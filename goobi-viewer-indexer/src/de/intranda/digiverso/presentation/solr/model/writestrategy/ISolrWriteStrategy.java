@@ -40,8 +40,6 @@ public interface ISolrWriteStrategy {
      */
     public void updateDoc(SolrInputDocument doc);
 
-    public int getPageOrderOffset();
-
     public int getPageDocsSize();
 
     public SolrInputDocument getPageDocForOrder(int order) throws FatalIndexerException;

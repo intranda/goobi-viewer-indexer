@@ -598,6 +598,9 @@ public class Hotfolder {
                     case LIDO:
                         addLidoToIndex(dataFile, reindexSettings);
                         break;
+                    case TEI:
+                        addWorldViewsToIndex(dataFile, fromReindexQueue, reindexSettings);
+                        break;
                     default:
                         logger.error("Unknown file format, deleting: {}", filename);
                         Files.delete(dataFile);
@@ -770,7 +773,7 @@ public class Hotfolder {
                         dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
                         break;
                     case "_wc":
-                        dataFolders.put(DataRepository.PARAM_TEI, path);
+                        dataFolders.put(DataRepository.PARAM_TEIWC, path);
                         break;
                     case "_neralto":
                         dataFolders.put(DataRepository.PARAM_ALTO, path);
@@ -831,7 +834,7 @@ public class Hotfolder {
         if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
             reindexSettings.put("reindexCrowdText", true);
         }
-        if (dataFolders.get(DataRepository.PARAM_TEI) == null) {
+        if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
             reindexSettings.put("reindexWordCoords", true);
         }
         if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
@@ -915,7 +918,7 @@ public class Hotfolder {
             }
             // Copy and delete TEI word coordinates folder
             if (reindexSettings.get("reindexWordCoords") == null || !reindexSettings.get("reindexWordCoords")) {
-                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_TEI), DataRepository.PARAM_TEI, pi);
+                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_TEIWC), DataRepository.PARAM_TEIWC, pi);
             }
 
             // Copy and delete ABBYY word coordinates folder
@@ -1012,7 +1015,7 @@ public class Hotfolder {
                     Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD));
                 }
                 if (reindexSettings.get("reindexWordCoords") == null || !reindexSettings.get("reindexWordCoords")) {
-                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_TEI));
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_TEIWC));
                 }
                 if (reindexSettings.get("reindexAbbyy") == null || !reindexSettings.get("reindexAbbyy")) {
                     Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ABBYY));
@@ -1115,7 +1118,7 @@ public class Hotfolder {
                     String identifier = resp[0];
                     String newLidoFileName = identifier + ".xml";
 
-                    // Write invidivual LIDO records as separate files
+                    // Write individual LIDO records as separate files
                     Path indexed = Paths.get(selectedDataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(),
                             newLidoFileName);
                     try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
@@ -1295,6 +1298,218 @@ public class Hotfolder {
             if (!reindexSettings.get("reindexMix") && dataFolders.get(DataRepository.PARAM_MIX) != null && Files.isDirectory(dataFolders.get(
                     DataRepository.PARAM_MIX))) {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
+            }
+        }
+    }
+
+    /**
+     * Indexes the given WorldViews file.
+     * 
+     * @param mainFile {@link File}
+     * @param fromReindexQueue
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * 
+     */
+    private void addWorldViewsToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException,
+            FatalIndexerException {
+        logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
+        String[] resp = { null, null };
+        Map<String, Path> dataFolders = new HashMap<>();
+        boolean useOldPyramidTiffs = false;
+
+        String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
+            for (Path path : stream) {
+                logger.info("Found data folder: {}", path.getFileName());
+                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
+                switch (fileNameSansRoot) {
+                    case "_tif":
+                    case "_media":
+                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
+                        break;
+                    case "_tei":
+                        dataFolders.put(DataRepository.PARAM_TEIWC, path);
+                        break;
+                    default:
+                        // nothing;
+                }
+            }
+        }
+
+        // Use existing folders for those missing in the hotfolder
+        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
+            reindexSettings.put("reindexMedia", true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
+            reindexSettings.put("reindexTei", true);
+        }
+
+        try {
+            currentIndexer = new MetsIndexer(this);
+            resp = ((MetsIndexer) currentIndexer).index(mainFile, fromReindexQueue, dataFolders, null, Configuration.getInstance()
+                    .getPageCountStart());
+        } finally {
+            currentIndexer = null;
+        }
+
+        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
+            // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
+            String newMetsFileName = resp[0];
+            String pi = FilenameUtils.getBaseName(newMetsFileName);
+            Path indexed = Paths.get(selectedDataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
+            if (mainFile.equals(indexed)) {
+                logger.debug("'{}' is an existing indexed file - not moving it.", mainFile.getFileName());
+                return;
+            }
+            if (Files.exists(indexed)) {
+                // Add a timestamp to the old file name
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
+                String oldMetsFilename = FilenameUtils.getBaseName(newMetsFileName) + "_" + sdf.format(new Date()) + ".xml";
+                Path newFile = Paths.get(updatedMets.toAbsolutePath().toString(), oldMetsFilename);
+                Files.copy(indexed, newFile);
+                logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
+            }
+            Files.copy(mainFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+
+            if (dummyRepository != null) {
+                // Move non-repository data folders to the selected repository
+                dummyRepository.moveDataFoldersToRepository(selectedDataRepository, FilenameUtils.getBaseName(newMetsFileName));
+            }
+
+            // Copy and delete media folder
+            if (reindexSettings.get("reindexMedia") == null || !reindexSettings.get("reindexMedia")) {
+                if (selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_MEDIA), DataRepository.PARAM_MEDIA, pi) > 0) {
+                    String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                    if (msg != null) {
+                        logger.info(msg);
+                    }
+                }
+            }
+            // Copy and delete ALTO folder
+            if (reindexSettings.get("reindexAlto") == null || !reindexSettings.get("reindexAlto")) {
+                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_ALTO), DataRepository.PARAM_ALTO, pi);
+            }
+            // Copy and delete crowdsourcing ALTO folder
+            if ((reindexSettings.get("reindexCrowdAlto") == null || !reindexSettings.get("reindexCrowdAlto")) && selectedDataRepository.getDir(
+                    DataRepository.PARAM_ALTOCROWD) != null) {
+                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_ALTOCROWD), DataRepository.PARAM_ALTOCROWD, pi);
+            }
+            // Copy and delete fulltext folder
+            if (reindexSettings.get("reindexText") == null || !reindexSettings.get("reindexText")) {
+                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_FULLTEXT), DataRepository.PARAM_FULLTEXT, pi);
+            }
+            // Copy and delete crowdsourcing fulltext folder
+            if ((reindexSettings.get("reindexCrowdText") == null || !reindexSettings.get("reindexCrowdText")) && selectedDataRepository.getDir(
+                    DataRepository.PARAM_FULLTEXTCROWD) != null) {
+                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
+                        DataRepository.PARAM_FULLTEXTCROWD, pi);
+            }
+
+            // Copy and delete user generated content files
+            if (reindexSettings.get("reindexUGC") == null || !reindexSettings.get("reindexUGC")) {
+                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_UGC), DataRepository.PARAM_UGC, pi);
+            }
+
+            // Copy and delete overview page text files
+            if (reindexSettings.get("reindexOverview") == null || !reindexSettings.get("reindexOverview")) {
+                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_OVERVIEW), DataRepository.PARAM_OVERVIEW, pi);
+            }
+
+            // Delete unsupported data folders
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
+                for (Path path : stream) {
+                    if (path.getFileName().toString().startsWith(fileNameRoot) && Files.isDirectory(path)) {
+                        if (Utils.deleteDirectory(path)) {
+                            logger.info("Deleted unsupported folder '{}'.", path.getFileName());
+                        } else {
+                            logger.warn("'{}' could not be deleted.", path.toAbsolutePath());
+                        }
+                    }
+                }
+            }
+
+            // success for goobi
+            Path successFile = Paths.get(success.toAbsolutePath().toString(), mainFile.getFileName().toString());
+            try {
+                Files.createFile(successFile);
+                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
+            } catch (FileAlreadyExistsException e) {
+                Files.delete(successFile);
+                Files.createFile(successFile);
+                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
+            }
+
+            try {
+                Files.delete(mainFile);
+            } catch (IOException e) {
+                logger.error("'{}' could not be deleted! Please delete it manually!", mainFile.toAbsolutePath());
+            }
+
+        } else {
+            // Error
+            if (deleteContentFilesOnFailure) {
+                // Delete all data folders in hotfolder
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {
+
+                    @Override
+                    public boolean accept(Path entry) throws IOException {
+                        return Files.isDirectory(entry) && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString()
+                                .endsWith("_media"));
+                    }
+                });) {
+                    for (Path path : stream) {
+                        logger.info("Found data folder: {}", path.getFileName());
+                        Utils.deleteDirectory(path);
+                    }
+                }
+
+                if (reindexSettings.get("reindexPyramidTiffs") == null || !reindexSettings.get("reindexPyramidTiffs")) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_TILEDIMAGES));
+                }
+                if (reindexSettings.get("reindexAlto") == null || !reindexSettings.get("reindexAlto")) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ALTO));
+                }
+                if (reindexSettings.get("reindexCrowdAlto") == null || !reindexSettings.get("reindexCrowdAlto")) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD));
+                }
+                if (reindexSettings.get("reindexText") == null || !reindexSettings.get("reindexText")) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXT));
+                }
+                if (reindexSettings.get("reindexCrowdText") == null || !reindexSettings.get("reindexCrowdText")) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD));
+                }
+                if (reindexSettings.get("reindexTei") == null || !reindexSettings.get("reindexTei")) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_TEIWC));
+                }
+                if (reindexSettings.get("reindexAbbyy") == null || !reindexSettings.get("reindexAbbyy")) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ABBYY));
+                }
+                if (reindexSettings.get("reindexMix") == null || !reindexSettings.get("reindexMix")) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
+                }
+                if (dataFolders.get(DataRepository.PARAM_PAGEPDF) != null) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_PAGEPDF));
+                }
+                if (dataFolders.get(DataRepository.PARAM_SOURCE) != null) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_SOURCE));
+                }
+                if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_UGC));
+                }
+                if ((reindexSettings.get("reindexOverview") == null || !reindexSettings.get("reindexOverview")) && dataFolders.get(
+                        DataRepository.PARAM_OVERVIEW) != null) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_OVERVIEW));
+                }
+            }
+            handleError(mainFile, resp[1]);
+            try {
+                Files.delete(mainFile);
+            } catch (IOException e) {
+                logger.error("'{}' could not be deleted! Please delete it manually!", mainFile.toAbsolutePath());
             }
         }
     }

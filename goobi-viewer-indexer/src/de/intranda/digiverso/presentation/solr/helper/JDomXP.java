@@ -124,6 +124,7 @@ public class JDomXP {
         getNamespaces().put("lido", Namespace.getNamespace("lido", "http://www.lido-schema.org"));
         getNamespaces().put("mix", Namespace.getNamespace("mix", "http://www.loc.gov/mix/v20"));
         getNamespaces().put("mm", Namespace.getNamespace("mm", "http://www.mycore.de/metsmaker/v1"));
+        getNamespaces().put("tei", Namespace.getNamespace("tei", "http://www.tei-c.org/ns/1.0"));
 
         Map<String, String> additionalNamespaces = Configuration.getInstance().getListConfiguration("init.namespaces");
         if (additionalNamespaces != null) {

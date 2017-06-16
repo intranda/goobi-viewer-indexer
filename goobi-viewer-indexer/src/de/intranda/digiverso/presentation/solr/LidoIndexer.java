@@ -336,8 +336,7 @@ public class LidoIndexer extends AbstractIndexer {
             boolean thumbnailSet = false;
             SolrInputDocument firstPageDoc = pageDocs.get(0);
             int firstPageOrder = (int) firstPageDoc.getFieldValue(SolrConstants.ORDER);
-            int offset = writeStrategy.getPageOrderOffset();
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageOrder - offset)));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageOrder)));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             if (StringUtils.isEmpty(filePathBanner)) {
                 // Add thumbnail information from the first page

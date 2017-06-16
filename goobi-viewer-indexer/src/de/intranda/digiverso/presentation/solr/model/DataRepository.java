@@ -46,7 +46,8 @@ public class DataRepository {
     public static final String PARAM_ABBYY = "abbyyFolder";
     public static final String PARAM_FULLTEXT = "fulltextFolder";
     public static final String PARAM_FULLTEXTCROWD = "fulltextCrowdsourcingFolder";
-    public static final String PARAM_TEI = "wcFolder";
+    public static final String PARAM_TEI = "teiFolder";
+    public static final String PARAM_TEIWC = "wcFolder";
     public static final String PARAM_PAGEPDF = "pagePdfFolder";
     public static final String PARAM_SOURCE = "sourceContentFolder";
     public static final String PARAM_UGC = "userGeneratedContentFolder";
@@ -95,13 +96,14 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_ALTOCROWD);
         checkAndCreateDataSubdir(PARAM_FULLTEXT);
         checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
-        checkAndCreateDataSubdir(PARAM_TEI);
+        checkAndCreateDataSubdir(PARAM_TEIWC);
         checkAndCreateDataSubdir(PARAM_ABBYY);
         checkAndCreateDataSubdir(PARAM_PAGEPDF);
         checkAndCreateDataSubdir(PARAM_SOURCE);
         checkAndCreateDataSubdir(PARAM_UGC);
         checkAndCreateDataSubdir(PARAM_MIX);
         checkAndCreateDataSubdir(PARAM_OVERVIEW);
+        checkAndCreateDataSubdir(PARAM_TEI);
         valid = true;
     }
 
@@ -147,7 +149,7 @@ public class DataRepository {
         deleteFolder(Paths.get(getDir(PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_FULLTEXT).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), baseFileName));
-        deleteFolder(Paths.get(getDir(PARAM_TEI).toAbsolutePath().toString(), baseFileName));
+        deleteFolder(Paths.get(getDir(PARAM_TEIWC).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_ABBYY).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_MEDIA).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName));
@@ -208,7 +210,7 @@ public class DataRepository {
         moveDataFolderToRepository(toRepository, pi, PARAM_ABBYY);
         moveDataFolderToRepository(toRepository, pi, PARAM_FULLTEXT);
         moveDataFolderToRepository(toRepository, pi, PARAM_FULLTEXTCROWD);
-        moveDataFolderToRepository(toRepository, pi, PARAM_TEI);
+        moveDataFolderToRepository(toRepository, pi, PARAM_TEIWC);
         moveDataFolderToRepository(toRepository, pi, PARAM_PAGEPDF);
         moveDataFolderToRepository(toRepository, pi, PARAM_SOURCE);
         moveDataFolderToRepository(toRepository, pi, PARAM_UGC);

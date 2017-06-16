@@ -159,22 +159,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     }
 
     /* (non-Javadoc)
-     * @see de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy#getPageOrderOffset()
-     */
-    @Override
-    public int getPageOrderOffset() {
-        //        if (!pageDocOrderIddocMap.isEmpty()) {
-        //            for (int i = 1; i < 1000; ++i) {
-        //                if (pageDocOrderIddocMap.get(i) != null) {
-        //                    return i - 1;
-        //                }
-        //            }
-        //        }
-
-        return 0;
-    }
-
-    /* (non-Javadoc)
      * @see de.intranda.digiverso.presentation.solr.model.ISolrWriteStrategy#getPageDocsSize()
      */
     @Override

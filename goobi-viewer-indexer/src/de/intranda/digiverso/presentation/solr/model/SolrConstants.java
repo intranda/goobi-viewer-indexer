@@ -127,5 +127,6 @@ public final class SolrConstants {
     public static final String _UGC_TYPE_CORPORATION = "CORPORATION";
     public static final String _UGC_TYPE_ADDRESS = "ADDRESS";
     public static final String _UGC_TYPE_COMMENT = "COMMENT";
+    public static final String _WORLDVIEWS = "WORLDVIEWS";
     public static final String NAMEDENTITIES = "NAMEDENTITIES";
 }

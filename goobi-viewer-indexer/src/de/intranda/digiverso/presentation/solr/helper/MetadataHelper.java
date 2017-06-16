@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,8 @@ public class MetadataHelper {
     public static DateTimeFormatter formatterJPDate = DateTimeFormat.forPattern("yyyy/MM/dd");;
     public static DateTimeFormatter formatterBasicDateTime = DateTimeFormat.forPattern("yyyyMMddHHmmss");
     public static DateTimeFormatter formatterISO8601DateTimeFullWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    private static DecimalFormat formatDoubleDigit = new DecimalFormat("00");
+    public static DecimalFormat formatDoubleDigit = new DecimalFormat("00");
+    public static DecimalFormat formatQuadrupleDigit = new DecimalFormat("0000");
 
     public static List<String> addNormDataFieldsToDefault;
 
@@ -192,9 +194,7 @@ public class MetadataHelper {
                     // Cut off "displayForm" if the field is to be aggregated
                     if (configurationItem.isGroupEntity() && xpath.endsWith("/mods:displayForm")) {
                         xpath = xpath.substring(0, xpath.length() - 17);
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("new xpath: " + xpath);
-                        }
+                        logger.debug("new xpath: {}", xpath);
                     }
                     if (xpath.contains(XPATH_ROOT_PLACEHOLDER)) {
                         // Replace the placeholder with the prefix (e.g. in expresions using concat())
@@ -203,9 +203,11 @@ public class MetadataHelper {
                         // User prefix as prefix
                         query = queryPrefix + xpath;
                     }
+                    //                    logger.info("XPath: {}", query);
                     for (Element currentElement : elementsToIterateOver) {
                         List list = xp.evaluate(query, currentElement);
                         if (list != null) {
+                            //                            logger.info("found: {}", list.size());
                             for (Object xpathAnswerObject : list) {
                                 if (configurationItem.isGroupEntity()) {
                                     // Aggregated / grouped metadata
@@ -416,8 +418,21 @@ public class MetadataHelper {
      */
     private static List<LuceneField> retrieveNormData(StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms, String url,
             List<String> addToDefaultFields, Map<Object, String> replaceRules) {
+        if (sbDefaultMetadataValues == null) {
+            throw new IllegalArgumentException("sbDefaultMetadataValues may not be null");
+        }
+        if (sbNormDataTerms == null) {
+            throw new IllegalArgumentException("sbNormDataTerms may not be null");
+        }
+        if (url == null) {
+            throw new IllegalArgumentException("url may not be null");
+        }
         List<LuceneField> ret = new ArrayList<>();
 
+        // If it's just an identifier, assume it's GND
+        if (!url.startsWith("http")) {
+            url = "http://d-nb.info/gnd/" + url;
+        }
         Map<String, List<NormData>> normDataListMap = NormDataImporter.importNormData(url);
         for (String key : normDataListMap.keySet()) {
             if (normDataListMap.get(key) == null) {
@@ -494,10 +509,6 @@ public class MetadataHelper {
     public static void writeMetadataToObject(IndexObject indexObj, Element element, String queryPrefix, JDomXP xp) throws FatalIndexerException {
         List<LuceneField> fields = retrieveElementMetadata(element, queryPrefix, indexObj, xp);
         for (LuceneField field : fields) {
-            // in das Objekt reinschreiben
-            if ("MD_SENDER".equals(field.getField())) {
-                logger.info(field.toString());
-            }
             if (indexObj.getLuceneFieldWithName(field.getField()) != null) {
                 boolean duplicate = false;
 
@@ -972,15 +983,17 @@ public class MetadataHelper {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         List<LuceneField> ret = new ArrayList<>();
 
+        String type = null;
         ret.add(new LuceneField(SolrConstants.LABEL, groupLabel));
         if (groupEntityFields.get("type") != null) {
             List<String> values = (List<String>) groupEntityFields.get("type");
             if (values != null && !values.isEmpty()) {
-                ret.add(new LuceneField(SolrConstants.METADATATYPE, values.get(0).trim()));
+                type = values.get(0).trim();
+                ret.add(new LuceneField(SolrConstants.METADATATYPE, type));
             }
         }
         boolean normUriFound = false;
-        boolean solrGroupFieldAdded = false;
+        Map<String, String> collectedValues = new HashMap<>();
         for (Object field : groupEntityFields.keySet()) {
             if ("type".equals(field)) {
                 continue;
@@ -988,21 +1001,17 @@ public class MetadataHelper {
             List<String> xpathList = (List<String>) groupEntityFields.get(field);
             if (xpathList != null) {
                 for (String xpath : xpathList) {
+                    //                    logger.info("XPath: {}", xpath);
                     List<Object> values = JDomXP.evaluate(xpath, ele, Filters.fpassthrough());
                     if (values != null && !values.isEmpty()) {
                         String fieldName = (String) field;
                         String fieldValue = JDomXP.objectToString(values.get(0));
+                        //                        logger.info("found: {}:{}", fieldName, fieldValue);
                         if (fieldValue != null) {
                             fieldValue = fieldValue.trim();
                         }
                         ret.add(new LuceneField(fieldName, fieldValue));
-
-                        // Add SORT_DISPLAYFORM so that there is a single-valued field by which to group metadata search hits
-                        if ("MD_VALUE".equals(field) && !solrGroupFieldAdded) {
-                            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(fieldValue).toString(), "", null,
-                                    ret);
-                            solrGroupFieldAdded = true;
-                        }
+                        collectedValues.put(fieldName, fieldValue);
 
                         if (NormDataImporter.FIELD_URI.equals(field)) {
                             normUriFound = true;
@@ -1010,6 +1019,40 @@ public class MetadataHelper {
                     }
                 }
             }
+        }
+
+        // if not MD_VALUE field exists, construct one
+        String mdValue = null;
+        for (LuceneField field : ret) {
+            if (field.getField().equals("MD_VALUE")) {
+                mdValue = field.getValue();
+                break;
+            }
+        }
+        if (mdValue == null) {
+            StringBuilder sbValue = new StringBuilder();
+            switch (type) {
+                case "PERSON":
+                    if (collectedValues.containsKey("MD_LASTNAME")) {
+                        sbValue.append(collectedValues.get("MD_LASTNAME"));
+                    }
+                    if (collectedValues.containsKey("MD_FIRSTNAME")) {
+                        if (sbValue.length() > 0) {
+                            sbValue.append(", ");
+                        }
+                        sbValue.append(collectedValues.get("MD_FIRSTNAME"));
+                    }
+                    break;
+            }
+            if (sbValue.length() > 0) {
+                mdValue = sbValue.toString();
+                ret.add(new LuceneField("MD_VALUE", mdValue));
+            }
+        }
+
+        // Add SORT_DISPLAYFORM so that there is a single-valued field by which to group metadata search hits
+        if (mdValue != null) {
+            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValue).toString(), "", null, ret);
         }
 
         // Add norm data URI, if available (GND only)
