@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI.2>
+  <teiHeader/>
+  <text>
+    <body>
+      <p id="ID29">
+        <w function="1526,2113,1674,2187" match="ex">EX</w>
+        <w function="1214,2206,2032,2298" match="bibliotkecan">BIBLIOTKECAN</w>
+        <w function="1130,2328,1480,2416" match="regia">REGIA</w>
+        <w function="1480,2406,1502,2418" match=".">.</w>
+        <w function="1550,2332,1968,2418" match="acade1">ACADE1</w>
+        <w function="1140,2516,1172,2562" match="v">v</w>
+        <w function="1298,2450,1882,2540" match="georgias">GEORGIAS</w>
+        <w function="1172,2566,1292,2654" match="v">V</w>
+        <w function="1480,2566,1714,2654" match="aug">AUG</w>
+        <w function="1714,2630,1740,2654" match=".">.</w>
+      </p>
+      <p id="ID2a">
+        <w function="1233,3371,1698,3459" match="digitalisiert">Digitalisiert</w>
+        <w function="1724,3371,1912,3439" match="dank">dank</w>
+      </p>
+      <p id="ID2b">
+        <w function="1048,3488,1522,3556" match="freundlicher">freundlicher</w>
+        <w function="1545,3491,2098,3576" match="unterstützung">Unterstützung</w>
+      </p>
+      <p id="ID2c">
+        <w function="1496,3628,1646,3673" match="von">von</w>
+      </p>
+      <p id="ID2d">
+        <w function="1274,3839,1546,3901" match="martin">Martin</w>
+        <w function="1575,3839,1912,3901" match="mattheis">Mattheis</w>
+      </p>
+      <p id="ID2e">
+        <w function="934,3976,957,4001" match="ii">ii</w>
+        <w function="1243,3969,1373,4001" match="www">www</w>
+        <w function="1376,3992,1386,4001" match=".">.</w>
+        <w function="1392,3956,1812,4014" match="digiwunschbuch">DigiWunschbuch</w>
+        <w function="1818,3992,1828,4001" match=".">.</w>
+        <w function="1834,3956,1896,4001" match="de">de</w>
+      </p>
+      <p id="ID2f">
+        <w function="2124,3274,2258,3392" match="^">^</w>
+      </p>
+      <pb/>
+      <milestone n="1" type="page"></milestone>
+    </body>
+  </text>
+</TEI.2>

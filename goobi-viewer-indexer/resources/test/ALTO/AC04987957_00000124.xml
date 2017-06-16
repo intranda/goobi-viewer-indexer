@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v2#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v2# http://www.loc.gov/standards/alto/alto.xsd">
+  <Description>
+    <MeasurementUnit>pixel</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>00000124.xml</fileName>
+    </sourceImageInformation>
+    <OCRProcessing ID="OCR_1">
+      <preProcessingStep>
+        <processingDateTime>2015-05-18T07:57:28</processingDateTime>
+        <processingAgency>intranda GmbH, www.intranda.com</processingAgency>
+        <processingSoftware>
+          <softwareCreator>intranda GmbH, Germany</softwareCreator>
+          <softwareName>intranda OCR Module for TaskManager</softwareName>
+          <softwareVersion>1.0r42</softwareVersion>
+        </processingSoftware>
+      </preProcessingStep>
+      <ocrProcessingStep>
+        <processingSoftware>
+          <softwareCreator>ABBYY (BIT Software), Russia</softwareCreator>
+          <softwareName>FineReader Engine</softwareName>
+          <softwareVersion>10</softwareVersion>
+        </processingSoftware>
+      </ocrProcessingStep>
+    </OCRProcessing>
+  </Description>
+  <Layout>
+    <Page PHYSICAL_IMG_NR="1" ID="Page_0" WIDTH="4898" HEIGHT="6937">
+      <PrintSpace ID="PrintSpace_1" HPOS="616" VPOS="750" WIDTH="4034" HEIGHT="4742">
+        <TextBlock ID="block_0" HPOS="640" VPOS="750" WIDTH="4010" HEIGHT="494">
+          <TextLine ID="TextLine_1" HPOS="640" VPOS="750" WIDTH="4010" HEIGHT="494">
+            <String CONTENT="114" ID="String_1" HPOS="640" VPOS="754" WIDTH="160" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_2" HPOS="830" VPOS="806" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="1" ID="String_3" HPOS="942" VPOS="758" WIDTH="46" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_4" HPOS="1014" VPOS="806" WIDTH="22" HEIGHT="28"></String>
+            <String CONTENT="11" ID="String_5" HPOS="1062" VPOS="766" WIDTH="104" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_6" HPOS="1200" VPOS="814" WIDTH="20" HEIGHT="24"></String>
+            <String CONTENT="1" ID="String_7" HPOS="1252" VPOS="766" WIDTH="42" HEIGHT="70"></String>
+            <String CONTENT="-" ID="String_8" HPOS="1374" VPOS="802" WIDTH="42" HEIGHT="12"></String>
+            <String CONTENT="170v" ID="String_9" HPOS="1434" VPOS="750" WIDTH="226" HEIGHT="88"></String>
+            <String CONTENT="Sermones" ID="String_10" HPOS="1736" VPOS="770" WIDTH="480" HEIGHT="98"></String>
+            <String CONTENT="de" ID="String_11" HPOS="2292" VPOS="786" WIDTH="106" HEIGHT="70"></String>
+            <String CONTENT="Sanctis" ID="String_12" HPOS="2476" VPOS="792" WIDTH="404" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_13" HPOS="2904" VPOS="842" WIDTH="26" HEIGHT="26"></String>
+            <String CONTENT="lat" ID="String_14" HPOS="2956" VPOS="798" WIDTH="166" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_15" HPOS="3148" VPOS="842" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="-" ID="String_16" HPOS="3202" VPOS="828" WIDTH="42" HEIGHT="18"></String>
+            <String CONTENT="Ine" ID="String_17" HPOS="3316" VPOS="796" WIDTH="172" HEIGHT="76"></String>
+            <String CONTENT="." ID="String_18" HPOS="3516" VPOS="850" WIDTH="24" HEIGHT="22"></String>
+            <String CONTENT=":" ID="String_19" HPOS="3576" VPOS="820" WIDTH="24" HEIGHT="46"></String>
+            <String CONTENT="Moálcum" ID="String_20" HPOS="3620" VPOS="802" WIDTH="424" HEIGHT="72"></String>
+            <String CONTENT="hatuisti" ID="String_21" HPOS="4118" VPOS="808" WIDTH="468" HEIGHT="72"></String>
+            <String CONTENT="etc" ID="String_22" HPOS="938" VPOS="968" WIDTH="168" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_23" HPOS="1136" VPOS="1008" WIDTH="22" HEIGHT="26"></String>
+            <String CONTENT="Gen" ID="String_24" HPOS="1246" VPOS="968" WIDTH="166" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_25" HPOS="1442" VPOS="1018" WIDTH="24" HEIGHT="22"></String>
+            <String CONTENT="30" ID="String_26" HPOS="1488" VPOS="968" WIDTH="110" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_27" HPOS="1628" VPOS="1020" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="Qui" ID="String_28" HPOS="1680" VPOS="970" WIDTH="158" HEIGHT="84"></String>
+            <String CONTENT="sitit" ID="String_29" HPOS="1922" VPOS="978" WIDTH="290" HEIGHT="72"></String>
+            <String CONTENT="," ID="String_30" HPOS="2238" VPOS="1032" WIDTH="24" HEIGHT="36"></String>
+            <String CONTENT="veniat" ID="String_31" HPOS="2290" VPOS="986" WIDTH="346" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_32" HPOS="2666" VPOS="1032" WIDTH="22" HEIGHT="26"></String>
+            <String CONTENT="Expl" ID="String_33" HPOS="2774" VPOS="986" WIDTH="228" HEIGHT="90"></String>
+            <String CONTENT="." ID="String_34" HPOS="3028" VPOS="1040" WIDTH="20" HEIGHT="22"></String>
+            <String CONTENT=";" ID="String_35" HPOS="3086" VPOS="1006" WIDTH="22" HEIGHT="50"></String>
+            <String CONTENT="nam" ID="String_36" HPOS="3196" VPOS="1014" WIDTH="174" HEIGHT="52"></String>
+            <String CONTENT="que" ID="String_37" HPOS="3444" VPOS="1014" WIDTH="170" HEIGHT="70"></String>
+            <String CONTENT="in" ID="String_38" HPOS="3690" VPOS="998" WIDTH="106" HEIGHT="72"></String>
+            <String CONTENT="deliciis" ID="String_39" HPOS="3876" VPOS="998" WIDTH="480" HEIGHT="72"></String>
+            <String CONTENT="est" ID="String_40" HPOS="4430" VPOS="1006" WIDTH="168" HEIGHT="66"></String>
+            <String CONTENT="," ID="String_41" HPOS="4626" VPOS="1054" WIDTH="24" HEIGHT="34"></String>
+            <String CONTENT="vivens" ID="String_42" HPOS="938" VPOS="1160" WIDTH="354" HEIGHT="78"></String>
+            <String CONTENT="mortua" ID="String_43" HPOS="1366" VPOS="1172" WIDTH="360" HEIGHT="70"></String>
+            <String CONTENT="est" ID="String_44" HPOS="1798" VPOS="1176" WIDTH="166" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_45" HPOS="1994" VPOS="1220" WIDTH="22" HEIGHT="22"></String>
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="block_1" HPOS="1427" VPOS="1334" WIDTH="356" HEIGHT="51">
+          <TextLine ID="TextLine_2" HPOS="1427" VPOS="1334" WIDTH="356" HEIGHT="51">
+            <String CONTENT="V" ID="String_46" HPOS="1427" VPOS="1338" WIDTH="49" HEIGHT="47"></String>
+            <String CONTENT="V" ID="String_47" HPOS="1736" VPOS="1334" WIDTH="47" HEIGHT="50"></String>
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="block_2" HPOS="934" VPOS="1358" WIDTH="2436" HEIGHT="116">
+          <TextLine ID="TextLine_3" HPOS="934" VPOS="1358" WIDTH="2436" HEIGHT="116">
+            <String CONTENT="2" ID="String_48" HPOS="934" VPOS="1358" WIDTH="50" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_49" HPOS="1008" VPOS="1408" WIDTH="24" HEIGHT="24"></String>
+            <String CONTENT="." ID="String_50" HPOS="1036" VPOS="1426" WIDTH="10" HEIGHT="10"></String>
+            <String CONTENT="21" ID="String_51" HPOS="1058" VPOS="1362" WIDTH="104" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_52" HPOS="1194" VPOS="1412" WIDTH="24" HEIGHT="22"></String>
+            <String CONTENT="170" ID="String_53" HPOS="1248" VPOS="1362" WIDTH="164" HEIGHT="70"></String>
+            <String CONTENT="-" ID="String_54" HPOS="1492" VPOS="1396" WIDTH="44" HEIGHT="16"></String>
+            <String CONTENT="180" ID="String_55" HPOS="1554" VPOS="1368" WIDTH="164" HEIGHT="70"></String>
+            <String CONTENT="Sermones" ID="String_56" HPOS="1858" VPOS="1368" WIDTH="476" HEIGHT="78"></String>
+            <String CONTENT="ad" ID="String_57" HPOS="2414" VPOS="1378" WIDTH="106" HEIGHT="72"></String>
+            <String CONTENT="clerum" ID="String_58" HPOS="2596" VPOS="1382" WIDTH="348" HEIGHT="70"></String>
+            <String CONTENT="," ID="String_59" HPOS="2968" VPOS="1440" WIDTH="22" HEIGHT="34"></String>
+            <String CONTENT="lat" ID="String_60" HPOS="3078" VPOS="1386" WIDTH="166" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_61" HPOS="3274" VPOS="1430" WIDTH="20" HEIGHT="24"></String>
+            <String CONTENT="*" ID="String_62" HPOS="3324" VPOS="1404" WIDTH="46" HEIGHT="42"></String>
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="block_3" HPOS="942" VPOS="1656" WIDTH="3650" HEIGHT="1840">
+          <TextLine ID="TextLine_4" HPOS="942" VPOS="1656" WIDTH="3650" HEIGHT="1840">
+            <String CONTENT="Saee" ID="String_63" HPOS="1058" VPOS="1656" WIDTH="228" HEIGHT="76"></String>
+            <String CONTENT="." ID="String_64" HPOS="1318" VPOS="1708" WIDTH="20" HEIGHT="22"></String>
+            <String CONTENT="XIV" ID="String_65" HPOS="1366" VPOS="1662" WIDTH="172" HEIGHT="68"></String>
+            <String CONTENT="," ID="String_66" HPOS="1564" VPOS="1718" WIDTH="20" HEIGHT="36"></String>
+            <String CONTENT="Perg" ID="String_67" HPOS="1676" VPOS="1666" WIDTH="230" HEIGHT="90"></String>
+            <String CONTENT="." ID="String_68" HPOS="1932" VPOS="1710" WIDTH="18" HEIGHT="22"></String>
+            <String CONTENT="," ID="String_69" HPOS="1990" VPOS="1722" WIDTH="24" HEIGHT="36"></String>
+            <String CONTENT="320x247" ID="String_70" HPOS="2102" VPOS="1668" WIDTH="410" HEIGHT="74"></String>
+            <String CONTENT="," ID="String_71" HPOS="2540" VPOS="1726" WIDTH="22" HEIGHT="38"></String>
+            <String CONTENT="180" ID="String_72" HPOS="2594" VPOS="1672" WIDTH="164" HEIGHT="68"></String>
+            <String CONTENT="B11" ID="String_73" HPOS="2834" VPOS="1678" WIDTH="164" HEIGHT="66"></String>
+            <String CONTENT="." ID="String_74" HPOS="3030" VPOS="1724" WIDTH="20" HEIGHT="24"></String>
+            <String CONTENT="2" ID="String_75" HPOS="3078" VPOS="1678" WIDTH="50" HEIGHT="64"></String>
+            <String CONTENT="Kol" ID="String_76" HPOS="3196" VPOS="1680" WIDTH="172" HEIGHT="72"></String>
+            <String CONTENT="!" ID="String_77" HPOS="3386" VPOS="1684" WIDTH="46" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_78" HPOS="3458" VPOS="1732" WIDTH="20" HEIGHT="18"></String>
+            <String CONTENT="-" ID="String_79" HPOS="3510" VPOS="1712" WIDTH="42" HEIGHT="12"></String>
+            <String CONTENT="10" ID="String_80" HPOS="3634" VPOS="1680" WIDTH="104" HEIGHT="66"></String>
+            <String CONTENT="Lagen" ID="String_81" HPOS="3808" VPOS="1686" WIDTH="296" HEIGHT="88"></String>
+            <String CONTENT="zu" ID="String_82" HPOS="4186" VPOS="1702" WIDTH="104" HEIGHT="52"></String>
+            <String CONTENT="je" ID="String_83" HPOS="4368" VPOS="1688" WIDTH="108" HEIGHT="82"></String>
+            <String CONTENT="10" ID="String_84" HPOS="946" VPOS="1852" WIDTH="96" HEIGHT="72"></String>
+            <String CONTENT="BI1" ID="String_85" HPOS="1120" VPOS="1858" WIDTH="166" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_86" HPOS="1316" VPOS="1906" WIDTH="24" HEIGHT="24"></String>
+            <String CONTENT="Am" ID="String_87" HPOS="1426" VPOS="1860" WIDTH="114" HEIGHT="72"></String>
+            <String CONTENT="Schi" ID="String_88" HPOS="1612" VPOS="1862" WIDTH="226" HEIGHT="74"></String>
+            <String CONTENT="," ID="String_89" HPOS="1868" VPOS="1912" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="sind" ID="String_90" HPOS="1980" VPOS="1868" WIDTH="234" HEIGHT="72"></String>
+            <String CONTENT="Sil" ID="String_91" HPOS="2284" VPOS="1868" WIDTH="164" HEIGHT="74"></String>
+            <String CONTENT="." ID="String_92" HPOS="2482" VPOS="1916" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="herausgenommen" ID="String_93" HPOS="2528" VPOS="1874" WIDTH="846" HEIGHT="90"></String>
+            <String CONTENT="worden" ID="String_94" HPOS="3440" VPOS="1878" WIDTH="356" HEIGHT="74"></String>
+            <String CONTENT="," ID="String_95" HPOS="3824" VPOS="1930" WIDTH="24" HEIGHT="40"></String>
+            <String CONTENT="die" ID="String_96" HPOS="3936" VPOS="1882" WIDTH="170" HEIGHT="70"></String>
+            <String CONTENT="wohl" ID="String_97" HPOS="4178" VPOS="1882" WIDTH="232" HEIGHT="70"></String>
+            <String CONTENT="die" ID="String_98" HPOS="944" VPOS="2052" WIDTH="164" HEIGHT="70"></String>
+            <String CONTENT="im" ID="String_99" HPOS="1184" VPOS="2058" WIDTH="110" HEIGHT="68"></String>
+            <String CONTENT="Inhaltsverzeichnis" ID="String_100" HPOS="1362" VPOS="2056" WIDTH="1094" HEIGHT="82"></String>
+            <String CONTENT="genannten" ID="String_101" HPOS="2528" VPOS="2070" WIDTH="534" HEIGHT="86"></String>
+            <String CONTENT="Sermones" ID="String_102" HPOS="3138" VPOS="2068" WIDTH="478" HEIGHT="74"></String>
+            <String CONTENT="de" ID="String_103" HPOS="3692" VPOS="2072" WIDTH="108" HEIGHT="72"></String>
+            <String CONTENT="Nat" ID="String_104" HPOS="3870" VPOS="2074" WIDTH="174" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_105" HPOS="4072" VPOS="2122" WIDTH="20" HEIGHT="20"></String>
+            <String CONTENT="Dni" ID="String_106" HPOS="4122" VPOS="2076" WIDTH="160" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_107" HPOS="4318" VPOS="2120" WIDTH="24" HEIGHT="26"></String>
+            <String CONTENT="enthielten" ID="String_108" HPOS="944" VPOS="2250" WIDTH="590" HEIGHT="74"></String>
+            <String CONTENT="." ID="String_109" HPOS="1564" VPOS="2300" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="-" ID="String_110" HPOS="1614" VPOS="2284" WIDTH="48" HEIGHT="18"></String>
+            <String CONTENT="Holzdeckel" ID="String_111" HPOS="1730" VPOS="2256" WIDTH="598" HEIGHT="74"></String>
+            <String CONTENT="mit" ID="String_112" HPOS="2404" VPOS="2262" WIDTH="170" HEIGHT="70"></String>
+            <String CONTENT="rotem" ID="String_113" HPOS="2652" VPOS="2268" WIDTH="296" HEIGHT="68"></String>
+            <String CONTENT="Lederüterzug" ID="String_114" HPOS="3012" VPOS="2254" WIDTH="732" HEIGHT="104"></String>
+            <String CONTENT="." ID="String_115" HPOS="3764" VPOS="2314" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="Von" ID="String_116" HPOS="3874" VPOS="2268" WIDTH="172" HEIGHT="70"></String>
+            <String CONTENT="den" ID="String_117" HPOS="4124" VPOS="2272" WIDTH="164" HEIGHT="68"></String>
+            <String CONTENT="zwei" ID="String_118" HPOS="4370" VPOS="2274" WIDTH="222" HEIGHT="70"></String>
+            <String CONTENT="Schliessen" ID="String_119" HPOS="942" VPOS="2440" WIDTH="594" HEIGHT="78"></String>
+            <String CONTENT="eine" ID="String_120" HPOS="1616" VPOS="2454" WIDTH="228" HEIGHT="72"></String>
+            <String CONTENT="atgetrochen" ID="String_121" HPOS="1922" VPOS="2454" WIDTH="652" HEIGHT="90"></String>
+            <String CONTENT="." ID="String_122" HPOS="2604" VPOS="2504" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="Auf" ID="String_123" HPOS="2714" VPOS="2458" WIDTH="168" HEIGHT="70"></String>
+            <String CONTENT="dem" ID="String_124" HPOS="2962" VPOS="2456" WIDTH="168" HEIGHT="74"></String>
+            <String CONTENT="vord" ID="String_125" HPOS="3204" VPOS="2458" WIDTH="232" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_126" HPOS="3458" VPOS="2508" WIDTH="24" HEIGHT="24"></String>
+            <String CONTENT="Deckfcl" ID="String_127" HPOS="3508" VPOS="2462" WIDTH="352" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_128" HPOS="3888" VPOS="2510" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="aufgeklet" ID="String_129" HPOS="3942" VPOS="2464" WIDTH="536" HEIGHT="88"></String>
+            <String CONTENT="-" ID="String_130" HPOS="4494" VPOS="2496" WIDTH="44" HEIGHT="14"></String>
+            <String CONTENT="ter" ID="String_131" HPOS="944" VPOS="2640" WIDTH="172" HEIGHT="72"></String>
+            <String CONTENT="Papierzettel" ID="String_132" HPOS="1188" VPOS="2638" WIDTH="712" HEIGHT="90"></String>
+            <String CONTENT=":" ID="String_133" HPOS="1920" VPOS="2658" WIDTH="6" HEIGHT="68"></String>
+            <String CONTENT="saec" ID="String_134" HPOS="1982" VPOS="2666" WIDTH="226" HEIGHT="54"></String>
+            <String CONTENT="." ID="String_135" HPOS="2236" VPOS="2694" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="XV" ID="String_136" HPOS="2284" VPOS="2650" WIDTH="112" HEIGHT="66"></String>
+            <String CONTENT="mit" ID="String_137" HPOS="2466" VPOS="2652" WIDTH="170" HEIGHT="70"></String>
+            <String CONTENT="Inhaltsangabe" ID="String_138" HPOS="2710" VPOS="2646" WIDTH="786" HEIGHT="98"></String>
+            <String CONTENT="." ID="String_139" HPOS="3520" VPOS="2694" WIDTH="20" HEIGHT="26"></String>
+            <String CONTENT="Sermones" ID="String_140" HPOS="3632" VPOS="2652" WIDTH="476" HEIGHT="74"></String>
+            <String CONTENT="de" ID="String_141" HPOS="4184" VPOS="2658" WIDTH="112" HEIGHT="72"></String>
+            <String CONTENT="Sanctis" ID="String_142" HPOS="946" VPOS="2838" WIDTH="414" HEIGHT="74"></String>
+            <String CONTENT="per" ID="String_143" HPOS="1434" VPOS="2856" WIDTH="174" HEIGHT="70"></String>
+            <String CONTENT="annum" ID="String_144" HPOS="1682" VPOS="2858" WIDTH="286" HEIGHT="56"></String>
+            <String CONTENT="." ID="String_145" HPOS="1994" VPOS="2886" WIDTH="20" HEIGHT="26"></String>
+            <String CONTENT="Item" ID="String_146" HPOS="2098" VPOS="2842" WIDTH="236" HEIGHT="72"></String>
+            <String CONTENT="sermones" ID="String_147" HPOS="2412" VPOS="2862" WIDTH="472" HEIGHT="56"></String>
+            <String CONTENT="ad" ID="String_148" HPOS="2964" VPOS="2848" WIDTH="106" HEIGHT="68"></String>
+            <String CONTENT="clerum" ID="String_149" HPOS="3146" VPOS="2848" WIDTH="348" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_150" HPOS="3522" VPOS="2894" WIDTH="20" HEIGHT="24"></String>
+            <String CONTENT="Item" ID="String_151" HPOS="3626" VPOS="2846" WIDTH="238" HEIGHT="74"></String>
+            <String CONTENT="sermones" ID="String_152" HPOS="3942" VPOS="2868" WIDTH="476" HEIGHT="56"></String>
+            <String CONTENT="de" ID="String_153" HPOS="950" VPOS="3030" WIDTH="110" HEIGHT="74"></String>
+            <String CONTENT="Nat" ID="String_154" HPOS="1126" VPOS="3034" WIDTH="176" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_155" HPOS="1330" VPOS="3078" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="Domini" ID="String_156" HPOS="1440" VPOS="3036" WIDTH="340" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_157" HPOS="1814" VPOS="3084" WIDTH="24" HEIGHT="22"></String>
+            <String CONTENT="-" ID="String_158" HPOS="1864" VPOS="3066" WIDTH="44" HEIGHT="18"></String>
+            <String CONTENT="Auâ" ID="String_159" HPOS="1982" VPOS="3038" WIDTH="170" HEIGHT="68"></String>
+            <String CONTENT="Garsten" ID="String_160" HPOS="2224" VPOS="3040" WIDTH="412" HEIGHT="70"></String>
+            <String CONTENT="," ID="String_161" HPOS="2664" VPOS="3092" WIDTH="28" HEIGHT="38"></String>
+            <String CONTENT="Bl" ID="String_162" HPOS="2780" VPOS="3040" WIDTH="102" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_163" HPOS="2912" VPOS="3086" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="lr" ID="String_164" HPOS="2964" VPOS="3010" WIDTH="108" HEIGHT="96"></String>
+            <String CONTENT=":" ID="String_165" HPOS="3094" VPOS="3058" WIDTH="22" HEIGHT="48"></String>
+            <String CONTENT="Catalogo" ID="String_166" HPOS="3206" VPOS="3038" WIDTH="474" HEIGHT="94"></String>
+            <String CONTENT="litrorum" ID="String_167" HPOS="3756" VPOS="3042" WIDTH="478" HEIGHT="72"></String>
+            <String CONTENT="steri" ID="String_168" HPOS="956" VPOS="3226" WIDTH="278" HEIGHT="74"></String>
+            <String CONTENT="!" ID="String_169" HPOS="1260" VPOS="3230" WIDTH="38" HEIGHT="70"></String>
+            <String CONTENT="S" ID="String_170" HPOS="1382" VPOS="3230" WIDTH="44" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_171" HPOS="1456" VPOS="3274" WIDTH="22" HEIGHT="26"></String>
+            <String CONTENT="Virg" ID="String_172" HPOS="1500" VPOS="3228" WIDTH="234" HEIGHT="92"></String>
+            <String CONTENT="." ID="String_173" HPOS="1758" VPOS="3278" WIDTH="20" HEIGHT="22"></String>
+            <String CONTENT="in" ID="String_174" HPOS="1866" VPOS="3232" WIDTH="104" HEIGHT="70"></String>
+            <String CONTENT="Garsten" ID="String_175" HPOS="2044" VPOS="3232" WIDTH="410" HEIGHT="74"></String>
+            <String CONTENT="inscriptus" ID="String_176" HPOS="2532" VPOS="3232" WIDTH="598" HEIGHT="88"></String>
+            <String CONTENT="." ID="String_177" HPOS="3156" VPOS="3282" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="Nr" ID="String_178" HPOS="3262" VPOS="3234" WIDTH="118" HEIGHT="70"></String>
+            <String CONTENT="20" ID="String_179" HPOS="3448" VPOS="3232" WIDTH="108" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_180" HPOS="3584" VPOS="3282" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="G" ID="String_181" HPOS="3694" VPOS="3238" WIDTH="54" HEIGHT="66"></String>
+            <String CONTENT="." ID="String_182" HPOS="3766" VPOS="3282" WIDTH="24" HEIGHT="24"></String>
+            <String CONTENT="Alte" ID="String_183" HPOS="3880" VPOS="3236" WIDTH="232" HEIGHT="74"></String>
+            <String CONTENT="Sign" ID="String_184" HPOS="4182" VPOS="3234" WIDTH="236" HEIGHT="92"></String>
+            <String CONTENT="." ID="String_185" HPOS="4446" VPOS="3286" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="d" ID="String_186" HPOS="956" VPOS="3426" WIDTH="50" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_187" HPOS="1030" VPOS="3472" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="St" ID="String_188" HPOS="1080" VPOS="3420" WIDTH="106" HEIGHT="76"></String>
+            <String CONTENT="." ID="String_189" HPOS="1216" VPOS="3468" WIDTH="20" HEIGHT="26"></String>
+            <String CONTENT="-" ID="String_190" HPOS="1264" VPOS="3454" WIDTH="46" HEIGHT="18"></String>
+            <String CONTENT="F" ID="String_191" HPOS="1324" VPOS="3424" WIDTH="60" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_192" HPOS="1398" VPOS="3472" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT=":" ID="String_193" HPOS="1456" VPOS="3438" WIDTH="20" HEIGHT="50"></String>
+            <String CONTENT="Ce" ID="String_194" HPOS="1566" VPOS="3422" WIDTH="104" HEIGHT="74"></String>
+            <String CONTENT="V" ID="String_195" HPOS="1744" VPOS="3426" WIDTH="52" HEIGHT="66"></String>
+            <String CONTENT="9" ID="String_196" HPOS="1864" VPOS="3424" WIDTH="46" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_197" HPOS="1940" VPOS="3472" WIDTH="22" HEIGHT="24"></String>
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="block_4" HPOS="616" VPOS="3528" WIDTH="292" HEIGHT="140">
+          <TextLine ID="TextLine_5" HPOS="616" VPOS="3528" WIDTH="292" HEIGHT="140">
+            <String CONTENT="333" ID="String_198" HPOS="616" VPOS="3528" WIDTH="292" HEIGHT="140"></String>
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="block_5" HPOS="656" VPOS="3692" WIDTH="3710" HEIGHT="318">
+          <TextLine ID="TextLine_6" HPOS="656" VPOS="3692" WIDTH="3710" HEIGHT="318">
+            <String CONTENT="115" ID="String_199" HPOS="656" VPOS="3716" WIDTH="166" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_200" HPOS="848" VPOS="3766" WIDTH="24" HEIGHT="26"></String>
+            <String CONTENT="Johannes" ID="String_201" HPOS="958" VPOS="3718" WIDTH="476" HEIGHT="78"></String>
+            <String CONTENT="Soecus" ID="String_202" HPOS="1506" VPOS="3718" WIDTH="350" HEIGHT="76"></String>
+            <String CONTENT="[" ID="String_203" HPOS="1938" VPOS="3724" WIDTH="40" HEIGHT="102"></String>
+            <String CONTENT="rK^nrad" ID="String_204" HPOS="1990" VPOS="3720" WIDTH="414" HEIGHT="80"></String>
+            <String CONTENT="von" ID="String_205" HPOS="2474" VPOS="3738" WIDTH="168" HEIGHT="54"></String>
+            <String CONTENT="(" ID="String_206" HPOS="2694" VPOS="3692" WIDTH="24" HEIGHT="94"></String>
+            <String CONTENT="firündelsheim" ID="String_207" HPOS="2718" VPOS="3710" WIDTH="718" HEIGHT="84"></String>
+            <String CONTENT="]" ID="String_208" HPOS="3436" VPOS="3712" WIDTH="36" HEIGHT="98"></String>
+            <String CONTENT="," ID="String_209" HPOS="3522" VPOS="3770" WIDTH="24" HEIGHT="40"></String>
+            <String CONTENT="Sermones" ID="String_210" HPOS="3636" VPOS="3718" WIDTH="476" HEIGHT="76"></String>
+            <String CONTENT="per" ID="String_211" HPOS="4190" VPOS="3740" WIDTH="176" HEIGHT="66"></String>
+            <String CONTENT="tempus" ID="String_212" HPOS="964" VPOS="3922" WIDTH="348" HEIGHT="84"></String>
+            <String CONTENT="hiemale" ID="String_213" HPOS="1386" VPOS="3920" WIDTH="408" HEIGHT="74"></String>
+            <String CONTENT="," ID="String_214" HPOS="1818" VPOS="3972" WIDTH="24" HEIGHT="38"></String>
+            <String CONTENT="lat" ID="String_215" HPOS="1930" VPOS="3920" WIDTH="162" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_216" HPOS="2122" VPOS="3966" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="-" ID="String_217" HPOS="2172" VPOS="3950" WIDTH="44" HEIGHT="18"></String>
+          </TextLine>
+        </TextBlock>
+        <TextBlock ID="block_6" HPOS="946" VPOS="4200" WIDTH="3666" HEIGHT="1292">
+          <TextLine ID="TextLine_7" HPOS="946" VPOS="4200" WIDTH="3666" HEIGHT="1292">
+            <String CONTENT="Saee" ID="String_218" HPOS="952" VPOS="4216" WIDTH="232" HEIGHT="74"></String>
+            <String CONTENT="." ID="String_219" HPOS="1212" VPOS="4266" WIDTH="22" HEIGHT="26"></String>
+            <String CONTENT="XIV" ID="String_220" HPOS="1262" VPOS="4216" WIDTH="172" HEIGHT="70"></String>
+            <String CONTENT="," ID="String_221" HPOS="1454" VPOS="4272" WIDTH="22" HEIGHT="36"></String>
+            <String CONTENT="Perg" ID="String_222" HPOS="1566" VPOS="4216" WIDTH="230" HEIGHT="92"></String>
+            <String CONTENT="." ID="String_223" HPOS="1818" VPOS="4262" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="," ID="String_224" HPOS="1878" VPOS="4268" WIDTH="24" HEIGHT="40"></String>
+            <String CONTENT="310x224" ID="String_225" HPOS="1986" VPOS="4216" WIDTH="416" HEIGHT="70"></String>
+            <String CONTENT="," ID="String_226" HPOS="2428" VPOS="4266" WIDTH="24" HEIGHT="38"></String>
+            <String CONTENT="1" ID="String_227" HPOS="2536" VPOS="4212" WIDTH="46" HEIGHT="70"></String>
+            <String CONTENT="*" ID="String_228" HPOS="2606" VPOS="4232" WIDTH="42" HEIGHT="48"></String>
+            <String CONTENT="149" ID="String_229" HPOS="2668" VPOS="4214" WIDTH="162" HEIGHT="68"></String>
+            <String CONTENT="Ell" ID="String_230" HPOS="2910" VPOS="4214" WIDTH="162" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_231" HPOS="3102" VPOS="4258" WIDTH="22" HEIGHT="26"></String>
+            <String CONTENT="2" ID="String_232" HPOS="3148" VPOS="4214" WIDTH="52" HEIGHT="66"></String>
+            <String CONTENT="Kol" ID="String_233" HPOS="3268" VPOS="4214" WIDTH="170" HEIGHT="70"></String>
+            <String CONTENT="!" ID="String_234" HPOS="3460" VPOS="4216" WIDTH="36" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_235" HPOS="3528" VPOS="4260" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="-" ID="String_236" HPOS="3582" VPOS="4242" WIDTH="42" HEIGHT="14"></String>
+            <String CONTENT="Lagen" ID="String_237" HPOS="3694" VPOS="4210" WIDTH="296" HEIGHT="92"></String>
+            <String CONTENT="zu" ID="String_238" HPOS="4068" VPOS="4230" WIDTH="110" HEIGHT="52"></String>
+            <String CONTENT="4" ID="String_239" HPOS="4254" VPOS="4212" WIDTH="44" HEIGHT="68"></String>
+            <String CONTENT="(" ID="String_240" HPOS="4326" VPOS="4200" WIDTH="24" HEIGHT="88"></String>
+            <String CONTENT="1" ID="String_241" HPOS="4382" VPOS="4212" WIDTH="44" HEIGHT="68"></String>
+            <String CONTENT=")" ID="String_242" HPOS="4450" VPOS="4202" WIDTH="26" HEIGHT="86"></String>
+            <String CONTENT="," ID="String_243" HPOS="4510" VPOS="4264" WIDTH="26" HEIGHT="36"></String>
+            <String CONTENT="8" ID="String_244" HPOS="946" VPOS="4414" WIDTH="52" HEIGHT="68"></String>
+            <String CONTENT="(" ID="String_245" HPOS="1024" VPOS="4404" WIDTH="24" HEIGHT="90"></String>
+            <String CONTENT="7" ID="String_246" HPOS="1070" VPOS="4418" WIDTH="48" HEIGHT="68"></String>
+            <String CONTENT="," ID="String_247" HPOS="1144" VPOS="4468" WIDTH="26" HEIGHT="40"></String>
+            <String CONTENT="9" ID="String_248" HPOS="1192" VPOS="4416" WIDTH="48" HEIGHT="70"></String>
+            <String CONTENT="}" ID="String_249" HPOS="1264" VPOS="4406" WIDTH="28" HEIGHT="88"></String>
+            <String CONTENT="," ID="String_250" HPOS="1330" VPOS="4470" WIDTH="22" HEIGHT="38"></String>
+            <String CONTENT="10" ID="String_251" HPOS="1384" VPOS="4414" WIDTH="100" HEIGHT="70"></String>
+            <String CONTENT="(" ID="String_252" HPOS="1514" VPOS="4402" WIDTH="24" HEIGHT="92"></String>
+            <String CONTENT="2" ID="String_253" HPOS="1562" VPOS="4412" WIDTH="52" HEIGHT="70"></String>
+            <String CONTENT="-" ID="String_254" HPOS="1630" VPOS="4446" WIDTH="42" HEIGHT="16"></String>
+            <String CONTENT="6" ID="String_255" HPOS="1684" VPOS="4418" WIDTH="48" HEIGHT="68"></String>
+            <String CONTENT="," ID="String_256" HPOS="1756" VPOS="4468" WIDTH="24" HEIGHT="44"></String>
+            <String CONTENT="10" ID="String_257" HPOS="1810" VPOS="4414" WIDTH="102" HEIGHT="68"></String>
+            <String CONTENT="-" ID="String_258" HPOS="1932" VPOS="4446" WIDTH="46" HEIGHT="16"></String>
+            <String CONTENT="13" ID="String_259" HPOS="1996" VPOS="4412" WIDTH="104" HEIGHT="70"></String>
+            <String CONTENT="," ID="String_260" HPOS="2124" VPOS="4462" WIDTH="24" HEIGHT="42"></String>
+            <String CONTENT="15" ID="String_261" HPOS="2180" VPOS="4414" WIDTH="102" HEIGHT="70"></String>
+            <String CONTENT=")" ID="String_262" HPOS="2308" VPOS="4404" WIDTH="26" HEIGHT="86"></String>
+            <String CONTENT="," ID="String_263" HPOS="2370" VPOS="4464" WIDTH="22" HEIGHT="38"></String>
+            <String CONTENT="12" ID="String_264" HPOS="2426" VPOS="4410" WIDTH="106" HEIGHT="70"></String>
+            <String CONTENT="(" ID="String_265" HPOS="2554" VPOS="4402" WIDTH="26" HEIGHT="88"></String>
+            <String CONTENT="8" ID="String_266" HPOS="2602" VPOS="4410" WIDTH="50" HEIGHT="68"></String>
+            <String CONTENT="," ID="String_267" HPOS="2676" VPOS="4460" WIDTH="24" HEIGHT="40"></String>
+            <String CONTENT="14" ID="String_268" HPOS="2732" VPOS="4412" WIDTH="102" HEIGHT="68"></String>
+            <String CONTENT="," ID="String_269" HPOS="2860" VPOS="4462" WIDTH="24" HEIGHT="38"></String>
+            <String CONTENT="16" ID="String_270" HPOS="2914" VPOS="4410" WIDTH="104" HEIGHT="72"></String>
+            <String CONTENT=")" ID="String_271" HPOS="3042" VPOS="4400" WIDTH="24" HEIGHT="86"></String>
+            <String CONTENT="Bll" ID="String_272" HPOS="3152" VPOS="4410" WIDTH="168" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_273" HPOS="3346" VPOS="4456" WIDTH="24" HEIGHT="22"></String>
+            <String CONTENT="Von" ID="String_274" HPOS="3452" VPOS="4408" WIDTH="172" HEIGHT="72"></String>
+            <String CONTENT="Lage" ID="String_275" HPOS="3696" VPOS="4406" WIDTH="238" HEIGHT="92"></String>
+            <String CONTENT="1" ID="String_276" HPOS="4010" VPOS="4406" WIDTH="44" HEIGHT="66"></String>
+            <String CONTENT="El" ID="String_277" HPOS="4130" VPOS="4406" WIDTH="104" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_278" HPOS="4264" VPOS="4450" WIDTH="24" HEIGHT="26"></String>
+            <String CONTENT="l" ID="String_279" HPOS="4318" VPOS="4406" WIDTH="46" HEIGHT="66"></String>
+            <String CONTENT="Deckfcl" ID="String_280" HPOS="952" VPOS="4610" WIDTH="348" HEIGHT="74"></String>
+            <String CONTENT="." ID="String_281" HPOS="1332" VPOS="4660" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="," ID="String_282" HPOS="1392" VPOS="4666" WIDTH="22" HEIGHT="38"></String>
+            <String CONTENT="etenso" ID="String_283" HPOS="1506" VPOS="4612" WIDTH="350" HEIGHT="72"></String>
+            <String CONTENT="B1" ID="String_284" HPOS="1934" VPOS="4606" WIDTH="104" HEIGHT="78"></String>
+            <String CONTENT="." ID="String_285" HPOS="2068" VPOS="4654" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="12" ID="String_286" HPOS="2122" VPOS="4606" WIDTH="104" HEIGHT="72"></String>
+            <String CONTENT="der" ID="String_287" HPOS="2302" VPOS="4608" WIDTH="174" HEIGHT="70"></String>
+            <String CONTENT="Lage" ID="String_288" HPOS="2542" VPOS="4604" WIDTH="236" HEIGHT="90"></String>
+            <String CONTENT="16" ID="String_289" HPOS="2856" VPOS="4606" WIDTH="106" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_290" HPOS="2984" VPOS="4650" WIDTH="24" HEIGHT="24"></String>
+            <String CONTENT="Von" ID="String_291" HPOS="3090" VPOS="4602" WIDTH="170" HEIGHT="74"></String>
+            <String CONTENT="Lage" ID="String_292" HPOS="3332" VPOS="4604" WIDTH="236" HEIGHT="88"></String>
+            <String CONTENT="1" ID="String_293" HPOS="3646" VPOS="4600" WIDTH="42" HEIGHT="68"></String>
+            <String CONTENT="11" ID="String_294" HPOS="3762" VPOS="4602" WIDTH="108" HEIGHT="68"></String>
+            <String CONTENT="." ID="String_295" HPOS="3896" VPOS="4646" WIDTH="24" HEIGHT="26"></String>
+            <String CONTENT="2" ID="String_296" HPOS="3946" VPOS="4600" WIDTH="50" HEIGHT="66"></String>
+            <String CONTENT="u" ID="String_297" HPOS="4064" VPOS="4620" WIDTH="50" HEIGHT="50"></String>
+            <String CONTENT="." ID="String_298" HPOS="4140" VPOS="4648" WIDTH="24" HEIGHT="22"></String>
+            <String CONTENT="4" ID="String_299" HPOS="4188" VPOS="4600" WIDTH="48" HEIGHT="66"></String>
+            <String CONTENT="," ID="String_300" HPOS="4264" VPOS="4650" WIDTH="24" HEIGHT="38"></String>
+            <String CONTENT="von" ID="String_301" HPOS="4380" VPOS="4618" WIDTH="164" HEIGHT="52"></String>
+            <String CONTENT="Lage" ID="String_302" HPOS="950" VPOS="4812" WIDTH="236" HEIGHT="92"></String>
+            <String CONTENT="16" ID="String_303" HPOS="1264" VPOS="4810" WIDTH="106" HEIGHT="72"></String>
+            <String CONTENT="Bl" ID="String_304" HPOS="1446" VPOS="4808" WIDTH="104" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_305" HPOS="1580" VPOS="4854" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="l" ID="String_306" HPOS="1632" VPOS="4812" WIDTH="44" HEIGHT="68"></String>
+            <String CONTENT="u" ID="String_307" HPOS="1746" VPOS="4826" WIDTH="54" HEIGHT="54"></String>
+            <String CONTENT="." ID="String_308" HPOS="1824" VPOS="4852" WIDTH="24" HEIGHT="26"></String>
+            <String CONTENT="ll" ID="String_309" HPOS="1876" VPOS="4808" WIDTH="108" HEIGHT="78"></String>
+            <String CONTENT="nur" ID="String_310" HPOS="2056" VPOS="4824" WIDTH="178" HEIGHT="56"></String>
+            <String CONTENT="Streifen" ID="String_311" HPOS="2302" VPOS="4784" WIDTH="474" HEIGHT="92"></String>
+            <String CONTENT="." ID="String_312" HPOS="2806" VPOS="4848" WIDTH="24" HEIGHT="26"></String>
+            <String CONTENT="-" ID="String_313" HPOS="2858" VPOS="4834" WIDTH="44" HEIGHT="16"></String>
+            <String CONTENT="Holzdeckel" ID="String_314" HPOS="2972" VPOS="4798" WIDTH="590" HEIGHT="74"></String>
+            <String CONTENT="mit" ID="String_315" HPOS="3638" VPOS="4800" WIDTH="170" HEIGHT="68"></String>
+            <String CONTENT="eheir" ID="String_316" HPOS="3888" VPOS="4800" WIDTH="222" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_317" HPOS="4142" VPOS="4844" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="vei" ID="String_318" HPOS="4186" VPOS="4798" WIDTH="168" HEIGHT="68"></String>
+            <String CONTENT="ssem" ID="String_319" HPOS="4384" VPOS="4816" WIDTH="228" HEIGHT="50"></String>
+            <String CONTENT="Lederüterzug" ID="String_320" HPOS="958" VPOS="4996" WIDTH="722" HEIGHT="100"></String>
+            <String CONTENT="," ID="String_321" HPOS="1702" VPOS="5056" WIDTH="24" HEIGHT="38"></String>
+            <String CONTENT="Schliessen" ID="String_322" HPOS="1816" VPOS="5002" WIDTH="598" HEIGHT="72"></String>
+            <String CONTENT="teschädigt" ID="String_323" HPOS="2492" VPOS="4988" WIDTH="592" HEIGHT="98"></String>
+            <String CONTENT="." ID="String_324" HPOS="3112" VPOS="5044" WIDTH="20" HEIGHT="22"></String>
+            <String CONTENT="Deckfcl" ID="String_325" HPOS="3222" VPOS="4994" WIDTH="344" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_326" HPOS="3596" VPOS="5038" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="aus" ID="String_327" HPOS="3650" VPOS="5010" WIDTH="164" HEIGHT="54"></String>
+            <String CONTENT="einem" ID="String_328" HPOS="3888" VPOS="4994" WIDTH="290" HEIGHT="70"></String>
+            <String CONTENT="Sermo" ID="String_329" HPOS="4254" VPOS="4990" WIDTH="296" HEIGHT="70"></String>
+            <String CONTENT="saec" ID="String_330" HPOS="968" VPOS="5222" WIDTH="228" HEIGHT="54"></String>
+            <String CONTENT="." ID="String_331" HPOS="1224" VPOS="5254" WIDTH="20" HEIGHT="22"></String>
+            <String CONTENT="XV" ID="String_332" HPOS="1270" VPOS="5204" WIDTH="106" HEIGHT="66"></String>
+            <String CONTENT="." ID="String_333" HPOS="1404" VPOS="5252" WIDTH="20" HEIGHT="24"></String>
+            <String CONTENT="-" ID="String_334" HPOS="1454" VPOS="5234" WIDTH="44" HEIGHT="18"></String>
+            <String CONTENT="Aus" ID="String_335" HPOS="1572" VPOS="5200" WIDTH="170" HEIGHT="74"></String>
+            <String CONTENT="Garsten" ID="String_336" HPOS="1814" VPOS="5202" WIDTH="418" HEIGHT="68"></String>
+            <String CONTENT="," ID="String_337" HPOS="2258" VPOS="5248" WIDTH="24" HEIGHT="38"></String>
+            <String CONTENT="fil" ID="String_338" HPOS="2370" VPOS="5196" WIDTH="108" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_339" HPOS="2506" VPOS="5244" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="lr" ID="String_340" HPOS="2560" VPOS="5172" WIDTH="106" HEIGHT="90"></String>
+            <String CONTENT=":" ID="String_341" HPOS="2686" VPOS="5210" WIDTH="20" HEIGHT="50"></String>
+            <String CONTENT="Catalogo" ID="String_342" HPOS="2798" VPOS="5188" WIDTH="472" HEIGHT="92"></String>
+            <String CONTENT="litrorum" ID="String_343" HPOS="3344" VPOS="5188" WIDTH="468" HEIGHT="72"></String>
+            <String CONTENT="monasteri" ID="String_344" HPOS="3888" VPOS="5186" WIDTH="526" HEIGHT="70"></String>
+            <String CONTENT="!" ID="String_345" HPOS="4442" VPOS="5184" WIDTH="36" HEIGHT="68"></String>
+            <String CONTENT="B" ID="String_346" HPOS="970" VPOS="5406" WIDTH="46" HEIGHT="66"></String>
+            <String CONTENT="." ID="String_347" HPOS="1044" VPOS="5450" WIDTH="20" HEIGHT="26"></String>
+            <String CONTENT="Virg" ID="String_348" HPOS="1088" VPOS="5400" WIDTH="234" HEIGHT="92"></String>
+            <String CONTENT="." ID="String_349" HPOS="1346" VPOS="5448" WIDTH="20" HEIGHT="24"></String>
+            <String CONTENT="in" ID="String_350" HPOS="1394" VPOS="5400" WIDTH="104" HEIGHT="72"></String>
+            <String CONTENT="Garsten" ID="String_351" HPOS="1572" VPOS="5398" WIDTH="414" HEIGHT="72"></String>
+            <String CONTENT="inscr" ID="String_352" HPOS="2064" VPOS="5394" WIDTH="300" HEIGHT="72"></String>
+            <String CONTENT="." ID="String_353" HPOS="2386" VPOS="5438" WIDTH="20" HEIGHT="24"></String>
+            <String CONTENT="Nr" ID="String_354" HPOS="2428" VPOS="5392" WIDTH="120" HEIGHT="68"></String>
+            <String CONTENT="22" ID="String_355" HPOS="2616" VPOS="5386" WIDTH="110" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_356" HPOS="2752" VPOS="5436" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="9" ID="String_357" HPOS="2794" VPOS="5384" WIDTH="46" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_358" HPOS="2872" VPOS="5436" WIDTH="22" HEIGHT="22"></String>
+            <String CONTENT="Alte" ID="String_359" HPOS="2982" VPOS="5386" WIDTH="230" HEIGHT="70"></String>
+            <String CONTENT="Sign" ID="String_360" HPOS="3284" VPOS="5378" WIDTH="230" HEIGHT="94"></String>
+            <String CONTENT="." ID="String_361" HPOS="3540" VPOS="5426" WIDTH="22" HEIGHT="26"></String>
+            <String CONTENT="d" ID="String_362" HPOS="3590" VPOS="5378" WIDTH="48" HEIGHT="66"></String>
+            <String CONTENT="." ID="String_363" HPOS="3664" VPOS="5430" WIDTH="20" HEIGHT="20"></String>
+            <String CONTENT="St" ID="String_364" HPOS="3712" VPOS="5376" WIDTH="102" HEIGHT="76"></String>
+            <String CONTENT="." ID="String_365" HPOS="3842" VPOS="5424" WIDTH="22" HEIGHT="24"></String>
+            <String CONTENT="-" ID="String_366" HPOS="3896" VPOS="5408" WIDTH="42" HEIGHT="18"></String>
+            <String CONTENT="1" ID="String_367" HPOS="3950" VPOS="5380" WIDTH="44" HEIGHT="66"></String>
+            <String CONTENT="." ID="String_368" HPOS="4024" VPOS="5426" WIDTH="24" HEIGHT="22"></String>
+            <String CONTENT="•Ce" ID="String_369" HPOS="4084" VPOS="5376" WIDTH="154" HEIGHT="70"></String>
+            <String CONTENT="V" ID="String_370" HPOS="4312" VPOS="5376" WIDTH="54" HEIGHT="68"></String>
+            <String CONTENT="6" ID="String_371" HPOS="4440" VPOS="5378" WIDTH="48" HEIGHT="70"></String>
+            <String CONTENT="." ID="String_372" HPOS="4512" VPOS="5424" WIDTH="22" HEIGHT="22"></String>
+          </TextLine>
+        </TextBlock>
+      </PrintSpace>
+    </Page>
+  </Layout>
+</alto>

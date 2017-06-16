@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mets="http://www.loc.gov/METS/" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:dv="http://dfg-viewer.de/" xmlns:xlink="http://www.w3.org/1999/xlink" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-4.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/version17/mets.v1-7.xsd">
+  <mets:metsHdr CREATEDATE="2011-12-12T16:43:20">
+    <mets:agent ROLE="CREATOR" TYPE="ORGANIZATION">
+      <mets:name>Niedersächsische Staats- und Universitätsbibliothek Göttingen</mets:name>
+    </mets:agent>
+  </mets:metsHdr>
+  <mets:dmdSec ID="DMDLOG_0000">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods>
+          <mods:titleInfo>
+            <mods:title>Justus Arneman : Professor ordin. der Medicin zu Göttingen ; [Portrait]</mods:title>
+          </mods:titleInfo>
+          <mods:name type="personal">
+            <mods:namePart type="family">Schwenterley</mods:namePart>
+            <mods:namePart type="given">Heinrich</mods:namePart>
+            <mods:namePart type="date">1749 - 1815</mods:namePart>
+            <mods:role>
+              <mods:roleTerm authority="marcrelator" type="code">ctb</mods:roleTerm>
+            </mods:role>
+          </mods:name>
+          <mods:typeOfResource>still image</mods:typeOfResource>
+          <mods:originInfo>
+            <mods:place>
+              <mods:placeTerm type="text">Göttingen</mods:placeTerm>
+            </mods:place>
+            <mods:dateCreated encoding="iso8601" point="start">1840</mods:dateCreated>
+            <mods:dateCreated>nach 1840</mods:dateCreated>
+          </mods:originInfo>
+          <mods:physicalDescription>
+            <mods:form>Foto von Radierung</mods:form>
+            <mods:extent>175 x 115 mm</mods:extent>
+          </mods:physicalDescription>
+          <mods:abstract>Schwenterley, Heinrich: Kupferstecher Justus Arneman war als ordentlicher Professor für Chirurgie und Physiologie an der Medizinischen Fakultät (Universität Göttingen) von 1792 - 1803 tätig. (Ebel, Wilhelm: Catalogus Professorum Gottingensium ; 1962; S.75)</mods:abstract>
+          <mods:subject>
+            <mods:name type="personal" xlink:href="http://de.wikipedia.org/wiki/Justus_Arnemann">
+              <mods:namePart type="family">Arneman</mods:namePart>
+              <mods:namePart type="given">Justus</mods:namePart>
+              <mods:namePart type="date">23.06.1763 - 25.07.1806</mods:namePart>
+            </mods:name>
+          </mods:subject>
+          <mods:relatedItem type="host" ID="slg_0002">
+            <mods:titleInfo>
+              <mods:title>Göttinger Universitätsgeschichte - Portraits</mods:title>
+            </mods:titleInfo>
+          </mods:relatedItem>
+          <mods:identifier type="kuni">isil_DE-7_arneman_m1_1</mods:identifier>
+          <mods:location>
+            <mods:physicalLocation type="current" valueURI="isil_DE-7">Niedersächsische Staats- und Universitätsbibliothek Göttingen</mods:physicalLocation>
+          </mods:location>
+          <mods:accessCondition type="restriction on access">Dieses Exponat befindet sich nicht im öffentlich zugänglichen Bereich und kann daher nur nach vorheriger Rücksprache zur Verfügung gestellt werden.</mods:accessCondition>
+          <mods:recordInfo>
+            <mods:recordContentSource>Niedersächsische Staats- und Universitätsbibliothek Göttingen</mods:recordContentSource>
+            <mods:recordChangeDate encoding="iso8601">2011-12-12T16:43:20</mods:recordChangeDate>
+            <mods:recordIdentifier>arneman_m1_1</mods:recordIdentifier>
+          </mods:recordInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:amdSec ID="AMD">
+    <mets:rightsMD ID="RIGHTS">
+      <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+        <mets:xmlData>
+          <dv:rights>
+            <dv:owner>Digitalisierungszentrum der Niedersächsischen Staats- und Universitätsbibliothek Göttingen</dv:owner>
+            <dv:ownerSiteURL>http://gdz.sub.uni-goettingen.de</dv:ownerSiteURL>
+          </dv:rights>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:rightsMD>
+  </mets:amdSec>
+  <mets:fileSec>
+    <mets:fileGrp USE="DEFAULT">
+      <mets:file ID="FILE_0000" MIMETYPE="image/tiff">
+        <mets:FLocat LOCTYPE="URL" xlink:href="images/00000001.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0001" MIMETYPE="image/tiff">
+        <mets:FLocat LOCTYPE="URL" xlink:href="images/00000002.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0002" MIMETYPE="image/tiff">
+        <mets:FLocat LOCTYPE="URL" xlink:href="images/00000003.tif"/>
+      </mets:file>
+    </mets:fileGrp>
+  </mets:fileSec>
+  <mets:structMap TYPE="LOGICAL">
+    <mets:div ADMID="AMD" DMDID="DMDLOG_0000" ID="LOG_0000" TYPE="library_object"/>
+  </mets:structMap>
+  <mets:structMap TYPE="PHYSICAL">
+    <mets:div TYPE="physSequence" ID="PHYS_0000">
+      <mets:div ID="PHYS_0001" TYPE="page" ORDER="1">
+        <mets:fptr FILEID="FILE_0000"/>
+      </mets:div>
+      <mets:div ID="PHYS_0002" TYPE="page" ORDER="2">
+        <mets:fptr FILEID="FILE_0001"/>
+      </mets:div>
+      <mets:div ID="PHYS_0003" TYPE="page" ORDER="3">
+        <mets:fptr FILEID="FILE_0002"/>
+      </mets:div>
+    </mets:div>
+  </mets:structMap>
+  <mets:structLink>
+    <mets:smLink xlink:to="PHYS_0001" xlink:from="LOG_0000"/>
+    <mets:smLink xlink:to="PHYS_0002" xlink:from="LOG_0000"/>
+    <mets:smLink xlink:to="PHYS_0003" xlink:from="LOG_0000"/>
+  </mets:structLink>
+</mets:mets>

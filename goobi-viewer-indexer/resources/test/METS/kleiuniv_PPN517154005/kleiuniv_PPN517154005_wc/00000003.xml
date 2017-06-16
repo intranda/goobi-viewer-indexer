@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI.2>
+  <teiHeader/>
+  <text>
+    <body>
+      <p id="ID19">
+        <w function="1264,1332,1342,1426" match="f">F</w>
+        <w function="1346,1408,1362,1426" match=".">.</w>
+        <w function="1426,1330,1898,1426" match="klein">KLEIN</w>
+        <w function="1906,1410,1922,1440" match=",">,</w>
+      </p>
+      <p id="ID1a">
+        <w function="270,1632,990,1770" match="universität">UNIVERSITÄT</w>
+        <w function="1068,1654,1298,1768" match="und">UND</w>
+        <w function="1380,1654,2074,1772" match="technische">TECHNISCHE</w>
+        <w function="2156,1654,2898,1774" match="hochschule">HOCHSCHULE</w>
+        <w function="2902,1750,2922,1776" match=".">.</w>
+      </p>
+      <p id="ID1b">
+        <w function="1378,1940,1784,2022" match="vortrag">VORTRAG</w>
+        <w function="1790,1998,1804,2034" match=",">,</w>
+      </p>
+      <p id="ID1c">
+        <w function="668,2148,1042,2216" match="gehalten">GEHALTEN</w>
+        <w function="1082,2150,1162,2216" match="in">IN</w>
+        <w function="1204,2150,1342,2216" match="der">DER</w>
+        <w function="1382,2150,1652,2216" match="ersten">ERSTEN</w>
+        <w function="1694,2148,2196,2216" match="allgemeinen">ALLGEMEINEN</w>
+        <w function="2238,2148,2536,2218" match="sitzung">SITZUNG</w>
+        <w function="1534,2284,1678,2338" match="der">DER</w>
+      </p>
+      <p id="ID1d">
+        <w function="392,2410,486,2480" match="70">70</w>
+        <w function="492,2466,508,2484" match=".">.</w>
+        <w function="554,2410,1114,2484" match="versammlung">VERSAMMLUNG</w>
+        <w function="1160,2410,1610,2484" match="deutscher">DEUTSCHER</w>
+        <w function="1650,2408,2290,2484" match="naturforscher">NATURFORSCHER</w>
+        <w function="2338,2410,2488,2482" match="und">UND</w>
+        <w function="2532,2410,2818,2486" match="aerzte">AERZTE</w>
+        <w function="1146,2618,1268,2684" match="in">IN</w>
+        <w function="1318,2606,2052,2688" match="düsseldorf">DÜSSELDORF</w>
+      </p>
+      <p id="ID1e">
+        <w function="1536,2750,1644,2804" match="am">AM</w>
+        <w function="1246,2868,1308,2920" match="19">19</w>
+        <w function="1310,2906,1324,2920" match=".">.</w>
+        <w function="1358,2864,1778,2920" match="september">SEPTEMBER</w>
+        <w function="1814,2866,1944,2920" match="1898">1898</w>
+        <w function="1946,2908,1960,2920" match=".">.</w>
+      </p>
+      <p id="ID1f">
+        <w function="394,4542,904,4596" match="verhandlungen">Verhandlungen</w>
+        <w function="910,4576,920,4588" match=".">.</w>
+        <w function="970,4544,1070,4586" match="1898">1898</w>
+        <w function="1074,4572,1086,4586" match=".">.</w>
+        <w function="1140,4542,1166,4584" match="i">I</w>
+        <w function="1170,4574,1178,4584" match=".">.</w>
+        <w function="1208,4542,1226,4594" match="(">(</w>
+        <w function="1230,4542,1390,4584" match="klein">Klein</w>
+        <w function="1394,4572,1404,4584" match=".">.</w>
+        <w function="1408,4542,1424,4592" match=")">)</w>
+      </p>
+      <p id="ID20">
+        <w function="2504,4538,2532,4588" match="1">1</w>
+      </p>
+      <pb/>
+      <milestone n="1" type="page"></milestone>
+    </body>
+  </text>
+</TEI.2>

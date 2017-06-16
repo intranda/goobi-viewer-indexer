@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alto xmlns="http://www.loc.gov/standards/alto/ns-v2#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v2# http://www.loc.gov/standards/alto/alto-v2.0.xsd">
+	<Description>
+		<MeasurementUnit>pixel</MeasurementUnit>
+		<sourceImageInformation>
+			<fileName>birdsbeneficialt00froh_abbyy.xml</fileName>
+		</sourceImageInformation>
+		<OCRProcessing ID="OCR_1">
+			<preProcessingStep>
+				<processingDateTime>2013-11-13T12:17:44</processingDateTime>
+				<processingAgency>intranda GmbH, www.intranda.com</processingAgency>
+				<processingSoftware>
+					<softwareCreator>intranda GmbH, Germany</softwareCreator>
+					<softwareName>intranda OCR Module for TaskManager</softwareName>
+					<softwareVersion>1.0r42</softwareVersion>
+				</processingSoftware>
+			</preProcessingStep>
+			<ocrProcessingStep>
+				<processingSoftware>
+					<softwareCreator>ABBYY (BIT Software), Russia</softwareCreator>
+					<softwareName>FineReader Engine</softwareName>
+					<softwareVersion>10</softwareVersion>
+				</processingSoftware>
+			</ocrProcessingStep>
+		</OCRProcessing>
+	</Description>
+	<Layout>
+		<Page ID="Page_32" HEIGHT="3288" WIDTH="1868" PHYSICAL_IMG_NR="32">
+		    <PrintSpace ID="EmptyPrintSpace" HPOS="40" VPOS="216"
+                HEIGHT="2360" WIDTH="1636" />
+			<PrintSpace ID="PrintSpace_71" HPOS="40" VPOS="216"
+				HEIGHT="2360" WIDTH="1636">
+				<TextBlock ID="TextBlock_258" HPOS="40" VPOS="216" HEIGHT="110"
+					WIDTH="520">
+					<TextLine ID="TextLine_718" HPOS="54" VPOS="226" HEIGHT="45"
+						WIDTH="503">
+						<String ID="Word_5377" CONTENT="Brit?." HPOS="54" VPOS="226"
+							HEIGHT="37" WIDTH="106" />
+						<SP HPOS="160" VPOS="226" WIDTH="26" />
+						<String ID="Word_5378" CONTENT="Mus." HPOS="186" VPOS="226"
+							HEIGHT="35" WIDTH="96" />
+						<SP HPOS="282" VPOS="228" WIDTH="28" />
+						<String ID="Word_5379" CONTENT="(Nat." HPOS="310" VPOS="226"
+							HEIGHT="45" WIDTH="103" />
+						<SP HPOS="413" VPOS="227" WIDTH="25" />
+						<String ID="Word_5380" CONTENT="Hist.)" HPOS="438" VPOS="227"
+							HEIGHT="42" WIDTH="119" />
+					</TextLine>
+					<TextLine ID="TextLine_719" HPOS="57" VPOS="287" HEIGHT="35"
+						WIDTH="420">
+						<String ID="Word_5381" CONTENT="Economic" HPOS="57" VPOS="289"
+							HEIGHT="33" WIDTH="196" />
+						<SP HPOS="253" VPOS="288" WIDTH="18" />
+						<String ID="Word_5382" CONTENT="Ser." HPOS="271" VPOS="288"
+							HEIGHT="32" WIDTH="74" />
+						<SP HPOS="345" VPOS="287" WIDTH="16" />
+						<String ID="Word_5383" CONTENT="No." HPOS="361" VPOS="287"
+							HEIGHT="32" WIDTH="68" />
+						<SP HPOS="429" VPOS="287" WIDTH="17" />
+						<String ID="Word_5384" CONTENT="9." HPOS="446" VPOS="287"
+							HEIGHT="32" WIDTH="31" />
+					</TextLine>
+				</TextBlock>
+				<TextBlock ID="TextBlock_259" HPOS="40" VPOS="216" HEIGHT="110"
+					WIDTH="1636">
+					<TextLine ID="TextLine_720" HPOS="1476" VPOS="233" HEIGHT="33"
+						WIDTH="197">
+						<String ID="Word_5385" CONTENT="Plate" HPOS="1476" VPOS="233"
+							HEIGHT="33" WIDTH="117" />
+						<SP HPOS="1593" VPOS="234" WIDTH="26" />
+						<String ID="Word_5386" CONTENT="IV." HPOS="1619" VPOS="234"
+							HEIGHT="32" WIDTH="54" />
+					</TextLine>
+				</TextBlock>
+				<ComposedBlock ID="ComposedBlock_Block260" HEIGHT="502"
+					WIDTH="1629" VPOS="209" HPOS="200" TYPE="container">
+					<Shape>
+						<Polygon POINTS="202,214 1829,214 1829,711 202,711 202,214" />
+					</Shape>
+					<Illustration ID="Page1_Block3" HEIGHT="499" WIDTH="1629"
+						VPOS="209" HPOS="200">
+						<Shape>
+							<Polygon
+								POINTS="202,214 1829,214 1829,408 1349,408 1349,472 1277,472 1277,655 702,655 702,657 700,657 700,711 202,711 202,214" />
+						</Shape>
+					</Illustration>
+					<TextBlock ID="TextBlock_261" HPOS="40" VPOS="216"
+						HEIGHT="2360" WIDTH="1636">
+						<TextLine ID="TextLine_721" HPOS="423" VPOS="2525"
+							HEIGHT="47" WIDTH="896">
+							<String ID="Word_5387" CONTENT="Stone-Curlew" HPOS="423"
+								VPOS="2528" HEIGHT="34" WIDTH="263" />
+							<SP HPOS="686" VPOS="2528" WIDTH="19" />
+							<String ID="Word_5388" CONTENT="(CEdicnemus" HPOS="705"
+								VPOS="2528" HEIGHT="44" WIDTH="241" />
+							<SP HPOS="946" VPOS="2538" WIDTH="17" />
+							<String ID="Word_5389" CONTENT="cedicnemus)," HPOS="963"
+								VPOS="2525" HEIGHT="45" WIDTH="234" />
+							<SP HPOS="1197" VPOS="2537" WIDTH="18" />
+							<String ID="Word_5390" CONTENT="male." HPOS="1215" VPOS="2528"
+								HEIGHT="31" WIDTH="104" />
+						</TextLine>
+					</TextBlock>
+				</ComposedBlock>
+			</PrintSpace>
+		</Page>
+	</Layout>
+</alto>

@@ -1,0 +1,26 @@
+[Unit]
+Description=intranda viewer solrIndexer
+After=tomcat8.service
+Requires=tomcat8.service
+After=tomcat8-solr.service
+Requires=tomcat8-solr.service
+
+
+[Service]
+Environment="STOPFILE=/opt/digiverso/viewer/hotfolder/.SHUTDOWN_INDEXER"
+Restart=always
+RestartSec=20s
+StartLimitInterval=100s
+StartLimitBurst=4
+ExecStartPre=/bin/bash -c '[ -e $STOPFILE ] && /bin/rm "$STOPFILE" || true'
+ExecStart=/usr/bin/java -jar /opt/digiverso/indexer/solrIndexer.jar /opt/digiverso/indexer/solr_indexerconfig.xml 1> /dev/null 2>> /opt/digiverso/logs/indexer.log
+# -Dlog4j.configuration=file:///opt/digiverso/indexer/indexerlog4j.properties fuer alte indexer bei Bedarf in ExecStart aufnehmen
+# -Dlogback.configurationFile=file:///opt/digiverso/indexer/logback.xml fuer neue indexer (2017/01)
+ExecStop=/usr/bin/touch "$STOPFILE"
+ExecStop=/bin/bash -c 'echo "Waiting for the Indexer to stop."; STILLRUNNING=true; for wait in {1..90}; do ps --pid $MAINPID >/dev/null || STILLRUNNING=false; if [ $STILLRUNNING = "true" ]; then sleep 1; else echo "Indexer shutdown successful."; break; fi; done; [ $STILLRUNNING = "true" ] && echo "Failed to stop Indexer, going to kill..."'
+User=tomcat8
+
+[Install]
+WantedBy=default.target
+WantedBy=tomcat8.service
+

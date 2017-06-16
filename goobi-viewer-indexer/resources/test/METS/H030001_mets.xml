@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/version17/mets.v1-7.xsd http://www.loc.gov/standards/premis/ http://www.loc.gov/standards/premis/v2/premis-v2-0.xsd http://www.loc.gov/standards/mix/ http://www.loc.gov/standards/mix/mix.xsd" xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<mets:metsHdr CREATEDATE="2013-07-02T15:03:37">
+		<mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+			<mets:name>Goobi - UGH-1.10-aaaa975 - 28−June−2013</mets:name>
+			<mets:note>Goobi</mets:note>
+		</mets:agent>
+	</mets:metsHdr>
+	<mets:dmdSec ID="DMDLOG_0000">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+					<mods:titleInfo>
+						<mods:title>VDALRICI FABRI RHETI AEGLOGA cui nomen</mods:title>
+					</mods:titleInfo>
+					<mods:recordInfo>
+						<mods:recordIdentifier source="gbv-ppn">H030001</mods:recordIdentifier>
+					</mods:recordInfo>
+					<mods:identifier type="vd16">F 123</mods:identifier>
+					<mods:titleInfo type="uniform">
+						<mods:title>AEGLOGA cui nomen greek[&gt;Agroc,]greek [...] id est, fletus pastoralis,</mods:title>
+					</mods:titleInfo>
+					<mods:location>
+						<mods:physicalLocation type="current">Gotha | Forschungsbibliothek</mods:physicalLocation>
+						<mods:shelfLocator>Math 4° 00145/03 (19)</mods:shelfLocator>
+						<mods:holdingSimple>
+							<mods:copyInformation>
+								<mods:note>Hs. Eintrag auf f. A3r.</mods:note>
+							</mods:copyInformation>
+						</mods:holdingSimple>
+					</mods:location>
+					<mods:location>
+						<mods:physicalLocation type="current">München | Bayerische Staatsbibliothek</mods:physicalLocation>
+						<mods:shelfLocator>P.o.lat. 1678 v</mods:shelfLocator>
+						<mods:url note="opac">http://opacplus.bsb-muenchen.de/search?query=BV001520516</mods:url>
+						<mods:url note="imageurn">http://nbn-resolving.de/urn:nbn:de:bvb:12-bsb00037799-6</mods:url>
+					</mods:location>
+					<mods:mods>
+						<mods:name type="personal">
+							<mods:role>
+								<mods:roleTerm authority="marcrelator" type="code">prt</mods:roleTerm>
+							</mods:role>
+							<mods:displayForm>Singriener, Johann</mods:displayForm>
+							<mods:namePart type="family">Singriener</mods:namePart>
+							<mods:namePart type="termsOfAddress">d.Ä.</mods:namePart>
+							<mods:namePart type="given">Johann</mods:namePart>
+						</mods:name>
+						<mods:originInfo>
+							<mods:place>
+								<mods:placeTerm authority="refgeo" authorityURI="http://normdata.intranda.com/normdata/refgeo/" type="text" valueURI="G000314">Wien</mods:placeTerm>
+							</mods:place>
+						</mods:originInfo>
+					</mods:mods>
+					<mods:subject>
+						<mods:topic>Tod</mods:topic>
+						<mods:temporal encoding="w3cdtf">1519-01-12</mods:temporal>
+						<mods:topic>&gt;001 besteht aus zwei Distichen auf der Titelseite. Am Ende von &gt;007 Errata mit dem Hinweis &quot;In quibusdam exemplaribus e[jusde]m probe
+			impressus est.&quot;.</mods:topic>
+					</mods:subject>
+					<mods:titleInfo type="uniform">
+						<mods:title>Aegloga</mods:title>
+					</mods:titleInfo>
+					<mods:titleInfo type="uniform">
+						<mods:title>Fletus pastoralis</mods:title>
+					</mods:titleInfo>
+					<mods:classification>Casualia</mods:classification>
+					<mods:name authority="refbio" authorityURI="http://normdata.intranda.com/normdata/refbio/" type="personal" valueURI="P000001">
+						<mods:role>
+							<mods:roleTerm authority="marcrelator" type="code">dte</mods:roleTerm>
+						</mods:role>
+						<mods:namePart type="family">Oberstain</mods:namePart>
+						<mods:namePart type="given">Paulus de</mods:namePart>
+						<mods:displayForm>Oberstain, Paulus de</mods:displayForm>
+					</mods:name>
+					<mods:name authority="refbio" authorityURI="http://normdata.intranda.com/normdata/refbio/" type="personal" valueURI="P000081">
+						<mods:role>
+							<mods:roleTerm authority="marcrelator" type="code">dte</mods:roleTerm>
+						</mods:role>
+						<mods:namePart type="family">Fabricius</mods:namePart>
+						<mods:namePart type="given">Huldrichus</mods:namePart>
+						<mods:displayForm>Fabricius, Huldrichus</mods:displayForm>
+					</mods:name>
+					<mods:originInfo>
+						<mods:dateIssued encoding="w3cdtf" keyDate="yes">1519</mods:dateIssued>
+					</mods:originInfo>
+					<mods:physicalDescription>
+						<mods:extent>4</mods:extent>
+					</mods:physicalDescription>
+					<mods:note type="source dimensions">14</mods:note>
+				</mods:mods>
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:dmdSec ID="DMDLOG_0001">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+					<mods:titleInfo>
+						<mods:title>AD LECTOREM</mods:title>
+					</mods:titleInfo>
+					<mods:part>
+						<mods:detail>
+							<mods:number>001</mods:number>
+						</mods:detail>
+					</mods:part>
+					<mods:name authority="refbio" authorityURI="http://normdata.intranda.com/normdata/refbio/" type="personal" valueURI="P000080">
+						<mods:role>
+							<mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+						</mods:role>
+						<mods:namePart type="family">Myllius</mods:namePart>
+						<mods:namePart type="given">Martinus</mods:namePart>
+						<mods:displayForm>Myllius, Martinus</mods:displayForm>
+					</mods:name>
+					<mods:language>
+						<mods:languageTerm authority="iso639-2b" type="code">lat.</mods:languageTerm>
+					</mods:language>
+				</mods:mods>
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:dmdSec ID="DMDLOG_0002">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+					<mods:titleInfo>
+						<mods:title>praemissa salute, [Prosa]</mods:title>
+					</mods:titleInfo>
+					<mods:titleInfo type="uniform">
+						<mods:title>Salute praemissa</mods:title>
+					</mods:titleInfo>
+					<mods:part>
+						<mods:detail>
+							<mods:number>002</mods:number>
+						</mods:detail>
+					</mods:part>
+					<mods:name authority="refbio" authorityURI="http://normdata.intranda.com/normdata/refbio/" type="personal" valueURI="P000081">
+						<mods:role>
+							<mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+						</mods:role>
+						<mods:namePart type="family">Faber</mods:namePart>
+						<mods:namePart type="given">Udalricus Rhetus</mods:namePart>
+						<mods:displayForm>Faber, Udalricus Rhetus</mods:displayForm>
+					</mods:name>
+					<mods:language>
+						<mods:languageTerm authority="iso639-2b" type="code">lat.</mods:languageTerm>
+					</mods:language>
+				</mods:mods>
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:dmdSec ID="DMDLOG_0003">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+					<mods:titleInfo>
+						<mods:title>greek[&gt;Apol´oghma]greek pro autore. [Prosa]</mods:title>
+					</mods:titleInfo>
+					<mods:titleInfo type="uniform">
+						<mods:title>Apologema [griech.]</mods:title>
+					</mods:titleInfo>
+					<mods:part>
+						<mods:detail>
+							<mods:number>003</mods:number>
+						</mods:detail>
+					</mods:part>
+					<mods:language>
+						<mods:languageTerm authority="iso639-2b" type="code">lat.</mods:languageTerm>
+					</mods:language>
+				</mods:mods>
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:dmdSec ID="DMDLOG_0004">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+					<mods:titleInfo>
+						<mods:title>IN HVLDRICHI FABRICII [...] Tetrastichon.</mods:title>
+					</mods:titleInfo>
+					<mods:titleInfo type="uniform">
+						<mods:title>Tetrastichon</mods:title>
+					</mods:titleInfo>
+					<mods:part>
+						<mods:detail>
+							<mods:number>004</mods:number>
+						</mods:detail>
+					</mods:part>
+					<mods:language>
+						<mods:languageTerm authority="iso639-2b" type="code">lat.</mods:languageTerm>
+					</mods:language>
+				</mods:mods>
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:dmdSec ID="DMDLOG_0005">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+					<mods:part>
+						<mods:detail>
+							<mods:number>005</mods:number>
+						</mods:detail>
+					</mods:part>
+					<mods:name authority="refbio" authorityURI="http://normdata.intranda.com/normdata/refbio/" type="personal" valueURI="P000080">
+						<mods:role>
+							<mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+						</mods:role>
+						<mods:namePart type="family">Myllius</mods:namePart>
+						<mods:namePart type="given">Martinus</mods:namePart>
+						<mods:displayForm>Myllius, Martinus</mods:displayForm>
+					</mods:name>
+					<mods:language>
+						<mods:languageTerm authority="iso639-2b" type="code">lat.</mods:languageTerm>
+					</mods:language>
+				</mods:mods>
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:dmdSec ID="DMDLOG_0006">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+					<mods:titleInfo>
+						<mods:title>Vlmanus Lectori.</mods:title>
+					</mods:titleInfo>
+					<mods:part>
+						<mods:detail>
+							<mods:number>006</mods:number>
+						</mods:detail>
+					</mods:part>
+					<mods:name authority="refbio" authorityURI="http://normdata.intranda.com/normdata/refbio/" type="personal" valueURI="P000084">
+						<mods:role>
+							<mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+						</mods:role>
+						<mods:namePart type="family">Gienger</mods:namePart>
+						<mods:namePart type="given">Georgius</mods:namePart>
+						<mods:displayForm>Gienger, Georgius</mods:displayForm>
+					</mods:name>
+					<mods:language>
+						<mods:languageTerm authority="iso639-2b" type="code">lat.</mods:languageTerm>
+					</mods:language>
+				</mods:mods>
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:dmdSec ID="DMDLOG_0007">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+					<mods:titleInfo>
+						<mods:title>AEGLOGA, [...] i. fletus Pastoralis. Interlocutores Lynceus, Thyrsis, &amp; tandem Odynaephatus.</mods:title>
+					</mods:titleInfo>
+					<mods:titleInfo type="uniform">
+						<mods:title>Aegloga</mods:title>
+					</mods:titleInfo>
+					<mods:part>
+						<mods:detail>
+							<mods:number>007</mods:number>
+						</mods:detail>
+					</mods:part>
+					<mods:name authority="refbio" authorityURI="http://normdata.intranda.com/normdata/refbio/" type="personal" valueURI="P000081">
+						<mods:role>
+							<mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+						</mods:role>
+						<mods:namePart type="family">Faber</mods:namePart>
+						<mods:namePart type="given">Udalricus Rhetus</mods:namePart>
+						<mods:displayForm>Faber, Udalricus Rhetus</mods:displayForm>
+					</mods:name>
+					<mods:language>
+						<mods:languageTerm authority="iso639-2b" type="code">lat.</mods:languageTerm>
+					</mods:language>
+				</mods:mods>
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:amdSec ID="AMD">
+		<mets:rightsMD ID="RIGHTS">
+			<mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+				<mets:xmlData>
+					<dv:rights xmlns:dv="http://dfg-viewer.de/">
+						<dv:owner>Wellcome Collection</dv:owner>
+						<dv:ownerLogo>http://library.wellcome.ac.uk/assets/home_logo.gif</dv:ownerLogo>
+						<dv:ownerSiteURL>http://library.wellcome.ac.uk/</dv:ownerSiteURL>
+						<dv:ownerContact>wdl@wellcome.ac.uk</dv:ownerContact>
+					</dv:rights>
+				</mets:xmlData>
+			</mets:mdWrap>
+		</mets:rightsMD>
+		<mets:digiprovMD ID="DIGIPROV">
+			<mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVLINKS">
+				<mets:xmlData>
+					<dv:links xmlns:dv="http://dfg-viewer.de/">
+						<dv:reference>H030001</dv:reference>
+						<dv:presentation>H030001</dv:presentation>
+					</dv:links>
+				</mets:xmlData>
+			</mets:mdWrap>
+		</mets:digiprovMD>
+	</mets:amdSec>
+	<mets:fileSec>
+		<mets:fileGrp USE="SDB"/>
+	</mets:fileSec>
+	<mets:structMap TYPE="LOGICAL">
+		<mets:div ADMID="AMD" DMDID="DMDLOG_0000" ID="LOG_0000" LABEL="VDALRICI FABRI RHETI AEGLOGA cui nomen" TYPE="Casualia">
+			<mets:div DMDID="DMDLOG_0001" ID="LOG_0001" LABEL="AD LECTOREM" TYPE="Contribution"/>
+			<mets:div DMDID="DMDLOG_0002" ID="LOG_0002" LABEL="praemissa salute, [Prosa]" TYPE="Contribution"/>
+			<mets:div DMDID="DMDLOG_0003" ID="LOG_0003" LABEL="greek[>Apol´oghma]greek pro autore. [Prosa]" TYPE="Contribution"/><mets:div DMDID="DMDLOG_0004" ID="LOG_0004" LABEL="IN HVLDRICHI FABRICII [...] Tetrastichon." TYPE="Contribution"/>
+			<mets:div DMDID="DMDLOG_0005" ID="LOG_0005" TYPE="Contribution"/>
+			<mets:div DMDID="DMDLOG_0006" ID="LOG_0006" LABEL="Vlmanus Lectori." TYPE="Contribution"/>
+			<mets:div DMDID="DMDLOG_0007" ID="LOG_0007" LABEL="AEGLOGA, [...] i. fletus Pastoralis. Interlocutores Lynceus, Thyrsis, &amp; tandem Odynaephatus." TYPE="Contribution"/>
+		</mets:div>
+	</mets:structMap>
+	<mets:structMap TYPE="PHYSICAL">
+		<mets:div ID="PHYS_0000" TYPE="physSequence"/>
+	</mets:structMap>
+	<mets:structLink/>
+</mets:mets>
