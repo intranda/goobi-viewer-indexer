@@ -1,7 +1,7 @@
 # Goobi viewer - Indexer
 > Indexing application as part of the highly flexible digital library framework - made by the Goobi developer team
 
-## Indexer for the digital library framwork
+## Indexer for the digital library framework
 The Goobi viewer indexer is responsible for indexing metadata files and related content files for the Goobi viewer. It parses provided metadata files (e.g. METS and LIDO) to fill the Solr search index with all relevant information. Additionally all fulltext files are read and indexed to allow a fulltext search in the Goobi viewer.
 
 ## Documentation
