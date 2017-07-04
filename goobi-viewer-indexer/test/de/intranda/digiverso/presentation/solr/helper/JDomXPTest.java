@@ -25,11 +25,20 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.intranda.digiverso.presentation.solr.helper.JDomXP.FileFormat;
 
 public class JDomXPTest {
+    
+    private static Hotfolder hotfolder;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
+    }
+
     /**
      * @see JDomXP#determineFileFormat(File)
      * @verifies detect mets files correctly
@@ -51,7 +60,7 @@ public class JDomXPTest {
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
     }
-    
+
     /**
      * @see JDomXP#determineFileFormat(File)
      * @verifies detect abbyy files correctly
@@ -251,5 +260,16 @@ public class JDomXPTest {
         JDomXP xp = new JDomXP(file);
         Element eleMdWrap = xp.getMdWrap("DMDLOG_0003");
         Assert.assertNotNull(eleMdWrap);
+    }
+
+    /**
+     * @see JDomXP#initNamespaces()
+     * @verifies add custom namespaces correctly
+     */
+    @Test
+    public void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
+        JDomXP.initNamespaces();
+        Assert.assertEquals(9, JDomXP.getNamespaces().size());
+        Assert.assertNotNull(JDomXP.getNamespaces().get("intranda"));
     }
 }

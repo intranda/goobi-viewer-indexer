@@ -113,6 +113,7 @@ public class JDomXP {
      * Adds relevant XML namespaces to the list of available namespace objects.
      * 
      * @throws FatalIndexerException
+     * @should add custom namespaces correctly
      */
     public static void initNamespaces() throws FatalIndexerException {
         namespaces = new HashMap<>();

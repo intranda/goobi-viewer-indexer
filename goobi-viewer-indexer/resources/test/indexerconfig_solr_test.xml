@@ -88,7 +88,9 @@
 		<piSplittingCharOccurrence>1</piSplittingCharOccurrence>
 
 		<namespaces>
-			<!-- <list> </list> -->
+			<list>
+			    <intranda>http://www.intranda.com/</intranda>
+			</list>
 		</namespaces>
 		
 		<!-- pageCountStart: Order number for the first page. Default is 1. -->
