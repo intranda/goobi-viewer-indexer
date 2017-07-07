@@ -3,7 +3,7 @@
  
   <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <Pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread]  %caller{1} %ex{full}      %msg%n</Pattern>
+      <Pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread]  \(%file:%line\)%n %ex{full}      %msg%n</Pattern>
     </encoder>
   </appender>
   <appender name="rolling" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -17,7 +17,7 @@
       <maxFileSize>20MB</maxFileSize>
     </triggeringPolicy>
     <encoder>
-      <Pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread]  %caller{1} %ex{full}       %msg%n</Pattern>
+      <Pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread]  \(%file:%line\)%n %ex{full}       %msg%n</Pattern>
     </encoder>
   </appender>
    
