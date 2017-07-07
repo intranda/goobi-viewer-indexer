@@ -38,9 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -111,7 +110,7 @@ public class MetsIndexer extends AbstractIndexer {
 
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private String useFileGroup = null;
+    private volatile String useFileGroup = null;
     private boolean hasFulltext = false;
 
     /**
@@ -908,11 +907,16 @@ public class MetsIndexer extends AbstractIndexer {
         if (Configuration.getInstance().getThreads() > 1) {
             // Generate each page document in its own thread
             ForkJoinPool pool = new ForkJoinPool(Configuration.getInstance().getThreads());
+            ConcurrentHashMap<Long, Boolean> map = new ConcurrentHashMap<>();
             try {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), null, writeStrategy,
-                                dataFolders);
+                        long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                        if (map.containsKey(iddoc)) {
+                            logger.error("Duplicate IDDOC: {}", iddoc);
+                        }
+                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), null, writeStrategy, dataFolders);
+                        map.put(iddoc, true);
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
                     }
@@ -975,6 +979,7 @@ public class MetsIndexer extends AbstractIndexer {
         }
 
         List<Element> eleFptrList = eleStructMapPhysical.getChildren("fptr", JDomXP.getNamespaces().get("mets"));
+        String useFileGroup = null;
 
         // Create Solr document for this page
         SolrInputDocument doc = new SolrInputDocument();
@@ -1058,7 +1063,8 @@ public class MetsIndexer extends AbstractIndexer {
             String fileGroup = eleFileGrp.getAttributeValue("USE");
             logger.debug("Found file group: {}", fileGroup);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if (!DEFAULT_FILEGROUP_1.equals(useFileGroup) && (DEFAULT_FILEGROUP_1.equals(fileGroup) || DEFAULT_FILEGROUP_2.equals(fileGroup))) {
+            if ((useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup)) && (DEFAULT_FILEGROUP_1.equals(fileGroup) || DEFAULT_FILEGROUP_2
+                    .equals(fileGroup))) {
                 useFileGroup = fileGroup;
             }
             String fileId = null;
@@ -1118,12 +1124,17 @@ public class MetsIndexer extends AbstractIndexer {
                 if (filePath.startsWith("http")) {
                     // Should  write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     doc.addField(SolrConstants.FILENAME, filePath);
+                    logger.info("Page {}, adding FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath, fileGroup);
 
                     // RosDok IIIF
                     if (DEFAULT_FILEGROUP_2.equals(useFileGroup) && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
                         doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                     }
                 } else {
+                    if (doc.containsKey(SolrConstants.FILENAME)) {
+                        logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, fileName,
+                                fileGroup);
+                    }
                     doc.addField(SolrConstants.FILENAME, fileName);
                 }
 
@@ -1493,6 +1504,10 @@ public class MetsIndexer extends AbstractIndexer {
         }
 
         writeStrategy.addPageDoc(doc);
+        // Set global useFileGroup value (used for mapping later), if not yet set
+        if (this.useFileGroup == null) {
+            this.useFileGroup = useFileGroup;
+        }
         return true;
     }
 

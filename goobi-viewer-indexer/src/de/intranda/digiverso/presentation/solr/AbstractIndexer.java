@@ -303,7 +303,7 @@ public abstract class AbstractIndexer {
      * @return
      * @throws FatalIndexerException 
      */
-    protected static long getNextIddoc(SolrHelper solrHelper) throws FatalIndexerException {
+    protected static synchronized long getNextIddoc(SolrHelper solrHelper) throws FatalIndexerException {
         if (nextIddoc < 0) {
             // Only determine the next IDDOC from Solr once per indexer lifetime, otherwise it might return numbers that already exist
             nextIddoc = System.currentTimeMillis();
