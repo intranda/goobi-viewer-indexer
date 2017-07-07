@@ -301,7 +301,7 @@ public class Hotfolder {
         }
 
         final PatternLayout layout = PatternLayout.newBuilder().withPattern(
-                "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %location%n        %msg%n").withConfiguration(config).build();
+                "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n").withConfiguration(config).build();
         secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", true, true);
         secondaryAppender.start();
         config.addAppender(secondaryAppender);
