@@ -38,8 +38,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -904,34 +906,23 @@ public class MetsIndexer extends AbstractIndexer {
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         if (Configuration.getInstance().getThreads() > 1) {
-            ExecutorService executor = Executors.newFixedThreadPool(Configuration.getInstance().getThreads());
-            for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
-
-                // Generate each page document in its own thread
-                Runnable r = new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), null, writeStrategy,
-                                    dataFolders);
-                        } catch (FatalIndexerException e) {
-                            logger.error("Should be exiting here now...");
-                        } finally {
-                        }
+            // Generate each page document in its own thread
+            ForkJoinPool pool = new ForkJoinPool(Configuration.getInstance().getThreads());
+            try {
+                pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
+                    try {
+                        generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), null, writeStrategy,
+                                dataFolders);
+                    } catch (FatalIndexerException e) {
+                        logger.error("Should be exiting here now...");
                     }
-                };
-                executor.execute(r);
+                })).get();
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error(e.getMessage(), e);
+                SolrIndexerDaemon.getInstance().stop();
             }
-            executor.shutdown();
-            while (!executor.isTerminated()) {
-            }
-
-            // TODO lambda instead of loop with Java 8
-            //        eleStructMapPhysicalList.parallelStream().forEach(
-            //                eleStructMapPhysical -> generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), null,
-            //                        writeStrategy, dataFolders));
         } else {
+            // Generate pages sequentially
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
                 if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), order, writeStrategy,

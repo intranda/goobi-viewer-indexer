@@ -299,14 +299,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             }
         }
 
-        // Add SUPERDEFAULT and SUPERFULLTEXT fields to the root doc
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERDEFAULT, AbstractIndexer.cleanUpDefaultField(sbSuperDefault.toString()));
-        //        }
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERFULLTEXT, sbSuperFulltext.toString());
-        //        }
-
         // Write the root doc
         logger.info("Writing root document to the index...");
         try {
