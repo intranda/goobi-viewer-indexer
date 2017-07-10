@@ -140,6 +140,9 @@ public class IndexObjectTest {
 
         Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_PARENT));
         Assert.assertEquals("PARENT_PI", io.getLuceneFieldWithName(SolrConstants.PI_PARENT).getValue());
+        
+        Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR));
+        Assert.assertEquals("PARENT_PI", io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR).getValue());
 
         Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.LABEL));
         Assert.assertEquals("<b>LABEL</b>", io.getLuceneFieldWithName(SolrConstants.LABEL).getValue());

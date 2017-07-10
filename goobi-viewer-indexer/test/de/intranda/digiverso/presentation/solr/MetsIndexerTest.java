@@ -411,7 +411,12 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(1, docList.size());
         SolrDocument doc = docList.get(0);
         Assert.assertEquals(piAnchor, doc.getFieldValue(SolrConstants.PI_PARENT));
-        //        Assert.assertNull(doc.getFieldValue(SolrConstants.IDDOC_PARENT));
+        Assert.assertEquals(piAnchor, doc.getFieldValue(SolrConstants.PI_ANCHOR));
+
+        // All child docstructs should have the PI_ANCHOR field
+        SolrDocumentList vol1Chidlren = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + piVol1 + " AND " + SolrConstants.PI_ANCHOR
+                + ":" + piAnchor, null);
+        Assert.assertEquals(95, vol1Chidlren.size());
 
         // Index anchor
         String anchorIddoc;

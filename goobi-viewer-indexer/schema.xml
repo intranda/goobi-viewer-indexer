@@ -30,7 +30,7 @@
 	request -->
 
 
-<schema name="goobi_viewer-20170607" version="1.5">
+<schema name="goobi_viewer-20170710" version="1.5">
 	<!-- attribute "name" is the name of this schema and is only used for display 
 		purposes. version="x.y" is Solr's version number for the schema syntax and 
 		semantics. It should not normally be changed by applications. 1.0: multiValued 
@@ -157,6 +157,7 @@
 		<field name="PARTNERID" type="string" indexed="true" stored="true" />
 		<field name="PHYSID" type="string" indexed="true" stored="true" />
 		<field name="PI" type="string" indexed="true" stored="true" />
+		<field name="PI_ANCHOR" type="string" indexed="true" stored="true" />
 		<field name="PI_PARENT" type="string" indexed="true" stored="true" />
 		<field name="PI_TOPSTRUCT" type="string" indexed="true" stored="true" />
 		<field name="SORTINGTITLE" type="string" indexed="true" stored="false" />

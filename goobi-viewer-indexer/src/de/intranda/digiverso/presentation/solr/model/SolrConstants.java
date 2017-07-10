@@ -91,6 +91,7 @@ public final class SolrConstants {
     public static final String PARTNERID = "PARTNERID";
     public static final String PHYSID = "PHYSID";
     public static final String PI = "PI";
+    public static final String PI_ANCHOR = "PI_ANCHOR";
     public static final String PI_PARENT = "PI_PARENT";
     public static final String PI_TOPSTRUCT = "PI_TOPSTRUCT";
     public static final String SOURCEDOCFORMAT = "SOURCEDOCFORMAT";

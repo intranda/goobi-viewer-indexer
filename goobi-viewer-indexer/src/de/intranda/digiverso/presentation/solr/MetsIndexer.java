@@ -2012,6 +2012,11 @@ public class MetsIndexer extends AbstractIndexer {
                 MetadataHelper.writeMetadataToObject(indexObj, xp.getMdWrap(indexObj.getDmdid()), "", xp);
             }
 
+            // Propagate PI_ANCHOR value
+            if (parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null) {
+                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR));
+            }
+
             // Add parent's metadata and SORT_* fields to this docstruct
             Set<String> existingMetadataFields = new HashSet<>();
             Set<String> existingSortFieldNames = new HashSet<>();

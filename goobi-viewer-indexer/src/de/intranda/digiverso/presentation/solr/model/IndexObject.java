@@ -102,6 +102,7 @@ public class IndexObject {
         addToLucene(SolrConstants.PI_TOPSTRUCT, topstructPI);
         if (StringUtils.isNotEmpty(parentPI)) {
             addToLucene(SolrConstants.PI_PARENT, parentPI);
+            addToLucene(SolrConstants.PI_ANCHOR, parentPI);
         }
         addToLucene(SolrConstants.LABEL, MetadataHelper.applyValueDefaultModifications(getLabel()));
         addToLucene(SolrConstants.DMDID, dmdId);
