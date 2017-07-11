@@ -1,5 +1,5 @@
 /**
- * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi Viewer and OAI-PMH/SRU interfaces.
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
  *
  * Visit these websites for more information.
  *          - http://www.intranda.com
@@ -37,8 +37,8 @@ public final class SolrIndexerDaemon {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
-    public static final String VERSION = "3.2.20170613";
-    private static final int MIN_SCHEMA_VERSION = 20170511;
+    public static final String VERSION = "3.2.20170710";
+    private static final int MIN_SCHEMA_VERSION = 20170710;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
@@ -151,11 +151,13 @@ public final class SolrIndexerDaemon {
             logger.warn("<sleep> must contain an numerical value, using default interval of {} ms instead.", DEFAULT_SLEEP_INTERVAL);
         }
 
-        MetsIndexer.fulltextCharset = Configuration.getInstance(confFilename).getConfiguration("fulltextEncoding");
+        MetsIndexer.fulltextCharset = Configuration.getInstance().getConfiguration("fulltextEncoding");
         if (StringUtils.isBlank(MetsIndexer.fulltextCharset)) {
             MetsIndexer.fulltextCharset = MetsIndexer.DEFAULT_FULLTEXT_CHARSET;
         }
         logger.info("Full-text encoding is '{}'.", MetsIndexer.fulltextCharset);
+
+        logger.info("Using {} CPU thread(s).", Configuration.getInstance().getThreads());
 
         // main loop
         logger.info("Program started, monitoring hotfolder...");

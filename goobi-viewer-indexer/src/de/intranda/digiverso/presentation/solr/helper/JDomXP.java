@@ -1,5 +1,5 @@
 /**
- * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi Viewer and OAI-PMH/SRU interfaces.
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
  *
  * Visit these websites for more information.
  *          - http://www.intranda.com
@@ -113,6 +113,7 @@ public class JDomXP {
      * Adds relevant XML namespaces to the list of available namespace objects.
      * 
      * @throws FatalIndexerException
+     * @should add custom namespaces correctly
      */
     public static void initNamespaces() throws FatalIndexerException {
         namespaces = new HashMap<>();

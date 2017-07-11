@@ -102,11 +102,11 @@
         <aggregateRecords>true</aggregateRecords>
 	    
 	    <email>
-	        <recipients>andrey@intranda.com</recipients>
-            <smtpServer>mail.intranda.com</smtpServer>
-            <smtpUser>test-if-pd@intranda.com</smtpUser>
-            <smtpPassword>Gohz0vai</smtpPassword>
-            <smtpSenderAddress>test-if-pd@intranda.com</smtpSenderAddress>
+	        <recipients></recipients>
+            <smtpServer></smtpServer>
+            <smtpUser></smtpUser>
+            <smtpPassword></smtpPassword>
+            <smtpSenderAddress></smtpSenderAddress>
             <smtpSenderName>intranda viewer Indexer</smtpSenderName>
             <smtpSecurity>SSL</smtpSecurity>
 	    </email>
@@ -130,7 +130,7 @@
         <autoOptimize>false</autoOptimize>
         
         <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
-        <threads>1</threads>
+        <threads>4</threads>
 	</performance>
 
 	<docstructmapping>

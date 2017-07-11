@@ -1,5 +1,5 @@
 /**
- * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi Viewer and OAI-PMH/SRU interfaces.
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
  *
  * Visit these websites for more information.
  *          - http://www.intranda.com

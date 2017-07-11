@@ -1,5 +1,5 @@
 /**
- * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi Viewer and OAI-PMH/SRU interfaces.
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
  *
  * Visit these websites for more information.
  *          - http://www.intranda.com
@@ -102,6 +102,7 @@ public class IndexObject {
         addToLucene(SolrConstants.PI_TOPSTRUCT, topstructPI);
         if (StringUtils.isNotEmpty(parentPI)) {
             addToLucene(SolrConstants.PI_PARENT, parentPI);
+            addToLucene(SolrConstants.PI_ANCHOR, parentPI);
         }
         addToLucene(SolrConstants.LABEL, MetadataHelper.applyValueDefaultModifications(getLabel()));
         addToLucene(SolrConstants.DMDID, dmdId);

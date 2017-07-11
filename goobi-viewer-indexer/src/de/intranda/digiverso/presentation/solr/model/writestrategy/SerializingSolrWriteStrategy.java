@@ -1,5 +1,5 @@
 /**
- * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi Viewer and OAI-PMH/SRU interfaces.
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
  *
  * Visit these websites for more information.
  *          - http://www.intranda.com
@@ -282,14 +282,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                 writePageDoc(order, rootDoc, aggregateRecords);
             }
         }
-
-        // Add SUPERDEFAULT and SUPERFULLTEXT fields to the root doc
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERDEFAULT, AbstractIndexer.cleanUpDefaultField(sbSuperDefault.toString()));
-        //        }
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERFULLTEXT, sbSuperFulltext.toString());
-        //        }
 
         // Write the root doc
         logger.info("Writing root document to the index...");

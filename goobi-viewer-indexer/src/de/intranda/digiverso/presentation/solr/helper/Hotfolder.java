@@ -1,5 +1,5 @@
 /**
- * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi Viewer and OAI-PMH/SRU interfaces.
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
  *
  * Visit these websites for more information.
  *          - http://www.intranda.com
@@ -16,13 +16,13 @@
 package de.intranda.digiverso.presentation.solr.helper;
 
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -49,6 +49,10 @@ import javax.mail.MessagingException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -58,11 +62,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.OutputStreamAppender;
 import de.intranda.digiverso.presentation.solr.AbstractIndexer;
 import de.intranda.digiverso.presentation.solr.DocUpdateIndexer;
 import de.intranda.digiverso.presentation.solr.LidoIndexer;
@@ -80,7 +79,8 @@ public class Hotfolder {
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
     private static final int WAIT_IF_FILE_EMPTY = 5000;
 
-    private static ByteArrayOutputStream baosSecondaryLog;
+    private StringWriter swSecondaryLog;
+    private WriterAppender secondaryAppender;
 
     private final SolrHelper solrHelper;
     private final List<DataRepository> dataRepositories = new ArrayList<>();
@@ -283,48 +283,34 @@ public class Hotfolder {
     /**
      * Empties and re-inits the secondary logger.
      */
-    private static void resetSecondaryLog() {
-        if (baosSecondaryLog != null) {
+    private void resetSecondaryLog() {
+        if (swSecondaryLog != null) {
             try {
-                baosSecondaryLog.close();
+                swSecondaryLog.close();
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }
         }
-        baosSecondaryLog = new ByteArrayOutputStream();
+        swSecondaryLog = new StringWriter();
 
-        // Kill previous version of this appender
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
-                ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
-        Appender<ILoggingEvent> oldAppender = rootLogger.getAppender("record");
-        if (oldAppender != null) {
-            oldAppender.stop();
-            rootLogger.detachAppender(oldAppender);
+        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
+        if (secondaryAppender != null) {
+            secondaryAppender.stop();
+            context.getRootLogger().removeAppender(secondaryAppender);
         }
 
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-
-        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-        encoder.setContext(context);
-        //        encoder.setPattern("%-5p %d (%F\\:%M\\:%L)%n        %m%n");
-        encoder.setPattern("%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread]  %logger%ex{full}%n       %msg%n");
-        encoder.setImmediateFlush(true);
-        encoder.start();
-
-        OutputStreamAppender<ILoggingEvent> newAppender = new OutputStreamAppender<>();
-        newAppender.setName("record");
-        newAppender.setContext(context);
-        newAppender.setEncoder(encoder);
-        //        recordAppender.setThreshold(Level.INFO);
-        //        recordAppender.activateOptions();
-        newAppender.setOutputStream(baosSecondaryLog);
-
-        rootLogger.addAppender(newAppender);
-        newAppender.start();
+        final PatternLayout layout = PatternLayout.newBuilder().withPattern(
+                "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n").withConfiguration(config).build();
+        secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", true, true);
+        secondaryAppender.start();
+        config.addAppender(secondaryAppender);
+        context.getRootLogger().addAppender(secondaryAppender);
+        context.updateLoggers();
     }
 
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
-        logger.debug("body:\n" + body);
+        logger.debug("body:\n{}", body);
         // Send report e-mail if the text body contains at least one ERROR level log message
         if (!body.contains("ERROR")) {
             return;
@@ -396,9 +382,9 @@ public class Hotfolder {
                 reindexSettings.put("reindexMix", true);
                 reindexSettings.put("reindexUGC", true);
                 noerror = handleDataFile(fileToReindex, true, reindexSettings);
-                if (baosSecondaryLog != null) {
-                    checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")", new String(
-                            baosSecondaryLog.toByteArray(), java.nio.charset.StandardCharsets.UTF_8));
+                if (swSecondaryLog != null) {
+                    checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")", swSecondaryLog
+                            .toString());
                 }
             } else {
                 // Check for the shutdown trigger file first
@@ -442,7 +428,7 @@ public class Hotfolder {
                             noerror = handleDataFile(recordFile, false, reindexSettings);
                             // logger.error("for the lulz");
                             checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")",
-                                    baosSecondaryLog.toString());
+                                    swSecondaryLog.toString());
                         } else {
                             logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
                             Files.delete(recordFile);
@@ -472,9 +458,9 @@ public class Hotfolder {
         logger.debug("Available storage space: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
-            if (baosSecondaryLog != null) {
-                checkAndSendErrorReport("Record indexing failed due to insufficient space (v" + SolrIndexerDaemon.VERSION + ")", new String(
-                        baosSecondaryLog.toByteArray(), java.nio.charset.StandardCharsets.UTF_8));
+            if (swSecondaryLog != null) {
+                checkAndSendErrorReport("Record indexing failed due to insufficient space (v" + SolrIndexerDaemon.VERSION + ")", swSecondaryLog
+                        .toString());
             }
             throw new FatalIndexerException("Insufficient free space");
         }

@@ -1,5 +1,5 @@
 /**
- * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi Viewer and OAI-PMH/SRU interfaces.
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
  *
  * Visit these websites for more information.
  *          - http://www.intranda.com
@@ -140,6 +140,9 @@ public class IndexObjectTest {
 
         Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_PARENT));
         Assert.assertEquals("PARENT_PI", io.getLuceneFieldWithName(SolrConstants.PI_PARENT).getValue());
+        
+        Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR));
+        Assert.assertEquals("PARENT_PI", io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR).getValue());
 
         Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.LABEL));
         Assert.assertEquals("<b>LABEL</b>", io.getLuceneFieldWithName(SolrConstants.LABEL).getValue());

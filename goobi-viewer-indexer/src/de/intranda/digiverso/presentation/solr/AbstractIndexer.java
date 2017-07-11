@@ -1,5 +1,5 @@
 /**
- * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi Viewer and OAI-PMH/SRU interfaces.
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
  *
  * Visit these websites for more information.
  *          - http://www.intranda.com
@@ -318,7 +318,7 @@ public abstract class AbstractIndexer {
      * @return
      * @throws FatalIndexerException
      */
-    protected static long getNextIddoc(SolrHelper solrHelper) throws FatalIndexerException {
+    protected static synchronized long getNextIddoc(SolrHelper solrHelper) throws FatalIndexerException {
         if (nextIddoc < 0) {
             // Only determine the next IDDOC from Solr once per indexer lifetime, otherwise it might return numbers that already exist
             nextIddoc = System.currentTimeMillis();
