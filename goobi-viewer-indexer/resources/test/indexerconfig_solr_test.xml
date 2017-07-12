@@ -10,14 +10,7 @@
 
 		<solrUrl>http://localhost:8081/solr</solrUrl>
 
-		<!-- If the METS file size exceeds the given number (in bytes), an alternate 
-			Solr write strategy will be used to avoid memory overflows (default is 10485760 
-			bytes) -->
-		<metsFileSizeThreshold>10485760</metsFileSizeThreshold>
-		<!-- If a data folder size exceeds the given number (in bytes), an alternate 
-			Solr write strategy will be used to avoid memory overflows (default is 157286400 
-			bytes) -->
-		<dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
+
 
 		<!-- Ordnerkonfiguration -->
 		<hotFolder>build/viewer/hotfolder/</hotFolder>
@@ -65,9 +58,6 @@
 		<errorMets>build/viewer/error_mets/</errorMets>
 		<origLido>build/viewer/orig_lido/</origLido>
 
-		<!-- If true, an optimize query will be sent to Solr after every indexed 
-			object. -->
-		<autoOptimize>false</autoOptimize>
 		<!-- Encoding that full-text files will be expected to have (default is 
 			'Cp1250'). -->
 		<fulltextEncoding>Cp1250</fulltextEncoding>
@@ -104,6 +94,24 @@
 		<stopwordFile>resources/test/stopwords_de_en.txt</stopwordFile>
 		<!-- <lucene>D:/digiverso/viewer/lucene/</lucene> -->
 	</init>
+	
+	<performance>
+	       <!-- If the METS file size exceeds the given number (in bytes), an alternate 
+            Solr write strategy will be used to avoid memory overflows (default is 10485760 
+            bytes) -->
+        <metsFileSizeThreshold>10485760</metsFileSizeThreshold>
+        <!-- If a data folder size exceeds the given number (in bytes), an alternate 
+            Solr write strategy will be used to avoid memory overflows (default is 157286400 
+            bytes) -->
+        <dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
+        
+        <!-- If true, an optimize query will be sent to Solr after every indexed 
+            object. -->
+        <autoOptimize>false</autoOptimize>
+        
+        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
+        <threads>4</threads>
+    </performance>
 
 	<docstructmapping>
 		<!-- If true, the docstruct in docstructmapping/list/_default will be used 
@@ -126,9 +134,6 @@
 		</list>
 	</docstructmapping>
 
-	<!-- Konfiguration der Lucene Felder - um eigene Felder erweiterbar Konfiguriert 
-		werden nur Felder die per xpath innerhalb der MODS-Sections ansprechbar sind. 
-		// -->
 	<fields>
 
 		<MD_TESTFIELD>
@@ -152,6 +157,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<addSortField>true</addSortField>
 					<normalizeYear minYearDigits="2">true</normalizeYear>
+					<interpolateYears>true</interpolateYears>
 					<aggregateEntity>true</aggregateEntity>
 					<groupEntity type="TYPE">
 						<field name="field1">xpath1</field>
@@ -187,8 +193,6 @@
 		</URN>
 
 		<PI>
-			<!-- enthaelt einen den vom System verwendeten persistenten Identifier 
-				falls vorhanden // -->
 			<list>
 				<item>
 					<xpath>
@@ -214,7 +218,6 @@
 		</PI>
 
 		<CURRENTNO>
-			<!-- enthaelt die Nummerierung z.B bei mehrbaendigen Werken // -->
 			<list>
 				<item>
 					<xpath>

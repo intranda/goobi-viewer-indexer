@@ -387,6 +387,10 @@ public class MetadataHelper {
                         break;
                     }
                 }
+                // Add years in between collected YEAR values, if so configured
+                if (configurationItem.isInterpolateYears()) {
+                    ret.addAll(completeYears(ret));
+                }
             }
         }
         if (sbDefaultMetadataValues.length() > 0)
@@ -398,7 +402,7 @@ public class MetadataHelper {
         if (sbNormDataTerms.length() > 0) {
             ret.add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
         }
-        ret.addAll(MetadataHelper.completeCenturies(ret));
+        ret.addAll(completeCenturies(ret));
 
         return ret;
 
@@ -494,10 +498,6 @@ public class MetadataHelper {
     public static void writeMetadataToObject(IndexObject indexObj, Element element, String queryPrefix, JDomXP xp) throws FatalIndexerException {
         List<LuceneField> fields = retrieveElementMetadata(element, queryPrefix, indexObj, xp);
         for (LuceneField field : fields) {
-            // in das Objekt reinschreiben
-            if ("MD_SENDER".equals(field.getField())) {
-                logger.info(field.toString());
-            }
             if (indexObj.getLuceneFieldWithName(field.getField()) != null) {
                 boolean duplicate = false;
 
@@ -935,28 +935,51 @@ public class MetadataHelper {
      * @should complete centuries correctly
      */
     protected static List<LuceneField> completeCenturies(List<LuceneField> fields) {
-        List<LuceneField> newFields = new ArrayList<>();
-        if (fields != null) {
-            List<Integer> centuries = new ArrayList<>();
+        return completeIntegerValues(fields, SolrConstants.CENTURY, new HashSet<>(Collections.singletonList(0)));
+    }
+
+    /**
+     * Adds additional YEAR fields if there is a gap (e.g. if there is 1990 and 1993, also add 1991 and 1992).
+     * 
+     * @param fields
+     * @return
+     * @should complete years correctly
+     */
+    protected static List<LuceneField> completeYears(List<LuceneField> fields) {
+        return completeIntegerValues(fields, SolrConstants.YEAR, null);
+    }
+
+    /**
+     * 
+     * @param fields
+     * @param fieldName
+     * @param
+     * @return
+     */
+    private static List<LuceneField> completeIntegerValues(List<LuceneField> fields, String fieldName, Set<Integer> skipValues) {
+        List<LuceneField> newValues = new ArrayList<>();
+        if (fields != null && !fields.isEmpty()) {
+            List<Integer> oldValues = new ArrayList<>();
             for (LuceneField field : fields) {
-                if (field.getField().equals(SolrConstants.CENTURY) && !centuries.contains(Integer.valueOf(field.getValue()))) {
-                    centuries.add(Integer.valueOf(field.getValue()));
+                if (field.getField().equals(fieldName) && !oldValues.contains(Integer.valueOf(field.getValue()))) {
+                    oldValues.add(Integer.valueOf(field.getValue()));
                 }
             }
-            if (!centuries.isEmpty()) {
-                Collections.sort(centuries);
-                for (int i = centuries.get(0); i < centuries.get(centuries.size() - 1); ++i) {
-                    if (i != 0 && !centuries.contains(i)) {
-                        newFields.add(new LuceneField(SolrConstants.CENTURY, String.valueOf(i)));
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Added implicit century: " + i);
+            if (!oldValues.isEmpty()) {
+                Collections.sort(oldValues);
+                for (int i = oldValues.get(0); i < oldValues.get(oldValues.size() - 1); ++i) {
+                    if (!oldValues.contains(i)) {
+                        if (skipValues != null && skipValues.contains(i)) {
+                            continue;
                         }
+                        newValues.add(new LuceneField(fieldName, String.valueOf(i)));
+                        logger.debug("Added implicit {}: {}", fieldName, i);
                     }
                 }
             }
         }
 
-        return newFields;
+        return newValues;
     }
 
     /**

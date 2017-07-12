@@ -177,6 +177,14 @@ public final class MetadataConfigurationManager {
                 configurationItem.setNormalizeYearMinDigits((int) configurationMap.get("normalizeYearMinDigits"));
             }
         }
+        
+        if (configurationMap.containsKey("interpolateYears")) {
+            if (((String) configurationMap.get("interpolateYears")).equals(FALSE)) {
+                configurationItem.setInterpolateYears(false);
+            } else {
+                configurationItem.setInterpolateYears(true);
+            }
+        }
 
         if (configurationMap.containsKey("groupEntity")) {
             configurationItem.setGroupEntityFields((MultiMap) configurationMap.get("groupEntity"));

@@ -154,10 +154,13 @@
 			<Münze>Coin</Münze>
 		</list>
 	</docstructmapping>
+	
+	<fieldOptions>
+	   <yearRangeStartField></yearRangeStartField>
+	   <yearRangeEndField>MD_YEAR</yearRangeEndField>
+	</fieldOptions>
 
-	<!-- Konfiguration der Lucene Felder - um eigene Felder erweiterbar Konfiguriert 
-		werden nur Felder die per xpath innerhalb der MODS-Sections ansprechbar sind. 
-		// -->
+	<!-- Index field configuration (via XPath expressions). -->
 	<fields>
 
 		<URN>
@@ -180,8 +183,6 @@
 		</URN>
 
 		<PI>
-			<!-- enthaelt einen den vom System verwendeten persistenten Identifier 
-				falls vorhanden // -->
 			<list>
 				<item>
 					<xpath>
@@ -222,7 +223,6 @@
         </MD_PROCESSID>
 
 		<CURRENTNO>
-			<!-- enthaelt die Nummerierung z.B bei mehrbaendigen Werken // -->
 			<list>
 				<item>
 					<xpath>
@@ -241,8 +241,6 @@
 		</CURRENTNO>
 
 		<CURRENTNOSORT>
-			<!-- enthaelt die sortierbare Nummerierung (integer) z.B bei mehrbaendigen 
-				Werken // -->
 			<list>
 				<item>
 					<xpath>
@@ -374,7 +372,6 @@
         </MD_SERIESTITLE>
 
 		<SORT_TITLE>
-			<!-- Sortiertitel der Struktureineinheit // -->
 			<list>
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:titleInfo[@type='uniform']/mods:title
@@ -386,7 +383,6 @@
 		</SORT_TITLE>
 
 		<MD_TITLE>
-			<!-- Titel der Struktureineinheit // -->
 			<list>
 				<item>
 					<xpath>
@@ -405,15 +401,10 @@
                     <replace string="&gt;&gt;"></replace>
 					<replace string="¬"></replace>
 				</item>
-				<!-- <item> <xpath>mets:xmlData/mods:mods/mods:titleInfo</xpath> <getchildren>all</getchildren> 
-					<addToDefault>true</addToDefault> <addSortField>true</addSortField> <replace 
-					string="&lt;ns&gt;"></replace> <replace string="&lt;/ns&gt;"></replace> <replace 
-					string="¬"></replace> </item> -->
 			</list>
 		</MD_TITLE>
 
 		<MD_SUBTITLE>
-			<!-- Titel der Struktureineinheit // -->
 			<list>
 				<item>
 					<xpath>
@@ -440,8 +431,6 @@
 		</MD_ALTERNATETITLE>
 
 		<MD_PUBLISHER>
-			<!-- Publisher der physischen Einheit (Bounded Book, Single Map etc.) 
-				// -->
 			<list>
 				<item>
 					<xpath>
@@ -465,8 +454,6 @@
 		</MD_PUBLISHER>
 
 		<MD_PLACEPUBLISH>
-			<!-- Place of Publication der physischen Einheit (Bounded Book, Single 
-				Map etc.) // -->
 			<list>
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
@@ -478,8 +465,6 @@
 		</MD_PLACEPUBLISH>
 
 		<MD_YEARPUBLISH>
-			<!-- Year of Publication der physischen Einheit (PhysSequence, Volume, 
-				Periodicalvolume, Single Map etc.) // -->
 			<list>
 				<item>
 					<xpath>
@@ -548,6 +533,8 @@
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                     <addSortField>false</addSortField>
+                    <normalizeYear>true</normalizeYear>
+                    <interpolateYears>true</interpolateYears>
                 </item>
             </list>
         </MD_PUBLICATIONRUN>
@@ -591,7 +578,6 @@
 		<DC>
 			<list>
 				<item>
-					<!-- Digital Collection (Sammlung) // -->
 					<xpath>
 						<list>
 							<!-- <item>mets:xmlData/mods:mods/mods:extension/zvdd:zvddWrap/zvdd:collectionIdentifier</item> -->
@@ -604,10 +590,7 @@
 							</item>
 						</list>
 					</xpath>
-					<!-- Konstanter Wert -->
-					<!-- <constantvalue>gdz</constantvalue> -->
 					<getparents>all</getparents>
-					<!-- <valuepostfix>.sub.goe.de</valuepostfix> -->
 					<onetoken>true</onetoken>
 					<onefield>false</onefield>
 					<addToDefault>false</addToDefault>
@@ -632,7 +615,6 @@
 		</ACCESSCONDITION>
 
 		<MD_PHYSICALCOPY>
-			<!-- Alle beteiligten Personen (alle in ein Feld) // -->
 			<list>
 				<item>
 					<xpath>
@@ -659,22 +641,6 @@
 				</item>
 			</list>
 		</MD_PHYSICALCOPY>
-
-		<!-- <NORM_PERSONURI> -->
-		<!-- <list> -->
-		<!-- <item> -->
-		<!-- <xpath> -->
-		<!-- <list> -->
-		<!-- <item>concat({{{ROOT}}}mets:xmlData/mods:mods/mods:name[@type="personal"]/@authorityURI,{{{ROOT}}}mets:xmlData/mods:mods/mods:name[@type="personal"]/@valueURI) -->
-		<!-- </item> -->
-		<!-- </list> -->
-		<!-- </xpath> -->
-		<!-- <addToDefault>false</addToDefault> -->
-		<!-- <addSortField>false</addSortField> -->
-		<!-- <addUntokenizedVersion>false</addUntokenizedVersion> -->
-		<!-- </item> -->
-		<!-- </list> -->
-		<!-- </NORM_PERSONURI> -->
 		
         <MD_EVENT_DESCRIPTION>
             <list>
@@ -1000,7 +966,6 @@
         </MD_CORRESPONDENT>
         
         <MD_CREATOR>
-            <!-- Alle beteiligten Personen (alle in ein Feld) // -->
             <list>
                 <item>
                     <xpath>
@@ -1009,13 +974,6 @@
                             </item>
                             <item>lido:eventActor/lido:actorInRole/lido:actor
                             </item>
-                            <!-- der Ausdruck liefert NACHNAME, VORNAME des ersten gefundenen 
-                                Knotens - dabei wird das KOMMA nur in Abhängigkeit von NACH- und VORNAME 
-                                gesetzt! -->
-                            <!-- <item> normalize-space( concat( string(mets:xmlData/mods:mods/mods:name[@type="personal"]/mods:namePart[@type="family"]/child::text()), 
-                                substring(", ",1 div (string-length(normalize-space(string(mets:xmlData/mods:mods/mods:name[@type="personal"]/mods:namePart[@type="family"]/child::text()))))), 
-                                string(mets:xmlData/mods:mods/mods:name[@type="personal"]/mods:namePart[@type="given"]/child::text()) 
-                                ) ) </item> -->
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1900,10 +1858,6 @@
 		<MD_ISSN>
 			<list>
 				<item>
-					<!-- Ausdruck entfernt den Bindestrich, damit man "vernünftig" suchen 
-						kann -->
-					<!-- <xpath>translate(string(mets:xmlData/mods:mods/mods:identifier[@type="issn" 
-						or @type="ISSN"][1]/child::text()),"-","")</xpath> -->
 					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="issn" or
 						@type="ISSN"]
 					</xpath>
@@ -1914,13 +1868,8 @@
 		</MD_ISSN>
 
 		<MD_ZDB>
-			<!-- enthaelt die ID der Zeitschriften DB falls vorhanden // -->
 			<list>
 				<item>
-					<!-- Ausdruck entfernt den Bindestrich, damit man "vernünftig" suchen 
-						kann -->
-					<!-- <xpath>translate(string(mets:xmlData/mods:mods/mods:identifier[@type="zdb-id" 
-						or @type="ZDB-ID"][1]/child::text()),"-","")</xpath> -->
 					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="zdb-id" or
 						@type="ZDB-ID"]
 					</xpath>
@@ -1930,7 +1879,6 @@
 			</list>
 		</MD_ZDB>
 
-		<!-- Projektabhängig - hier der DigiWunschbuch Sponsor -->
 		<MD_SPONSOR>
 			<list>
 				<item>
@@ -1987,8 +1935,6 @@
 		</MD_SHELFMARK>
 
 		<MD_OLDSHELFMARK>
-			<!-- Year of Publication der physischen Einheit (PhysSequence, Volume, 
-				Periodicalvolume, Single Map etc.) // -->
 			<list>
 				<item>
 					<xpath>
@@ -2128,8 +2074,6 @@
 		</MD_ORIGINALLOCATION>
 
 		<MD_NEWLOCATION>
-			<!-- Year of Publication der physischen Einheit (PhysSequence, Volume, 
-				Periodicalvolume, Single Map etc.) // -->
 			<list>
 				<item>
 					<xpath>
@@ -2359,8 +2303,6 @@
 		</MD_LITERATURE>
 
 		<MD_CATEGORY>
-			<!-- Year of Publication der physischen Einheit (PhysSequence, Volume, 
-				Periodicalvolume, Single Map etc.) // -->
 			<list>
 				<item>
 					<xpath>
@@ -2376,8 +2318,6 @@
 		</MD_CATEGORY>
 
 		<MD_WATERMARK>
-			<!-- Year of Publication der physischen Einheit (PhysSequence, Volume, 
-				Periodicalvolume, Single Map etc.) // -->
 			<list>
 				<item>
 					<xpath>
@@ -2393,8 +2333,6 @@
 		</MD_WATERMARK>
 
 		<MD_ILLUSTRATIONTYPE>
-			<!-- Year of Publication der physischen Einheit (PhysSequence, Volume, 
-				Periodicalvolume, Single Map etc.) // -->
 			<list>
 				<item>
 					<xpath>
@@ -2410,8 +2348,6 @@
 		</MD_ILLUSTRATIONTYPE>
 
 		<MD_PURPOSE>
-			<!-- Year of Publication der physischen Einheit (PhysSequence, Volume, 
-				Periodicalvolume, Single Map etc.) // -->
 			<list>
 				<item>
 					<xpath>
@@ -2886,13 +2822,13 @@
 					</xpath>
 					<addToDefault>false</addToDefault>
 				</item>
-				<!-- ZugehÃ¶rigkeit -->
+				<!-- Zugehörigkeit -->
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/titleInfo/title
 					</xpath>
 					<addToDefault>false</addToDefault>
 				</item>
-				<!-- Angaben zu Personen und KÃ¶rperschaften -->
+				<!-- Angaben zu Personen und Körperschaften -->
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:name/mods:namePart</xpath>
 					<addToDefault>false</addToDefault>
@@ -3091,8 +3027,6 @@
 			</item>
 		</list>
 	</MD_KENOM_LITERATUR>
-	
-	    <!-- Rwanda -->
 	
 	    <MD_COURTDIS>
             <list>
