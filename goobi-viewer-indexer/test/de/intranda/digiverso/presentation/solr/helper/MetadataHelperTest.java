@@ -316,6 +316,22 @@ public class MetadataHelperTest {
     }
 
     /**
+     * @see MetadataHelper#completeYears(List)
+     * @verifies complete years correctly
+     */
+    @Test
+    public void completeYears_shouldCompleteYearsCorrectly() throws Exception {
+        List<LuceneField> years = new ArrayList<>();
+        years.add(new LuceneField(SolrConstants.YEAR, "1990"));
+        years.add(new LuceneField(SolrConstants.YEAR, "1993"));
+        List<LuceneField> newYears = MetadataHelper.completeYears(years);
+        Assert.assertEquals(2, newYears.size());
+        Assert.assertEquals(SolrConstants.YEAR, newYears.get(0).getField());
+        Assert.assertEquals("1991", newYears.get(0).getValue());
+        Assert.assertEquals("1992", newYears.get(1).getValue());
+    }
+
+    /**
      * @see MetadataHelper#applyReplaceRules(String,Map)
      * @verifies apply rules correctly
      */

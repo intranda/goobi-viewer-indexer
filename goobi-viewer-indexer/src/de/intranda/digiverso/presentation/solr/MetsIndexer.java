@@ -640,7 +640,7 @@ public class MetsIndexer extends AbstractIndexer {
                 copyAndReIndexAnchor(indexObj, hotfolder);
             }
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
-        } catch (Exception e) {
+        } catch (FatalIndexerException | IndexerException | SolrServerException | IOException | JDOMException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();

@@ -44,6 +44,7 @@ public class FieldConfig {
     private String splittingCharacter = null;
     private boolean addSortField = false;
     private boolean normalizeYear = false;
+    private boolean interpolateYears = false;
     private int normalizeYearMinDigits = 3;
     private MultiMap groupEntityFields = new MultiValueMap();
     private Map<Object, String> replaceRules = new LinkedHashMap<>();
@@ -286,6 +287,20 @@ public class FieldConfig {
      */
     public int getNormalizeYearMinDigits() {
         return normalizeYearMinDigits;
+    }
+
+    /**
+     * @return the interpolateYears
+     */
+    public boolean isInterpolateYears() {
+        return interpolateYears;
+    }
+
+    /**
+     * @param interpolateYears the interpolateYears to set
+     */
+    public void setInterpolateYears(boolean interpolateYears) {
+        this.interpolateYears = interpolateYears;
     }
 
     /**

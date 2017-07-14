@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -64,7 +65,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
      * @param pyramidTiffFolder
      * @param mixFolder
      * @return
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should update document correctly
      */
 
@@ -163,9 +164,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
 
             ret[0] = pi;
             logger.info("Successfully finished updating IDDOC={}", iddoc);
-        } catch (
-
-        Exception e) {
+        } catch (FatalIndexerException | SolrServerException e) {
             logger.error("Indexing of IDDOC={} could not be finished due to an error.", iddoc);
             logger.error(e.getMessage(), e);
             ret[0] = "ERROR";
