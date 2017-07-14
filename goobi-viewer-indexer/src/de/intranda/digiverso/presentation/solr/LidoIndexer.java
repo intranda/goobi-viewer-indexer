@@ -118,7 +118,10 @@ public class LidoIndexer extends AbstractIndexer {
                 if (StringUtils.isNotBlank(pi)) {
                     // Remove prefix
                     if (pi.contains(":")) {
-                        pi = pi.substring(pi.indexOf(':') + 1);
+                        pi = pi.substring(pi.lastIndexOf(':') + 1);
+                    }
+                    if (pi.contains("/")) {
+                        pi = pi.substring(pi.lastIndexOf('/') + 1);
                     }
                     pi = MetadataHelper.applyIdentifierModifications(pi);
                     // Do not allow identifiers with illegal characters
@@ -260,9 +263,6 @@ public class LidoIndexer extends AbstractIndexer {
                 indexObj.setDefaultValue("");
             }
 
-            StringBuilder sbSuperDefault = new StringBuilder();
-            StringBuilder sbSuperFulltext = new StringBuilder();
-
             // Add event docs to the main list
             writeStrategy.addDocs(events);
 
@@ -329,7 +329,11 @@ public class LidoIndexer extends AbstractIndexer {
             Map<String, Path> dataFolders, int depth) throws FatalIndexerException {
         List<LuceneField> ret = new ArrayList<>();
 
-        List<SolrInputDocument> pageDocs = writeStrategy.getPageDocsForPhysIdList(Collections.singletonList("LIDO"));
+        List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
+        for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
+            physIds.add(String.valueOf(i));
+        }
+        List<SolrInputDocument> pageDocs = writeStrategy.getPageDocsForPhysIdList(physIds);
         if (!pageDocs.isEmpty()) {
             // If this is a top struct element, look for a representative image
             String filePathBanner = null;
@@ -485,13 +489,10 @@ public class LidoIndexer extends AbstractIndexer {
      */
     public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart)
             throws FatalIndexerException {
-        String xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet/lido:resourceID";
+        String xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet";
         List<Element> resourceSetList = xp.evaluateToElements(xpath, null);
         if (resourceSetList == null || resourceSetList.isEmpty()) {
-            xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet/lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource";
-            resourceSetList = xp.evaluateToElements(xpath, null);
-        }
-        if (resourceSetList == null || resourceSetList.isEmpty()) {
+            // No pages
             return;
         }
 
@@ -503,6 +504,10 @@ public class LidoIndexer extends AbstractIndexer {
         //                        writeStrategy, dataFolders));
         int order = pageCountStart;
         for (Element eleResourceSet : resourceSetList) {
+            String orderAttribute = eleResourceSet.getAttributeValue("sortorder", JDomXP.getNamespaces().get("lido"));
+            if (orderAttribute != null) {
+                order = Integer.valueOf(orderAttribute);
+            }
             if (generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), order, writeStrategy, dataFolders)) {
                 order++;
             }
@@ -527,12 +532,20 @@ public class LidoIndexer extends AbstractIndexer {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
         }
 
+        String xpath = "lido:resourceID";
+        String fileName = xp.evaluateToString(xpath, eleResourceSet);
+        if (fileName == null || fileName.isEmpty()) {
+            xpath = "lido:resourceRepresentation[@lido:type='image_master' or @lido:type='image_overview']/lido:linkResource";
+            fileName = xp.evaluateToString(xpath, eleResourceSet);
+        }
+
         // Create Solr document for this page
         SolrInputDocument doc = new SolrInputDocument();
         doc.addField(SolrConstants.IDDOC, iddoc);
         doc.addField(SolrConstants.GROUPFIELD, iddoc);
         doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
         doc.addField(SolrConstants.ORDER, order);
+        doc.addField(SolrConstants.PHYSID, String.valueOf(order));
 
         String orderLabel = eleResourceSet.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
@@ -541,9 +554,11 @@ public class LidoIndexer extends AbstractIndexer {
             doc.addField(SolrConstants.ORDERLABEL, " - ");
         }
 
-        String fileName = eleResourceSet.getTextTrim();
         if (StringUtils.isNotEmpty(fileName)) {
             doc.addField(SolrConstants.FILENAME, fileName);
+            if (fileName.startsWith("http")) {
+                doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", fileName);
+            }
             String mimetype = "image"; // TODO other types?
             doc.addField(SolrConstants.MIMETYPE, mimetype);
         }

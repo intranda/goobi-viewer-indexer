@@ -532,7 +532,6 @@ public class MetsIndexer extends AbstractIndexer {
             // Add DEFAULT field
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
-                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue("");
             }
 
@@ -2118,13 +2117,11 @@ public class MetsIndexer extends AbstractIndexer {
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
                 // Add default value to parent doc
-                // parentIndexObject.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue("");
             }
             // write to lucene
             logger.debug("Writing child document '{}'...", indexObj.getIddoc());
             writeStrategy.addDoc(SolrHelper.createDocument(indexObj.getLuceneFields()));
-            // SolrHelper.getInstance().writeToIndex(SolrHelper.getInstance().createDocument(indexObj.getLuceneFields()));
             indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
         }
     }
