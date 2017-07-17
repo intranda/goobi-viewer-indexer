@@ -1071,9 +1071,22 @@ public class Hotfolder {
                     case "_ptif":
                         dataFolders.put(DataRepository.PARAM_TILEDIMAGES, path);
                         break;
+                    case "_downloadimages":
+                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
+                        break;
                     default:
                         // nothing;
                 }
+            }
+        }
+
+        if (dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) {
+            logger.info("External images will be downloaded.");
+            Path newMediaFolder = Paths.get(hotfolderPath.toString(), fileNameRoot + "_tif");
+            dataFolders.put(DataRepository.PARAM_MEDIA, newMediaFolder);
+            if (!Files.exists(newMediaFolder)) {
+                Files.createDirectory(newMediaFolder);
+                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath().toString());
             }
         }
 
@@ -1095,7 +1108,8 @@ public class Hotfolder {
         try {
             for (Document doc : lidoDocs) {
                 currentIndexer = new LidoIndexer(this);
-                resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart());
+                resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(), dataFolders
+                        .containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
                 if (!"ERROR".equals(resp[0])) {
                     // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
                     String identifier = resp[0];
@@ -1136,7 +1150,7 @@ public class Hotfolder {
                                     Files.copy(mediaFile, Paths.get(destMediaDir.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
                                             StandardCopyOption.REPLACE_EXISTING);
                                     imageCounter++;
-                                    if (!useOldPyramidTiffs) {
+                                    if (!useOldPyramidTiffs && dataFolders.get(DataRepository.PARAM_TILEDIMAGES) != null) {
                                         String baseFileName = FilenameUtils.getBaseName(mediaFile.getFileName().toString());
                                         Path pyramidTiff0 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
                                                 baseFileName + "_0degree.tif");
@@ -1268,6 +1282,12 @@ public class Hotfolder {
                 DataRepository.PARAM_MIX)) && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
             logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath());
         }
+        if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null && Files.isDirectory(dataFolders.get(
+                DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) && !Utils.deleteDirectory(dataFolders.get(
+                        DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
+            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)
+                    .toAbsolutePath());
+        }
 
         if (deleteContentFilesOnFailure) {
             // Delete all folders
@@ -1281,6 +1301,10 @@ public class Hotfolder {
             if (!reindexSettings.get("reindexMix") && dataFolders.get(DataRepository.PARAM_MIX) != null && Files.isDirectory(dataFolders.get(
                     DataRepository.PARAM_MIX))) {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
+            }
+            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null && Files.isDirectory(dataFolders.get(
+                    DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
+                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
             }
         }
     }

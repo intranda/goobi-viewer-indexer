@@ -44,6 +44,7 @@ public class DataRepository {
     public static final String PARAM_ALTO = "altoFolder";
     public static final String PARAM_ALTOCROWD = "altoCrowdsourcingFolder";
     public static final String PARAM_ABBYY = "abbyyFolder";
+    public static final String PARAM_DOWNLOAD_IMAGES_TRIGGER = "downloadImages";
     public static final String PARAM_FULLTEXT = "fulltextFolder";
     public static final String PARAM_FULLTEXTCROWD = "fulltextCrowdsourcingFolder";
     public static final String PARAM_TEI = "wcFolder";

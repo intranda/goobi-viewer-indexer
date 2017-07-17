@@ -86,7 +86,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1);
+        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, false);
         Assert.assertEquals("ERROR: " + ret[1], pi, ret[0]);
         String iddoc;
         {
@@ -147,7 +147,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1);
+        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, false);
         Assert.assertEquals(pi, ret[0]);
         String iddoc;
         {

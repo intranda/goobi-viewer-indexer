@@ -76,10 +76,10 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldIndexRecordCorrectly() throws Exception {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile);
         Assert.assertEquals(30, lidoDocs.size());
-        
+
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
-            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1);
+            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -269,10 +269,10 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldUpdateRecordCorrectly() throws Exception {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile);
         Assert.assertEquals(30, lidoDocs.size());
-        
+
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
-            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1);
+            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -333,7 +333,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         }
 
         // Re-index
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1);
+        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, false);
         Assert.assertNotEquals("ERROR", ret[0]);
 
         String newIddoc;
