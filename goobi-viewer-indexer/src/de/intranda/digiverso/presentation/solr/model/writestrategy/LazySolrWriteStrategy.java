@@ -90,9 +90,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         }
         pageOrderMap.put(order, doc);
         String key = (String) doc.getFieldValue(SolrConstants.PHYSID);
-        if (key == null) {
-            key = "LIDO";
-        }
         physIdPageMap.put(key, doc);
     }
 
@@ -148,7 +145,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /**
      * @param aggregateHits
      * @throws IndexerException
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @see de.intranda.digiverso.presentation.solr.model.ISolrWriteStrategy#writeDocs()
      * @should write all structure docs correctly
      * @should write all page docs correctly
@@ -159,14 +156,16 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
             throw new IndexerException("topDoc may not be null");
         }
         docsToAdd.add(rootDoc);
+        String pi = (String) rootDoc.getFieldValue(SolrConstants.PI);
         for (int order : pageOrderMap.keySet()) {
             SolrInputDocument pageDoc = pageOrderMap.get(order);
             checkAndAddAccessCondition(pageDoc);
             docsToAdd.add(pageDoc);
+            if (!pageDoc.containsKey(SolrConstants.PI_TOPSTRUCT) && pi != null) {
+                pageDoc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+                logger.warn("Page document {} has no PI_TOPSTRUCT fields, adding now...", pageDoc.getFieldValue(SolrConstants.ORDER));
+            }
         }
-
-        //        StringBuilder sbSuperDefault = new StringBuilder();
-        //        StringBuilder sbSuperFulltext = new StringBuilder();
 
         for (SolrInputDocument doc : docsToAdd) {
             if (doc.getFieldValue("GROUPFIELD") == null) {
@@ -174,23 +173,13 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
             }
             if (aggregateRecords) {
                 if (doc.containsKey(SolrConstants.DEFAULT)) {
-                    // sbSuperDefault.append(' ').append(doc.getFieldValue(SolrConstants.DEFAULT));
-                    rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
+                    rootDoc.addField(SolrConstants.SUPERDEFAULT, doc.getFieldValue(SolrConstants.DEFAULT));
                 }
                 if (doc.containsKey(SolrConstants.FULLTEXT)) {
-                    // sbSuperFulltext.append('\n').append(doc.getFieldValue(SolrConstants.FULLTEXT));
-                    rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
+                    rootDoc.addField(SolrConstants.SUPERFULLTEXT, doc.getFieldValue(SolrConstants.FULLTEXT));
                 }
             }
         }
-
-        // Add SUPERDEFAULT and SUPERFULLTEXT fields to the root doc
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERDEFAULT, AbstractIndexer.cleanUpDefaultField(sbSuperDefault.toString()));
-        //        }
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERFULLTEXT, sbSuperFulltext.toString());
-        //        }
 
         if (!docsToAdd.isEmpty()) {
             solrHelper.writeToIndex(docsToAdd);

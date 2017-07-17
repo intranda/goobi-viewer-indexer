@@ -208,6 +208,7 @@
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<replace string="rosdok/ppn"></replace>
+					<replace string="http://ld.zdb-services.de/resource/organisations/DE-MUS-814819/"></replace>
 				</item>
 			</list>
 		</PI>
