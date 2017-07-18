@@ -31,7 +31,7 @@ import org.junit.Test;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP.FileFormat;
 
 public class JDomXPTest {
-    
+
     private static Hotfolder hotfolder;
 
     @BeforeClass
@@ -59,6 +59,17 @@ public class JDomXPTest {
         File file = new File("resources/test/LIDO/khm_lido_export.xml");
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect worldviews files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectWorldviewsFilesCorrectly() throws Exception {
+        File file = new File("resources/test/WorldViews/gei_test_sthe_quelle_01.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.WORLDVIEWS, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -269,7 +280,7 @@ public class JDomXPTest {
     @Test
     public void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
         JDomXP.initNamespaces();
-        Assert.assertEquals(9, JDomXP.getNamespaces().size());
+        Assert.assertEquals(10, JDomXP.getNamespaces().size());
         Assert.assertNotNull(JDomXP.getNamespaces().get("intranda"));
     }
 }

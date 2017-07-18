@@ -51,6 +51,7 @@ public class JDomXP {
         UNKNOWN,
         METS,
         LIDO,
+        WORLDVIEWS,
         ALTO,
         ABBYYXML,
         TEI;
@@ -60,11 +61,14 @@ public class JDomXP {
                 return METS;
             } else if ("LIDO".equalsIgnoreCase(name)) {
                 return LIDO;
+            } else if ("WORLDVIEWS".equalsIgnoreCase(name)) {
+                return WORLDVIEWS;
             } else if ("ABBYY".equalsIgnoreCase(name) || "ABBYYXML".equalsIgnoreCase(name)) {
-                return LIDO;
+                return ABBYYXML;
             } else if ("TEI".equalsIgnoreCase(name)) {
-                return LIDO;
+                return TEI;
             }
+
             return UNKNOWN;
         }
     }
@@ -489,6 +493,7 @@ public class JDomXP {
      * @throws FatalIndexerException
      * @should detect mets files correctly
      * @should detect lido files correctly
+     * @should detect worldviews files correctly
      * @should detect abbyy files correctly
      * @should detect tei files correctly
      */
@@ -501,6 +506,9 @@ public class JDomXP {
                 }
                 if (xp.doc.getRootElement().getNamespace("lido") != null) {
                     return FileFormat.LIDO;
+                }
+                if (xp.doc.getRootElement().getName().equals("worldviews")) {
+                    return FileFormat.WORLDVIEWS;
                 }
                 if (xp.doc.getRootElement().getNamespace().getURI().contains("abbyy")) {
                     return FileFormat.ABBYYXML;

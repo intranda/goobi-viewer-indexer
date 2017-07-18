@@ -48,6 +48,8 @@
 		<userGeneratedContentFolder>ugc</userGeneratedContentFolder>
 		<mixFolder>mix</mixFolder>
 		<overviewFolder>overview</overviewFolder>
+		<teiFolder>tei</teiFolder>
+		
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
 
@@ -392,6 +394,8 @@
 							</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
 							</item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@xml:lang)]
+                            </item>							
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -404,6 +408,54 @@
 				</item>
 			</list>
 		</MD_TITLE>
+		
+        <MD_TITLE_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
+                            </item>
+                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
+                            </item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang="ger"]
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </MD_TITLE_DE>
+		
+        <MD_TITLE_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
+                            </item>
+                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
+                            </item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang="eng"]
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </MD_TITLE_EN>
 
 		<MD_SUBTITLE>
 			<list>

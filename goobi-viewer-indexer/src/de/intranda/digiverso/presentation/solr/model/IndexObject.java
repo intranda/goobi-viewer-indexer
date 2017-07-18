@@ -42,7 +42,7 @@ public class IndexObject {
     private IndexObject parent = null;
     private boolean update = false;
     private long dateCreated = -1;
-    private List<Long> dateUpdated = new ArrayList<>();
+    private final List<Long> dateUpdated = new ArrayList<>();
 
     private String dmdId;
     private String logId;
@@ -68,12 +68,13 @@ public class IndexObject {
     private int numPages = 0;
     private String firstPageLabel;
     private String lastPageLabel;
+    /** Available language versions for this record. */
+    private final Set<String> languages = new HashSet<>();
 
     /**
      * @param iddoc
      */
     public IndexObject(long iddoc) {
-        super();
         this.iddoc = iddoc;
     }
 
@@ -390,13 +391,6 @@ public class IndexObject {
     }
 
     /**
-     * @param dateUpdated the dateUpdated to set
-     */
-    public void setDateUpdated(List<Long> dateUpdated) {
-        this.dateUpdated = dateUpdated;
-    }
-
-    /**
      * @return the urn
      */
     public String getUrn() {
@@ -563,5 +557,12 @@ public class IndexObject {
      */
     public void setLastPageLabel(String lastPageLabel) {
         this.lastPageLabel = lastPageLabel;
+    }
+
+    /**
+     * @return the languages
+     */
+    public Set<String> getLanguages() {
+        return languages;
     }
 }

@@ -203,11 +203,13 @@ public class MetadataHelper {
                         // User prefix as prefix
                         query = queryPrefix + xpath;
                     }
-                    //                    logger.info("XPath: {}", query);
+                    if(xpath.startsWith("teiHeader"))
+                                        logger.info("XPath: {}", query);
                     for (Element currentElement : elementsToIterateOver) {
                         List list = xp.evaluate(query, currentElement);
                         if (list != null) {
-                            //                            logger.info("found: {}", list.size());
+                            if(xpath.startsWith("teiHeader"))
+                                                        logger.info("found: {}", list.size());
                             for (Object xpathAnswerObject : list) {
                                 if (configurationItem.isGroupEntity()) {
                                     // Aggregated / grouped metadata

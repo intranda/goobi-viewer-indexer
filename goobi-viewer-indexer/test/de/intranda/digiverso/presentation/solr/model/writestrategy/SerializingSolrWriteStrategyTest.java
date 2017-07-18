@@ -91,7 +91,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
     public void writeDocs_shouldWriteAllStructureDocsCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEI, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_TILEDIMAGES, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ptif"));
         dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
 
@@ -113,7 +113,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
     public void writeDocs_shouldWriteAllPageDocsCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEI, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_TILEDIMAGES, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ptif"));
         dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
 

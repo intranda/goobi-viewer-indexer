@@ -30,7 +30,7 @@
 	request -->
 
 
-<schema name="goobi_viewer-20170710" version="1.5">
+<schema name="goobi_viewer-20170717" version="1.5">
 	<!-- attribute "name" is the name of this schema and is only used for display 
 		purposes. version="x.y" is Solr's version number for the schema syntax and 
 		semantics. It should not normally be changed by applications. 1.0: multiValued 
@@ -71,7 +71,6 @@
 		<field name="_version_" type="long" indexed="true" stored="true" />
 		<field name="_root_" type="string" indexed="true" stored="false"/>
 
-		<!-- intranda viewer control fields -->
 		<field name="ABBYYXML" type="string" indexed="false" stored="true" />
 		<field name="ACCESSCONDITION" type="string" indexed="true"
 			stored="true" multiValued="true" />
@@ -132,6 +131,7 @@
 		<field name="ISANCHOR" type="boolean" indexed="true" stored="true" />
 		<field name="ISWORK" type="boolean" indexed="true" stored="true" />
 		<field name="LABEL" type="string" indexed="true" stored="true" />
+		<field name="LANGUAGE" type="string" indexed="true" stored="true" multiValued="true" />
 		<field name="LOGID" type="string" indexed="true" stored="true" />
 		<field name="METADATATYPE" type="string" indexed="true" stored="true" />
 		<field name="MIMETYPE" type="string" indexed="true" stored="true" />
@@ -189,7 +189,6 @@
 		<field name="YEARMONTHDAY" type="tlong" indexed="true" stored="true"
 			multiValued="true" />
 
-		<!-- intranda viewer metadata fields -->
 		<dynamicField name="FILENAME_*" type="string" indexed="true"
 			stored="true" />
 		<dynamicField name="IMAGEURL_*" type="string" indexed="true"

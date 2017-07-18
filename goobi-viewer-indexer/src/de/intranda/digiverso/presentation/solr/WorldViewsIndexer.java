@@ -189,14 +189,14 @@ public class WorldViewsIndexer extends AbstractIndexer {
                                     .toAbsolutePath());
                         }
                     }
-                    if (dataFolders.get(DataRepository.PARAM_TEI) == null) {
+                    if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
                         // Use the old TEI metadata folder
-                        dataFolders.put(DataRepository.PARAM_TEI, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_TEI)
-                                .toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEI))) {
-                            dataFolders.put(DataRepository.PARAM_TEI, null);
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get(hotfolder.getDataRepository().getDir(
+                                DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
+                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
+                            dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
                         } else {
-                            logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEI).toAbsolutePath());
+                            logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIMETADATA).toAbsolutePath());
                         }
                     }
                     if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
@@ -281,7 +281,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             case DataRepository.PARAM_FULLTEXTCROWD:
                             case DataRepository.PARAM_ABBYY:
                             case DataRepository.PARAM_TEIWC:
-                            case DataRepository.PARAM_TEI:
+                            case DataRepository.PARAM_TEIMETADATA:
                                 Path dataFolder = dataFolders.get(key);
                                 if (dataFolder != null) {
                                     // Files.size() does not work with directories, so use FileUtils
@@ -332,24 +332,12 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             int workDepth = 0; // depth of the docstrct that has ISWORK (volume or monograph)
 
-            // TODO write opac url?
-            //            String opacXpath =
-            //                    "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()";
-            //            String opacUrl = xp.evaluateToString(opacXpath, null);
-            //            if (StringUtils.isEmpty(opacUrl)) {
-            //                opacUrl = xp.evaluateToCdata(opacXpath, null);
-            //            }
-            //            logger.debug("OPACURL: {}", opacUrl);
-            //            if (StringUtils.isNotEmpty(opacUrl)) {
-            //                indexObj.addToLucene(SolrConstants.OPACURL, opacUrl);
-            //            }
-
             // put some simple data in lucene array
             indexObj.pushSimpleDataToLuceneArray();
 
             // Process TEI files
-            if (dataFolders.containsKey(DataRepository.PARAM_TEI)) {
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_TEI), "*.{xml}")) {
+            if (dataFolders.containsKey(DataRepository.PARAM_TEIMETADATA)) {
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_TEIMETADATA), "*.{xml}")) {
                     for (Path path : stream) {
                         logger.info("Found TEI file: {}", path.getFileName().toString());
                         JDomXP tei = new JDomXP(path.toFile());
@@ -359,9 +347,14 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         // Add text body
                         Element eleText = tei.getRootElement().getChild("text", null);
                         if (eleText != null && eleText.getChild("body", null) != null) {
+                            String language = eleText.getAttributeValue("xml:lang");
                             Element eleBody = eleText.getChild("body", null);
                             String body = TextHelper.getStringFromElement(eleBody, null);
-                            indexObj.addToLucene("MD_TEXT", body);
+                            if (language == null) {
+                                indexObj.addToLucene("MD_TEXT", body);
+                            } else {
+
+                            }
                         } else {
                             logger.warn("No text body found in TEI");
                         }

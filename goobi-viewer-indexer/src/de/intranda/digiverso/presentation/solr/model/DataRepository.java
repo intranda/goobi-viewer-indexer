@@ -47,7 +47,7 @@ public class DataRepository {
     public static final String PARAM_DOWNLOAD_IMAGES_TRIGGER = "downloadImages";
     public static final String PARAM_FULLTEXT = "fulltextFolder";
     public static final String PARAM_FULLTEXTCROWD = "fulltextCrowdsourcingFolder";
-    public static final String PARAM_TEI = "teiFolder";
+    public static final String PARAM_TEIMETADATA = "teiFolder";
     public static final String PARAM_TEIWC = "wcFolder";
     public static final String PARAM_PAGEPDF = "pagePdfFolder";
     public static final String PARAM_SOURCE = "sourceContentFolder";
@@ -104,7 +104,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_UGC);
         checkAndCreateDataSubdir(PARAM_MIX);
         checkAndCreateDataSubdir(PARAM_OVERVIEW);
-        checkAndCreateDataSubdir(PARAM_TEI);
+        checkAndCreateDataSubdir(PARAM_TEIMETADATA);
         valid = true;
     }
 
@@ -269,6 +269,114 @@ public class DataRepository {
 
     /**
      * 
+     * @param dataFolders
+     * @param reindexSettings
+     */
+    public static void deleteDataFolders(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_TILEDIMAGES);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ALTO);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_TEIWC);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ABBYY);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_MIX);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_UGC);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_OVERVIEW);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_PAGEPDF);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
+
+        // Delete unsupported data folders
+        //                List<File> unknownDirs = Arrays.asList(hotfolderPath.listFiles(getDataFolderFilter(fileNameRoot + "_")));
+        //                if (unknownDirs != null) {
+        //                    for (File f : unknownDirs) {
+        //                        if (!deleteDirectory(f)) {
+        //                            logger.warn("'" + f.getAbsolutePath() + "' could not be deleted.");
+        //                        }
+        //                    }
+        //                }
+    }
+
+    private static void deleteDataFolder(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param) {
+        if (param == null) {
+            throw new IllegalArgumentException("param may notbe null");
+        }
+
+        if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
+            Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_OVERVIEW));
+        }
+    }
+
+    /**
+     * Copies data folders (all except for _media) from the hotfolder to their respective destination and deletes the folders from the hotfolder.
+     * 
+     * @param pi Record identifier
+     * @param dataFolders Map with source data folders
+     * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
+     * @throws IOException
+     */
+    public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) throws IOException {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+        if (reindexSettings == null) {
+            throw new IllegalArgumentException("reindexSettings may not be null");
+        }
+
+        // Copy and delete pyramid TIFF folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TILEDIMAGES);
+        // Copy and delete ALTO folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTO);
+        // Copy and delete crowdsourcing ALTO folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD);
+        // Copy and delete fulltext folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT);
+        // Copy and delete crowdsourcing fulltext folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD);
+        // Copy and delete TEI metadata folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA);
+        // Copy and delete TEI word coordinates folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIWC);
+        // Copy and delete ABBYY word coordinates folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ABBYY);
+        // Copy and delete MIX files
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MIX);
+        // Copy and delete page PDF files
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_PAGEPDF);
+        // Copy and delete original content files
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
+        // Copy and delete user generated content files
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_UGC);
+        // Copy and delete overview page text files
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_OVERVIEW);
+    }
+
+    /**
+     * Checks whether the folder with the given param name exists and is in the hotfolder, then proceeds to copy it to the destination folder and
+     * delete the source.
+     * 
+     * @param pi Record identifier
+     * @param dataFolders Map with source data folders
+     * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
+     * @param param Folder parameter name
+     * @return
+     * @throws IOException
+     */
+    public int checkCopyAndDeleteDataFolder(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param)
+            throws IOException {
+        if (param == null) {
+            throw new IllegalArgumentException("param may not be null");
+        }
+
+        if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param)!= null) {
+            return copyAndDeleteDataFolder(dataFolders.get(param), param, pi);
+        }
+
+        return 0;
+    }
+
+    /**
+     * 
      * @param srcFolder
      * @param paramName
      * @param identifier
@@ -285,6 +393,7 @@ public class DataRepository {
         if (identifier == null) {
             throw new IllegalArgumentException("identifier may not be null");
         }
+
         logger.info("Copying {} files from '{}'...", paramName, srcFolder);
         int counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
         logger.info("{} {} files copied.", counter, paramName);
