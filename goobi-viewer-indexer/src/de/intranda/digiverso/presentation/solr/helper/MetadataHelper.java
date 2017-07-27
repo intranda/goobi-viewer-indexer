@@ -203,13 +203,13 @@ public class MetadataHelper {
                         // User prefix as prefix
                         query = queryPrefix + xpath;
                     }
-                    if(xpath.startsWith("teiHeader"))
-                                        logger.info("XPath: {}", query);
+                    if (xpath.startsWith("teiHeader"))
+                        logger.info("XPath: {}", query);
                     for (Element currentElement : elementsToIterateOver) {
                         List list = xp.evaluate(query, currentElement);
                         if (list != null) {
-                            if(xpath.startsWith("teiHeader"))
-                                                        logger.info("found: {}", list.size());
+                            if (xpath.startsWith("teiHeader"))
+                                logger.info("found: {}", list.size());
                             for (Object xpathAnswerObject : list) {
                                 if (configurationItem.isGroupEntity()) {
                                     // Aggregated / grouped metadata
@@ -537,6 +537,16 @@ public class MetadataHelper {
             } else {
                 indexObj.addToLucene(field);
             }
+            // Extract language code from the field name and add it to the topstruct indexObj
+            String language = extractLanguageCodeFromMetadataField(field.getField());
+            if (StringUtils.isNotEmpty(language)) {
+                IndexObject obj = indexObj;
+                while (obj.getParent() != null && !obj.getParent().isAnchor()) {
+                    obj = obj.getParent();
+                }
+                obj.getLanguages().add(language);
+            }
+
             // logger.debug("METADATA " + fieldName + " : " + field.getValue());
 
             indexObj.setDefaultValue(indexObj.getDefaultValue().trim());
@@ -1258,4 +1268,26 @@ public class MetadataHelper {
         }
     }
 
+    /**
+     * Extracts the (lowercase) language code from the given field name.
+     * 
+     * @param fieldName
+     * @return
+     * @should extract language code correctly
+     * @should ignore any suffixes longer than two chars
+     */
+    public static String extractLanguageCodeFromMetadataField(String fieldName) {
+        if (fieldName == null) {
+            throw new IllegalArgumentException("fieldName may not be null");
+        }
+
+        if (fieldName.contains(SolrConstants._LANG_)) {
+            int index = fieldName.indexOf(SolrConstants._LANG_) + SolrConstants._LANG_.length();
+            if (fieldName.length() == index + 2) {
+                return fieldName.substring(index).toLowerCase();
+            }
+        }
+
+        return null;
+    }
 }

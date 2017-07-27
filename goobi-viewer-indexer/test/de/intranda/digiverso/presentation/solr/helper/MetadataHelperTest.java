@@ -470,4 +470,22 @@ public class MetadataHelperTest {
         Assert.assertEquals(SolrConstants.SORT_ + "TITLE", result.get(0).getField());
         Assert.assertEquals("other title", result.get(0).getValue());
     }
+
+    /**
+     * @see MetadataHelper#extractLanguageCodeFromMetadataField(String)
+     * @verifies extract language code correctly
+     */
+    @Test
+    public void extractLanguageCodeFromMetadataField_shouldExtractLanguageCodeCorrectly() throws Exception {
+        Assert.assertEquals("en", MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN"));
+    }
+
+    /**
+     * @see MetadataHelper#extractLanguageCodeFromMetadataField(String)
+     * @verifies ignore any suffixes longer than two chars
+     */
+    @Test
+    public void extractLanguageCodeFromMetadataField_shouldIgnoreAnySuffixesLongerThanTwoChars() throws Exception {
+        Assert.assertNull(MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN_UNTOKENIZED"));
+    }
 }

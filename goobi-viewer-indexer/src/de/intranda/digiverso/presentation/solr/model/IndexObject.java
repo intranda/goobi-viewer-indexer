@@ -181,6 +181,14 @@ public class IndexObject {
             addToLucene(SolrConstants.DATEUPDATED, String.valueOf(date));
         }
     }
+    
+    public void writeLanguages() {
+        if (!languages.isEmpty()) {
+            for (String language : languages) {
+                addToLucene(SolrConstants.LANGUAGE, language);
+            }
+        }
+    }
 
     /**
      * Returns the first {@link LuceneField} with the given name.

@@ -73,6 +73,7 @@ public final class SolrConstants {
     public static final String IMAGEURN_OAI = "IMAGEURN_OAI";
     public static final String ISANCHOR = "ISANCHOR";
     public static final String ISWORK = "ISWORK";
+    public static final String LANGUAGE = "LANGUAGE";
     public static final String LOGID = "LOGID";
     public static final String METADATATYPE = "METADATATYPE";
     public static final String MIMETYPE = "MIMETYPE";
@@ -120,6 +121,7 @@ public final class SolrConstants {
     public static final String SORT_ = "SORT_";
     public static final String SORTNUM_ = "SORTNUM_";
     // public static final String VIDEO_ = "VIDEO_";
+    public static final String _LANG_ = "_LANG_";
     public static final String _NOESCAPE = "_NOESCAPE";
     public static final String _UNTOKENIZED = "_UNTOKENIZED";
     public static final String _METS = "METS";

@@ -111,11 +111,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
      * @param pageCountStart Order number for the first page.
      * @return
      * @should index record correctly
-     * @should index aggregated metadata correctly
-     * @should index multi volume records correctly
-     * @should update record correctly
-     * @should set access conditions correctly
-     * @should write overview page texts into index
      */
     public String[] index(Path mainFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
@@ -332,9 +327,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             int workDepth = 0; // depth of the docstrct that has ISWORK (volume or monograph)
 
-            // put some simple data in lucene array
-            indexObj.pushSimpleDataToLuceneArray();
-
             // Process TEI files
             if (dataFolders.containsKey(DataRepository.PARAM_TEIMETADATA)) {
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_TEIMETADATA), "*.{xml}")) {
@@ -362,6 +354,10 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                 }
             }
+            
+
+            // Add IndexObject member values as Solr fields (after processing the TEI files!)
+            indexObj.pushSimpleDataToLuceneArray();
 
             // Write mapped metadata
             MetadataHelper.writeMetadataToObject(indexObj, xp.getRootElement(), "", xp);
@@ -371,6 +367,9 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 indexObj.setLabel(label.getValue());
                 indexObj.addToLucene(SolrConstants.LABEL, MetadataHelper.applyValueDefaultModifications(label.getValue()));
             }
+            
+            // Add language codes as metadata fields
+            indexObj.writeLanguages();
 
             // Set access conditions
             indexObj.writeAccessConditions(null);
