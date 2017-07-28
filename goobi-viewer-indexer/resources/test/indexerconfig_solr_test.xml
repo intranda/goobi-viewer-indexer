@@ -114,6 +114,12 @@
         <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
         <threads>4</threads>
     </performance>
+    
+    <!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
+    <languageMapping>
+        <eng>en</eng>
+        <ger>de</ger>
+    </languageMapping>
 
 	<docstructmapping>
 		<!-- If true, the docstruct in docstructmapping/list/_default will be used 
@@ -433,6 +439,8 @@
 							</item>
 							<item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Verlag']/lido:actor/lido:nameActorSet/lido:appellationValue
 							</item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:publisher/tei:orgName
+                            </item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -446,9 +454,14 @@
 				Map etc.) // -->
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo/mods:place/mods:placeTerm[@type="text"]
-					</xpath>
-					<getnode>first</getnode>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
+                            </item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:pubPlace
+                            </item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -469,6 +482,8 @@
 							</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue
 							</item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:date
+                            </item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>

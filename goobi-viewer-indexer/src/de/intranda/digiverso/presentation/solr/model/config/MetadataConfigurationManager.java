@@ -177,7 +177,7 @@ public final class MetadataConfigurationManager {
                 configurationItem.setNormalizeYearMinDigits((int) configurationMap.get("normalizeYearMinDigits"));
             }
         }
-        
+
         if (configurationMap.containsKey("interpolateYears")) {
             if (((String) configurationMap.get("interpolateYears")).equals(FALSE)) {
                 configurationItem.setInterpolateYears(false);
@@ -247,10 +247,23 @@ public final class MetadataConfigurationManager {
     }
 
     /**
+     * 
+     * @param code
+     * @return
+     * @throws FatalIndexerException
+     * @should return correct mapping
+     * @should return null if code not configured
+     */
+    public static String getLanguageMapping(String code) throws FatalIndexerException {
+        return Configuration.getInstance().getString("languageMapping." + code);
+    }
+
+    /**
      * Checks for custom docstruct name mappings to be used in the index instead of the given name.
      * 
      * @param string
-     * @return The mapped replacement name, if available; default docstruct name, if configured to be used; the original name (without spaces) otherwise.
+     * @return The mapped replacement name, if available; default docstruct name, if configured to be used; the original name (without spaces)
+     *         otherwise.
      * @throws FatalIndexerException
      */
     public static String mapDocStrct(String string) throws FatalIndexerException {

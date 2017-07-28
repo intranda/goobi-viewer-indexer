@@ -499,12 +499,12 @@ public final class TextHelper {
      */
     public static String getStringFromElement(Element element, String encoding) {
         if (element == null) {
-            throw new IllegalArgumentException("element may nto be null");
+            throw new IllegalArgumentException("element may not be null");
         }
         if (encoding == null) {
             encoding = DEFAULT_ENCODING;
         }
-        Format format = Format.getPrettyFormat();
+        Format format = Format.getRawFormat();
         XMLOutputter outputter = new XMLOutputter(format);
         Format xmlFormat = outputter.getFormat();
         if (StringUtils.isNotEmpty(encoding)) {

@@ -93,7 +93,19 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
             // Assert.assertEquals("", doc.getFieldValue(SolrConstants.OPACURL));
             // Assert.assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
 
-            // Languages
+            // Language codes
+            {
+                List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.LANGUAGE);
+                Assert.assertNotNull(mdList);
+                String s = "";
+                for (String md : mdList) {
+                    s += md + ", ";
+                }
+                Assert.assertEquals(s, 2, mdList.size());
+                Assert.assertEquals("de", mdList.get(0));
+                Assert.assertEquals("en", mdList.get(1));
+            }
+            // Title languages
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_TITLE_LANG_DE");
                 Assert.assertNotNull(mdList);
@@ -106,34 +118,31 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals("World War with Words - War Prose in the Third Reich 1933 until 1940", mdList.get(0));
             }
+            // Text
             {
-                List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.LANGUAGE);
+                List<String> mdList = (List<String>) doc.getFieldValue("MD_TEXT_LANG_DE");
                 Assert.assertNotNull(mdList);
-                String s = "";
-                for(String md : mdList) {
-                    s += md + ", ";
-                }
-                Assert.assertEquals(s, 2, mdList.size());
-                Assert.assertEquals("de", mdList.get(0));
-                Assert.assertEquals("en", mdList.get(1));
-            }
-
-            {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR");
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(2, mdList.size());
-                Assert.assertEquals("Lungershausen, Gerrit", mdList.get(0));
-                Assert.assertEquals("Meier, Albert", mdList.get(0));
+                Assert.assertEquals(1, mdList.size());
             }
             {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR" + SolrConstants._UNTOKENIZED);
+                List<String> mdList = (List<String>) doc.getFieldValue("MD_TEXT_LANG_EN");
                 Assert.assertNotNull(mdList);
-                Assert.assertEquals(2, mdList.size());
-                Assert.assertEquals("Lungershausen, Gerrit", mdList.get(0));
+                Assert.assertEquals(1, mdList.size());
             }
-            // TODO GND
-            // TODO 
-            Assert.assertEquals("Lungershausen, Gerrit", doc.getFieldValue("SORT_AUTHOR"));
+            //            {
+            //                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR");
+            //                Assert.assertNotNull(mdList);
+            //                Assert.assertEquals(2, mdList.size());
+            //                Assert.assertEquals("Lungershausen, Gerrit", mdList.get(0));
+            //                Assert.assertEquals("Meier, Albert", mdList.get(0));
+            //            }
+            //            {
+            //                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR" + SolrConstants._UNTOKENIZED);
+            //                Assert.assertNotNull(mdList);
+            //                Assert.assertEquals(2, mdList.size());
+            //                Assert.assertEquals("Lungershausen, Gerrit", mdList.get(0));
+            //            }
+            //            Assert.assertEquals("Lungershausen, Gerrit", doc.getFieldValue("SORT_AUTHOR"));
 
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEAR);
@@ -141,20 +150,6 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals(Long.valueOf(2017), mdList.get(0));
                 Assert.assertEquals(Long.valueOf(2017), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEAR));
-            }
-            {
-                List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEARMONTH);
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
-                Assert.assertEquals(Long.valueOf(198007), mdList.get(0));
-                Assert.assertEquals(Long.valueOf(198007), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEARMONTH));
-            }
-            {
-                List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEARMONTHDAY);
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
-                Assert.assertEquals(Long.valueOf(19800710), mdList.get(0));
-                Assert.assertEquals(Long.valueOf(19800710), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEARMONTHDAY));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.CENTURY);

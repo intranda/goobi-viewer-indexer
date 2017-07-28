@@ -121,6 +121,7 @@ public class JDomXP {
      */
     public static void initNamespaces() throws FatalIndexerException {
         namespaces = new HashMap<>();
+        getNamespaces().put("xml", Namespace.getNamespace("xml", "http://www.w3.org/XML/1998/namespace"));
         getNamespaces().put("mets", Namespace.getNamespace("mets", "http://www.loc.gov/METS/"));
         getNamespaces().put("mods", Namespace.getNamespace("mods", "http://www.loc.gov/mods/v3"));
         getNamespaces().put("gdz", Namespace.getNamespace("gdz", "http://gdz.sub.uni-goettingen.de/"));

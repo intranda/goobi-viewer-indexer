@@ -63,6 +63,7 @@ import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
+import de.intranda.digiverso.presentation.solr.model.config.MetadataConfigurationManager;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.LazySolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.SerializingSolrWriteStrategy;
@@ -339,14 +340,22 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         // Add text body
                         Element eleText = tei.getRootElement().getChild("text", null);
                         if (eleText != null && eleText.getChild("body", null) != null) {
-                            String language = eleText.getAttributeValue("xml:lang");
+                            String language = eleText.getAttributeValue("lang", JDomXP.getNamespaces().get("xml")); // TODO extract language from a different element?
                             Element eleBody = eleText.getChild("body", null);
-                            String body = TextHelper.getStringFromElement(eleBody, null);
-                            if (language == null) {
-                                indexObj.addToLucene("MD_TEXT", body);
-                            } else {
-
+                            Element eleNewRoot = new Element("tempRoot");
+                            for (Element ele : eleBody.getChildren()) {
+                                ele.detach();
+                                eleNewRoot.addContent(ele);
                             }
+                            String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "").trim();
+                            String textFieldName = "MD_TEXT";
+                            if (language != null) {
+                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
+                                if (isoCode != null) {
+                                    textFieldName += SolrConstants._LANG_ + isoCode.toUpperCase();
+                                }
+                            }
+                            indexObj.addToLucene(textFieldName, body);
                         } else {
                             logger.warn("No text body found in TEI");
                         }
@@ -354,7 +363,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                 }
             }
-            
 
             // Add IndexObject member values as Solr fields (after processing the TEI files!)
             indexObj.pushSimpleDataToLuceneArray();
@@ -367,7 +375,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 indexObj.setLabel(label.getValue());
                 indexObj.addToLucene(SolrConstants.LABEL, MetadataHelper.applyValueDefaultModifications(label.getValue()));
             }
-            
+
             // Add language codes as metadata fields
             indexObj.writeLanguages();
 
@@ -430,18 +438,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
                                     indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, Jsoup.parse(content).text());
                                 }
                                     break;
-                                default: {
-                                    // Legacy overview page ingest (IKFN)
-                                    // String content = TextHelper.readFileToString(file);
-                                    // if (StringUtils.isNotEmpty(content)) {
-                                    //     indexObj.addToLucene(SolrConstants.OVERVIEWPAGE, content);
-                                    //     if (StringUtils.containsIgnoreCase(content, "<force>true</force>")) {
-                                    //         indexObj.addToLucene(SolrConstants.OVERVIEWPAGEFORCE, "true");
-                                    //     }
-                                    // } else {
-                                    //     logger.warn("Overview page config file is empty: {}", file.getName());
-                                    // }
-                                }
                             }
                         }
                     }

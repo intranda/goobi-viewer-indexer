@@ -134,6 +134,12 @@
         <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
         <threads>4</threads>
 	</performance>
+	
+    <!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
+    <languageMapping>
+        <eng>en</eng>
+        <ger>de</ger>
+    </languageMapping>
 
 	<docstructmapping>
 		<!-- If true, the docstruct in docstructmapping/list/_default will be used 
@@ -519,7 +525,6 @@
                             </item>
                         </list>
 					</xpath>
-					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -2685,10 +2690,14 @@
 		<MD_EDITION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo/mods:edition[not(text() = '[Electronic ed.]')]
-					</xpath>
-                    <xpath>tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition
-                    </xpath>					
+					<xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo/mods:edition[not(text() = '[Electronic ed.]')]
+                            </item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition
+                            </item>
+                        </list>
+                    </xpath>				
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
