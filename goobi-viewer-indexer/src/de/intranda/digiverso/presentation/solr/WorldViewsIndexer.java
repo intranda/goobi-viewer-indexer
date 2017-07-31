@@ -354,6 +354,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                                 if (isoCode != null) {
                                     textFieldName += SolrConstants._LANG_ + isoCode.toUpperCase();
                                 }
+                                indexObj.getLanguages().add(isoCode);
                             }
                             indexObj.addToLucene(textFieldName, body);
                         } else {

@@ -37,7 +37,7 @@ public final class SolrIndexerDaemon {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
-    public static final String VERSION = "3.2.20170728";
+    public static final String VERSION = "3.2.20170731";
     private static final int MIN_SCHEMA_VERSION = 20170717;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
@@ -45,7 +45,7 @@ public final class SolrIndexerDaemon {
     private static final Object lock = new Object();
     private static volatile SolrIndexerDaemon instance = null;
 
-    private String confFilename = "indexerconfig_solr.xml";
+    private String confFilename = "indexerconfig_solr_worldviews.xml";
     private int sleepInterval = 1000;
     private volatile boolean running = false;
     private MetadataConfigurationManager metadataConfigurationManager;

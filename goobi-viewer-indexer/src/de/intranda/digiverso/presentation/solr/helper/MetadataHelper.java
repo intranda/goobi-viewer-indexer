@@ -538,14 +538,16 @@ public class MetadataHelper {
                 indexObj.addToLucene(field);
             }
             // Extract language code from the field name and add it to the topstruct indexObj
-            String language = extractLanguageCodeFromMetadataField(field.getField());
-            if (StringUtils.isNotEmpty(language)) {
-                IndexObject obj = indexObj;
-                while (obj.getParent() != null && !obj.getParent().isAnchor()) {
-                    obj = obj.getParent();
-                }
-                obj.getLanguages().add(language);
-            }
+            //            if (field.getField().startsWith("MD_TEXT_")) {
+            //                String language = extractLanguageCodeFromMetadataField(field.getField());
+            //                if (StringUtils.isNotEmpty(language)) {
+            //                    IndexObject obj = indexObj;
+            //                    while (obj.getParent() != null && !obj.getParent().isAnchor()) {
+            //                        obj = obj.getParent();
+            //                    }
+            //                    obj.getLanguages().add(language);
+            //                }
+            //            }
 
             // logger.debug("METADATA " + fieldName + " : " + field.getValue());
 
