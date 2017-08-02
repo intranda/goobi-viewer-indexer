@@ -53,6 +53,7 @@ import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
+import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
 import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
@@ -271,8 +272,8 @@ public class LidoIndexer extends AbstractIndexer {
             writeStrategy.addDocs(events);
 
             // Add aggregated metadata groups as separate documents
-            for (List<LuceneField> metadataFieldList : indexObj.getGroupedMetadataFields()) {
-                SolrInputDocument mdDoc = SolrHelper.createDocument(metadataFieldList);
+            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+                SolrInputDocument mdDoc = SolrHelper.createDocument(gmd.getFields());
                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                 mdDoc.addField(SolrConstants.IDDOC, iddoc);
                 if (!mdDoc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
@@ -715,16 +716,16 @@ public class LidoIndexer extends AbstractIndexer {
                 }
 
                 // Create a backup of the current grouped metadata list of the parent docstruct
-                List<List<LuceneField>> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
+                List<GroupedMetadata> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
                 List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eleEvent, "", indexObj, xp);
 
                 // Add aggregated metadata groups as separate documents
                 if (indexObj.getGroupedMetadataFields().size() > groupedFieldsBackup.size()) {
                     // Newly added items in IndexObject.groupedMetadataFields come from the event, so just use these new items
-                    List<List<LuceneField>> eventGroupedFields = indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj
+                    List<GroupedMetadata> eventGroupedFields = indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj
                             .getGroupedMetadataFields().size());
-                    for (List<LuceneField> metadataFieldList : eventGroupedFields) {
-                        SolrInputDocument doc = SolrHelper.createDocument(metadataFieldList);
+                    for (GroupedMetadata gmd : eventGroupedFields) {
+                        SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
                         long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                         doc.addField(SolrConstants.IDDOC, iddoc);
                         if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {

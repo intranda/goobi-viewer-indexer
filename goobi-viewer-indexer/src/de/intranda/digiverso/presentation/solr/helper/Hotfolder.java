@@ -681,14 +681,8 @@ public class Hotfolder {
             boolean success = false;
             switch (format) {
                 case METS:
-                    if (trace) {
-                        logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());
-                    } else {
-                        logger.info("Deleting {} file '{}' (no trace document will be created)...", format.name(), actualXmlFile.getFileName());
-                    }
-                    success = AbstractIndexer.delete(baseFileName, trace, solrHelper);
-                    break;
                 case LIDO:
+                case WORLDVIEWS:
                     if (trace) {
                         logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());
                     } else {

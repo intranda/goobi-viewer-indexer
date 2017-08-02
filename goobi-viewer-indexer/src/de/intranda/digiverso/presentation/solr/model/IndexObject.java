@@ -37,7 +37,7 @@ public class IndexObject {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexObject.class);
 
-    private long iddoc = 1;
+    private long iddoc;
     private String pi;
     private IndexObject parent = null;
     private boolean update = false;
@@ -64,7 +64,7 @@ public class IndexObject {
     private String thumbnailRepresent = null;
     private String dataRepository;
     private final List<LuceneField> luceneFields = new ArrayList<>();
-    private List<List<LuceneField>> groupedMetadataFields = new ArrayList<>();
+    private List<GroupedMetadata> groupedMetadataFields = new ArrayList<>();
     private int numPages = 0;
     private String firstPageLabel;
     private String lastPageLabel;
@@ -181,7 +181,7 @@ public class IndexObject {
             addToLucene(SolrConstants.DATEUPDATED, String.valueOf(date));
         }
     }
-    
+
     public void writeLanguages() {
         if (!languages.isEmpty()) {
             for (String language : languages) {
@@ -265,6 +265,28 @@ public class IndexObject {
             } else {
                 logger.warn("Multiple values for group field '{}'.", field);
             }
+        }
+    }
+
+    /**
+     * @should remove duplicates correctly
+     */
+    public void removeDuplicateGroupedMetadata() {
+        Set<GroupedMetadata> existing = new HashSet<>();
+        List<GroupedMetadata> metadataToRemove = new ArrayList<>();
+        for (GroupedMetadata gmd : getGroupedMetadataFields()) {
+            if (existing.contains(gmd)) {
+                metadataToRemove.add(gmd);
+            } else {
+                existing.add(gmd);
+            }
+        }
+        if (!metadataToRemove.isEmpty()) {
+            for (GroupedMetadata gmd : metadataToRemove) {
+                // Do not use removeAll because it will remove all objects equal to the ones in the list
+                getGroupedMetadataFields().remove(gmd);
+            }
+            logger.info("Removed {} duplicate grouped metadata documents.", metadataToRemove.size());
         }
     }
 
@@ -514,14 +536,14 @@ public class IndexObject {
     /**
      * @return the groupedMetadataFields
      */
-    public List<List<LuceneField>> getGroupedMetadataFields() {
+    public List<GroupedMetadata> getGroupedMetadataFields() {
         return groupedMetadataFields;
     }
 
     /**
      * @param groupedMetadataFields the groupedMetadataFields to set
      */
-    public void setGroupedMetadataFields(List<List<LuceneField>> groupedMetadataFields) {
+    public void setGroupedMetadataFields(List<GroupedMetadata> groupedMetadataFields) {
         this.groupedMetadataFields = groupedMetadataFields;
     }
 

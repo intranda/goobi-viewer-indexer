@@ -69,6 +69,7 @@ import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.helper.Utils;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
+import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
 import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
@@ -581,8 +582,8 @@ public class MetsIndexer extends AbstractIndexer {
             }
 
             // Add aggregated metadata groups as separate documents
-            for (List<LuceneField> metadataFieldList : indexObj.getGroupedMetadataFields()) {
-                SolrInputDocument doc = SolrHelper.createDocument(metadataFieldList);
+            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+                SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                 doc.addField(SolrConstants.IDDOC, iddoc);
                 if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
@@ -1932,8 +1933,8 @@ public class MetsIndexer extends AbstractIndexer {
 
             // Add aggregated metadata groups as separate documents
             List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
-            for (List<LuceneField> metadataFieldList : indexObj.getGroupedMetadataFields()) {
-                SolrInputDocument doc = SolrHelper.createDocument(metadataFieldList);
+            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+                SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                 doc.addField(SolrConstants.IDDOC, iddoc);
                 if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {

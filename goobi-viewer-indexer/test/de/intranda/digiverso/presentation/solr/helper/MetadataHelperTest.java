@@ -27,22 +27,19 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
-import de.intranda.digiverso.presentation.solr.helper.Configuration;
-import de.intranda.digiverso.presentation.solr.helper.JDomXP;
-import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper.PrimitiveDate;
+import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.MetadataGroupType;
 
 public class MetadataHelperTest {
 
-    private static Hotfolder hotfolder;
+    //    private static Hotfolder hotfolder;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
+        //        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
     }
 
     /**
@@ -241,8 +238,10 @@ public class MetadataHelperTest {
 
         Element eleName = docMods.getRootElement().getChild("name", JDomXP.getNamespaces().get("mods"));
         Assert.assertNotNull(eleName);
-        List<LuceneField> fields = MetadataHelper.getGroupedMetadata(eleName, groupEntity, "label");
-        Assert.assertFalse(fields.isEmpty());
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, groupEntity, "label");
+        Assert.assertFalse(gmd.getFields().isEmpty());
+        Assert.assertEquals("label", gmd.getLabel());
+        Assert.assertEquals("label_display_form", gmd.getMainValue());
         String label = null;
         String metadataType = null;
         String corporation = null;
@@ -253,7 +252,7 @@ public class MetadataHelperTest {
         String date = null;
         String termsOfAddress = null;
         String link = null;
-        for (LuceneField field : fields) {
+        for (LuceneField field : gmd.getFields()) {
             switch (field.getField()) {
                 case SolrConstants.METADATATYPE:
                     metadataType = field.getValue();

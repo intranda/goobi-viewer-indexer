@@ -58,6 +58,7 @@ import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
+import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
 import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
@@ -347,7 +348,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                                 ele.detach();
                                 eleNewRoot.addContent(ele);
                             }
-                            String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "").trim();
+                            String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "")
+                                    .trim();
                             String textFieldName = "MD_TEXT";
                             if (language != null) {
                                 String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
@@ -364,7 +366,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                 }
             }
-
             // Add IndexObject member values as Solr fields (after processing the TEI files!)
             indexObj.pushSimpleDataToLuceneArray();
 
@@ -465,9 +466,12 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 }
             }
 
-            // Add grouped metadata as separate Solr docs
-            for (List<LuceneField> metadataFieldList : indexObj.getGroupedMetadataFields()) {
-                SolrInputDocument doc = SolrHelper.createDocument(metadataFieldList);
+            // Add grouped metadata as separate Solr docs (remove duplicates first)
+            indexObj.removeDuplicateGroupedMetadata();
+            logger.debug("Group fields: {}", indexObj.getGroupedMetadataFields().size());
+            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+                logger.debug("adding group field: {}", gmd.getMainValue());
+                SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                 doc.addField(SolrConstants.IDDOC, iddoc);
                 if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
@@ -618,8 +622,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
                 // Add grouped metadata as separate documents
                 List<LuceneField> dcFields = currentIndexObj.getLuceneFieldsWithName(SolrConstants.DC);
-                for (List<LuceneField> metadataFieldList : rootIndexObj.getGroupedMetadataFields()) {
-                    SolrInputDocument doc = SolrHelper.createDocument(metadataFieldList);
+                for (GroupedMetadata gmd : currentIndexObj.getGroupedMetadataFields()) {
+                    SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
                     long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                     doc.addField(SolrConstants.IDDOC, iddoc);
                     if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {

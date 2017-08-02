@@ -498,8 +498,6 @@
 							</item>
 							<item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Verlag']
 							</item>
-                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:publisher/tei:orgName
-                            </item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -534,8 +532,6 @@
 					<xpath>
 					    <list>
                             <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
-                            </item>
-                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:pubPlace
                             </item>
                         </list>
 					</xpath>
