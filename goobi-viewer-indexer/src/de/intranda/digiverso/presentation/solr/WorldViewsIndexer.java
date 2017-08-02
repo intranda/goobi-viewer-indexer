@@ -345,8 +345,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             Element eleBody = eleText.getChild("body", null);
                             Element eleNewRoot = new Element("tempRoot");
                             for (Element ele : eleBody.getChildren()) {
-                                ele.detach();
-                                eleNewRoot.addContent(ele);
+                                eleNewRoot.addContent(ele.clone());
                             }
                             String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "")
                                     .trim();
