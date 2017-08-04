@@ -55,10 +55,6 @@ public final class SolrConstants {
     public static final String EVENTTYPE = "EVENTTYPE";
     public static final String FILEIDROOT = "FILEIDROOT";
     public static final String FILENAME = "FILENAME";
-    public static final String FILENAME_TILED_0 = "FILENAME_TILED_0";
-    public static final String FILENAME_TILED_90 = "FILENAME_TILED_90";
-    public static final String FILENAME_TILED_180 = "FILENAME_TILED_180";
-    public static final String FILENAME_TILED_270 = "FILENAME_TILED_270";
     public static final String FULLTEXT = "FULLTEXT";
     public static final String FULLTEXTAVAILABLE = "FULLTEXTAVAILABLE";
     public static final String GROUPFIELD = "GROUPFIELD";
