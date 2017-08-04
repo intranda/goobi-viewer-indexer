@@ -62,7 +62,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
      * Updates the Solr document with the IDDOC contained in the data file name.
      * 
      * @param dataFile
-     * @param pyramidTiffFolder
+     * @param dataFolders
      * @param mixFolder
      * @return
      * @throws FatalIndexerException

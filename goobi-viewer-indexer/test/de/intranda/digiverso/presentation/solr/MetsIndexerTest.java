@@ -109,7 +109,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_TILEDIMAGES, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ptif"));
         dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
         Assert.assertEquals(PI + ".xml", ret[0]);
@@ -850,7 +849,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         //        Assert.assertTrue(doc.containsKey(SolrConstants.ALTO));
-        //        Assert.assertTrue(doc.containsKey(SolrConstants.FULLTEXT));
         //        Assert.assertTrue(doc.containsKey("MD_FULLTEXT"));
         //        Assert.assertEquals("2203", doc.getFieldValue(SolrConstants.WIDTH));
         //        Assert.assertEquals("3121", doc.getFieldValue(SolrConstants.HEIGHT));
@@ -878,41 +876,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertNotNull(doc.getFieldValue(SolrConstants.ALTO));
-    }
-
-    /**
-     * @see MetsIndexer#generatePageDocument(Element,String,Integer,ISolrWriteStrategy,Map)
-     * @verifies add fields for tiled images correctly
-     */
-    @Test
-    public void generatePageDocument_shouldAddFieldsForTiledImagesCorrectly() throws Exception {
-        Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_TILEDIMAGES, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ptif"));
-
-        MetsIndexer indexer = new MetsIndexer(hotfolder);
-        indexer.initJDomXP(metsFile);
-        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
-        List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
-
-        Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(0), String.valueOf(MetsIndexer.getNextIddoc(hotfolder
-                .getSolrHelper())), 1, writeStrategy, dataFolders));
-        Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(1), String.valueOf(MetsIndexer.getNextIddoc(hotfolder
-                .getSolrHelper())), 2, writeStrategy, dataFolders));
-
-        SolrInputDocument pageDoc1 = writeStrategy.getPageDocForOrder(1);
-        Assert.assertNotNull(pageDoc1);
-        Assert.assertEquals("00000001_0degree.jp2", pageDoc1.getFieldValue(SolrConstants.FILENAME_TILED_0).toString());
-        Assert.assertEquals("00000001_90degree.jp2", pageDoc1.getFieldValue(SolrConstants.FILENAME_TILED_90).toString());
-        Assert.assertEquals("00000001_180degree.jp2", pageDoc1.getFieldValue(SolrConstants.FILENAME_TILED_180).toString());
-        Assert.assertEquals("00000001_270degree.jp2", pageDoc1.getFieldValue(SolrConstants.FILENAME_TILED_270).toString());
-
-        SolrInputDocument pageDoc2 = writeStrategy.getPageDocForOrder(2);
-        Assert.assertNotNull(pageDoc2);
-        Assert.assertEquals("00000002_0degree.tif", pageDoc2.getFieldValue(SolrConstants.FILENAME_TILED_0).toString());
-        Assert.assertEquals("00000002_90degree.tif", pageDoc2.getFieldValue(SolrConstants.FILENAME_TILED_90).toString());
-        Assert.assertEquals("00000002_180degree.tif", pageDoc2.getFieldValue(SolrConstants.FILENAME_TILED_180).toString());
-        Assert.assertEquals("00000002_270degree.tif", pageDoc2.getFieldValue(SolrConstants.FILENAME_TILED_270).toString());
     }
 
     /**

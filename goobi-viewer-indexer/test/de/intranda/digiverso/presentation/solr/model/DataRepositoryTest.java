@@ -80,7 +80,6 @@ public class DataRepositoryTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MEDIA).toFile().isDirectory());
-        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_TILEDIMAGES).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTO).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toFile().isDirectory());
@@ -105,7 +104,6 @@ public class DataRepositoryTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MEDIA).toFile().isDirectory());
-        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_TILEDIMAGES).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTO).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toFile().isDirectory());
@@ -250,20 +248,6 @@ public class DataRepositoryTest {
     public void deleteDataFoldersForRecord_shouldDeleteMediaFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
-        Assert.assertTrue(dataFolder.mkdirs());
-        Assert.assertTrue(dataFolder.exists());
-        useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);
-        Assert.assertFalse(dataFolder.exists());
-    }
-
-    /**
-     * @see DataRepository#deleteDataFoldersForRecord(String)
-     * @verifies delete tiled images folder correctly
-     */
-    @Test
-    public void deleteDataFoldersForRecord_shouldDeleteTiledImagesFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
-        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
         useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);

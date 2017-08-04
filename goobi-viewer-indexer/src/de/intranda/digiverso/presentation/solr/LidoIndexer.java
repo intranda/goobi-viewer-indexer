@@ -148,16 +148,6 @@ public class LidoIndexer extends AbstractIndexer {
 
                     ret[0] = indexObj.getPi();
 
-                    if (dataFolders.get(DataRepository.PARAM_TILEDIMAGES) == null) {
-                        // Use the pyramid TIFF text folder
-                        dataFolders.put(DataRepository.PARAM_TILEDIMAGES, Paths.get(hotfolder.getDataRepository().getDir(
-                                DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TILEDIMAGES))) {
-                            dataFolders.put(DataRepository.PARAM_TILEDIMAGES, null);
-                        } else {
-                            logger.info("Using old pyramid TIFF folder '{}'.", dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath());
-                        }
-                    }
                     if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
                         // Use the old MIX folder
                         dataFolders.put(DataRepository.PARAM_MIX, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_MIX)
@@ -616,44 +606,6 @@ public class LidoIndexer extends AbstractIndexer {
 
         String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
 
-        // Check for tiled images
-        if (dataFolders.get(DataRepository.PARAM_TILEDIMAGES) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_TILEDIMAGES))) {
-            Path rotated0PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                    + "_0degree.tif");
-            if (!Files.exists(rotated0PyramidTiff)) {
-                rotated0PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                        + "_0degree.jp2");
-            }
-            if (Files.isRegularFile(rotated0PyramidTiff)) {
-                doc.addField(SolrConstants.FILENAME_TILED_0, rotated0PyramidTiff.getFileName().toString());
-                logger.debug("Found 0° tiled image: {}", rotated0PyramidTiff.toAbsolutePath());
-                Path rotated90PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                        + "_90degree.tif");
-                if (!Files.exists(rotated90PyramidTiff)) {
-                    rotated90PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                            + "_90degree.jp2");
-                }
-                Path rotated180PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                        + "_180degree.tif");
-                if (!Files.exists(rotated180PyramidTiff)) {
-                    rotated180PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                            + "_180degree.jp2");
-                }
-                Path rotated270PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                        + "_270degree.tif");
-                if (!Files.exists(rotated270PyramidTiff)) {
-                    rotated270PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                            + "_270degree.jp2");
-                }
-                if (Files.isRegularFile(rotated90PyramidTiff) && Files.isRegularFile(rotated180PyramidTiff) && Files.isRegularFile(
-                        rotated270PyramidTiff)) {
-                    doc.addField(SolrConstants.FILENAME_TILED_90, rotated90PyramidTiff.getFileName().toString());
-                    doc.addField(SolrConstants.FILENAME_TILED_180, rotated180PyramidTiff.getFileName().toString());
-                    doc.addField(SolrConstants.FILENAME_TILED_270, rotated270PyramidTiff.getFileName().toString());
-                    logger.debug("Found rotated tiled images.");
-                }
-            }
-        }
         if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
             try {
                 Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
