@@ -35,7 +35,6 @@
 		<!-- Data subfolder names (path is relative to either a data repository 
 			or viewerHome) -->
 		<mediaFolder>media</mediaFolder>
-		<pyramidTiffFolder>ptif</pyramidTiffFolder>
 		<altoFolder>alto</altoFolder>
 		<altoCrowdsourcingFolder>alto_crowd</altoCrowdsourcingFolder>
 		<fulltextFolder>fulltext</fulltextFolder>

@@ -233,16 +233,6 @@ public class MetsIndexer extends AbstractIndexer {
                             logger.info("Using old media folder '{}'.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
                         }
                     }
-                    if (dataFolders.get(DataRepository.PARAM_TILEDIMAGES) == null) {
-                        // Use the pyramid TIFF text folder
-                        dataFolders.put(DataRepository.PARAM_TILEDIMAGES, Paths.get(hotfolder.getDataRepository().getDir(
-                                DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TILEDIMAGES))) {
-                            dataFolders.put(DataRepository.PARAM_TILEDIMAGES, null);
-                        } else {
-                            logger.info("Using old pyramid TIFF folder '{}'.", dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath());
-                        }
-                    }
                     if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
                         // Use the old text folder
                         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXT)
@@ -947,7 +937,6 @@ public class MetsIndexer extends AbstractIndexer {
      * @return
      * @throws FatalIndexerException
      * @should add all basic fields
-     * @should add fields for tiled images correctly
      * @should add crowdsourcing ALTO field correctly
      * @should add crowdsourcing fulltext field correctly
      * @should add fulltext field correctly
@@ -1224,45 +1213,6 @@ public class MetsIndexer extends AbstractIndexer {
         if (dataFolders != null) {
             Map<String, Object> altoData = null;
             String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
-
-            // Check for tiled images
-            if (dataFolders.get(DataRepository.PARAM_TILEDIMAGES) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_TILEDIMAGES))) {
-                Path rotated0PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                        + "_0degree.tif");
-                if (!Files.exists(rotated0PyramidTiff)) {
-                    rotated0PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                            + "_0degree.jp2");
-                }
-                if (Files.isRegularFile(rotated0PyramidTiff)) {
-                    doc.addField(SolrConstants.FILENAME_TILED_0, rotated0PyramidTiff.getFileName().toString());
-                    logger.debug("Found 0° tiled image: {}", rotated0PyramidTiff.toAbsolutePath());
-                    Path rotated90PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                            + "_90degree.tif");
-                    if (!Files.exists(rotated90PyramidTiff)) {
-                        rotated90PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                                + "_90degree.jp2");
-                    }
-                    Path rotated180PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                            + "_180degree.tif");
-                    if (!Files.exists(rotated180PyramidTiff)) {
-                        rotated180PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                                + "_180degree.jp2");
-                    }
-                    Path rotated270PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                            + "_270degree.tif");
-                    if (!Files.exists(rotated270PyramidTiff)) {
-                        rotated270PyramidTiff = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName
-                                + "_270degree.jp2");
-                    }
-                    if (Files.isRegularFile(rotated90PyramidTiff) && Files.isRegularFile(rotated180PyramidTiff) && Files.isRegularFile(
-                            rotated270PyramidTiff)) {
-                        doc.addField(SolrConstants.FILENAME_TILED_90, rotated90PyramidTiff.getFileName().toString());
-                        doc.addField(SolrConstants.FILENAME_TILED_180, rotated180PyramidTiff.getFileName().toString());
-                        doc.addField(SolrConstants.FILENAME_TILED_270, rotated270PyramidTiff.getFileName().toString());
-                        logger.debug("Found rotated tiled images.");
-                    }
-                }
-            }
 
             // Add complete crowdsourcing ALTO document and full-text generated from ALTO, if available
             boolean foundCrowdsourcingData = false;

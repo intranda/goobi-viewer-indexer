@@ -780,9 +780,6 @@ public class Hotfolder {
                     case "_mix":
                         dataFolders.put(DataRepository.PARAM_MIX, path);
                         break;
-                    case "_ptif":
-                        dataFolders.put(DataRepository.PARAM_TILEDIMAGES, path);
-                        break;
                     case "_src":
                         dataFolders.put(DataRepository.PARAM_SOURCE, path);
                         break;
@@ -801,9 +798,6 @@ public class Hotfolder {
         // Use existing folders for those missing in the hotfolder
         if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
             reindexSettings.put("reindexMedia", true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TILEDIMAGES) == null) {
-            reindexSettings.put("reindexPyramidTiffs", true);
         }
         if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
             reindexSettings.put("reindexAlto", true);
@@ -874,11 +868,6 @@ public class Hotfolder {
                         logger.info(msg);
                     }
                 }
-            }
-            // Copy and delete pyramid TIFF folder
-            if (reindexSettings.get("reindexPyramidTiffs") == null || !reindexSettings.get("reindexPyramidTiffs")) {
-                selectedDataRepository.copyAndDeleteDataFolder(dataFolders.get(DataRepository.PARAM_TILEDIMAGES), DataRepository.PARAM_TILEDIMAGES,
-                        pi);
             }
             // Copy and delete ALTO folder
             if (reindexSettings.get("reindexAlto") == null || !reindexSettings.get("reindexAlto")) {
@@ -982,9 +971,6 @@ public class Hotfolder {
                     }
                 }
 
-                if (reindexSettings.get("reindexPyramidTiffs") == null || !reindexSettings.get("reindexPyramidTiffs")) {
-                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_TILEDIMAGES));
-                }
                 if (reindexSettings.get("reindexAlto") == null || !reindexSettings.get("reindexAlto")) {
                     Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ALTO));
                 }
@@ -1051,8 +1037,6 @@ public class Hotfolder {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String[] resp = { null, null };
         Map<String, Path> dataFolders = new HashMap<>();
-        boolean useOldPyramidTiffs = false;
-
         String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -1067,9 +1051,6 @@ public class Hotfolder {
                         break;
                     case "_mix":
                         dataFolders.put(DataRepository.PARAM_MIX, path);
-                        break;
-                    case "_ptif":
-                        dataFolders.put(DataRepository.PARAM_TILEDIMAGES, path);
                         break;
                     case "_downloadimages":
                         dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
@@ -1093,9 +1074,6 @@ public class Hotfolder {
         // Use existing folders for those missing in the hotfolder
         if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
             reindexSettings.put("reindexMedia", true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TILEDIMAGES) == null) {
-            reindexSettings.put("reindexPyramidTiffs", true);
         }
         if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
             reindexSettings.put("reindexMix", true);
@@ -1135,14 +1113,10 @@ public class Hotfolder {
                     }
 
                     int imageCounter = 0;
-                    int pyramidImageCounter = 0;
                     if (StringUtils.isNotEmpty(resp[1]) && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
                         logger.info("Copying image files...");
                         String[] imgFileNamesSplit = resp[1].split(";");
                         Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
-                        Path destPyramidTiffDir = Paths.get(selectedDataRepository.getDir(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath()
-                                .toString(), identifier);
-
                         try (DirectoryStream<Path> mediaFileStream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MEDIA))) {
                             for (Path mediaFile : mediaFileStream) {
                                 if (Files.isRegularFile(mediaFile) && imgFileNames.contains(mediaFile.getFileName().toString())) {
@@ -1150,66 +1124,6 @@ public class Hotfolder {
                                     Files.copy(mediaFile, Paths.get(destMediaDir.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
                                             StandardCopyOption.REPLACE_EXISTING);
                                     imageCounter++;
-                                    if (!useOldPyramidTiffs && dataFolders.get(DataRepository.PARAM_TILEDIMAGES) != null) {
-                                        String baseFileName = FilenameUtils.getBaseName(mediaFile.getFileName().toString());
-                                        Path pyramidTiff0 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
-                                                baseFileName + "_0degree.tif");
-                                        if (!Files.exists(pyramidTiff0)) {
-                                            pyramidTiff0 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
-                                                    baseFileName + "_0degree.jp2");
-                                        }
-                                        logger.debug("Checking tiled images for: {}", pyramidTiff0.toAbsolutePath());
-                                        if (Files.exists(pyramidTiff0)) {
-                                            if (!Files.exists(destPyramidTiffDir)) {
-                                                Files.createDirectory(destPyramidTiffDir);
-                                            }
-                                            Files.copy(pyramidTiff0, Paths.get(destPyramidTiffDir.toAbsolutePath().toString(), pyramidTiff0
-                                                    .getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
-                                            pyramidImageCounter++;
-                                        }
-                                        Path pyramidTiff90 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
-                                                baseFileName + "_90degree.tif");
-                                        if (!Files.exists(pyramidTiff90)) {
-                                            pyramidTiff90 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
-                                                    baseFileName + "_90degree.jp2");
-                                        }
-                                        if (Files.exists(pyramidTiff90)) {
-                                            if (!Files.exists(destPyramidTiffDir)) {
-                                                Files.createDirectory(destPyramidTiffDir);
-                                            }
-                                            Files.copy(pyramidTiff90, Paths.get(destPyramidTiffDir.toAbsolutePath().toString(), pyramidTiff90
-                                                    .getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
-                                            pyramidImageCounter++;
-                                        }
-                                        Path pyramidTiff180 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
-                                                baseFileName + "_180degree.tif");
-                                        if (!Files.exists(pyramidTiff180)) {
-                                            pyramidTiff180 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
-                                                    baseFileName + "_180degree.jp2");
-                                        }
-                                        if (Files.exists(pyramidTiff180)) {
-                                            if (!Files.exists(destPyramidTiffDir)) {
-                                                Files.createDirectory(destPyramidTiffDir);
-                                            }
-                                            Files.copy(pyramidTiff180, Paths.get(destPyramidTiffDir.toAbsolutePath().toString(), pyramidTiff180
-                                                    .getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
-                                            pyramidImageCounter++;
-                                        }
-                                        Path pyramidTiff270 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
-                                                baseFileName + "_270degree.tif");
-                                        if (!Files.exists(pyramidTiff270)) {
-                                            pyramidTiff270 = Paths.get(dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath().toString(),
-                                                    baseFileName + "_270degree.jp2");
-                                        }
-                                        if (Files.exists(pyramidTiff270)) {
-                                            if (!Files.exists(destPyramidTiffDir)) {
-                                                Files.createDirectory(destPyramidTiffDir);
-                                            }
-                                            Files.copy(pyramidTiff270, Paths.get(destPyramidTiffDir.toAbsolutePath().toString(), pyramidTiff270
-                                                    .getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
-                                            pyramidImageCounter++;
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -1221,9 +1135,6 @@ public class Hotfolder {
                         logger.warn("No media folder found for '{}'.", lidoFile);
                     } else {
                         logger.info("{} media file(s) copied.", imageCounter);
-                        if (pyramidImageCounter > 0) {
-                            logger.info("{} pyramid TIFF file(s) copied.", pyramidImageCounter);
-                        }
                     }
 
                     // Copy and delete MIX files
@@ -1274,10 +1185,6 @@ public class Hotfolder {
                 .deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
             logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
         }
-        if (!useOldPyramidTiffs && dataFolders.get(DataRepository.PARAM_TILEDIMAGES) != null && Files.isDirectory(dataFolders.get(
-                DataRepository.PARAM_TILEDIMAGES)) && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_TILEDIMAGES))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_TILEDIMAGES).toAbsolutePath());
-        }
         if (!reindexSettings.get("reindexMix") && dataFolders.get(DataRepository.PARAM_MIX) != null && Files.isDirectory(dataFolders.get(
                 DataRepository.PARAM_MIX)) && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
             logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath());
@@ -1293,10 +1200,6 @@ public class Hotfolder {
             // Delete all folders
             if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
-            }
-            if (!useOldPyramidTiffs && dataFolders.get(DataRepository.PARAM_TILEDIMAGES) != null && Files.isDirectory(dataFolders.get(
-                    DataRepository.PARAM_TILEDIMAGES))) {
-                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_TILEDIMAGES));
             }
             if (!reindexSettings.get("reindexMix") && dataFolders.get(DataRepository.PARAM_MIX) != null && Files.isDirectory(dataFolders.get(
                     DataRepository.PARAM_MIX))) {

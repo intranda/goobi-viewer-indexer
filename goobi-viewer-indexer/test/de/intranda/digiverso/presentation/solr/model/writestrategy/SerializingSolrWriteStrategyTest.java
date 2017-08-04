@@ -61,7 +61,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        
+
         Utils.deleteDirectory(tempFolder);
     }
 
@@ -92,7 +92,6 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEI, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_TILEDIMAGES, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ptif"));
         dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
 
         SolrHelper sh = new SolrHelper(server);
@@ -114,7 +113,6 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEI, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_TILEDIMAGES, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ptif"));
         dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
 
         SolrHelper sh = new SolrHelper(server);

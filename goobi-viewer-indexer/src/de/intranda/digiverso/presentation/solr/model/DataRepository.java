@@ -40,7 +40,6 @@ public class DataRepository {
     public static final String PARAM_INDEXED_METS = "indexedMets";
     public static final String PARAM_INDEXED_LIDO = "indexedLido";
     public static final String PARAM_MEDIA = "mediaFolder";
-    public static final String PARAM_TILEDIMAGES = "pyramidTiffFolder";
     public static final String PARAM_ALTO = "altoFolder";
     public static final String PARAM_ALTOCROWD = "altoCrowdsourcingFolder";
     public static final String PARAM_ABBYY = "abbyyFolder";
@@ -91,7 +90,6 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_INDEXED_METS);
         checkAndCreateDataSubdir(PARAM_INDEXED_LIDO);
         checkAndCreateDataSubdir(PARAM_MEDIA);
-        checkAndCreateDataSubdir(PARAM_TILEDIMAGES);
         checkAndCreateDataSubdir(PARAM_ALTO);
         checkAndCreateDataSubdir(PARAM_ALTOCROWD);
         checkAndCreateDataSubdir(PARAM_FULLTEXT);
@@ -136,7 +134,6 @@ public class DataRepository {
      * @should delete word coords folder correctly
      * @should delete ABBYY folder correctly
      * @should delete media folder correctly
-     * @should delete tiled images folder correctly
      * @should delete source folder correctly
      * @should delete user generated content folder correctly
      * @should delete MIX folder correctly
@@ -151,7 +148,6 @@ public class DataRepository {
         deleteFolder(Paths.get(getDir(PARAM_TEI).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_ABBYY).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_MEDIA).toAbsolutePath().toString(), baseFileName));
-        deleteFolder(Paths.get(getDir(PARAM_TILEDIMAGES).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_SOURCE).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_UGC).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_MIX).toAbsolutePath().toString(), baseFileName));
@@ -203,7 +199,6 @@ public class DataRepository {
      */
     public void moveDataFoldersToRepository(DataRepository toRepository, String pi) {
         moveDataFolderToRepository(toRepository, pi, PARAM_MEDIA);
-        moveDataFolderToRepository(toRepository, pi, PARAM_TILEDIMAGES);
         moveDataFolderToRepository(toRepository, pi, PARAM_ALTO);
         moveDataFolderToRepository(toRepository, pi, PARAM_ALTOCROWD);
         moveDataFolderToRepository(toRepository, pi, PARAM_ABBYY);
