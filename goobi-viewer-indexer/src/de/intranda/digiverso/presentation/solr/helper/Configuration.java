@@ -50,8 +50,9 @@ public final class Configuration {
     private static Configuration instance = null;
 
     public static synchronized Configuration getInstance(String confFilename) throws FatalIndexerException {
-        if (confFilename != null) {
+        if (confFilename != null && !Configuration.configPath.equals(confFilename)) {
             Configuration.configPath = confFilename;
+            Configuration.instance = null;
         }
         return getInstance();
     }
