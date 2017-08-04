@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-
 <root>
 	<init>
 		<!-- Hotfolder pause between scans (milliseconds) -->
@@ -376,6 +375,7 @@
 			</list>
 		</MD_ALTERNATETITLE>
 
+		<MD_PUBLISHER>
 			<list>
 				<item>
 					<xpath>
@@ -596,8 +596,6 @@
 							</item>
 						</list>
 					</xpath>
-					<getnode>first</getnode>
-					<onefield>false</onefield>
 					<groupEntity type="PERSON">
 					    <field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
@@ -692,9 +690,6 @@
 							</item>
 						</list>
 					</xpath>
-					<getnode>first</getnode>
-					<onefield>false</onefield>
-					<aggregateEntity>true</aggregateEntity>
 				</item>
 			</list>
 		</MD_TRANSLATOR>

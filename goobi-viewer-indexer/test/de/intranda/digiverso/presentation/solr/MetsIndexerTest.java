@@ -108,7 +108,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldIndexRecordCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
         Assert.assertEquals(PI + ".xml", ret[0]);
@@ -862,7 +862,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void generatePageDocument_shouldAddALTOFieldFromTEICorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
 
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);

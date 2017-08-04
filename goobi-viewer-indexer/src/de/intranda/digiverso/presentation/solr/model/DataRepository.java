@@ -95,6 +95,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_ALTOCROWD);
         checkAndCreateDataSubdir(PARAM_FULLTEXT);
         checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
+        checkAndCreateDataSubdir(PARAM_TEIMETADATA);
         checkAndCreateDataSubdir(PARAM_TEIWC);
         checkAndCreateDataSubdir(PARAM_ABBYY);
         checkAndCreateDataSubdir(PARAM_PAGEPDF);
@@ -102,7 +103,6 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_UGC);
         checkAndCreateDataSubdir(PARAM_MIX);
         checkAndCreateDataSubdir(PARAM_OVERVIEW);
-        checkAndCreateDataSubdir(PARAM_TEIMETADATA);
         valid = true;
     }
 
@@ -133,6 +133,7 @@ public class DataRepository {
      * @should delete ALTO crowdsourcing folder correctly
      * @should delete fulltext folder correctly
      * @should delete fulltext crowdsourcing folder correctly
+     * @should delete TEI folder correctly
      * @should delete word coords folder correctly
      * @should delete ABBYY folder correctly
      * @should delete media folder correctly
@@ -147,6 +148,7 @@ public class DataRepository {
         deleteFolder(Paths.get(getDir(PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_FULLTEXT).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), baseFileName));
+        deleteFolder(Paths.get(getDir(PARAM_TEIMETADATA).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_TEIWC).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_ABBYY).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_MEDIA).toAbsolutePath().toString(), baseFileName));
@@ -206,6 +208,7 @@ public class DataRepository {
         moveDataFolderToRepository(toRepository, pi, PARAM_ABBYY);
         moveDataFolderToRepository(toRepository, pi, PARAM_FULLTEXT);
         moveDataFolderToRepository(toRepository, pi, PARAM_FULLTEXTCROWD);
+        moveDataFolderToRepository(toRepository, pi, PARAM_TEIMETADATA);
         moveDataFolderToRepository(toRepository, pi, PARAM_TEIWC);
         moveDataFolderToRepository(toRepository, pi, PARAM_PAGEPDF);
         moveDataFolderToRepository(toRepository, pi, PARAM_SOURCE);
@@ -272,6 +275,7 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_TEIWC);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ABBYY);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_MIX);
@@ -360,7 +364,7 @@ public class DataRepository {
             throw new IllegalArgumentException("param may not be null");
         }
 
-        if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param)!= null) {
+        if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
             return copyAndDeleteDataFolder(dataFolders.get(param), param, pi);
         }
 
