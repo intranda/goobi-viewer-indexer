@@ -113,15 +113,15 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     @Override
     public void addPageDoc(SolrInputDocument doc) {
         String iddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
-        if (doc.getField(SolrConstants.ALTO) != null) {
-            String xml = (String) doc.getFieldValue(SolrConstants.ALTO);
-            try {
-                FileUtils.writeStringToFile(new File(tempFolder.toFile(), iddoc + "_" + SolrConstants.ALTO), xml, ENCODING_UTF8);
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-            doc.removeField(SolrConstants.ALTO);
-        }
+        //        if (doc.getField(SolrConstants.ALTO) != null) {
+        //            String xml = (String) doc.getFieldValue(SolrConstants.ALTO);
+        //            try {
+        //                FileUtils.writeStringToFile(new File(tempFolder.toFile(), iddoc + "_" + SolrConstants.ALTO), xml, ENCODING_UTF8);
+        //            } catch (IOException e) {
+        //                logger.error(e.getMessage(), e);
+        //            }
+        //            doc.removeField(SolrConstants.ALTO);
+        //        }
         if (doc.getField(SolrConstants.FULLTEXT) != null) {
             String text = (String) doc.getFieldValue(SolrConstants.FULLTEXT);
             try {
@@ -307,19 +307,18 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         String iddoc = pageDocOrderIddocMap.get(order);
         SolrInputDocument doc = load(iddoc);
         if (doc != null) {
-            // doc.setField(SolrConstants.ORDER, newOrder); // make sure order starts at 1 in the end
             {
-                Path xmlFile = Paths.get(tempFolder.toAbsolutePath().toString(), new StringBuilder().append(iddoc).append("_").append(
-                        SolrConstants.ALTO).toString());
-                if (Files.isRegularFile(xmlFile)) {
-                    try {
-                        String xml = FileUtils.readFileToString(xmlFile.toFile(), "UTF8");
-                        doc.addField(SolrConstants.ALTO, xml);
-                        logger.debug("Found ALTO for: {}", iddoc);
-                    } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
+                //                Path xmlFile = Paths.get(tempFolder.toAbsolutePath().toString(), new StringBuilder().append(iddoc).append("_").append(
+                //                        SolrConstants.ALTO).toString());
+                //                if (Files.isRegularFile(xmlFile)) {
+                //                    try {
+                //                        String xml = FileUtils.readFileToString(xmlFile.toFile(), "UTF8");
+                //                        doc.addField(SolrConstants.ALTO, xml);
+                //                        logger.debug("Found ALTO for: {}", iddoc);
+                //                    } catch (IOException e) {
+                //                        logger.error(e.getMessage(), e);
+                //                    }
+                //                }
             }
             {
                 Path xmlFile = Paths.get(tempFolder.toAbsolutePath().toString(), new StringBuilder().append(iddoc).append("_").append(

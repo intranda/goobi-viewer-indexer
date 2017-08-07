@@ -341,7 +341,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         // Add text body
                         Element eleText = tei.getRootElement().getChild("text", null);
                         if (eleText != null && eleText.getChild("body", null) != null) {
-                            String language = eleText.getAttributeValue("lang", JDomXP.getNamespaces().get("xml")); // TODO extract language from a different element?
+                            String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml")); // TODO extract language from a different element?
                             Element eleBody = eleText.getChild("body", null);
                             Element eleNewRoot = new Element("tempRoot");
                             for (Element ele : eleBody.getChildren()) {
@@ -599,14 +599,14 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 Set<String> existingMetadataFields = new HashSet<>();
                 Set<String> existingSortFieldNames = new HashSet<>();
                 for (LuceneField field : currentIndexObj.getLuceneFields()) {
-                    if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())) {
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())) {
                         existingMetadataFields.add(new StringBuilder(field.getField()).append(field.getValue()).toString());
                     } else if (field.getField().startsWith(SolrConstants.SORT_)) {
                         existingSortFieldNames.add(field.getField());
                     }
                 }
                 for (LuceneField field : rootIndexObj.getLuceneFields()) {
-                    if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())
                             && !existingMetadataFields.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                         // Avoid duplicates (same field name + value)
                         currentIndexObj.addToLucene(field.getField(), field.getValue());
@@ -693,7 +693,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             Set<String> existingMetadataFieldNames = new HashSet<>();
             Set<String> existingSortFieldNames = new HashSet<>();
             for (String fieldName : pageDoc.getFieldNames()) {
-                if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
                     for (Object value : pageDoc.getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
@@ -702,7 +702,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 }
             }
             for (LuceneField field : currentIndexObj.getLuceneFields()) {
-                if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
                         && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                     // Avoid duplicates (same field name + value)
                     pageDoc.addField(field.getField(), field.getValue());
@@ -941,7 +941,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
                 try {
                     altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(),
-                            baseFileName + AbstractIndexer.XML_EXTENSION));
+                            baseFileName + XML_EXTENSION));
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
                 } catch (JDOMException | IOException e) {
@@ -951,11 +951,12 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     foundCrowdsourcingData = true;
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                         doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                        doc.addField(SolrConstants.FILENAME_ALTOCROWD, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
                         doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                        doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
+                        // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -974,11 +975,13 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
             if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD), false);
+                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
+                        false);
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    doc.addField("MD_FULLTEXT", fulltext);
+                    // doc.addField("MD_FULLTEXT", fulltext);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXTCROWD, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
                 }
             }
@@ -987,7 +990,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     .get(DataRepository.PARAM_ALTO) != null) {
                 try {
                     altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName
-                            + AbstractIndexer.XML_EXTENSION));
+                            + XML_EXTENSION));
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -996,11 +999,12 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 if (altoData != null) {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                         doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                         doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                        doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
+                        // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1019,10 +1023,11 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             // If FULLTEXT is still empty, look for a plain full-text
             if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
+                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
                 if (fulltext != null) {
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    doc.addField("MD_FULLTEXT", fulltext);
+                    // doc.addField("MD_FULLTEXT", fulltext);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from regular plain text for page {}", order);
                 }
             }
@@ -1032,7 +1037,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 try {
                     try {
                         altoData = TextHelper.readAbbyyToAlto(new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
-                                baseFileName + AbstractIndexer.XML_EXTENSION));
+                                baseFileName + XML_EXTENSION));
                         if (altoData != null) {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                                 doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
@@ -1070,15 +1075,16 @@ public class WorldViewsIndexer extends AbstractIndexer {
             if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
                 try {
                     altoData = TextHelper.readTeiToAlto(new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName
-                            + AbstractIndexer.XML_EXTENSION));
+                            + XML_EXTENSION));
                     if (altoData != null) {
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                             doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                            doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                             logger.debug("Added ALTO from regular ALTO for page {}", order);
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                             doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                            doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
+                            // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                             logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
 
                         }
@@ -1094,8 +1100,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             addNamedEntitiesFields(altoData, doc);
                         }
                     }
-                    //                        doc.addField(SolrConstants.WORDCOORDS, TextHelper.readXmlFileToString(new File(dataFolders.get(DataRepository.PARAM_WC),
-                    //                                baseFileName + AbstractIndexer.XML_EXTENSION)));
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1106,7 +1110,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
                 try {
                     Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                            baseFileName + AbstractIndexer.XML_EXTENSION));
+                            baseFileName + XML_EXTENSION));
                     for (String key : mixData.keySet()) {
                         if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null) && !(key.equals(SolrConstants.HEIGHT)
                                 && doc.getField(SolrConstants.HEIGHT) != null)) {

@@ -41,7 +41,7 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
     /**
      * @param aggregateRecords
      * @throws IndexerException
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @see de.intranda.digiverso.presentation.solr.model.ISolrWriteStrategy#writeDocs()
      * @should write all structure docs correctly
      * @should write all page docs correctly
@@ -57,9 +57,6 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
             checkAndAddAccessCondition(pageDoc);
             docsToAdd.add(pageDoc);
         }
-
-        //        StringBuilder sbSuperDefault = new StringBuilder();
-        //        StringBuilder sbSuperFulltext = new StringBuilder();
 
         for (SolrInputDocument doc : docsToAdd) {
             if (doc.getFieldValue("GROUPFIELD") == null) {
@@ -77,14 +74,6 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
                 }
             }
         }
-
-        // Add SUPERDEFAULT and SUPERFULLTEXT fields to the root doc
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERDEFAULT, AbstractIndexer.cleanUpDefaultField(sbSuperDefault.toString()));
-        //        }
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERFULLTEXT, sbSuperFulltext.toString());
-        //        }
 
         solrHelper.writeToIndex(rootDoc);
         solrHelper.commit(SolrHelper.optimize);

@@ -165,6 +165,10 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
                 pageDoc.addField(SolrConstants.PI_TOPSTRUCT, pi);
                 logger.warn("Page document {} has no PI_TOPSTRUCT fields, adding now...", pageDoc.getFieldValue(SolrConstants.ORDER));
             }
+            // Remove ALTO field (easier than removing all the logic involved in adding the ALTO field)
+            if (pageDoc.containsKey(SolrConstants.ALTO)) {
+                pageDoc.removeField(SolrConstants.ALTO);
+            }
         }
 
         for (SolrInputDocument doc : docsToAdd) {

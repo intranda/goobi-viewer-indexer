@@ -419,10 +419,11 @@ public final class TextHelper {
      * @throws FileNotFoundException
      * @throws IOException
      * @throws JDOMException
+     * @throws FatalIndexerException
      * @should return correct values
      * @should throw FileNotFoundException if file not found
      */
-    public static Map<String, String> readMix(File file) throws FileNotFoundException, IOException, JDOMException {
+    public static Map<String, String> readMix(File file) throws FileNotFoundException, IOException, JDOMException, FatalIndexerException {
         Map<String, String> ret = new HashMap<>();
 
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -475,7 +476,7 @@ public final class TextHelper {
      */
     public static String generateFulltext(String fileName, Path folder, boolean warnIfMissing) {
         if (Files.isDirectory(folder)) {
-            Path txt = Paths.get(folder.toAbsolutePath().toString(), fileName + ".txt");
+            Path txt = Paths.get(folder.toAbsolutePath().toString(), fileName);
             if (Files.isRegularFile(txt)) {
                 try {
                     String text = TextHelper.readFileToString(txt.toFile());

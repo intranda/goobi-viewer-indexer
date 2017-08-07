@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
-import de.intranda.digiverso.presentation.solr.SolrIndexerDaemon;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
@@ -94,14 +93,14 @@ public class MetadataHelper {
         List<LuceneField> ret = new ArrayList<>();
 
         Set<Integer> centuries = new HashSet<>();
-        List<String> fieldNamesList = SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
+        List<String> fieldNamesList = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
         StringBuilder sbDefaultMetadataValues = new StringBuilder();
         if (indexObj.getDefaultValue() != null) {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());
         }
         StringBuilder sbNormDataTerms = new StringBuilder();
         for (String fieldName : fieldNamesList) {
-            List<FieldConfig> configurationItemList = SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
+            List<FieldConfig> configurationItemList = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
                     fieldName);
             for (FieldConfig configurationItem : configurationItemList) {
                 // Constant value instead of XPath
@@ -664,7 +663,7 @@ public class MetadataHelper {
         }
         String ret = pi.trim();
         // Apply replace rules defined for the field PI
-        List<FieldConfig> configItems = SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
+        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
                 SolrConstants.PI);
         if (configItems != null && !configItems.isEmpty()) {
             Map<Object, String> replaceRules = configItems.get(0).getReplaceRules();
@@ -756,7 +755,7 @@ public class MetadataHelper {
         return value;
     }
 
-    public static String getAnchorPi(JDomXP xp) {
+    public static String getAnchorPi(JDomXP xp) throws FatalIndexerException {
         String query =
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
@@ -1023,10 +1022,11 @@ public class MetadataHelper {
      * @param groupEntityFields
      * @param groupLabel
      * @return
+     * @throws FatalIndexerException
      * @should group correctly
      */
     @SuppressWarnings("unchecked")
-    protected static GroupedMetadata getGroupedMetadata(Element ele, MultiMap groupEntityFields, String groupLabel) {
+    protected static GroupedMetadata getGroupedMetadata(Element ele, MultiMap groupEntityFields, String groupLabel) throws FatalIndexerException {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);

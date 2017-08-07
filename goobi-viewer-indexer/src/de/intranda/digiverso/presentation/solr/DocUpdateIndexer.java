@@ -119,11 +119,12 @@ public class DocUpdateIndexer extends AbstractIndexer {
                                 partialUpdates.put(SolrConstants.FULLTEXT, update);
                             }
                             {
-                                Map<String, Object> update = new HashMap<>();
-                                update.put("set", fulltext);
-                                partialUpdates.put("MD_FULLTEXT", update);
+                                // Map<String, Object> update = new HashMap<>();
+                                // update.put("set", fulltext);
+                                // partialUpdates.put("MD_FULLTEXT", update);
                             }
                         }
+                        
                     }
                 }
             }
@@ -139,11 +140,11 @@ public class DocUpdateIndexer extends AbstractIndexer {
                             update.put("set", Jsoup.parse(fulltext).text());
                             partialUpdates.put(SolrConstants.FULLTEXT, update);
                         }
-                        if (!partialUpdates.containsKey("MD_FULLTEXT")) {
-                            Map<String, Object> update = new HashMap<>();
-                            update.put("set", fulltext);
-                            partialUpdates.put("MD_FULLTEXT", update);
-                        }
+                        //                        if (!partialUpdates.containsKey("MD_FULLTEXT")) {
+                        //                            Map<String, Object> update = new HashMap<>();
+                        //                            update.put("set", fulltext);
+                        //                            partialUpdates.put("MD_FULLTEXT", update);
+                        //                        }
                     }
                 }
             }

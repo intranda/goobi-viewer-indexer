@@ -70,6 +70,7 @@ public abstract class AbstractIndexer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractIndexer.class);
 
     public static final String XML_EXTENSION = ".xml";
+    public static final String TXT_EXTENSION = ".txt";
 
     public static boolean noTimestampUpdate = false;
 

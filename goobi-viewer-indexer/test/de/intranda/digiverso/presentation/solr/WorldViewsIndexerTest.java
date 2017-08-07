@@ -21,7 +21,7 @@ import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStr
 
 public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
 
-    private static Hotfolder hotfolder;
+    private Hotfolder hotfolder;
 
     @Override
     @Before

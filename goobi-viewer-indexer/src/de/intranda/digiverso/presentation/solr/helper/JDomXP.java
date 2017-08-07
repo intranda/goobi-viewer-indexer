@@ -20,9 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.jdom2.Attribute;
@@ -78,8 +76,6 @@ public class JDomXP {
 
     private Document doc;
 
-    private static Map<String, Namespace> namespaces;
-
     /**
      * Constructor that reads a Document from the given file.
      * 
@@ -90,10 +86,6 @@ public class JDomXP {
      * @throws FatalIndexerException
      */
     public JDomXP(File file) throws JDOMException, FileNotFoundException, IOException, FatalIndexerException {
-        if (namespaces == null) {
-            initNamespaces();
-        }
-
         SAXBuilder builder = new SAXBuilder();
         try (FileInputStream fis = new FileInputStream(file)) {
             doc = builder.build(fis);
@@ -107,38 +99,7 @@ public class JDomXP {
      * @throws FatalIndexerException
      */
     public JDomXP(Document doc) throws FatalIndexerException {
-        if (namespaces == null) {
-            initNamespaces();
-        }
         this.doc = doc;
-    }
-
-    /**
-     * Adds relevant XML namespaces to the list of available namespace objects.
-     * 
-     * @throws FatalIndexerException
-     * @should add custom namespaces correctly
-     */
-    public static void initNamespaces() throws FatalIndexerException {
-        namespaces = new HashMap<>();
-        getNamespaces().put("xml", Namespace.getNamespace("xml", "http://www.w3.org/XML/1998/namespace"));
-        getNamespaces().put("mets", Namespace.getNamespace("mets", "http://www.loc.gov/METS/"));
-        getNamespaces().put("mods", Namespace.getNamespace("mods", "http://www.loc.gov/mods/v3"));
-        getNamespaces().put("gdz", Namespace.getNamespace("gdz", "http://gdz.sub.uni-goettingen.de/"));
-        getNamespaces().put("xlink", Namespace.getNamespace("xlink", "http://www.w3.org/1999/xlink"));
-        getNamespaces().put("dv", Namespace.getNamespace("dv", "http://dfg-viewer.de/"));
-        getNamespaces().put("lido", Namespace.getNamespace("lido", "http://www.lido-schema.org"));
-        getNamespaces().put("mix", Namespace.getNamespace("mix", "http://www.loc.gov/mix/v20"));
-        getNamespaces().put("mm", Namespace.getNamespace("mm", "http://www.mycore.de/metsmaker/v1"));
-        getNamespaces().put("tei", Namespace.getNamespace("tei", "http://www.tei-c.org/ns/1.0"));
-
-        Map<String, String> additionalNamespaces = Configuration.getInstance().getListConfiguration("init.namespaces");
-        if (additionalNamespaces != null) {
-            for (String key : additionalNamespaces.keySet()) {
-                getNamespaces().put(key, Namespace.getNamespace(key, additionalNamespaces.get(key)));
-                logger.info("Added custom namespace '{}'.", key);
-            }
-        }
     }
 
     /***
@@ -147,8 +108,9 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link List}
+     * @throws FatalIndexerException 
      */
-    public List<Object> evaluate(String expr, Object parent) {
+    public List<Object> evaluate(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
             parent = doc;
         }
@@ -162,13 +124,14 @@ public class JDomXP {
      * @param parent If not null, the expression is evaluated relative to this element.
      * @param filter Return type filter.
      * @return
+     * @throws FatalIndexerException 
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static List<Object> evaluate(String expr, Object parent, Filter filter) {
+    public static List<Object> evaluate(String expr, Object parent, Filter filter) throws FatalIndexerException {
         XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
         // Add all namespaces
-        for (String key : getNamespaces().keySet()) {
-            Namespace value = getNamespaces().get(key);
+        for (String key : Configuration.getInstance().getNamespaces().keySet()) {
+            Namespace value = Configuration.getInstance().getNamespaces().get(key);
             builder.setNamespace(key, value.getURI());
         }
         XPathExpression<Object> xpath = builder.compileWith(XPathFactory.instance());
@@ -182,9 +145,10 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link ArrayList} or null
+     * @throws FatalIndexerException 
      * @should return all values
      */
-    public List<Element> evaluateToElements(String expr, Object parent) {
+    public List<Element> evaluateToElements(String expr, Object parent) throws FatalIndexerException {
         List<Element> retList = new ArrayList<>();
         if (parent == null) {
             parent = doc;
@@ -208,9 +172,10 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link ArrayList} or null
+     * @throws FatalIndexerException 
      * @should return all values
      */
-    public List<Attribute> evaluateToAttributes(String expr, Object parent) {
+    public List<Attribute> evaluateToAttributes(String expr, Object parent) throws FatalIndexerException {
         List<Attribute> retList = new ArrayList<>();
         if (parent == null) {
             parent = doc;
@@ -234,9 +199,10 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return
+     * @throws FatalIndexerException 
      * @should return value correctly
      */
-    public String evaluateToAttributeStringValue(String expr, Object parent) {
+    public String evaluateToAttributeStringValue(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
             parent = doc;
         }
@@ -257,9 +223,10 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link String} or null
+     * @throws FatalIndexerException 
      * @should return value correctly
      */
-    public String evaluateToString(String expr, Object parent) {
+    public String evaluateToString(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
             parent = doc;
         }
@@ -283,9 +250,10 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link ArrayList} or null
+     * @throws FatalIndexerException 
      * @should return all values
      */
-    public List<String> evaluateToStringList(String expr, Object parent) {
+    public List<String> evaluateToStringList(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
             parent = doc;
         }
@@ -308,9 +276,10 @@ public class JDomXP {
      * @param expr
      * @param parent
      * @return
+     * @throws FatalIndexerException 
      * @should return value correctly
      */
-    public String evaluateToCdata(String expr, Object parent) {
+    public String evaluateToCdata(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
             parent = doc;
         }
@@ -383,19 +352,16 @@ public class JDomXP {
      * 
      * @param dmdId
      * @return
+     * @throws FatalIndexerException
      * @should return mdWrap correctly
      */
-    public Element getMdWrap(String dmdId) {
+    public Element getMdWrap(String dmdId) throws FatalIndexerException {
         List<Element> ret = evaluateToElements("mets:mets/mets:dmdSec[@ID='" + dmdId + "']/mets:mdWrap[@MDTYPE='MODS']", null);
         if (ret != null && !ret.isEmpty()) {
             return ret.get(0);
         }
 
         return null;
-    }
-
-    public static Map<String, Namespace> getNamespaces() {
-        return namespaces;
     }
 
     /**
@@ -419,7 +385,7 @@ public class JDomXP {
                 if (xp.doc.getRootElement().getName().equals("lidoWrap")) {
                     // Multiple LIDO document file
                     Namespace nsXsi = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                    List<Element> lidoElements = xp.doc.getRootElement().getChildren("lido", namespaces.get("lido"));
+                    List<Element> lidoElements = xp.doc.getRootElement().getChildren("lido", Configuration.getInstance().getNamespaces().get("lido"));
                     if (lidoElements != null) {
                         for (Element eleLidoDoc : lidoElements) {
                             Document doc = new Document();

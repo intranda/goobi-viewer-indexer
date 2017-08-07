@@ -219,7 +219,7 @@ public class TextHelperTest {
     public void generateFulltext_shouldReturnTextIfFulltextFileExists() throws Exception {
         Path folder = Paths.get("resources/test");
         Assert.assertTrue(Files.isDirectory(folder));
-        String text = TextHelper.generateFulltext("stopwords_de_en", folder, false);
+        String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false);
         Assert.assertTrue(StringUtils.isNotEmpty(text));
     }
 
@@ -231,7 +231,7 @@ public class TextHelperTest {
     public void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() throws Exception {
         Path folder = Paths.get("resources/test");
         Assert.assertTrue(Files.isDirectory(folder));
-        String text = TextHelper.generateFulltext("filenotfound", folder, false);
+        String text = TextHelper.generateFulltext("filenotfound.txt", folder, false);
         Assert.assertNull(text);
     }
 

@@ -779,7 +779,7 @@ public class MetsIndexer extends AbstractIndexer {
                 Set<String> existingMetadataFieldNames = new HashSet<>();
                 Set<String> existingSortFieldNames = new HashSet<>();
                 for (String fieldName : pageDoc.getFieldNames()) {
-                    if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
                         for (Object value : pageDoc.getFieldValues(fieldName)) {
                             existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                         }
@@ -788,7 +788,7 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                 }
                 for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
                             && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                         // Avoid duplicates (same field name + value)
                         pageDoc.addField(field.getField(), field.getValue());
@@ -939,7 +939,7 @@ public class MetsIndexer extends AbstractIndexer {
             return false;
         }
 
-        List<Element> eleFptrList = eleStructMapPhysical.getChildren("fptr", JDomXP.getNamespaces().get("mets"));
+        List<Element> eleFptrList = eleStructMapPhysical.getChildren("fptr", Configuration.getInstance().getNamespaces().get("mets"));
         String useFileGroup = null;
 
         // Create Solr document for this page
@@ -1192,7 +1192,7 @@ public class MetsIndexer extends AbstractIndexer {
             if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
                 try {
                     altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(),
-                            baseFileName + AbstractIndexer.XML_EXTENSION));
+                            baseFileName + XML_EXTENSION));
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
                 } catch (JDOMException | IOException e) {
@@ -1202,11 +1202,12 @@ public class MetsIndexer extends AbstractIndexer {
                     foundCrowdsourcingData = true;
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                         doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                        doc.addField(SolrConstants.FILENAME_ALTOCROWD, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
                         doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                        doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
+                        // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1225,11 +1226,13 @@ public class MetsIndexer extends AbstractIndexer {
 
             // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
             if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD), false);
+                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
+                        false);
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    doc.addField("MD_FULLTEXT", fulltext);
+                    // doc.addField("MD_FULLTEXT", fulltext);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXTCROWD, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
                 }
             }
@@ -1238,7 +1241,7 @@ public class MetsIndexer extends AbstractIndexer {
                     .get(DataRepository.PARAM_ALTO) != null) {
                 try {
                     altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName
-                            + AbstractIndexer.XML_EXTENSION));
+                            + XML_EXTENSION));
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1247,11 +1250,12 @@ public class MetsIndexer extends AbstractIndexer {
                 if (altoData != null) {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                         doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                         doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                        doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
+                        // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1270,10 +1274,11 @@ public class MetsIndexer extends AbstractIndexer {
 
             // If FULLTEXT is still empty, look for a plain full-text
             if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
+                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
                 if (fulltext != null) {
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    doc.addField("MD_FULLTEXT", fulltext);
+                    // doc.addField("MD_FULLTEXT", fulltext);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from regular plain text for page {}", order);
                 }
             }
@@ -1283,7 +1288,7 @@ public class MetsIndexer extends AbstractIndexer {
                 try {
                     try {
                         altoData = TextHelper.readAbbyyToAlto(new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
-                                baseFileName + AbstractIndexer.XML_EXTENSION));
+                                baseFileName + XML_EXTENSION));
                         if (altoData != null) {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                                 doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
@@ -1328,15 +1333,16 @@ public class MetsIndexer extends AbstractIndexer {
             if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
                 try {
                     altoData = TextHelper.readTeiToAlto(new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName
-                            + AbstractIndexer.XML_EXTENSION));
+                            + XML_EXTENSION));
                     if (altoData != null) {
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                             doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                            doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                             logger.debug("Added ALTO from regular ALTO for page {}", order);
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                             doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                            doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
+                            // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                             logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
 
                         }
@@ -1352,8 +1358,6 @@ public class MetsIndexer extends AbstractIndexer {
                             addNamedEntitiesFields(altoData, doc);
                         }
                     }
-                    //                        doc.addField(SolrConstants.WORDCOORDS, TextHelper.readXmlFileToString(new File(dataFolders.get(DataRepository.PARAM_WC),
-                    //                                baseFileName + AbstractIndexer.XML_EXTENSION)));
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1364,7 +1368,7 @@ public class MetsIndexer extends AbstractIndexer {
             if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
                 try {
                     Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                            baseFileName + AbstractIndexer.XML_EXTENSION));
+                            baseFileName + XML_EXTENSION));
                     for (String key : mixData.keySet()) {
                         if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null) && !(key.equals(SolrConstants.HEIGHT)
                                 && doc.getField(SolrConstants.HEIGHT) != null)) {
@@ -1388,6 +1392,8 @@ public class MetsIndexer extends AbstractIndexer {
                     if (altoData != null) {
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                             doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                            // TODO write ALTO file
+                            doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                             logger.debug("Added ALTO from downloaded ALTO for page {}", order);
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
@@ -1547,7 +1553,7 @@ public class MetsIndexer extends AbstractIndexer {
                 List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec);
                 if (eleModsList != null && !eleModsList.isEmpty()) {
                     Element eleMods = eleModsList.get(0);
-                    List<FieldConfig> collectionConfigFields = SolrIndexerDaemon.getInstance().getMetadataConfigurationManager()
+                    List<FieldConfig> collectionConfigFields = Configuration.getInstance().getMetadataConfigurationManager()
                             .getConfigurationListForField(SolrConstants.DC);
                     if (collectionConfigFields != null) {
                         logger.debug("Found {} config items for DC", collectionConfigFields.size());
@@ -1642,8 +1648,8 @@ public class MetsIndexer extends AbstractIndexer {
 
             // URL
             {
-                Namespace nsMets = JDomXP.getNamespaces().get("mets");
-                Namespace nsXlink = JDomXP.getNamespaces().get("xlink");
+                Namespace nsMets = Configuration.getInstance().getNamespaces().get("mets");
+                Namespace nsXlink = Configuration.getInstance().getNamespaces().get("xlink");
                 Element mptr = child.getChild("mptr", nsMets);
                 String href = mptr.getAttribute("href", nsXlink).getValue();
                 if (href.contains("=")) {
@@ -1861,14 +1867,14 @@ public class MetsIndexer extends AbstractIndexer {
             Set<String> existingMetadataFields = new HashSet<>();
             Set<String> existingSortFieldNames = new HashSet<>();
             for (LuceneField field : indexObj.getLuceneFields()) {
-                if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())) {
                     existingMetadataFields.add(new StringBuilder(field.getField()).append(field.getValue()).toString());
                 } else if (field.getField().startsWith(SolrConstants.SORT_)) {
                     existingSortFieldNames.add(field.getField());
                 }
             }
             for (LuceneField field : parentIndexObject.getLuceneFields()) {
-                if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())
                         && !existingMetadataFields.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                     // Avoid duplicates (same field name + value)
                     indexObj.addToLucene(field.getField(), field.getValue());
@@ -2022,8 +2028,9 @@ public class MetsIndexer extends AbstractIndexer {
      * top docstruct (ISWORK). TODO get from generated pages instead of METS.
      * 
      * @param indexObj The IndexObject to find URNs for.
+     * @throws FatalIndexerException 
      */
-    private void generatePageUrns(IndexObject indexObj) {
+    private void generatePageUrns(IndexObject indexObj) throws FatalIndexerException {
         String query1 = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div/@CONTENTIDS";
         List<String> physUrnList = xp.evaluateToStringList(query1, null);
         if (physUrnList != null) {
@@ -2051,8 +2058,9 @@ public class MetsIndexer extends AbstractIndexer {
      * 
      * @param indexObj
      * @return
+     * @throws FatalIndexerException 
      */
-    private String setUrn(IndexObject indexObj) {
+    private String setUrn(IndexObject indexObj) throws FatalIndexerException {
         String query = "/mets:mets/mets:structMap[@TYPE='LOGICAL']//mets:div[@ID='" + indexObj.getLogId() + "']/@CONTENTIDS";
         String urn = xp.evaluateToAttributeStringValue(query, null);
         if (Utils.isUrn(urn)) {
@@ -2068,9 +2076,10 @@ public class MetsIndexer extends AbstractIndexer {
      * 
      * @param indexObj
      * @return {@link Element} or null
+     * @throws FatalIndexerException 
      * 
      */
-    private Element findStructNode(IndexObject indexObj) {
+    private Element findStructNode(IndexObject indexObj) throws FatalIndexerException {
         String query = "";
         if (!indexObj.isVolume()) {
             query = "//mets:mets/mets:structMap[@TYPE='LOGICAL']/mets:div[@DMDID and @ID]";
@@ -2090,8 +2099,9 @@ public class MetsIndexer extends AbstractIndexer {
      * 
      * 
      * @return boolean
+     * @throws FatalIndexerException
      */
-    private boolean isAnchor() {
+    private boolean isAnchor() throws FatalIndexerException {
         String anchorQuery = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']";
         List<Element> anchorList = xp.evaluateToElements(anchorQuery, null);
         // das habe ich selber hinzugefügt..
@@ -2106,8 +2116,9 @@ public class MetsIndexer extends AbstractIndexer {
      * 
      * @return boolean
      * @throws IndexerException
+     * @throws FatalIndexerException
      */
-    private boolean isVolume() throws IndexerException {
+    private boolean isVolume() throws IndexerException, FatalIndexerException {
         String query =
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
@@ -2121,10 +2132,11 @@ public class MetsIndexer extends AbstractIndexer {
     /**
      * 
      * @return
+     * @throws FatalIndexerException 
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS
      */
-    protected Date getMetsCreateDate() {
+    protected Date getMetsCreateDate() throws FatalIndexerException {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
         if (dateString != null) {
             try {

@@ -231,17 +231,16 @@ public class MetadataHelperTest {
         MultiMap groupEntity = (MultiMap) fieldValues.get("groupEntity");
         Assert.assertNotNull(groupEntity);
 
-        JDomXP.initNamespaces();
         Document docMods = JDomXP.readXmlFile("resources/test/METS/aggregation_mods_test.xml");
         Assert.assertNotNull(docMods);
         Assert.assertNotNull(docMods.getRootElement());
 
-        Element eleName = docMods.getRootElement().getChild("name", JDomXP.getNamespaces().get("mods"));
+        Element eleName = docMods.getRootElement().getChild("name", Configuration.getInstance().getNamespaces().get("mods"));
         Assert.assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, groupEntity, "label");
         Assert.assertFalse(gmd.getFields().isEmpty());
         Assert.assertEquals("label", gmd.getLabel());
-        Assert.assertEquals("label_display_form", gmd.getMainValue());
+        Assert.assertEquals("display_form", gmd.getMainValue());
         String label = null;
         String metadataType = null;
         String corporation = null;

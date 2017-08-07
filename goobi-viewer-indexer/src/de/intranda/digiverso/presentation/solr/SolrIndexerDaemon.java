@@ -37,7 +37,7 @@ public final class SolrIndexerDaemon {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
-    public static final String VERSION = "3.2.20170804";
+    public static final String VERSION = "3.2.20170807";
     private static final int MIN_SCHEMA_VERSION = 20170717;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
@@ -48,7 +48,6 @@ public final class SolrIndexerDaemon {
     private String confFilename = "indexerconfig_solr_worldviews.xml";
     private int sleepInterval = 1000;
     private volatile boolean running = false;
-    private MetadataConfigurationManager metadataConfigurationManager;
 
     public static SolrIndexerDaemon getInstance() {
         SolrIndexerDaemon indexer = instance;
@@ -199,17 +198,4 @@ public final class SolrIndexerDaemon {
 
         return false;
     }
-
-    /**
-     * @return the metadataConfigurationManager
-     * @throws FatalIndexerException
-     */
-    public MetadataConfigurationManager getMetadataConfigurationManager() throws FatalIndexerException {
-        if (metadataConfigurationManager == null) {
-            metadataConfigurationManager = new MetadataConfigurationManager();
-        }
-
-        return metadataConfigurationManager;
-    }
-
 }

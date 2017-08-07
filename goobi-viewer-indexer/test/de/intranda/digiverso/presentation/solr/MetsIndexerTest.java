@@ -57,7 +57,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     private static final String PI = "PPN517154005";
     private static final String PI2 = "H030001";
 
-    private static Hotfolder hotfolder;
+    private Hotfolder hotfolder;
 
     private Path metsFile;
     private Path metsFile2;
@@ -161,8 +161,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("urn:nbn:de:hebis:66:fuldig-1946", doc.getFieldValue(SolrConstants.URN));
             Assert.assertNull(doc.getFieldValue(SolrConstants.IMAGEURN_OAI)); // only docs representing deleted records should have this field
             Assert.assertEquals("http://opac.sub.uni-goettingen.de/DB=1/PPN?PPN=517154005", doc.getFieldValue(SolrConstants.OPACURL));
-            // Assert.assertNotNull(doc.getFieldValue(SolrConstants.OVERVIEWPAGE));
-            // Assert.assertEquals(true, doc.getFieldValue(SolrConstants.OVERVIEWPAGEFORCE));
             Assert.assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR");
@@ -287,10 +285,12 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.IMAGEURN));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.FILEIDROOT));
+                Assert.assertNotNull(doc.getFieldValue(SolrConstants.FILENAME));
+                String fileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
                 {
-                    List<String> values = (List<String>) doc.getFieldValue("MD_FULLTEXT");
-                    Assert.assertNotNull(values);
-                    Assert.assertFalse(values.isEmpty());
+                    //                    List<String> values = (List<String>) doc.getFieldValue("MD_FULLTEXT");
+                    //                    Assert.assertNotNull(values);
+                    //                    Assert.assertFalse(values.isEmpty());
                     Assert.assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
                 }
                 {
@@ -302,8 +302,9 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 }
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
                 {
-                    String value = (String) doc.getFieldValue(SolrConstants.ALTO);
+                    String value = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
                     Assert.assertNotNull(value);
+                    Assert.assertEquals(FilenameUtils.getBaseName(fileName) + AbstractIndexer.XML_EXTENSION, value);
                 }
                 // DATEUPDATED from the top docstruct
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));

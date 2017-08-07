@@ -39,9 +39,7 @@ public final class MetadataConfigurationManager {
     private Set<String> fieldsToAddToChildren = new HashSet<>();
     private Set<String> fieldsToAddToPages = new HashSet<>();
 
-    public MetadataConfigurationManager() throws FatalIndexerException {
-        Configuration config = Configuration.getInstance();
-
+    public MetadataConfigurationManager(Configuration config) {
         // Regular fields
         Map<String, List<Map<String, Object>>> fieldMap = config.getFieldConfiguration();
         // For each field
@@ -70,7 +68,6 @@ public final class MetadataConfigurationManager {
     @SuppressWarnings("unchecked")
     FieldConfig generateConfigurationItem(String fieldName, Map<String, Object> configurationMap) {
         FieldConfig configurationItem = new FieldConfig(fieldName);
-        // alle werte die null sind werden aus der map entfernt.
         Object[] keys = configurationMap.keySet().toArray();
         for (Object object : keys) {
             if (configurationMap.get(object) == null) {

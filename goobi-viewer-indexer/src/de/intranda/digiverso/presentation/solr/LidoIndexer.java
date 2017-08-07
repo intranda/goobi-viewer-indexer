@@ -409,7 +409,7 @@ public class LidoIndexer extends AbstractIndexer {
                 Set<String> existingMetadataFieldNames = new HashSet<>();
                 Set<String> existingSortFieldNames = new HashSet<>();
                 for (String fieldName : pageDoc.getFieldNames()) {
-                    if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
                         for (Object value : pageDoc.getFieldValues(fieldName)) {
                             existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                         }
@@ -418,7 +418,7 @@ public class LidoIndexer extends AbstractIndexer {
                     }
                 }
                 for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
                             && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                         // Avoid duplicates (same field name + value)
                         pageDoc.addField(field.getField(), field.getValue());
@@ -498,7 +498,7 @@ public class LidoIndexer extends AbstractIndexer {
         //                        writeStrategy, dataFolders));
         int order = pageCountStart;
         for (Element eleResourceSet : resourceSetList) {
-            String orderAttribute = eleResourceSet.getAttributeValue("sortorder", JDomXP.getNamespaces().get("lido"));
+            String orderAttribute = eleResourceSet.getAttributeValue("sortorder", Configuration.getInstance().getNamespaces().get("lido"));
             // Extract page order info , if available
             if (orderAttribute != null) {
                 order = Integer.valueOf(orderAttribute);
@@ -521,9 +521,10 @@ public class LidoIndexer extends AbstractIndexer {
      * @param dataFolders
      * @param downloadExternalImages
      * @return
+     * @throws FatalIndexerException
      */
     boolean generatePageDocument(Element eleResourceSet, String iddoc, Integer order, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders,
-            boolean downloadExternalImages) {
+            boolean downloadExternalImages) throws FatalIndexerException {
         if (order == null) {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
         }

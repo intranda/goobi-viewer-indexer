@@ -36,6 +36,7 @@ public final class SolrConstants {
     }
 
     public static final String ACCESSCONDITION = "ACCESSCONDITION";
+    @Deprecated
     public static final String ALTO = "ALTO";
     public static final String CENTURY = "CENTURY";
     public static final String COLORSPACE = "COLORSPACE";
@@ -55,6 +56,10 @@ public final class SolrConstants {
     public static final String EVENTTYPE = "EVENTTYPE";
     public static final String FILEIDROOT = "FILEIDROOT";
     public static final String FILENAME = "FILENAME";
+    public static final String FILENAME_ALTO = "FILENAME_ALTO";
+    public static final String FILENAME_ALTOCROWD = "FILENAME_ALTOCROWD";
+    public static final String FILENAME_FULLTEXT = "FILENAME_FULLTEXT";
+    public static final String FILENAME_FULLTEXTCROWD = "FILENAME_FULLTEXTCROWD";
     public static final String FULLTEXT = "FULLTEXT";
     public static final String FULLTEXTAVAILABLE = "FULLTEXTAVAILABLE";
     public static final String GROUPFIELD = "GROUPFIELD";
@@ -81,8 +86,6 @@ public final class SolrConstants {
     public static final String ORDERLABEL = "ORDERLABEL";
     public static final String ORDERLABELFIRST = "ORDERLABELFIRST";
     public static final String ORDERLABELLAST = "ORDERLABELLAST";
-    //    public static final String OVERVIEWPAGE = "OVERVIEWPAGE";
-    //    public static final String OVERVIEWPAGEFORCE = "OVERVIEWPAGEFORCE";
     public static final String OVERVIEWPAGE_DESCRIPTION = "OVERVIEWPAGE_DESCRIPTION";
     public static final String OVERVIEWPAGE_PUBLICATIONTEXT = "OVERVIEWPAGE_PUBLICATIONTEXT";
     public static final String PARTNERID = "PARTNERID";

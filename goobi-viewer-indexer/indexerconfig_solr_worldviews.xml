@@ -419,10 +419,6 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
-                            </item>
-                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
-                            </item>
                             <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang="ger"]
                             </item> 
                         </list>
@@ -443,10 +439,6 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
-                            </item>
-                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
-                            </item>
                             <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang="eng"]
                             </item> 
                         </list>
