@@ -92,9 +92,9 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_INDEXED_LIDO);
         checkAndCreateDataSubdir(PARAM_MEDIA);
         checkAndCreateDataSubdir(PARAM_ALTO);
-        checkAndCreateDataSubdir(PARAM_ALTOCROWD);
+        //        checkAndCreateDataSubdir(PARAM_ALTOCROWD);
         checkAndCreateDataSubdir(PARAM_FULLTEXT);
-        checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
+        //        checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
         checkAndCreateDataSubdir(PARAM_TEIMETADATA);
         checkAndCreateDataSubdir(PARAM_TEIWC);
         checkAndCreateDataSubdir(PARAM_ABBYY);
@@ -323,11 +323,11 @@ public class DataRepository {
 
         // Copy and delete ALTO folder
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTO);
-        // Copy and delete crowdsourcing ALTO folder
+        // Copy and delete crowdsourcing ALTO folder (AFTER regular ALTO!)
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD);
         // Copy and delete fulltext folder
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT);
-        // Copy and delete crowdsourcing fulltext folder
+        // Copy and delete crowdsourcing fulltext folder (AFTER regular FULLTEXT!)
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD);
         // Copy and delete TEI metadata folder
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA);
@@ -390,6 +390,12 @@ public class DataRepository {
             throw new IllegalArgumentException("identifier may not be null");
         }
 
+        // Copy crowdsourcing data folders into their regular counterparts, overwriting regular filess
+        if (PARAM_ALTOCROWD.equals(paramName)) {
+            paramName = PARAM_ALTO;
+        } else if (PARAM_FULLTEXTCROWD.equals(paramName)) {
+            paramName = PARAM_FULLTEXT;
+        }
         logger.info("Copying {} files from '{}'...", paramName, srcFolder);
         int counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
         logger.info("{} {} files copied.", counter, paramName);

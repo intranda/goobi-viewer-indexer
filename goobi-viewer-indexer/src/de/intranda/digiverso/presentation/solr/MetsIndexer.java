@@ -62,7 +62,6 @@ import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
-import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
@@ -1202,7 +1201,7 @@ public class MetsIndexer extends AbstractIndexer {
                     foundCrowdsourcingData = true;
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                         doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
-                        doc.addField(SolrConstants.FILENAME_ALTOCROWD, baseFileName + XML_EXTENSION);
+                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
@@ -1232,7 +1231,7 @@ public class MetsIndexer extends AbstractIndexer {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
                     // doc.addField("MD_FULLTEXT", fulltext);
-                    doc.addField(SolrConstants.FILENAME_FULLTEXTCROWD, baseFileName + TXT_EXTENSION);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
                 }
             }

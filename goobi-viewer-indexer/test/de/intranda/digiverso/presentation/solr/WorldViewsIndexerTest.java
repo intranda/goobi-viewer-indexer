@@ -51,7 +51,7 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi + " AND " + SolrConstants.FULLTEXT + ":*", null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             {
@@ -120,14 +120,10 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
             }
             // Text
             {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_TEXT_LANG_DE");
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
-            }
-            {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_TEXT_LANG_EN");
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
+                Assert.assertEquals("Quelle_Grossstadtdokumente_ger.xml", doc.getFieldValue(SolrConstants.FILENAME_TEI + SolrConstants._LANG_
+                        + "DE"));
+                Assert.assertEquals("Quelle_Grossstadtdokumente_eng.xml", doc.getFieldValue(SolrConstants.FILENAME_TEI + SolrConstants._LANG_
+                        + "EN"));
             }
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR");
@@ -162,7 +158,7 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals(Long.valueOf(21), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.CENTURY));
             }
         }
-        
+
         // Grouped metadata
     }
 }

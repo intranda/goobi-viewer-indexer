@@ -332,6 +332,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             // Process TEI files
             if (dataFolders.containsKey(DataRepository.PARAM_TEIMETADATA)) {
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_TEIMETADATA), "*.{xml}")) {
+                    boolean fulltextAdded = false;
                     for (Path path : stream) {
                         logger.info("Found TEI file: {}", path.getFileName().toString());
                         JDomXP tei = new JDomXP(path.toFile());
@@ -342,22 +343,28 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         Element eleText = tei.getRootElement().getChild("text", null);
                         if (eleText != null && eleText.getChild("body", null) != null) {
                             String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml")); // TODO extract language from a different element?
+                            String fileFieldName = SolrConstants.FILENAME_TEI;
+                            if (language != null) {
+                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
+                                if (isoCode != null) {
+                                    fileFieldName += SolrConstants._LANG_ + isoCode.toUpperCase();
+                                }
+                                indexObj.getLanguages().add(isoCode);
+                            }
+                            indexObj.addToLucene(fileFieldName, path.getFileName().toString());
+
+                            // Add searchable version of the text
                             Element eleBody = eleText.getChild("body", null);
                             Element eleNewRoot = new Element("tempRoot");
                             for (Element ele : eleBody.getChildren()) {
                                 eleNewRoot.addContent(ele.clone());
                             }
-                            String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "")
-                                    .trim();
-                            String textFieldName = "MD_TEXT";
-                            if (language != null) {
-                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
-                                if (isoCode != null) {
-                                    textFieldName += SolrConstants._LANG_ + isoCode.toUpperCase();
-                                }
-                                indexObj.getLanguages().add(isoCode);
+                            if (!fulltextAdded) {
+                                String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "")
+                                        .trim();
+                                indexObj.addToLucene(SolrConstants.FULLTEXT, Jsoup.parse(body).text());
+                                fulltextAdded = true;
                             }
-                            indexObj.addToLucene(textFieldName, body);
                         } else {
                             logger.warn("No text body found in TEI");
                         }
@@ -951,7 +958,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     foundCrowdsourcingData = true;
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                         doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
-                        doc.addField(SolrConstants.FILENAME_ALTOCROWD, baseFileName + XML_EXTENSION);
+                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
@@ -981,7 +988,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
                     // doc.addField("MD_FULLTEXT", fulltext);
-                    doc.addField(SolrConstants.FILENAME_FULLTEXTCROWD, baseFileName + TXT_EXTENSION);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
                 }
             }

@@ -57,9 +57,8 @@ public final class SolrConstants {
     public static final String FILEIDROOT = "FILEIDROOT";
     public static final String FILENAME = "FILENAME";
     public static final String FILENAME_ALTO = "FILENAME_ALTO";
-    public static final String FILENAME_ALTOCROWD = "FILENAME_ALTOCROWD";
     public static final String FILENAME_FULLTEXT = "FILENAME_FULLTEXT";
-    public static final String FILENAME_FULLTEXTCROWD = "FILENAME_FULLTEXTCROWD";
+    public static final String FILENAME_TEI = "FILENAME_TEI";
     public static final String FULLTEXT = "FULLTEXT";
     public static final String FULLTEXTAVAILABLE = "FULLTEXTAVAILABLE";
     public static final String GROUPFIELD = "GROUPFIELD";
