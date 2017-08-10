@@ -92,9 +92,9 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_INDEXED_LIDO);
         checkAndCreateDataSubdir(PARAM_MEDIA);
         checkAndCreateDataSubdir(PARAM_ALTO);
-        //        checkAndCreateDataSubdir(PARAM_ALTOCROWD);
+        checkAndCreateDataSubdir(PARAM_ALTOCROWD);
         checkAndCreateDataSubdir(PARAM_FULLTEXT);
-        //        checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
+        checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
         checkAndCreateDataSubdir(PARAM_TEIMETADATA);
         checkAndCreateDataSubdir(PARAM_TEIWC);
         checkAndCreateDataSubdir(PARAM_ABBYY);

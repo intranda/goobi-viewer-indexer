@@ -36,7 +36,6 @@
 			or viewerHome) -->
 		<mediaFolder>media</mediaFolder>
 		<altoFolder>alto</altoFolder>
-		<altoCrowdsourcingFolder>alto_crowd</altoCrowdsourcingFolder>
 		<fulltextFolder>fulltext</fulltextFolder>
 		<fulltextCrowdsourcingFolder>fulltext_crowd
 		</fulltextCrowdsourcingFolder>
