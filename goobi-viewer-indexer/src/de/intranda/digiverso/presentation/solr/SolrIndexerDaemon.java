@@ -85,7 +85,7 @@ public final class SolrIndexerDaemon {
         try {
             SolrIndexerDaemon.getInstance().start(configFileName, noUpdate, cleanupAnchors);
         } catch (FatalIndexerException e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage(), e);
             System.exit(-1);
         }
     }
