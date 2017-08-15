@@ -82,10 +82,10 @@ public class DocUpdateIndexer extends AbstractIndexer {
         String pi = fileNameSplit[0];
         String iddoc = fileNameSplit[1];
         hotfolder.selectDataRepository(null, pi);
-
         try {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.IDDOC + ":" + iddoc, null);
             if (docList == null || docList.isEmpty()) {
+                logger.error("Document not found in index: {}", iddoc);
                 ret[1] = "IDDOC not found in index: " + iddoc;
                 return ret;
             }
