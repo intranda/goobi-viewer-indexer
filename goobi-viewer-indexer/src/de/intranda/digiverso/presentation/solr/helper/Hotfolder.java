@@ -1295,6 +1295,7 @@ public class Hotfolder {
 
         } else {
             // Error
+            logger.error(resp[1]);
             if (deleteContentFilesOnFailure) {
                 // Delete all data folders in hotfolder
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {

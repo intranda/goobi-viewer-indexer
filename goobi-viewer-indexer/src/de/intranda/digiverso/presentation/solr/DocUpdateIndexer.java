@@ -93,6 +93,11 @@ public class DocUpdateIndexer extends AbstractIndexer {
             int order = (int) doc.getFieldValue(SolrConstants.ORDER);
             String pageFileName = doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED") ? (String) doc.getFieldValue(SolrConstants.FILENAME
                     + "_HTML-SANDBOXED") : (String) doc.getFieldValue(SolrConstants.FILENAME);
+            if (pageFileName == null) {
+                logger.error("Page file name not found in document: {}", iddoc);
+                ret[1] = "Page file name not found in document: " + iddoc;
+                return ret;
+            }
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
             logger.info("Updating doc {} ({}, page {})...", iddoc, pi, doc.getFieldValue(SolrConstants.ORDER));
 
