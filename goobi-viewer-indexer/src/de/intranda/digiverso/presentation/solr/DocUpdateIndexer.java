@@ -82,7 +82,6 @@ public class DocUpdateIndexer extends AbstractIndexer {
         String pi = fileNameSplit[0];
         String iddoc = fileNameSplit[1];
         hotfolder.selectDataRepository(null, pi);
-
         try {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.IDDOC + ":" + iddoc, null);
             if (docList == null || docList.isEmpty()) {
@@ -90,9 +89,17 @@ public class DocUpdateIndexer extends AbstractIndexer {
                 return ret;
             }
             SolrDocument doc = docList.get(0);
+            if (!doc.containsKey(SolrConstants.ORDER)) {
+                ret[1] = "Document " + iddoc + " contains no " + SolrConstants.ORDER + " field, please checks the index.";
+                return ret;
+            }
             int order = (int) doc.getFieldValue(SolrConstants.ORDER);
             String pageFileName = doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED") ? (String) doc.getFieldValue(SolrConstants.FILENAME
                     + "_HTML-SANDBOXED") : (String) doc.getFieldValue(SolrConstants.FILENAME);
+            if (pageFileName == null) {
+                ret[1] = "Document " + iddoc + " contains no " + SolrConstants.FILENAME + " field, please checks the index.";
+                return ret;
+            }
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
             logger.info("Updating doc {} ({}, page {})...", iddoc, pi, doc.getFieldValue(SolrConstants.ORDER));
 
@@ -165,7 +172,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
 
             ret[0] = pi;
             logger.info("Successfully finished updating IDDOC={}", iddoc);
-        } catch (FatalIndexerException | SolrServerException e) {
+        } catch (Exception e) {
             logger.error("Indexing of IDDOC={} could not be finished due to an error.", iddoc);
             logger.error(e.getMessage(), e);
             ret[0] = "ERROR";

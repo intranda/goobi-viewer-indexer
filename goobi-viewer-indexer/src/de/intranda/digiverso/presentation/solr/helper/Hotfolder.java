@@ -1303,6 +1303,16 @@ public class Hotfolder {
             }
         }
 
+        if (dataFolders.isEmpty()) {
+            logger.info("No data folders found for '{}', file won't be processed.", dataFile.getFileName().toString());
+            try {
+                Files.delete(dataFile);
+            } catch (IOException e) {
+                logger.error("'{}' could not be deleted! Please delete it manually!", dataFile.toAbsolutePath());
+            }
+            return;
+        }
+
         try {
             currentIndexer = new DocUpdateIndexer(this);
             resp = ((DocUpdateIndexer) currentIndexer).index(dataFile, dataFolders);
@@ -1336,6 +1346,7 @@ public class Hotfolder {
 
         } else {
             // Error
+            logger.error(resp[1]);
             if (deleteContentFilesOnFailure) {
                 // Delete all data folders in hotfolder
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {

@@ -291,7 +291,7 @@ public class LidoIndexer extends AbstractIndexer {
             }
             ret[1] = sbImgFileNames.toString();
             logger.info("Successfully finished indexing '{}'.", pi);
-        } catch (FatalIndexerException | IndexerException | SolrServerException | IOException e) {
+        } catch (Exception e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
                 logger.error("Indexing of '{}' could not be finished due to an error: {}", pi, e.getMessage());
             } else {
