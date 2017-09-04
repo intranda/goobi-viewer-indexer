@@ -359,7 +359,7 @@ public final class Configuration {
                             } else if (string != null) {
                                 replaceRules.put(string, replaceWith);
                             } else if (regex != null) {
-                                replaceRules.put(string, "REGEX: " + regex);
+                                replaceRules.put("REGEX:" + regex, replaceWith);
                             }
                         }
                         fieldValues.put("replaceRules", replaceRules);
