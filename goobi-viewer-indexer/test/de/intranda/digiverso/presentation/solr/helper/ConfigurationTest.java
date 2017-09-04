@@ -78,7 +78,7 @@ public class ConfigurationTest {
         Assert.assertNotNull(fieldInformation);
         Assert.assertEquals(1, fieldInformation.size());
         Map<String, Object> fieldValues = fieldInformation.get(0);
-        Assert.assertEquals(19, fieldValues.size());
+        Assert.assertEquals(21, fieldValues.size());
 
         List<String> xpath = (List<String>) fieldValues.get("xpath");
         Assert.assertNotNull(xpath);
@@ -143,7 +143,7 @@ public class ConfigurationTest {
         Assert.assertNotNull(replaceRules);
         Assert.assertEquals(2, replaceRules.size());
         Assert.assertEquals("replace1", replaceRules.get("stringToReplace1"));
-        Assert.assertEquals("replace2", replaceRules.get("stringToReplace2"));
+        Assert.assertEquals("replace2", replaceRules.get("[ ]*stringToReplace2[ ]*"));
 
         List<NonSortConfiguration> nonSortConfigurations = (List<NonSortConfiguration>) fieldValues.get("nonSortConfigurations");
         Assert.assertNotNull(nonSortConfigurations);

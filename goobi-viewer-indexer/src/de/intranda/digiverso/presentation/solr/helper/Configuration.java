@@ -345,6 +345,11 @@ public final class Configuration {
                                 string = sub.getString("[@string]");
                             } catch (NoSuchElementException e) {
                             }
+                            String regex = null;
+                            try {
+                                regex = sub.getString("[@regex]");
+                            } catch (NoSuchElementException e) {
+                            }
                             String replaceWith = sub.getString("");
                             if (replaceWith == null) {
                                 replaceWith = "";
@@ -353,6 +358,8 @@ public final class Configuration {
                                 replaceRules.put(character, replaceWith);
                             } else if (string != null) {
                                 replaceRules.put(string, replaceWith);
+                            } else if (regex != null) {
+                                replaceRules.put(string, "REGEX: " + regex);
                             }
                         }
                         fieldValues.put("replaceRules", replaceRules);

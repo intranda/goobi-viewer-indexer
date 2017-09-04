@@ -166,7 +166,7 @@
 					<splittingCharacter>#</splittingCharacter>
 					<constantValue>XXX</constantValue>
 					<replace string="stringToReplace1">replace1</replace>
-					<replace string="stringToReplace2">replace2</replace>
+					<replace regex="[ ]*stringToReplace2[ ]*">replace2</replace>
 					<nonSortCharacters prefix="nonSortPrefix" suffix="nonSortSuffix" />
 				</item>
 			</list>

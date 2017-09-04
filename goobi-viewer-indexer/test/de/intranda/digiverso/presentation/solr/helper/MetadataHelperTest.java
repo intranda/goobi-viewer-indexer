@@ -27,10 +27,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
-import de.intranda.digiverso.presentation.solr.helper.Configuration;
-import de.intranda.digiverso.presentation.solr.helper.JDomXP;
-import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper.PrimitiveDate;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
@@ -340,7 +336,8 @@ public class MetadataHelperTest {
         Map<Object, String> replaceRules = new HashMap<>();
         replaceRules.put('<', "");
         replaceRules.put(">", "s");
-        Assert.assertEquals("vase", MetadataHelper.applyReplaceRules("v<a>e", replaceRules));
+        replaceRules.put("REGEX:[ ]*100[ ]*", "");
+        Assert.assertEquals("vase", MetadataHelper.applyReplaceRules(" 100 v<a>e", replaceRules));
     }
 
     /**
