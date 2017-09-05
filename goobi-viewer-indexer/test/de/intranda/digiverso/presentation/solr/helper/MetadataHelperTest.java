@@ -338,7 +338,8 @@ public class MetadataHelperTest {
         Map<Object, String> replaceRules = new HashMap<>();
         replaceRules.put('<', "");
         replaceRules.put(">", "s");
-        Assert.assertEquals("vase", MetadataHelper.applyReplaceRules("v<a>e", replaceRules));
+        replaceRules.put("REGEX:[ ]*100[ ]*", "");
+        Assert.assertEquals("vase", MetadataHelper.applyReplaceRules(" 100 v<a>e", replaceRules));
     }
 
     /**

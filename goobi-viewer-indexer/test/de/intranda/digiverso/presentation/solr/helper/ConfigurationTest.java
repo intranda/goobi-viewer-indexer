@@ -141,8 +141,9 @@ public class ConfigurationTest {
         Map<Object, String> replaceRules = (Map<Object, String>) fieldValues.get("replaceRules");
         Assert.assertNotNull(replaceRules);
         Assert.assertEquals(2, replaceRules.size());
+        logger.info(replaceRules.keySet().toString());
         Assert.assertEquals("replace1", replaceRules.get("stringToReplace1"));
-        Assert.assertEquals("replace2", replaceRules.get("stringToReplace2"));
+        Assert.assertEquals("replace2", replaceRules.get("REGEX:[ ]*stringToReplace2[ ]*"));
 
         List<NonSortConfiguration> nonSortConfigurations = (List<NonSortConfiguration>) fieldValues.get("nonSortConfigurations");
         Assert.assertNotNull(nonSortConfigurations);
@@ -176,7 +177,7 @@ public class ConfigurationTest {
         Assert.assertTrue(configItem.isInterpolateYears());
         Assert.assertEquals(2, configItem.getReplaceRules().size());
         Assert.assertEquals("replace1", configItem.getReplaceRules().get("stringToReplace1"));
-        Assert.assertEquals("replace2", configItem.getReplaceRules().get("stringToReplace2"));
+        Assert.assertEquals("replace2", configItem.getReplaceRules().get("REGEX:[ ]*stringToReplace2[ ]*"));
         Assert.assertEquals(1, configItem.getNonSortConfigurations().size());
         Assert.assertEquals("nonSortPrefix", configItem.getNonSortConfigurations().get(0).getPrefix());
         Assert.assertEquals("nonSortSuffix", configItem.getNonSortConfigurations().get(0).getSuffix());

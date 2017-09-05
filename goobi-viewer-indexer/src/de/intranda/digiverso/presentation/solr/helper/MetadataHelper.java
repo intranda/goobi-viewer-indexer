@@ -623,7 +623,11 @@ public class MetadataHelper {
                 ret = ret.replace(sb.toString(), replaceRules.get(key));
             } else if (key instanceof String) {
                 logger.debug("replace rule: {} -> {}", key, replaceRules.get(key));
-                ret = ret.replace((String) key, replaceRules.get(key));
+                if (((String) key).startsWith("REGEX:")) {
+                    ret = ret.replaceAll(((String) key).substring(6), replaceRules.get(key));
+                } else {
+                    ret = ret.replace((String) key, replaceRules.get(key));
+                }
             } else {
                 logger.error("Unknown replacement key type of '{}: {}", key.toString(), key.getClass().getName());
             }
