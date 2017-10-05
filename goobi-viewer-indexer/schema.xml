@@ -30,7 +30,7 @@
 	request -->
 
 
-<schema name="goobi_viewer-20170717" version="1.5">
+<schema name="goobi_viewer-20170906" version="1.5">
 	<!-- attribute "name" is the name of this schema and is only used for display 
 		purposes. version="x.y" is Solr's version number for the schema syntax and 
 		semantics. It should not normally be changed by applications. 1.0: multiValued 
@@ -41,7 +41,12 @@
 		to drive QueryParser behavior when a single string produces multiple tokens. 
 		Defaults to off for version >= 1.4 1.5: omitNorms defaults to true for primitive 
 		field types (int, float, boolean, string...) -->
-
+		
+	<!-- Include custom fields, if desired -->
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="schema_extension_fields.xml">
+		<xi:fallback />
+	</xi:include>
+	
 	<fields>
 		<!-- Valid attributes for fields: name: mandatory - the name for the field 
 			type: mandatory - the name of a field type from the <types> fieldType section 
@@ -67,7 +72,7 @@
 			The field is required. It will throw an error if the value does not exist 
 			default: a value that should be used if no value is specified when adding 
 			a document. -->
-
+			
 		<field name="_version_" type="long" indexed="true" stored="true" />
 		<field name="_root_" type="string" indexed="true" stored="false"/>
 
@@ -219,11 +224,15 @@
 		<dynamicField name="BOOL_*" type="boolean" indexed="true"
             stored="true" />
             
-
 		<dynamicField name="random_*" type="random" />
 
 	</fields>
 	
+	<!-- Include custom fields, if desired -->
+	<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="schema_extension_copyfields.xml">
+		<xi:fallback />
+	</xi:include>
+
 	<!-- Automatically add faceting  -->
 	<copyField source="CENTURY" dest="FACET_CENTURY" />
 	<copyField source="DC" dest="FACET_DC" />
