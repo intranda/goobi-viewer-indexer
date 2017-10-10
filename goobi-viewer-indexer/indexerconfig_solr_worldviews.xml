@@ -869,7 +869,7 @@
                         <field name="MD_VALUE">tei:displayName</field>
                         <field name="MD_LASTNAME">tei:surname</field>
                         <field name="MD_FIRSTNAME">tei:forename</field>
-                        <field name="MD_WVEXPERTS">@wv</field>
+                        <field name="MD_EDUEXPERTS">@source</field>
                         <field name="NORM_URI">@ref</field>
                     </groupEntity>
                 </item>
@@ -3486,6 +3486,38 @@
                 </item>
             </list>
         </MD_KENOM_HERSTELLER_VERLEGER_MUENZMEISTER_KUENSTLER>
+        
+        <MD_WV_TOPIC>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@scheme='WV.topics']/tei:term/tei:rs[@type='topic']/@key
+                            </item>
+                        </list>
+                    </xpath>
+                    <addSortField>false</addSortField>
+                    <addToChildren>true</addToChildren>
+                    <addToPages>true</addToPages>
+                </item>
+            </list>
+        </MD_WV_TOPIC>
+        
+        <MD_WV_KEYWORD>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@scheme='WV.topics']/tei:term/tei:rs[@type='keyword']/@key
+                            </item>
+                        </list>
+                    </xpath>
+                    <addSortField>false</addSortField>
+                    <addToChildren>true</addToChildren>
+                    <addToPages>true</addToPages>
+                </item>
+            </list>
+        </MD_WV_KEYWORD>
         
 	</fields>
 

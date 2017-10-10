@@ -132,7 +132,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             // Set PI
             {
-                String pi = xp.evaluateToString("worldviews/resource/identifier/text()", null);
+                String pi = xp.evaluateToString("worldviews//identifier/text()", null);
                 if (StringUtils.isNotBlank(pi)) {
                     pi = MetadataHelper.applyIdentifierModifications(pi);
                     logger.info("Record PI: {}", pi);
@@ -316,14 +316,34 @@ public class WorldViewsIndexer extends AbstractIndexer {
             prepareUpdate(indexObj);
 
             // Docstruct
-            indexObj.setType("Monograph"); // TODO
+            {
+                String docstructType = xp.evaluateToString("worldviews//docType/text()", null);
+                if (docstructType != null) {
+                    indexObj.setType(docstructType);
+                } else {
+                    indexObj.setType("Monograph");
+                    logger.warn("<docType> not found, setting docstruct type to 'Monograph'.");
+                }
+            }
             // LOGID
             indexObj.setLogId("LOG_0000");
             // Collections
-            List<String> collections = xp.evaluateToStringList("worldviews/resource/collection", null);
-            if (collections != null && !collections.isEmpty()) {
-                for (String collection : collections) {
-                    indexObj.addToLucene(SolrConstants.DC, collection);
+            {
+                List<String> collections = xp.evaluateToStringList("worldviews//collection", null);
+                if (collections != null && !collections.isEmpty()) {
+                    for (String collection : collections) {
+                        indexObj.addToLucene(SolrConstants.DC, collection);
+                    }
+                }
+            }
+            // MD_WV_SOURCE
+            {
+                String sourcePi = xp.evaluateToString("worldviews//relatedItem[@type='primarySource']/identifier/text()", null);
+                if (sourcePi != null) {
+                    indexObj.addToLucene("MD_WV_SOURCE", sourcePi);
+                } else {
+                    // For sources use own PI
+                    indexObj.addToLucene("MD_WV_SOURCE", indexObj.getPi());
                 }
             }
 
@@ -756,7 +776,9 @@ public class WorldViewsIndexer extends AbstractIndexer {
         }
 
         // Finalize last docstruct
-        finalizeChildDocstruct(currentIndexObj, writeStrategy);
+        if (currentIndexObj != null) {
+            finalizeChildDocstruct(currentIndexObj, writeStrategy);
+        }
 
         // Set root doc thumbnail
         rootIndexObj.setThumbnailRepresent(thumbnailFile);
