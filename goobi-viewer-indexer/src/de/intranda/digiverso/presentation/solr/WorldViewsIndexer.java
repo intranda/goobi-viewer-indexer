@@ -336,14 +336,20 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                 }
             }
-            // MD_WV_SOURCE
+            // MD_WV_*SOURCE
             {
                 String sourcePi = xp.evaluateToString("worldviews//relatedItem[@type='primarySource']/identifier/text()", null);
                 if (sourcePi != null) {
-                    indexObj.addToLucene("MD_WV_SOURCE", sourcePi);
+                    indexObj.addToLucene("MD_WV_PRIMARYSOURCE", sourcePi);
                 } else {
                     // For sources use own PI
-                    indexObj.addToLucene("MD_WV_SOURCE", indexObj.getPi());
+                    indexObj.addToLucene("MD_WV_PRIMARYSOURCE", indexObj.getPi());
+                }
+            }
+            {
+                String sourcePi = xp.evaluateToString("worldviews//relatedItem[@type='secondarySource']/identifier/text()", null);
+                if (sourcePi != null) {
+                    indexObj.addToLucene("MD_WV_SECONDARYSOURCE", sourcePi);
                 }
             }
 
