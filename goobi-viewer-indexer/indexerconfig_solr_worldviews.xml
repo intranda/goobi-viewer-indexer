@@ -3435,58 +3435,6 @@
             </list>
         </BOOL_HIDE>
         
-        <MD_KENOM_MUENZSTAETTE>
-            <list>
-                <item>
-                    <xpath prefix="pre_" suffix="_suf">
-                        lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[lido:eventType/lido:term[text() = 'Production']]/lido:eventPlace[lido:place[@lido:politicalEntity='minting_place']]
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">
-                            lido:displayPlace
-                        </field>
-                        <field name="MD_KENOM_MUENZSTAETTE_NAME">
-                            lido:displayPlace
-                        </field>
-                        <field name="MD_KENOM_MUENZSTAETTE_URI">
-                            lido:place/lido:placeID[@lido:type='URI']
-                        </field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_KENOM_MUENZSTAETTE>
-        
-        <MD_KENOM_HERSTELLER_VERLEGER_MUENZMEISTER_KUENSTLER>
-            <list>
-                <item>
-                    <xpath>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor[../lido:eventType/lido:term[text() = 'Creation'] or ../lido:eventType/lido:term[text() = 'Production'] or (../lido:eventType/lido:term[text() = 'Publication'] and lido:actorInRole/lido:roleActor/lido:term[text() = 'Verleger'])]
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                                        <groupEntity type="OTHER">
-                                            <field name="MD_VALUE">
-                                                lido:displayActorInRole
-                                            </field>
-                                            <field name="MD_KENOM_HERSTELLER_VERLEGER_MUENZMEISTER_KUENSTLER_NAME_UND_ROLLE">
-                                                lido:displayActorInRole
-                                            </field>
-                                            <field name="MD_KENOM_HERSTELLER_VERLEGER_MUENZMEISTER_KUENSTLER_NAME">
-                                                lido:actorInRole/lido:actor/lido:nameActorSet/lido:appellationValue
-                                            </field>
-                                            <field name="MD_KENOM_HERSTELLER_VERLEGER_MUENZMEISTER_KUENSTLER_ART">
-                                                                                        lido:actorInRole/lido:actor/@lido:type
-                                            </field>
-                                            <field name="MD_KENOM_HERSTELLER_VERLEGER_MUENZMEISTER_KUENSTLER_ROLLE">
-                                                lido:actorInRole/lido:roleActor/lido:term
-                                            </field>
-                                            <field name="MD_KENOM_MUENZHERR_AUFTRAGGEBER_HERAUSGEBER_URI">
-                                                lido:actorInRole/lido:actor/lido:actorID[@lido:type='URI']
-                                            </field>
-                                        </groupEntity>
-                </item>
-            </list>
-        </MD_KENOM_HERSTELLER_VERLEGER_MUENZMEISTER_KUENSTLER>
-        
         <MD_WV_TOPIC>
             <list>
                 <item>
@@ -3518,6 +3466,36 @@
                 </item>
             </list>
         </MD_WV_KEYWORD>
+        
+        <MD_ABSTRACT_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:abstract[@xml:lang="ger"]/tei:p
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_ABSTRACT_LANG_DE>
+        
+        <MD_ABSTRACT_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:abstract[@xml:lang="eng"]/tei:p
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_ABSTRACT_LANG_EN>
         
 	</fields>
 
