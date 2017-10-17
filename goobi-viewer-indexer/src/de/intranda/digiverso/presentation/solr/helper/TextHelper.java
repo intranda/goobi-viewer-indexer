@@ -349,7 +349,7 @@ public final class TextHelper {
      * @should throw IOException given wrong document format
      */
     public static Map<String, Object> readTeiToAlto(File file) throws FileNotFoundException, IOException, JDOMException, FatalIndexerException {
-        logger.trace("readTei: {}", file.getAbsolutePath());
+        logger.info("readTei: {}", file.getAbsolutePath());
         if (!file.exists()) {
             throw new FileNotFoundException("File not found: " + file.getAbsolutePath());
         }
@@ -365,7 +365,9 @@ public final class TextHelper {
                 Document altoDoc = new Document();
                 altoDoc.setRootElement(alto);
                 ret = readAltoDoc(altoDoc, file.getAbsolutePath());
-                logger.debug("Converted TEI to ALTO: {}", file.getName());
+                logger.info("Converted TEI to ALTO: {}", file.getName());
+            } else {
+                logger.warn("Could not convert TEI to ALTO: {}", file.getName());
             }
         } catch (XMLStreamException e) {
             throw new IOException(e);
@@ -470,7 +472,7 @@ public final class TextHelper {
      */
     public static String generateFulltext(String fileName, Path folder, boolean warnIfMissing) {
         if (Files.isDirectory(folder)) {
-            Path txt = Paths.get(folder.toAbsolutePath().toString(), fileName + ".txt");
+            Path txt = Paths.get(folder.toAbsolutePath().toString(), fileName);
             if (Files.isRegularFile(txt)) {
                 try {
                     String text = TextHelper.readFileToString(txt.toFile());

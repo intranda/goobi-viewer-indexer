@@ -254,6 +254,16 @@ public class MetsIndexer extends AbstractIndexer {
                                     .toAbsolutePath());
                         }
                     }
+                    if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
+                        // Use the old ABBYY folder
+                        dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_ABBYY)
+                                .toAbsolutePath().toString(), pi));
+                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY))) {
+                            dataFolders.put(DataRepository.PARAM_ABBYY, null);
+                        } else {
+                            logger.info("Using old ABBYY folder '{}'.", dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath());
+                        }
+                    }
                     if (dataFolders.get(DataRepository.PARAM_TEI) == null) {
                         // Use the old TEI word coordinate folder
                         dataFolders.put(DataRepository.PARAM_TEI, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_TEI)
@@ -270,6 +280,13 @@ public class MetsIndexer extends AbstractIndexer {
                                 .toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO))) {
                             dataFolders.put(DataRepository.PARAM_ALTO, null);
+                            
+                            // Create ALTO dir for converted ABBYY or TEI files
+                            if (dataFolders.get(DataRepository.PARAM_ABBYY) != null || dataFolders.get(DataRepository.PARAM_TEI) != null) {
+                                dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, Paths.get(hotfolder.getDataRepository().getDir(
+                                        DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
+                                Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
+                            }
                         } else {
                             logger.info("Using old ALTO folder '{}'.", dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath());
                         }
@@ -283,16 +300,6 @@ public class MetsIndexer extends AbstractIndexer {
                         } else {
                             logger.info("Using old crowdsourcing ALTO folder '{}'.", dataFolders.get(DataRepository.PARAM_ALTOCROWD)
                                     .toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
-                        // Use the old ABBYY folder
-                        dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_ABBYY)
-                                .toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY))) {
-                            dataFolders.put(DataRepository.PARAM_ABBYY, null);
-                        } else {
-                            logger.info("Using old ABBYY folder '{}'.", dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath());
                         }
                     }
                     if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
@@ -454,7 +461,7 @@ public class MetsIndexer extends AbstractIndexer {
             // put some simple data in lucene array
             indexObj.pushSimpleDataToLuceneArray();
 
-            // Restliche METADATA (aus Konfigdatei) in Lucene schreiben
+            // Write metadata relative to the mdWrap
             MetadataHelper.writeMetadataToObject(indexObj, xp.getMdWrap(indexObj.getDmdid()), "", xp);
 
             // Write root metadata (outside of MODS sections)
@@ -1219,7 +1226,7 @@ public class MetsIndexer extends AbstractIndexer {
             if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
                 try {
                     altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(),
-                            baseFileName + AbstractIndexer.XML_EXTENSION));
+                            baseFileName + XML_EXTENSION));
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
                 } catch (JDOMException | IOException e) {
@@ -1228,12 +1235,11 @@ public class MetsIndexer extends AbstractIndexer {
                 if (altoData != null) {
                     foundCrowdsourcingData = true;
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-                        doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
                         doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                        doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1252,11 +1258,12 @@ public class MetsIndexer extends AbstractIndexer {
 
             // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
             if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD), false);
+                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
+                        false);
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    doc.addField("MD_FULLTEXT", fulltext);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
                 }
             }
@@ -1265,7 +1272,7 @@ public class MetsIndexer extends AbstractIndexer {
                     .get(DataRepository.PARAM_ALTO) != null) {
                 try {
                     altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName
-                            + AbstractIndexer.XML_EXTENSION));
+                            + XML_EXTENSION));
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1273,12 +1280,11 @@ public class MetsIndexer extends AbstractIndexer {
                 }
                 if (altoData != null) {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
-                        doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                         doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                        doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1297,10 +1303,10 @@ public class MetsIndexer extends AbstractIndexer {
 
             // If FULLTEXT is still empty, look for a plain full-text
             if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
+                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
                 if (fulltext != null) {
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    doc.addField("MD_FULLTEXT", fulltext);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from regular plain text for page {}", order);
                 }
             }
@@ -1310,16 +1316,19 @@ public class MetsIndexer extends AbstractIndexer {
                 try {
                     try {
                         altoData = TextHelper.readAbbyyToAlto(new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
-                                baseFileName + AbstractIndexer.XML_EXTENSION));
+                                baseFileName + XML_EXTENSION));
                         if (altoData != null) {
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
-                                doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(
+                                    SolrConstants.FILENAME_ALTO) == null) {
+                                doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                                 logger.debug("Added ALTO from regular ALTO for page {}", order);
+                                // TODO write ALTO file
+                                FileUtils.writeStringToFile(new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName
+                                        + XML_EXTENSION), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
                             }
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(
                                     SolrConstants.FULLTEXT) == null) {
                                 doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                                doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                                 logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                             }
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1337,13 +1346,6 @@ public class MetsIndexer extends AbstractIndexer {
                     } catch (FileNotFoundException e) {
                         logger.warn(e.getMessage());
                     }
-                    //                        for (String key : abbyyData.keySet()) {
-                    //                            
-                    //                            if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
-                    //                                    && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
-                    //                                doc.addField(key, abbyyData.get(key));
-                    //                            }
-                    //                        }
                 } catch (XMLStreamException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1355,15 +1357,18 @@ public class MetsIndexer extends AbstractIndexer {
             if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEI) != null) {
                 try {
                     altoData = TextHelper.readTeiToAlto(new File(dataFolders.get(DataRepository.PARAM_TEI).toAbsolutePath().toString(), baseFileName
-                            + AbstractIndexer.XML_EXTENSION));
+                            + XML_EXTENSION));
                     if (altoData != null) {
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
-                            doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
+                            doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                             logger.debug("Added ALTO from regular ALTO for page {}", order);
+                            // TODO write ALTO file
+                            FileUtils.writeStringToFile(new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName + XML_EXTENSION),
+                                    (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                             doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                            doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                             logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
 
                         }
@@ -1379,8 +1384,6 @@ public class MetsIndexer extends AbstractIndexer {
                             addNamedEntitiesFields(altoData, doc);
                         }
                     }
-                    //                        doc.addField(SolrConstants.WORDCOORDS, TextHelper.readXmlFileToString(new File(dataFolders.get(DataRepository.PARAM_WC),
-                    //                                baseFileName + AbstractIndexer.XML_EXTENSION)));
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1391,7 +1394,7 @@ public class MetsIndexer extends AbstractIndexer {
             if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
                 try {
                     Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                            baseFileName + AbstractIndexer.XML_EXTENSION));
+                            baseFileName + XML_EXTENSION));
                     for (String key : mixData.keySet()) {
                         if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null) && !(key.equals(SolrConstants.HEIGHT)
                                 && doc.getField(SolrConstants.HEIGHT) != null)) {
@@ -1414,12 +1417,14 @@ public class MetsIndexer extends AbstractIndexer {
                     altoData = TextHelper.readAltoDoc(altoDoc, altoURL);
                     if (altoData != null) {
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
-                            doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
+                            doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                             logger.debug("Added ALTO from downloaded ALTO for page {}", order);
+                            // TODO write ALTO file
+                            FileUtils.writeStringToFile(new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName + XML_EXTENSION),
+                                    (String) altoData.get(SolrConstants.ALTO), "UTF-8");
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                             doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                            doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                             logger.debug("Added FULLTEXT from downloaded ALTO for page {}", order);
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1461,7 +1466,7 @@ public class MetsIndexer extends AbstractIndexer {
     }
 
     /**
-     * 
+     * TODO
      * @param dataFolders
      * @param doc
      */
@@ -1512,7 +1517,7 @@ public class MetsIndexer extends AbstractIndexer {
                     AltoDocument outputDoc = deskewer.deskewAlto(altoDoc, imageSize, "tr");
                     String output = AltoDocument.getStringFromDomDocument(new Document(outputDoc.writeToDom()));
                     if (output != null && !output.isEmpty()) {
-                        doc.setField(SolrConstants.ALTO, output);
+                        //                        doc.setField(SolrConstants.ALTO, output);
                         doc.setField(SolrConstants.WIDTH, outputDoc.getFirstPage().getWidth());
                         doc.setField(SolrConstants.HEIGHT, outputDoc.getFirstPage().getHeight());
                     }
