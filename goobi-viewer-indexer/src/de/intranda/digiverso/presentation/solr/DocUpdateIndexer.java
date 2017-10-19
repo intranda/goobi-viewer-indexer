@@ -119,21 +119,20 @@ public class DocUpdateIndexer extends AbstractIndexer {
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                             // Write ALTO file
                             Path repositoryPath = hotfolder.getDataRepository().getRootDir();
-                            String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
-                            if (altoFileName == null) {
-                                // Add FILENAME_ALTO, if it doesn't exist yet
-                                altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
-                                if (altoFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_ALTO)) {
-                                    altoFileName = new StringBuilder().append(dataFolders.get(DataRepository.PARAM_ALTOCROWD).getFileName()
-                                            .toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(altoFileName)).append(
-                                                    XML_EXTENSION).toString();
-                                    Map<String, Object> update = new HashMap<>();
-                                    update.put("set", altoFileName);
-                                    partialUpdates.put(SolrConstants.FILENAME_ALTO, update);
-                                }
+
+                            // Update FILENAME_ALTO, if it doesn't exist yet
+                            String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
+                            if (altoFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_ALTO)) {
+                                altoFileName = new StringBuilder().append(hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTOCROWD)
+                                        .getFileName().toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(altoFileName))
+                                        .append(XML_EXTENSION).toString();
+                                Map<String, Object> update = new HashMap<>();
+                                update.put("set", altoFileName);
+                                partialUpdates.put(SolrConstants.FILENAME_ALTO, update);
                             } else {
                                 throw new RuntimeException(altoFileName);
                             }
+
                             Path altoFile = Paths.get(repositoryPath.toAbsolutePath().toString(), altoFileName);
                             Utils.checkAndCreateDirectory(altoFile.getParent());
                             FileUtils.writeStringToFile(altoFile.toFile(), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
@@ -168,9 +167,9 @@ public class DocUpdateIndexer extends AbstractIndexer {
                             // Add FILENAME_FULLTEXT, if it doesn't exist yet
                             fulltextFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
                             if (fulltextFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_FULLTEXT)) {
-                                fulltextFileName = new StringBuilder().append(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD).getFileName()
-                                        .toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(fulltextFileName)).append(
-                                                TXT_EXTENSION).toString();
+                                fulltextFileName = new StringBuilder().append(hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXTCROWD)
+                                        .getFileName().toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(
+                                                fulltextFileName)).append(TXT_EXTENSION).toString();
                                 Map<String, Object> update = new HashMap<>();
                                 update.put("set", fulltextFileName);
                                 partialUpdates.put(SolrConstants.FILENAME_FULLTEXT, update);

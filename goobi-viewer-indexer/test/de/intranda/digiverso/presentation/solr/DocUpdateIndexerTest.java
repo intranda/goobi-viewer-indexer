@@ -67,7 +67,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldUpdateDocumentCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         String iddoc = null;
-        
+
         // Index original doc and make sure all fields that will be updated already exist
         {
             dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
@@ -132,8 +132,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             // Check for updated ALTO file in file system
             String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
             Assert.assertNotNull(altoFileName);
-            Path csAltoPath = hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTOCROWD);
-            Path altoFile = Paths.get(csAltoPath.toAbsolutePath().toString(), altoFileName);
+            Path altoFile = Paths.get(hotfolder.getDataRepository().getRootDir().toAbsolutePath().toString(), altoFileName);
             Assert.assertTrue("File not found at " + altoFile.toAbsolutePath().toString(), Files.isRegularFile(altoFile));
             String altoText = TextHelper.readFileToString(altoFile.toFile());
             Assert.assertNotNull(altoText);
@@ -163,18 +162,14 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
 
-            //            Assert.assertNotNull(doc.getFieldValues("MD_FULLTEXT"));
-            //            Assert.assertEquals("updated text file", (((String) doc.getFieldValues("MD_FULLTEXT").iterator().next()).trim()));
-
             // Check for updated text file in file system
             String textFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
             Assert.assertNotNull(textFileName);
-            Path csFulltextPath = hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXTCROWD);
-            Path textFile = Paths.get(csFulltextPath.toAbsolutePath().toString(), textFileName);
+            Path textFile = Paths.get(hotfolder.getDataRepository().getRootDir().toAbsolutePath().toString(), textFileName);
             Assert.assertTrue(Files.isRegularFile(textFile));
             String altoText = TextHelper.readFileToString(textFile.toFile());
             Assert.assertNotNull(altoText);
-            Assert.assertTrue(altoText.equals("updated text file"));
+            Assert.assertEquals("updated text file", altoText.trim());
         }
 
     }
