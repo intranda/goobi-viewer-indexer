@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
+import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 
@@ -66,7 +67,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldUpdateDocumentCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         String iddoc = null;
-
+        
         // Index original doc and make sure all fields that will be updated already exist
         {
             dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
@@ -81,8 +82,6 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             SolrDocument doc = docList.get(0);
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(iddoc);
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.ALTO));
-            Assert.assertNotNull(doc.getFieldValue("MD_FULLTEXT"));
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
         }
 
@@ -129,10 +128,17 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                     null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.ALTO));
-            Assert.assertTrue(((String) doc.getFieldValue(SolrConstants.ALTO)).contains("Bollywood!"));
-            Assert.assertNotNull(doc.getFieldValues("MD_FULLTEXT"));
-            Assert.assertTrue(((String) doc.getFieldValues("MD_FULLTEXT").iterator().next()).contains("Bollywood!"));
+
+            // Check for updated ALTO file in file system
+            String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
+            Assert.assertNotNull(altoFileName);
+            Path csAltoPath = hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTOCROWD);
+            Path altoFile = Paths.get(csAltoPath.toAbsolutePath().toString(), altoFileName);
+            Assert.assertTrue("File not found at " + altoFile.toAbsolutePath().toString(), Files.isRegularFile(altoFile));
+            String altoText = TextHelper.readFileToString(altoFile.toFile());
+            Assert.assertNotNull(altoText);
+            Assert.assertTrue(altoText.contains("Bollywood!"));
+
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
             Assert.assertTrue(((String) doc.getFieldValue(SolrConstants.UGCTERMS)).contains("Hütchenspieler"));
         }
@@ -156,8 +162,19 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                     null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assert.assertNotNull(doc.getFieldValues("MD_FULLTEXT"));
-            Assert.assertEquals("updated text file", (((String) doc.getFieldValues("MD_FULLTEXT").iterator().next()).trim()));
+
+            //            Assert.assertNotNull(doc.getFieldValues("MD_FULLTEXT"));
+            //            Assert.assertEquals("updated text file", (((String) doc.getFieldValues("MD_FULLTEXT").iterator().next()).trim()));
+
+            // Check for updated text file in file system
+            String textFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
+            Assert.assertNotNull(textFileName);
+            Path csFulltextPath = hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXTCROWD);
+            Path textFile = Paths.get(csFulltextPath.toAbsolutePath().toString(), textFileName);
+            Assert.assertTrue(Files.isRegularFile(textFile));
+            String altoText = TextHelper.readFileToString(textFile.toFile());
+            Assert.assertNotNull(altoText);
+            Assert.assertTrue(altoText.equals("updated text file"));
         }
 
     }
