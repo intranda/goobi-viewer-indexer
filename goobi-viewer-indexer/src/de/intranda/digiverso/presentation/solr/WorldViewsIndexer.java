@@ -56,6 +56,7 @@ import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
+import de.intranda.digiverso.presentation.solr.helper.language.LanguageHelper;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
@@ -368,10 +369,11 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         // Add text body
                         Element eleText = tei.getRootElement().getChild("text", null);
                         if (eleText != null && eleText.getChild("body", null) != null) {
-                            String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml")); // TODO extract language from a different element?
+                            String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml")); // TODO extract language from a different element? - No, this is the correct element (Florian)
                             String fileFieldName = SolrConstants.FILENAME_TEI;
                             if (language != null) {
-                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
+//                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
+                                String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();
                                 if (isoCode != null) {
                                     fileFieldName += SolrConstants._LANG_ + isoCode.toUpperCase();
                                 }
