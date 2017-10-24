@@ -19,9 +19,8 @@ public class LanguageHelper {
     public static LanguageHelper getInstance() {
         if (helper == null) {
             helper = new LanguageHelper();
-            String file = "languages.xml";
             try {
-                config = new XMLConfiguration(new File(file));
+                config = new XMLConfiguration("languages.xml");
             } catch (ConfigurationException e) {
                 config = new XMLConfiguration();
             }
