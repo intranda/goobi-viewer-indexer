@@ -865,6 +865,7 @@
                     <replace string="&gt;&gt;"></replace>
                     <replace char="152"></replace>
                     <replace char="156"></replace>
+                    <replace string="http://middleware.gei.de/wv.experts/">http://normdata.intranda.com/normdata/edu.experts/wvexpertsid/</replace>
                     <groupEntity type="PERSON">
                         <field name="MD_VALUE">tei:displayName</field>
                         <field name="MD_LASTNAME">tei:surname</field>
