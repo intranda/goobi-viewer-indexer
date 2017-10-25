@@ -1213,7 +1213,6 @@ public class MetsIndexer extends AbstractIndexer {
                                 + '/' + dataFolders.get(DataRepository.PARAM_ALTOCROWD).getFileName().toString() + '/' + baseFileName
                                 + XML_EXTENSION);
                         altoWritten = true;
-                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
@@ -1263,7 +1262,6 @@ public class MetsIndexer extends AbstractIndexer {
                         doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO).getParent().getFileName().toString()
                                 + '/' + dataFolders.get(DataRepository.PARAM_ALTO).getFileName().toString() + '/' + baseFileName + XML_EXTENSION);
                         altoWritten = true;
-                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                         logger.debug("Added ALTO from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
@@ -1355,7 +1353,6 @@ public class MetsIndexer extends AbstractIndexer {
                                 doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent()
                                         .getFileName().toString() + '/' + dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getFileName()
                                                 .toString() + '/' + baseFileName + XML_EXTENSION);
-                                doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                                 logger.debug("Added ALTO from regular ALTO for page {}", order);
                                 FileUtils.writeStringToFile(new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName
                                         + XML_EXTENSION), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
@@ -1425,8 +1422,6 @@ public class MetsIndexer extends AbstractIndexer {
                                 File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
                                 FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), "UTF-8");
                                 altoWritten = true;
-                                // TODO write ALTO file
-                                doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
                                 logger.debug("Added ALTO from downloaded ALTO for page {}", order);
                             } else {
                                 logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
