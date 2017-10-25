@@ -41,6 +41,7 @@ public class DataRepository {
     public static final String PARAM_INDEXED_LIDO = "indexedLido";
     public static final String PARAM_MEDIA = "mediaFolder";
     public static final String PARAM_ALTO = "altoFolder";
+    public static final String PARAM_ALTO_CONVERTED = "altoFolder";
     public static final String PARAM_ALTOCROWD = "altoCrowdsourcingFolder";
     public static final String PARAM_ABBYY = "abbyyFolder";
     public static final String PARAM_DOWNLOAD_IMAGES_TRIGGER = "downloadImages";

@@ -64,6 +64,29 @@ public class MetadataHelper {
 
     private static String multiValueSeparator = DEFAULT_MULTIVALUE_SEPARATOR;
 
+    public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
+
+        @Override
+        protected DecimalFormat initialValue() {
+            return new DecimalFormat("00");
+        }
+    };
+    public static final ThreadLocal<DecimalFormat> FORMAT_FOUR_DIGITS = new ThreadLocal<DecimalFormat>() {
+
+        @Override
+        protected DecimalFormat initialValue() {
+            return new DecimalFormat("0000");
+        }
+    };
+    public static final ThreadLocal<DecimalFormat> FORMAT_EIGHT_DIGITS = new ThreadLocal<DecimalFormat>() {
+
+        @Override
+        protected DecimalFormat initialValue() {
+            return new DecimalFormat("00000000");
+        }
+    };
+
+
     public static DateTimeFormatter formatterISO8601Full = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
     public static DateTimeFormatter formatterISO8601Date = ISODateTimeFormat.date(); // yyyy-MM-dd
     public static DateTimeFormatter formatterISO8601YearMonth = DateTimeFormat.forPattern("yyyy-MM");
@@ -73,8 +96,6 @@ public class MetadataHelper {
     public static DateTimeFormatter formatterJPDate = DateTimeFormat.forPattern("yyyy/MM/dd");;
     public static DateTimeFormatter formatterBasicDateTime = DateTimeFormat.forPattern("yyyyMMddHHmmss");
     public static DateTimeFormatter formatterISO8601DateTimeFullWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    public static DecimalFormat formatDoubleDigit = new DecimalFormat("00");
-    public static DecimalFormat formatQuadrupleDigit = new DecimalFormat("0000");
 
     public static List<String> addNormDataFieldsToDefault;
 
@@ -821,10 +842,10 @@ public class MetadataHelper {
                         centuries.add(century);
                     }
                     if (date.getMonth() != null) {
-                        ret.add(new LuceneField(SolrConstants.YEARMONTH, date.getYear() + formatDoubleDigit.format(date.getMonth())));
+                        ret.add(new LuceneField(SolrConstants.YEARMONTH, date.getYear() + FORMAT_TWO_DIGITS.get().format(date.getMonth())));
                         if (date.getDay() != null) {
-                            ret.add(new LuceneField(SolrConstants.YEARMONTHDAY, date.getYear() + formatDoubleDigit.format(date.getMonth())
-                                    + formatDoubleDigit.format(date.getDay())));
+                            ret.add(new LuceneField(SolrConstants.YEARMONTHDAY, date.getYear() + FORMAT_TWO_DIGITS.get().format(date.getMonth())
+                                    + FORMAT_TWO_DIGITS.get().format(date.getDay())));
                         }
                     }
                 }

@@ -19,11 +19,13 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -37,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
+import de.intranda.digiverso.presentation.solr.helper.Utils;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
@@ -114,9 +117,25 @@ public class DocUpdateIndexer extends AbstractIndexer {
                     if (o instanceof Map<?, ?>) {
                         Map<String, Object> altoData = (Map<String, Object>) o;
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-                            Map<String, Object> update = new HashMap<>();
-                            update.put("set", altoData.get(SolrConstants.ALTO));
-                            partialUpdates.put(SolrConstants.ALTO, update);
+                            // Write ALTO file
+                            Path repositoryPath = hotfolder.getDataRepository().getRootDir();
+
+                            // Update FILENAME_ALTO, if it doesn't exist yet
+                            String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
+                            if (altoFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_ALTO)) {
+                                altoFileName = new StringBuilder().append(hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTOCROWD)
+                                        .getFileName().toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(altoFileName))
+                                        .append(XML_EXTENSION).toString();
+                                Map<String, Object> update = new HashMap<>();
+                                update.put("set", altoFileName);
+                                partialUpdates.put(SolrConstants.FILENAME_ALTO, update);
+                            } else {
+                                throw new RuntimeException(altoFileName);
+                            }
+
+                            Path altoFile = Paths.get(repositoryPath.toAbsolutePath().toString(), altoFileName);
+                            Utils.checkAndCreateDirectory(altoFile.getParent());
+                            FileUtils.writeStringToFile(altoFile.toFile(), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
                             String fulltext = ((String) altoData.get(SolrConstants.FULLTEXT)).trim();
@@ -125,13 +144,8 @@ public class DocUpdateIndexer extends AbstractIndexer {
                                 update.put("set", Jsoup.parse(fulltext).text());
                                 partialUpdates.put(SolrConstants.FULLTEXT, update);
                             }
-                            {
-                                // Map<String, Object> update = new HashMap<>();
-                                // update.put("set", fulltext);
-                                // partialUpdates.put("MD_FULLTEXT", update);
-                            }
                         }
-                        
+
                     }
                 }
             }
@@ -147,11 +161,24 @@ public class DocUpdateIndexer extends AbstractIndexer {
                             update.put("set", Jsoup.parse(fulltext).text());
                             partialUpdates.put(SolrConstants.FULLTEXT, update);
                         }
-                        //                        if (!partialUpdates.containsKey("MD_FULLTEXT")) {
-                        //                            Map<String, Object> update = new HashMap<>();
-                        //                            update.put("set", fulltext);
-                        //                            partialUpdates.put("MD_FULLTEXT", update);
-                        //                        }
+                        // Write text file
+                        Path repositoryPath = hotfolder.getDataRepository().getRootDir();
+                        String fulltextFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
+                        if (fulltextFileName == null) {
+                            // Add FILENAME_FULLTEXT, if it doesn't exist yet
+                            fulltextFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
+                            if (fulltextFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_FULLTEXT)) {
+                                fulltextFileName = new StringBuilder().append(hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXTCROWD)
+                                        .getFileName().toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(
+                                                fulltextFileName)).append(TXT_EXTENSION).toString();
+                                Map<String, Object> update = new HashMap<>();
+                                update.put("set", fulltextFileName);
+                                partialUpdates.put(SolrConstants.FILENAME_FULLTEXT, update);
+                            }
+                        }
+                        Path fulltextFile = Paths.get(repositoryPath.toAbsolutePath().toString(), fulltextFileName);
+                        Utils.checkAndCreateDirectory(fulltextFile.getParent());
+                        FileUtils.writeStringToFile(fulltextFile.toFile(), fulltext, "UTF-8");
                     }
                 }
             }
@@ -172,7 +199,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
 
             ret[0] = pi;
             logger.info("Successfully finished updating IDDOC={}", iddoc);
-        } catch (Exception e) {
+        } catch (IOException | SolrServerException e) {
             logger.error("Indexing of IDDOC={} could not be finished due to an error.", iddoc);
             logger.error(e.getMessage(), e);
             ret[0] = "ERROR";

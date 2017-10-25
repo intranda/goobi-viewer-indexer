@@ -15,7 +15,6 @@
  */
 package de.intranda.digiverso.presentation.solr;
 
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +42,7 @@ import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocumen
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
+import de.intranda.digiverso.presentation.solr.helper.Utils;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
@@ -57,7 +57,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     private static final String PI = "PPN517154005";
     private static final String PI2 = "H030001";
 
-    private Hotfolder hotfolder;
+    private static Hotfolder hotfolder;
 
     private Path metsFile;
     private Path metsFile2;
@@ -282,15 +282,16 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 }
                 Integer order = (Integer) doc.getFieldValue(SolrConstants.ORDER);
                 Assert.assertNotNull(order);
+                String fileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
+                Assert.assertNotNull(fileName);
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.IMAGEURN));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.FILEIDROOT));
-                Assert.assertNotNull(doc.getFieldValue(SolrConstants.FILENAME));
-                String fileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
                 {
-                    //                    List<String> values = (List<String>) doc.getFieldValue("MD_FULLTEXT");
-                    //                    Assert.assertNotNull(values);
-                    //                    Assert.assertFalse(values.isEmpty());
+                    String value = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
+                    Assert.assertNotNull(value);
+                    Assert.assertEquals("kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt/" + FilenameUtils.getBaseName(fileName)
+                            + AbstractIndexer.TXT_EXTENSION, value);
                     Assert.assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
                 }
                 {
@@ -301,11 +302,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                     Assert.assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
                 }
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-                {
-                    String value = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
-                    Assert.assertNotNull(value);
-                    Assert.assertEquals(FilenameUtils.getBaseName(fileName) + AbstractIndexer.XML_EXTENSION, value);
-                }
                 // DATEUPDATED from the top docstruct
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
                 // SORT_* fields from the direct owner docstruct
@@ -371,10 +367,11 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                         SolrConstants.LABEL)));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
                 if ("MD_CREATOR".equals(doc.getFieldValue(SolrConstants.LABEL))) {
-                    Assert.assertNotNull(doc.getFieldValue("MD_DISPLAYFORM"));
+                    Assert.assertNotNull(doc.getFieldValue("MD_VALUE"));
                     Assert.assertNotNull(doc.getFieldValue("MD_FIRSTNAME"));
                     Assert.assertNotNull(doc.getFieldValue("MD_LASTNAME"));
                     Assert.assertNotNull(doc.getFieldValue("NORM_URI"));
+                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.DEFAULT));
                 } else if ("MD_PHYSICALCOPY".equals(doc.getFieldValue(SolrConstants.LABEL))) {
                     Assert.assertNotNull(doc.getFieldValue("MD_LOCATION"));
                     Assert.assertNotNull(doc.getFieldValue("MD_SHELFMARK"));
@@ -582,7 +579,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void index_shouldSetAccessConditionsCorrectly() throws Exception {
-        //TODO auto-generated
         String pi = "AC06736966";
         Map<String, Path> dataFolders = new HashMap<>();
         String[] ret = new MetsIndexer(hotfolder).index(metsFile3, false, dataFolders, null, 1);
@@ -728,54 +724,54 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         }
     }
 
-    @Test
-    public void deskewAlto_shouldRotateCoordinatedCorrectly() throws Exception {
-
-        //        String filename = "AC04987957_00000124";
-        String[] filenames = { "00000005.tif", "00225231.png" };
-
-        int[] imageWidth = { 4966, 2794 };
-
-        MetsIndexer indexer = new MetsIndexer(hotfolder);
-        File dataFolder = new File("resources/test/alto_deskew");
-
-        int i = 0;
-        for (String filename : filenames) {
-
-            String baseFilename = FilenameUtils.getBaseName(filename);
-
-            File altoFile = new File(dataFolder, baseFilename + ".xml");
-            String origAltoString = FileUtils.readFileToString(altoFile);
-            File outputFolder = new File(dataFolder, "output");
-            if (outputFolder.isDirectory()) {
-                FileUtils.deleteDirectory(outputFolder);
-            }
-            outputFolder.mkdir();
-
-            Map<String, Path> dataFolders = new HashMap<>();
-            dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
-
-            SolrInputDocument doc = new SolrInputDocument();
-            doc.setField(SolrConstants.ALTO, origAltoString);
-            doc.setField(SolrConstants.WIDTH, "" + imageWidth[i]);
-            doc.setField(SolrConstants.FILENAME, filename);
-
-            MetsIndexer.deskewAlto(dataFolders, doc);
-            String deskewedAltoString = (String) doc.getFieldValue(SolrConstants.ALTO);
-            AltoDocument deskewedDoc = AltoDocument.getDocumentFromString(deskewedAltoString);
-            FileUtils.writeStringToFile(new File(outputFolder, filename + ".xml"), deskewedAltoString, false);
-            Word testWord = (Word) deskewedDoc.getFirstPage().getAllWordsAsList().get(1);
-            Assert.assertNotNull(testWord);
-            if (filename.equals("00000005.tif")) {
-                Assert.assertEquals("Name", testWord.getContent());
-                Assert.assertEquals(new Rectangle2D.Float(327, 765, 228, 54), testWord.getRect());
-                Assert.assertEquals("Tag0", testWord.getAttributeValue("TAGREFS"));
-                Assert.assertEquals("Tag0", deskewedDoc.getTags().getTags().getChild("NamedEntityTag", null).getAttributeValue("ID"));
-            }
-
-            i++;
-        }
-    }
+    //    @Test
+    //    public void deskewAlto_shouldRotateCoordinatedCorrectly() throws Exception {
+    //
+    //        //        String filename = "AC04987957_00000124";
+    //        String[] filenames = { "00000005.tif", "00225231.png" };
+    //
+    //        int[] imageWidth = { 4966, 2794 };
+    //
+    //        MetsIndexer indexer = new MetsIndexer(hotfolder);
+    //        File dataFolder = new File("resources/test/alto_deskew");
+    //
+    //        int i = 0;
+    //        for (String filename : filenames) {
+    //
+    //            String baseFilename = FilenameUtils.getBaseName(filename);
+    //
+    //            File altoFile = new File(dataFolder, baseFilename + ".xml");
+    //            String origAltoString = FileUtils.readFileToString(altoFile);
+    //            File outputFolder = new File(dataFolder, "output");
+    //            if (outputFolder.isDirectory()) {
+    //                FileUtils.deleteDirectory(outputFolder);
+    //            }
+    //            outputFolder.mkdir();
+    //
+    //            Map<String, Path> dataFolders = new HashMap<>();
+    //            dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
+    //
+    //            SolrInputDocument doc = new SolrInputDocument();
+    //            doc.setField(SolrConstants.ALTO, origAltoString);
+    //            doc.setField(SolrConstants.WIDTH, "" + imageWidth[i]);
+    //            doc.setField(SolrConstants.FILENAME, filename);
+    //
+    //            MetsIndexer.deskewAlto(dataFolders, doc);
+    //            String deskewedAltoString = (String) doc.getFieldValue(SolrConstants.ALTO);
+    //            AltoDocument deskewedDoc = AltoDocument.getDocumentFromString(deskewedAltoString);
+    //            FileUtils.writeStringToFile(new File(outputFolder, filename + ".xml"), deskewedAltoString, false);
+    //            Word testWord = (Word) deskewedDoc.getFirstPage().getAllWordsAsList().get(1);
+    //            Assert.assertNotNull(testWord);
+    //            if (filename.equals("00000005.tif")) {
+    //                Assert.assertEquals("Name", testWord.getContent());
+    //                Assert.assertEquals(new Rectangle2D.Float(327, 765, 228, 54), testWord.getRect());
+    //                Assert.assertEquals("Tag0", testWord.getAttributeValue("TAGREFS"));
+    //                Assert.assertEquals("Tag0", deskewedDoc.getTags().getTags().getChild("NamedEntityTag", null).getAttributeValue("ID"));
+    //            }
+    //
+    //            i++;
+    //        }
+    //    }
 
     /**
      * @see MetsIndexer#getMetsCreateDate()
@@ -832,10 +828,10 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see MetsIndexer#generatePageDocument(Element,String,Integer,ISolrWriteStrategy,Map)
-     * @verifies add ALTO field from fileId if none provided in data folders
+     * @verifies create ALTO file from fileId if none provided in data folders
      */
     @Test
-    public void generatePageDocument_shouldAddALTOFieldFromFileIdIfNoneProvidedInDataFolders() throws Exception {
+    public void generatePageDocument_shouldCreateALTOFileFromFileIdIfNoneProvidedInDataFolders() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(Paths.get("resources/test/METS/ppn750542047_intrandatest.dv.mets.xml"));
         ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
@@ -844,25 +840,31 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertNotNull(eleStructMapPhysicalList);
         Assert.assertFalse(eleStructMapPhysicalList.isEmpty());
 
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path altoPath = Paths.get("build/viewer/alto/750542047");
+        Utils.checkAndCreateDirectory(altoPath);
+        Assert.assertTrue(Files.isDirectory(altoPath));
+        dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, altoPath);
+
         int page = 5;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1), String.valueOf(MetsIndexer.getNextIddoc(hotfolder
-                .getSolrHelper())), page, writeStrategy, new HashMap<String, Path>()));
+                .getSolrHelper())), page, writeStrategy, dataFolders));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
-        //        Assert.assertTrue(doc.containsKey(SolrConstants.ALTO));
-        //        Assert.assertTrue(doc.containsKey("MD_FULLTEXT"));
-        //        Assert.assertEquals("2203", doc.getFieldValue(SolrConstants.WIDTH));
-        //        Assert.assertEquals("3121", doc.getFieldValue(SolrConstants.HEIGHT));
-        //        Assert.assertTrue(doc.containsKey(SolrConstants.FULLTEXTAVAILABLE));
+        Assert.assertTrue(Files.isRegularFile(Paths.get(altoPath.toAbsolutePath().toString(), "00000005.xml")));
     }
 
     /**
      * @see MetsIndexer#generatePageDocument(Element,String,Integer,ISolrWriteStrategy,Map)
-     * @verifies add ALTO field from TEI correctly
+     * @verifies create ALTO file from TEI correctly
      */
     @Test
-    public void generatePageDocument_shouldAddALTOFieldFromTEICorrectly() throws Exception {
+    public void generatePageDocument_shouldCreateALTOFileFromTEICorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
+        Path altoPath = Paths.get("build/viewer/alto/PPN517154005");
+        Utils.checkAndCreateDirectory(altoPath);
+        Assert.assertTrue(Files.isDirectory(altoPath));
+        dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, altoPath);
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
 
         MetsIndexer indexer = new MetsIndexer(hotfolder);
@@ -876,7 +878,8 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 .getSolrHelper())), page, writeStrategy, dataFolders));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
-        Assert.assertNotNull(doc.getFieldValue(SolrConstants.ALTO));
+
+        Assert.assertTrue(Files.isRegularFile(Paths.get(altoPath.toAbsolutePath().toString(), "00000001.xml")));
     }
 
     /**

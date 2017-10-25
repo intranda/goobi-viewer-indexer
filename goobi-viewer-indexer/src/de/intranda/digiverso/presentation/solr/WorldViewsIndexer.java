@@ -611,7 +611,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 if (StringUtils.isNotEmpty(rootIndexObj.getDataRepository())) {
                     currentIndexObj.setDataRepository(rootIndexObj.getDataRepository());
                 }
-                currentIndexObj.setLogId("LOG_" + MetadataHelper.formatQuadrupleDigit.format(docstructCount));
+                currentIndexObj.setLogId("LOG_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(docstructCount));
                 currentIndexObj.pushSimpleDataToLuceneArray();
 
                 // This is a new docstruct, so the current page is its first
@@ -907,7 +907,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
         doc.addField(SolrConstants.IDDOC, iddoc);
         doc.addField(SolrConstants.GROUPFIELD, iddoc);
         doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        doc.addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.formatQuadrupleDigit.format(order));
+        doc.addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(order));
         doc.addField(SolrConstants.ORDER, order);
         doc.addField(SolrConstants.ORDERLABEL, " - ");
 
