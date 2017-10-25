@@ -582,7 +582,7 @@
 						<list>
 							<!-- <item>mets:xmlData/mods:mods/mods:extension/zvdd:zvddWrap/zvdd:collectionIdentifier</item> -->
 							<item>mets:xmlData/mods:mods/mods:classification[not(@*)]</item>
-							<item>mets:xmlData/mods:mods/mods:classification[@authority="ivdcc" or @authority="bie"]
+							<item>mets:xmlData/mods:mods/mods:classification[@authority="ivdcc" or @authority="GDZ"]
 							</item>
 							<item>mets:xmlData/mods:mods/mods:relatedItem[@type='host']/@ID
 							</item>
@@ -1540,8 +1540,6 @@
                     <replace char="156"></replace>
                     <groupEntity type="PERSON">
                         <field name="MD_VALUE">mods:displayForm</field>
-                        <field name="MD_VALUE">mods:displayForm</field>
-                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
                         <field name="MD_LINK">@xlink:href</field>
                         <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
                         <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>

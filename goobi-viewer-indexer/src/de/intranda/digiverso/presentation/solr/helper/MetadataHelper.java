@@ -293,6 +293,10 @@ public class MetadataHelper {
                                     if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(normIdentifier)) {
                                         groupMetadata.add(new LuceneField(SolrConstants.GROUPFIELD, normIdentifier));
                                     }
+                                    // Add MD_VALUE as DEFAULT to the metadata doc
+                                    if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
+                                        groupMetadata.add(new LuceneField(SolrConstants.DEFAULT, fieldValue));
+                                    }
                                     groupMetadata.addAll(normData); // Add norm data outside the loop over groupMetadata
                                     indexObj.getGroupedMetadataFields().add(groupMetadata);
                                 } else {

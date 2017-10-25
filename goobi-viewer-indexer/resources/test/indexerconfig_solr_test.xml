@@ -562,7 +562,6 @@
 					<addSortField>true</addSortField>
                     <groupEntity type="PERSON">
                         <field name="MD_VALUE">mods:displayForm</field>
-                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
                         <field name="MD_LINK">@xlink:href</field>
                         <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
                         <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>

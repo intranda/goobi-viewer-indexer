@@ -370,10 +370,11 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                         SolrConstants.LABEL)));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
                 if ("MD_CREATOR".equals(doc.getFieldValue(SolrConstants.LABEL))) {
-                    Assert.assertNotNull(doc.getFieldValue("MD_DISPLAYFORM"));
+                    Assert.assertNotNull(doc.getFieldValue("MD_VALUE"));
                     Assert.assertNotNull(doc.getFieldValue("MD_FIRSTNAME"));
                     Assert.assertNotNull(doc.getFieldValue("MD_LASTNAME"));
                     Assert.assertNotNull(doc.getFieldValue("NORM_URI"));
+                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.DEFAULT));
                 } else if ("MD_PHYSICALCOPY".equals(doc.getFieldValue(SolrConstants.LABEL))) {
                     Assert.assertNotNull(doc.getFieldValue("MD_LOCATION"));
                     Assert.assertNotNull(doc.getFieldValue("MD_SHELFMARK"));
