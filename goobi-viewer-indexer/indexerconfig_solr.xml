@@ -106,7 +106,7 @@
             <smtpUser></smtpUser>
             <smtpPassword></smtpPassword>
             <smtpSenderAddress></smtpSenderAddress>
-            <smtpSenderName>intranda viewer Indexer</smtpSenderName>
+            <smtpSenderName>Goobi viewer - Indexer</smtpSenderName>
             <smtpSecurity>SSL</smtpSecurity>
 	    </email>
 	   

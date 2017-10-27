@@ -12,9 +12,9 @@
 
 ### 
 #
-# intranda SolrIndexer2
+# Goobi viewer - Indexer
 #
-# Author: intranda GmbH <goobi@intranda.com>
+# Author: intranda GmbH <support@intranda.com>
 #
 ###
 
@@ -34,7 +34,7 @@ LOGCONFIG=/opt/digiverso/indexer/indexerlog4j.properties
 RUNNINGUSER=tomcat7
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="intranda solrIndexer"
+DESC="Goobi viewer - Indexer"
 SOLRURL="http://localhost:8080/solr/"
 SOLRRESULT="HTTP/1.1 200 OK"
 
