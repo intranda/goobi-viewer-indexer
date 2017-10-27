@@ -71,7 +71,7 @@
 		<field name="_version_" type="long" indexed="true" stored="true" />
 		<field name="_root_" type="string" indexed="true" stored="false"/>
 
-		<!-- intranda viewer control fields -->
+		<!-- Goobi viewer control fields -->
 		<field name="ABBYYXML" type="string" indexed="false" stored="true" />
 		<field name="ACCESSCONDITION" type="string" indexed="true"
 			stored="true" multiValued="true" />
@@ -189,7 +189,7 @@
 		<field name="YEARMONTHDAY" type="tlong" indexed="true" stored="true"
 			multiValued="true" />
 
-		<!-- intranda viewer metadata fields -->
+		<!-- Goobi viewer metadata fields -->
 		<dynamicField name="FILENAME_*" type="string" indexed="true"
 			stored="true" />
 		<dynamicField name="IMAGEURL_*" type="string" indexed="true"
