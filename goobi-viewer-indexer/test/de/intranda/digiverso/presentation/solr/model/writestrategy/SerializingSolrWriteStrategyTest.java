@@ -75,7 +75,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        indexer.generatePageDocuments(strat, null, 1);
+        indexer.generatePageDocuments(strat, null, hotfolder.getDataRepository(), "PPN517154005", 1);
         List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
         Assert.assertEquals(3, docs.size());
         Assert.assertEquals("PHYS_0001", docs.get(0).getFieldValue(SolrConstants.PHYSID));
