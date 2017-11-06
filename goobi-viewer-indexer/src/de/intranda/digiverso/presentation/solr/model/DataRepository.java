@@ -60,7 +60,7 @@ public class DataRepository {
     private boolean valid = false;
     private String name;
     private Path rootDir;
-    private Map<String, Path> dirMap = new HashMap<>();
+    private final Map<String, Path> dirMap = new HashMap<>();
 
     /**
      * 

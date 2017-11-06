@@ -489,7 +489,7 @@ public class MetsIndexer extends AbstractIndexer {
 
             if (!indexObj.isAnchor()) {
                 // Generate docs for all pages and add to the write strategy
-                generatePageDocuments(writeStrategy, dataFolders, pageCountStart);
+                generatePageDocuments(writeStrategy, dataFolders, hotfolder.getDataRepository(), indexObj.getPi(), pageCountStart);
 
                 // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
                 if (hasFulltext) {
@@ -858,6 +858,8 @@ public class MetsIndexer extends AbstractIndexer {
      * 
      * @param writeStrategy
      * @param dataFolders
+     * @param dataRepository
+     * @param pi
      * @param pageCountStart
      * @return
      * @throws FatalIndexerException
@@ -867,8 +869,8 @@ public class MetsIndexer extends AbstractIndexer {
      * @should switch to DEFAULT file group correctly
      * @should maintain page order after parallel processing
      */
-    public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders, int pageCountStart)
-            throws FatalIndexerException {
+    public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
+            final DataRepository dataRepository, final String pi, int pageCountStart) throws FatalIndexerException {
         // Get all physical elements
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
@@ -885,7 +887,7 @@ public class MetsIndexer extends AbstractIndexer {
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), null, writeStrategy, dataFolders);
+                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository);
                         map.put(iddoc, true);
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
@@ -899,8 +901,8 @@ public class MetsIndexer extends AbstractIndexer {
             // Generate pages sequentially
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
-                if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), order, writeStrategy,
-                        dataFolders)) {
+                if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), pi, order, writeStrategy,
+                        dataFolders, dataRepository)) {
                     order++;
                 }
             }
@@ -912,9 +914,11 @@ public class MetsIndexer extends AbstractIndexer {
      * 
      * @param eleStructMapPhysical
      * @param iddoc
+     * @param pi
      * @param order
      * @param writeStrategy
      * @param dataFolders
+     * @param dataRepository
      * @return
      * @throws FatalIndexerException
      * @should add all basic fields
@@ -930,8 +934,12 @@ public class MetsIndexer extends AbstractIndexer {
      * @should add width and height from MIX correctly
      * @should add page metadata correctly
      */
-    boolean generatePageDocument(Element eleStructMapPhysical, String iddoc, Integer order, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders) throws FatalIndexerException {
+    boolean generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, Integer order, final ISolrWriteStrategy writeStrategy,
+            final Map<String, Path> dataFolders, final DataRepository dataRepository) throws FatalIndexerException {
+        if (dataFolders != null && dataRepository == null) {
+            throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
+        }
+        
         String id = eleStructMapPhysical.getAttributeValue("ID");
         if (order == null) {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
@@ -1209,9 +1217,8 @@ public class MetsIndexer extends AbstractIndexer {
                 if (altoData != null) {
                     foundCrowdsourcingData = true;
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-                        doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTOCROWD).getParent().getFileName().toString()
-                                + '/' + dataFolders.get(DataRepository.PARAM_ALTOCROWD).getFileName().toString() + '/' + baseFileName
-                                + XML_EXTENSION);
+                        doc.addField(SolrConstants.FILENAME_ALTO, hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTOCROWD).getFileName()
+                                .toString() + '/' + pi + '/' + baseFileName + XML_EXTENSION);
                         altoWritten = true;
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
@@ -1240,9 +1247,8 @@ public class MetsIndexer extends AbstractIndexer {
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    doc.addField(SolrConstants.FILENAME_FULLTEXT, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD).getParent().getFileName()
-                            .toString() + '/' + dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD).getFileName().toString() + '/' + baseFileName
-                            + TXT_EXTENSION);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXT, hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXTCROWD)
+                            .getFileName().toString() + '/' + pi + '/' + baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
                 }
             }
@@ -1259,8 +1265,8 @@ public class MetsIndexer extends AbstractIndexer {
                 }
                 if (altoData != null) {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
-                        doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO).getParent().getFileName().toString()
-                                + '/' + dataFolders.get(DataRepository.PARAM_ALTO).getFileName().toString() + '/' + baseFileName + XML_EXTENSION);
+                        doc.addField(SolrConstants.FILENAME_ALTO, hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTO).getFileName()
+                                .toString() + '/' + pi + '/' + baseFileName + XML_EXTENSION);
                         altoWritten = true;
                         logger.debug("Added ALTO from regular ALTO for page {}", order);
                     }
@@ -1287,8 +1293,10 @@ public class MetsIndexer extends AbstractIndexer {
                 String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
                 if (fulltext != null) {
                     doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    doc.addField(SolrConstants.FILENAME_FULLTEXT, dataFolders.get(DataRepository.PARAM_FULLTEXT).getParent().getFileName().toString()
-                            + '/' + dataFolders.get(DataRepository.PARAM_FULLTEXT).getFileName().toString() + '/' + baseFileName + TXT_EXTENSION);
+                    hotfolder.getDataRepository();
+                    hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXT);
+                    doc.addField(SolrConstants.FILENAME_FULLTEXT, hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXT).getFileName()
+                            .toString() + '/' + pi + '/' + baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from regular plain text for page {}", order);
                 }
             }
@@ -1303,9 +1311,9 @@ public class MetsIndexer extends AbstractIndexer {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(
                                     SolrConstants.FILENAME_ALTO) == null) {
                                 if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                    doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent()
-                                            .getFileName().toString() + '/' + dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getFileName()
-                                                    .toString() + '/' + baseFileName + XML_EXTENSION);
+                                    doc.addField(SolrConstants.FILENAME_ALTO, hotfolder.getDataRepository().getDir(
+                                            DataRepository.PARAM_ALTO_CONVERTED).getFileName().toString() + '/' + pi + '/' + baseFileName
+                                            + XML_EXTENSION);
                                     // Write converted ALTO file
                                     FileUtils.writeStringToFile(new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName
                                             + XML_EXTENSION), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
@@ -1351,8 +1359,7 @@ public class MetsIndexer extends AbstractIndexer {
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
                             if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
                                 doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent()
-                                        .getFileName().toString() + '/' + dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getFileName()
-                                                .toString() + '/' + baseFileName + XML_EXTENSION);
+                                        .getFileName().toString() + '/' + pi + '/' + baseFileName + XML_EXTENSION);
                                 logger.debug("Added ALTO from regular ALTO for page {}", order);
                                 FileUtils.writeStringToFile(new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName
                                         + XML_EXTENSION), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
@@ -1416,8 +1423,7 @@ public class MetsIndexer extends AbstractIndexer {
                             if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
                                 String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + XML_EXTENSION;
                                 doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent()
-                                        .getFileName().toString() + '/' + dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getFileName()
-                                                .toString() + '/' + fileName);
+                                        .getFileName().toString() + '/' + pi + '/' + fileName);
                                 // Write ALTO file
                                 File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
                                 FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), "UTF-8");
