@@ -242,9 +242,9 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                     if (doc.containsKey(SolrConstants.DEFAULT)) {
                         rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
                     }
-                    if (doc.containsKey(SolrConstants.NORMDATATERMS)) {
-                        rootDoc.addField(SolrConstants.NORMDATATERMS, doc.getFieldValue(SolrConstants.NORMDATATERMS));
-                    }
+                    //                    if (doc.containsKey(SolrConstants.NORMDATATERMS)) {
+                    //                        rootDoc.addField(SolrConstants.NORMDATATERMS, doc.getFieldValue(SolrConstants.NORMDATATERMS));
+                    //                    }
                 }
                 try {
                     solrHelper.writeToIndex(doc);
