@@ -867,7 +867,7 @@
                     <replace char="156"></replace>
                     <replace string="http://middleware.gei.de/wv.experts/">http://normdata.intranda.com/normdata/edu.experts/wvexpertsid/</replace>
                     <groupEntity type="PERSON">
-                        <field name="MD_VALUE">tei:displayName</field>
+                        <field name="MD_VALUE">concat(text(),tei:surname,', ',tei:forename)</field>
                         <field name="MD_LASTNAME">tei:surname</field>
                         <field name="MD_FIRSTNAME">tei:forename</field>
                         <field name="MD_EDUEXPERTS">@source</field>
