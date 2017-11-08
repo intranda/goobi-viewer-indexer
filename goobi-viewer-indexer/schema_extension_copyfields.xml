@@ -2,5 +2,5 @@
 <!-- GEI additional copyFields, version 20171004 -->
 <root>
 	<copyField source="PI" dest="id" />
-	<copyField source="FULLTEXT" dest="contents" />
+	<copyField source="FULLTEXT" dest="content" />
 </root>
