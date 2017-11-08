@@ -41,7 +41,7 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
     /**
      * @param aggregateRecords
      * @throws IndexerException
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @see de.intranda.digiverso.presentation.solr.model.ISolrWriteStrategy#writeDocs()
      * @should write all structure docs correctly
      * @should write all page docs correctly
@@ -58,9 +58,6 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
             docsToAdd.add(pageDoc);
         }
 
-        //        StringBuilder sbSuperDefault = new StringBuilder();
-        //        StringBuilder sbSuperFulltext = new StringBuilder();
-
         for (SolrInputDocument doc : docsToAdd) {
             if (doc.getFieldValue("GROUPFIELD") == null) {
                 logger.error("Field has no GROUPFIELD: {}", doc.toString());
@@ -68,23 +65,16 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
             rootDoc.addChildDocument(doc);
             if (aggregateRecords) {
                 if (doc.containsKey(SolrConstants.DEFAULT)) {
-                    // sbSuperDefault.append(' ').append(doc.getFieldValue(SolrConstants.DEFAULT));
                     rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
                 }
+                if (doc.containsKey(SolrConstants.NORMDATATERMS)) {
+                    rootDoc.addField(SolrConstants.NORMDATATERMS, doc.getFieldValue(SolrConstants.NORMDATATERMS));
+                }
                 if (doc.containsKey(SolrConstants.FULLTEXT)) {
-                    // sbSuperFulltext.append('\n').append(doc.getFieldValue(SolrConstants.FULLTEXT));
                     rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
                 }
             }
         }
-
-        // Add SUPERDEFAULT and SUPERFULLTEXT fields to the root doc
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERDEFAULT, AbstractIndexer.cleanUpDefaultField(sbSuperDefault.toString()));
-        //        }
-        //        if (sbSuperFulltext.length() > 0) {
-        //            rootDoc.addField(SolrConstants.SUPERFULLTEXT, sbSuperFulltext.toString());
-        //        }
 
         solrHelper.writeToIndex(rootDoc);
         solrHelper.commit(SolrHelper.optimize);

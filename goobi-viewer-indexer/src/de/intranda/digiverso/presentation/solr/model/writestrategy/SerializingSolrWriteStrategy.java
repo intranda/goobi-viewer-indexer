@@ -233,17 +233,18 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             throw new IndexerException("rootDoc may not be null");
         }
 
-        //        StringBuilder sbSuperDefault = new StringBuilder();
-        //        StringBuilder sbSuperFulltext = new StringBuilder();
-
         logger.info("Writing {} structure/content documents to the index...", docIddocs.size());
         for (String iddoc : docIddocs) {
             SolrInputDocument doc = load(iddoc);
             if (doc != null) {
                 // Add the child doc's DEFAULT values to the SUPERDEFAULT value of the root doc
-                if (aggregateRecords && doc.containsKey(SolrConstants.DEFAULT)) {
-                    // sbSuperDefault.append(' ').append(doc.getFieldValue(SolrConstants.DEFAULT));
-                    rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
+                if (aggregateRecords) {
+                    if (doc.containsKey(SolrConstants.DEFAULT)) {
+                        rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
+                    }
+                    if (doc.containsKey(SolrConstants.NORMDATATERMS)) {
+                        rootDoc.addField(SolrConstants.NORMDATATERMS, doc.getFieldValue(SolrConstants.NORMDATATERMS));
+                    }
                 }
                 try {
                     solrHelper.writeToIndex(doc);

@@ -103,7 +103,6 @@ public class MetadataHelper {
         if (indexObj.getDefaultValue() != null) {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());
         }
-        StringBuilder sbNormDataTerms = new StringBuilder();
         for (String fieldName : fieldNamesList) {
             List<FieldConfig> configurationItemList = SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
                     fieldName);
@@ -222,6 +221,7 @@ public class MetadataHelper {
                                     List<LuceneField> normData = new ArrayList<>();
                                     boolean groupFieldAlreadyReplaced = false;
                                     String normIdentifier = null;
+                                    StringBuilder sbNormDataTerms = new StringBuilder();
                                     for (LuceneField field : groupMetadata) {
                                         if ((field.getField().equals("MD_VALUE") || (eleMods.getName().equals("name") && field.getField().equals(
                                                 "MD_DISPLAYFORM")) || (eleMods.getName().equals("location") && field.getField().equals(
@@ -303,6 +303,10 @@ public class MetadataHelper {
                                     // Add MD_VALUE as DEFAULT to the metadata doc
                                     if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
                                         groupMetadata.add(new LuceneField(SolrConstants.DEFAULT, fieldValue));
+                                    }
+                                    // NORMDATATERMS is now in the metadata docs, not docstructs
+                                    if (sbNormDataTerms.length() > 0) {
+                                        groupMetadata.add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
                                     }
                                     groupMetadata.addAll(normData); // Add norm data outside the loop over groupMetadata
                                     indexObj.getGroupedMetadataFields().add(groupMetadata);
@@ -408,10 +412,6 @@ public class MetadataHelper {
 
         {
             indexObj.setDefaultValue(sbDefaultMetadataValues.toString());
-        }
-        // NORMDATATERMS is now in the metadata docs, not docstructs
-        if (sbNormDataTerms.length() > 0) {
-            ret.add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
         }
         ret.addAll(completeCenturies(ret));
 
