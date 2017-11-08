@@ -9,7 +9,7 @@
 	<property name="dir.lib" value="./lib" />
 	<property name="dir.buildlib" value="./lib-build" />
 	<property name="classloader.zip" value="${dir.buildlib}/jar-in-jar-loader.zip" />
-	<property name="deploy.dir" value="Z:/Deploy/solrIndexer/3.2" />
+	<property name="deploy.dir" value="Z:/Deploy/solrIndexer/3.3" />
 	<property name="jar.list" value="./ alto.jar commons-codec-1.9.jar commons-collections-3.2.2.jar commons-configuration-1.6.jar commons-io-2.4.jar commons-jxpath-1.2.jar commons-lang-2.6.jar geronimo-stax-api_1.0_spec-1.0.1.jar httpclient-4.5.1.jar httpcore-4.4.3.jar httpmime-4.5.1.jar icu4j-59_1.jar icu4j-charset-59_1.jar icu4j-localespi-59_1.jar javax.mail.jar jaxen-1.1.6.jar jcl-over-slf4j-1.7.25.jar jdom-2.0.6.jar joda-time-2.3.jar jsoup-1.8.3.jar log4j-api-2.8.2.jar log4j-core-2.8.2.jar log4j-slf4j-impl-2.8.2.jar metadata-extractor-2.8.1.jar noggit-0.5.jar normdataimporter.jar slf4j-api-1.7.25.jar solr-solrj-4.10.4.jar wstx-asl-3.2.7.jar xmpcore-5.1.2.jar xpp3_min-1.1.4c.jar xstream-1.4.9.jar zookeeper-3.4.6.jar" />
 	<property name="dir.tests.src" value="./test" />
 	<property name="dir.tests.classes" value="${dir.build}/test-classes" />
