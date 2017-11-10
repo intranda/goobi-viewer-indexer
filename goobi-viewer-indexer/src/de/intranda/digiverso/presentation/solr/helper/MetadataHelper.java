@@ -86,7 +86,6 @@ public class MetadataHelper {
         }
     };
 
-
     public static DateTimeFormatter formatterISO8601Full = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
     public static DateTimeFormatter formatterISO8601Date = ISODateTimeFormat.date(); // yyyy-MM-dd
     public static DateTimeFormatter formatterISO8601YearMonth = DateTimeFormat.forPattern("yyyy-MM");
@@ -119,7 +118,6 @@ public class MetadataHelper {
         if (indexObj.getDefaultValue() != null) {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());
         }
-        StringBuilder sbNormDataTerms = new StringBuilder();
         for (String fieldName : fieldNamesList) {
             List<FieldConfig> configurationItemList = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
                     fieldName);
@@ -240,6 +238,7 @@ public class MetadataHelper {
                                     List<LuceneField> normData = new ArrayList<>();
                                     boolean groupFieldAlreadyReplaced = false;
                                     String normIdentifier = null;
+                                    StringBuilder sbNormDataTerms = new StringBuilder();
 
                                     // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                     if (gmd.getMainValue() != null) {
@@ -324,9 +323,13 @@ public class MetadataHelper {
                                         gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, fieldValue));
                                     }
                                     gmd.getFields().addAll(normData); // Add norm data outside the loop over groupMetadata
-                                    
+
                                     if (!indexObj.getGroupedMetadataFields().contains(gmd)) {
                                         indexObj.getGroupedMetadataFields().add(gmd);
+                                    }
+                                    // NORMDATATERMS is now in the metadata docs, not docstructs
+                                    if (sbNormDataTerms.length() > 0) {
+                                        gmd.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
                                     }
                                 } else {
                                     // Regular metadata
@@ -430,10 +433,6 @@ public class MetadataHelper {
 
         {
             indexObj.setDefaultValue(sbDefaultMetadataValues.toString());
-        }
-        // NORMDATATERMS is now in the metadata docs, not docstructs
-        if (sbNormDataTerms.length() > 0) {
-            ret.add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
         }
         ret.addAll(completeCenturies(ret));
 
@@ -692,8 +691,7 @@ public class MetadataHelper {
         }
         String ret = pi.trim();
         // Apply replace rules defined for the field PI
-        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
-                SolrConstants.PI);
+        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (configItems != null && !configItems.isEmpty()) {
             Map<Object, String> replaceRules = configItems.get(0).getReplaceRules();
             if (replaceRules != null && !replaceRules.isEmpty()) {

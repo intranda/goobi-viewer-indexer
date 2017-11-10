@@ -65,11 +65,12 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
             rootDoc.addChildDocument(doc);
             if (aggregateRecords) {
                 if (doc.containsKey(SolrConstants.DEFAULT)) {
-                    // sbSuperDefault.append(' ').append(doc.getFieldValue(SolrConstants.DEFAULT));
                     rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
                 }
+                //                if (doc.containsKey(SolrConstants.NORMDATATERMS)) {
+                //                    rootDoc.addField(SolrConstants.NORMDATATERMS, doc.getFieldValue(SolrConstants.NORMDATATERMS));
+                //                }
                 if (doc.containsKey(SolrConstants.FULLTEXT)) {
-                    // sbSuperFulltext.append('\n').append(doc.getFieldValue(SolrConstants.FULLTEXT));
                     rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
                 }
             }

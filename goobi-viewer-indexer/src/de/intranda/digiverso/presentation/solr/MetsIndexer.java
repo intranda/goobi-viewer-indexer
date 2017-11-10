@@ -96,7 +96,6 @@ public class MetsIndexer extends AbstractIndexer {
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
     public static final String DEFAULT_FULLTEXT_CHARSET = "Cp1250";
 
-
     public static String fulltextCharset = DEFAULT_FULLTEXT_CHARSET;
 
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
@@ -939,7 +938,7 @@ public class MetsIndexer extends AbstractIndexer {
         if (dataFolders != null && dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
         }
-        
+
         String id = eleStructMapPhysical.getAttributeValue("ID");
         if (order == null) {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
@@ -1302,7 +1301,7 @@ public class MetsIndexer extends AbstractIndexer {
             }
 
             // ABBYY XML (converted to ALTO)
-            if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null) {
+            if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null) {
                 try {
                     try {
                         altoData = TextHelper.readAbbyyToAlto(new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
@@ -1351,7 +1350,7 @@ public class MetsIndexer extends AbstractIndexer {
             }
 
             // Read word coords from TEI only if none has been read from ALTO for this page yet
-            if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
+            if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
                 try {
                     altoData = TextHelper.readTeiToAlto(new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName
                             + XML_EXTENSION));
@@ -1412,7 +1411,7 @@ public class MetsIndexer extends AbstractIndexer {
             }
 
             // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
-            if (!foundCrowdsourcingData && !altoWritten && altoURL != null) {
+            if (!altoWritten && !foundCrowdsourcingData && altoURL != null) {
                 try {
                     logger.debug("Downloading ALTO from {}", altoURL);
                     String alto = Utils.callUrl(altoURL);
