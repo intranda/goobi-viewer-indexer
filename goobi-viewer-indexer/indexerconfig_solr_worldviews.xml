@@ -360,7 +360,7 @@
         <GROUPORDER_SERIES>
             <list>
                 <item>
-                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:part/@order
+                    <xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:biblScope[@unit='volume']
                     </xpath>
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
@@ -371,13 +371,35 @@
         <MD_SERIESTITLE>
             <list>
                 <item>
-                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:titleInfo/mods:title
+                    <xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:title[@level='s'][@type='main' or @type='translated']
                     </xpath>
                     <addToDefault>true</addToDefault>
                     <addUntokenizedVersion>true</addUntokenizedVersion>
                 </item>
             </list>
         </MD_SERIESTITLE>
+        
+        <MD_SERIESTITLE_LANG_DE>
+            <list>
+                <item>
+                    <xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:title[@level='s'][@type='main' or @type='translated'][@xml:lang='ger']
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_SERIESTITLE_LANG_DE>
+        
+        <MD_SERIESTITLE_LANG_EN>
+            <list>
+                <item>
+                    <xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:title[@level='s'][@type='main' or @type='translated'][@xml:lang='eng']
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_SERIESTITLE_LANG_EN>
 
 		<SORT_TITLE>
 			<list>
@@ -419,7 +441,9 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang="ger"]
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume'][@xml:lang="ger"]
+                            </item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='main' or @type='translated'][@xml:lang="ger"]
                             </item> 
                         </list>
                     </xpath>
@@ -439,7 +463,9 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang="eng"]
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume'][@xml:lang="eng"]
+                            </item> 
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='main' or @type='translated'][@xml:lang="eng"]
                             </item> 
                         </list>
                     </xpath>
@@ -464,10 +490,38 @@
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
-					<addToMetadata>false</addToMetadata>
 				</item>
 			</list>
 		</MD_SUBTITLE>
+		
+        <MD_SUBTITLE_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='sub'][@xml:lang='ger']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_SUBTITLE_LANG_DE>
+        
+        <MD_SUBTITLE_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='sub'][@xml:lang='eng']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_SUBTITLE_LANG_EN>
+
 
 		<MD_ALTERNATETITLE>
 			<list>
@@ -480,28 +534,25 @@
 			</list>
 		</MD_ALTERNATETITLE>
 
-		<MD_PUBLISHER>
-			<list>
-				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:publisher
-							</item>
-							<item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Verlag']
-							</item>
-						</list>
-					</xpath>
-					<addToDefault>true</addToDefault>
-					<groupEntity type="ORIGININFO">
-					   <field name="MD_VALUE">text()</field>
-					   <field name="MD_PUBLISHER">text()</field>
-					   <field name="MD_PUBLISHER">lido:actor/lido:nameActorSet/lido:appellationValue</field>
-<!-- 					   <field name="NORM_URI">@valueURI</field> -->
-					   <field name="NORM_URI">lido:actor/lido:actorID</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_PUBLISHER>
+        <MD_PUBLISHER>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:publisher/tei:orgName
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="ORIGININFO">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_PUBLISHER">text()</field>
+                        <field name="MD_EDUEXPERTS">@source</field>
+                        <field name="NORM_URI">@ref</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_PUBLISHER>
 		
 		<MD_PUBLISHER_SOURCE>
             <list>
@@ -513,23 +564,69 @@
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
+                    <groupEntity type="ORIGININFO">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_PUBLISHER">text()</field>
+                        <field name="MD_EDUEXPERTS">@source</field>
+                        <field name="NORM_URI">@ref</field>
+                    </groupEntity>
                 </item>
             </list>
         </MD_PUBLISHER_SOURCE>
 
-		<MD_PLACEPUBLISH>
-			<list>
-				<item>
-					<xpath>
-					    <list>
+        <MD_PLACEPUBLISH>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
                             <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
                             </item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:pubPlace
+                            </item>
                         </list>
-					</xpath>
-					<addToDefault>true</addToDefault>
-				</item>
-			</list>
-		</MD_PLACEPUBLISH>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_PLACEPUBLISH>
+        
+        <MD_PLACEPUBLISH_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:pubPlace[@xml:lang='ger']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="ORIGININFO">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_PLACEPUBLISH_LANG_DE">text()</field>
+                        <field name="MD_GEONAMES">@ref</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_PLACEPUBLISH_LANG_DE>
+        
+        <MD_PLACEPUBLISH_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:pubPlace[@xml:lang='eng']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="ORIGININFO">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_PLACEPUBLISH_LANG_DE">text()</field>
+                        <field name="MD_GEONAMES">@ref</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_PLACEPUBLISH_LANG_EN>
 		
         <MD_PLACEPUBLISH_SOURCE>
             <list>
@@ -558,7 +655,7 @@
 							</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue
 							</item>
-                            <item>tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date[@type="publication"]
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:date
                             </item>
 						</list>
 					</xpath>
@@ -1228,7 +1325,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="edt"[@authority='marcrelator'][@type='code']]/mods:displayForm
+							<item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:editor/tei:persName
 							</item>
 						</list>
 					</xpath>
@@ -1239,19 +1336,41 @@
 					<replace char="152"></replace>
 					<replace char="156"></replace>
                     <groupEntity type="PERSON">
-                        <field name="MD_VALUE">mods:displayForm</field>
-                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
-                        <field name="MD_LINK">@xlink:href</field>
-                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
+                        <field name="MD_VALUE">concat(text(),tei:surname,', ',tei:forename)</field>
+                        <field name="MD_LASTNAME">tei:surname</field>
+                        <field name="MD_FIRSTNAME">tei:forename</field>
+                        <field name="MD_EDUEXPERTS">@source</field>
+                        <field name="NORM_URI">@valueURI</field>
                     </groupEntity>
 				</item>
 			</list>
 		</MD_EDITOR>
+		
+        <MD_EDITOR_SERIES>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:editor/tei:persName
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace char="152"></replace>
+                    <replace char="156"></replace>
+                    <groupEntity type="PERSON">
+                        <field name="MD_VALUE">concat(text(),tei:surname,', ',tei:forename)</field>
+                        <field name="MD_LASTNAME">tei:surname</field>
+                        <field name="MD_FIRSTNAME">tei:forename</field>
+                        <field name="MD_EDUEXPERTS">@source</field>
+                        <field name="NORM_URI">@valueURI</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_EDITOR_SERIES>
 		
         <MD_ENGRAVER>
             <list>
@@ -1882,6 +2001,21 @@
                 </item>
             </list>
         </MD_CORPORATEFORMEROWNER>
+        
+        <MD_CORPORATEEDITOR>
+            <list>
+                <item>
+                    <xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:editor/tei:orgName
+                    </xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_CORPORATION">text()</field>
+                        <field name="MD_EDUEXPERTS">@source</field>
+                        <field name="NORM_URI">@ref</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATEEDITOR>
         
         <MD_CORPORATEORIGINATOR>
             <list>
@@ -2686,21 +2820,21 @@
 			</list>
 		</MD_LETTERNUMBER>
 
-		<MD_EDITION>
-			<list>
-				<item>
-					<xpath>
+        <MD_EDITION>
+            <list>
+                <item>
+                    <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:originInfo/mods:edition[not(text() = '[Electronic ed.]')]
                             </item>
-                            <item>tei:teiHeader/tei:fileDesc/tei:editionStmt/tei:edition
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:editionStmt/tei:edition
                             </item>
                         </list>
                     </xpath>				
-					<addToDefault>true</addToDefault>
-				</item>
-			</list>
-		</MD_EDITION>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_EDITION>
 
 		<MD_GEOGRAPHICSCOPE>
 			<list>
@@ -3497,6 +3631,21 @@
                 </item>
             </list>
         </MD_ABSTRACT_LANG_EN>
+        
+        <MD_NUMPAGES>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:extent/tei:measure[@unit='pages']
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_NUMPAGES>
         
 	</fields>
 
