@@ -3774,6 +3774,141 @@
 				</item>
 			</list>
 		</MD_NUMPAGES>
+		
+        <MD_TEXTTYPE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.textType'][not(@xml:lang)] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_TEXTTYPE>
+
+        <MD_TEXTTYPE_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.textType'][@xml:lang='ger'] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_TEXTTYPE_DE>
+
+        <MD_TEXTTYPE_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.textType'][@xml:lang='eng'] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_TEXTTYPE_EN>
+
+        <MD_EDUCATIONALLEVEL>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.educationalLevel'][not(@xml:lang)] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_EDUCATIONALLEVEL>
+
+        <MD_EDUCATIONALLEVEL_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.educationalLevel'][@xml:lang='ger'] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_EDUCATIONALLEVEL_DE>
+
+        <MD_EDUCATIONALLEVEL_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.educationalLevel'][@xml:lang='eng'] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_EDUCATIONALLEVEL_EN>
+
+        <MD_EDUCATIONALSUBJECT>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.educationalSubject'][not(@xml:lang)] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_EDUCATIONALSUBJECT>
+
+        <MD_EDUCATIONALSUBJECT_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.educationalSubject'][@xml:lang='ger'] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_EDUCATIONALSUBJECT_DE>
+
+        <MD_EDUCATIONALSUBJECT_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.educationalSubject'][@xml:lang='eng'] 
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_EDUCATIONALSUBJECT_EN>
 
 	</fields>
 
