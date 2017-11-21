@@ -631,6 +631,30 @@
 			</list>
 		</MD_ALTERNATETITLE>
 
+		<MD_MAIN_LANGUAGE>
+            <list>
+                <item>
+                    <xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msContents/tei:textLang/@mainLang
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_MAIN_LANGUAGE>
+
+        <MD_ORIG_LANGUAGE>
+            <list>
+                <item>
+                    <xpath>tei:teiHeader/tei:fileDesc/tei:notesStmt/tei:note[@type='translationNote']
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                    <replace string="translated from "></replace>
+                    <replace char="32"></replace>
+                </item>
+            </list>
+        </MD_ORIG_LANGUAGE>
+
 		<MD_PUBLISHER>
 			<list>
 				<item>
