@@ -478,6 +478,7 @@
 				</item>
 			</list>
 		</MD_TITLE>
+		
 		<MD_TITLE_LANG_DE>
 			<list>
 				<item>
@@ -517,7 +518,8 @@
 				</item>
 			</list>
 		</MD_TITLE_LANG_EN>
-<MD_TITLE_SCHOOLBOOK>
+		
+        <MD_TITLE_SCHOOLBOOK>
             <list>
                 <item>
                     <xpath>
@@ -618,7 +620,66 @@
 				</item>
 			</list>
 		</MD_SUBTITLE_SCHOOLBOOK_LANG_EN>
+		
+        <MD_TITLE_SCHOOLBOOK_VOLUME>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume'][not(@xml:lang)]
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </MD_TITLE_SCHOOLBOOK_VOLUME>
 
+        <MD_TITLE_SCHOOLBOOK_VOLUME_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume' or @type='translated'][@xml:lang="ger"]
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </MD_TITLE_SCHOOLBOOK_VOLUME_LANG_DE>
+
+        <MD_TITLE_SCHOOLBOOK_VOLUME_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume' or @type='translated'][@xml:lang="eng"]
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </MD_TITLE_SCHOOLBOOK_VOLUME_LANG_EN>
 
 		<MD_ALTERNATETITLE>
 			<list>
@@ -1431,7 +1492,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:editor/tei:persName
+							<item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:editor[not(@role="translator")]/tei:persName
 							</item>
 						</list>
 					</xpath>
