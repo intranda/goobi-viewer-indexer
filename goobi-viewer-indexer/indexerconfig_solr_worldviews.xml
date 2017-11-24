@@ -387,8 +387,7 @@
 		<MD_SERIESTITLE>
 			<list>
 				<item>
-					<xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:title[@level='s'][@type='main'
-						or @type='translated']
+					<xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:title[@level='s'][@type='main']
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
@@ -478,6 +477,7 @@
 				</item>
 			</list>
 		</MD_TITLE>
+		
 		<MD_TITLE_LANG_DE>
 			<list>
 				<item>
@@ -517,12 +517,13 @@
 				</item>
 			</list>
 		</MD_TITLE_LANG_EN>
-<MD_TITLE_SCHOOLBOOK>
+		
+        <MD_TITLE_SCHOOLBOOK>
             <list>
                 <item>
                     <xpath>
                         <list>
-                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='main'][not(@xml:lang)]
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='main']
                             </item>
                         </list>
                     </xpath>
@@ -618,7 +619,26 @@
 				</item>
 			</list>
 		</MD_SUBTITLE_SCHOOLBOOK_LANG_EN>
-
+		
+        <MD_TITLE_SCHOOLBOOK_VOLUME>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </MD_TITLE_SCHOOLBOOK_VOLUME>
 
 		<MD_ALTERNATETITLE>
 			<list>
@@ -1455,7 +1475,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:editor/tei:persName
+							<item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:editor[not(@role="translator")]/tei:persName
 							</item>
 						</list>
 					</xpath>
