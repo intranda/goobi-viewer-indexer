@@ -387,8 +387,7 @@
 		<MD_SERIESTITLE>
 			<list>
 				<item>
-					<xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:title[@level='s'][@type='main'
-						or @type='translated']
+					<xpath>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:seriesStmt/tei:title[@level='s'][@type='main']
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
@@ -524,7 +523,7 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='main'][not(@xml:lang)]
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='main']
                             </item>
                         </list>
                     </xpath>
@@ -626,7 +625,7 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume'][not(@xml:lang)]
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume']
                             </item>
                         </list>
                     </xpath>
@@ -640,46 +639,6 @@
                 </item>
             </list>
         </MD_TITLE_SCHOOLBOOK_VOLUME>
-
-        <MD_TITLE_SCHOOLBOOK_VOLUME_LANG_DE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume' or @type='translated'][@xml:lang="ger"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                    <replace string="&lt;ns&gt;"></replace>
-                    <replace string="&lt;/ns&gt;"></replace>
-                    <replace string="&lt;&lt;"></replace>
-                    <replace string="&gt;&gt;"></replace>
-                    <replace string="¬"></replace>
-                </item>
-            </list>
-        </MD_TITLE_SCHOOLBOOK_VOLUME_LANG_DE>
-
-        <MD_TITLE_SCHOOLBOOK_VOLUME_LANG_EN>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:titleStmt/tei:title[@level='m'][@type='volume' or @type='translated'][@xml:lang="eng"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                    <replace string="&lt;ns&gt;"></replace>
-                    <replace string="&lt;/ns&gt;"></replace>
-                    <replace string="&lt;&lt;"></replace>
-                    <replace string="&gt;&gt;"></replace>
-                    <replace string="¬"></replace>
-                </item>
-            </list>
-        </MD_TITLE_SCHOOLBOOK_VOLUME_LANG_EN>
 
 		<MD_ALTERNATETITLE>
 			<list>
