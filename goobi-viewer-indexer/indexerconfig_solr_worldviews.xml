@@ -453,30 +453,6 @@
 				</item>
 			</list>
 		</MD_TITLE>
-
-		<MD_TITLE>
-			<list>
-				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
-							</item>
-							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
-							</item>
-							<item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@xml:lang)]
-							</item>
-						</list>
-					</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<replace string="&lt;ns&gt;"></replace>
-					<replace string="&lt;/ns&gt;"></replace>
-					<replace string="&lt;&lt;"></replace>
-					<replace string="&gt;&gt;"></replace>
-					<replace string="¬"></replace>
-				</item>
-			</list>
-		</MD_TITLE>
 		
 		<MD_TITLE_LANG_DE>
 			<list>
@@ -3773,6 +3749,21 @@
 				</item>
 			</list>
 		</MD_WV_KEYWORD>
+		
+        <MD_WV_SEGMENT>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:text//tei:seg/@type</item>
+                        </list>
+                    </xpath>
+                    <addSortField>false</addSortField>
+                    <addToChildren>true</addToChildren>
+                    <addToPages>true</addToPages>
+                </item>
+            </list>
+        </MD_WV_SEGMENT>
 
 		<MD_ABSTRACT_LANG_DE>
             <list>
