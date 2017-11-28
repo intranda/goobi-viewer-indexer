@@ -1883,24 +1883,45 @@
 			</list>
 		</MD_SUBJECTPERSON>
 
-		<MD_TRANSLATOR>
-			<list>
-				<item>
-					<xpath>
-						<list>
-							<item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@role="translator"]/tei:persName
-							</item>
-						</list>
-					</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<replace string="&lt;&lt;"></replace>
-					<replace string="&gt;&gt;"></replace>
-					<replace char="152"></replace>
-					<replace char="156"></replace>
-				</item>
-			</list>
-		</MD_TRANSLATOR>
+	<MD_TRANSLATOR_LANG_DE>
+		<list>
+			<item>
+				<xpath>
+					<list>
+						<item>tei:teiHeader/tei:fileDesc/tei:titleStmt[tei:title[@xml:lang="ger"][@type="translated"]]/tei:editor[@role="translator"]/tei:persName
+						</item>
+					</list>
+				</xpath>
+				<addToDefault>true</addToDefault>
+				<addSortField>true</addSortField>
+				<replace string="&lt;&lt;"></replace>
+				<replace string="&gt;&gt;"></replace>
+				<replace char="152"></replace>
+				<replace char="156"></replace>
+			</item>
+		</list>
+	</MD_TRANSLATOR_LANG_DE>
+
+	<MD_TRANSLATOR_LANG_EN>
+		<list>
+			<item>
+				<xpath>
+					<list>
+						<item>tei:teiHeader/tei:fileDesc/tei:titleStmt[tei:title[@xml:lang="eng"][@type="translated"]]/tei:editor[@role="translator"]/tei:persName
+						</item>
+					</list>
+				</xpath>
+				<addToDefault>true</addToDefault>
+				<addSortField>true</addSortField>
+				<replace string="&lt;&lt;"></replace>
+				<replace string="&gt;&gt;"></replace>
+				<replace char="152"></replace>
+				<replace char="156"></replace>
+
+			</item>
+		</list>
+	</MD_TRANSLATOR_LANG_EN>
+
 
 		<MD_WOODENGRAVER>
 			<list>
