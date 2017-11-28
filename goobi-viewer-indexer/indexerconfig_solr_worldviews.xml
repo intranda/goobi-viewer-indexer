@@ -3913,6 +3913,51 @@
             </list>
         </MD_TEXTTYPE_EN>
 
+	<MD_SOURCETYPE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.sourceType'][not(@xml:lang)]
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_SOURCETYPE>
+
+        <MD_SOURCETYPE_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.sourceType'][@xml:lang='ger']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_SOURCETYPE_LANG_DE>
+
+        <MD_SOURCETYPE_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:profileDesc/tei:textClass/tei:classCode[@scheme='WV.sourceType'][@xml:lang='eng']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_SOURCETYPE_LANG_EN>
+
         <MD_EDUCATIONALLEVEL>
             <list>
                 <item>
