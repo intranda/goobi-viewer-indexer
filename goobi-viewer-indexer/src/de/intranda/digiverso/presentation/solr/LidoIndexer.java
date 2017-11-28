@@ -530,11 +530,17 @@ public class LidoIndexer extends AbstractIndexer {
 
         String xpath = "lido:resourceID";
         String filePath = xp.evaluateToString(xpath, eleResourceSet);
-        String fileName = filePath;
         if (filePath == null || filePath.isEmpty()) {
             // TODO configurable
             xpath = "lido:resourceRepresentation[@lido:type='image_master' or @lido:type='http://terminology.lido-schema.org/lido00464' or @lido:type='image_overview']/lido:linkResource";
             filePath = xp.evaluateToString(xpath, eleResourceSet);
+        }
+
+        String fileName;
+        if (filePath.contains("/")) {
+            fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+        } else {
+            fileName = filePath;
         }
 
         // Create Solr document for this page
@@ -553,10 +559,8 @@ public class LidoIndexer extends AbstractIndexer {
         }
 
         if (StringUtils.isNotEmpty(filePath)) {
+            // External image
             if (filePath.startsWith("http")) {
-                // External image
-                fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-
                 // Download image, if so requested
                 if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
                     try {
@@ -579,7 +583,7 @@ public class LidoIndexer extends AbstractIndexer {
 
             // Add full path if this is a local file or download has failed or is disabled
             if (!doc.containsKey(SolrConstants.FILENAME)) {
-                doc.addField(SolrConstants.FILENAME, filePath);
+                doc.addField(SolrConstants.FILENAME, fileName);
             }
 
             String mimetype = "image"; // TODO other types?
