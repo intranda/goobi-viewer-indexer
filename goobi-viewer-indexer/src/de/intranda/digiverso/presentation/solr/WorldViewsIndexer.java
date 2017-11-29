@@ -573,6 +573,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
         String firstPageFile = null;
         String thumbnailFile = null;
+        int thumbnailOrder = 1;
         int docstructCount = 0;
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
@@ -581,6 +582,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     .getThumbnailRepresent() != null && currentIndexObj.getThumbnailRepresent().equals(pageDoc.getFieldValue(
                             SolrConstants.FILENAME)))) {
                 thumbnailFile = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
+                thumbnailOrder = (int) pageDoc.getFieldValue(SolrConstants.ORDER);
                 if (pageDoc.containsKey(SolrConstants.THUMBNAILREPRESENT)) {
                     pageDoc.removeField(SolrConstants.THUMBNAILREPRESENT);
                 }
@@ -626,7 +628,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 }
 
                 // Set thumbnail info
-                currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(i)));
+                currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(thumbnailOrder)));
                 currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENOLABEL, orderLabel));
                 currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAIL, (String) pageDoc.getFieldValue(SolrConstants.FILENAME)));
 
@@ -790,7 +792,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
         // Set root doc thumbnail
         rootIndexObj.setThumbnailRepresent(thumbnailFile);
-        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENO, "1"));
+        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(thumbnailOrder)));
         rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENOLABEL, " - "));
         rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFile));
         rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAILREPRESENT, thumbnailFile));
