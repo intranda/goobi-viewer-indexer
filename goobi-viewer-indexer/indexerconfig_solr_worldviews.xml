@@ -3777,6 +3777,7 @@
                     <xpath>
                         <list>
                             <item>tei:text//tei:seg/@type</item>
+                            <item>tei:text//tei:div/@type</item>
                         </list>
                     </xpath>
                     <addSortField>false</addSortField>
