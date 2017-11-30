@@ -65,7 +65,6 @@ import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
-import de.intranda.digiverso.presentation.solr.model.config.MetadataConfigurationManager;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.LazySolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.SerializingSolrWriteStrategy;
@@ -372,7 +371,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml")); // TODO extract language from a different element? - No, this is the correct element (Florian)
                             String fileFieldName = SolrConstants.FILENAME_TEI;
                             if (language != null) {
-//                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
+                                //                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
                                 String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();
                                 if (isoCode != null) {
                                     fileFieldName += SolrConstants._LANG_ + isoCode.toUpperCase();
@@ -405,6 +404,15 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             // Write mapped metadata
             MetadataHelper.writeMetadataToObject(indexObj, xp.getRootElement(), "", xp);
+
+            // Only keep MD_WV_SEGMENT fields on Sources
+            if (!"Source".equals(indexObj.getType())) {
+                List<LuceneField> removeList = indexObj.getLuceneFieldsWithName("MD_WV_SEGMENT");
+                indexObj.getLuceneFields().removeAll(removeList);
+                removeList = indexObj.getLuceneFieldsWithName("MD_WV_SEGMENT_UNTOKENIZED");
+                indexObj.getLuceneFields().removeAll(removeList);
+                logger.info("Record not a Source, removed MD_WV_SEGMENT.");
+            }
 
             LuceneField label = indexObj.getLuceneFieldWithName("MD_TITLE");
             if (label != null) {

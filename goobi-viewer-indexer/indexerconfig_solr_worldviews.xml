@@ -3781,8 +3781,8 @@
                         </list>
                     </xpath>
                     <addSortField>false</addSortField>
-                    <addToChildren>true</addToChildren>
-                    <addToPages>true</addToPages>
+                    <addToChildren>false</addToChildren>
+                    <addToPages>false</addToPages>
                 </item>
             </list>
         </MD_WV_SEGMENT>
