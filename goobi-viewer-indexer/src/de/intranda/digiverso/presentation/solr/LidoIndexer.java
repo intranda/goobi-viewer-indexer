@@ -528,12 +528,11 @@ public class LidoIndexer extends AbstractIndexer {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
         }
 
-        String xpath =
-                "lido:resourceRepresentation[@lido:type='image_master' or lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/resourceRepresentation_type/provided_representation'] or @lido:type='http://terminology.lido-schema.org/lido00464' or @lido:type='image_overview']/lido:linkResource";
+        String xpath = "lido:resourceID";
         String filePath = xp.evaluateToString(xpath, eleResourceSet);
         if (filePath == null || filePath.isEmpty()) {
             // TODO configurable
-            xpath = "lido:resourceID";
+            xpath = "lido:resourceRepresentation[@lido:type='image_master' or @lido:type='http://terminology.lido-schema.org/lido00464' or @lido:type='image_overview']/lido:linkResource";
             filePath = xp.evaluateToString(xpath, eleResourceSet);
         }
 
