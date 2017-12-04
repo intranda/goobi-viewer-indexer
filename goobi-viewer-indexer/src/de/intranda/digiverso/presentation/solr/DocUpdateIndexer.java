@@ -145,6 +145,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
                                 partialUpdates.put(SolrConstants.FULLTEXT, update);
                             }
                         }
+
                     }
                 }
             }

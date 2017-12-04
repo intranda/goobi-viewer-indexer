@@ -58,6 +58,7 @@ public final class SolrConstants {
     public static final String FILENAME = "FILENAME";
     public static final String FILENAME_ALTO = "FILENAME_ALTO";
     public static final String FILENAME_FULLTEXT = "FILENAME_FULLTEXT";
+    public static final String FILENAME_TEI = "FILENAME_TEI";
     public static final String FULLTEXT = "FULLTEXT";
     public static final String FULLTEXTAVAILABLE = "FULLTEXTAVAILABLE";
     public static final String GROUPFIELD = "GROUPFIELD";
@@ -72,6 +73,7 @@ public final class SolrConstants {
     public static final String IMAGEURN_OAI = "IMAGEURN_OAI";
     public static final String ISANCHOR = "ISANCHOR";
     public static final String ISWORK = "ISWORK";
+    public static final String LANGUAGE = "LANGUAGE";
     public static final String LOGID = "LOGID";
     public static final String METADATATYPE = "METADATATYPE";
     public static final String MIMETYPE = "MIMETYPE";
@@ -83,8 +85,6 @@ public final class SolrConstants {
     public static final String ORDERLABEL = "ORDERLABEL";
     public static final String ORDERLABELFIRST = "ORDERLABELFIRST";
     public static final String ORDERLABELLAST = "ORDERLABELLAST";
-    //    public static final String OVERVIEWPAGE = "OVERVIEWPAGE";
-    //    public static final String OVERVIEWPAGEFORCE = "OVERVIEWPAGEFORCE";
     public static final String OVERVIEWPAGE_DESCRIPTION = "OVERVIEWPAGE_DESCRIPTION";
     public static final String OVERVIEWPAGE_PUBLICATIONTEXT = "OVERVIEWPAGE_PUBLICATIONTEXT";
     public static final String PARTNERID = "PARTNERID";
@@ -119,6 +119,7 @@ public final class SolrConstants {
     public static final String SORT_ = "SORT_";
     public static final String SORTNUM_ = "SORTNUM_";
     // public static final String VIDEO_ = "VIDEO_";
+    public static final String _LANG_ = "_LANG_";
     public static final String _NOESCAPE = "_NOESCAPE";
     public static final String _UNTOKENIZED = "_UNTOKENIZED";
     public static final String _METS = "METS";
@@ -127,5 +128,6 @@ public final class SolrConstants {
     public static final String _UGC_TYPE_CORPORATION = "CORPORATION";
     public static final String _UGC_TYPE_ADDRESS = "ADDRESS";
     public static final String _UGC_TYPE_COMMENT = "COMMENT";
+    public static final String _WORLDVIEWS = "WORLDVIEWS";
     public static final String NAMEDENTITIES = "NAMEDENTITIES";
 }

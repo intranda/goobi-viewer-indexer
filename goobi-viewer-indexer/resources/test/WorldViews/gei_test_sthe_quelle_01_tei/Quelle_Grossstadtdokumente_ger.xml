@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="GEI-textbooks" version="5.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title level="a" xml:lang="ger" type="translated">Fences and their victims (deutsch)</title>
+        <editor role="translator">
+          <persName>Miriam Alpers</persName>
+        </editor>
+        <author>
+          <persName ref="http://d-nb.info/gnd/118590561">
+            <surname>Ostwald</surname>
+            <forename>Hans</forename>
+            <displayName>Ostwald, Hans</displayName>
+          </persName>
+        </author>
+        <author>
+          <persName wv="http://wvexperts.gei.de/Lena_Stahn">
+            <surname>Stahn</surname>
+            <forename>Lena-Luise</forename>
+            <displayName>Stahn, Lena-Luise</displayName>
+          </persName>
+        </author>
+        <author>
+          <persName ref="http://d-nb.info/gnd/111952050">
+            <surname>Hohlbein</surname>
+            <forename>Wolfgang</forename>
+            <displayName>Hohlbein, Wolfgang</displayName>
+          </persName>
+        </author>
+      </titleStmt>
+      <editionStmt>
+        <edition n="1">Version 1</edition>
+      </editionStmt>
+      <extent>
+        <measure unit="pages" quantity="4">- 66</measure>
+      </extent>
+      <publicationStmt>
+        <authority>
+          <orgName role="hostingInstitution">Georg-Eckert-Institut</orgName>
+          <orgName role="project">WorldViews</orgName>
+        </authority>
+        <date when="2016" type="publication">2016</date>
+        <availability xml:lang="ger">
+          <p>AVAILABILITY ORIGINAL</p>
+          <licence target="https://creativecommons.org/licenses/by-nc-sa/3.0/de/">CC BY-NC-SA 3.0 DE</licence>
+        </availability>
+      </publicationStmt>
+      <sourceDesc>
+        <biblFull>
+          <titleStmt>
+            <title level="m" type="volume" xml:lang="ger">5 : Im Sittenspiegel der Großstadt : gesammelte Großstadt-Dokumente Teil 5</title>
+            <title level="m" type="main" xml:lang="ger">Großstadt-Dokumente</title>
+            <title level="m" type="sub" xml:lang="ger">gesammelte Großstadt-Dokumente</title>
+            <author>
+              <persName ref="http://d-nb.info/gnd/118590561">
+                <surname>Ostwald</surname>
+                <forename>Hans</forename>
+                <displayName>Ostwald, Hans</displayName>
+              </persName>
+            </author>
+            <editor>
+              <orgName>Seemann</orgName>
+            </editor>
+            <editor>
+              <orgName ref="http://d-nb.info/gnd/1044305584">Georg-Eckert-Institut - Leibniz-Institut für Internationale Schulbuchforschung</orgName>
+            </editor>
+          </titleStmt>
+          <editionStmt>
+            <edition>kein Vermerk</edition>
+          </editionStmt>
+          <extent>
+            <measure unit="pages" quantity="423">423</measure>
+          </extent>
+          <publicationStmt>
+            <publisher>
+              <orgName>Seemann</orgName>
+              <orgName ref="http://d-nb.info/gnd/1044305584">Georg Eckert Institute for International Textbook Research</orgName>
+            </publisher>
+            <pubPlace>Berlin [u.a.]</pubPlace>
+            <pubPlace ref="http://sws.geonames.org/6547539">Berlin</pubPlace>
+            <pubPlace ref="http://sws.geonames.org/6557373">Göttingen</pubPlace>
+            <date when="1985">1985</date>
+            <idno type="ISBN">12314353456</idno>
+          </publicationStmt>
+          <seriesStmt>
+            <title level="s" type="main" xml:lang="ger">Reihe Großstadt-Dokumente</title>
+            <editor>a</editor>
+            <editor>b</editor>
+            <editor>c</editor>
+            <editor ref="http://d-nb.info/gnd/5550404-8">AFS - Austauschprogramme für Interkulturelles Lernen</editor>
+            <editor ref="http://d-nb.info/gnd/141014121">Oswald, Hans</editor>
+            <biblScope unit="volume">312</biblScope>
+          </seriesStmt>
+        </biblFull>
+        <msDesc>
+          <msIdentifier>
+            <repository>Wiener Bibliothek</repository>
+            <idno>
+              <idno type="shelfmark">HK-42</idno>
+            </idno>
+          </msIdentifier>
+          <msContents>
+            <textLang mainLang="ger" otherLangs="plt cze" />
+          </msContents>
+        </msDesc>
+      </sourceDesc>
+    </fileDesc>
+    <encodingDesc>
+      <projectDesc xml:lang="ger">
+        <p>ORIGINAL</p>
+        <p>Ziel ist es, Selbstverortungen und Alteritätskonzept zu erheben sowie Auszüge aus Schulbücher aus aller Welt im Hinblick auf Vorstellungen von übernationalen Zugehörigkeiten und Teilhabe an historisch prägenden Ereignissen und Prozessen abzubilden. Mit dem Quellenmaterial wird es NutzerInnen ermöglicht, transnationale, regionale und interkulturelle Verflechtungen zu erschließen. Wir fokussieren in der Projektphase 2016-22 vor allem auf Vorstellungen von Europäizität sowie alternativen Sinnstiftungsangeboten, auf Gesellschaftskonzepte und Modernitätsverständnisse.</p>
+      </projectDesc>
+      <samplingDecl xml:lang="ger">
+        <p>Quellenauszüge sind im Hinblick auf Repräsentation, Deutungsmuster und/ oder Perspektive der Darstellung möglichst markant. Es sind Darstellungen, die in besonders weit verbreiteten Schulbüchern vermittelt werden oder als Sonderpositionierungen gekennzeichnet werden können. Sie werden von KooperationspartnerInnen und/oder der Redaktion erhoben, wissenschaftlich kontextualisiert und nah am Ausgangstext ins Deutsche und Englische übersetzt.</p>
+      </samplingDecl>
+    </encodingDesc>
+    <profileDesc>
+      <langUsage>
+        <language ident="ger">ger</language>
+      </langUsage>
+      <abstract xml:lang="ger" xml:id="ProfileDescAbstractSchoolbook">
+        <p>Informationen zum Schulbuch ORIGINAL</p>
+      </abstract>
+      <abstract xml:lang="ger" xml:id="ProfileDescAbstractShort">
+        <p>Kurbeschreibung ORIGINAL</p>
+      </abstract>
+      <abstract xml:lang="ger" xml:id="ProfileDescAbstractLong">
+        <p>Beschreibung Inhaltszusammenfassung ORIGINAL</p>
+      </abstract>
+      <textClass>
+        <keywords scheme="WV.topics" xml:lang="ger">
+          <term>
+            <rs type="topic" key="t_war">Gewaltsame Konflikte und Frieden</rs>
+            -
+            <rs type="keyword" key="k_laws_of_nations">Völkerrecht</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_war">Gewaltsame Konflikte und Frieden</rs>
+            -
+            <rs type="keyword" key="k_peace_conference">Friedenskonferenz</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_power">Machtstrukturen</rs>
+            -
+            <rs type="keyword" key="k_laws_of_nations">Völkerrecht</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_relations">Trans- und internationale Beziehungen und Organisationen</rs>
+            -
+            <rs type="keyword" key="k_laws_of_nations">Völkerrecht</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_relations">Trans- und internationale Beziehungen und Organisationen</rs>
+            -
+            <rs type="keyword" key="k_peace_conference">Friedenskonferenz</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_country">Länder</rs>
+            -
+            <rs type="keyword" key="k_netherlands">Niederlande</rs>
+          </term>
+        </keywords>
+        <classCode scheme="WV.textType" xml:lang="ger">Schulbuchquelle</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="ger">Autorentext</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="ger">Abbildungen - Gemälde</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="ger">Infografik - Karte - topologische Karte</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="ger">Infografik - Illustrative Zeichnung</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="ger">Schriftquelle</classCode>
+        <classCode scheme="WV.educationalLevel" xml:lang="ger">Sekundarstufe 2</classCode>
+        <classCode scheme="WV.educationalSubject" xml:lang="ger">Geschichte</classCode>
+        <classCode scheme="WV.educationalSubject" xml:lang="ger">Erdkunde</classCode>
+        <classCode scheme="WV.placeOfUse" xml:lang="ger">Deutschland</classCode>
+        <classCode scheme="WV.placeOfUse">Fantasien</classCode>
+        <classCode scheme="WV.placeOfUse" xml:lang="ger">Niedersachsen</classCode>
+        <classCode scheme="WV.placeOfUse" xml:lang="ger">Rheinland-Pfalz</classCode>
+        <classCode scheme="WV.placeOfUse" xml:lang="eng">Land Berlin</classCode>
+      </textClass>
+    </profileDesc>
+    <revisionDesc>
+      <change when="20170420" n="2">version 2</change>
+    </revisionDesc>
+  </teiHeader>
+  <text xml:lang="ger">
+        <body>
+            <div>
+                <head>Systematische Übersicht über die Elemente für die Auszeichnung von Quellen</head>
+                <p>Das Referenzdokument für Quellen beinhaltet, soweit wie möglich, alle vorgesehenen Varianten der Verwendung von Elementen, Attributen und Attributwerten, insbesondere der Verschachtelungen.</p>
+            </div>
+            <div>
+                <head>Überschriften</head>
+                <p>Das Rendering einer Überschrift ergibt sich aus der Positionierung in der Hierarchie der div-Elemente.</p>
+                <div>
+                    <p>Ein Abschnitt muss keine Überschrift haben.</p>
+                </div>
+            </div>
+            <div>
+                <head>Textauszeichnungen</head>
+                <p>
+                    Das Profil erlaubt
+                    <hi rend="bold">fett</hi>
+                    ,
+                    <hi rend="italic">kursiv</hi>
+                    ,
+                    <hi rend="underline">unterstrichen</hi>
+                    ,
+                    <hi rend="spacedOut">gesperrt</hi>
+                    ,
+                    <hi rend="strikethrough">strikethrough</hi>
+                    ,
+                    <hi rend="blockCapitals">blockCapitals</hi>
+                    ,
+                    <hi rend="smallCapitals">smallCapitals</hi>
+                    sowie Kombinationen aus den genannten Varianten.
+                </p>
+                <p>
+                    Typische Varianten sind
+                    <hi rend="bold">
+                        <hi rend="italic">fett-kursiv</hi>
+                    </hi>
+                    ,
+                    <hi rend="bold">
+                        <hi rend="underline">fett-unterstrichen</hi>
+                    </hi>
+                    ,
+                    <hi rend="italic">
+                        <hi rend="underline">kursiv-unterstrichen</hi>
+                    </hi>
+                    ,
+                    <hi rend="bold">
+                        <hi rend="italic">
+                            <hi rend="underline">fett-kursiv-unterstrichen</hi>
+                        </hi>
+                    </hi>
+                    .
+                </p>
+            </div>
+            <div>
+                <head>Paragraphen (p), Textabschnitte (div) und Textsegmente (seg)</head>
+                <p>Ein Text kann in paragraphs, divisions und segments gegliedert werden.</p>
+                <p>Paragraphen entsprechen normalen Textabsätzen und können weder näher qualifiziert noch geschachtelt werden.</p>
+                <p>Textabschnitte gruppieren Paragraphen, Textabschnitten und andere Elemente. Sie gliedern den Textkörper logisch und dürfen keine Textknoten als Kinder enthalten. Textabschnitte können mit einem @type näher qualifiziert werden, bspw. als eine Aufgabenstellung. Textabschnitte können geschachtelt werden.</p>
+                <p>Textsegmente markieren besondere Texteinheiten innerhalb eines Paragraphen. Textsegmente müssen mit einem @type qualifiziert werden und können geschachtelt werden.</p>
+                <p>
+                    Dieser Paragraph enthält eine
+                    <seg type="explanation">Erklärung zu einer Fragestellung</seg>
+                    , die weiter oben steht.
+                </p>
+                <div type="assignment">
+                    <p>[assignment]</p>
+                    <p>
+                        <seg type="dossier">Und noch mehr zum Beispiel ein Dossier.</seg>
+                    </p>
+                </div>
+            </div>
+            <div>
+                <head>Verschachtelungen von Textabschnitten (div)</head>
+                <div>
+                    <head><hi rend="bold">Überschrift</hi>-1-a</head>
+                    <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam a question within the running text of a paragraph aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                    <div>
+                        <head><hi rend="italic">Überschrift</hi>-2-a</head>
+                        <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam a question within the running text of a paragraph aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                        <div>
+                            <head><hi rend="underline">Überschrift</hi>-3-a</head>
+                            <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam a question within the running text of a paragraph aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                        </div>
+                        <div>
+                            <head>Überschrift-3-b</head>
+                            <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam a question within the running text of a paragraph aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <head><hi rend="bold"><hi rend="italic">Überschrift</hi></hi>-2-b</head>
+                        <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam a question within the running text of a paragraph aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <head>Seiten- und Zeilenumbrüche</head>
+                <p>
+                    Ein Seitenumbruch wird im Text mit dem Element pb markiert.
+                    <pb n="5" />
+                    Das @n gibt die Seitenzahl der nächsten Seite an.
+                </p>
+                <p>
+                    Ein Zeilenumbruch
+                    <lb />
+                    wird mit dem Element lb markiert.
+                </p>
+            </div>
+            <div>
+                <head>Spalten</head>
+                <p>Textblöcke können in Spalten organisiert sein. Das Element cb @type="start"
+                    markiert den Beginn eines Spaltensatzes und das Element cb @type="end" markiert
+                    das Ende eines Spaltensatzes. Das leere Element cb markiert Spaltenumbrüche
+                    innerhalb eines Spaltensatzes.</p>
+                <p>Das Element cb ist nur als Kind von div oder p erlaubt! Ein Abschnitt im
+                    Spaltensatz muss immer mit einem div Element umschlossen sein.</p>
+                <div>
+                    <cb type="start"/>
+                    <head>Abschnitt als Spaltensatz mit Überschrift</head>
+                    <p>Text in Spalte 1.</p>
+                    <cb />
+                    <p>Text in Spalte 2</p>
+                    <cb type="end"/>
+                </div>
+                <div>
+                    <cb type="start"/>
+                    <p>Ein Abschnitt als Spaltensatz mit einem Absatz wo der Text von Spalte 1<cb /> auf Spalte 2 umbricht. Das cb Element steht also innerhalb des p Elements.</p>
+                    <p>Der nächste Absatz geht in Spalte 2 weiter und bricht dann wieder innerhalb des Absatzes <cb /> auf eine Spalte 3 um. Das cb Element steht wieder innerhalb des p Elements.</p>
+                    <cb />
+                    <p>Und dann gibt es eine vierte Spalte mit einem eigenen Absatz. Entsprechend ist das cb Element zwischen den p Elementen.</p>
+                    <cb type="end"/>
+                </div>
+                <div>
+                    <cb type="start"/>
+                    <div>
+                        <head>Abschnitt als Spaltensatz mit Überschrift über Spalte 1</head>
+                        <p>Text in Spalte 1.</p>
+                    </div>
+                    <cb />
+                    <div>
+                        <head>Abschnitt als Spaltensatz mit Überschrift über Spalte 2</head>
+                        <p>Text in Spalte 2.</p>               
+                    </div>
+                    <cb type="end"/>
+                </div>
+            </div>
+            <div>
+                <head>Anmerkungen</head>
+                <p>Es gibt Anmerkungen im Text im Sinne von Fußnoten, Endnoten und Marginalien.</p>
+                <p>Es können optional die Position der Anmerkung mit @place und ein Fussnotenzeichen in @n angeben werden. Fuss- oder Endnotenzeichen sollen unverändert aus der Schulbuchquelle übernommen werden, d.h. diese werden beim Rendering nicht automatisch generiert wie bei den Beiträgen.</p>
+                <p>Editorische Anmerkungen sind besondere Arten von Anmerkungen, die von den Bearbeitern der Schulbuchquelle gemacht werden, nicht von den Schulbuchautoren. Diese werden später standardisiert gerendert, also ein Ort oder Fussnotenzeichen kann nicht angegben werden.</p>
+                <p>
+                    Im Text können Anmerkungen als Fußnoten
+                    <note type="footnote" n="*">
+                        <p>Diese Anmerkungen können später beliebig dargestellt werden, bspw. als Fußnoten.</p>
+                    </note>
+                    gemacht werden.
+                </p>
+                <p>
+                    Im Text können Anmerkungen als Endnoten
+                    <note type="endnote">
+                        <p>Diese Anmerkungen können später beliebig dargestellt werden, bspw. als Endnote.</p>
+                    </note>
+                    gemacht werden.
+                </p>
+                <p>
+                    Im Text können Anmerkungen als eine linke Marginalien
+                    <note type="gloss" place="left">
+                        <p>Diese Anmerkungen können später beliebig dargestellt werden, bspw. als linke Marginalie.</p>
+                    </note>
+                    gemacht werden.
+                </p>
+                <p>
+                    Im Text können Anmerkungen als eine rechte Marginalien
+                    <note type="gloss" place="right">
+                        <p>Diese Anmerkungen können später beliebig dargestellt werden, bspw. als rechte Marginalie.</p>
+                    </note>
+                    gemacht werden.
+                </p>
+                <p>
+                    Im Text können editorische Anmerkungen
+                    <note type="editorial">
+                        <p>Diese Anmerkungen können später beliebig dargestellt werden.</p>
+                    </note>
+                    gemacht werden.
+                </p>
+            </div>
+            <div>
+                <head>Verweise</head>
+                <p>Es können allgemeine, unbestimmte Verweise auf beliebige Stellen innerhalb des Texts sowie auf externe Elemente gemacht werden.</p>
+                <p>
+                    Ein Verweis auf eine Tabelle: Siehe
+                    <ref target="#table_1" type="crossref">Tabelle 1</ref>
+                    unten. Tabelle 1 soll anklickbar sein.
+                </p>
+                <p>
+                    Ein Verweis auf eine Abbildung: Siehe
+                    <ref target="#figure_2" type="crossref">Abbildung 1</ref>
+                    unten. Gerendert soll dann hier stehen: Siehe Abbildung 2 unten. Abbildung 2 soll anklickbar sein.
+                </p>
+                <p>
+                    Ein Verweis auf einen Abschnitt im Dokument: Siehe
+                    <ref target="#introduction" type="crossref">Einleitung</ref>
+                    für weitere Informationen. Einleitung soll anklickbar sein.
+                </p>
+                <p>
+                    Ein Verweis auf eine externe Resource: Siehe
+                    <ref target="http://www.tei-c.org/Vault/P5/2.2.0/doc/tei-p5-doc/en/html/SA.html#SATSRN" type="url">16.2.5.4 range()</ref>
+                    . 16.2.5.4 range() soll anklickbar sein.
+                </p>
+                <p>
+                    Ein Verweis auf einen Eintrag im Glossar: Vgl. den Begriff der <ref type="glossary" target="wvgl:race">Rasse</ref> im Glossar.
+                </p>
+            </div>
+            <div>
+                <head>Named Entities</head>
+                <p>An beliebiger Stelle im Text können Personen, Orte, Organisationen sowie Ereignisse ausgezeichnet werden.</p>
+                <p>Das @ref soll eine URI des named entity in einem kontrollierten Vokabular enthalten.</p>
+                <p>
+                    Das Bild zeigt
+                    <rs type="person" ref="http://d-nb.info/gnd/1044305584">Jean Monnet</rs>
+                    in
+                    <rs type="place" ref="http://d-nb.info/gnd/1044305584">Paris</rs>
+                    zusammen mit der
+                    <rs type="organisation" ref="http://d-nb.info/gnd/1044305584">französischen Malervereinigung</rs>
+                    anläßlich der
+                    <rs type="event" ref="http://d-nb.info/gnd/1044305584">Eröffnung</rs>
+                    des Hauses.
+                </p>
+            </div>
+            <div>
+                <head>Zitate</head>
+                <p>Jede Art von direktem oder indirektem Zitat kann bei Quellen ausgezeichnet werden.</p>
+                <p>Alle Zitate werden mit q markiert und können weiterhin in @type als direct oder indirect gekennzeichnet werden.</p>
+                <p>Ein Nachweis für das Zitat kann in @source angegeben werden.</p>
+                <p>Der gleiche Mechanismus für die bibliografischen Nachweise wie bei den Beiträgen ist möglich. Zusätzlich ist auch ein direkter Verweis auf den vollen bibliografischen Nachweis möglich. Der bibliografische Nachweis soll aus der Schulbuchquelle nach Möglichkeit unverändert übernommen werden. Entsprechend sollen auch Anführungszeichen o.ä. für das Markieren des Zitats unverändert gelassen werden, d.h. diese werden beim Rendering nicht automatisch generiert wie bei den Beiträgen.</p>
+                <p>
+                    Ein nachgewiesenes Direktzitat:
+                    <q source="#quoteref1" type="direct">"das direkte, nachgewiesene Zitat"</q>
+                    (
+                    <ref type="bibl" xml:id="quoteref1" target="#ref1">Answeiler et al. 1989, 14</ref>
+                    )
+                </p>
+                <p>
+                    Ein nachgewiesenes Direktzitat: Answeiler et al.
+                    <ref type="bibl" xml:id="quoteref2" target="#ref1">1989</ref>
+                    schreiben
+                    <q source="#quoteref2" type="direct">"das direkte, nachgewiesene Zitat"</q>
+                </p>
+                <p>
+                    Ein nicht nachgewiesenes Direktzitat: In der Studie wird von
+                    <q>"Luftschlössern"</q>
+                    und
+                    <q>"Utopien"</q>
+                    geschrieben. Hier wird einfach etwas als Zitat markiert, ohne jede weitere Angabe über die Quelle oder ob es direkt oder indirekt ist.
+                </p>
+                <p>
+                    Das
+                    <q source="#ref3" type="indirect">indirekte, nachgewiesene Zitat</q>
+                    kann auch direkt auf den vollständigen Literaturnachweis zeigen.
+                </p>
+                <p>
+                    Das Blockzitat
+                    <cit>
+                        <q source="#quoteref3">ist ein längeres, nachgewiesenes Direktzitat als eingeschobener Block dargestellt, mit zusätzlichem bibliografischen Kurznachweis direkt im Anschluss,</q>
+                        <ref type="bibl" xml:id="quoteref3" target="#ref3">Berg 1987, 93</ref>
+                    </cit>
+                    wobei der Text dann auch noch weiter gehen kann.
+                </p>
+                <p>
+                    Bibliografische Angaben können überall innerhalb von div oder p gemacht werden, anders als bei Beiträgen.
+                    <bibl xml:id="ref8">Berg: Handbuch. München 1987.</bibl>
+                </p>
+                <bibl xml:id="ref3">Berg, Christa u.a. (Hg.), Handbuch der deutschen Bildungsgeschichte, 6 Bde., München 1987ff.</bibl>
+            </div>
+            <div>
+                <head>Abbildungen</head>
+                <p>Es folgen zwei Abbildungen:</p>
+                <figure xml:id="figure_1" type="photography" place="center left">
+                    <head>[optionale Bildüberbeschriftung]</head>
+                    <graphic url="vorgangstitel_001.png" />
+                    <p>[alle sonstigen Bildbeschriftungen wie Bildlegende oder Bildunterschriften sowie Text im Bild]</p>
+                    <p>
+                        <ref type="bibl" target="#ref4">Answeiler et al. 1989, 14</ref>
+                    </p>
+                    <figDesc>[Beschreibung des Bildinhalts]</figDesc>
+                </figure>
+                <p>
+                    Diese Abbildung steht innerhalb eines Absatzes...
+                    <figure xml:id="figure_2" type="cartoon" place="bottom left">
+                        <graphic url="vorgangstitel_001.png" />
+                        <p>
+                            <bibl xml:id="ref4">[bibliografische Angabe zur Abbildung]</bibl>
+                        </p>
+                    </figure>
+                    ...und wird von diesem umschlossen.
+                </p>
+            </div>
+            <div>
+                <head>Tabellen</head>
+                <p>Eine Tabelle mit drei Spalten und drei Zeilen.</p>
+                <table>
+                    <head>[optionale Tabellenbeschriftung]</head>
+                    <row>
+                        <cell></cell>
+                        <cell>label</cell>
+                        <cell>label</cell>
+                    </row>
+                    <row>
+                        <cell role="label" cols="3">cell ...</cell>
+                        <cell>cell</cell>
+                        <cell>cell with a note</cell>
+                    </row>
+                    <row>
+                        <cell role="label" rows="3">cell</cell>
+                        <cell>cell</cell>
+                        <cell>cell</cell>
+                    </row>
+                </table>
+                <table xml:id="table_1">
+                    <head>[optionale Tabellenbeschriftung]</head>
+                    <row>
+                        <cell>cell</cell>
+                        <cell>cell</cell>
+                        <cell>
+                            <p>Inhalt in einer Zelle kann auch mit den üblichen Elementen strukturiert werden.</p>
+                            <bibl xml:id="ref5">[bibliografische Angabe zur Abbildung]</bibl>
+                        </cell>
+                    </row>
+                    <row>
+                        <cell>cell</cell>
+                        <cell>cell</cell>
+                        <cell>cell</cell>
+                    </row>
+                </table>
+                <p>
+                    Diese Tabelle steht innerhalb eines Absatzes...
+                    <table xml:id="table_2">
+                        <row>
+                            <cell></cell>
+                            <cell rows="2">label</cell>
+                            <cell>label</cell>
+                        </row>
+                        <row>
+                            <cell role="label" cols="3">cell</cell>
+                            <cell>cell</cell>
+                            <cell>cell</cell>
+                        </row>
+                        <row>
+                            <cell role="label" cols="2">cell</cell>
+                            <cell>cell</cell>
+                            <cell>
+                                cell
+                                <note type="editorial">
+                                    <p>[Anmerkungen sind in Listen und Tabellen erlaubt]</p>
+                                </note>
+                            </cell>
+                        </row>
+                    </table>
+                    ...und wird von diesem umschlossen.
+                </p>
+            </div>
+            <div>
+                <head>Listen</head>
+                <p>Erlaubt sind bulleted, numerical und alphabetical Listen.</p>
+                <list>
+                    <item>1. first numbered item</item>
+                    <item>2. second numbered item</item>
+                    <item>3. third numbered item</item>
+                </list>
+                <p>
+                    Diese Liste steht innerhalb eines Absatzes...
+                    <list>
+                        <head>Listenüberschrift</head>
+                        <item>* first bullet item</item>
+                        <item>* second bullet item</item>
+                        <item>
+                            * third bullet item
+                            <note type="editorial">
+                                <p>[Anmerkungen sind in Listen und Tabellen erlaubt]</p>
+                            </note>
+                        </item>
+                    </list>
+                    ...und wird von diesem umschlossen.
+                </p>
+            </div>
+            <div>
+                <head>Literaturverzeichnis</head>
+                <p>Das ist das Literaturverzeichnis.</p>
+                <bibl xml:id="ref1">Anweiler, Oskar, Schulpolitik und Schulsystem in der DDR, Opladen 1988.</bibl>
+                <bibl xml:id="ref2">Becker, Hellmut; Kluchert, Gerhard, Die Bildung der Nation. Schule, Gesellschaft und Politik vom Kaiserreich zur Weimarer Republik, Stuttgart 1993.</bibl>
+                <p>Die Literaturangaben könnten auch in einer Liste strukturiert werden.</p>
+                <list>
+                    <item>
+                        <bibl xml:id="ref6">Anweiler, Oskar, Schulpolitik und Schulsystem in der DDR, Opladen 1988.</bibl>
+                    </item>
+                    <item>
+                        <bibl xml:id="ref7">Becker, Hellmut; Kluchert, Gerhard, Die Bildung der Nation. Schule, Gesellschaft und Politik vom Kaiserreich zur Weimarer Republik, Stuttgart 1993.</bibl>
+                    </item>
+                </list>
+            </div>
+            <div xml:lang="ger" type="chapter" xml:id="div_1">
+                <head>
+                    Ein Kapitel, das
+                    <hi rend="underline">durcheinander</hi>
+                    ist
+                </head>
+                <p>
+                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
+                    <seg type="question" xml:id="q_1">a question within the running text of a paragraph</seg>
+                    aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                </p>
+                <div type="assignment" xml:id="div_2">
+                    <p>An Assignment as a clearly seperate text division on the page.</p>
+                </div>
+                <div type="part" xml:id="div_3">
+                    <head>
+                        Überschrift
+                        <note type="editorial">editorische Anmerkung der Redaktion zur Überschrift</note>
+                        einer Section
+                    </head>
+                    <p>
+                        Lorem ipsum dolor sit amet
+                        <note type="footnote" place="foot" n="*">Eine Fussnote des Schulbuchautors.</note>
+                        , consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna
+                        <note type="gloss" place="right">Eine Marginalie des Schulbuchautors am rechten Rand des Texts.</note>
+                        aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                    </p>
+                    <figure place="center" type="photography" xml:id="fig_1">
+                        <head>Überschrift zur Grafik</head>
+                        <graphic url="vorgangstitel_001.png" />
+                        <figDesc>Beschreibung der Grafik</figDesc>
+                        <p>
+                            Text zur
+                            <hi rend="underline">Grafik</hi>
+                        </p>
+                    </figure>
+                    <figure place="top right" type="diagram" xml:id="fig_2">
+                        <graphic url="vorgangstitel_001.png" />
+                        <p>Text zur Grafik</p>
+                        <figDesc>
+                            Das Diagramm beschreibt die Produktionsentwicklung
+                            <rs type="place" ref="http://sws.geonames.org/6547539">Deutschlands</rs>
+                            in den Jahren 1950-1970 und zeigt einen eindeutigen Trend.
+                        </figDesc>
+                    </figure>
+                    <p>
+                        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
+                        <pb n="22" />
+                        nonumy eirmod tempor
+                        <ref target="#q_1" type="bibl">Verweis im Fließtext auf eine Fragestellung</ref>
+                        et dolore magna aliquyam erat,
+                        <ref target="#fig_1" type="bibl">Verweis im Text auf ein Bild</ref>
+                        . Im Fließtext wird eine URL angegeben oder auf eine Webseite verwiesen:
+                        <ref target="http://example.org/" type="url">http://example.org/</ref>
+                        . At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                    </p>
+                    <div type="part" xml:id="div_4">
+                        <head>Überschrift eines Parts</head>
+                        <p>
+                            Lorem ipsum dolor sit amet:
+                            <q type="direct" source="#ref_1">"a direct written quote"</q>
+                            , sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua:
+                            <lb />
+                            <list>
+                                <item>1. first numbered item</item>
+                                <item>
+                                    2.
+                                    <hi rend="underline">second numbered</hi>
+                                    item
+                                </item>
+                                <item>3. third numbered item</item>
+                            </list>
+                            <list>
+                                <head>Listenüberschrift</head>
+                                <item>* first bullet item</item>
+                                <item>* second bullet item</item>
+                                <item>* third bullet item</item>
+                            </list>
+                            At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                            <lb />
+                            Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                        </p>
+                        <q type="indirect" source="#ref_3">Ein längeres Zitat aus einer Primärquelle. Lorem ipsum dolor sit amet, consetetur sadipscing elitr... Mit der Quellenangabe diret nach dem Zitat.</q>
+                        <bibl xml:id="ref_3">
+                            Berg, Christa u.a. (Hg.),
+                            <hi rend="bold"></hi>
+                            Handbuch der deutschen Bildungsgeschichte, 6 Bde., München 1987ff.
+                        </bibl>
+                        <p>
+                            Lorem ipsum dolor sit amet, consetetur
+                            <hi rend="smallCapitals">text in small Capitals</hi>
+                            , sed diam nonumy eirmod
+                            <hi rend="italic">
+                                italic
+                                <hi rend="bold">and bold text</hi>
+                            </hi>
+                            ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </body>
+  </text>
+</TEI>

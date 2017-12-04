@@ -32,26 +32,38 @@ import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.lang.StringUtils;
+import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.NonSortConfiguration;
+import de.intranda.digiverso.presentation.solr.model.config.MetadataConfigurationManager;
 import de.intranda.digiverso.presentation.solr.model.config.XPathConfig;
 
 public final class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
-    private XMLConfiguration config;
+    private final XMLConfiguration config;
     private Map<String, List<Map<String, Object>>> fieldConfiguration;
+    private final MetadataConfigurationManager metadataConfigurationManager;
+    private final Map<String, Namespace> namespaces;
 
     /* default */
     private static String configPath = "indexerconfig_solr.xml";
     private static Configuration instance = null;
 
+    /**
+     * Re-inits the instance with the given config file name.
+     * 
+     * @param confFilename
+     * @return
+     * @throws FatalIndexerException
+     */
     public static synchronized Configuration getInstance(String confFilename) throws FatalIndexerException {
         if (confFilename != null) {
             Configuration.configPath = confFilename;
+            Configuration.instance = null;
         }
         return getInstance();
     }
@@ -78,6 +90,36 @@ public final class Configuration {
         AbstractConfiguration.setDelimiter('&');
         config = new XMLConfiguration(configPath);
         config.setReloadingStrategy(new FileChangedReloadingStrategy());
+        metadataConfigurationManager = new MetadataConfigurationManager(this);
+        namespaces = new HashMap<>();
+        initNamespaces();
+    }
+
+    /**
+     * Adds relevant XML namespaces to the list of available namespace objects.
+     * 
+     * @should add custom namespaces correctly
+     */
+    public void initNamespaces() {
+        namespaces.clear();
+        namespaces.put("xml", Namespace.getNamespace("xml", "http://www.w3.org/XML/1998/namespace"));
+        namespaces.put("mets", Namespace.getNamespace("mets", "http://www.loc.gov/METS/"));
+        namespaces.put("mods", Namespace.getNamespace("mods", "http://www.loc.gov/mods/v3"));
+        namespaces.put("gdz", Namespace.getNamespace("gdz", "http://gdz.sub.uni-goettingen.de/"));
+        namespaces.put("xlink", Namespace.getNamespace("xlink", "http://www.w3.org/1999/xlink"));
+        namespaces.put("dv", Namespace.getNamespace("dv", "http://dfg-viewer.de/"));
+        namespaces.put("lido", Namespace.getNamespace("lido", "http://www.lido-schema.org"));
+        namespaces.put("mix", Namespace.getNamespace("mix", "http://www.loc.gov/mix/v20"));
+        namespaces.put("mm", Namespace.getNamespace("mm", "http://www.mycore.de/metsmaker/v1"));
+        namespaces.put("tei", Namespace.getNamespace("tei", "http://www.tei-c.org/ns/1.0"));
+
+        Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
+        if (additionalNamespaces != null) {
+            for (String key : additionalNamespaces.keySet()) {
+                namespaces.put(key, Namespace.getNamespace(key, additionalNamespaces.get(key)));
+                logger.info("Added custom namespace '{}'.", key);
+            }
+        }
     }
 
     /**
@@ -371,4 +413,19 @@ public final class Configuration {
             }
         }
     }
+
+    /**
+     * @return the metadataConfigurationManager
+     */
+    public MetadataConfigurationManager getMetadataConfigurationManager() {
+        return metadataConfigurationManager;
+    }
+
+    /**
+     * @return the namespaces
+     */
+    public Map<String, Namespace> getNamespaces() {
+        return namespaces;
+    }
+
 }

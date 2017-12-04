@@ -28,17 +28,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper.PrimitiveDate;
+import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.MetadataGroupType;
 
 public class MetadataHelperTest {
 
-    private static Hotfolder hotfolder;
+    //    private static Hotfolder hotfolder;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
+        //        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
     }
 
     /**
@@ -230,15 +231,16 @@ public class MetadataHelperTest {
         MultiMap groupEntity = (MultiMap) fieldValues.get("groupEntity");
         Assert.assertNotNull(groupEntity);
 
-        JDomXP.initNamespaces();
         Document docMods = JDomXP.readXmlFile("resources/test/METS/aggregation_mods_test.xml");
         Assert.assertNotNull(docMods);
         Assert.assertNotNull(docMods.getRootElement());
 
-        Element eleName = docMods.getRootElement().getChild("name", JDomXP.getNamespaces().get("mods"));
+        Element eleName = docMods.getRootElement().getChild("name", Configuration.getInstance().getNamespaces().get("mods"));
         Assert.assertNotNull(eleName);
-        List<LuceneField> fields = MetadataHelper.getGroupedMetadata(eleName, groupEntity, "label");
-        Assert.assertFalse(fields.isEmpty());
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, groupEntity, "label");
+        Assert.assertFalse(gmd.getFields().isEmpty());
+        Assert.assertEquals("label", gmd.getLabel());
+        Assert.assertEquals("display_form", gmd.getMainValue());
         String label = null;
         String metadataType = null;
         String corporation = null;
@@ -249,7 +251,7 @@ public class MetadataHelperTest {
         String date = null;
         String termsOfAddress = null;
         String link = null;
-        for (LuceneField field : fields) {
+        for (LuceneField field : gmd.getFields()) {
             switch (field.getField()) {
                 case SolrConstants.METADATATYPE:
                     metadataType = field.getValue();
@@ -466,5 +468,23 @@ public class MetadataHelperTest {
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(SolrConstants.SORT_ + "TITLE", result.get(0).getField());
         Assert.assertEquals("other title", result.get(0).getValue());
+    }
+
+    /**
+     * @see MetadataHelper#extractLanguageCodeFromMetadataField(String)
+     * @verifies extract language code correctly
+     */
+    @Test
+    public void extractLanguageCodeFromMetadataField_shouldExtractLanguageCodeCorrectly() throws Exception {
+        Assert.assertEquals("en", MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN"));
+    }
+
+    /**
+     * @see MetadataHelper#extractLanguageCodeFromMetadataField(String)
+     * @verifies ignore any suffixes longer than two chars
+     */
+    @Test
+    public void extractLanguageCodeFromMetadataField_shouldIgnoreAnySuffixesLongerThanTwoChars() throws Exception {
+        Assert.assertNull(MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN_UNTOKENIZED"));
     }
 }

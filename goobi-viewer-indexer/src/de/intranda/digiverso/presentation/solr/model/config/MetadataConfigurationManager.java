@@ -39,9 +39,7 @@ public final class MetadataConfigurationManager {
     private Set<String> fieldsToAddToChildren = new HashSet<>();
     private Set<String> fieldsToAddToPages = new HashSet<>();
 
-    public MetadataConfigurationManager() throws FatalIndexerException {
-        Configuration config = Configuration.getInstance();
-
+    public MetadataConfigurationManager(Configuration config) {
         // Regular fields
         Map<String, List<Map<String, Object>>> fieldMap = config.getFieldConfiguration();
         // For each field
@@ -70,7 +68,6 @@ public final class MetadataConfigurationManager {
     @SuppressWarnings("unchecked")
     FieldConfig generateConfigurationItem(String fieldName, Map<String, Object> configurationMap) {
         FieldConfig configurationItem = new FieldConfig(fieldName);
-        // alle werte die null sind werden aus der map entfernt.
         Object[] keys = configurationMap.keySet().toArray();
         for (Object object : keys) {
             if (configurationMap.get(object) == null) {
@@ -177,7 +174,7 @@ public final class MetadataConfigurationManager {
                 configurationItem.setNormalizeYearMinDigits((int) configurationMap.get("normalizeYearMinDigits"));
             }
         }
-        
+
         if (configurationMap.containsKey("interpolateYears")) {
             if (((String) configurationMap.get("interpolateYears")).equals(FALSE)) {
                 configurationItem.setInterpolateYears(false);
@@ -247,10 +244,23 @@ public final class MetadataConfigurationManager {
     }
 
     /**
+     * 
+     * @param code
+     * @return
+     * @throws FatalIndexerException
+     * @should return correct mapping
+     * @should return null if code not configured
+     */
+    public static String getLanguageMapping(String code) throws FatalIndexerException {
+        return Configuration.getInstance().getString("languageMapping." + code);
+    }
+
+    /**
      * Checks for custom docstruct name mappings to be used in the index instead of the given name.
      * 
      * @param string
-     * @return The mapped replacement name, if available; default docstruct name, if configured to be used; the original name (without spaces) otherwise.
+     * @return The mapped replacement name, if available; default docstruct name, if configured to be used; the original name (without spaces)
+     *         otherwise.
      * @throws FatalIndexerException
      */
     public static String mapDocStrct(String string) throws FatalIndexerException {

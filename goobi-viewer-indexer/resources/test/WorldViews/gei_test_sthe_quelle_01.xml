@@ -1,0 +1,92 @@
+<worldviews>
+	<resource>
+		<identifier>gei_test_sthe_quelle_01</identifier>
+		<relatedItem>
+			<identifier>gei_test_sthe_schulbuch_01</identifier>
+		</relatedItem>
+		<collection>col1</collection>
+		<collection>col2</collection>
+		<images>
+			<image>
+				<fileName>Q8 Content 1.jpg</fileName>
+				<sequence>1</sequence>
+				<structType>Quelle</structType>
+				<displayImage>true</displayImage>
+				<licence>alle Rechte beim Verlag</licence>
+				<representative>false</representative>
+				<copyright></copyright>
+				<placeholder>kein Platzhalter</placeholder>
+			</image>
+			<image>
+				<fileName>Q8 Content 2.jpg</fileName>
+				<sequence>2</sequence>
+				<structType>Quelle</structType>
+				<displayImage>true</displayImage>
+				<licence>alle Rechte beim Verlag</licence>
+				<representative>true</representative>
+				<copyright>Copyright für dieses Bild</copyright>
+				<placeholder>kein Platzhalter</placeholder>
+			</image>
+			<image>
+				<fileName>Q8 Content 3.jpg</fileName>
+				<sequence>3</sequence>
+				<structType>Quelle</structType>
+				<displayImage>true</displayImage>
+				<licence>alle Rechte beim Verlag</licence>
+				<representative>false</representative>
+				<copyright></copyright>
+				<placeholder>kein Platzhalter</placeholder>
+			</image>
+			<image>
+				<fileName>Q8 Content 4.jpg</fileName>
+				<sequence>4</sequence>
+				<structType>Quelle</structType>
+				<displayImage>true</displayImage>
+				<licence>alle Rechte beim Verlag</licence>
+				<representative>false</representative>
+				<copyright></copyright>
+				<placeholder>kein Platzhalter</placeholder>
+			</image>
+			<image>
+				<fileName>Q8 Content 5.jpg</fileName>
+				<sequence>5</sequence>
+				<structType>Quelle</structType>
+				<displayImage>false</displayImage>
+				<licence>alle Rechte beim Verlag</licence>
+				<representative>false</representative>
+				<copyright>ungeklärt</copyright>
+				<placeholder>in Bearbeitung</placeholder>
+			</image>
+			<image>
+				<fileName>Q8 Cover.jpg</fileName>
+				<sequence>6</sequence>
+				<structType>Titel</structType>
+				<displayImage>true</displayImage>
+				<licence>alle Rechte beim Verlag</licence>
+				<representative>false</representative>
+				<copyright></copyright>
+				<placeholder>kein Platzhalter</placeholder>
+			</image>
+			<image>
+				<fileName>Q8 Impressum.jpg</fileName>
+				<sequence>7</sequence>
+				<structType>Vorwort</structType>
+				<displayImage>true</displayImage>
+				<licence>alle Rechte beim Verlag</licence>
+				<representative>false</representative>
+				<copyright></copyright>
+				<placeholder>kein Platzhalter</placeholder>
+			</image>
+			<image>
+				<fileName>Q8 Index.jpg</fileName>
+				<sequence>8</sequence>
+				<structType>Inhaltsverzeichnis</structType>
+				<displayImage>true</displayImage>
+				<licence>alle Rechte beim Verlag</licence>
+				<representative>false</representative>
+				<copyright></copyright>
+				<placeholder>kein Platzhalter</placeholder>
+			</image>
+		</images>
+	</resource>
+</worldviews>

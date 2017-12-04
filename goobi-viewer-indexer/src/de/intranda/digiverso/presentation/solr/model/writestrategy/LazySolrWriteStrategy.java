@@ -102,22 +102,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     }
 
     /* (non-Javadoc)
-     * @see de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy#getPageOrderOffset()
-     */
-    @Override
-    public int getPageOrderOffset() {
-        //        if (!pageOrderMap.isEmpty()) {
-        //            for (int i = 1; i < 1000; ++i) {
-        //                if (pageOrderMap.get(i) != null) {
-        //                    return i - 1;
-        //                }
-        //            }
-        //        }
-
-        return 0;
-    }
-
-    /* (non-Javadoc)
      * @see de.intranda.digiverso.presentation.solr.model.ISolrWriteStrategy#getPageDocsSize()
      */
     @Override
@@ -180,6 +164,10 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
             if (!pageDoc.containsKey(SolrConstants.PI_TOPSTRUCT) && pi != null) {
                 pageDoc.addField(SolrConstants.PI_TOPSTRUCT, pi);
                 logger.warn("Page document {} has no PI_TOPSTRUCT fields, adding now...", pageDoc.getFieldValue(SolrConstants.ORDER));
+            }
+            // Remove ALTO field (easier than removing all the logic involved in adding the ALTO field)
+            if (pageDoc.containsKey(SolrConstants.ALTO)) {
+                pageDoc.removeField(SolrConstants.ALTO);
             }
         }
 

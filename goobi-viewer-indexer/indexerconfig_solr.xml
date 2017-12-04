@@ -36,7 +36,6 @@
 			or viewerHome) -->
 		<mediaFolder>media</mediaFolder>
 		<altoFolder>alto</altoFolder>
-		<altoCrowdsourcingFolder>alto_crowd</altoCrowdsourcingFolder>
 		<fulltextFolder>fulltext</fulltextFolder>
 		<fulltextCrowdsourcingFolder>fulltext_crowd
 		</fulltextCrowdsourcingFolder>
@@ -47,6 +46,8 @@
 		<userGeneratedContentFolder>ugc</userGeneratedContentFolder>
 		<mixFolder>mix</mixFolder>
 		<overviewFolder>overview</overviewFolder>
+		<teiFolder>tei</teiFolder>
+		
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
 
@@ -140,6 +141,12 @@
         <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
         <threads>4</threads>
 	</performance>
+	
+    <!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
+    <languageMapping>
+        <eng>en</eng>
+        <ger>de</ger>
+    </languageMapping>
 
 	<docstructmapping>
 		<!-- If true, the docstruct in docstructmapping/list/_default will be used 
@@ -399,7 +406,7 @@
 							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
 							</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
-							</item>
+							</item>						
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -465,9 +472,12 @@
 		<MD_PLACEPUBLISH>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
+					<xpath>
+					    <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
+                            </item>
+                        </list>
 					</xpath>
-					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -488,7 +498,6 @@
 							</item>
 						</list>
 					</xpath>
-					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<normalizeYear minYearDigits="1">true</normalizeYear>
@@ -782,7 +791,7 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm
-                            </item>
+                            </item>                      
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -2373,7 +2382,11 @@
 		<MD_PHYSICALDESCRIPTIONEXTENT>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent
+					<xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent
+                            </item>
+                        </list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
@@ -2619,10 +2632,13 @@
 		<MD_EDITION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo/mods:edition[not(text() = '[Electronic ed.]')]
-					</xpath>
+					<xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo/mods:edition[not(text() = '[Electronic ed.]')]
+                            </item>
+                        </list>
+                    </xpath>				
 					<addToDefault>true</addToDefault>
-					<onefield>false</onefield>
 				</item>
 			</list>
 		</MD_EDITION>

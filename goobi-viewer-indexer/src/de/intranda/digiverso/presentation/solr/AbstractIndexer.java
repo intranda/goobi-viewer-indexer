@@ -15,8 +15,11 @@
  */
 package de.intranda.digiverso.presentation.solr;
 
+import java.awt.Dimension;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,11 +44,22 @@ import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.jpeg.JpegDirectory;
+
+import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
+import de.intranda.digiverso.ocr.alto.utils.AltoDeskewer;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
+import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
+import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
@@ -78,7 +92,7 @@ public abstract class AbstractIndexer {
      * @param hotfolder
      * @return {@link Boolean}
      * @throws IOException
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should delete METS record from index completely
      * @should delete LIDO record from index completely
      * @should leave trace document for METS record if requested
@@ -131,9 +145,10 @@ public abstract class AbstractIndexer {
      * @param solrHelper
      * @throws IOException
      * @throws SolrServerException
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
-    protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrHelper solrHelper) throws IOException, SolrServerException, FatalIndexerException {
+    protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrHelper solrHelper) throws IOException, SolrServerException,
+            FatalIndexerException {
         Set<String> iddocsToDelete = new HashSet<>();
 
         String query = SolrConstants.PI + ":" + pi;
@@ -269,7 +284,7 @@ public abstract class AbstractIndexer {
      * @param dateCreated
      * @throws IOException
      * @throws NumberFormatException
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
     private static void createDeletedDoc(String pi, String urn, List<String> pageUrns, String dateDeleted, String dateUpdated, SolrHelper solrHelper)
             throws NumberFormatException, IOException, FatalIndexerException {
@@ -302,7 +317,7 @@ public abstract class AbstractIndexer {
      * 
      * @param solrHelper
      * @return
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
     protected static synchronized long getNextIddoc(SolrHelper solrHelper) throws FatalIndexerException {
         if (nextIddoc < 0) {
@@ -392,8 +407,8 @@ public abstract class AbstractIndexer {
      * @return
      * @throws FatalIndexerException
      */
-    List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, int order,
-            String fileNameRoot) throws FatalIndexerException {
+    List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, int order, String fileNameRoot)
+            throws FatalIndexerException {
         List<SolrInputDocument> ret = new ArrayList<>();
 
         if (folder != null && Files.isDirectory(folder)) {
@@ -511,4 +526,118 @@ public abstract class AbstractIndexer {
 
         return ret;
     }
+
+    /**
+     * Creates the JDomXP instance for this indexer using the given XML file.
+     * 
+     * @param xmlFile
+     * @throws IOException
+     * @throws JDOMException
+     * @throws IndexerException
+     * @throws FatalIndexerException
+     */
+    public void initJDomXP(Path xmlFile) throws IOException, JDOMException, IndexerException, FatalIndexerException {
+        xp = new JDomXP(xmlFile.toFile());
+        if (xp == null) {
+            throw new IndexerException("Could not create XML parser.");
+        }
+    }
+
+    /**
+     * @param width
+     * @param parseInt
+     * @return
+     */
+    protected static int delta(int n, int m) {
+        return Math.abs(n - m);
+    }
+
+    /**
+     * 
+     * @param dataFolders
+     * @param doc
+     */
+    static void deskewAlto(Map<String, Path> dataFolders, SolrInputDocument doc) {
+        logger.trace("deskewAlto");
+        String alto = (String) doc.getFieldValue(SolrConstants.ALTO);
+        String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
+        if (filename != null && alto != null && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
+            File imageFile = new File(filename);
+            imageFile = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), imageFile.getName());
+            if (!imageFile.isFile()) {
+                return;
+            }
+            logger.trace("Found image file {}", imageFile.getAbsolutePath());
+            Dimension imageSize = new Dimension(0, 0);
+            try {
+                AltoDocument altoDoc = AltoDocument.getDocumentFromString(alto);
+                Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
+                Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
+                Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+                try {
+                    imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
+                    imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
+                } catch (NullPointerException e) {
+                }
+                try {
+                    imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
+                    imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
+                } catch (NullPointerException e) {
+                }
+
+                String solrWidthString = (String) doc.getFieldValue(SolrConstants.WIDTH);
+                if (solrWidthString == null) {
+                    logger.debug("{} not found, cannot deskew ALTO.", SolrConstants.WIDTH);
+                    return;
+                }
+                int solrWidth = Integer.parseInt(solrWidthString);
+                //                int solrHeight = Integer.parseInt((String) doc.getFieldValue(SolrConstants.HEIGHT));
+
+                if (imageSize.width > 0 && doc.getFieldValue(SolrConstants.WIDTH) != null && delta(imageSize.width, solrWidth) > 2) {
+
+                    if (delta(imageSize.width, solrWidth) > 0.15 * imageSize.width) {
+                        return; //if alto-size differs more than 15% in width from image size, don't deskew
+                    }
+
+                    logger.trace("Rotating alto coordinates to size {}x{}", imageSize.width, imageSize.height);
+                    AltoDeskewer deskewer = new AltoDeskewer();
+                    AltoDocument outputDoc = deskewer.deskewAlto(altoDoc, imageSize, "tr");
+                    String output = AltoDocument.getStringFromDomDocument(new Document(outputDoc.writeToDom()));
+                    if (output != null && !output.isEmpty()) {
+                        doc.setField(SolrConstants.ALTO, output);
+                        doc.setField(SolrConstants.WIDTH, outputDoc.getFirstPage().getWidth());
+                        doc.setField(SolrConstants.HEIGHT, outputDoc.getFirstPage().getHeight());
+                    }
+                }
+
+            } catch (ImageProcessingException | IOException e) {
+                if (e.getMessage().contains("File format is not supported")) {
+                    logger.warn("{}: {}", e.getMessage(), filename);
+                } else {
+                    logger.error("Could not deskew ALTO for image '{}', please check the image file.", imageFile.getAbsolutePath());
+                    logger.error(e.getMessage(), e);
+                }
+            } catch (JDOMException e) {
+                logger.error(e.getMessage(), e);
+            }
+        } else {
+            logger.trace("Cannot deskew ALTO: Image file is {} and alto text has length of {}", filename, alto != null ? alto.length() : "0");
+        }
+    }
+
+    public static FilenameFilter txt = new FilenameFilter() {
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return (name.endsWith(".txt"));
+        }
+    };
+
+    public static FilenameFilter xml = new FilenameFilter() {
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith(AbstractIndexer.XML_EXTENSION);
+        }
+    };
 }

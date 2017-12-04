@@ -53,6 +53,7 @@ import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
+import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
 import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
@@ -262,8 +263,8 @@ public class LidoIndexer extends AbstractIndexer {
             writeStrategy.addDocs(events);
 
             // Add aggregated metadata groups as separate documents
-            for (List<LuceneField> metadataFieldList : indexObj.getGroupedMetadataFields()) {
-                SolrInputDocument mdDoc = SolrHelper.createDocument(metadataFieldList);
+            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+                SolrInputDocument mdDoc = SolrHelper.createDocument(gmd.getFields());
                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                 mdDoc.addField(SolrConstants.IDDOC, iddoc);
                 if (!mdDoc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
@@ -335,8 +336,7 @@ public class LidoIndexer extends AbstractIndexer {
             boolean thumbnailSet = false;
             SolrInputDocument firstPageDoc = pageDocs.get(0);
             int firstPageOrder = (int) firstPageDoc.getFieldValue(SolrConstants.ORDER);
-            int offset = writeStrategy.getPageOrderOffset();
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageOrder - offset)));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageOrder)));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             if (StringUtils.isEmpty(filePathBanner)) {
                 // Add thumbnail information from the first page
@@ -410,7 +410,7 @@ public class LidoIndexer extends AbstractIndexer {
                 Set<String> existingMetadataFieldNames = new HashSet<>();
                 Set<String> existingSortFieldNames = new HashSet<>();
                 for (String fieldName : pageDoc.getFieldNames()) {
-                    if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
                         for (Object value : pageDoc.getFieldValues(fieldName)) {
                             existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                         }
@@ -419,7 +419,7 @@ public class LidoIndexer extends AbstractIndexer {
                     }
                 }
                 for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
                             && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                         // Avoid duplicates (same field name + value)
                         pageDoc.addField(field.getField(), field.getValue());
@@ -504,7 +504,7 @@ public class LidoIndexer extends AbstractIndexer {
         //                        writeStrategy, dataFolders));
         int order = pageCountStart;
         for (Element eleResourceSet : resourceSetList) {
-            String orderAttribute = eleResourceSet.getAttributeValue("sortorder", JDomXP.getNamespaces().get("lido"));
+            String orderAttribute = eleResourceSet.getAttributeValue("sortorder", Configuration.getInstance().getNamespaces().get("lido"));
             // Extract page order info , if available
             if (orderAttribute != null) {
                 order = Integer.valueOf(orderAttribute);
@@ -527,9 +527,10 @@ public class LidoIndexer extends AbstractIndexer {
      * @param dataFolders
      * @param downloadExternalImages
      * @return
+     * @throws FatalIndexerException
      */
     boolean generatePageDocument(Element eleResourceSet, String iddoc, Integer order, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders,
-            List<String> imageXPaths, boolean downloadExternalImages) {
+            List<String> imageXPaths, boolean downloadExternalImages) throws FatalIndexerException {
         if (order == null) {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
         }
@@ -686,16 +687,16 @@ public class LidoIndexer extends AbstractIndexer {
                 }
 
                 // Create a backup of the current grouped metadata list of the parent docstruct
-                List<List<LuceneField>> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
+                List<GroupedMetadata> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
                 List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eleEvent, "", indexObj, xp);
 
                 // Add aggregated metadata groups as separate documents
                 if (indexObj.getGroupedMetadataFields().size() > groupedFieldsBackup.size()) {
                     // Newly added items in IndexObject.groupedMetadataFields come from the event, so just use these new items
-                    List<List<LuceneField>> eventGroupedFields = indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj
+                    List<GroupedMetadata> eventGroupedFields = indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj
                             .getGroupedMetadataFields().size());
-                    for (List<LuceneField> metadataFieldList : eventGroupedFields) {
-                        SolrInputDocument doc = SolrHelper.createDocument(metadataFieldList);
+                    for (GroupedMetadata gmd : eventGroupedFields) {
+                        SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
                         long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                         doc.addField(SolrConstants.IDDOC, iddoc);
                         if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {

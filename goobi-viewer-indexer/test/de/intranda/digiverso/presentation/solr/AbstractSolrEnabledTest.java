@@ -44,8 +44,8 @@ public abstract class AbstractSolrEnabledTest {
     private static final String CORE_NAME = "test-indexer";
 
     private static String solrPath = "/opt/digiverso/viewer/apache-solr/";
-    private static CoreContainer coreContainer;
-
+    
+    private CoreContainer coreContainer;
     protected EmbeddedSolrServer server;
     protected SolrHelper solrHelper;
 
@@ -90,9 +90,7 @@ public abstract class AbstractSolrEnabledTest {
             Assert.assertFalse(Files.isDirectory(viewerRootFolder));
         }
 
-        // coreContainer.getClass(); // random call so that there is no red PMD warning
-
-        if (coreContainer != null) {
+        if (coreContainer != null && !coreContainer.isShutDown()) {
             coreContainer.shutdown();
         }
 

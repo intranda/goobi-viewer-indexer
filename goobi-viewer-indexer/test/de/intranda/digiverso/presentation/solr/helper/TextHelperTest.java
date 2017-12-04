@@ -231,7 +231,7 @@ public class TextHelperTest {
     public void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() throws Exception {
         Path folder = Paths.get("resources/test");
         Assert.assertTrue(Files.isDirectory(folder));
-        String text = TextHelper.generateFulltext("filenotfound", folder, false);
+        String text = TextHelper.generateFulltext("filenotfound.txt", folder, false);
         Assert.assertNull(text);
     }
 

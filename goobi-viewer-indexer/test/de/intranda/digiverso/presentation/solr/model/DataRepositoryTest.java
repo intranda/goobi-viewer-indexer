@@ -84,7 +84,7 @@ public class DataRepositoryTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toFile().isDirectory());
-        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_TEI).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ABBYY).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_PAGEPDF).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_SOURCE).toFile().isDirectory());
@@ -108,7 +108,7 @@ public class DataRepositoryTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toFile().isDirectory());
-        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_TEI).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ABBYY).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_PAGEPDF).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_SOURCE).toFile().isDirectory());
@@ -214,12 +214,26 @@ public class DataRepositoryTest {
 
     /**
      * @see DataRepository#deleteDataFoldersForRecord(String)
+     * @verifies delete TEI folder correctly
+     */
+    @Test
+    public void deleteDataFoldersForRecord_shouldDeleteTEIFolderCorrectly() throws Exception {
+        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+        useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);
+        Assert.assertFalse(dataFolder.exists());
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersForRecord(String)
      * @verifies delete word coords folder correctly
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
-        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEI).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
         useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);

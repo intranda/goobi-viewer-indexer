@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
 <root>
 	<init>
 		<!-- Hotfolder pause between scans (milliseconds) -->
@@ -89,15 +90,6 @@
         <!-- addLabelToChildren: If true, LABEL values will be propagated to child 
             docstruct documents. Default is false. -->
         <addLabelToChildren>true</addLabelToChildren>
-        
-        <lido>
-            <!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
-            <imageXPath>lido:resourceRepresentation[@lido:type='image_master']/lido:linkResource</imageXPath>
-            <imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/resourceRepresentation_type/provided_representation']/lido:linkResource</imageXPath>
-            <imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/lido00464']/lido:linkResource</imageXPath>
-            <imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
-            <imageXPath>lido:resourceID</imageXPath>
-        </lido>
 
 		<!-- Lucene (only set these if a timestamp import from Lucene is desired) -->
 		<stopwordFile>resources/test/stopwords_de_en.txt</stopwordFile>
@@ -182,7 +174,7 @@
 					<splittingCharacter>#</splittingCharacter>
 					<constantValue>XXX</constantValue>
 					<replace string="stringToReplace1">replace1</replace>
-					<replace regex="[ ]*stringToReplace2[ ]*">replace2</replace>
+					<replace string="stringToReplace2">replace2</replace>
 					<nonSortCharacters prefix="nonSortPrefix" suffix="nonSortSuffix" />
 				</item>
 			</list>
@@ -347,6 +339,8 @@
 							</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
 							</item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[not(@xml:lang)]
+                            </item> 
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -357,8 +351,49 @@
 				</item>
 			</list>
 		</MD_TITLE>
+		
+        <MD_TITLE_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang="ger"]
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </MD_TITLE_LANG_DE>
+        
+        <MD_TITLE_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title[@xml:lang="eng"]
+                            </item> 
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </MD_TITLE_LANG_EN>
 
 		<MD_SUBTITLE>
+			<!-- Titel der Struktureineinheit // -->
 			<list>
 				<item>
 					<xpath>
@@ -399,6 +434,20 @@
 				</item>
 			</list>
 		</MD_PUBLISHER>
+		
+        <MD_PUBLISHER_SOURCE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:publisher/tei:orgName
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_PUBLISHER_SOURCE>
 
 		<MD_PLACEPUBLISH>
 			<list>
@@ -413,6 +462,20 @@
 				</item>
 			</list>
 		</MD_PLACEPUBLISH>
+		
+        <MD_PLACEPUBLISH_SOURCE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:biblFull/tei:publicationStmt/tei:pubPlace
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_PLACEPUBLISH_SOURCE>
 
 		<MD_YEARPUBLISH>
 			<list>
@@ -427,6 +490,8 @@
 							</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue
 							</item>
+                            <item>tei:teiHeader/tei:fileDesc/tei:publicationStmt/tei:date[@type="publication"]
+                            </item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -446,7 +511,6 @@
 							</item>
 						</list>
 					</xpath>
-					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<addSortField>true</addSortField>
@@ -464,7 +528,6 @@
 							</item>
 						</list>
 					</xpath>
-					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<addSortField>true</addSortField>
@@ -566,6 +629,7 @@
 					<addSortField>true</addSortField>
                     <groupEntity type="PERSON">
                         <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
                         <field name="MD_LINK">@xlink:href</field>
                         <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
                         <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
@@ -587,7 +651,6 @@
 							</item>
 						</list>
 					</xpath>
-					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 					<addSortField>false</addSortField>
 					<aggregateEntity>false</aggregateEntity>
@@ -595,31 +658,27 @@
 			</list>
 		</MD_EVENTACTOR>
 
-		<MD_AUTHOR>
-			<list>
-				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm
-							</item>
-						</list>
-					</xpath>
-					<groupEntity type="PERSON">
-					    <field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_DISPLAYFORM">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-					<addSortField>true</addSortField>
-					<nonSortCharacters prefix="&lt;&lt;" suffix="&gt;&gt;" />
-					<nonSortCharacters suffix="\u00AC" />
-				</item>
-			</list>
-		</MD_AUTHOR>
+        <MD_AUTHOR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author/tei:persName
+                            </item>                            
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <groupEntity type="PERSON">
+                        <field name="MD_VALUE">tei:displayName</field>
+                        <field name="MD_LASTNAME">tei:surname</field>
+                        <field name="MD_FIRSTNAME">tei:forename</field>
+                        <field name="MD_WVEXPERTS">@wv</field>
+                        <field name="NORM_URI">@ref</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_AUTHOR>
 
 		<MD_COMPOSER>
 			<list>
@@ -689,18 +748,20 @@
 			</list>
 		</MD_PHOTOGRAPHER>
 
-		<MD_TRANSLATOR>
-			<list>
-				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="trl"[@authority='marcrelator'][@type='code']]/mods:displayForm
-							</item>
-						</list>
-					</xpath>
-				</item>
-			</list>
-		</MD_TRANSLATOR>
+        <MD_TRANSLATOR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:editor[@role="translator"]/tei:persName
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                </item>
+            </list>
+        </MD_TRANSLATOR>
 
 		<MD_ARTIST>
 			<list>

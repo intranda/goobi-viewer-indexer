@@ -30,7 +30,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.intranda.digiverso.presentation.solr.SolrIndexerDaemon;
 import de.intranda.digiverso.presentation.solr.model.NonSortConfiguration;
 import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
 
@@ -155,9 +154,8 @@ public class ConfigurationTest {
 
     @Test
     public void metadataConfigTest() throws Exception {
-        Assert.assertEquals(120, SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames().size());
-        List<FieldConfig> configItems = SolrIndexerDaemon.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
-                "MD_TESTFIELD");
+        Assert.assertEquals(120, Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames().size());
+        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(configItems);
         Assert.assertEquals(1, configItems.size());
 
@@ -192,6 +190,17 @@ public class ConfigurationTest {
     @Test
     public void getPageCountStart_shouldReturnCorrectValue() throws Exception {
         Assert.assertEquals(0, Configuration.getInstance("resources/test/indexerconfig_solr_test.xml").getPageCountStart());
+    }
+
+    /**
+     * @see Configuration#initNamespaces()
+     * @verifies add custom namespaces correctly
+     */
+    @Test
+    public void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
+        Configuration.getInstance().initNamespaces();
+        Assert.assertEquals(11, Configuration.getInstance().getNamespaces().size());
+        Assert.assertNotNull(Configuration.getInstance().getNamespaces().get("intranda"));
     }
 
 }

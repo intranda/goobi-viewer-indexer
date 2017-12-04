@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="GEI-textbooks" version="5.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title level="a" xml:lang="eng" type="translated">Fences and their victims</title>
+        <editor role="translator">
+          <persName>Florian Alpers</persName>
+        </editor>
+        <author>
+          <persName ref="http://d-nb.info/gnd/118590561">
+            <surname>Ostwald</surname>
+            <forename>Hans</forename>
+            <displayName>Ostwald, Hans</displayName>
+          </persName>
+        </author>
+        <author>
+          <persName wv="http://wvexperts.gei.de/Lena_Stahn">
+            <surname>Stahn</surname>
+            <forename>Lena-Luise</forename>
+            <displayName>Stahn, Lena-Luise</displayName>
+          </persName>
+        </author>
+        <author>
+          <persName ref="http://d-nb.info/gnd/111952050">
+            <surname>Hohlbein</surname>
+            <forename>Wolfgang</forename>
+            <displayName>Hohlbein, Wolfgang</displayName>
+          </persName>
+        </author>
+      </titleStmt>
+      <editionStmt>
+        <edition n="1">Version 1</edition>
+      </editionStmt>
+      <extent>
+        <measure unit="pages" quantity="4">- 66</measure>
+      </extent>
+      <publicationStmt>
+        <authority>
+          <orgName role="hostingInstitution">Georg-Eckert-Institut</orgName>
+          <orgName role="project">WorldViews</orgName>
+        </authority>
+        <date when="2016" type="publication">2016</date>
+        <availability xml:lang="eng">
+          <p>Available with prior consent of depositor (GEI) for purposes of academic research and teaching only.</p>
+          <licence target="https://creativecommons.org/licenses/by-nc-sa/3.0/de/">CC BY-NC-SA 3.0 DE</licence>
+        </availability>
+      </publicationStmt>
+      <sourceDesc>
+        <biblFull>
+          <titleStmt>
+            <title level="m" type="volume" xml:lang="ger">5 : Im Sittenspiegel der Großstadt : gesammelte Großstadt-Dokumente Teil 5</title>
+            <title level="m" type="main" xml:lang="ger">Großstadt-Dokumente</title>
+            <title level="m" type="sub" xml:lang="ger">gesammelte Großstadt-Dokumente</title>
+            <title level="m" xml:lang="eng" type="translated">Metropolis documents</title>
+            <author>
+              <persName ref="http://d-nb.info/gnd/118590561">
+                <surname>Ostwald</surname>
+                <forename>Hans</forename>
+                <displayName>Ostwald, Hans</displayName>
+              </persName>
+            </author>
+            <editor>
+              <orgName>Seemann</orgName>
+            </editor>
+            <editor>
+              <orgName ref="http://d-nb.info/gnd/1044305584">Georg-Eckert-Institut - Leibniz-Institut für Internationale Schulbuchforschung</orgName>
+            </editor>
+          </titleStmt>
+          <editionStmt>
+            <edition>kein Vermerk</edition>
+          </editionStmt>
+          <extent>
+            <measure unit="pages" quantity="423">423</measure>
+          </extent>
+          <publicationStmt>
+            <publisher>
+              <orgName>Seemann</orgName>
+              <orgName ref="http://d-nb.info/gnd/1044305584">Georg Eckert Institute for International Textbook Research</orgName>
+            </publisher>
+            <pubPlace>Berlin [u.a.]</pubPlace>
+            <pubPlace ref="http://sws.geonames.org/6547539">Berlin</pubPlace>
+            <pubPlace ref="http://sws.geonames.org/6557373">Göttingen</pubPlace>
+            <date when="1985">1985</date>
+            <idno type="ISBN">12314353456</idno>
+          </publicationStmt>
+          <seriesStmt>
+            <title level="s" type="main" xml:lang="ger">Reihe Großstadt-Dokumente</title>
+            <title level="s" xml:lang="eng" type="translated">Series Metropolis documents</title>
+            <editor>a</editor>
+            <editor>b</editor>
+            <editor>c</editor>
+            <editor ref="http://d-nb.info/gnd/5550404-8">AFS - Austauschprogramme für Interkulturelles Lernen</editor>
+            <editor ref="http://d-nb.info/gnd/141014121">Oswald, Hans</editor>
+            <biblScope unit="volume">312</biblScope>
+          </seriesStmt>
+        </biblFull>
+        <msDesc>
+          <msIdentifier>
+            <repository>Wiener Bibliothek</repository>
+            <idno>
+              <idno type="shelfmark">HK-42</idno>
+            </idno>
+          </msIdentifier>
+          <msContents>
+            <textLang mainLang="ger" otherLangs="plt cze" />
+          </msContents>
+        </msDesc>
+      </sourceDesc>
+    </fileDesc>
+    <encodingDesc>
+      <projectDesc xml:lang="eng">
+        <p>Ziel ist es, Selbstverortungen und Alteritätskonzept zu erheben sowie Auszüge aus Schulbücher aus aller Welt im Hinblick auf Vorstellungen von übernationalen Zugehörigkeiten und Teilhabe an historisch prägenden Ereignissen und Prozessen abzubilden. Mit dem Quellenmaterial wird es NutzerInnen ermöglicht, transnationale, regionale und interkulturelle Verflechtungen zu erschließen. Wir fokussieren in der Projektphase 2016-22 vor allem auf Vorstellungen von Europäizität sowie alternativen Sinnstiftungsangeboten, auf Gesellschaftskonzepte und Modernitätsverständnisse.</p>
+      </projectDesc>
+      <samplingDecl xml:lang="eng">
+        <p>Quellenauszüge sind im Hinblick auf Repräsentation, Deutungsmuster und/ oder Perspektive der Darstellung möglichst markant. Es sind Darstellungen, die in besonders weit verbreiteten Schulbüchern vermittelt werden oder als Sonderpositionierungen gekennzeichnet werden können. Sie werden von KooperationspartnerInnen und/oder der Redaktion erhoben, wissenschaftlich kontextualisiert und nah am Ausgangstext ins Deutsche und Englische übersetzt.</p>
+      </samplingDecl>
+    </encodingDesc>
+    <profileDesc>
+      <langUsage>
+        <language ident="eng">eng</language>
+      </langUsage>
+      <abstract xml:lang="eng" xml:id="ProfileDescAbstractSchoolbook">
+        <p>Schoolbook information</p>
+      </abstract>
+      <abstract xml:lang="eng" xml:id="ProfileDescAbstractShort">
+        <p>short description</p>
+      </abstract>
+      <abstract xml:lang="eng" xml:id="ProfileDescAbstractLong">
+        <p>Description content</p>
+      </abstract>
+      <textClass>
+        <keywords scheme="WV.topics" xml:lang="eng">
+          <term>
+            <rs type="topic" key="t_war">Violent Conflict and Peace</rs>
+            -
+            <rs type="keyword" key="k_peace_conference">Peace Conference</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_war">Violent Conflict and Peace</rs>
+            -
+            <rs type="keyword" key="k_laws_of_nations">Laws of Nations</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_power">Structures of Power</rs>
+            -
+            <rs type="keyword" key="k_laws_of_nations">Laws of Nations</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_relations">Transnational and International Relations and Organisations</rs>
+            -
+            <rs type="keyword" key="k_peace_conference">Peace Conference</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_relations">Transnational and International Relations and Organisations</rs>
+            -
+            <rs type="keyword" key="k_laws_of_nations">Laws of Nations</rs>
+          </term>
+          <term>
+            <rs type="topic" key="t_country">Countries</rs>
+            -
+            <rs type="keyword" key="k_netherlands">Netherlands</rs>
+          </term>
+        </keywords>
+        <classCode scheme="WV.textType" xml:lang="eng">textbook source</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="eng">author text</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="eng">picture - painting</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="eng">infographic - map - topological map</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="eng">infographic - illustrative drawing</classCode>
+        <classCode scheme="WV.sourceType" xml:lang="eng">textual source</classCode>
+        <classCode scheme="WV.educationalLevel" xml:lang="eng">Secondary level 2</classCode>
+        <classCode scheme="WV.educationalSubject" xml:lang="eng">History</classCode>
+        <classCode scheme="WV.educationalSubject" xml:lang="eng">Geography</classCode>
+        <classCode scheme="WV.placeOfUse" xml:lang="eng">Germany</classCode>
+        <classCode scheme="WV.placeOfUse">Fantasien</classCode>
+        <classCode scheme="WV.placeOfUse" xml:lang="eng">Lower Saxony</classCode>
+        <classCode scheme="WV.placeOfUse" xml:lang="eng">Rhineland-Palatinate</classCode>
+        <classCode scheme="WV.placeOfUse" xml:lang="eng">Land Berlin</classCode>
+      </textClass>
+    </profileDesc>
+    <revisionDesc>
+      <change when="20170420" n="2">version 2</change>
+    </revisionDesc>
+  </teiHeader>
+  <text xml:lang="eng">
+    <body>
+      <div>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</div>
+    </body>
+  </text>
+</TEI>
