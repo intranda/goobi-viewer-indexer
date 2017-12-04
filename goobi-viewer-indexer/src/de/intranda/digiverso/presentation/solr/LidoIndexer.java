@@ -588,6 +588,9 @@ public class LidoIndexer extends AbstractIndexer {
                     } else {
                         doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                     }
+                } else {
+                    // For non-remote file, add the file name to the list
+                    sbImgFileNames.append(';').append(fileName);
                 }
 
                 // Add full path if this is a local file or download has failed or is disabled
