@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
@@ -79,7 +80,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
-            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1, false);
+            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1, Configuration.getInstance().getList(
+                    "init.lido.imageXPath"), false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -272,7 +274,9 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
-            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1, false);
+            @SuppressWarnings("unchecked")
+            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1, Configuration.getInstance().getList(
+                    "init.lido.imageXPath"), false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -333,7 +337,9 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         }
 
         // Re-index
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, false);
+        @SuppressWarnings("unchecked")
+        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, Configuration.getInstance().getList(
+                "init.lido.imageXPath"), false);
         Assert.assertNotEquals("ERROR", ret[0]);
 
         String newIddoc;

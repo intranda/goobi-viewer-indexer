@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.model.DataRepository;
@@ -81,12 +82,14 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
      * @see AbstractIndexer#delete(String,boolean)
      * @verifies delete LIDO record from index completely
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void delete_shouldDeleteLIDORecordFromIndexCompletely() throws Exception {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, false);
+        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, Configuration.getInstance().getList(
+                "init.lido.imageXPath"), false);
         Assert.assertEquals("ERROR: " + ret[1], pi, ret[0]);
         String iddoc;
         {
@@ -142,12 +145,14 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
      * @see AbstractIndexer#delete(String,boolean)
      * @verifies leave trace document for LIDO record if requested
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void delete_shouldLeaveTraceDocumentForLIDORecordIfRequested() throws Exception {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, false);
+        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,Configuration.getInstance().getList(
+                "init.lido.imageXPath"), false);
         Assert.assertEquals(pi, ret[0]);
         String iddoc;
         {
