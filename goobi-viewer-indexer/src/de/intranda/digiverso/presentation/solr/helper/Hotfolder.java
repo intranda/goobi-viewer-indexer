@@ -1033,6 +1033,7 @@ public class Hotfolder {
      * @throws FatalIndexerException
      * 
      */
+    @SuppressWarnings("unchecked")
     private void addLidoToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String[] resp = { null, null };
@@ -1086,8 +1087,8 @@ public class Hotfolder {
         try {
             for (Document doc : lidoDocs) {
                 currentIndexer = new LidoIndexer(this);
-                resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(), dataFolders
-                        .containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+                resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(), Configuration
+                        .getInstance().getList("init.lido.imageXPath"), dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
                 if (!"ERROR".equals(resp[0])) {
                     // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
                     String identifier = resp[0];

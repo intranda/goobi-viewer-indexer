@@ -92,12 +92,13 @@ public class LidoIndexer extends AbstractIndexer {
      * @param dataFolders
      * @param writeStrategy
      * @param pageCountStart
+     * @param imageXPaths
      * @param downloadExternalImages
      * @return
      * @should index record correctly
      * @should update record correctly
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
+    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart, List<String> imageXPaths,
             boolean downloadExternalImages) {
         String[] ret = { "ERROR", null };
         String pi = null;
@@ -225,7 +226,7 @@ public class LidoIndexer extends AbstractIndexer {
                 }
             }
 
-            generatePageDocuments(writeStrategy, dataFolders, pageCountStart, downloadExternalImages);
+            generatePageDocuments(writeStrategy, dataFolders, pageCountStart, imageXPaths, downloadExternalImages);
 
             // Set access conditions
             indexObj.writeAccessConditions(null);
@@ -478,10 +479,11 @@ public class LidoIndexer extends AbstractIndexer {
      * @param writeStrategy
      * @param dataFolders
      * @param pageCountStart
+     * @param imageXPaths
      * @param downloadExternalImages
      * @throws FatalIndexerException
      */
-    public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart,
+    public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart, List<String> imageXPaths,
             boolean downloadExternalImages) throws FatalIndexerException {
         String xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet";
         List<Element> resourceSetList = xp.evaluateToElements(xpath, null);
@@ -491,6 +493,10 @@ public class LidoIndexer extends AbstractIndexer {
         }
 
         logger.info("Generating {} page documents (count starts at {})...", resourceSetList.size(), pageCountStart);
+
+        if (imageXPaths == null || imageXPaths.isEmpty()) {
+            logger.error("No init.lido.imageXPath configuration elements found, cannot add images!");
+        }
 
         // TODO lambda instead of loop (find a way to preserve order first)
         //        resourceSetList.parallelStream().forEach(
@@ -504,7 +510,7 @@ public class LidoIndexer extends AbstractIndexer {
                 order = Integer.valueOf(orderAttribute);
             }
             if (generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), order, writeStrategy, dataFolders,
-                    downloadExternalImages)) {
+                    imageXPaths, downloadExternalImages)) {
                 order++;
             }
         }
@@ -523,24 +529,9 @@ public class LidoIndexer extends AbstractIndexer {
      * @return
      */
     boolean generatePageDocument(Element eleResourceSet, String iddoc, Integer order, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders,
-            boolean downloadExternalImages) {
+            List<String> imageXPaths, boolean downloadExternalImages) {
         if (order == null) {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
-        }
-
-        String xpath = "lido:resourceID";
-        String filePath = xp.evaluateToString(xpath, eleResourceSet);
-        if (filePath == null || filePath.isEmpty()) {
-            // TODO configurable
-            xpath = "lido:resourceRepresentation[@lido:type='image_master' or @lido:type='http://terminology.lido-schema.org/lido00464' or @lido:type='image_overview']/lido:linkResource";
-            filePath = xp.evaluateToString(xpath, eleResourceSet);
-        }
-
-        String fileName;
-        if (filePath.contains("/")) {
-            fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-        } else {
-            fileName = filePath;
         }
 
         // Create Solr document for this page
@@ -558,74 +549,94 @@ public class LidoIndexer extends AbstractIndexer {
             doc.addField(SolrConstants.ORDERLABEL, " - ");
         }
 
-        if (StringUtils.isNotEmpty(filePath)) {
-            // External image
-            if (filePath.startsWith("http")) {
-                // Download image, if so requested
-                if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
-                    try {
-                        File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
-                        FileUtils.copyURLToFile(new URL(filePath), file);
-                        if (file.isFile()) {
-                            logger.info("Downloaded {}", file);
-                            sbImgFileNames.append(';').append(fileName);
-                            doc.addField(SolrConstants.FILENAME, fileName);
-                        } else {
-                            logger.warn("Could not download file: {}", filePath);
+        if (imageXPaths != null && !imageXPaths.isEmpty()) {
+
+            String filePath = null;
+            for (String xpath : imageXPaths) {
+                filePath = xp.evaluateToString(xpath, eleResourceSet);
+                if (StringUtils.isNotEmpty(filePath)) {
+                    logger.info("Found image in {}", xpath);
+                    break;
+                }
+            }
+
+            String fileName;
+            if (StringUtils.isNotEmpty(filePath) && filePath.contains("/")) {
+                fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+            } else {
+                fileName = filePath;
+            }
+
+            if (StringUtils.isNotEmpty(filePath)) {
+                // External image
+                if (filePath.startsWith("http")) {
+                    // Download image, if so requested
+                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
+                        try {
+                            File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
+                            FileUtils.copyURLToFile(new URL(filePath), file);
+                            if (file.isFile()) {
+                                logger.info("Downloaded {}", file);
+                                sbImgFileNames.append(';').append(fileName);
+                                doc.addField(SolrConstants.FILENAME, fileName);
+                            } else {
+                                logger.warn("Could not download file: {}", filePath);
+                            }
+                        } catch (IOException e) {
+                            logger.error(e.getMessage());
                         }
-                    } catch (IOException e) {
-                        logger.error(e.getMessage());
+                    } else {
+                        doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                     }
-                } else {
-                    doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
+                }
+
+                // Add full path if this is a local file or download has failed or is disabled
+                if (!doc.containsKey(SolrConstants.FILENAME)) {
+                    doc.addField(SolrConstants.FILENAME, fileName);
+                }
+
+                String mimetype = "image"; // TODO other types?
+                doc.addField(SolrConstants.MIMETYPE, mimetype);
+            }
+
+            // Add file size
+            if (dataFolders != null) {
+                try {
+                    Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
+                    // TODO other mime types/folders
+                    if (dataFolder != null) {
+                        Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
+                        if (Files.isRegularFile(path)) {
+                            doc.addField("MDNUM_FILESIZE", Files.size(path));
+                        }
+                    }
+                } catch (IllegalArgumentException | IOException e) {
+                    logger.warn(e.getMessage());
+                }
+                if (!doc.containsKey("MDNUM_FILESIZE")) {
+                    doc.addField("MDNUM_FILESIZE", -1);
                 }
             }
 
-            // Add full path if this is a local file or download has failed or is disabled
-            if (!doc.containsKey(SolrConstants.FILENAME)) {
-                doc.addField(SolrConstants.FILENAME, fileName);
-            }
+            String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
 
-            String mimetype = "image"; // TODO other types?
-            doc.addField(SolrConstants.MIMETYPE, mimetype);
-        }
-        // Add file size
-        if (dataFolders != null) {
-            try {
-                Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                // TODO other mime types/folders
-                if (dataFolder != null) {
-                    Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                    if (Files.isRegularFile(path)) {
-                        doc.addField("MDNUM_FILESIZE", Files.size(path));
+            if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
+                try {
+                    Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
+                            baseFileName + AbstractIndexer.XML_EXTENSION));
+                    for (String key : mixData.keySet()) {
+                        if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null) && !(key.equals(SolrConstants.HEIGHT)
+                                && doc.getField(SolrConstants.HEIGHT) != null)) {
+                            doc.addField(key, mixData.get(key));
+                        }
                     }
+                } catch (JDOMException e) {
+                    logger.error(e.getMessage(), e);
+                } catch (IOException e) {
+                    logger.warn(e.getMessage());
                 }
-            } catch (IllegalArgumentException | IOException e) {
-                logger.warn(e.getMessage());
-            }
-            if (!doc.containsKey("MDNUM_FILESIZE")) {
-                doc.addField("MDNUM_FILESIZE", -1);
-            }
-        }
 
-        String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
-
-        if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
-            try {
-                Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                        baseFileName + AbstractIndexer.XML_EXTENSION));
-                for (String key : mixData.keySet()) {
-                    if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null) && !(key.equals(SolrConstants.HEIGHT) && doc
-                            .getField(SolrConstants.HEIGHT) != null)) {
-                        doc.addField(key, mixData.get(key));
-                    }
-                }
-            } catch (JDOMException e) {
-                logger.error(e.getMessage(), e);
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
             }
-
         }
 
         writeStrategy.addPageDoc(doc);

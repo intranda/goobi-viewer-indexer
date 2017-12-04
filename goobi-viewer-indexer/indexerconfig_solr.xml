@@ -99,6 +99,15 @@
         </addNormDataFieldsToDefault>
         
         <aggregateRecords>true</aggregateRecords>
+        
+        <lido>
+            <!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
+            <imageXPath>lido:resourceRepresentation[@lido:type='image_master']/lido:linkResource</imageXPath>
+            <imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/resourceRepresentation_type/provided_representation']/lido:linkResource</imageXPath>
+            <imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/lido00464']/lido:linkResource</imageXPath>
+            <imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
+            <imageXPath>lido:resourceID</imageXPath>
+        </lido>
 	    
 	    <email>
 	        <recipients></recipients>
