@@ -571,8 +571,9 @@ public class LidoIndexer extends AbstractIndexer {
             if (StringUtils.isNotEmpty(filePath)) {
                 // External image
                 if (filePath.startsWith("http")) {
-                    // Download image, if so requested
-                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
+                    // Download image, if so requested (and not a IIIF resource)
+                    String baseFileName = FilenameUtils.getBaseName(fileName);
+                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && "default".equals(baseFileName)) {
                         try {
                             File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
                             FileUtils.copyURLToFile(new URL(filePath), file);
