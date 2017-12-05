@@ -32,9 +32,9 @@ import de.intranda.digiverso.presentation.solr.AbstractSolrEnabledTest;
 import de.intranda.digiverso.presentation.solr.MetsIndexer;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
 

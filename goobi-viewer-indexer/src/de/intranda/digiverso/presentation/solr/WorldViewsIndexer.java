@@ -57,7 +57,6 @@ import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.helper.language.LanguageHelper;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
@@ -65,6 +64,7 @@ import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.LazySolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.SerializingSolrWriteStrategy;
@@ -149,16 +149,16 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     logger.debug("PI: {}", indexObj.getPi());
 
                     // Determine the data repository to use
-                    hotfolder.selectDataRepository(null, pi);
-                    if (StringUtils.isNotEmpty(hotfolder.getSelectedRepository().getName())) {
-                        indexObj.setDataRepository(hotfolder.getSelectedRepository().getName());
+                    dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(null, pi, hotfolder.getSolrHelper());
+                    if (StringUtils.isNotEmpty(dataRepository.getName())) {
+                        indexObj.setDataRepository(dataRepository.getName());
                     }
 
                     ret[0] = new StringBuilder(indexObj.getPi()).append(AbstractIndexer.XML_EXTENSION).toString();
                     if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
                         // Use the old media folder
-                        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_MEDIA)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath()
+                                .toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
                             dataFolders.put(DataRepository.PARAM_MEDIA, null);
                         } else {
@@ -167,8 +167,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
                         // Use the old text folder
-                        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXT)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath()
+                                .toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXT))) {
                             dataFolders.put(DataRepository.PARAM_FULLTEXT, null);
                         } else {
@@ -177,8 +177,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
                         // Use the old crowdsourcing text folder
-                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, Paths.get(hotfolder.getDataRepository().getDir(
-                                DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD)
+                                .toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD))) {
                             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, null);
                         } else {
@@ -188,8 +188,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
                         // Use the old TEI metadata folder
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get(hotfolder.getDataRepository().getDir(
-                                DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA)
+                                .toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
                             dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
                         } else {
@@ -198,8 +198,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
                         // Use the old TEI word coordinate folder
-                        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_TEIWC)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath()
+                                .toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIWC))) {
                             dataFolders.put(DataRepository.PARAM_TEIWC, null);
                         } else {
@@ -208,8 +208,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
                         // Use the old ALTO folder
-                        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTO)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath()
+                                .toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO))) {
                             dataFolders.put(DataRepository.PARAM_ALTO, null);
                         } else {
@@ -218,7 +218,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
                         // Use the old crowdsourcing ALTO folder
-                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTOCROWD)
+                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD)
                                 .toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD))) {
                             dataFolders.put(DataRepository.PARAM_ALTOCROWD, null);
@@ -229,8 +229,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
                         // Use the old ABBYY folder
-                        dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_ABBYY)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get(dataRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath()
+                                .toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY))) {
                             dataFolders.put(DataRepository.PARAM_ABBYY, null);
                         } else {
@@ -239,8 +239,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
                         // Use the old user generated content folder
-                        dataFolders.put(DataRepository.PARAM_UGC, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_UGC)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_UGC, Paths.get(dataRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath()
+                                .toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_UGC))) {
                             dataFolders.put(DataRepository.PARAM_UGC, null);
                         } else {
@@ -249,8 +249,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_OVERVIEW) == null) {
                         // Use the old overview config folder
-                        dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_OVERVIEW)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toAbsolutePath()
+                                .toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_OVERVIEW))) {
                             dataFolders.put(DataRepository.PARAM_OVERVIEW, null);
                         } else {
@@ -543,7 +543,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
             if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
                 logger.info("Re-indexing anchor...");
-                copyAndReIndexAnchor(indexObj, hotfolder);
+                copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
             logger.info("Successfully finished indexing '{}'.", mainFile.getFileName());
         } catch (Exception e) {
@@ -1190,14 +1190,16 @@ public class WorldViewsIndexer extends AbstractIndexer {
      * Adds the anchor for the given volume object to the re-index queue.
      * 
      * @param indexObj {@link IndexObject}
+     * @param hotfolder
+     * @param dataRepository
      * @throws UnsupportedEncodingException
      */
-    static void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder) throws UnsupportedEncodingException {
+    static void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) throws UnsupportedEncodingException {
         logger.debug("copyAndReIndexAnchor: {}", indexObj.getPi());
         if (indexObj.getParent() != null) {
             String piParent = indexObj.getParent().getPi();
-            String indexedAnchorFilePath = new StringBuilder(hotfolder.getDataRepository().getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath()
-                    .toString()).append("/").append(piParent).append(AbstractIndexer.XML_EXTENSION).toString();
+            String indexedAnchorFilePath = new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString())
+                    .append("/").append(piParent).append(AbstractIndexer.XML_EXTENSION).toString();
             Path indexedAnchor = Paths.get(indexedAnchorFilePath);
             if (Files.exists(indexedAnchor)) {
                 hotfolder.getReindexQueue().add(indexedAnchor);

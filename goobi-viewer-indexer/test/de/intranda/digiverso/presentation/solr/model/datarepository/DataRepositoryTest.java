@@ -13,7 +13,7 @@
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.intranda.digiverso.presentation.solr.model;
+package de.intranda.digiverso.presentation.solr.model.datarepository;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 
 public class DataRepositoryTest {
@@ -99,7 +100,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void DataRepository_shouldCreateRealRepositoryCorrectly() throws Exception {
-        DataRepository dataRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "1");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository dataRepository = new DataRepository(Paths.get(dataRepositoriesHome), "1");
         Assert.assertTrue(dataRepository.isValid());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
@@ -162,7 +164,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteALTOFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -176,7 +179,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteALTOCrowdsourcingFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -190,7 +194,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteFulltextFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -204,7 +209,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteFulltextCrowdsourcingFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -218,7 +224,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteTEIFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -232,7 +239,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -246,7 +254,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteABBYYFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -260,7 +269,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteMediaFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -274,7 +284,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteSourceFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_SOURCE).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -288,7 +299,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteUserGeneratedContentFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -302,7 +314,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteMIXFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -316,7 +329,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeletePagePDFFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_PAGEPDF).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -330,7 +344,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteOverviewFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository useRepository = new DataRepository(Paths.get(dataRepositoriesHome), "");
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_OVERVIEW).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -344,7 +359,8 @@ public class DataRepositoryTest {
      */
     @Test
     public void moveDataFolderToRepository_shouldMoveDataFolderCorrectly() throws Exception {
-        DataRepository oldRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "old");
+        String dataRepositoriesHome = Configuration.getInstance().getString("init.dataRepositories.dataRepositoriesHome");
+        DataRepository oldRepository = new DataRepository(Paths.get(dataRepositoriesHome), "old");
         File oldDataFolder = new File(oldRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(oldDataFolder.mkdirs());
         Assert.assertTrue(oldDataFolder.exists());
@@ -352,7 +368,7 @@ public class DataRepositoryTest {
         Assert.assertTrue(oldDataFile.createNewFile());
         Assert.assertTrue(oldDataFile.exists());
 
-        DataRepository newRepository = new DataRepository(hotfolder.getDataRepositoriesHomePath(), "new");
+        DataRepository newRepository = new DataRepository(Paths.get(dataRepositoriesHome), "new");
         oldRepository.moveDataFolderToRepository(newRepository, BASE_FILE_NAME, DataRepository.PARAM_MEDIA);
 
         File newDataFolder = new File(newRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);

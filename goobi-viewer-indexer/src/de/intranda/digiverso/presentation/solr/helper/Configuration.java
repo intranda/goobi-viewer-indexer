@@ -137,18 +137,50 @@ public final class Configuration {
         return answer;
     }
 
+    /**
+     * 
+     * @param inPath
+     * @param defaultValue
+     * @return
+     */
     private Boolean getBoolean(String inPath, boolean defaultValue) {
         return config.getBoolean(inPath, defaultValue);
     }
 
+    /**
+     * 
+     * @param inPath
+     * @param defaultValue
+     * @return
+     */
     public Integer getInt(String inPath, int defaultValue) {
         return config.getInt(inPath, defaultValue);
     }
 
+    /**
+     * 
+     * @param inPath
+     * @param defaultValue
+     * @return
+     */
+    public String getString(String inPath, String defaultValue) {
+        return config.getString(inPath, defaultValue);
+    }
+
+    /**
+     * 
+     * @param inPath
+     * @return
+     */
     public String getString(String inPath) {
         return config.getString(inPath);
     }
 
+    /**
+     * 
+     * @param inPath
+     * @return
+     */
     @SuppressWarnings({ "rawtypes" })
     public List getList(String inPath) {
         return config.getList(inPath, config.getList(inPath));
@@ -158,8 +190,8 @@ public final class Configuration {
      * 
      * @return
      */
-    public boolean isDataRepositoriesEnabled() {
-        return getBoolean("init.dataRepositories.enabled", false);
+    public String getDataRepsitoryDestributionStrategy() {
+        return getString("init.dataRepositories.distributionStrategy", "SingleRepositoryStrategy");
     }
 
     /**

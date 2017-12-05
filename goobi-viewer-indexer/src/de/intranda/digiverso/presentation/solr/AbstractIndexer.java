@@ -57,12 +57,12 @@ import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 public abstract class AbstractIndexer {
 
@@ -81,6 +81,8 @@ public abstract class AbstractIndexer {
 
     /** XPath Parser. */
     protected JDomXP xp;
+    
+    protected DataRepository dataRepository;
 
     protected StringBuilder sbLog = new StringBuilder();
 

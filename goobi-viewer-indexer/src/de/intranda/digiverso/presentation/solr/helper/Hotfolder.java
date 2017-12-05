@@ -69,9 +69,10 @@ import de.intranda.digiverso.presentation.solr.MetsIndexer;
 import de.intranda.digiverso.presentation.solr.SolrIndexerDaemon;
 import de.intranda.digiverso.presentation.solr.WorldViewsIndexer;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP.FileFormat;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
+import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy;
 
 public class Hotfolder {
 
@@ -84,7 +85,7 @@ public class Hotfolder {
     private WriterAppender secondaryAppender;
 
     private final SolrHelper solrHelper;
-    private final List<DataRepository> dataRepositories = new ArrayList<>();
+    private final IDataRepositoryStrategy dataRepositoryStrategy;
     private final Queue<Path> reindexQueue = new LinkedList<>();
 
     private int minStorageSpace = 2048;
@@ -93,8 +94,6 @@ public class Hotfolder {
 
     private Path hotfolderPath;
     private Path tempFolderPath;
-    private Path viewerHomePath;
-    private Path dataRepositoriesHomePath;
     private Path updatedMets;
     private Path deletedMets;
     private Path errorMets;
@@ -104,7 +103,6 @@ public class Hotfolder {
     private AbstractIndexer currentIndexer;
     private DataRepository selectedDataRepository;
     private DataRepository dummyRepository;
-    private boolean dataRepositoriesEnabled = false;
     private boolean addVolumeCollectionsToAnchor = false;
     private boolean deleteContentFilesOnFailure = true;
 
@@ -156,45 +154,16 @@ public class Hotfolder {
             throw new FatalIndexerException("Configuration error, see log for details.");
         }
 
+        logger.info("Data repositories strategy: {}", (config.getDataRepsitoryDestributionStrategy()));
         try {
-            viewerHomePath = Paths.get(config.getConfiguration("viewerHome"));
-            if (!Files.isDirectory(viewerHomePath)) {
-                logger.error("Path defined in <viewerHome> does not exist, exiting...");
-                throw new FatalIndexerException("Configuration error, see log for details.");
-            }
-        } catch (Exception e) {
-            logger.error("<viewerHome> not defined, exiting...");
-            throw new FatalIndexerException("Configuration error, see log for details.");
-        }
-
-        dataRepositoriesEnabled = Configuration.getInstance().isDataRepositoriesEnabled();
-        logger.info("Data repositories are {}", (dataRepositoriesEnabled ? "enabled." : "disabled."));
-        try {
-            dataRepositoriesHomePath = Paths.get(config.getString("init.dataRepositories.dataRepositoriesHome"));
-            if (!Utils.checkAndCreateDirectory(dataRepositoriesHomePath)) {
-                throw new FatalIndexerException("Could not create directory : " + dataRepositoriesHomePath.toAbsolutePath().toString());
-            }
-        } catch (Exception e) {
-            logger.error("<dataRepositoriesHome> not defined.");
-            throw new FatalIndexerException("Configuration error, see log for details.");
-        }
-        // Load data repositories
-        List<String> dataRepositoryNames = config.getList("init.dataRepositories.dataRepository");
-        if (dataRepositoriesEnabled && dataRepositoryNames != null) {
-            for (String name : dataRepositoryNames) {
-                DataRepository dataRepository = new DataRepository(dataRepositoriesHomePath, name);
-                if (dataRepository.isValid()) {
-                    dataRepositories.add(dataRepository);
-                    if (dataRepositoriesEnabled) {
-                        logger.info("Found configured data repository: {}", name);
-                    }
-                }
-            }
-        }
-        try {
-            DataRepository.dataRepositoriesMaxRecords = config.getInt("init.dataRepositories.maxRecords", 10000);
-        } catch (Exception e) {
-            logger.error("<dataRepositories.maxRecords> not defined.");
+            dataRepositoryStrategy = (IDataRepositoryStrategy) Class.forName("de.intranda.digiverso.presentation.solr.model.datarepository.strategy."
+                    + config.getDataRepsitoryDestributionStrategy()).newInstance();
+        } catch (InstantiationException e) {
+            throw new FatalIndexerException("Could not instantiate data repository strategy: " + e.getMessage());
+        } catch (IllegalAccessException e) {
+            throw new FatalIndexerException("Could not instantiate data repository strategy: " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            throw new FatalIndexerException("Could not instantiate data repository strategy: " + e.getMessage());
         }
 
         try {
@@ -468,85 +437,6 @@ public class Hotfolder {
     }
 
     /**
-     * Selects available data repository for the given record. If no repository could be selected, the indexer MUST be halted.
-     * 
-     * @param file
-     * @param inPi
-     * @throws FatalIndexerException
-     */
-    public void selectDataRepository(Path file, String inPi) throws FatalIndexerException {
-        String pi = inPi;
-        if (StringUtils.isEmpty(pi) && file != null) {
-            String fileExtension = FilenameUtils.getExtension(file.getFileName().toString());
-            if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals("." + fileExtension) || "delete".equals(fileExtension) || "purge".equals(fileExtension)) {
-                pi = Utils.extractPiFromFileName(file);
-            }
-        }
-        if (StringUtils.isNotBlank(pi)) {
-            String previousRepository = null;
-            try {
-                // Look up previous repository in the index
-                previousRepository = solrHelper.findCurrentDataRepository(pi);
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage(), e);
-            }
-            if (previousRepository != null) {
-                if ("?".equals(previousRepository)) {
-                    if (dataRepositoriesEnabled) {
-                        // Record is already indexed, but not in a data repository
-                        dummyRepository = new DataRepository(Paths.get(Configuration.getInstance().getString("init.viewerHome")), "");
-                        logger.info(
-                                "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
-                    }
-                } else {
-                    // Find previous repository
-                    for (DataRepository repository : dataRepositories) {
-                        if (previousRepository.equals(repository.getName())) {
-                            if (dataRepositoriesEnabled) {
-                                logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
-                                selectedDataRepository = repository;
-                            } else {
-                                logger.info(
-                                        "'{}' is currently indexed in data repository '{}'. Since data repositories are disabled, it will be moved to out of the repository.",
-                                        pi, previousRepository);
-                                dummyRepository = repository;
-                                selectedDataRepository = new DataRepository(Paths.get(Configuration.getInstance().getString("init.viewerHome")), "");
-                            }
-                            return;
-                        }
-                    }
-                    logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
-                }
-            }
-
-            if (!dataRepositoriesEnabled) {
-                selectedDataRepository = new DataRepository(viewerHomePath, "");
-                return;
-            }
-
-            // Find available repository
-            try {
-                for (DataRepository repository : dataRepositories) {
-                    int records = repository.getNumRecords();
-                    if (records < DataRepository.dataRepositoriesMaxRecords) {
-                        selectedDataRepository = repository;
-                        logger.info("Repository selected for '{}': {} (currently contains {} records)", pi, selectedDataRepository.getName(),
-                                records);
-                        return;
-                    } else if (records > DataRepository.dataRepositoriesMaxRecords) {
-                        logger.warn("Repository '{}' contains {} records, the limit is {}, though.", repository.getName(), records,
-                                DataRepository.dataRepositoriesMaxRecords);
-                    }
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-            logger.error("No data repository available for indexing. Please configure additional repositories. Exiting...");
-            throw new FatalIndexerException("No data repository available for indexing. Please configure additional repositories. Exiting...");
-        }
-    }
-
-    /**
      * 
      * @param dataFile
      * @param fromReindexQueue
@@ -596,15 +486,15 @@ public class Hotfolder {
 
             } else if (filename.endsWith(".delete")) {
                 // DELETE
-                selectDataRepository(dataFile, null);
+                selectedDataRepository = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
                 removeFromIndex(dataFile, true);
             } else if (filename.endsWith(".purge")) {
                 // PURGE (delete with no "deleted" doc)
-                selectDataRepository(dataFile, null);
+                selectedDataRepository = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
                 removeFromIndex(dataFile, false);
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
-                selectDataRepository(dataFile, null);
+                selectedDataRepository = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
                 MetsIndexer.superupdate(dataFile, updatedMets, selectedDataRepository);
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
@@ -1498,31 +1388,24 @@ public class Hotfolder {
     }
 
     /**
-     * @return the dataRepositoriesEnabled
-     */
-    public boolean isDataRepositoriesEnabled() {
-        return dataRepositoriesEnabled;
-    }
-
-    /**
      * @return the addVolumeCollectionsToAnchor
      */
     public boolean isAddVolumeCollectionsToAnchor() {
         return addVolumeCollectionsToAnchor;
     }
 
-    /**
-     * @return the repositoriesHomePath
-     */
-    public Path getDataRepositoriesHomePath() {
-        return dataRepositoriesHomePath;
-    }
+    //    /**
+    //     * @return the repositoriesHomePath
+    //     */
+    //    public Path getDataRepositoriesHomePath() {
+    //        return dataRepositoriesHomePath;
+    //    }
 
     /**
-     * @return the dataRepositories
+     * @return the dataRepositoryStrategy
      */
-    public List<DataRepository> getDataRepositories() {
-        return dataRepositories;
+    public IDataRepositoryStrategy getDataRepositoryStrategy() {
+        return dataRepositoryStrategy;
     }
 
     public Path getUpdatedMets() {
@@ -1559,22 +1442,12 @@ public class Hotfolder {
         return filter;
     }
 
-    /**
-     * Returns the currently selected data repository. If the current record is already indexed, the dummy repository (= old style fodler structure)
-     * is returned.
-     * 
-     * @return
-     */
-    public DataRepository getSelectedRepository() {
-        return selectedDataRepository;
-    }
-
-    public DataRepository getDataRepository() {
-        if (dummyRepository != null) {
-            return dummyRepository;
-        }
-        return selectedDataRepository;
-    }
+    //    public DataRepository getDataRepository() {
+    //        if (dummyRepository != null) {
+    //            return dummyRepository;
+    //        }
+    //        return selectedDataRepository;
+    //    }
 
     public void setDummyRepository(DataRepository dummyRepository) {
         this.dummyRepository = dummyRepository;

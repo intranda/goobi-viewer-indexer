@@ -13,7 +13,7 @@
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.intranda.digiverso.presentation.solr.model;
+package de.intranda.digiverso.presentation.solr.model.datarepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Utils;
+import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 
 public class DataRepository {
 
@@ -55,7 +56,7 @@ public class DataRepository {
     public static final String PARAM_MIX = "mixFolder";
     public static final String PARAM_OVERVIEW = "overviewFolder";
 
-    public static int dataRepositoriesMaxRecords = 10000;
+    //    public static int dataRepositoriesMaxRecords = 10000;
 
     private boolean valid = false;
     private String name;

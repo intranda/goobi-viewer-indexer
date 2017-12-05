@@ -32,8 +32,8 @@ import org.junit.Test;
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 public class AbstractIndexerTest extends AbstractSolrEnabledTest {
 

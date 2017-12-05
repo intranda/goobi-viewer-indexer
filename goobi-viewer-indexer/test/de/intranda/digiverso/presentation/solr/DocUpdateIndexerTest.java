@@ -27,10 +27,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
+import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy;
+import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.SingleRepositoryStrategy;
 
 public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
@@ -67,6 +70,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldUpdateDocumentCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         String iddoc = null;
+        IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
 
         // Index original doc and make sure all fields that will be updated already exist
         {
@@ -165,7 +169,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             // Check for updated text file in file system
             String textFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
             Assert.assertNotNull(textFileName);
-            Path textFile = Paths.get(hotfolder.getDataRepository().getRootDir().toAbsolutePath().toString(), textFileName);
+            Path textFile = Paths.get().getRootDir().toAbsolutePath().toString(), textFileName);
             Assert.assertTrue(Files.isRegularFile(textFile));
             String altoText = TextHelper.readFileToString(textFile.toFile());
             Assert.assertNotNull(altoText);

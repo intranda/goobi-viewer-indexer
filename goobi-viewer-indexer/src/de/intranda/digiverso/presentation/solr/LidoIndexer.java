@@ -51,7 +51,6 @@ import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
@@ -60,6 +59,7 @@ import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 import de.intranda.digiverso.presentation.solr.model.config.MetadataConfigurationManager;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.LazySolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.SerializingSolrWriteStrategy;
@@ -142,17 +142,17 @@ public class LidoIndexer extends AbstractIndexer {
                     logger.debug("PI: {}", indexObj.getPi());
 
                     // Determine the data repository to use
-                    hotfolder.selectDataRepository(null, pi);
-                    if (StringUtils.isNotEmpty(hotfolder.getSelectedRepository().getName())) {
-                        indexObj.setDataRepository(hotfolder.getSelectedRepository().getName());
+                    dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(null, pi, hotfolder.getSolrHelper());
+                    if (StringUtils.isNotEmpty(dataRepository.getName())) {
+                        indexObj.setDataRepository(dataRepository.getName());
                     }
 
                     ret[0] = indexObj.getPi();
 
                     if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
                         // Use the old MIX folder
-                        dataFolders.put(DataRepository.PARAM_MIX, Paths.get(hotfolder.getDataRepository().getDir(DataRepository.PARAM_MIX)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_MIX, Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath()
+                                .toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
                             dataFolders.put(DataRepository.PARAM_MIX, null);
                         } else {

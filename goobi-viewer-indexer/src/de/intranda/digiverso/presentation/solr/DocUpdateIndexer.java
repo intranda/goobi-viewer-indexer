@@ -40,9 +40,9 @@ import org.slf4j.LoggerFactory;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.helper.Utils;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 public class DocUpdateIndexer extends AbstractIndexer {
 
@@ -84,7 +84,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
 
         String pi = fileNameSplit[0];
         String iddoc = fileNameSplit[1];
-        hotfolder.selectDataRepository(null, pi);
+        //        dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(null, pi, hotfolder.getSolrHelper());
         try {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.IDDOC + ":" + iddoc, null);
             if (docList == null || docList.isEmpty()) {
@@ -118,14 +118,14 @@ public class DocUpdateIndexer extends AbstractIndexer {
                         Map<String, Object> altoData = (Map<String, Object>) o;
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                             // Write ALTO file
-                            Path repositoryPath = hotfolder.getDataRepository().getRootDir();
+                            Path repositoryPath = dataRepository.getRootDir();
 
                             // Update FILENAME_ALTO, if it doesn't exist yet
                             String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
                             if (altoFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_ALTO)) {
-                                altoFileName = new StringBuilder().append(hotfolder.getDataRepository().getDir(DataRepository.PARAM_ALTOCROWD)
-                                        .getFileName().toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(altoFileName))
-                                        .append(XML_EXTENSION).toString();
+                                altoFileName = new StringBuilder().append(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).getFileName()
+                                        .toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(altoFileName)).append(
+                                                XML_EXTENSION).toString();
                                 Map<String, Object> update = new HashMap<>();
                                 update.put("set", altoFileName);
                                 partialUpdates.put(SolrConstants.FILENAME_ALTO, update);
@@ -162,15 +162,15 @@ public class DocUpdateIndexer extends AbstractIndexer {
                             partialUpdates.put(SolrConstants.FULLTEXT, update);
                         }
                         // Write text file
-                        Path repositoryPath = hotfolder.getDataRepository().getRootDir();
+                        Path repositoryPath = dataRepository.getRootDir();
                         String fulltextFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
                         if (fulltextFileName == null) {
                             // Add FILENAME_FULLTEXT, if it doesn't exist yet
                             fulltextFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
                             if (fulltextFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_FULLTEXT)) {
-                                fulltextFileName = new StringBuilder().append(hotfolder.getDataRepository().getDir(DataRepository.PARAM_FULLTEXTCROWD)
-                                        .getFileName().toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(
-                                                fulltextFileName)).append(TXT_EXTENSION).toString();
+                                fulltextFileName = new StringBuilder().append(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName()
+                                        .toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(fulltextFileName)).append(
+                                                TXT_EXTENSION).toString();
                                 Map<String, Object> update = new HashMap<>();
                                 update.put("set", fulltextFileName);
                                 partialUpdates.put(SolrConstants.FILENAME_FULLTEXT, update);

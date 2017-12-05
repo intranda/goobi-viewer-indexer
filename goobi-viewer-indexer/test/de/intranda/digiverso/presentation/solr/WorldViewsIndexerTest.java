@@ -14,9 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
-import de.intranda.digiverso.presentation.solr.model.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
 
 public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {

@@ -115,10 +115,6 @@ public final class SolrIndexerDaemon {
         // create hotfolder
         Hotfolder hotfolder = new Hotfolder(confFilename, SolrHelper.getNewHttpSolrServer(confFilename));
 
-        // TODO move to Hotfolder.java
-        if (hotfolder.isDataRepositoriesEnabled() && (hotfolder.getDataRepositories() == null || hotfolder.getDataRepositories().isEmpty())) {
-            throw new FatalIndexerException("No data repositories found, exiting...");
-        }
         if (hotfolder.getSuccess() == null || !Files.isDirectory(hotfolder.getSuccess())) {
             throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
         }
