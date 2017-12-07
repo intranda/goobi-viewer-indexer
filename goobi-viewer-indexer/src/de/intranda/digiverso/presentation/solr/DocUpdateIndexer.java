@@ -84,7 +84,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
 
         String pi = fileNameSplit[0];
         String iddoc = fileNameSplit[1];
-        //        dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(null, pi, hotfolder.getSolrHelper());
+        //        dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(null, pi, hotfolder.getSolrHelper())[0];
         try {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.IDDOC + ":" + iddoc, null);
             if (docList == null || docList.isEmpty()) {

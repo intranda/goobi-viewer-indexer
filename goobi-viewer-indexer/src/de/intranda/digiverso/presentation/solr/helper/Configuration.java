@@ -190,8 +190,8 @@ public final class Configuration {
      * 
      * @return
      */
-    public String getDataRepsitoryDestributionStrategy() {
-        return getString("init.dataRepositories.distributionStrategy", "SingleRepositoryStrategy");
+    public String getDataRepositoryStrategy() {
+        return getString("init.dataRepositories.strategy", "SingleRepositoryStrategy");
     }
 
     /**

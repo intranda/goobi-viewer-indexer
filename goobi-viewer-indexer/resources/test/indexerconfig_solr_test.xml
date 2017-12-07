@@ -16,9 +16,6 @@
 		<tempFolder>build/indexer/temp/</tempFolder>
 		<viewerHome>build/viewer/</viewerHome>
 		<dataRepositories>
-			<!-- If true, records will be distributed over configured data repositories. 
-				Otherwise the default folder structure will be used. (default is false) -->
-			<enabled>false</enabled>
 			<!-- root folder for data repository folders -->
 			<dataRepositoriesHome>build/viewer/data/</dataRepositoriesHome>
 			<!-- max number of records (METS+LIDO) per data repository (default is 

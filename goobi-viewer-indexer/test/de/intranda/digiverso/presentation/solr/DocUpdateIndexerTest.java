@@ -71,6 +71,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         String iddoc = null;
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
+        DataRepository dataRepository = dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)[0];
 
         // Index original doc and make sure all fields that will be updated already exist
         {
@@ -136,7 +137,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             // Check for updated ALTO file in file system
             String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
             Assert.assertNotNull(altoFileName);
-            Path altoFile = Paths.get(hotfolder.getDataRepository().getRootDir().toAbsolutePath().toString(), altoFileName);
+            Path altoFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), altoFileName);
             Assert.assertTrue("File not found at " + altoFile.toAbsolutePath().toString(), Files.isRegularFile(altoFile));
             String altoText = TextHelper.readFileToString(altoFile.toFile());
             Assert.assertNotNull(altoText);
@@ -169,7 +170,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             // Check for updated text file in file system
             String textFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
             Assert.assertNotNull(textFileName);
-            Path textFile = Paths.get().getRootDir().toAbsolutePath().toString(), textFileName);
+            Path textFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), textFileName);
             Assert.assertTrue(Files.isRegularFile(textFile));
             String altoText = TextHelper.readFileToString(textFile.toFile());
             Assert.assertNotNull(altoText);

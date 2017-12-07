@@ -658,7 +658,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper), PI, 1);
+        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)[0], PI, 1);
         Assert.assertEquals(16, writeStrategy.getPageDocsSize());
     }
 
@@ -672,7 +672,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper), PI, 1);
+        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)[0], PI, 1);
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             SolrInputDocument doc = writeStrategy.getPageDocForOrder(i);
             Assert.assertEquals(i, doc.getFieldValue(SolrConstants.ORDER));
@@ -823,7 +823,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1), String.valueOf(MetsIndexer.getNextIddoc(hotfolder
                 .getSolrHelper())), "ppn750544996", page, writeStrategy, null, dataRepositoryStrategy.selectDataRepository(metsFile, "ppn750542047",
-                        solrHelper)));
+                        solrHelper)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertEquals("http://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn750544996%252Fphys_0001/full/full/0/native.jpg", doc
@@ -856,7 +856,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1), String.valueOf(MetsIndexer.getNextIddoc(hotfolder
                 .getSolrHelper())), "ppn750542047", page, writeStrategy, dataFolders, dataRepositoryStrategy.selectDataRepository(metsFile,
-                        "ppn750542047", solrHelper)));
+                        "ppn750542047", solrHelper)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertTrue(Files.isRegularFile(Paths.get(altoPath.toAbsolutePath().toString(), "00000005.xml")));
@@ -884,7 +884,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1), String.valueOf(MetsIndexer.getNextIddoc(hotfolder
-                .getSolrHelper())), PI, page, writeStrategy, dataFolders, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)));
+                .getSolrHelper())), PI, page, writeStrategy, dataFolders, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
 
@@ -909,7 +909,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1), String.valueOf(MetsIndexer.getNextIddoc(hotfolder
-                .getSolrHelper())), PI, page, writeStrategy, dataFolders, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)));
+                .getSolrHelper())), PI, page, writeStrategy, dataFolders, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertEquals("fulltext/" + PI + "/00000001.txt", doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT));
@@ -931,7 +931,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 3;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1), String.valueOf(MetsIndexer.getNextIddoc(hotfolder
-                .getSolrHelper())), PI, page, writeStrategy, null, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)));
+                .getSolrHelper())), PI, page, writeStrategy, null, dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC));

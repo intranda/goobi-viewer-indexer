@@ -81,8 +81,10 @@ public abstract class AbstractIndexer {
 
     /** XPath Parser. */
     protected JDomXP xp;
-    
+
     protected DataRepository dataRepository;
+
+    protected DataRepository previousDataRepository;
 
     protected StringBuilder sbLog = new StringBuilder();
 
@@ -625,6 +627,34 @@ public abstract class AbstractIndexer {
         } else {
             logger.trace("Cannot deskew ALTO: Image file is {} and alto text has length of {}", filename, alto != null ? alto.length() : "0");
         }
+    }
+
+    /**
+     * @return the dataRepository
+     */
+    public DataRepository getDataRepository() {
+        return dataRepository;
+    }
+
+    /**
+     * @param dataRepository the dataRepository to set
+     */
+    public void setDataRepository(DataRepository dataRepository) {
+        this.dataRepository = dataRepository;
+    }
+
+    /**
+     * @return the previousDataRepository
+     */
+    public DataRepository getPreviousDataRepository() {
+        return previousDataRepository;
+    }
+
+    /**
+     * @param previousDataRepository the previousDataRepository to set
+     */
+    public void setPreviousDataRepository(DataRepository previousDataRepository) {
+        this.previousDataRepository = previousDataRepository;
     }
 
     public static FilenameFilter txt = new FilenameFilter() {

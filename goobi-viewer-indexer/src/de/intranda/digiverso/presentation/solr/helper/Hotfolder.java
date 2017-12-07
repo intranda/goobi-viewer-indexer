@@ -73,6 +73,8 @@ import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy;
+import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.MaxRecordNumberStrategy;
+import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.SingleRepositoryStrategy;
 
 public class Hotfolder {
 
@@ -101,8 +103,8 @@ public class Hotfolder {
     private Path success;
 
     private AbstractIndexer currentIndexer;
-    private DataRepository selectedDataRepository;
-    private DataRepository dummyRepository;
+    //    private DataRepository selectedDataRepository;
+    //    private DataRepository dummyRepository;
     private boolean addVolumeCollectionsToAnchor = false;
     private boolean deleteContentFilesOnFailure = true;
 
@@ -154,16 +156,33 @@ public class Hotfolder {
             throw new FatalIndexerException("Configuration error, see log for details.");
         }
 
-        logger.info("Data repositories strategy: {}", (config.getDataRepsitoryDestributionStrategy()));
-        try {
-            dataRepositoryStrategy = (IDataRepositoryStrategy) Class.forName("de.intranda.digiverso.presentation.solr.model.datarepository.strategy."
-                    + config.getDataRepsitoryDestributionStrategy()).newInstance();
-        } catch (InstantiationException e) {
-            throw new FatalIndexerException("Could not instantiate data repository strategy: " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new FatalIndexerException("Could not instantiate data repository strategy: " + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            throw new FatalIndexerException("Could not instantiate data repository strategy: " + e.getMessage());
+        //        String repositoryClassName = "de.intranda.digiverso.presentation.solr.model.datarepository.strategy." + config.getDataRepositoryStrategy();
+        //        logger.info("Data repositories strategy: {}", repositoryClassName);
+        //        try {
+        //            dataRepositoryStrategy = (IDataRepositoryStrategy) Class.forName(repositoryClassName).getConstructor(Configuration.class).newInstance(
+        //                    config);
+        //        } catch (InstantiationException e) {
+        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
+        //        } catch (IllegalAccessException e) {
+        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
+        //        } catch (ClassNotFoundException e) {
+        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
+        //        } catch (IllegalArgumentException e) {
+        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
+        //        } catch (InvocationTargetException e) {
+        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
+        //        } catch (NoSuchMethodException e) {
+        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
+        //        } catch (SecurityException e) {
+        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
+        //        }
+
+        switch (config.getDataRepositoryStrategy()) {
+            case "MaxRecordNumberStrategy":
+                dataRepositoryStrategy = new MaxRecordNumberStrategy(config);
+                break;
+            default:
+                dataRepositoryStrategy = new SingleRepositoryStrategy(config);
         }
 
         try {
@@ -447,8 +466,6 @@ public class Hotfolder {
     private boolean handleDataFile(Path dataFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
         logger.trace("handleDataFile: {}", dataFile);
         // Always unselect repository
-        selectedDataRepository = null;
-        dummyRepository = null;
         String filename = dataFile.getFileName().toString();
         try {
             if (filename.endsWith(".xml")) {
@@ -486,16 +503,16 @@ public class Hotfolder {
 
             } else if (filename.endsWith(".delete")) {
                 // DELETE
-                selectedDataRepository = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
-                removeFromIndex(dataFile, true);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
+                removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], true);
             } else if (filename.endsWith(".purge")) {
                 // PURGE (delete with no "deleted" doc)
-                selectedDataRepository = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
-                removeFromIndex(dataFile, false);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
+                removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], false);
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
-                selectedDataRepository = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
-                MetsIndexer.superupdate(dataFile, updatedMets, selectedDataRepository);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
+                MetsIndexer.superupdate(dataFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
                 updateSingleDocument(dataFile);
@@ -517,11 +534,19 @@ public class Hotfolder {
      * Removes the document and its data folders represented by the file name.
      * 
      * @param deleteFile {@link Path}
+     * @param dataRepository Data repository in which the record data is stored
      * @param trace A Lucene document with DATEDELETED timestamp will be created if true.
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
      */
-    private void removeFromIndex(Path deleteFile, boolean trace) throws IOException, FatalIndexerException {
+    private void removeFromIndex(Path deleteFile, DataRepository dataRepository, boolean trace) throws IOException, FatalIndexerException {
+        if (deleteFile == null) {
+            throw new IllegalArgumentException("deleteFile may not be null");
+        }
+        if (dataRepository == null) {
+            throw new IllegalArgumentException("dataRepository may not be null");
+        }
+
         String baseFileName = FilenameUtils.getBaseName(deleteFile.getFileName().toString());
         try {
             // Check for empty file names, otherwise the entire content folders will be deleted!
@@ -530,15 +555,11 @@ public class Hotfolder {
                 return;
             }
 
-            DataRepository useRepository = selectedDataRepository;
-            if (dummyRepository != null) {
-                useRepository = dummyRepository;
-            }
-
-            Path actualXmlFile = Paths.get(useRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), baseFileName
+            Path actualXmlFile = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), baseFileName
                     + ".xml");
             if (!Files.exists(actualXmlFile)) {
-                actualXmlFile = Paths.get(useRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName + ".xml");
+                actualXmlFile = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName
+                        + ".xml");
             }
             FileFormat format = FileFormat.UNKNOWN;
             if (!Files.exists(actualXmlFile)) {
@@ -553,9 +574,9 @@ public class Hotfolder {
                 // Attempt to determine the file format by the path if no SOURCEDOCFORMAT field exists
                 if (format.equals(FileFormat.UNKNOWN)) {
                     logger.warn("SOURCEDOCFORMAT not found, attempting to determine the format via the file path...");
-                    if (deleteFile.getParent().equals(useRepository.getDir(DataRepository.PARAM_INDEXED_METS))) {
+                    if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS))) {
                         format = FileFormat.METS;
-                    } else if (deleteFile.getParent().equals(useRepository.getDir(DataRepository.PARAM_INDEXED_LIDO))) {
+                    } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO))) {
                         format = FileFormat.LIDO;
                     } else if (doc.containsKey(SolrConstants.DATEDELETED)) {
                         format = FileFormat.METS;
@@ -585,7 +606,7 @@ public class Hotfolder {
                     return;
             }
             if (success) {
-                useRepository.deleteDataFoldersForRecord(baseFileName);
+                dataRepository.deleteDataFoldersForRecord(baseFileName);
                 if (actualXmlFile.toFile().exists()) {
                     Path deleted = Paths.get(deletedMets.toAbsolutePath().toString(), actualXmlFile.getFileName().toString());
                     Files.copy(actualXmlFile, deleted, StandardCopyOption.REPLACE_EXISTING);
@@ -715,11 +736,15 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_OVERVIEW, true);
         }
 
+        DataRepository dataRepository;
+        DataRepository previousDataRepository;
         try {
             currentIndexer = new MetsIndexer(this);
             resp = ((MetsIndexer) currentIndexer).index(metsFile, fromReindexQueue, dataFolders, null, Configuration.getInstance()
                     .getPageCountStart());
         } finally {
+            dataRepository = currentIndexer.getDataRepository();
+            previousDataRepository = currentIndexer.getPreviousDataRepository();
             currentIndexer = null;
         }
 
@@ -727,8 +752,7 @@ public class Hotfolder {
             // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
             String newMetsFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newMetsFileName);
-            // kopieren
-            Path indexed = Paths.get(selectedDataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
+            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
             if (metsFile.equals(indexed)) {
                 logger.debug("'{}' is an existing indexed file - not moving it.", metsFile.getFileName());
                 return;
@@ -743,13 +767,13 @@ public class Hotfolder {
             }
             Files.copy(metsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
 
-            if (dummyRepository != null) {
+            if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
-                dummyRepository.moveDataFoldersToRepository(selectedDataRepository, FilenameUtils.getBaseName(newMetsFileName));
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newMetsFileName));
             }
 
             // Copy and delete media folder
-            if (selectedDataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA) > 0) {
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
                 if (msg != null) {
                     logger.info(msg);
@@ -757,7 +781,7 @@ public class Hotfolder {
             }
 
             // Copy data folders
-            selectedDataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings);
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings);
 
             // Delete unsupported data folders
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
@@ -890,20 +914,21 @@ public class Hotfolder {
                     String newLidoFileName = identifier + ".xml";
 
                     // Write individual LIDO records as separate files
-                    Path indexed = Paths.get(selectedDataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(),
+                    Path indexed = Paths.get(currentIndexer.getDataRepository().getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(),
                             newLidoFileName);
                     try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
                         outputter.output(doc, out);
                     }
 
                     // Move non-repository data directories to the selected repository
-                    if (dummyRepository != null) {
-                        dummyRepository.moveDataFoldersToRepository(selectedDataRepository, identifier);
+                    if (currentIndexer.getPreviousDataRepository() != null) {
+                        currentIndexer.getPreviousDataRepository().moveDataFoldersToRepository(currentIndexer.getDataRepository(), identifier);
                     }
 
                     // copy media files
                     boolean mediaFilesCopied = false;
-                    Path destMediaDir = Paths.get(selectedDataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
+                    Path destMediaDir = Paths.get(currentIndexer.getDataRepository().getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(),
+                            identifier);
                     if (!Files.exists(destMediaDir)) {
                         Files.createDirectory(destMediaDir);
                     }
@@ -935,7 +960,8 @@ public class Hotfolder {
 
                     // Copy and delete MIX files
                     if (!reindexSettings.get(DataRepository.PARAM_MIX)) {
-                        Path destMixDir = Paths.get(selectedDataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), identifier);
+                        Path destMixDir = Paths.get(currentIndexer.getDataRepository().getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
+                                identifier);
                         if (!Files.exists(destMixDir)) {
                             Files.createDirectory(destMixDir);
                         }
@@ -1054,11 +1080,15 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
         }
 
+        DataRepository dataRepository;
+        DataRepository previousDataRepository;
         try {
             currentIndexer = new WorldViewsIndexer(this);
             resp = ((WorldViewsIndexer) currentIndexer).index(mainFile, fromReindexQueue, dataFolders, null, Configuration.getInstance()
                     .getPageCountStart());
         } finally {
+            dataRepository = currentIndexer.getDataRepository();
+            previousDataRepository = currentIndexer.getPreviousDataRepository();
             currentIndexer = null;
         }
 
@@ -1066,7 +1096,7 @@ public class Hotfolder {
             // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
             String newMetsFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newMetsFileName);
-            Path indexed = Paths.get(selectedDataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
+            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
             if (mainFile.equals(indexed)) {
                 logger.debug("'{}' is an existing indexed file - not moving it.", mainFile.getFileName());
                 return;
@@ -1081,13 +1111,13 @@ public class Hotfolder {
             }
             Files.copy(mainFile, indexed, StandardCopyOption.REPLACE_EXISTING);
 
-            if (dummyRepository != null) {
+            if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
-                dummyRepository.moveDataFoldersToRepository(selectedDataRepository, FilenameUtils.getBaseName(newMetsFileName));
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newMetsFileName));
             }
 
             // Copy and delete media folder
-            if (selectedDataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA) > 0) {
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
                 if (msg != null) {
                     logger.info(msg);
@@ -1095,7 +1125,7 @@ public class Hotfolder {
             }
 
             // Copy other data folders
-            selectedDataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings);
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings);
 
             // Delete unsupported data folders
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
@@ -1204,17 +1234,19 @@ public class Hotfolder {
             return;
         }
 
+        DataRepository dataRepository;
         try {
             currentIndexer = new DocUpdateIndexer(this);
             resp = ((DocUpdateIndexer) currentIndexer).index(dataFile, dataFolders);
         } finally {
+            dataRepository = currentIndexer.getDataRepository();
             currentIndexer = null;
         }
 
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String pi = resp[0];
 
-            selectedDataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, new HashMap<>());
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, new HashMap<>());
 
             // Delete unsupported data folders
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
@@ -1448,10 +1480,10 @@ public class Hotfolder {
     //        }
     //        return selectedDataRepository;
     //    }
-
-    public void setDummyRepository(DataRepository dummyRepository) {
-        this.dummyRepository = dummyRepository;
-    }
+    //
+    //    public void setDummyRepository(DataRepository dummyRepository) {
+    //        this.dummyRepository = dummyRepository;
+    //    }
 
     /**
      * @return the solrHelper

@@ -32,12 +32,15 @@ import org.junit.Test;
 
 import de.intranda.digiverso.presentation.solr.AbstractSolrEnabledTest;
 import de.intranda.digiverso.presentation.solr.MetsIndexer;
+import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.Utils;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
+import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy;
+import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.SingleRepositoryStrategy;
 
 public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
 
@@ -61,7 +64,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        
+
         Utils.deleteDirectory(tempFolder);
     }
 
@@ -73,9 +76,11 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
     public void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
         SolrHelper sh = new SolrHelper(server);
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
+        IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        indexer.generatePageDocuments(strat, null, hotfolder.getDataRepository(), "PPN517154005", 1);
+        indexer.generatePageDocuments(strat, null, dataRepositoryStrategy.selectDataRepository(metsFile, "PPN517154005", solrHelper)[0],
+                "PPN517154005", 1);
         List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
         Assert.assertEquals(3, docs.size());
         Assert.assertEquals("PHYS_0001", docs.get(0).getFieldValue(SolrConstants.PHYSID));

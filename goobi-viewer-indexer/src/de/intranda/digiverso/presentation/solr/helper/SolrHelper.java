@@ -180,7 +180,8 @@ public final class SolrHelper {
     /**
      * 
      * @param pi
-     * @return
+     * @return The name of the data repository currently used for the record with the given PI; "?" if the record is indexed, but not in a repository;
+     *         null if the record is not in the index
      * @throws SolrServerException
      * @should find correct data repository for record
      */

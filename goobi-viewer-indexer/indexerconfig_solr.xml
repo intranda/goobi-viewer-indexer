@@ -17,11 +17,10 @@
 		<viewerHome>C:/digiverso/viewer/</viewerHome>
 		<dataRepositories>	
 			<!-- distributionStrategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
-			<distributionStrategy>MaxRecordNumberStrategy</distributionStrategy>
+			<strategy>SingleRepositoryStrategy</strategy>
 			
             <!-- root folder for data repository folders -->
-            <dataRepositoriesHome>C:/digiverso/viewer/data/
-            </dataRepositoriesHome>
+            <dataRepositoriesHome>C:/digiverso/viewer/data/</dataRepositoriesHome>
 			
 			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 
 				10000) -->
@@ -38,9 +37,9 @@
 			or viewerHome) -->
 		<mediaFolder>media</mediaFolder>
 		<altoFolder>alto</altoFolder>
+		<altoCrowdsourcingFolder>alto_crowd</altoCrowdsourcingFolder>
 		<fulltextFolder>fulltext</fulltextFolder>
-		<fulltextCrowdsourcingFolder>fulltext_crowd
-		</fulltextCrowdsourcingFolder>
+		<fulltextCrowdsourcingFolder>fulltext_crowd</fulltextCrowdsourcingFolder>
 		<wcFolder>wc</wcFolder>
 		<abbyyFolder>abbyy</abbyyFolder>
 		<pagePdfFolder>pdf</pagePdfFolder>
