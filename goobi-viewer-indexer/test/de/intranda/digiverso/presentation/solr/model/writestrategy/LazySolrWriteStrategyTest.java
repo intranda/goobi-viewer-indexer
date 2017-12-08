@@ -75,7 +75,7 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        indexer.generatePageDocuments(strat, null, dataRepositoryStrategy.selectDataRepository(metsFile, "PPN517154005", solrHelper)[0],
+        indexer.generatePageDocuments(strat, null, dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, solrHelper)[0],
                 "PPN517154005", 1);
         List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
         Assert.assertEquals(3, docs.size());

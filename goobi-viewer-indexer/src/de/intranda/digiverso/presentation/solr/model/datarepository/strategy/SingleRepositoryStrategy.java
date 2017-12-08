@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -43,36 +44,25 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
 
     private final List<DataRepository> dataRepositories = new ArrayList<>();
 
-    private final Path viewerHomePath;
+    private final String viewerHomePath;
 
     @SuppressWarnings("unchecked")
     public SingleRepositoryStrategy(Configuration config) throws FatalIndexerException {
-        Path dataRepositoriesHomePath;
-        try {
-            dataRepositoriesHomePath = Paths.get(config.getString("init.dataRepositories.dataRepositoriesHome"));
-            if (!Utils.checkAndCreateDirectory(dataRepositoriesHomePath)) {
-                throw new FatalIndexerException("Could not create directory : " + dataRepositoriesHomePath.toAbsolutePath().toString());
-            }
-        } catch (Exception e) {
-            logger.error("<dataRepositoriesHome> not defined.");
-            throw new FatalIndexerException("Configuration error, see log for details.");
-        }
-
         // Load data repositories
-        List<String> dataRepositoryNames = config.getList("init.dataRepositories.dataRepository");
-        if (dataRepositoryNames != null) {
-            for (String name : dataRepositoryNames) {
-                DataRepository dataRepository = new DataRepository(dataRepositoriesHomePath, name);
+        List<String> dataRepositoryPaths = config.getList("init.dataRepositories.dataRepository");
+        if (dataRepositoryPaths != null) {
+            for (String path : dataRepositoryPaths) {
+                DataRepository dataRepository = new DataRepository(path);
                 if (dataRepository.isValid()) {
                     dataRepositories.add(dataRepository);
-                    logger.info("Found configured data repository: {}", name);
+                    logger.info("Found configured data repository: {}", path);
                 }
             }
         }
 
         try {
-            viewerHomePath = Paths.get(config.getConfiguration("viewerHome"));
-            if (!Files.isDirectory(viewerHomePath)) {
+            viewerHomePath = config.getConfiguration("viewerHome");
+            if (!Files.isDirectory(Paths.get(viewerHomePath))) {
                 logger.error("Path defined in <viewerHome> does not exist, exiting...");
                 throw new FatalIndexerException("Configuration error, see log for details.");
             }
@@ -83,22 +73,22 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
     }
 
     /* (non-Javadoc)
-     * @see de.intranda.digiverso.presentation.solr.model.datarepository.IDataRepositoryDistributionStrategy#selectDataRepository(java.nio.file.Path, java.lang.String, de.intranda.digiverso.presentation.solr.helper.SolrHelper)
+     * @see de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, de.intranda.digiverso.presentation.solr.helper.SolrHelper)
      */
     @Override
-    public DataRepository[] selectDataRepository(Path file, String pi, SolrHelper solrHelper) throws FatalIndexerException {
+    public DataRepository[] selectDataRepository(String pi, Path dataFile, Map<String, Path> dataFolders, SolrHelper solrHelper) throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
         // Extract PI from the file name, if not value was passed (e.g. when deleting a record)
-        if (StringUtils.isEmpty(pi) && file != null) {
-            String fileExtension = FilenameUtils.getExtension(file.getFileName().toString());
+        if (StringUtils.isEmpty(pi) && dataFile != null) {
+            String fileExtension = FilenameUtils.getExtension(dataFile.getFileName().toString());
             if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals("." + fileExtension) || "delete".equals(fileExtension) || "purge".equals(fileExtension)) {
-                pi = Utils.extractPiFromFileName(file);
+                pi = Utils.extractPiFromFileName(dataFile);
             }
         }
         if (StringUtils.isBlank(pi)) {
-            if (file != null) {
-                logger.error("Could not parse PI from '{}'", file.getFileName().toString());
+            if (dataFile != null) {
+                logger.error("Could not parse PI from '{}'", dataFile.getFileName().toString());
             }
             return ret;
         }
@@ -113,7 +103,7 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {
                 // Record is already indexed, but not in a data repository
-                ret[0] = new DataRepository(viewerHomePath, "");
+                ret[0] = new DataRepository(viewerHomePath);
                 return ret;
             }
 
@@ -123,7 +113,7 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
                     logger.info(
                             "'{}' is currently indexed in data repository '{}'. Since data repositories are disabled, it will be moved to out of the repository.",
                             pi, previousRepository);
-                    ret[0] = new DataRepository(Paths.get(Configuration.getInstance().getString("init.viewerHome")), "");
+                    ret[0] = new DataRepository(Configuration.getInstance().getString("init.viewerHome"));
                     ret[1] = repository;
                     return ret;
                 }
@@ -131,7 +121,7 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
             logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
         }
 
-        ret[0] = new DataRepository(viewerHomePath, "");
+        ret[0] = new DataRepository(viewerHomePath);
         return ret;
     }
 

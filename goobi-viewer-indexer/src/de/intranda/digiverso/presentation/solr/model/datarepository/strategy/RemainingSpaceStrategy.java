@@ -16,6 +16,7 @@
 package de.intranda.digiverso.presentation.solr.model.datarepository.strategy;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -37,20 +39,18 @@ import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 /**
- * Data repository strategy that avoids full repositories where the number of records equals <code>dataRepositoriesMaxRecords</code>.
+ * 
  */
-public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
+public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(MaxRecordNumberStrategy.class);
+    private static final Logger logger = LoggerFactory.getLogger(RemainingSpaceStrategy.class);
 
     private final List<DataRepository> dataRepositories = new ArrayList<>();
-
-    private final int dataRepositoriesMaxRecords;
 
     private final Path viewerHomePath;
 
     @SuppressWarnings("unchecked")
-    public MaxRecordNumberStrategy(Configuration config) throws FatalIndexerException {
+    public RemainingSpaceStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
         List<String> dataRepositoryPaths = config.getList("init.dataRepositories.dataRepository");
         if (dataRepositoryPaths != null) {
@@ -65,8 +65,6 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
         if (dataRepositories.isEmpty()) {
             throw new FatalIndexerException("No data repositories found, exiting...");
         }
-
-        dataRepositoriesMaxRecords = config.getInt("init.dataRepositories.maxRecords", 10000);
 
         try {
             viewerHomePath = Paths.get(config.getConfiguration("viewerHome"));
@@ -84,7 +82,7 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
      * @see de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, de.intranda.digiverso.presentation.solr.helper.SolrHelper)
      */
     @Override
-    public DataRepository[] selectDataRepository(String pi, Path dataFile, Map<String, Path> dataFolders, SolrHelper solrHelper)
+    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders, final SolrHelper solrHelper)
             throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
@@ -103,6 +101,19 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
             return ret;
         }
 
+        long recordSize = 0;
+        if (dataFile != null || dataFolders != null) {
+            try {
+                recordSize = getRecordTotalSize(dataFile, dataFolders);
+                logger.info("Total record size is {} Bytes.", recordSize);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+                throw new FatalIndexerException(e.getMessage());
+            }
+        } else {
+            logger.warn("dataFile is null, skipping record size calculation.");
+        }
+
         String previousRepository = null;
         try {
             // Look up previous repository in the index
@@ -118,35 +129,93 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
                         "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
             } else {
                 // Find previous repository
+                boolean found = false;
                 for (DataRepository repository : dataRepositories) {
                     if (previousRepository.equals(repository.getName())) {
-                        logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
-                        ret[0] = repository;
-                        return ret;
+                        found = true;
+                        if (recordSize < repository.getUsableSpace()) {
+                            logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
+                            ret[0] = repository;
+                            return ret;
+                        }
+                        logger.info(
+                                "Record is currently in repository '{}', but its space is insufficient. Record will be moved to a new repository.");
+                        ret[1] = repository;
                     }
                 }
-                logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
+                if (!found) {
+                    logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
+                }
             }
         }
 
         // Record not yet indexed; find available repository
-        try {
-            for (DataRepository repository : dataRepositories) {
-                int records = repository.getNumRecords();
-                if (records < dataRepositoriesMaxRecords) {
-                    logger.info("Repository selected for '{}': {} (currently contains {} records)", pi, repository.getName(), records);
-                    ret[0] = repository;
-                    return ret;
-                } else if (records > dataRepositoriesMaxRecords) {
-                    logger.warn("Repository '{}' contains {} records, the limit is {}, though.", repository.getName(), records,
-                            dataRepositoriesMaxRecords);
-                }
+        for (DataRepository repository : dataRepositories) {
+            if (recordSize < repository.getUsableSpace()) {
+                logger.info("Repository selected for '{}': {} ({} bytes available)", pi, repository.getName(), repository.getUsableSpace());
+                ret[0] = repository;
+                return ret;
             }
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
         }
 
         logger.error("No data repository available for indexing. Please configure additional repositories. Exiting...");
         throw new FatalIndexerException("No data repository available for indexing. Please configure additional repositories. Exiting...");
     }
+
+    /**
+     * Counts the total size of the record represented by the given <code>dataFile</code>, including all data folders.
+     * 
+     * @param dataFile
+     * @param dataFolders
+     * @return total size in bytes
+     * @throws IOException
+     */
+    long getRecordTotalSize(final Path dataFile, final Map<String, Path> dataFolders) throws IOException {
+        long ret = 0;
+
+        if (dataFile != null) {
+            ret += Files.size(dataFile);
+        } else {
+            logger.info("No data file passed, assuming an extra 1 MB.");
+            ret += 1048576;
+        }
+
+        if (dataFolders != null) {
+            // Count data folders' size
+            for (String key : dataFolders.keySet()) {
+                if (dataFolders.get(key) != null) {
+                    Path dataFolder = dataFolders.get(key);
+                    if (Files.isDirectory(dataFolder)) {
+                        long dataFolderSize = FileUtils.sizeOfDirectory(dataFolder.toFile());
+                        if (dataFolderSize > 0) {
+                            ret += dataFolderSize;
+                        } else {
+                            logger.error("Data folder '{}' has a size of {} bytes.", dataFolder.getFileName().toString());
+                        }
+                    } else {
+                        logger.error("Data folder not found: {}", dataFolder.toAbsolutePath().toString());
+                    }
+                }
+            }
+        } else {
+            // Look for data folders in hotfolder
+            logger.info("No data folders passed, scanning hotfolder...");
+            String fileNameRoot = FilenameUtils.getBaseName(dataFile.getFileName().toString());
+            Path hotfolderPath = dataFile.getParent();
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
+                for (Path dataFolder : stream) {
+                    logger.debug("Found data folder: {}", dataFolder.getFileName());
+                    long dataFolderSize = FileUtils.sizeOfDirectory(dataFolder.toFile());
+                    if (dataFolderSize > 0) {
+                        ret += dataFolderSize;
+                    } else {
+                        logger.error("Data folder '{}' has a size of {} bytes.", dataFolder.getFileName().toString());
+                    }
+                }
+            }
+        }
+
+        return ret;
+    }
+
 }

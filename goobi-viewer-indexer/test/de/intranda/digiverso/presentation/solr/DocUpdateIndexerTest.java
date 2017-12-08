@@ -71,7 +71,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         String iddoc = null;
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        DataRepository dataRepository = dataRepositoryStrategy.selectDataRepository(metsFile, PI, solrHelper)[0];
+        DataRepository dataRepository = dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, solrHelper)[0];
 
         // Index original doc and make sure all fields that will be updated already exist
         {

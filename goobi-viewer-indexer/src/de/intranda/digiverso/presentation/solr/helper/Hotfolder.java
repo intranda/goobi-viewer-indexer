@@ -74,6 +74,7 @@ import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.MaxRecordNumberStrategy;
+import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.RemainingSpaceStrategy;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.SingleRepositoryStrategy;
 
 public class Hotfolder {
@@ -177,9 +178,13 @@ public class Hotfolder {
         //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
         //        }
 
+        logger.info("Data repository strategy: {}", config.getDataRepositoryStrategy());
         switch (config.getDataRepositoryStrategy()) {
             case "MaxRecordNumberStrategy":
                 dataRepositoryStrategy = new MaxRecordNumberStrategy(config);
+                break;
+            case "RemainingSpaceStrategy":
+                dataRepositoryStrategy = new RemainingSpaceStrategy(config);
                 break;
             default:
                 dataRepositoryStrategy = new SingleRepositoryStrategy(config);
@@ -358,81 +363,82 @@ public class Hotfolder {
      */
     public boolean scan() throws FatalIndexerException {
         boolean noerror = true;
-        if (Files.isDirectory(hotfolderPath)) {
-            Path fileToReindex = reindexQueue.poll();
-            if (fileToReindex != null) {
-                resetSecondaryLog();
-                logger.info("Found file '{}' (re-index queue).", fileToReindex.getFileName());
-                checkFreeSpace();
-                Map<String, Boolean> reindexSettings = new HashMap<>();
-                reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
-                reindexSettings.put(DataRepository.PARAM_TEIWC, true);
-                reindexSettings.put(DataRepository.PARAM_ALTO, true);
-                reindexSettings.put(DataRepository.PARAM_MIX, true);
-                reindexSettings.put(DataRepository.PARAM_UGC, true);
-                noerror = handleDataFile(fileToReindex, true, reindexSettings);
-                if (swSecondaryLog != null) {
-                    checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")", swSecondaryLog
-                            .toString());
-                }
-            } else {
-                // Check for the shutdown trigger file first
-                Path shutdownFile = Paths.get(hotfolderPath.toAbsolutePath().toString(), SHUTDOWN_FILE);
-                if (currentIndexer == null && Files.exists(shutdownFile)) {
-                    logger.info("Shutdown trigger file detected, shutting down...");
-                    try {
-                        Files.delete(shutdownFile);
-                    } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                    SolrIndexerDaemon.getInstance().stop();
-                    return true;
-                }
-                logger.trace("Hotfolder: Listing files...");
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,delete,purge,docupdate,UPDATED}")) {
-                    for (Path path : stream) {
-                        // Only one file at a time right now
-                        if (currentIndexer != null) {
-                            break;
-                        }
-                        Path recordFile = path;
-                        if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
-                            // Check whether the data folders for this record have been copied completely, otherwise skip
-                            if (!isDataFolderExportDone(recordFile)) {
-                                logger.trace("Export not yet finished for '{}'", recordFile.getFileName());
-                                continue;
-                            }
-                            resetSecondaryLog();
-                            logger.info("Found file '{}' (hotfolder).", recordFile.getFileName());
-                            if (MetsIndexer.noTimestampUpdate) {
-                                logger.warn("WARNING: No update mode - DATEUPDATED timestamps will not be updated.");
-                            }
-                            checkFreeSpace();
-                            Map<String, Boolean> reindexSettings = new HashMap<>();
-                            reindexSettings.put(DataRepository.PARAM_FULLTEXT, false);
-                            reindexSettings.put(DataRepository.PARAM_TEIWC, false);
-                            reindexSettings.put(DataRepository.PARAM_ALTO, false);
-                            reindexSettings.put(DataRepository.PARAM_MIX, false);
-                            reindexSettings.put(DataRepository.PARAM_UGC, false);
-                            noerror = handleDataFile(recordFile, false, reindexSettings);
-                            // logger.error("for the lulz");
-                            checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")",
-                                    swSecondaryLog.toString());
-                        } else {
-                            logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
-                            Files.delete(recordFile);
-                        }
-                        break; // always break after attempting to index a file, so that the loop restarts
-                    }
+        if (!Files.isDirectory(hotfolderPath)) {
+            noerror = false;
+            logger.error("Hotfolder not found!");
+            return noerror;
+
+        }
+        Path fileToReindex = reindexQueue.poll();
+        if (fileToReindex != null) {
+            resetSecondaryLog();
+            logger.info("Found file '{}' (re-index queue).", fileToReindex.getFileName());
+            checkFreeSpace();
+            Map<String, Boolean> reindexSettings = new HashMap<>();
+            reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
+            reindexSettings.put(DataRepository.PARAM_TEIWC, true);
+            reindexSettings.put(DataRepository.PARAM_ALTO, true);
+            reindexSettings.put(DataRepository.PARAM_MIX, true);
+            reindexSettings.put(DataRepository.PARAM_UGC, true);
+            noerror = handleDataFile(fileToReindex, true, reindexSettings);
+            if (swSecondaryLog != null) {
+                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")", swSecondaryLog
+                        .toString());
+            }
+        } else {
+            // Check for the shutdown trigger file first
+            Path shutdownFile = Paths.get(hotfolderPath.toAbsolutePath().toString(), SHUTDOWN_FILE);
+            if (currentIndexer == null && Files.exists(shutdownFile)) {
+                logger.info("Shutdown trigger file detected, shutting down...");
+                try {
+                    Files.delete(shutdownFile);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
                 }
+                SolrIndexerDaemon.getInstance().stop();
+                return true;
             }
-
-        } else {
-            noerror = false;
-            logger.error("Hotfolder not found!");
+            logger.trace("Hotfolder: Listing files...");
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,delete,purge,docupdate,UPDATED}")) {
+                for (Path path : stream) {
+                    // Only one file at a time right now
+                    if (currentIndexer != null) {
+                        break;
+                    }
+                    Path recordFile = path;
+                    if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
+                        // Check whether the data folders for this record have been copied completely, otherwise skip
+                        if (!isDataFolderExportDone(recordFile)) {
+                            logger.trace("Export not yet finished for '{}'", recordFile.getFileName());
+                            continue;
+                        }
+                        resetSecondaryLog();
+                        logger.info("Found file '{}' (hotfolder).", recordFile.getFileName());
+                        if (MetsIndexer.noTimestampUpdate) {
+                            logger.warn("WARNING: No update mode - DATEUPDATED timestamps will not be updated.");
+                        }
+                        checkFreeSpace();
+                        Map<String, Boolean> reindexSettings = new HashMap<>();
+                        reindexSettings.put(DataRepository.PARAM_FULLTEXT, false);
+                        reindexSettings.put(DataRepository.PARAM_TEIWC, false);
+                        reindexSettings.put(DataRepository.PARAM_ALTO, false);
+                        reindexSettings.put(DataRepository.PARAM_MIX, false);
+                        reindexSettings.put(DataRepository.PARAM_UGC, false);
+                        noerror = handleDataFile(recordFile, false, reindexSettings);
+                        // logger.error("for the lulz");
+                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")", swSecondaryLog
+                                .toString());
+                    } else {
+                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
+                        Files.delete(recordFile);
+                    }
+                    break; // always break after attempting to index a file, so that the loop restarts
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
         }
+
         return noerror;
     }
 
@@ -442,7 +448,7 @@ public class Hotfolder {
      * @throws FatalIndexerException
      */
     private void checkFreeSpace() throws FatalIndexerException {
-        // TODO
+        // TODO alternate check if RemainingSpaceStrategy is selected
         int freeSpace = (int) (hotfolderPath.toFile().getFreeSpace() / 1048576);
         logger.debug("Available storage space: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
@@ -503,15 +509,15 @@ public class Hotfolder {
 
             } else if (filename.endsWith(".delete")) {
                 // DELETE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, solrHelper);
                 removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], true);
             } else if (filename.endsWith(".purge")) {
                 // PURGE (delete with no "deleted" doc)
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, solrHelper);
                 removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], false);
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(dataFile, null, solrHelper);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, solrHelper);
                 MetsIndexer.superupdate(dataFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
@@ -1426,13 +1432,6 @@ public class Hotfolder {
         return addVolumeCollectionsToAnchor;
     }
 
-    //    /**
-    //     * @return the repositoriesHomePath
-    //     */
-    //    public Path getDataRepositoriesHomePath() {
-    //        return dataRepositoriesHomePath;
-    //    }
-
     /**
      * @return the dataRepositoryStrategy
      */
@@ -1463,6 +1462,13 @@ public class Hotfolder {
         return success;
     }
 
+    /**
+     * @return the solrHelper
+     */
+    public SolrHelper getSolrHelper() {
+        return solrHelper;
+    }
+
     public static FilenameFilter getDataFolderFilter(final String prefix) {
         FilenameFilter filter = new FilenameFilter() {
             @Override
@@ -1474,21 +1480,4 @@ public class Hotfolder {
         return filter;
     }
 
-    //    public DataRepository getDataRepository() {
-    //        if (dummyRepository != null) {
-    //            return dummyRepository;
-    //        }
-    //        return selectedDataRepository;
-    //    }
-    //
-    //    public void setDummyRepository(DataRepository dummyRepository) {
-    //        this.dummyRepository = dummyRepository;
-    //    }
-
-    /**
-     * @return the solrHelper
-     */
-    public SolrHelper getSolrHelper() {
-        return solrHelper;
-    }
 }

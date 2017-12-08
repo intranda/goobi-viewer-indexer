@@ -11,21 +11,19 @@
 
 
 
-		<!-- Ordnerkonfiguration -->
+		<!-- Folder configuration -->
 		<hotFolder>build/viewer/hotfolder/</hotFolder>
 		<tempFolder>build/indexer/temp/</tempFolder>
 		<viewerHome>build/viewer/</viewerHome>
 		<dataRepositories>
-			<!-- root folder for data repository folders -->
-			<dataRepositoriesHome>build/viewer/data/</dataRepositoriesHome>
 			<!-- max number of records (METS+LIDO) per data repository (default is 
 				10000) -->
 			<maxRecords>10000</maxRecords>
 			<!-- Data repository folders to be used (a new folder structure will be 
 				created for each dataRepository element unter dataRepositoriesHome -->
-			<dataRepository>1</dataRepository>
-			<dataRepository>2</dataRepository>
-			<dataRepository>3</dataRepository>
+			<dataRepository>build/viewer/data/1</dataRepository>
+			<dataRepository>build/viewer/data/2</dataRepository>
+			<dataRepository>build/viewer/data/3</dataRepository>
 		</dataRepositories>
 
 		<!-- Data subfolder names (path is relative to either a data repository 

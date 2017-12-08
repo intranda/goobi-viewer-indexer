@@ -59,22 +59,21 @@ public class DataRepository {
     //    public static int dataRepositoriesMaxRecords = 10000;
 
     private boolean valid = false;
-    private String name;
+    private String path;
     private Path rootDir;
     private final Map<String, Path> dirMap = new HashMap<>();
 
     /**
      * 
-     * @param repositoriesRootDir
-     * @param name
+     * @param path
      * @throws FatalIndexerException
      * @should create dummy repository correctly
      * @should create real repository correctly
      */
-    public DataRepository(Path repositoriesRootDir, String name) throws FatalIndexerException {
-        this.name = name;
+    public DataRepository(String path) throws FatalIndexerException {
+        this.path = path;
         //        rootDir = new File(repositoriesRootDir, name);
-        rootDir = Paths.get(repositoriesRootDir.toAbsolutePath().toString(), name);
+        rootDir = Paths.get(path);
         if (Files.exists(rootDir)) {
             if (Files.isRegularFile(rootDir)) {
                 logger.error("Data repository '{}' is defined but is a file, not a directory. This repository will not be used.", rootDir
@@ -190,11 +189,25 @@ public class DataRepository {
         Path metsDir = getDir(PARAM_INDEXED_METS);
         Path lidoDir = getDir(PARAM_INDEXED_LIDO);
         int metsRecords = countFiles(metsDir);
-        logger.info("Data repository '{}' contains {} METS records.", name, metsRecords);
+        logger.info("Data repository '{}' contains {} METS records.", path, metsRecords);
         int lidoRecords = countFiles(lidoDir);
-        logger.info("Data repository '{}' contains {} LIDO records.", name, lidoRecords);
+        logger.info("Data repository '{}' contains {} LIDO records.", path, lidoRecords);
 
         return metsRecords + lidoRecords;
+    }
+
+    /**
+     * 
+     * @return Remaining space in bytes
+     */
+    public long getUsableSpace() {
+        try {
+            return Files.getFileStore(rootDir.toRealPath()).getUsableSpace();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return 0;
     }
 
     /**
@@ -440,7 +453,7 @@ public class DataRepository {
      * @return the name
      */
     public String getName() {
-        return name;
+        return path;
     }
 
     /**

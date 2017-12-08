@@ -11,26 +11,23 @@
 		<solrUrl>http://localhost:8081/solr/collection2</solrUrl>
 		<viewerUrl>http://localhost:8080/viewer</viewerUrl>
 
-		<!-- Ordnerkonfiguration -->
+		<!-- Folder configuration -->
 		<hotFolder>C:/digiverso/viewer/hotfolder/</hotFolder>
 		<tempFolder>C:/digiverso/indexer/temp/</tempFolder>
 		<viewerHome>C:/digiverso/viewer/</viewerHome>
 		<dataRepositories>	
 			<!-- distributionStrategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
-			<strategy>SingleRepositoryStrategy</strategy>
-			
-            <!-- root folder for data repository folders -->
-            <dataRepositoriesHome>C:/digiverso/viewer/data/</dataRepositoriesHome>
-			
+			<strategy>RemainingSpaceStrategy</strategy>
+
 			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 
 				10000) -->
 			<maxRecords>10000</maxRecords>
 			
-			<!-- Data repository folders to be used (a new folder structure will be 
-				created for each dataRepository element unter dataRepositoriesHome -->
-			<dataRepository>1</dataRepository>
-			<dataRepository>2</dataRepository>
-			<dataRepository>3</dataRepository>
+			<!-- Data repository folders (absolute paths to be used (a new folder structure will be 
+				created for each dataRepository) -->
+			<dataRepository>C:/digiverso/viewer/data/1</dataRepository>
+			<dataRepository>C:/digiverso/viewer/data/2</dataRepository>
+			<dataRepository>C:/digiverso/viewer/data/3</dataRepository>
 		</dataRepositories>
 
 		<!-- Data subfolder names (path is relative to either a data repository 
