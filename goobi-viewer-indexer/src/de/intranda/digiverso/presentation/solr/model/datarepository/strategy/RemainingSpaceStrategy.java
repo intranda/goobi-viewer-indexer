@@ -21,8 +21,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -114,6 +117,15 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
             logger.warn("dataFile is null, skipping record size calculation.");
         }
 
+        // Collect repositories' available space
+        SortedMap<Long, DataRepository> repositorySpaceMap = new TreeMap<>();
+        for (DataRepository repository : dataRepositories) {
+            long size = repository.getUsableSpace();
+            if (size > 0) {
+                repositorySpaceMap.put(size, repository);
+            }
+        }
+
         String previousRepository = null;
         try {
             // Look up previous repository in the index
@@ -150,8 +162,10 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
         }
 
         // Record not yet indexed; find available repository
-        for (DataRepository repository : dataRepositories) {
-            if (recordSize < repository.getUsableSpace()) {
+        for (Iterator<Long> iterator = repositorySpaceMap.keySet().iterator(); iterator.hasNext();) {
+            long storageSize = iterator.next();
+            if (recordSize < storageSize) {
+                DataRepository repository = repositorySpaceMap.get(storageSize);
                 logger.info("Repository selected for '{}': {} ({} bytes available)", pi, repository.getName(), repository.getUsableSpace());
                 ret[0] = repository;
                 return ret;
