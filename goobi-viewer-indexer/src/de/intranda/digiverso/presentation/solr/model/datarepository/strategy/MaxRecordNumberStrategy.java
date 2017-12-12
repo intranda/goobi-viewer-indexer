@@ -16,9 +16,7 @@
 package de.intranda.digiverso.presentation.solr.model.datarepository.strategy;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +45,6 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
 
     private final int dataRepositoriesMaxRecords;
 
-    private final Path viewerHomePath;
-
     @SuppressWarnings("unchecked")
     public MaxRecordNumberStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
@@ -67,17 +63,6 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
         }
 
         dataRepositoriesMaxRecords = config.getInt("init.dataRepositories.maxRecords", 10000);
-
-        try {
-            viewerHomePath = Paths.get(config.getConfiguration("viewerHome"));
-            if (!Files.isDirectory(viewerHomePath)) {
-                logger.error("Path defined in <viewerHome> does not exist, exiting...");
-                throw new FatalIndexerException("Configuration error, see log for details.");
-            }
-        } catch (Exception e) {
-            logger.error("<viewerHome> not defined, exiting...");
-            throw new FatalIndexerException("Configuration error, see log for details.");
-        }
     }
 
     /* (non-Javadoc)
@@ -113,13 +98,13 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {
                 // Record is already indexed, but not in a data repository
-                ret[1] = new DataRepository(Configuration.getInstance().getString("init.viewerHome"));
+                ret[1] = new DataRepository("");
                 logger.info(
                         "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
             } else {
                 // Find previous repository
                 for (DataRepository repository : dataRepositories) {
-                    if (previousRepository.equals(repository.getName())) {
+                    if (previousRepository.equals(repository.getPath())) {
                         logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
                         ret[0] = repository;
                         return ret;
@@ -134,11 +119,11 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
             for (DataRepository repository : dataRepositories) {
                 int records = repository.getNumRecords();
                 if (records < dataRepositoriesMaxRecords) {
-                    logger.info("Repository selected for '{}': {} (currently contains {} records)", pi, repository.getName(), records);
+                    logger.info("Repository selected for '{}': {} (currently contains {} records)", pi, repository.getPath(), records);
                     ret[0] = repository;
                     return ret;
                 } else if (records > dataRepositoriesMaxRecords) {
-                    logger.warn("Repository '{}' contains {} records, the limit is {}, though.", repository.getName(), records,
+                    logger.warn("Repository '{}' contains {} records, the limit is {}, though.", repository.getPath(), records,
                             dataRepositoriesMaxRecords);
                 }
             }

@@ -64,16 +64,25 @@ public class DataRepository {
     private final Map<String, Path> dirMap = new HashMap<>();
 
     /**
+     * Constructor for unit tests.
+     */
+    public DataRepository(final String path, final boolean dummy) {
+        this.path = path;
+    }
+
+    /**
      * 
-     * @param path
+     * @param path Absolute path to the repository; empty string means the default folder structure in init.viewerHome will be used
+     * @param createFolders If true, the data subfolders will be automatically created
      * @throws FatalIndexerException
      * @should create dummy repository correctly
      * @should create real repository correctly
+     * @should set rootDir to viewerHome path if empty string was given
      */
-    public DataRepository(String path) throws FatalIndexerException {
+    public DataRepository(final String path) throws FatalIndexerException {
         this.path = path;
-        //        rootDir = new File(repositoriesRootDir, name);
-        rootDir = Paths.get(path);
+        rootDir = "".equals(path) ? Paths.get(Configuration.getInstance().getViewerHome()) : Paths.get(path);
+
         if (Files.exists(rootDir)) {
             if (Files.isRegularFile(rootDir)) {
                 logger.error("Data repository '{}' is defined but is a file, not a directory. This repository will not be used.", rootDir
@@ -217,6 +226,16 @@ public class DataRepository {
      * @param pi
      */
     public void moveDataFoldersToRepository(DataRepository toRepository, String pi) {
+        if (toRepository == null) {
+            throw new IllegalArgumentException("toRepository may not be null");
+        }
+
+        logger.info("Moving data from '{}' to '{}'...", path, toRepository.getPath());
+        if (toRepository.equals(this)) {
+            logger.error("Source and destination repositories are the same, cannot move data.");
+            return;
+        }
+
         moveDataFolderToRepository(toRepository, pi, PARAM_MEDIA);
         moveDataFolderToRepository(toRepository, pi, PARAM_ALTO);
         moveDataFolderToRepository(toRepository, pi, PARAM_ALTOCROWD);
@@ -277,6 +296,8 @@ public class DataRepository {
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
+        } else {
+            logger.warn("{} does not exist.", oldDataFolder.toAbsolutePath().toString());
         }
     }
 
@@ -452,7 +473,7 @@ public class DataRepository {
     /**
      * @return the name
      */
-    public String getName() {
+    public String getPath() {
         return path;
     }
 

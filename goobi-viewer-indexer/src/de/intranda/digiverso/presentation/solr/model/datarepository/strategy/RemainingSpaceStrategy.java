@@ -117,7 +117,6 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
             logger.warn("dataFile is null, skipping record size calculation.");
         }
 
-        // Collect repositories' available space
         SortedMap<Long, DataRepository> repositorySpaceMap = new TreeMap<>();
         for (DataRepository repository : dataRepositories) {
             long size = repository.getUsableSpace();
@@ -136,14 +135,14 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {
                 // Record is already indexed, but not in a data repository
-                ret[1] = new DataRepository(Configuration.getInstance().getString("init.viewerHome"));
+                ret[1] = new DataRepository("");
                 logger.info(
                         "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
             } else {
                 // Find previous repository
                 boolean found = false;
                 for (DataRepository repository : dataRepositories) {
-                    if (previousRepository.equals(repository.getName())) {
+                    if (previousRepository.equals(repository.getPath())) {
                         found = true;
                         if (recordSize < repository.getUsableSpace()) {
                             logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
@@ -162,18 +161,38 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
         }
 
         // Record not yet indexed; find available repository
-        for (Iterator<Long> iterator = repositorySpaceMap.keySet().iterator(); iterator.hasNext();) {
-            long storageSize = iterator.next();
-            if (recordSize < storageSize) {
-                DataRepository repository = repositorySpaceMap.get(storageSize);
-                logger.info("Repository selected for '{}': {} ({} bytes available)", pi, repository.getName(), repository.getUsableSpace());
-                ret[0] = repository;
-                return ret;
-            }
+        DataRepository repository = selectRepository(repositorySpaceMap, recordSize);
+        if (repository != null) {
+            logger.info("Repository selected for '{}': {} ({} bytes available).", pi, repository.getPath(), repository.getUsableSpace());
+            ret[0] = repository;
+            return ret;
         }
 
         logger.error("No data repository available for indexing. Please configure additional repositories. Exiting...");
         throw new FatalIndexerException("No data repository available for indexing. Please configure additional repositories. Exiting...");
+    }
+
+    /**
+     * 
+     * @param repositorySpaceMap
+     * @param recordSize
+     * @return
+     * @should select repository with the smallest sufficient space
+     * @should return null if recordSize is larger than any available repository space
+     */
+    static DataRepository selectRepository(SortedMap<Long, DataRepository> repositorySpaceMap, long recordSize) {
+        if (repositorySpaceMap == null) {
+            throw new IllegalArgumentException("repositorySpaceMap may not be null");
+        }
+
+        for (Iterator<Long> iterator = repositorySpaceMap.keySet().iterator(); iterator.hasNext();) {
+            long storageSize = iterator.next();
+            if (recordSize < storageSize) {
+                return repositorySpaceMap.get(storageSize);
+            }
+        }
+
+        return null;
     }
 
     /**

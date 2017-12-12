@@ -189,6 +189,15 @@ public final class Configuration {
     /**
      * 
      * @return
+     * @should return correct value
+     */
+    public String getViewerHome() {
+        return getString("init.viewerHome");
+    }
+
+    /**
+     * 
+     * @return
      */
     public String getDataRepositoryStrategy() {
         return getString("init.dataRepositories.strategy", "SingleRepositoryStrategy");

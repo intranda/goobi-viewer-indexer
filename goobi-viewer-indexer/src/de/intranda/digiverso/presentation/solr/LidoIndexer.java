@@ -142,9 +142,12 @@ public class LidoIndexer extends AbstractIndexer {
                     logger.debug("PI: {}", indexObj.getPi());
 
                     // Determine the data repository to use
-                    dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder.getSolrHelper())[0];
-                    if (StringUtils.isNotEmpty(dataRepository.getName())) {
-                        indexObj.setDataRepository(dataRepository.getName());
+                    DataRepository[] repositories = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder
+                            .getSolrHelper());
+                    dataRepository = repositories[0];
+                    previousDataRepository = repositories[1];
+                    if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+                        indexObj.setDataRepository(dataRepository.getPath());
                     }
 
                     ret[0] = indexObj.getPi();

@@ -30,9 +30,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
-import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
+import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 
 public class DataRepositoryTest {
 
@@ -116,6 +115,17 @@ public class DataRepositoryTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_UGC).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MIX).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toFile().isDirectory());
+    }
+
+    /**
+     * @see DataRepository#DataRepository(String)
+     * @verifies set rootDir to viewerHome path if empty string was given
+     */
+    @Test
+    public void DataRepository_shouldSetRootDirToViewerHomePathIfEmptyStringWasGiven() throws Exception {
+        DataRepository dataRepository = new DataRepository("");
+        Assert.assertEquals("", dataRepository.getPath());
+        Assert.assertEquals(Configuration.getInstance().getViewerHome(), dataRepository.getRootDir().toAbsolutePath().toString());
     }
 
     /**

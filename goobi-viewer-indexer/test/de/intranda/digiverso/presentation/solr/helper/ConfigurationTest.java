@@ -202,4 +202,12 @@ public class ConfigurationTest {
         Assert.assertNotNull(Configuration.getInstance().getNamespaces().get("intranda"));
     }
 
+    /**
+     * @see Configuration#getViewerHome()
+     * @verifies return correct value
+     */
+    @Test
+    public void getViewerHome_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals("build/viewer/", Configuration.getInstance().getViewerHome());
+    }
 }

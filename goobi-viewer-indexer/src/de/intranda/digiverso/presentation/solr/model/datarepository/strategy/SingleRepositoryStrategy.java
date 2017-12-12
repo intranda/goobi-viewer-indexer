@@ -15,9 +15,7 @@
  */
 package de.intranda.digiverso.presentation.solr.model.datarepository.strategy;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +42,6 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
 
     private final List<DataRepository> dataRepositories = new ArrayList<>();
 
-    private final String viewerHomePath;
-
     @SuppressWarnings("unchecked")
     public SingleRepositoryStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
@@ -59,24 +55,14 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
                 }
             }
         }
-
-        try {
-            viewerHomePath = config.getConfiguration("viewerHome");
-            if (!Files.isDirectory(Paths.get(viewerHomePath))) {
-                logger.error("Path defined in <viewerHome> does not exist, exiting...");
-                throw new FatalIndexerException("Configuration error, see log for details.");
-            }
-        } catch (Exception e) {
-            logger.error("<viewerHome> not defined, exiting...");
-            throw new FatalIndexerException("Configuration error, see log for details.");
-        }
     }
 
     /* (non-Javadoc)
      * @see de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, de.intranda.digiverso.presentation.solr.helper.SolrHelper)
      */
     @Override
-    public DataRepository[] selectDataRepository(String pi, Path dataFile, Map<String, Path> dataFolders, SolrHelper solrHelper) throws FatalIndexerException {
+    public DataRepository[] selectDataRepository(String pi, Path dataFile, Map<String, Path> dataFolders, SolrHelper solrHelper)
+            throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
         // Extract PI from the file name, if not value was passed (e.g. when deleting a record)
@@ -103,17 +89,17 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {
                 // Record is already indexed, but not in a data repository
-                ret[0] = new DataRepository(viewerHomePath);
+                ret[0] = new DataRepository("");
                 return ret;
             }
 
             // Find previous repository
             for (DataRepository repository : dataRepositories) {
-                if (previousRepository.equals(repository.getName())) {
+                if (previousRepository.equals(repository.getPath())) {
                     logger.info(
-                            "'{}' is currently indexed in data repository '{}'. Since data repositories are disabled, it will be moved to out of the repository.",
+                            "'{}' is currently indexed in data repository '{}'. Since 'SingleRepositoryStrategy' is configured, the record will be moved to out of the repository.",
                             pi, previousRepository);
-                    ret[0] = new DataRepository(Configuration.getInstance().getString("init.viewerHome"));
+                    ret[0] = new DataRepository("");
                     ret[1] = repository;
                     return ret;
                 }
@@ -121,7 +107,7 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
             logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
         }
 
-        ret[0] = new DataRepository(viewerHomePath);
+        ret[0] = new DataRepository("");
         return ret;
     }
 

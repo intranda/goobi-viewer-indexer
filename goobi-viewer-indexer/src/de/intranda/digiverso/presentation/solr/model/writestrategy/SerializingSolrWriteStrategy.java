@@ -224,8 +224,8 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                 // Add the child doc's DEFAULT values to the SUPERDEFAULT value of the root doc
                 if (aggregateRecords) {
                     if (doc.containsKey(SolrConstants.DEFAULT)) {
-                    rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
-                }
+                        rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
+                    }
                     //                    if (doc.containsKey(SolrConstants.NORMDATATERMS)) {
                     //                        rootDoc.addField(SolrConstants.NORMDATATERMS, doc.getFieldValue(SolrConstants.NORMDATATERMS));
                     //                    }
@@ -434,7 +434,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     private static void copyFailedFile(Path file) throws FatalIndexerException {
         try {
-            Files.copy(file, Paths.get(Configuration.getInstance().getConfiguration("viewerHome"), file.getFileName().toString()),
+            Files.copy(file, Paths.get(Configuration.getInstance().getViewerHome(), file.getFileName().toString()),
                     StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

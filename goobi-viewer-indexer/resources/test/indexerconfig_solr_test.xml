@@ -16,6 +16,9 @@
 		<tempFolder>build/indexer/temp/</tempFolder>
 		<viewerHome>build/viewer/</viewerHome>
 		<dataRepositories>
+		    <!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
+            <strategy>SingleRepositoryStrategy</strategy>
+            
 			<!-- max number of records (METS+LIDO) per data repository (default is 
 				10000) -->
 			<maxRecords>10000</maxRecords>

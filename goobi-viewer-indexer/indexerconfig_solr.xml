@@ -16,8 +16,8 @@
 		<tempFolder>C:/digiverso/indexer/temp/</tempFolder>
 		<viewerHome>C:/digiverso/viewer/</viewerHome>
 		<dataRepositories>	
-			<!-- distributionStrategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
-			<strategy>RemainingSpaceStrategy</strategy>
+			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
+			<strategy>SingleRepositoryStrategy</strategy>
 
 			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 
 				10000) -->

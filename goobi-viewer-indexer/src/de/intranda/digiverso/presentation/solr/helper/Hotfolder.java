@@ -147,6 +147,17 @@ public class Hotfolder {
         }
 
         try {
+            String viewerHomePath = config.getViewerHome();
+            if (!Files.isDirectory(Paths.get(viewerHomePath))) {
+                logger.error("Path defined in <viewerHome> does not exist, exiting...");
+                throw new FatalIndexerException("Configuration error, see log for details.");
+            }
+        } catch (Exception e) {
+            logger.error("<viewerHome> not defined, exiting...");
+            throw new FatalIndexerException("Configuration error, see log for details.");
+        }
+
+        try {
             tempFolderPath = Paths.get(config.getConfiguration("tempFolder"));
             if (!Utils.checkAndCreateDirectory(tempFolderPath)) {
                 logger.error("Could not create folder '{}', exiting...", tempFolderPath);
@@ -180,6 +191,9 @@ public class Hotfolder {
 
         logger.info("Data repository strategy: {}", config.getDataRepositoryStrategy());
         switch (config.getDataRepositoryStrategy()) {
+            case "SingleRepositoryStrategy":
+                dataRepositoryStrategy = new SingleRepositoryStrategy(config);
+                break;
             case "MaxRecordNumberStrategy":
                 dataRepositoryStrategy = new MaxRecordNumberStrategy(config);
                 break;
@@ -187,6 +201,7 @@ public class Hotfolder {
                 dataRepositoryStrategy = new RemainingSpaceStrategy(config);
                 break;
             default:
+                logger.error("Unknown data repository strategy: '{}', using SingleRepositoryStrategy instead.");
                 dataRepositoryStrategy = new SingleRepositoryStrategy(config);
         }
 
