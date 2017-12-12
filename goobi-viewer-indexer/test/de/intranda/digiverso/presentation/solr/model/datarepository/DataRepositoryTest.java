@@ -125,7 +125,7 @@ public class DataRepositoryTest {
     public void DataRepository_shouldSetRootDirToViewerHomePathIfEmptyStringWasGiven() throws Exception {
         DataRepository dataRepository = new DataRepository("");
         Assert.assertEquals("", dataRepository.getPath());
-        Assert.assertEquals(Configuration.getInstance().getViewerHome(), dataRepository.getRootDir().toAbsolutePath().toString());
+        Assert.assertEquals(Paths.get(Configuration.getInstance().getViewerHome()), dataRepository.getRootDir());
     }
 
     /**
