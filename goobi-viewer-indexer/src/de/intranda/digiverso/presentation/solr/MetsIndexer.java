@@ -1769,6 +1769,7 @@ public class MetsIndexer extends AbstractIndexer {
                 .append(" AND ").append(SolrConstants.ISWORK).append(":true").toString(), null);
         if (hits.isEmpty()) {
             logger.debug("No volume METS files found for this anchor.");
+            return;
         }
         for (SolrDocument doc : hits) {
             // Do not use PI here, as older documents might not have that field, use PPN instead
@@ -1785,9 +1786,7 @@ public class MetsIndexer extends AbstractIndexer {
             if (Files.exists(indexedMets)) {
                 hotfolder.getReindexQueue().add(indexedMets);
                 MetsIndexer.reindexedChildrenFileList.add(indexedMets);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Added '" + pi + "' to reindexedChildrenPiList.");
-                }
+                    logger.debug("Added '{}' to reindexedChildrenPiList.", pi);
             }
         }
     }
@@ -1809,48 +1808,50 @@ public class MetsIndexer extends AbstractIndexer {
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
         SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
-        if (hits != null && hits.getNumFound() > 0) {
-            logger.debug("This file has already been indexed, initiating an UPDATE instead...");
-            indexObj.setUpdate(true);
-            SolrDocument doc = hits.get(0);
+        if (hits == null || hits.getNumFound() == 0) {
+            return;
+        }
+        
+        logger.debug("This file has already been indexed, initiating an UPDATE instead...");
+        indexObj.setUpdate(true);
+        SolrDocument doc = hits.get(0);
+        // Set creation timestamp, if exists (should never be updated)
+        Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
+        if (dateCreated != null) {
             // Set creation timestamp, if exists (should never be updated)
-            Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
-            if (dateCreated != null) {
-                // Set creation timestamp, if exists (should never be updated)
-                indexObj.setDateCreated((Long) dateCreated);
+            indexObj.setDateCreated((Long) dateCreated);
+        }
+        // Set update timestamp
+        Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
+        if (dateUpdatedValues != null) {
+            for (Object date : dateUpdatedValues) {
+                indexObj.getDateUpdated().add((Long) date);
             }
-            // Set update timestamp
-            Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
-            if (dateUpdatedValues != null) {
-                for (Object date : dateUpdatedValues) {
-                    indexObj.getDateUpdated().add((Long) date);
-                }
+        }
+        // Set previous representation thumbnail, if available
+        Object thumbnail = doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT);
+        if (thumbnail != null) {
+            indexObj.setThumbnailRepresent((String) thumbnail);
+        }
+        if (isAnchor()) {
+            // Keep old IDDOC
+            indexObj.setIddoc(Long.valueOf(doc.getFieldValue(SolrConstants.IDDOC).toString()));
+            // Delete old doc
+            hotfolder.getSolrHelper().deleteDocument(String.valueOf(indexObj.getIddoc()));
+            // Delete secondary docs (aggregated metadata, events)
+            List<String> iddocsToDelete = new ArrayList<>();
+            hits = hotfolder.getSolrHelper().search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(
+                    SolrConstants.IDDOC));
+            for (SolrDocument doc2 : hits) {
+                iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
-            // Set previous representation thumbnail, if available
-            Object thumbnail = doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT);
-            if (thumbnail != null) {
-                indexObj.setThumbnailRepresent((String) thumbnail);
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
+                hotfolder.getSolrHelper().deleteDocuments(new ArrayList<>(iddocsToDelete));
             }
-            if (isAnchor()) {
-                // Keep old IDDOC
-                indexObj.setIddoc(Long.valueOf(doc.getFieldValue(SolrConstants.IDDOC).toString()));
-                // Delete old doc
-                hotfolder.getSolrHelper().deleteDocument(String.valueOf(indexObj.getIddoc()));
-                // Delete secondary docs (aggregated metadata, events)
-                List<String> iddocsToDelete = new ArrayList<>();
-                hits = hotfolder.getSolrHelper().search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(
-                        SolrConstants.IDDOC));
-                for (SolrDocument doc2 : hits) {
-                    iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
-                }
-                if (!iddocsToDelete.isEmpty()) {
-                    logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
-                    hotfolder.getSolrHelper().deleteDocuments(new ArrayList<>(iddocsToDelete));
-                }
-            } else {
-                // Recursively delete all children, if not an anchor
-                deleteWithPI(pi, false, hotfolder.getSolrHelper());
-            }
+        } else {
+            // Recursively delete all children, if not an anchor
+            deleteWithPI(pi, false, hotfolder.getSolrHelper());
         }
     }
 

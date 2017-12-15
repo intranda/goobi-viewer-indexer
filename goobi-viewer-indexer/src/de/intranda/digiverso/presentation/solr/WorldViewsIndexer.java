@@ -331,12 +331,13 @@ public class WorldViewsIndexer extends AbstractIndexer {
             }
             // LOGID
             indexObj.setLogId("LOG_0000");
-            // Collections
+            // Collections / access conditions
             {
                 List<String> collections = xp.evaluateToStringList("worldviews//collection", null);
                 if (collections != null && !collections.isEmpty()) {
                     for (String collection : collections) {
                         indexObj.addToLucene(SolrConstants.DC, collection);
+                        indexObj.addToLucene(SolrConstants.ACCESSCONDITION, collection);
                     }
                 }
             }
