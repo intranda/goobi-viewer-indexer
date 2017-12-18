@@ -1412,7 +1412,8 @@ public class MetsIndexer extends AbstractIndexer {
             }
 
             // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
-            if (!altoWritten && !foundCrowdsourcingData && altoURL != null) {
+            if (!altoWritten && !foundCrowdsourcingData && altoURL != null && !altoURL.startsWith(Configuration.getInstance().getString(
+                    "init.viewerUrl", "missing?"))) {
                 try {
                     logger.debug("Downloading ALTO from {}", altoURL);
                     String alto = Utils.callUrl(altoURL);
@@ -1786,7 +1787,7 @@ public class MetsIndexer extends AbstractIndexer {
             if (Files.exists(indexedMets)) {
                 hotfolder.getReindexQueue().add(indexedMets);
                 MetsIndexer.reindexedChildrenFileList.add(indexedMets);
-                    logger.debug("Added '{}' to reindexedChildrenPiList.", pi);
+                logger.debug("Added '{}' to reindexedChildrenPiList.", pi);
             }
         }
     }
@@ -1811,7 +1812,7 @@ public class MetsIndexer extends AbstractIndexer {
         if (hits == null || hits.getNumFound() == 0) {
             return;
         }
-        
+
         logger.debug("This file has already been indexed, initiating an UPDATE instead...");
         indexObj.setUpdate(true);
         SolrDocument doc = hits.get(0);
