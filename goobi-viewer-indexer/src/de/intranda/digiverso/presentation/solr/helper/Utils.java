@@ -219,7 +219,7 @@ public class Utils {
      * 
      * @param pi
      * @return
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
     public static String removeRecordImagesFromCache(String pi) throws FatalIndexerException {
         String viewerUrl = Configuration.getInstance().getConfiguration("viewerUrl");
@@ -279,9 +279,11 @@ public class Utils {
      * @should build document correctly
      */
     public static Document getDocumentFromString(String string, String encoding) throws JDOMException, IOException {
+        if (string == null) {
+            throw new IllegalArgumentException("string may not be null");
+        }
         if (encoding == null) {
             encoding = "UTF-8";
-            ;
         }
 
         byte[] byteArray = null;
@@ -339,7 +341,6 @@ public class Utils {
 
         return path;
     }
-    
 
     /**
      * 

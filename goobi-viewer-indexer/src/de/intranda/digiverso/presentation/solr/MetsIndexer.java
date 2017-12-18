@@ -1417,37 +1417,40 @@ public class MetsIndexer extends AbstractIndexer {
                 try {
                     logger.debug("Downloading ALTO from {}", altoURL);
                     String alto = Utils.callUrl(altoURL);
-                    Document altoDoc = Utils.getDocumentFromString(alto, null);
-                    altoData = TextHelper.readAltoDoc(altoDoc, altoURL);
-                    if (altoData != null) {
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-                            if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + XML_EXTENSION;
-                                doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent()
-                                        .getFileName().toString() + '/' + pi + '/' + fileName);
-                                // Write ALTO file
-                                File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
-                                FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), "UTF-8");
-                                altoWritten = true;
-                                logger.debug("Added ALTO from downloaded ALTO for page {}", order);
-                            } else {
-                                logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
+                    if (StringUtils.isNotEmpty(alto)) {
+                        Document altoDoc = Utils.getDocumentFromString(alto, null);
+                        altoData = TextHelper.readAltoDoc(altoDoc, altoURL);
+                        if (altoData != null) {
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
+                                if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
+                                    String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + XML_EXTENSION;
+                                    doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent()
+                                            .getFileName().toString() + '/' + pi + '/' + fileName);
+                                    // Write ALTO file
+                                    File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
+                                    FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+                                    altoWritten = true;
+                                    logger.debug("Added ALTO from downloaded ALTO for page {}", order);
+                                } else {
+                                    logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
+                                }
                             }
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                            doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
-                            logger.debug("Added FULLTEXT from downloaded ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                            logger.debug("Added WIDTH from downloaded ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                            logger.debug("Added HEIGHT from downloaded ALTO for page {}", order);
-                        }
-                        if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                            addNamedEntitiesFields(altoData, doc);
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(
+                                    SolrConstants.FULLTEXT) == null) {
+                                doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                                logger.debug("Added FULLTEXT from downloaded ALTO for page {}", order);
+                            }
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
+                                doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
+                                logger.debug("Added WIDTH from downloaded ALTO for page {}", order);
+                            }
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
+                                doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
+                                logger.debug("Added HEIGHT from downloaded ALTO for page {}", order);
+                            }
+                            if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
+                                addNamedEntitiesFields(altoData, doc);
+                            }
                         }
                     }
                 } catch (JDOMException e) {
