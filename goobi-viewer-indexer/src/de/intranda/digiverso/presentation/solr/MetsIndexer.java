@@ -94,7 +94,7 @@ public class MetsIndexer extends AbstractIndexer {
     public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
     public static final String ALTO_FILEGROUP = "FULLTEXT";
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
-    public static final String DEFAULT_FULLTEXT_CHARSET = "Cp1250";
+    public static final String DEFAULT_FULLTEXT_CHARSET = "UTF-8";
 
     public static String fulltextCharset = DEFAULT_FULLTEXT_CHARSET;
 
