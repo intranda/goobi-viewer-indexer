@@ -57,7 +57,6 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
-import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -535,12 +534,12 @@ public class MetsIndexer extends AbstractIndexer {
                             switch (file.getName()) {
                                 case "description.xml": {
                                     String content = TextHelper.readFileToString(file);
-                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_DESCRIPTION, Jsoup.parse(content).text());
+                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_DESCRIPTION, TextHelper.cleanUpHtmlTags(content));
                                 }
                                     break;
                                 case "publicationtext.xml": {
                                     String content = TextHelper.readFileToString(file);
-                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, Jsoup.parse(content).text());
+                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, TextHelper.cleanUpHtmlTags(content));
                                 }
                                     break;
                                 default: {
@@ -1225,7 +1224,7 @@ public class MetsIndexer extends AbstractIndexer {
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
-                        doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                        doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                         logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1248,7 +1247,7 @@ public class MetsIndexer extends AbstractIndexer {
                         false);
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
-                    doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
+                    doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                     doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName().toString()
                             + '/' + pi + '/' + baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
@@ -1273,7 +1272,7 @@ public class MetsIndexer extends AbstractIndexer {
                         logger.debug("Added ALTO from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                        doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                        doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                         logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1294,8 +1293,7 @@ public class MetsIndexer extends AbstractIndexer {
             if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null) {
                 String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
                 if (fulltext != null) {
-                    doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
-                    dataRepository.getDir(DataRepository.PARAM_FULLTEXT);
+                    doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                     doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepository.getDir(DataRepository.PARAM_FULLTEXT).getFileName().toString() + '/'
                             + pi + '/' + baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from regular plain text for page {}", order);
@@ -1325,7 +1323,7 @@ public class MetsIndexer extends AbstractIndexer {
                             }
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(
                                     SolrConstants.FULLTEXT) == null) {
-                                doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                                doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                                 logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                             }
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1371,7 +1369,7 @@ public class MetsIndexer extends AbstractIndexer {
 
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                            doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                             logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
 
                         }
@@ -1437,7 +1435,7 @@ public class MetsIndexer extends AbstractIndexer {
                             }
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(
                                     SolrConstants.FULLTEXT) == null) {
-                                doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                                doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                                 logger.debug("Added FULLTEXT from downloaded ALTO for page {}", order);
                             }
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {

@@ -43,6 +43,7 @@ import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -518,5 +519,20 @@ public final class TextHelper {
         String docString = outputter.outputString(element);
 
         return docString;
+    }
+
+    /**
+     * Strips the given string of HTML tags, etc.
+     * @param text
+     * @return
+     * @should clean up string correctly
+     */
+    public static String cleanUpHtmlTags(String text) {
+        // Workaround for strings containing just opening brackets because JSoup cuts off everything that comes after
+        if (text.contains("<") && !text.contains(">")) {
+            text = text.replace("<", "");
+        }
+
+        return Jsoup.parse(text).text();
     }
 }

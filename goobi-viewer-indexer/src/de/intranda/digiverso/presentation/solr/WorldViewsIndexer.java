@@ -46,7 +46,6 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -394,7 +393,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             if (!fulltextAdded) {
                                 String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "")
                                         .trim();
-                                indexObj.addToLucene(SolrConstants.FULLTEXT, Jsoup.parse(body).text());
+                                indexObj.addToLucene(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(body));
                                 fulltextAdded = true;
                             }
                         } else {
@@ -479,12 +478,12 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             switch (file.getName()) {
                                 case "description.xml": {
                                     String content = TextHelper.readFileToString(file);
-                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_DESCRIPTION, Jsoup.parse(content).text());
+                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_DESCRIPTION, TextHelper.cleanUpHtmlTags(content));
                                 }
                                     break;
                                 case "publicationtext.xml": {
                                     String content = TextHelper.readFileToString(file);
-                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, Jsoup.parse(content).text());
+                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, TextHelper.cleanUpHtmlTags(content));
                                 }
                                     break;
                             }
@@ -1007,7 +1006,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
-                        doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                        doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                         // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
                     }
@@ -1031,7 +1030,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         false);
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
-                    doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
+                    doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                     // doc.addField("MD_FULLTEXT", fulltext);
                     doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
@@ -1055,7 +1054,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         logger.debug("Added ALTO from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                        doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                        doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                         // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                     }
@@ -1077,7 +1076,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null) {
                 String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
                 if (fulltext != null) {
-                    doc.addField(SolrConstants.FULLTEXT, Jsoup.parse(fulltext).text());
+                    doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                     // doc.addField("MD_FULLTEXT", fulltext);
                     doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from regular plain text for page {}", order);
@@ -1097,7 +1096,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             }
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(
                                     SolrConstants.FULLTEXT) == null) {
-                                doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                                doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                                 doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                                 logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                             }
@@ -1135,7 +1134,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             logger.debug("Added ALTO from regular ALTO for page {}", order);
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                            doc.addField(SolrConstants.FULLTEXT, Jsoup.parse((String) altoData.get(SolrConstants.FULLTEXT)).text());
+                            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                             // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                             logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
 

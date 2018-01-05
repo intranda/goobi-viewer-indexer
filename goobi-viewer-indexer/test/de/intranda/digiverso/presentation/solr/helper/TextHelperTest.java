@@ -31,7 +31,6 @@ import org.jdom2.Document;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.intranda.digiverso.presentation.solr.MetsIndexer;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 
 public class TextHelperTest {
@@ -245,5 +244,15 @@ public class TextHelperTest {
         Assert.assertFalse(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false);
         Assert.assertNull(text);
+    }
+
+    /**
+     * @see TextHelper#cleanUpHtmlTags(String)
+     * @verifies clean up string correctly
+     */
+    @Test
+    public void cleanUpHtmlTags_shouldCleanUpStringCorrectly() throws Exception {
+        Assert.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("<p><b>foo</b></p><br/>bar"));
+        Assert.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("foo <bar"));
     }
 }
