@@ -1087,6 +1087,9 @@ public class Hotfolder {
                     case "_tei":
                         dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
                         break;
+                    case "_cmdi":
+                        dataFolders.put(DataRepository.PARAM_CMDI, path);
+                        break;
                     default:
                         // nothing;
                 }
@@ -1099,6 +1102,9 @@ public class Hotfolder {
         }
         if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
             reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_CMDI) == null) {
+            reindexSettings.put(DataRepository.PARAM_CMDI, true);
         }
 
         DataRepository dataRepository;

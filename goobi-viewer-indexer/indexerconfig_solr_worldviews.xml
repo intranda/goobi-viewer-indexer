@@ -40,7 +40,6 @@
 		<fulltextFolder>fulltext</fulltextFolder>
 		<fulltextCrowdsourcingFolder>fulltext_crowd
 		</fulltextCrowdsourcingFolder>
-		<teiFolder>tei</teiFolder>
 		<wcFolder>wc</wcFolder>
 		<abbyyFolder>abbyy</abbyyFolder>
 		<pagePdfFolder>pdf</pagePdfFolder>
@@ -48,6 +47,8 @@
 		<userGeneratedContentFolder>ugc</userGeneratedContentFolder>
 		<mixFolder>mix</mixFolder>
 		<overviewFolder>overview</overviewFolder>
+        <teiFolder>tei</teiFolder>
+        <cmdiFolder>cmdi</cmdiFolder>
 
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>

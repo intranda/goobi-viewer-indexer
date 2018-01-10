@@ -48,6 +48,7 @@ public class DataRepository {
     public static final String PARAM_DOWNLOAD_IMAGES_TRIGGER = "downloadImages";
     public static final String PARAM_FULLTEXT = "fulltextFolder";
     public static final String PARAM_FULLTEXTCROWD = "fulltextCrowdsourcingFolder";
+    public static final String PARAM_CMDI = "cmdiFolder";
     public static final String PARAM_TEIMETADATA = "teiFolder";
     public static final String PARAM_TEIWC = "wcFolder";
     public static final String PARAM_PAGEPDF = "pagePdfFolder";
@@ -105,6 +106,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_ALTOCROWD);
         checkAndCreateDataSubdir(PARAM_FULLTEXT);
         checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
+        checkAndCreateDataSubdir(PARAM_CMDI);
         checkAndCreateDataSubdir(PARAM_TEIMETADATA);
         checkAndCreateDataSubdir(PARAM_TEIWC);
         checkAndCreateDataSubdir(PARAM_ABBYY);
@@ -143,6 +145,7 @@ public class DataRepository {
      * @should delete ALTO crowdsourcing folder correctly
      * @should delete fulltext folder correctly
      * @should delete fulltext crowdsourcing folder correctly
+     * @should delete CMDI folder correctly
      * @should delete TEI folder correctly
      * @should delete word coords folder correctly
      * @should delete ABBYY folder correctly
@@ -158,6 +161,7 @@ public class DataRepository {
         deleteFolder(Paths.get(getDir(PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_FULLTEXT).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), baseFileName));
+        deleteFolder(Paths.get(getDir(PARAM_CMDI).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_TEIMETADATA).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_TEIWC).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_ABBYY).toAbsolutePath().toString(), baseFileName));
@@ -242,6 +246,7 @@ public class DataRepository {
         moveDataFolderToRepository(toRepository, pi, PARAM_ABBYY);
         moveDataFolderToRepository(toRepository, pi, PARAM_FULLTEXT);
         moveDataFolderToRepository(toRepository, pi, PARAM_FULLTEXTCROWD);
+        moveDataFolderToRepository(toRepository, pi, PARAM_CMDI);
         moveDataFolderToRepository(toRepository, pi, PARAM_TEIMETADATA);
         moveDataFolderToRepository(toRepository, pi, PARAM_TEIWC);
         moveDataFolderToRepository(toRepository, pi, PARAM_PAGEPDF);
@@ -311,6 +316,7 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_CMDI);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_TEIWC);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ABBYY);
@@ -365,6 +371,8 @@ public class DataRepository {
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT);
         // Copy and delete crowdsourcing fulltext folder (AFTER regular FULLTEXT!)
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD);
+        // Copy and delete CMDI metadata folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_CMDI);
         // Copy and delete TEI metadata folder
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA);
         // Copy and delete TEI word coordinates folder

@@ -45,6 +45,7 @@
 		<mixFolder>mix</mixFolder>
 		<overviewFolder>overview</overviewFolder>
 		<teiFolder>tei</teiFolder>
+		<cmdiFolder>cmdi</cmdiFolder>
 		
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
