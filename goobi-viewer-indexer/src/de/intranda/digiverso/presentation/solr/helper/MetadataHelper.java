@@ -113,22 +113,27 @@ public class MetadataHelper {
         List<LuceneField> ret = new ArrayList<>();
 
         Set<Integer> centuries = new HashSet<>();
-        List<String> fieldNamesList = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
+        List<String> fieldNamesList = Configuration.getInstance()
+                .getMetadataConfigurationManager()
+                .getListWithAllFieldNames();
         StringBuilder sbDefaultMetadataValues = new StringBuilder();
         if (indexObj.getDefaultValue() != null) {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());
         }
         for (String fieldName : fieldNamesList) {
-            List<FieldConfig> configurationItemList = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(
-                    fieldName);
+            List<FieldConfig> configurationItemList = Configuration.getInstance()
+                    .getMetadataConfigurationManager()
+                    .getConfigurationListForField(fieldName);
             for (FieldConfig configurationItem : configurationItemList) {
                 // Constant value instead of XPath
                 if (configurationItem.getConstantValue() != null) {
                     StringBuilder sbValue = new StringBuilder(configurationItem.getConstantValue());
-                    if (configurationItem.getValuepostfix().length() > 0) {
+                    if (configurationItem.getValuepostfix()
+                            .length() > 0) {
                         sbValue.append(configurationItem.getValuepostfix());
                     }
-                    String value = sbValue.toString().trim();
+                    String value = sbValue.toString()
+                            .trim();
                     if (configurationItem.isOneToken()) {
                         value = toOneToken(value, configurationItem.getSplittingCharacter());
                     }
@@ -146,7 +151,8 @@ public class MetadataHelper {
                 // If a field needs child and/or parent values, add those elements to the iteration list
                 Set<String> childrenAndAncestors = new HashSet<>();
                 // children
-                if (configurationItem.getChild().equals("all")) {
+                if (configurationItem.getChild()
+                        .equals("all")) {
                     List<Attribute> childrenNodeList = xp.evaluateToAttributes("mets:div/attribute::DMDID", indexObj.getRootStructNode());
                     if (childrenNodeList != null) {
                         for (Attribute attribute : childrenNodeList) {
@@ -174,7 +180,8 @@ public class MetadataHelper {
                             } else {
                                 logger.warn("DMDID for Parent element '{}' not found.", parent.getLogId());
                             }
-                            while (parent.getParent() != null && !parent.getParent().isAnchor()) {
+                            while (parent.getParent() != null && !parent.getParent()
+                                    .isAnchor()) {
                                 parent = parent.getParent();
                                 if (parent.getDmdid() != null) {
                                     childrenAndAncestors.add(parent.getDmdid());
@@ -196,7 +203,8 @@ public class MetadataHelper {
                 }
 
                 boolean breakfirst = false;
-                if (configurationItem.getNode().equalsIgnoreCase("first")) {
+                if (configurationItem.getNode()
+                        .equalsIgnoreCase("first")) {
                     breakfirst = true;
                 }
 
@@ -233,8 +241,8 @@ public class MetadataHelper {
                                 if (configurationItem.isGroupEntity()) {
                                     // Aggregated / grouped metadata
                                     Element eleMods = (Element) xpathAnswerObject;
-                                    GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem
-                                            .getFieldname());
+                                    GroupedMetadata gmd =
+                                            getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
                                     List<LuceneField> normData = new ArrayList<>();
                                     boolean groupFieldAlreadyReplaced = false;
                                     String normIdentifier = null;
@@ -278,7 +286,8 @@ public class MetadataHelper {
                                                 case "NORM_IDENTIFIER":
                                                     // If a NORM_IDENTIFIER exists for this metadata group, use it to replace the value of GROUPFIELD
                                                     for (LuceneField groupField : gmd.getFields()) {
-                                                        if (groupField.getField().equals(SolrConstants.GROUPFIELD)) {
+                                                        if (groupField.getField()
+                                                                .equals(SolrConstants.GROUPFIELD)) {
                                                             groupField.setValue(normField.getValue());
                                                             groupFieldAlreadyReplaced = true;
                                                             break;
@@ -316,20 +325,26 @@ public class MetadataHelper {
 
                                     // If there was no existing GROUPFIELD in the group metadata, add one now using the norm identifier
                                     if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(normIdentifier)) {
-                                        gmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, normIdentifier));
+                                        gmd.getFields()
+                                                .add(new LuceneField(SolrConstants.GROUPFIELD, normIdentifier));
                                     }
                                     // Add MD_VALUE as DEFAULT to the metadata doc
                                     if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
-                                        gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, fieldValue));
+                                        gmd.getFields()
+                                                .add(new LuceneField(SolrConstants.DEFAULT, fieldValue));
                                     }
-                                    gmd.getFields().addAll(normData); // Add norm data outside the loop over groupMetadata
+                                    gmd.getFields()
+                                            .addAll(normData); // Add norm data outside the loop over groupMetadata
 
-                                    if (!indexObj.getGroupedMetadataFields().contains(gmd)) {
-                                        indexObj.getGroupedMetadataFields().add(gmd);
+                                    if (!indexObj.getGroupedMetadataFields()
+                                            .contains(gmd)) {
+                                        indexObj.getGroupedMetadataFields()
+                                                .add(gmd);
                                     }
                                     // NORMDATATERMS is now in the metadata docs, not docstructs
                                     if (sbNormDataTerms.length() > 0) {
-                                        gmd.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
+                                        gmd.getFields()
+                                                .add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
                                     }
                                 } else {
                                     // Regular metadata
@@ -396,13 +411,13 @@ public class MetadataHelper {
                     }
                     // Add normalized year
                     if (configurationItem.isNormalizeYear()) {
-                        List<LuceneField> normalizedFields = parseDatesAndCenturies(centuries, fieldValue, configurationItem
-                                .getNormalizeYearMinDigits());
+                        List<LuceneField> normalizedFields =
+                                parseDatesAndCenturies(centuries, fieldValue, configurationItem.getNormalizeYearMinDigits());
                         ret.addAll(normalizedFields);
                         // Add sort fields for normalized years, centuries, etc.
                         for (LuceneField normalizedDateField : normalizedFields) {
-                            addSortField(normalizedDateField.getField(), normalizedDateField.getValue(), SolrConstants.SORTNUM_, configurationItem
-                                    .getNonSortConfigurations(), ret);
+                            addSortField(normalizedDateField.getField(), normalizedDateField.getValue(), SolrConstants.SORTNUM_,
+                                    configurationItem.getNonSortConfigurations(), ret);
                         }
                     }
                     // Add Solr field
@@ -415,7 +430,8 @@ public class MetadataHelper {
                                 ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
-                        ret.add(new LuceneField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(), fieldValue));
+                        ret.add(new LuceneField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED)
+                                .toString(), fieldValue));
                     }
 
                     // Abort after first value, if so configured
@@ -474,10 +490,12 @@ public class MetadataHelper {
                 continue;
             }
             for (NormData normData : normDataListMap.get(key)) {
-                if (normData.getKey().startsWith("NORM_")) {
+                if (normData.getKey()
+                        .startsWith("NORM_")) {
                     // IKFN norm data browsing hack
                     for (NormDataValue val : normData.getValues()) {
-                        if (StringUtils.isNotBlank(val.getText()) && !normData.getKey().equals("NORM_STATICPAGE")) {
+                        if (StringUtils.isNotBlank(val.getText()) && !normData.getKey()
+                                .equals("NORM_STATICPAGE")) {
                             String textValue = val.getText();
                             if (replaceRules != null) {
                                 textValue = applyReplaceRules(textValue, replaceRules);
@@ -492,29 +510,38 @@ public class MetadataHelper {
                             ret.add(new LuceneField(normData.getKey(), textValue));
                             ret.add(new LuceneField(normData.getKey() + SolrConstants._UNTOKENIZED, textValue));
 
-                            String valWithSpaces = new StringBuilder(" ").append(textValue).append(' ').toString();
+                            String valWithSpaces = new StringBuilder(" ").append(textValue)
+                                    .append(' ')
+                                    .toString();
 
                             // Add to DEFAULT
                             if (addToDefaultFields != null && !addToDefaultFields.isEmpty() && addToDefaultFields.contains(normData.getKey())
-                                    && !sbDefaultMetadataValues.toString().contains(valWithSpaces)) {
+                                    && !sbDefaultMetadataValues.toString()
+                                            .contains(valWithSpaces)) {
                                 addValueToDefault(textValue, sbDefaultMetadataValues);
                                 logger.trace("Added to DEFAULT: {}", textValue);
                             }
 
                             // Add to the norm data search field NORMDATATERMS
-                            if (!normData.getKey().startsWith("NORM_URI") && !sbNormDataTerms.toString().contains(valWithSpaces)) {
+                            if (!normData.getKey()
+                                    .startsWith("NORM_URI")
+                                    && !sbNormDataTerms.toString()
+                                            .contains(valWithSpaces)) {
                                 sbNormDataTerms.append(valWithSpaces);
                                 logger.trace("Added to NORMDATATERMS: {}", textValue);
                             }
 
                             // Add aggregated Aggregate place fields into the same untokenized field for term browsing
-                            if (normData.getKey().equals("NORM_ALTNAME")) {
+                            if (normData.getKey()
+                                    .equals("NORM_ALTNAME")) {
                                 ret.add(new LuceneField("NORM_NAME_SEARCH", textValue));
                                 ret.add(new LuceneField("NORM_NAME" + SolrConstants._UNTOKENIZED, textValue));
-                            } else if (normData.getKey().startsWith("NORM_PLACE")) {
+                            } else if (normData.getKey()
+                                    .startsWith("NORM_PLACE")) {
                                 ret.add(new LuceneField("NORM_PLACE_SEARCH", textValue));
                                 ret.add(new LuceneField("NORM_PLACE" + SolrConstants._UNTOKENIZED, textValue));
-                            } else if (normData.getKey().equals("NORM_LIFEPERIOD")) {
+                            } else if (normData.getKey()
+                                    .equals("NORM_LIFEPERIOD")) {
                                 String[] valueSplit = textValue.split("-");
                                 if (valueSplit.length > 0) {
                                     for (String date : valueSplit) {
@@ -549,20 +576,26 @@ public class MetadataHelper {
 
                 // Do not write duplicate fields (same name + value)
                 for (LuceneField f : indexObj.getLuceneFields()) {
-                    if (f.getField().equals(field.getField()) && (((f.getValue() != null) && f.getValue().equals(field.getValue())) || field
-                            .getField().startsWith(SolrConstants.SORT_))) {
+                    if (f.getField()
+                            .equals(field.getField())
+                            && (((f.getValue() != null) && f.getValue()
+                                    .equals(field.getValue())) || field.getField()
+                                            .startsWith(SolrConstants.SORT_))) {
                         duplicate = true;
                         break;
                     }
                 }
                 if (duplicate) {
-                    logger.debug("Duplicate field found: {}:{}", field.getField(), indexObj.getLuceneFieldWithName(field.getField()).getValue());
+                    logger.debug("Duplicate field found: {}:{}", field.getField(), indexObj.getLuceneFieldWithName(field.getField())
+                            .getValue());
                     continue;
                 }
             }
-            if (field.getField().equals(SolrConstants.ACCESSCONDITION)) {
+            if (field.getField()
+                    .equals(SolrConstants.ACCESSCONDITION)) {
                 // Add access conditions to a separate list
-                indexObj.getAccessConditions().add(field.getValue());
+                indexObj.getAccessConditions()
+                        .add(field.getValue());
             } else {
                 indexObj.addToLucene(field);
             }
@@ -580,7 +613,8 @@ public class MetadataHelper {
 
             // logger.debug("METADATA " + fieldName + " : " + field.getValue());
 
-            indexObj.setDefaultValue(indexObj.getDefaultValue().trim());
+            indexObj.setDefaultValue(indexObj.getDefaultValue()
+                    .trim());
         }
     }
 
@@ -600,7 +634,8 @@ public class MetadataHelper {
         fieldValue = applyReplaceRules(fieldValue, configurationItem.getReplaceRules());
         fieldValue = applyValueDefaultModifications(fieldValue);
 
-        if (configurationItem.getFieldname().equals(SolrConstants.PI)) {
+        if (configurationItem.getFieldname()
+                .equals(SolrConstants.PI)) {
             fieldValue = applyIdentifierModifications(fieldValue);
         }
 
@@ -653,7 +688,8 @@ public class MetadataHelper {
                     ret = ret.replace((String) key, replaceRules.get(key));
                 }
             } else {
-                logger.error("Unknown replacement key type of '{}: {}", key.toString(), key.getClass().getName());
+                logger.error("Unknown replacement key type of '{}: {}", key.toString(), key.getClass()
+                        .getName());
             }
         }
 
@@ -691,9 +727,12 @@ public class MetadataHelper {
         }
         String ret = pi.trim();
         // Apply replace rules defined for the field PI
-        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
+        List<FieldConfig> configItems = Configuration.getInstance()
+                .getMetadataConfigurationManager()
+                .getConfigurationListForField(SolrConstants.PI);
         if (configItems != null && !configItems.isEmpty()) {
-            Map<Object, String> replaceRules = configItems.get(0).getReplaceRules();
+            Map<Object, String> replaceRules = configItems.get(0)
+                    .getReplaceRules();
             if (replaceRules != null && !replaceRules.isEmpty()) {
                 ret = MetadataHelper.applyReplaceRules(ret, replaceRules);
             }
@@ -731,7 +770,8 @@ public class MetadataHelper {
 
         String sortFieldName = sortFieldPrefix + fieldName.replace("MD_", "");
         for (LuceneField field : retList) {
-            if (field.getField().equals(sortFieldName)) {
+            if (field.getField()
+                    .equals(sortFieldName)) {
                 // A sort field by that name already exists (only one may be added to a doc)
                 return;
             }
@@ -747,7 +787,8 @@ public class MetadataHelper {
                 if (nonSortConfig.getSuffix() != null) {
                     regex.append(nonSortConfig.getSuffix());
                 }
-                fieldValue = fieldValue.replaceAll(regex.toString(), "").trim();
+                fieldValue = fieldValue.replaceAll(regex.toString(), "")
+                        .trim();
                 // logger.info("Non-sort regex: {}", regex);
                 // logger.info("fieldValue: {}", fieldValue);
             }
@@ -787,7 +828,8 @@ public class MetadataHelper {
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
         if ((relatedItemList != null) && (!relatedItemList.isEmpty())) {
-            return relatedItemList.get(0).getText();
+            return relatedItemList.get(0)
+                    .getText();
         }
 
         return null;
@@ -803,9 +845,12 @@ public class MetadataHelper {
      */
     @SuppressWarnings({ "unchecked" })
     public static String getPIFromXML(String prefix, JDomXP xp) throws FatalIndexerException {
-        List<Map<String, Object>> piConfig = Configuration.getInstance().getFieldConfiguration().get(SolrConstants.PI);
+        List<Map<String, Object>> piConfig = Configuration.getInstance()
+                .getFieldConfiguration()
+                .get(SolrConstants.PI);
         if (piConfig != null) {
-            List<XPathConfig> xPathConfigurations = (ArrayList<XPathConfig>) piConfig.get(0).get("xpath");
+            List<XPathConfig> xPathConfigurations = (ArrayList<XPathConfig>) piConfig.get(0)
+                    .get("xpath");
             for (XPathConfig xPathConfig : xPathConfigurations) {
                 String query = prefix + xPathConfig.getxPath();
                 List<String> list = new ArrayList<>();
@@ -844,10 +889,13 @@ public class MetadataHelper {
                         centuries.add(century);
                     }
                     if (date.getMonth() != null) {
-                        ret.add(new LuceneField(SolrConstants.YEARMONTH, date.getYear() + FORMAT_TWO_DIGITS.get().format(date.getMonth())));
+                        ret.add(new LuceneField(SolrConstants.YEARMONTH, date.getYear() + FORMAT_TWO_DIGITS.get()
+                                .format(date.getMonth())));
                         if (date.getDay() != null) {
-                            ret.add(new LuceneField(SolrConstants.YEARMONTHDAY, date.getYear() + FORMAT_TWO_DIGITS.get().format(date.getMonth())
-                                    + FORMAT_TWO_DIGITS.get().format(date.getDay())));
+                            ret.add(new LuceneField(SolrConstants.YEARMONTHDAY, date.getYear() + FORMAT_TWO_DIGITS.get()
+                                    .format(date.getMonth())
+                                    + FORMAT_TWO_DIGITS.get()
+                                            .format(date.getDay())));
                         }
                     }
                 }
@@ -881,37 +929,43 @@ public class MetadataHelper {
 
         // Try known date formats first
         try {
-            Date date = formatterDEDate.parseDateTime(dateString).toDate();
+            Date date = formatterDEDate.parseDateTime(dateString)
+                    .toDate();
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (IllegalArgumentException e) {
         }
         try {
-            Date date = formatterISO8601Date.parseDateTime(dateString).toDate();
+            Date date = formatterISO8601Date.parseDateTime(dateString)
+                    .toDate();
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (IllegalArgumentException e) {
         }
         try {
-            Date date = formatterISO8601YearMonth.parseDateTime(dateString).toDate();
+            Date date = formatterISO8601YearMonth.parseDateTime(dateString)
+                    .toDate();
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (IllegalArgumentException e) {
         }
         try {
-            Date date = formatterUSDate.parseDateTime(dateString).toDate();
+            Date date = formatterUSDate.parseDateTime(dateString)
+                    .toDate();
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (IllegalArgumentException e) {
         }
         try {
-            Date date = formatterCNDate.parseDateTime(dateString).toDate();
+            Date date = formatterCNDate.parseDateTime(dateString)
+                    .toDate();
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (IllegalArgumentException e) {
         }
         try {
-            Date date = formatterJPDate.parseDateTime(dateString).toDate();
+            Date date = formatterJPDate.parseDateTime(dateString)
+                    .toDate();
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (IllegalArgumentException e) {
@@ -1022,7 +1076,8 @@ public class MetadataHelper {
         if (fields != null && !fields.isEmpty()) {
             List<Integer> oldValues = new ArrayList<>();
             for (LuceneField field : fields) {
-                if (field.getField().equals(fieldName) && !oldValues.contains(Integer.valueOf(field.getValue()))) {
+                if (field.getField()
+                        .equals(fieldName) && !oldValues.contains(Integer.valueOf(field.getValue()))) {
                     oldValues.add(Integer.valueOf(field.getValue()));
                 }
             }
@@ -1059,12 +1114,15 @@ public class MetadataHelper {
         ret.setLabel(groupLabel);
 
         String type = null;
-        ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
+        ret.getFields()
+                .add(new LuceneField(SolrConstants.LABEL, groupLabel));
         if (groupEntityFields.get("type") != null) {
             List<String> values = (List<String>) groupEntityFields.get("type");
             if (values != null && !values.isEmpty()) {
-                type = values.get(0).trim();
-                ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type));
+                type = values.get(0)
+                        .trim();
+                ret.getFields()
+                        .add(new LuceneField(SolrConstants.METADATATYPE, type));
             }
         }
         boolean normUriFound = false;
@@ -1085,7 +1143,8 @@ public class MetadataHelper {
                         if (fieldValue != null) {
                             fieldValue = fieldValue.trim();
                         }
-                        ret.getFields().add(new LuceneField(fieldName, fieldValue));
+                        ret.getFields()
+                                .add(new LuceneField(fieldName, fieldValue));
                         collectedValues.put(fieldName, fieldValue);
 
                         if (NormDataImporter.FIELD_URI.equals(field)) {
@@ -1100,8 +1159,12 @@ public class MetadataHelper {
         // if not MD_VALUE field exists, construct one
         String mdValue = null;
         for (LuceneField field : ret.getFields()) {
-            if (field.getField().equals("MD_VALUE") || (field.getField().equals("MD_DISPLAYFORM") && "name".equals(type)) || (field.getField().equals(
-                    "MD_LOCATION") && "location".equals(type))) {
+            if (field.getField()
+                    .equals("MD_VALUE")
+                    || (field.getField()
+                            .equals("MD_DISPLAYFORM") && "name".equals(type))
+                    || (field.getField()
+                            .equals("MD_LOCATION") && "location".equals(type))) {
                 mdValue = field.getValue();
                 break;
             }
@@ -1123,7 +1186,8 @@ public class MetadataHelper {
             }
             if (sbValue.length() > 0) {
                 mdValue = sbValue.toString();
-                ret.getFields().add(new LuceneField("MD_VALUE", mdValue));
+                ret.getFields()
+                        .add(new LuceneField("MD_VALUE", mdValue));
             }
         }
         if (mdValue != null) {
@@ -1132,26 +1196,35 @@ public class MetadataHelper {
 
         // Add SORT_DISPLAYFORM so that there is a single-valued field by which to group metadata search hits
         if (mdValue != null) {
-            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValue).toString(), "", null, ret.getFields());
+            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_")
+                    .append(mdValue)
+                    .toString(), "", null, ret.getFields());
         }
 
         // Add norm data URI, if available (GND only)
         if (!normUriFound) {
             String authority = ele.getAttributeValue("authority");
             if (authority != null) {
+                String authorityURI = ele.getAttributeValue("authorityURI");
+                String valueURI = ele.getAttributeValue("valueURI");
                 switch (authority) {
                     case "gnd":
+                        // Skip missing GND identifiers
+                        if ("http://d-nb.info/gnd/".equals(valueURI)) {
+                            break;
+                        }
                     case "refgeo":
                     case "refbio":
-                        String authorityURI = ele.getAttributeValue("authorityURI");
-                        String valueURI = ele.getAttributeValue("valueURI");
                         if (StringUtils.isNotEmpty(valueURI)) {
                             valueURI = valueURI.trim();
                             if (StringUtils.isNotEmpty(authorityURI) && !valueURI.startsWith(authorityURI)) {
-                                ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, authorityURI + valueURI));
-                                ret.getFields().add(new LuceneField("NORM_IDENTIFIER", valueURI));
+                                ret.getFields()
+                                        .add(new LuceneField(NormDataImporter.FIELD_URI, authorityURI + valueURI));
+                                ret.getFields()
+                                        .add(new LuceneField("NORM_IDENTIFIER", valueURI));
                             } else {
-                                ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
+                                ret.getFields()
+                                        .add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
                             }
                             ret.setNormUri(valueURI);
                         }
@@ -1235,14 +1308,20 @@ public class MetadataHelper {
         }
 
         String fieldValueTrim = value.trim();
-        String defaultValueWithSpaces = new StringBuilder(" ").append(fieldValueTrim).append(' ').toString();
-        if (!sbDefaultMetadataValues.toString().contains(defaultValueWithSpaces)) {
+        String defaultValueWithSpaces = new StringBuilder(" ").append(fieldValueTrim)
+                .append(' ')
+                .toString();
+        if (!sbDefaultMetadataValues.toString()
+                .contains(defaultValueWithSpaces)) {
             sbDefaultMetadataValues.append(defaultValueWithSpaces);
         }
         String concatValue = getConcatenatedValue(fieldValueTrim);
         if (!concatValue.equals(value)) {
-            String concatValueWithSpaces = new StringBuilder(" ").append(concatValue).append(' ').toString();
-            if (!sbDefaultMetadataValues.toString().contains(concatValueWithSpaces)) {
+            String concatValueWithSpaces = new StringBuilder(" ").append(concatValue)
+                    .append(' ')
+                    .toString();
+            if (!sbDefaultMetadataValues.toString()
+                    .contains(concatValueWithSpaces)) {
                 sbDefaultMetadataValues.append(concatValueWithSpaces);
             }
         }
@@ -1277,8 +1356,8 @@ public class MetadataHelper {
         if (!dates.isEmpty()) {
             PrimitiveDate date = dates.get(0);
             if (date.getYear() != null) {
-                MutableDateTime mdt = new MutableDateTime(date.getYear(), date.getMonth() != null ? date.getMonth() : 1, date.getDay() != null ? date
-                        .getDay() : 1, 0, 0, 0, 0);
+                MutableDateTime mdt = new MutableDateTime(date.getYear(), date.getMonth() != null ? date.getMonth() : 1,
+                        date.getDay() != null ? date.getDay() : 1, 0, 0, 0, 0);
                 return formatterISO8601DateTimeFullWithTimeZone.print(mdt);
             }
         }
@@ -1326,7 +1405,8 @@ public class MetadataHelper {
         if (fieldName.contains(SolrConstants._LANG_)) {
             int index = fieldName.indexOf(SolrConstants._LANG_) + SolrConstants._LANG_.length();
             if (fieldName.length() == index + 2) {
-                return fieldName.substring(index).toLowerCase();
+                return fieldName.substring(index)
+                        .toLowerCase();
             }
         }
 
