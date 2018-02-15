@@ -114,7 +114,8 @@ public class IndexObject {
 
             // Add IDDOC of the top element of this work as 'IDDOC_TOPSTRUCT' (required for bookshelves)
             IndexObject top = this;
-            while (top.getParent() != null && !top.getParent().isAnchor()) {
+            while (top.getParent() != null && !top.getParent()
+                    .isAnchor()) {
                 top = top.getParent();
             }
             addToLucene(SolrConstants.IDDOC_TOPSTRUCT, String.valueOf(top.getIddoc()));
@@ -177,8 +178,16 @@ public class IndexObject {
         }
 
         addToLucene(SolrConstants.DATECREATED, String.valueOf(getDateCreated()));
+        long latest = 0;
         for (Long date : getDateUpdated()) {
             addToLucene(SolrConstants.DATEUPDATED, String.valueOf(date));
+            if (date > latest) {
+                date = latest;
+            }
+        }
+        // Add latest DATEUPDATED value as SORT_DATEUPDATED
+        if (latest > 0) {
+            addToLucene(SolrConstants.SORT_ + SolrConstants.DATEUPDATED, String.valueOf(latest));
         }
     }
 
@@ -200,7 +209,8 @@ public class IndexObject {
      */
     public LuceneField getLuceneFieldWithName(String name) {
         for (LuceneField luceneField : luceneFields) {
-            if (luceneField.getField().equals(name)) {
+            if (luceneField.getField()
+                    .equals(name)) {
                 return luceneField;
             }
         }
@@ -219,7 +229,8 @@ public class IndexObject {
         List<LuceneField> ret = new ArrayList<>();
 
         for (LuceneField luceneField : luceneFields) {
-            if (luceneField.getField().equals(name)) {
+            if (luceneField.getField()
+                    .equals(name)) {
                 ret.add(luceneField);
             }
         }
