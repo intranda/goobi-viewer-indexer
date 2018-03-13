@@ -86,8 +86,8 @@ public class DataRepository {
 
         if (Files.exists(rootDir)) {
             if (Files.isRegularFile(rootDir)) {
-                logger.error("Data repository '{}' is defined but is a file, not a directory. This repository will not be used.", rootDir
-                        .getFileName());
+                logger.error("Data repository '{}' is defined but is a file, not a directory. This repository will not be used.",
+                        rootDir.getFileName());
                 return;
             }
         } else {
@@ -434,12 +434,12 @@ public class DataRepository {
             throw new IllegalArgumentException("identifier may not be null");
         }
 
-        // Copy crowdsourcing data folders into their regular counterparts, overwriting regular filess
-        if (PARAM_ALTOCROWD.equals(paramName)) {
-            paramName = PARAM_ALTO;
-        } else if (PARAM_FULLTEXTCROWD.equals(paramName)) {
-            paramName = PARAM_FULLTEXT;
-        }
+        // Copy crowdsourcing data folders into their regular counterparts, overwriting regular files
+        //        if (PARAM_ALTOCROWD.equals(paramName)) {
+        //            paramName = PARAM_ALTO;
+        //        } else if (PARAM_FULLTEXTCROWD.equals(paramName)) {
+        //            paramName = PARAM_FULLTEXT;
+        //        }
         logger.info("Copying {} files from '{}'...", paramName, srcFolder);
         int counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
         logger.info("{} {} files copied.", counter, paramName);
