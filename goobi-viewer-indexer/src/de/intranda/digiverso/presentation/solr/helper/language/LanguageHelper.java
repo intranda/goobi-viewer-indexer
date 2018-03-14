@@ -8,8 +8,16 @@ import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.intranda.digiverso.presentation.solr.WorldViewsIndexer;
 
 public class LanguageHelper {
+
+    /** Logger for this class. */
+    private static final Logger logger = LoggerFactory.getLogger(LanguageHelper.class);
+
     private static XMLConfiguration config;
 
     private static LanguageHelper helper;
@@ -31,19 +39,19 @@ public class LanguageHelper {
 
         return helper;
     }
-    
+
     public Language getLanguage(String isoCode) {
         SubnodeConfiguration languageConfig = null;
         try {
-        if(isoCode.length() == 3) {
-            languageConfig = (SubnodeConfiguration) config.configurationsAt("language[iso_639-2=\"" + isoCode + "\"]").get(0);
-        } else if(isoCode.length() == 2) {
-            languageConfig = (SubnodeConfiguration) config.configurationsAt("language[iso_639-1=\"" + isoCode + "\"]").get(0);
+            if (isoCode.length() == 3) {
+                languageConfig = (SubnodeConfiguration) config.configurationsAt("language[iso_639-2=\"" + isoCode + "\"]").get(0);
+            } else if (isoCode.length() == 2) {
+                languageConfig = (SubnodeConfiguration) config.configurationsAt("language[iso_639-1=\"" + isoCode + "\"]").get(0);
+            }
+        } catch (Throwable e) {
+            throw new IllegalArgumentException("No matching language found for " + isoCode, e);
         }
-        } catch(Throwable e) {
-            throw new IllegalArgumentException(e);
-        }
-        if(languageConfig == null) {            
+        if (languageConfig == null) {
             throw new IllegalArgumentException("No matching language found for " + isoCode);
         }
         Language language = new Language();
@@ -52,7 +60,7 @@ public class LanguageHelper {
         language.setEnglishName(languageConfig.getString("eng"));
         language.setGermanName(languageConfig.getString("ger"));
         language.setFrenchName(languageConfig.getString("fre"));
-        
+
         return language;
     }
 
