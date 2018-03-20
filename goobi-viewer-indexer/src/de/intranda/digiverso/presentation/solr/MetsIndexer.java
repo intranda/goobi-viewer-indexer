@@ -472,7 +472,7 @@ public class MetsIndexer extends AbstractIndexer {
                                 indexObj.getAccessConditions().add(o.toString());
                             }
                         } else {
-                            logger.warn(
+                            logger.error(
                                     "Anchor document '{}' has no ACCESSCONDITION values. Please check whether it is a proper anchor and not a group!",
                                     anchorPi);
                         }
