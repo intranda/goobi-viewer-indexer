@@ -1247,6 +1247,9 @@ public class Hotfolder {
                     case "_ugc":
                         dataFolders.put(DataRepository.PARAM_UGC, path);
                         break;
+                    case "_overview":
+                        dataFolders.put(DataRepository.PARAM_OVERVIEW, path);
+                        break;
                     default:
                         // nothing
                 }

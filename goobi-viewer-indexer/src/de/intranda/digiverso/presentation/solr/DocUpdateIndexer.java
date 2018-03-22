@@ -15,6 +15,7 @@
  */
 package de.intranda.digiverso.presentation.solr;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -108,6 +109,33 @@ public class DocUpdateIndexer extends AbstractIndexer {
 
             //  Find files in data folders and populate update map
             Map<String, Map<String, Object>> partialUpdates = new HashMap<>();
+            
+            if (dataFolders.get(DataRepository.PARAM_OVERVIEW) != null) {
+                Path staticPageFolder = dataFolders.get(DataRepository.PARAM_OVERVIEW);
+                if (Files.isDirectory(staticPageFolder)) {
+                    File[] files = staticPageFolder.toFile().listFiles(xml);
+                    if (files.length > 0) {
+                        for (File file : files) {
+                            switch (file.getName()) {
+                                case "description.xml": {
+                                    String content = TextHelper.readFileToString(file);
+                                    Map<String, Object> update = new HashMap<>();
+                                    update.put("set", TextHelper.cleanUpHtmlTags(content));
+                                    partialUpdates.put(SolrConstants.OVERVIEWPAGE_DESCRIPTION, update);
+                                }
+                                    break;
+                                case "publicationtext.xml": {
+                                    String content = TextHelper.readFileToString(file);
+                                    Map<String, Object> update = new HashMap<>();
+                                    update.put("set", TextHelper.cleanUpHtmlTags(content));
+                                    partialUpdates.put(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, update);
+                                }
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
 
             // Crowdsourcing ALTO
             if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
