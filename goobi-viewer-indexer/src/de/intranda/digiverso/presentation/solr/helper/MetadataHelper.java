@@ -1358,7 +1358,7 @@ public class MetadataHelper {
             throw new IllegalArgumentException("indexObj may not be null");
         }
         if (teiFolder == null) {
-            throw new IllegalArgumentException("indexObj may not be null");
+            throw new IllegalArgumentException("teiFolder may not be null");
         }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(teiFolder, "*.{xml}")) {

@@ -169,7 +169,7 @@ public class LidoIndexer extends AbstractIndexer {
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
                             dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
                         } else {
-                            logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath());
+                            logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIMETADATA).toAbsolutePath());
                         }
                     }
                 } else {
@@ -216,7 +216,7 @@ public class LidoIndexer extends AbstractIndexer {
             prepareUpdate(indexObj);
 
             // Process TEI files
-            if (dataFolders.containsKey(DataRepository.PARAM_TEIMETADATA)) {
+            if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) != null) {
                 MetadataHelper.processTEIMetadataFiles(indexObj, dataFolders.get(DataRepository.PARAM_TEIMETADATA));
             }
 

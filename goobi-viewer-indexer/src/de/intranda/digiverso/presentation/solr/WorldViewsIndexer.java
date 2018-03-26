@@ -358,7 +358,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             int workDepth = 0; // depth of the docstrct that has ISWORK (volume or monograph)
 
             // Process TEI files
-            if (dataFolders.containsKey(DataRepository.PARAM_TEIMETADATA)) {
+            if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) != null) {
                 MetadataHelper.processTEIMetadataFiles(indexObj, dataFolders.get(DataRepository.PARAM_TEIMETADATA));
             }
 
