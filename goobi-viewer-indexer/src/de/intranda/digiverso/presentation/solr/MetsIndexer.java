@@ -324,6 +324,16 @@ public class MetsIndexer extends AbstractIndexer {
                             logger.info("Using old overview config folder '{}'.", dataFolders.get(DataRepository.PARAM_OVERVIEW).toAbsolutePath());
                         }
                     }
+                    if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+                        // Use the old TEI metadata folder
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
+                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
+                            dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
+                        } else {
+                            logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath());
+                        }
+                    }
                 } else {
                     ret[1] = "PI not found.";
                     throw new IndexerException(ret[1]);
@@ -448,6 +458,11 @@ public class MetsIndexer extends AbstractIndexer {
             logger.debug("OPACURL: {}", opacUrl);
             if (StringUtils.isNotEmpty(opacUrl)) {
                 indexObj.addToLucene(SolrConstants.OPACURL, opacUrl);
+            }
+
+            // Process TEI files
+            if (dataFolders.containsKey(DataRepository.PARAM_TEIMETADATA)) {
+                MetadataHelper.processTEIMetadataFiles(indexObj, dataFolders.get(DataRepository.PARAM_TEIMETADATA));
             }
 
             // put some simple data in lucene array

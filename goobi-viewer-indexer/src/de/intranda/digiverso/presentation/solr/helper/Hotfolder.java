@@ -719,6 +719,9 @@ public class Hotfolder {
                     case "_overview":
                         dataFolders.put(DataRepository.PARAM_OVERVIEW, path);
                         break;
+                    case "_tei":
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
+                        break;
                     default:
                         // nothing
                 }
@@ -755,6 +758,9 @@ public class Hotfolder {
         }
         if (dataFolders.get(DataRepository.PARAM_OVERVIEW) == null) {
             reindexSettings.put(DataRepository.PARAM_OVERVIEW, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
         }
 
         DataRepository dataRepository;
@@ -896,6 +902,9 @@ public class Hotfolder {
                     case "_downloadimages":
                         dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
                         break;
+                    case "_tei":
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
+                        break;
                     default:
                         // nothing;
                 }
@@ -918,6 +927,9 @@ public class Hotfolder {
         }
         if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
             reindexSettings.put(DataRepository.PARAM_MIX, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
         }
 
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
