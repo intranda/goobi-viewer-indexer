@@ -79,7 +79,7 @@
 		<echo>Running JUnit tests...</echo>
 		<mkdir dir="${dir.tests.report}" />
 		<jacoco:coverage>
-			<junit printsummary="withOutAndErr" haltonerror="true" haltonfailure="true" logfailedtests="true" fork="true" forkmode="once">
+			<junit printsummary="on" haltonerror="true" haltonfailure="true" logfailedtests="true" fork="true" forkmode="once">
 				<classpath refid="test.classpath" />
 				<formatter type="xml" usefile="true" />
 				<batchtest todir="${dir.tests.report}">
