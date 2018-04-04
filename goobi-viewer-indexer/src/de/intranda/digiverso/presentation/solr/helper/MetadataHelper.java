@@ -1104,15 +1104,22 @@ public class MetadataHelper {
             }
         }
 
-        // if not MD_VALUE field exists, construct one
         String mdValue = null;
         for (LuceneField field : ret.getFields()) {
             if (field.getField().equals("MD_VALUE") || (field.getField().equals("MD_DISPLAYFORM") && "name".equals(type))
                     || (field.getField().equals("MD_LOCATION") && "location".equals(type))) {
-                mdValue = field.getValue();
+                mdValue = field.getValue().trim();
+                // Hack to remove the comma if a person has no first or last name (e.g when using concat() in XPath)
+                if (mdValue.endsWith(",") && mdValue.length() > 1) {
+                    mdValue = mdValue.substring(0, mdValue.length() - 1);
+                }
+                if (mdValue.startsWith(",") && mdValue.length() > 1) {
+                    mdValue = mdValue.substring(1).trim();
+                }
                 break;
             }
         }
+        // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
             StringBuilder sbValue = new StringBuilder();
             switch (type) {
