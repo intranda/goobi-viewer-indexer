@@ -35,11 +35,11 @@ import de.intranda.digiverso.presentation.solr.model.SolrConstants.MetadataGroup
 
 public class MetadataHelperTest {
 
-    //    private static Hotfolder hotfolder;
+    private static Hotfolder hotfolder;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        //        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
+        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
     }
 
     /**
@@ -486,5 +486,25 @@ public class MetadataHelperTest {
     @Test
     public void extractLanguageCodeFromMetadataField_shouldIgnoreAnySuffixesLongerThanTwoChars() throws Exception {
         Assert.assertNull(MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN_UNTOKENIZED"));
+    }
+
+    /**
+     * @see MetadataHelper#cleanUpName(String)
+     * @verifies remove leading comma
+     */
+    @Test
+    public void cleanUpName_shouldRemoveLeadingComma() throws Exception {
+        Assert.assertEquals("foo", MetadataHelper.cleanUpName(", foo"));
+        Assert.assertEquals("foo", MetadataHelper.cleanUpName(",foo"));
+    }
+
+    /**
+     * @see MetadataHelper#cleanUpName(String)
+     * @verifies remove trailing comma
+     */
+    @Test
+    public void cleanUpName_shouldRemoveTrailingComma() throws Exception {
+        Assert.assertEquals("foo", MetadataHelper.cleanUpName("foo,"));
+        Assert.assertEquals("foo", MetadataHelper.cleanUpName("foo, "));
     }
 }

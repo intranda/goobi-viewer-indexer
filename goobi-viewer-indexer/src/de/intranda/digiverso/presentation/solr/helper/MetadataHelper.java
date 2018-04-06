@@ -1108,15 +1108,8 @@ public class MetadataHelper {
         for (LuceneField field : ret.getFields()) {
             if (field.getField().equals("MD_VALUE") || (field.getField().equals("MD_DISPLAYFORM") && "name".equals(type))
                     || (field.getField().equals("MD_LOCATION") && "location".equals(type))) {
-                mdValue = field.getValue().trim();
-                // Hack to remove the comma if a person has no first or last name (e.g when using concat() in XPath)
-                if (mdValue.endsWith(",") && mdValue.length() > 1) {
-                    mdValue = mdValue.substring(0, mdValue.length() - 1);
-                }
-                if (mdValue.startsWith(",") && mdValue.length() > 1) {
-                    mdValue = mdValue.substring(1).trim();
-                }
-                break;
+                mdValue = cleanUpName(field.getValue());
+                field.setValue(mdValue);
             }
         }
         // if no MD_VALUE field exists, construct one
@@ -1180,6 +1173,29 @@ public class MetadataHelper {
         }
 
         return ret;
+    }
+
+    /**
+     * 
+     * @param value
+     * @return
+     * @should remove leading comma
+     * @should remove trailing comma
+     */
+    static String cleanUpName(String value) {
+        if (value == null) {
+            return value;
+        }
+        value = value.trim();
+        // Hack to remove the comma if a person has no first or last name (e.g when using concat() in XPath)
+        if (value.endsWith(",") && value.length() > 1) {
+            value = value.substring(0, value.length() - 1);
+        }
+        if (value.startsWith(",") && value.length() > 1) {
+            value = value.substring(1).trim();
+        }
+
+        return value;
     }
 
     /**
