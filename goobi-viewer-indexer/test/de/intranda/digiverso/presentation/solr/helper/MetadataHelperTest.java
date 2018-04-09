@@ -527,7 +527,6 @@ public class MetadataHelperTest {
         Assert.assertNotNull(obj.getLuceneFieldWithName(SolrConstants.FULLTEXT));
         String fulltext = obj.getLuceneFieldWithName(SolrConstants.FULLTEXT).getValue();
         Assert.assertNotNull(fulltext);
-       System.out.println(fulltext);
         Assert.assertTrue(fulltext.contains("ENGLISH"));
         Assert.assertTrue(fulltext.contains("FRENCH"));
         Assert.assertTrue(fulltext.contains("Systematische Übersicht über die Elemente für die Auszeichnung von Quellen"));
