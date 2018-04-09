@@ -1375,6 +1375,7 @@ public class MetadataHelper {
      * @throws FatalIndexerException
      * @throws IOException
      * @throws JDOMException
+     * @should append fulltext from all files
      */
     public static void processTEIMetadataFiles(IndexObject indexObj, Path teiFolder) throws FatalIndexerException, IOException, JDOMException {
         if (indexObj == null) {
@@ -1384,8 +1385,8 @@ public class MetadataHelper {
             throw new IllegalArgumentException("teiFolder may not be null");
         }
 
+        StringBuilder sbFulltext = new StringBuilder();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(teiFolder, "*.{xml}")) {
-            boolean fulltextAdded = false;
             for (Path path : stream) {
                 logger.info("Found TEI file: {}", path.getFileName().toString());
                 JDomXP tei = new JDomXP(path.toFile());
@@ -1412,16 +1413,16 @@ public class MetadataHelper {
                     for (Element ele : eleBody.getChildren()) {
                         eleNewRoot.addContent(ele.clone());
                     }
-                    if (!fulltextAdded) {
-                        String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "").trim();
-                        indexObj.addToLucene(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(body));
-                        fulltextAdded = true;
-                    }
+                    String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "").trim();
+                    sbFulltext.append(TextHelper.cleanUpHtmlTags(body)).append('\n');
                 } else {
                     logger.warn("No text body found in TEI");
                 }
 
             }
+        }
+        if (sbFulltext.length() > 0) {
+            indexObj.addToLucene(SolrConstants.FULLTEXT, sbFulltext.toString());
         }
     }
 }
