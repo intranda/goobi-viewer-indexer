@@ -15,6 +15,7 @@
  */
 package de.intranda.digiverso.presentation.solr;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -680,6 +682,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     @Test
+    @Deprecated
     public void deskewAlto_handleMissingFilename() throws Exception {
 
         //        String filename = "AC04987957_00000124";
@@ -728,54 +731,39 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         }
     }
 
-    //    @Test
-    //    public void deskewAlto_shouldRotateCoordinatedCorrectly() throws Exception {
-    //
-    //        //        String filename = "AC04987957_00000124";
-    //        String[] filenames = { "00000005.tif", "00225231.png" };
-    //
-    //        int[] imageWidth = { 4966, 2794 };
-    //
-    //        MetsIndexer indexer = new MetsIndexer(hotfolder);
-    //        File dataFolder = new File("resources/test/alto_deskew");
-    //
-    //        int i = 0;
-    //        for (String filename : filenames) {
-    //
-    //            String baseFilename = FilenameUtils.getBaseName(filename);
-    //
-    //            File altoFile = new File(dataFolder, baseFilename + ".xml");
-    //            String origAltoString = FileUtils.readFileToString(altoFile);
-    //            File outputFolder = new File(dataFolder, "output");
-    //            if (outputFolder.isDirectory()) {
-    //                FileUtils.deleteDirectory(outputFolder);
-    //            }
-    //            outputFolder.mkdir();
-    //
-    //            Map<String, Path> dataFolders = new HashMap<>();
-    //            dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
-    //
-    //            SolrInputDocument doc = new SolrInputDocument();
-    //            doc.setField(SolrConstants.ALTO, origAltoString);
-    //            doc.setField(SolrConstants.WIDTH, "" + imageWidth[i]);
-    //            doc.setField(SolrConstants.FILENAME, filename);
-    //
-    //            MetsIndexer.deskewAlto(dataFolders, doc);
-    //            String deskewedAltoString = (String) doc.getFieldValue(SolrConstants.ALTO);
-    //            AltoDocument deskewedDoc = AltoDocument.getDocumentFromString(deskewedAltoString);
-    //            FileUtils.writeStringToFile(new File(outputFolder, filename + ".xml"), deskewedAltoString, false);
-    //            Word testWord = (Word) deskewedDoc.getFirstPage().getAllWordsAsList().get(1);
-    //            Assert.assertNotNull(testWord);
-    //            if (filename.equals("00000005.tif")) {
-    //                Assert.assertEquals("Name", testWord.getContent());
-    //                Assert.assertEquals(new Rectangle2D.Float(327, 765, 228, 54), testWord.getRect());
-    //                Assert.assertEquals("Tag0", testWord.getAttributeValue("TAGREFS"));
-    //                Assert.assertEquals("Tag0", deskewedDoc.getTags().getTags().getChild("NamedEntityTag", null).getAttributeValue("ID"));
-    //            }
-    //
-    //            i++;
-    //        }
-    //    }
+        @Test
+        public void getGetSizeTest() throws Exception {
+    
+            //        String filename = "AC04987957_00000124";
+            String[] filenames = { "00000005.tif", "00225231.png" };
+    
+            Dimension[] imageSizes = {new Dimension(4678, 6205), new Dimension(2794,3838)};
+    
+            MetsIndexer indexer = new MetsIndexer(hotfolder);
+            File dataFolder = new File("resources/test/image_size");
+    
+            int i = 0;
+            for (String filename : filenames) {
+    
+                File outputFolder = new File(dataFolder, "output");
+                if (outputFolder.isDirectory()) {
+                    FileUtils.deleteDirectory(outputFolder);
+                }
+                outputFolder.mkdir();
+    
+                Map<String, Path> dataFolders = new HashMap<>();
+                dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
+    
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.setField(SolrConstants.FILENAME, filename);
+    
+                Optional<Dimension> dim = MetsIndexer.getSize(dataFolders, doc);
+                Assert.assertTrue(dim.isPresent());
+                Assert.assertEquals(imageSizes[i], dim);
+    
+                i++;
+            }
+        }
 
     /**
      * @see MetsIndexer#getMetsCreateDate()

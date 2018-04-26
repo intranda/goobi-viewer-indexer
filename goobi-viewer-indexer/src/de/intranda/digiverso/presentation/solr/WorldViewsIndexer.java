@@ -1098,14 +1098,15 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
 
                         }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                        }
+                        //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
+//                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
+//                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
+//                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
+//                        }
+//                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
+//                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
+//                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
+//                        }
                         if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                             addNamedEntitiesFields(altoData, doc);
                         }
@@ -1133,9 +1134,18 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     logger.warn(e.getMessage());
                 }
             }
+            
+            //get width/height from image file if it is an actual image and width/height haven't been set
+            if(doc.getFieldValue(SolrConstants.MIMETYPE) != null && "image".equalsIgnoreCase(doc.getFieldValue(SolrConstants.MIMETYPE).toString()) &&  doc.getField(SolrConstants.HEIGHT) == null || doc.getField(SolrConstants.WIDTH) == null) {
+                getSize(dataFolders, doc).ifPresent(dimension -> {
+                    doc.setField(SolrConstants.WIDTH, dimension.width);
+                    doc.setField(SolrConstants.HEIGHT, dimension.height);
+                });
+            }
 
-            //deskew alto if necessary
-            deskewAlto(dataFolders, doc);
+            //Do not deskew ALTO. This may lead to incorrect results since the point around which the ALTO is
+            //rotated is not known 
+//            deskewAlto(dataFolders, doc);
 
             // If the doc has FULLTEXT, indicate it so that the main doc can get a FULLTEXTAVAILABLE field later
             if (doc.getField(SolrConstants.FULLTEXT) != null) {

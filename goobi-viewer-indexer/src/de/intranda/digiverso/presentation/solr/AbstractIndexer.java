@@ -21,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,6 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang.CharUtils;
@@ -54,15 +54,11 @@ import com.drew.metadata.jpeg.JpegDirectory;
 
 import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
 import de.intranda.digiverso.ocr.alto.utils.AltoDeskewer;
-import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
-import de.intranda.digiverso.presentation.solr.helper.TextHelper;
-import de.intranda.digiverso.presentation.solr.helper.language.LanguageHelper;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
-import de.intranda.digiverso.presentation.solr.model.IndexObject;
 import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
@@ -565,6 +561,47 @@ public abstract class AbstractIndexer {
         return Math.abs(n - m);
     }
 
+    static Optional<Dimension> getSize(Map<String, Path> dataFolders, SolrInputDocument doc) {
+        logger.trace("deskewAlto");
+        String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
+        if (filename != null && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
+            File imageFile = new File(filename);
+            imageFile = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), imageFile.getName());
+            if (!imageFile.isFile()) {
+                return Optional.empty();
+            }
+            logger.trace("Found image file {}", imageFile.getAbsolutePath());
+            Dimension imageSize = new Dimension(0, 0);
+            try {
+                Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
+                Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
+                Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+                try {
+                    imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
+                    imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
+                } catch (NullPointerException e) {
+                }
+                try {
+                    imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
+                    imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
+                } catch (NullPointerException e) {
+                }
+                
+                if(imageSize.getHeight()*imageSize.getHeight() > 0) {
+                    return Optional.of(imageSize);
+                }
+
+            } catch (ImageProcessingException | IOException e) {
+                if (e.getMessage().contains("File format is not supported")) {
+                    logger.warn("{}: {}", e.getMessage(), filename);
+                } else {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+    
     /**
      * 
      * @param dataFolders
