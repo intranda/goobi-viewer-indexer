@@ -681,7 +681,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         }
     }
 
-    @Test
+//    @Test
     @Deprecated
     public void deskewAlto_handleMissingFilename() throws Exception {
 
@@ -732,7 +732,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
         @Test
-        public void getGetSizeTest() throws Exception {
+        public void testGetGetSize() throws Exception {
     
             //        String filename = "AC04987957_00000124";
             String[] filenames = { "00000005.tif", "00225231.png" };
@@ -759,7 +759,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     
                 Optional<Dimension> dim = MetsIndexer.getSize(dataFolders, doc);
                 Assert.assertTrue(dim.isPresent());
-                Assert.assertEquals(imageSizes[i], dim);
+                Assert.assertEquals(imageSizes[i], dim.get());
     
                 i++;
             }
