@@ -589,9 +589,9 @@ public class MetsIndexer extends AbstractIndexer {
             // Create group documents if this record is part of a group and no doc exists for that group yet
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
                 Map<String, String> moreMetadata = new HashMap<>();
-                if (indexObj.getLuceneFieldWithName("MD_SHELFMARK") != null) {
-                    moreMetadata.put("MD_SHELFMARK", indexObj.getLuceneFieldWithName("MD_SHELFMARK").getValue());
-                }
+                //                if (indexObj.getLuceneFieldWithName("MD_SHELFMARK") != null) {
+                //                    moreMetadata.put("MD_SHELFMARK", indexObj.getLuceneFieldWithName("MD_SHELFMARK").getValue());
+                //                }
                 if (indexObj.getLuceneFieldWithName("MD_SERIESTITLE") != null) {
                     moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
                     moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
