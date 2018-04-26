@@ -730,40 +730,42 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             i++;
         }
     }
+    
 
-        @Test
-        public void testGetGetSize() throws Exception {
-    
-            //        String filename = "AC04987957_00000124";
-            String[] filenames = { "00000005.tif", "00225231.png" };
-    
-            Dimension[] imageSizes = {new Dimension(4678, 6205), new Dimension(2794,3838)};
-    
-            MetsIndexer indexer = new MetsIndexer(hotfolder);
-            File dataFolder = new File("resources/test/image_size");
-    
-            int i = 0;
-            for (String filename : filenames) {
-    
-                File outputFolder = new File(dataFolder, "output");
-                if (outputFolder.isDirectory()) {
-                    FileUtils.deleteDirectory(outputFolder);
-                }
-                outputFolder.mkdir();
-    
-                Map<String, Path> dataFolders = new HashMap<>();
-                dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
-    
-                SolrInputDocument doc = new SolrInputDocument();
-                doc.setField(SolrConstants.FILENAME, filename);
-    
-                Optional<Dimension> dim = MetsIndexer.getSize(dataFolders, doc);
-                Assert.assertTrue(dim.isPresent());
-                Assert.assertEquals(imageSizes[i], dim.get());
-    
-                i++;
+    @Test
+    public void testGetSize() throws Exception {
+
+        //        String filename = "AC04987957_00000124";
+        String[] filenames = { "00000005.tif", "00225231.png" };
+
+        Dimension[] imageSizes = {new Dimension(4678, 6205), new Dimension(2794,3838)};
+
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        File dataFolder = new File("resources/test/image_size");
+
+        int i = 0;
+        for (String filename : filenames) {
+
+            File outputFolder = new File(dataFolder, "output");
+            if (outputFolder.isDirectory()) {
+                FileUtils.deleteDirectory(outputFolder);
             }
+            outputFolder.mkdir();
+
+            Map<String, Path> dataFolders = new HashMap<>();
+            dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
+
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField(SolrConstants.FILENAME, filename);
+
+            Optional<Dimension> dim = MetsIndexer.getSize(dataFolders, doc);
+            Assert.assertTrue(dim.isPresent());
+            Assert.assertEquals(imageSizes[i], dim.get());
+
+            i++;
         }
+    }
+
 
     /**
      * @see MetsIndexer#getMetsCreateDate()

@@ -561,6 +561,14 @@ public abstract class AbstractIndexer {
         return Math.abs(n - m);
     }
 
+    /**
+     * Retrieves the image size (width/height) for the image referenced in the given page document
+     * The image sizes are retrieved from image metadata. if this doesn't work, no image sizes are set
+     * 
+     * @param dataFolders   The data folders which must include the {@link DataRepository#PARAM_MEDIA} folder containing the image
+     * @param doc           the page document pertaining to the image
+     * @return
+     */
     static Optional<Dimension> getSize(Map<String, Path> dataFolders, SolrInputDocument doc) {
         logger.trace("deskewAlto");
         String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
