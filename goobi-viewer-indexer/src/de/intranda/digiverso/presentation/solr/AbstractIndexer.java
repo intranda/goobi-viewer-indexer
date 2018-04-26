@@ -51,6 +51,7 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
+import com.drew.metadata.png.PngDirectory;
 
 import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
 import de.intranda.digiverso.ocr.alto.utils.AltoDeskewer;
@@ -584,6 +585,12 @@ public abstract class AbstractIndexer {
                 Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
                 Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
                 Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+                Directory pngDirectory = imageMetadata.getFirstDirectoryOfType(PngDirectory.class);
+                try {
+                    imageSize.width = Integer.valueOf(pngDirectory.getDescription(1).replaceAll("\\D", ""));
+                    imageSize.height = Integer.valueOf(pngDirectory.getDescription(2).replaceAll("\\D", ""));
+                } catch (NullPointerException e) {
+                }
                 try {
                     imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
                     imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
