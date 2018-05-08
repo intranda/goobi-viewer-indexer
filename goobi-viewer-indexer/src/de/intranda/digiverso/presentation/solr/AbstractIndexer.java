@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang.CharUtils;
@@ -50,6 +51,7 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
+import com.drew.metadata.png.PngDirectory;
 
 import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
 import de.intranda.digiverso.ocr.alto.utils.AltoDeskewer;
@@ -111,10 +113,10 @@ public abstract class AbstractIndexer {
         }
         // Check whether this is an anchor record
         try {
-            SolrDocumentList hits = solrHelper.search(new StringBuilder(SolrConstants.PI).append(":").append(pi).toString(), Collections
-                    .singletonList(SolrConstants.ISANCHOR));
-            if (!hits.isEmpty() && hits.get(0).getFieldValue(SolrConstants.ISANCHOR) != null && (Boolean) hits.get(0).getFieldValue(
-                    SolrConstants.ISANCHOR)) {
+            SolrDocumentList hits = solrHelper.search(new StringBuilder(SolrConstants.PI).append(":").append(pi).toString(),
+                    Collections.singletonList(SolrConstants.ISANCHOR));
+            if (!hits.isEmpty() && hits.get(0).getFieldValue(SolrConstants.ISANCHOR) != null
+                    && (Boolean) hits.get(0).getFieldValue(SolrConstants.ISANCHOR)) {
                 hits = solrHelper.search(SolrConstants.PI_PARENT + ":" + pi, Collections.singletonList(SolrConstants.PI));
                 if (hits.getNumFound() > 0) {
                     // Only empty anchors may be deleted
@@ -151,8 +153,8 @@ public abstract class AbstractIndexer {
      * @throws SolrServerException
      * @throws FatalIndexerException
      */
-    protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrHelper solrHelper) throws IOException, SolrServerException,
-            FatalIndexerException {
+    protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrHelper solrHelper)
+            throws IOException, SolrServerException, FatalIndexerException {
         Set<String> iddocsToDelete = new HashSet<>();
 
         String query = SolrConstants.PI + ":" + pi;
@@ -165,8 +167,12 @@ public abstract class AbstractIndexer {
                         "{} previous instances of this volume have been found in the index. This shouldn't ever be the case. Check whether there is more than one indexer instance running! All instances will be removed...",
                         hits.getNumFound());
             }
-            String queryPageUrns = new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":").append(pi).append(" AND ").append(SolrConstants.DOCTYPE)
-                    .append(":PAGE").toString();
+            String queryPageUrns = new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
+                    .append(pi)
+                    .append(" AND ")
+                    .append(SolrConstants.DOCTYPE)
+                    .append(":PAGE")
+                    .toString();
             for (SolrDocument doc : hits) {
                 String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
                 if (iddoc != null) {
@@ -199,8 +205,8 @@ public abstract class AbstractIndexer {
         }
 
         // Retrieve all docs for this record via PI_TOPSTRUCT
-        hits = solrHelper.search(new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":").append(pi).toString(), Collections.singletonList(
-                SolrConstants.IDDOC));
+        hits = solrHelper.search(new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":").append(pi).toString(),
+                Collections.singletonList(SolrConstants.IDDOC));
         for (SolrDocument doc : hits) {
             String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             if (iddoc != null) {
@@ -454,8 +460,8 @@ public abstract class AbstractIndexer {
                                     if (StringUtils.isNotEmpty(eleField.getValue())) {
                                         switch (eleField.getName()) {
                                             case "area":
-                                                doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(eleField
-                                                        .getValue()));
+                                                doc.addField(SolrConstants.UGCCOORDS,
+                                                        MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                                 break;
                                             case "firstname":
                                                 doc.addField("MD_FIRSTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
@@ -464,8 +470,8 @@ public abstract class AbstractIndexer {
                                                 doc.addField("MD_LASTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                                 break;
                                             case "personIdentifier":
-                                                doc.addField("MD_PERSONIDENTIFIER", MetadataHelper.applyValueDefaultModifications(eleField
-                                                        .getValue()));
+                                                doc.addField("MD_PERSONIDENTIFIER",
+                                                        MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                                 break;
                                             case "title":
                                                 doc.addField("MD_CORPORATION", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
@@ -474,8 +480,8 @@ public abstract class AbstractIndexer {
                                                 doc.addField("MD_ADDRESS", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                                 break;
                                             case "corporationIdentifier":
-                                                doc.addField("MD_CORPORATIONIDENTIFIER", MetadataHelper.applyValueDefaultModifications(eleField
-                                                        .getValue()));
+                                                doc.addField("MD_CORPORATIONIDENTIFIER",
+                                                        MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                                 break;
                                             case "street":
                                                 doc.addField("MD_STREET", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
@@ -556,6 +562,61 @@ public abstract class AbstractIndexer {
         return Math.abs(n - m);
     }
 
+    /**
+     * Retrieves the image size (width/height) for the image referenced in the given page document
+     * The image sizes are retrieved from image metadata. if this doesn't work, no image sizes are set
+     * 
+     * @param dataFolders   The data folders which must include the {@link DataRepository#PARAM_MEDIA} folder containing the image
+     * @param doc           the page document pertaining to the image
+     * @return
+     */
+    static Optional<Dimension> getSize(Map<String, Path> dataFolders, SolrInputDocument doc) {
+        logger.trace("deskewAlto");
+        String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
+        if (filename != null && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
+            File imageFile = new File(filename);
+            imageFile = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), imageFile.getName());
+            if (!imageFile.isFile()) {
+                return Optional.empty();
+            }
+            logger.trace("Found image file {}", imageFile.getAbsolutePath());
+            Dimension imageSize = new Dimension(0, 0);
+            try {
+                Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
+                Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
+                Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+                Directory pngDirectory = imageMetadata.getFirstDirectoryOfType(PngDirectory.class);
+                try {
+                    imageSize.width = Integer.valueOf(pngDirectory.getDescription(1).replaceAll("\\D", ""));
+                    imageSize.height = Integer.valueOf(pngDirectory.getDescription(2).replaceAll("\\D", ""));
+                } catch (NullPointerException e) {
+                }
+                try {
+                    imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
+                    imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
+                } catch (NullPointerException e) {
+                }
+                try {
+                    imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
+                    imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
+                } catch (NullPointerException e) {
+                }
+                
+                if(imageSize.getHeight()*imageSize.getHeight() > 0) {
+                    return Optional.of(imageSize);
+                }
+
+            } catch (ImageProcessingException | IOException e) {
+                if (e.getMessage().contains("File format is not supported")) {
+                    logger.warn("{}: {}", e.getMessage(), filename);
+                } else {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+    
     /**
      * 
      * @param dataFolders

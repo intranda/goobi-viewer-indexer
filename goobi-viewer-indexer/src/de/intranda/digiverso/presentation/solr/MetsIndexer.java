@@ -324,6 +324,16 @@ public class MetsIndexer extends AbstractIndexer {
                             logger.info("Using old overview config folder '{}'.", dataFolders.get(DataRepository.PARAM_OVERVIEW).toAbsolutePath());
                         }
                     }
+                    if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+                        // Use the old TEI metadata folder
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
+                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
+                            dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
+                        } else {
+                            logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIMETADATA).toAbsolutePath());
+                        }
+                    }
                 } else {
                     ret[1] = "PI not found.";
                     throw new IndexerException(ret[1]);
@@ -450,6 +460,11 @@ public class MetsIndexer extends AbstractIndexer {
                 indexObj.addToLucene(SolrConstants.OPACURL, opacUrl);
             }
 
+            // Process TEI files
+            if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) != null) {
+                MetadataHelper.processTEIMetadataFiles(indexObj, dataFolders.get(DataRepository.PARAM_TEIMETADATA));
+            }
+
             // put some simple data in lucene array
             indexObj.pushSimpleDataToLuceneArray();
 
@@ -574,9 +589,9 @@ public class MetsIndexer extends AbstractIndexer {
             // Create group documents if this record is part of a group and no doc exists for that group yet
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
                 Map<String, String> moreMetadata = new HashMap<>();
-                if (indexObj.getLuceneFieldWithName("MD_SHELFMARK") != null) {
-                    moreMetadata.put("MD_SHELFMARK", indexObj.getLuceneFieldWithName("MD_SHELFMARK").getValue());
-                }
+                //                if (indexObj.getLuceneFieldWithName("MD_SHELFMARK") != null) {
+                //                    moreMetadata.put("MD_SHELFMARK", indexObj.getLuceneFieldWithName("MD_SHELFMARK").getValue());
+                //                }
                 if (indexObj.getLuceneFieldWithName("MD_SERIESTITLE") != null) {
                     moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
                     moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
@@ -1139,7 +1154,7 @@ public class MetsIndexer extends AbstractIndexer {
                             doc.addField("MDNUM_FILESIZE", -1);
                         }
                     } catch (FileNotFoundException | NoSuchFileException e) {
-                        logger.error(e.getMessage());
+                        logger.error("File not found: " + e.getMessage());
                         doc.addField("MDNUM_FILESIZE", -1);
                     } catch (IOException e) {
                         logger.error(e.getMessage(), e);

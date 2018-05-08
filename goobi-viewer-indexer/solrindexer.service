@@ -2,8 +2,8 @@
 Description=Goobi viewer - Indexer
 After=tomcat8.service
 Requires=tomcat8.service
-After=tomcat8-solr.service
-Requires=tomcat8-solr.service
+#After=tomcat8-solr.service
+#Requires=tomcat8-solr.service
 
 
 [Service]

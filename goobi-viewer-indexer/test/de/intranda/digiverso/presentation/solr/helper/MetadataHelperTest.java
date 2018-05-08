@@ -15,10 +15,14 @@
  */
 package de.intranda.digiverso.presentation.solr.helper;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.SynchronousQueue;
 
 import org.apache.commons.collections.MultiMap;
 import org.jdom2.Document;
@@ -29,17 +33,19 @@ import org.junit.Test;
 
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper.PrimitiveDate;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
+import de.intranda.digiverso.presentation.solr.model.IndexObject;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.MetadataGroupType;
 
 public class MetadataHelperTest {
 
-    //    private static Hotfolder hotfolder;
+    @SuppressWarnings("unused")
+    private static Hotfolder hotfolder;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        //        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
+        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
     }
 
     /**
@@ -486,5 +492,43 @@ public class MetadataHelperTest {
     @Test
     public void extractLanguageCodeFromMetadataField_shouldIgnoreAnySuffixesLongerThanTwoChars() throws Exception {
         Assert.assertNull(MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN_UNTOKENIZED"));
+    }
+
+    /**
+     * @see MetadataHelper#cleanUpName(String)
+     * @verifies remove leading comma
+     */
+    @Test
+    public void cleanUpName_shouldRemoveLeadingComma() throws Exception {
+        Assert.assertEquals("foo", MetadataHelper.cleanUpName(", foo"));
+        Assert.assertEquals("foo", MetadataHelper.cleanUpName(",foo"));
+    }
+
+    /**
+     * @see MetadataHelper#cleanUpName(String)
+     * @verifies remove trailing comma
+     */
+    @Test
+    public void cleanUpName_shouldRemoveTrailingComma() throws Exception {
+        Assert.assertEquals("foo", MetadataHelper.cleanUpName("foo,"));
+        Assert.assertEquals("foo", MetadataHelper.cleanUpName("foo, "));
+    }
+
+    /**
+     * @see MetadataHelper#processTEIMetadataFiles(IndexObject,Path)
+     * @verifies append fulltext from all files
+     */
+    @Test
+    public void processTEIMetadataFiles_shouldAppendFulltextFromAllFiles() throws Exception {
+        IndexObject obj = new IndexObject(1L);
+        Path teiFolder = Paths.get("resources/test/WorldViews/gei_test_sthe_quelle_01_tei");
+        Assert.assertTrue(Files.isDirectory(teiFolder));
+        MetadataHelper.processTEIMetadataFiles(obj, teiFolder);
+        Assert.assertNotNull(obj.getLuceneFieldWithName(SolrConstants.FULLTEXT));
+        String fulltext = obj.getLuceneFieldWithName(SolrConstants.FULLTEXT).getValue();
+        Assert.assertNotNull(fulltext);
+        Assert.assertTrue(fulltext.contains("ENGLISH"));
+        Assert.assertTrue(fulltext.contains("FRENCH"));
+        Assert.assertTrue(fulltext.contains("Systematische Übersicht über die Elemente für die Auszeichnung von Quellen"));
     }
 }

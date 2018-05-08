@@ -88,8 +88,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
     private boolean hasFulltext = false;
 
-    private List<JDomXP> teiDocuments = new ArrayList<>(2);
-
     /**
      * Constructor.
      * 
@@ -148,8 +146,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     logger.debug("PI: {}", indexObj.getPi());
 
                     // Determine the data repository to use
-                    DataRepository[] repositories = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, mainFile, dataFolders, hotfolder
-                            .getSolrHelper());
+                    DataRepository[] repositories =
+                            hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, mainFile, dataFolders, hotfolder.getSolrHelper());
                     dataRepository = repositories[0];
                     previousDataRepository = repositories[1];
 
@@ -160,8 +158,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     ret[0] = new StringBuilder(indexObj.getPi()).append(AbstractIndexer.XML_EXTENSION).toString();
                     if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
                         // Use the old media folder
-                        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_MEDIA,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
                             dataFolders.put(DataRepository.PARAM_MEDIA, null);
                         } else {
@@ -170,8 +168,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
                         // Use the old text folder
-                        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_FULLTEXT,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXT))) {
                             dataFolders.put(DataRepository.PARAM_FULLTEXT, null);
                         } else {
@@ -180,19 +178,19 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
                         // Use the old crowdsourcing text folder
-                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD))) {
                             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, null);
                         } else {
-                            logger.info("Using old crowdsourcing text folder '{}'.", dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD)
-                                    .toAbsolutePath());
+                            logger.info("Using old crowdsourcing text folder '{}'.",
+                                    dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath());
                         }
                     }
                     if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
                         // Use the old TEI metadata folder
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
                             dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
                         } else {
@@ -201,8 +199,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
                         // Use the old TEI word coordinate folder
-                        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_TEIWC,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIWC))) {
                             dataFolders.put(DataRepository.PARAM_TEIWC, null);
                         } else {
@@ -211,8 +209,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
                         // Use the old ALTO folder
-                        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_ALTO,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO))) {
                             dataFolders.put(DataRepository.PARAM_ALTO, null);
                         } else {
@@ -221,19 +219,19 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
                         // Use the old crowdsourcing ALTO folder
-                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_ALTOCROWD,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD))) {
                             dataFolders.put(DataRepository.PARAM_ALTOCROWD, null);
                         } else {
-                            logger.info("Using old crowdsourcing ALTO folder '{}'.", dataFolders.get(DataRepository.PARAM_ALTOCROWD)
-                                    .toAbsolutePath());
+                            logger.info("Using old crowdsourcing ALTO folder '{}'.",
+                                    dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath());
                         }
                     }
                     if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
                         // Use the old ABBYY folder
-                        dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get(dataRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_ABBYY,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY))) {
                             dataFolders.put(DataRepository.PARAM_ABBYY, null);
                         } else {
@@ -242,8 +240,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
                         // Use the old user generated content folder
-                        dataFolders.put(DataRepository.PARAM_UGC, Paths.get(dataRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_UGC,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_UGC))) {
                             dataFolders.put(DataRepository.PARAM_UGC, null);
                         } else {
@@ -252,8 +250,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_OVERVIEW) == null) {
                         // Use the old overview config folder
-                        dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_OVERVIEW,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_OVERVIEW))) {
                             dataFolders.put(DataRepository.PARAM_OVERVIEW, null);
                         } else {
@@ -360,49 +358,10 @@ public class WorldViewsIndexer extends AbstractIndexer {
             int workDepth = 0; // depth of the docstrct that has ISWORK (volume or monograph)
 
             // Process TEI files
-            if (dataFolders.containsKey(DataRepository.PARAM_TEIMETADATA)) {
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_TEIMETADATA), "*.{xml}")) {
-                    boolean fulltextAdded = false;
-                    for (Path path : stream) {
-                        logger.info("Found TEI file: {}", path.getFileName().toString());
-                        JDomXP tei = new JDomXP(path.toFile());
-                        teiDocuments.add(tei);
-                        MetadataHelper.writeMetadataToObject(indexObj, tei.getRootElement(), "", tei);
-
-                        // Add text body
-                        Element eleText = tei.getRootElement().getChild("text", null);
-                        if (eleText != null && eleText.getChild("body", null) != null) {
-                            String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml")); // TODO extract language from a different element? - No, this is the correct element (Florian)
-                            String fileFieldName = SolrConstants.FILENAME_TEI;
-                            if (language != null) {
-                                //                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
-                                String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();
-                                if (isoCode != null) {
-                                    fileFieldName += SolrConstants._LANG_ + isoCode.toUpperCase();
-                                }
-                                indexObj.getLanguages().add(isoCode);
-                            }
-                            indexObj.addToLucene(fileFieldName, path.getFileName().toString());
-
-                            // Add searchable version of the text
-                            Element eleBody = eleText.getChild("body", null);
-                            Element eleNewRoot = new Element("tempRoot");
-                            for (Element ele : eleBody.getChildren()) {
-                                eleNewRoot.addContent(ele.clone());
-                            }
-                            if (!fulltextAdded) {
-                                String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "")
-                                        .trim();
-                                indexObj.addToLucene(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(body));
-                                fulltextAdded = true;
-                            }
-                        } else {
-                            logger.warn("No text body found in TEI");
-                        }
-
-                    }
-                }
+            if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) != null) {
+                MetadataHelper.processTEIMetadataFiles(indexObj, dataFolders.get(DataRepository.PARAM_TEIMETADATA));
             }
+
             // Add IndexObject member values as Solr fields (after processing the TEI files!)
             indexObj.pushSimpleDataToLuceneArray();
 
@@ -445,8 +404,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
                 }
                 if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
-                    indexObj.addToLucene("MD_ORDERLABELRANGE", new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj
-                            .getLastPageLabel()).toString());
+                    indexObj.addToLucene("MD_ORDERLABELRANGE",
+                            new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
                 }
             }
 
@@ -521,8 +480,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                 doc.addField(SolrConstants.IDDOC, iddoc);
                 if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                    logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD, doc.getFieldValue(
-                            SolrConstants.LABEL));
+                    logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
+                            doc.getFieldValue(SolrConstants.LABEL));
                     doc.addField(SolrConstants.GROUPFIELD, iddoc);
                 }
                 doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
@@ -590,9 +549,9 @@ public class WorldViewsIndexer extends AbstractIndexer {
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
 
-            if (thumbnailFile == null || pageDoc.containsKey(SolrConstants.THUMBNAILREPRESENT) || (currentIndexObj != null && currentIndexObj
-                    .getThumbnailRepresent() != null && currentIndexObj.getThumbnailRepresent().equals(pageDoc.getFieldValue(
-                            SolrConstants.FILENAME)))) {
+            if (thumbnailFile == null || pageDoc.containsKey(SolrConstants.THUMBNAILREPRESENT)
+                    || (currentIndexObj != null && currentIndexObj.getThumbnailRepresent() != null
+                            && currentIndexObj.getThumbnailRepresent().equals(pageDoc.getFieldValue(SolrConstants.FILENAME)))) {
                 thumbnailFile = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
                 thumbnailOrder = (int) pageDoc.getFieldValue(SolrConstants.ORDER);
                 if (pageDoc.containsKey(SolrConstants.THUMBNAILREPRESENT)) {
@@ -675,8 +634,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                     doc.addField(SolrConstants.IDDOC, iddoc);
                     if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                        logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD, doc.getFieldValue(
-                                SolrConstants.LABEL));
+                        logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
+                                doc.getFieldValue(SolrConstants.LABEL));
                         doc.addField(SolrConstants.GROUPFIELD, iddoc);
                     }
                     // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped. Since child docstructs are added recursively, this should be the case without further conditions.
@@ -764,8 +723,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             // Add used-generated content docs
             if (dataFolders.get(DataRepository.PARAM_UGC) != null && pageDoc.getField(SolrConstants.UGCTERMS) == null) {
-                writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC), String.valueOf(
-                        rootIndexObj.getParentPI()), (Integer) pageDoc.getFieldValue(SolrConstants.ORDER), pageFileBaseName));
+                writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                        String.valueOf(rootIndexObj.getParentPI()), (Integer) pageDoc.getFieldValue(SolrConstants.ORDER), pageFileBaseName));
             }
 
             // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
@@ -827,8 +786,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
             }
             if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
-                indexObj.addToLucene("MD_ORDERLABELRANGE", new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj
-                        .getLastPageLabel()).toString());
+                indexObj.addToLucene("MD_ORDERLABELRANGE",
+                        new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
             }
         }
 
@@ -991,8 +950,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
             boolean foundCrowdsourcingData = false;
             if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
                 try {
-                    altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(),
-                            baseFileName + XML_EXTENSION));
+                    altoData = TextHelper.readAltoFile(
+                            new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
                 } catch (JDOMException | IOException e) {
@@ -1010,14 +969,15 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
                     }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                        doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                        logger.debug("Added WIDTH from crowdsourcing ALTO for page {}", order);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                        doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                        logger.debug("Added WIDTH from crowdsourcing ALTO for page {}", order);
-                    }
+                    //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
+//                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
+//                        doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
+//                        logger.debug("Added WIDTH from crowdsourcing ALTO for page {}", order);
+//                    }
+//                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
+//                        doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
+//                        logger.debug("Added WIDTH from crowdsourcing ALTO for page {}", order);
+//                    }
                     if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                         addNamedEntitiesFields(altoData, doc);
                     }
@@ -1026,8 +986,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
             if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
-                        false);
+                String fulltext =
+                        TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD), false);
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
@@ -1037,11 +997,11 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 }
             }
             // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
-            if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null) && dataFolders
-                    .get(DataRepository.PARAM_ALTO) != null) {
+            if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
+                    && dataFolders.get(DataRepository.PARAM_ALTO) != null) {
                 try {
-                    altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName
-                            + XML_EXTENSION));
+                    altoData = TextHelper.readAltoFile(
+                            new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1058,14 +1018,15 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                     }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                        doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                        logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                        doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                        logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                    }
+                    //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
+//                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
+//                        doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
+//                        logger.debug("Added WIDTH from regular ALTO for page {}", order);
+//                    }
+//                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
+//                        doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
+//                        logger.debug("Added WIDTH from regular ALTO for page {}", order);
+//                    }
                     if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                         addNamedEntitiesFields(altoData, doc);
                     }
@@ -1087,27 +1048,28 @@ public class WorldViewsIndexer extends AbstractIndexer {
             if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null) {
                 try {
                     try {
-                        altoData = TextHelper.readAbbyyToAlto(new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
-                                baseFileName + XML_EXTENSION));
+                        altoData = TextHelper.readAbbyyToAlto(
+                                new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                         if (altoData != null) {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                                 doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
                                 logger.debug("Added ALTO from regular ALTO for page {}", order);
                             }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(
-                                    SolrConstants.FULLTEXT) == null) {
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
+                                    && doc.getField(SolrConstants.FULLTEXT) == null) {
                                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                                 doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                                 logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                             }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                                doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                                logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                            }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                                doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                                logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                            }
+                            //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
+//                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
+//                                doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
+//                                logger.debug("Added WIDTH from regular ALTO for page {}", order);
+//                            }
+//                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
+//                                doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
+//                                logger.debug("Added WIDTH from regular ALTO for page {}", order);
+//                            }
                             if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                                 addNamedEntitiesFields(altoData, doc);
                             }
@@ -1125,8 +1087,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
             // Read word coords from TEI only if none has been read from ALTO for this page yet
             if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
                 try {
-                    altoData = TextHelper.readTeiToAlto(new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName
-                            + XML_EXTENSION));
+                    altoData = TextHelper.readTeiToAlto(
+                            new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                     if (altoData != null) {
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                             doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
@@ -1139,14 +1101,15 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
 
                         }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                        }
+                        //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
+//                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
+//                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
+//                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
+//                        }
+//                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
+//                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
+//                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
+//                        }
                         if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                             addNamedEntitiesFields(altoData, doc);
                         }
@@ -1160,11 +1123,11 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
                 try {
-                    Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                            baseFileName + XML_EXTENSION));
+                    Map<String, String> mixData = TextHelper
+                            .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                     for (String key : mixData.keySet()) {
-                        if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null) && !(key.equals(SolrConstants.HEIGHT)
-                                && doc.getField(SolrConstants.HEIGHT) != null)) {
+                        if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
+                                && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
                             doc.addField(key, mixData.get(key));
                         }
                     }
@@ -1174,9 +1137,18 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     logger.warn(e.getMessage());
                 }
             }
+            
+            //get width/height from image file if it is an actual image and width/height haven't been set
+            if(doc.getFieldValue(SolrConstants.MIMETYPE) != null && "image".equalsIgnoreCase(doc.getFieldValue(SolrConstants.MIMETYPE).toString()) &&  doc.getField(SolrConstants.HEIGHT) == null || doc.getField(SolrConstants.WIDTH) == null) {
+                getSize(dataFolders, doc).ifPresent(dimension -> {
+                    doc.addField(SolrConstants.WIDTH, dimension.width);
+                    doc.addField(SolrConstants.HEIGHT, dimension.height);
+                });
+            }
 
-            //deskew alto if necessary
-            deskewAlto(dataFolders, doc);
+            //Do not deskew ALTO. This may lead to incorrect results since the point around which the ALTO is
+            //rotated is not known 
+//            deskewAlto(dataFolders, doc);
 
             // If the doc has FULLTEXT, indicate it so that the main doc can get a FULLTEXTAVAILABLE field later
             if (doc.getField(SolrConstants.FULLTEXT) != null) {
@@ -1202,8 +1174,11 @@ public class WorldViewsIndexer extends AbstractIndexer {
         logger.debug("copyAndReIndexAnchor: {}", indexObj.getPi());
         if (indexObj.getParent() != null) {
             String piParent = indexObj.getParent().getPi();
-            String indexedAnchorFilePath = new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString())
-                    .append("/").append(piParent).append(AbstractIndexer.XML_EXTENSION).toString();
+            String indexedAnchorFilePath =
+                    new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
+                            .append(piParent)
+                            .append(AbstractIndexer.XML_EXTENSION)
+                            .toString();
             Path indexedAnchor = Paths.get(indexedAnchorFilePath);
             if (Files.exists(indexedAnchor)) {
                 hotfolder.getReindexQueue().add(indexedAnchor);
