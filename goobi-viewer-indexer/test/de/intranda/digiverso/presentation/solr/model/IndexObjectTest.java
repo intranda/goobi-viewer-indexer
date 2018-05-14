@@ -369,4 +369,19 @@ public class IndexObjectTest {
         indexObj.removeDuplicateGroupedMetadata();
         Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
     }
+
+    /**
+     * @see IndexObject#writeLanguages()
+     * @verifies add languages from metadata fields
+     */
+    @Test
+    public void writeLanguages_shouldAddLanguagesFromMetadataFields() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        indexObj.getLuceneFields().add(new LuceneField("MD_TITLE_LANG_EN", "Title"));
+        indexObj.getLuceneFields().add(new LuceneField("MD_TITLE_LANG_DE", "Titel"));
+        indexObj.writeLanguages();
+        Assert.assertEquals(2, indexObj.getLanguages().size());
+        Assert.assertTrue(indexObj.getLanguages().contains("en"));
+        Assert.assertTrue(indexObj.getLanguages().contains("de"));
+    }
 }

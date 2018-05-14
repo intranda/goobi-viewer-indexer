@@ -114,8 +114,7 @@ public class IndexObject {
 
             // Add IDDOC of the top element of this work as 'IDDOC_TOPSTRUCT' (required for bookshelves)
             IndexObject top = this;
-            while (top.getParent() != null && !top.getParent()
-                    .isAnchor()) {
+            while (top.getParent() != null && !top.getParent().isAnchor()) {
                 top = top.getParent();
             }
             addToLucene(SolrConstants.IDDOC_TOPSTRUCT, String.valueOf(top.getIddoc()));
@@ -191,7 +190,24 @@ public class IndexObject {
         }
     }
 
+    /**
+     * @should add languages from metadata fields
+     */
     public void writeLanguages() {
+        if (languages.isEmpty()) {
+            Set<String> languageSet = new HashSet<>();
+            for (LuceneField field : luceneFields) {
+                if (field.getField().contains(SolrConstants._LANG_)) {
+                    String lang = field.getField()
+                            .substring(field.getField().lastIndexOf(SolrConstants._LANG_) + SolrConstants._LANG_.length())
+                            .toLowerCase();
+                    languageSet.add(lang);
+                }
+            }
+            if (!languageSet.isEmpty()) {
+                languages.addAll(languageSet);
+            }
+        }
         if (!languages.isEmpty()) {
             for (String language : languages) {
                 addToLucene(SolrConstants.LANGUAGE, language);
@@ -209,8 +225,7 @@ public class IndexObject {
      */
     public LuceneField getLuceneFieldWithName(String name) {
         for (LuceneField luceneField : luceneFields) {
-            if (luceneField.getField()
-                    .equals(name)) {
+            if (luceneField.getField().equals(name)) {
                 return luceneField;
             }
         }
@@ -229,8 +244,7 @@ public class IndexObject {
         List<LuceneField> ret = new ArrayList<>();
 
         for (LuceneField luceneField : luceneFields) {
-            if (luceneField.getField()
-                    .equals(name)) {
+            if (luceneField.getField().equals(name)) {
                 ret.add(luceneField);
             }
         }
