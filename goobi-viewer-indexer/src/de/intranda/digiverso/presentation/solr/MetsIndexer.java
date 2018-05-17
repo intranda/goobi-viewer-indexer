@@ -728,15 +728,14 @@ public class MetsIndexer extends AbstractIndexer {
             }
             boolean thumbnailSet = false;
             SolrInputDocument firstPageDoc = pageDocs.get(0);
-            int firstPageOrder = (int) firstPageDoc.getFieldValue(SolrConstants.ORDER);
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageOrder)));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             if (StringUtils.isEmpty(filePathBanner)) {
                 // Add thumbnail information from the first page
                 //                String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) firstPageDoc
                 //                        .getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
                 String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
                 ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
                 ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
                 thumbnailSet = true;
             }
@@ -750,6 +749,8 @@ public class MetsIndexer extends AbstractIndexer {
                     ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
                     // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
                     ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
+                    ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(pageDoc.getFieldValue(SolrConstants.ORDER))));
+                    ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) pageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
                     ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) pageDoc.getFieldValue(SolrConstants.MIMETYPE)));
                     thumbnailSet = true;
                 }
@@ -848,13 +849,13 @@ public class MetsIndexer extends AbstractIndexer {
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pageDocs.isEmpty()) {
                 logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                         filePathBanner);
-                //                String pageFileName = pageDocs.get(0).getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) pageDocs.get(0)
-                //                        .getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) pageDocs.get(0).getFieldValue(SolrConstants.FILENAME);
-                String pageFileName = (String) pageDocs.get(0).getFieldValue(SolrConstants.FILENAME);
+                String pageFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
                 ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
                 // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
                 ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
-                ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) pageDocs.get(0).getFieldValue(SolrConstants.MIMETYPE)));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
+                ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
                 thumbnailSet = true;
             }
 
