@@ -228,13 +228,9 @@ public class MetadataHelper {
                         // User prefix as prefix
                         query = queryPrefix + xpath;
                     }
-                    if (xpath.startsWith("teiHeader"))
-                        logger.info("XPath: {}", query);
                     for (Element currentElement : elementsToIterateOver) {
                         List list = xp.evaluate(query, currentElement);
                         if (list != null) {
-                            if (xpath.startsWith("teiHeader"))
-                                logger.info("found: {}", list.size());
                             for (Object xpathAnswerObject : list) {
                                 if (configurationItem.isGroupEntity()) {
                                     // Aggregated / grouped metadata
@@ -346,6 +342,10 @@ public class MetadataHelper {
                                         xpathAnswerString =
                                                 new StringBuilder(xpathAnswerString).append(configurationItem.getValuepostfix()).toString();
                                         fieldValue = xpathAnswerString.trim();
+                                        // Hack to prevent empty concatenated collection names
+                                        if ("#".equals(fieldValue)) {
+                                            continue;
+                                        }
                                         if (configurationItem.isOneToken()) {
                                             fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
                                         }
