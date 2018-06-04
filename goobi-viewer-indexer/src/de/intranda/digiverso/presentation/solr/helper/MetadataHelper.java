@@ -342,13 +342,15 @@ public class MetadataHelper {
                                         xpathAnswerString =
                                                 new StringBuilder(xpathAnswerString).append(configurationItem.getValuepostfix()).toString();
                                         fieldValue = xpathAnswerString.trim();
-                                        // Hack to prevent empty concatenated collection names
-                                        if (configurationItem.getSplittingCharacter().equals(fieldValue)) {
-                                            continue;
-                                        }
-                                        // Hack to prevent collection names ending with a separator
-                                        if (fieldValue.endsWith(configurationItem.getSplittingCharacter())) {
-                                            fieldValue = fieldValue.substring(0, fieldValue.length() - 1);
+                                        if (configurationItem.getSplittingCharacter() != null) {
+                                            // Hack to prevent empty concatenated collection names
+                                            if (configurationItem.getSplittingCharacter().equals(fieldValue)) {
+                                                continue;
+                                            }
+                                            // Hack to prevent collection names ending with a separator
+                                            if (fieldValue.endsWith(configurationItem.getSplittingCharacter())) {
+                                                fieldValue = fieldValue.substring(0, fieldValue.length() - 1);
+                                            }
                                         }
                                         if (configurationItem.isOneToken()) {
                                             fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
