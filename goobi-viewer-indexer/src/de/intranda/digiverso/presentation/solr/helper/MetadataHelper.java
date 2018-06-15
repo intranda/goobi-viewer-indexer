@@ -1151,7 +1151,13 @@ public class MetadataHelper {
         // Add norm data URI, if available (GND only)
         if (!normUriFound) {
             String authority = ele.getAttributeValue("authority");
-            if (authority != null) {
+            if (authority == null) {
+                // Add valueURI without any other specifications
+                String valueURI = ele.getAttributeValue("valueURI");
+                if (valueURI != null) {
+                    ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
+                }
+            } else {
                 String authorityURI = ele.getAttributeValue("authorityURI");
                 String valueURI = ele.getAttributeValue("valueURI");
                 switch (authority) {
