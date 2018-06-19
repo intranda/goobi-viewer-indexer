@@ -31,6 +31,7 @@ import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
+import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.SingleRepositoryStrategy;
@@ -81,8 +82,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
             Assert.assertEquals(PI + ".xml", ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
-                    + ":1 AND " + SolrConstants.FULLTEXT + ":*", null);
+            SolrDocumentList docList = hotfolder.getSolrHelper()
+                    .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.FULLTEXT + ":*", null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
@@ -95,33 +96,33 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
         // Update doc with new ALTO and UGC (FULLTEXT should be updated via ALTO)
         {
             // New ALTO content
-            Path updateCrowdsourcingAltoFolderSourcePath = Paths.get(
-                    "resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_altocrowd");
-            Path updateCrowdsourcingAltoFolderHotfolderPath = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(),
-                    "PPN517154005#1483455145198_altocrowd");
+            Path updateCrowdsourcingAltoFolderSourcePath =
+                    Paths.get("resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_altocrowd");
+            Path updateCrowdsourcingAltoFolderHotfolderPath =
+                    Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_altocrowd");
             Files.createDirectory(updateCrowdsourcingAltoFolderHotfolderPath);
-            Assert.assertEquals(1, Hotfolder.copyDirectory(updateCrowdsourcingAltoFolderSourcePath.toFile(),
-                    updateCrowdsourcingAltoFolderHotfolderPath.toFile()));
+            Assert.assertEquals(1,
+                    Hotfolder.copyDirectory(updateCrowdsourcingAltoFolderSourcePath.toFile(), updateCrowdsourcingAltoFolderHotfolderPath.toFile()));
             dataFolders.put(DataRepository.PARAM_ALTOCROWD, updateCrowdsourcingAltoFolderHotfolderPath);
 
             // New FULLTEXT (should be ignored because ALTO is present)
-            Path updateCrowdsourcingTextFolderSourcePath = Paths.get(
-                    "resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
-            Path updateCrowdsourcingTextFolderHotfolderPath = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(),
-                    "PPN517154005#1483455145198_txtcrowd");
+            Path updateCrowdsourcingTextFolderSourcePath =
+                    Paths.get("resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
+            Path updateCrowdsourcingTextFolderHotfolderPath =
+                    Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
             Files.createDirectory(updateCrowdsourcingTextFolderHotfolderPath);
-            Assert.assertEquals(1, Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath.toFile(),
-                    updateCrowdsourcingTextFolderHotfolderPath.toFile()));
+            Assert.assertEquals(1,
+                    Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath.toFile(), updateCrowdsourcingTextFolderHotfolderPath.toFile()));
             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, updateCrowdsourcingTextFolderHotfolderPath);
 
             // New UGC
-            Path updateCrowdsourcingUgcFolderSourcePath = Paths.get(
-                    "resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_ugc");
-            Path updateCrowdsourcingUgcFolderHotfolderPath = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(),
-                    "PPN517154005#1483455145198_ugc");
+            Path updateCrowdsourcingUgcFolderSourcePath =
+                    Paths.get("resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_ugc");
+            Path updateCrowdsourcingUgcFolderHotfolderPath =
+                    Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_ugc");
             Files.createDirectory(updateCrowdsourcingUgcFolderHotfolderPath);
-            Assert.assertEquals(1, Hotfolder.copyDirectory(updateCrowdsourcingUgcFolderSourcePath.toFile(), updateCrowdsourcingUgcFolderHotfolderPath
-                    .toFile()));
+            Assert.assertEquals(1,
+                    Hotfolder.copyDirectory(updateCrowdsourcingUgcFolderSourcePath.toFile(), updateCrowdsourcingUgcFolderHotfolderPath.toFile()));
             dataFolders.put(DataRepository.PARAM_UGC, updateCrowdsourcingUgcFolderHotfolderPath);
 
             // Update doc and check updated values
@@ -129,8 +130,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1",
-                    null);
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
+                    + ":1 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
 
@@ -151,10 +152,10 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
         // Update just the FULLTEXT
         {
-            Path updateCrowdsourcingTextFolderSourcePath = Paths.get(
-                    "resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
-            Path updateCrowdsourcingTextFolderHotfolderPath = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(),
-                    "PPN517154005#1483455145198_txtcrowd");
+            Path updateCrowdsourcingTextFolderSourcePath =
+                    Paths.get("resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
+            Path updateCrowdsourcingTextFolderHotfolderPath =
+                    Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
             Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath.toFile(), updateCrowdsourcingTextFolderHotfolderPath.toFile());
             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, updateCrowdsourcingTextFolderHotfolderPath);
 
@@ -162,8 +163,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1",
-                    null);
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
+                    + ":1  AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
 
