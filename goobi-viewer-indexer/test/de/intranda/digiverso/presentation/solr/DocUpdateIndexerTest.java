@@ -88,7 +88,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             SolrDocument doc = docList.get(0);
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(iddoc);
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+            Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+            // TODO check new UGC docs
         }
 
         dataFolders.clear();
