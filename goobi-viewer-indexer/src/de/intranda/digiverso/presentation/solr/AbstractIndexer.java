@@ -89,6 +89,8 @@ public abstract class AbstractIndexer {
     protected DataRepository previousDataRepository;
 
     protected StringBuilder sbLog = new StringBuilder();
+    
+    protected final Set<Integer> ugcAddedChecklist = new HashSet<>();
 
     /**
      * Removes the document represented by the given METS or LIDO file from the index.
@@ -430,8 +432,9 @@ public abstract class AbstractIndexer {
                         List<Element> eleContentList = xmlDoc.getRootElement().getChildren();
                         if (eleContentList != null) {
                             //                            logger.info("Found " + eleContentList.size() + " user generated contents for file " + file.getName());
-                            StringBuilder sbTerms = new StringBuilder();
+                            StringBuilder sbAllTerms = new StringBuilder();
                             for (Element eleContent : eleContentList) {
+                                StringBuilder sbTerms = new StringBuilder();
                                 SolrInputDocument doc = new SolrInputDocument();
                                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                                 doc.addField(SolrConstants.IDDOC, iddoc);
@@ -521,13 +524,17 @@ public abstract class AbstractIndexer {
                                         }
                                     }
                                 }
+                                if (StringUtils.isNotBlank(sbTerms.toString())) {
+                                    doc.addField(SolrConstants.UGCTERMS, sbTerms.toString());
+                                    sbAllTerms.append(sbTerms.toString()).append(" ");
+                                }
                                 ret.add(doc);
                             }
                             // Add plaintext terms to a search field in the page doc
-                            if (StringUtils.isNotBlank(sbTerms.toString())) {
-                                pageDoc.addField(SolrConstants.UGCTERMS, sbTerms.toString());
-                                //                                logger.info("Added search terms to page " + order + " :" + sbTerms.toString().trim());
-                            }
+                            //                            if (StringUtils.isNotBlank(sbAllTerms.toString())) {
+                            // pageDoc.addField(SolrConstants.UGCTERMS, sbAllTerms.toString());
+                            // logger.info("Added search terms to page " + order + " :" + sbTerms.toString().trim());
+                            //                            }
                         }
                     }
                 } catch (FileNotFoundException e) {
@@ -569,11 +576,11 @@ public abstract class AbstractIndexer {
     }
 
     /**
-     * Retrieves the image size (width/height) for the image referenced in the given page document
-     * The image sizes are retrieved from image metadata. if this doesn't work, no image sizes are set
+     * Retrieves the image size (width/height) for the image referenced in the given page document The image sizes are retrieved from image metadata.
+     * if this doesn't work, no image sizes are set
      * 
-     * @param dataFolders   The data folders which must include the {@link DataRepository#PARAM_MEDIA} folder containing the image
-     * @param doc           the page document pertaining to the image
+     * @param dataFolders The data folders which must include the {@link DataRepository#PARAM_MEDIA} folder containing the image
+     * @param doc the page document pertaining to the image
      * @return
      */
     static Optional<Dimension> getSize(Map<String, Path> dataFolders, SolrInputDocument doc) {
@@ -607,8 +614,8 @@ public abstract class AbstractIndexer {
                     imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
                 } catch (NullPointerException e) {
                 }
-                
-                if(imageSize.getHeight()*imageSize.getHeight() > 0) {
+
+                if (imageSize.getHeight() * imageSize.getHeight() > 0) {
                     return Optional.of(imageSize);
                 }
 
@@ -622,7 +629,7 @@ public abstract class AbstractIndexer {
         }
         return Optional.empty();
     }
-    
+
     /**
      * 
      * @param dataFolders

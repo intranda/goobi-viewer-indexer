@@ -98,8 +98,8 @@ public class DocUpdateIndexer extends AbstractIndexer {
                 return ret;
             }
             int order = (int) doc.getFieldValue(SolrConstants.ORDER);
-            String pageFileName = doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED") ? (String) doc.getFieldValue(SolrConstants.FILENAME
-                    + "_HTML-SANDBOXED") : (String) doc.getFieldValue(SolrConstants.FILENAME);
+            String pageFileName = doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
                 ret[1] = "Document " + iddoc + " contains no " + SolrConstants.FILENAME + " field, please checks the index.";
                 return ret;
@@ -109,7 +109,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
 
             //  Find files in data folders and populate update map
             Map<String, Map<String, Object>> partialUpdates = new HashMap<>();
-            
+
             if (dataFolders.get(DataRepository.PARAM_OVERVIEW) != null) {
                 Path staticPageFolder = dataFolders.get(DataRepository.PARAM_OVERVIEW);
                 if (Files.isDirectory(staticPageFolder)) {
@@ -151,9 +151,14 @@ public class DocUpdateIndexer extends AbstractIndexer {
                             // Update FILENAME_ALTO, if it doesn't exist yet
                             String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
                             if (altoFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_ALTO)) {
-                                altoFileName = new StringBuilder().append(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).getFileName()
-                                        .toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(altoFileName)).append(
-                                                XML_EXTENSION).toString();
+                                altoFileName =
+                                        new StringBuilder().append(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).getFileName().toString())
+                                                .append('/')
+                                                .append(pi)
+                                                .append('/')
+                                                .append(FilenameUtils.getBaseName(altoFileName))
+                                                .append(XML_EXTENSION)
+                                                .toString();
                                 Map<String, Object> update = new HashMap<>();
                                 update.put("set", altoFileName);
                                 partialUpdates.put(SolrConstants.FILENAME_ALTO, update);
@@ -196,9 +201,14 @@ public class DocUpdateIndexer extends AbstractIndexer {
                             // Add FILENAME_FULLTEXT, if it doesn't exist yet
                             fulltextFileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
                             if (fulltextFileName != null && !partialUpdates.containsKey(SolrConstants.FILENAME_FULLTEXT)) {
-                                fulltextFileName = new StringBuilder().append(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName()
-                                        .toString()).append('/').append(pi).append('/').append(FilenameUtils.getBaseName(fulltextFileName)).append(
-                                                TXT_EXTENSION).toString();
+                                fulltextFileName =
+                                        new StringBuilder().append(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName().toString())
+                                                .append('/')
+                                                .append(pi)
+                                                .append('/')
+                                                .append(FilenameUtils.getBaseName(fulltextFileName))
+                                                .append(TXT_EXTENSION)
+                                                .toString();
                                 Map<String, Object> update = new HashMap<>();
                                 update.put("set", fulltextFileName);
                                 partialUpdates.put(SolrConstants.FILENAME_FULLTEXT, update);
@@ -212,11 +222,29 @@ public class DocUpdateIndexer extends AbstractIndexer {
             }
             // UGC
             if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
-                SolrInputDocument dummyDoc = new SolrInputDocument();
-                generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC), pi, order, pageFileBaseName);
-                Map<String, Object> update = new HashMap<>();
-                update.put("set", dummyDoc.getFieldValue(SolrConstants.UGCTERMS));
-                partialUpdates.put(SolrConstants.UGCTERMS, update);
+                SolrDocumentList ugcDocList = hotfolder.getSolrHelper().search(
+                        SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
+                        null);
+                if (ugcDocList != null && ugcDocList.isEmpty()) {
+                    // Collect delete old UGC docs
+                    List<String> oldIddocs = new ArrayList<>(ugcDocList.size());
+                    for(SolrDocument oldDoc : ugcDocList) {
+                        oldIddocs.add((String) oldDoc.getFieldValue(SolrConstants.IDDOC));
+                    }
+                    hotfolder.getSolrHelper().deleteDocuments(oldIddocs);
+                    
+                    // Add new UGC docs
+                    SolrInputDocument dummyDoc = new SolrInputDocument();
+                    List<SolrInputDocument> newUgcDocList =
+                            generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC), pi, order, pageFileBaseName);
+                    hotfolder.getSolrHelper().writeToIndex(newUgcDocList);
+                }
+
+                //                SolrInputDocument dummyDoc = new SolrInputDocument();
+                //                generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC), pi, order, pageFileBaseName);
+                //                Map<String, Object> update = new HashMap<>();
+                //                update.put("set", dummyDoc.getFieldValue(SolrConstants.UGCTERMS));
+                //                partialUpdates.put(SolrConstants.UGCTERMS, update);
             }
 
             // Update doc

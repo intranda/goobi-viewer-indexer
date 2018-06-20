@@ -836,9 +836,11 @@ public class MetsIndexer extends AbstractIndexer {
                 }
 
                 // Add used-generated content docs
-                if (dataFolders.get(DataRepository.PARAM_UGC) != null && pageDoc.getField(SolrConstants.UGCTERMS) == null) {
+                int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
+                if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
                     writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                            String.valueOf(indexObj.getTopstructPI()), (Integer) pageDoc.getFieldValue(SolrConstants.ORDER), pageFileBaseName));
+                            String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
+                    ugcAddedChecklist.add(order);
                 }
 
                 // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
