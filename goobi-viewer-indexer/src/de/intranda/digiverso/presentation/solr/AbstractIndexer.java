@@ -489,6 +489,12 @@ public abstract class AbstractIndexer {
                                             case "houseNumber":
                                                 doc.addField("MD_HOUSENUMBER", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                                 break;
+                                            case "district":
+                                                doc.addField("MD_DISTRICT", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                                break;
+                                            case "city":
+                                                doc.addField("MD_CITY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                                break;
                                             case "country":
                                                 doc.addField("MD_COUNTRY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                                 break;
