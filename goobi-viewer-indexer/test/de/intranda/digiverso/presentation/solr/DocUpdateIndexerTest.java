@@ -145,8 +145,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(altoText);
             Assert.assertTrue(altoText.contains("Bollywood!"));
 
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
-            Assert.assertTrue(((String) doc.getFieldValue(SolrConstants.UGCTERMS)).contains("Hütchenspieler"));
+            Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+            //Assert.assertTrue(((String) doc.getFieldValue(SolrConstants.UGCTERMS)).contains("Hütchenspieler"));
         }
 
         dataFolders.clear();
