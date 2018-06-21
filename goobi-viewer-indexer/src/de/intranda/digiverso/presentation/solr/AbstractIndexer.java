@@ -89,7 +89,7 @@ public abstract class AbstractIndexer {
     protected DataRepository previousDataRepository;
 
     protected StringBuilder sbLog = new StringBuilder();
-    
+
     protected final Set<Integer> ugcAddedChecklist = new HashSet<>();
 
     /**
@@ -418,6 +418,7 @@ public abstract class AbstractIndexer {
      * @param fileNameRoot
      * @return
      * @throws FatalIndexerException
+     * @should
      */
     List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, int order, String fileNameRoot)
             throws FatalIndexerException {
@@ -438,6 +439,9 @@ public abstract class AbstractIndexer {
                                 SolrInputDocument doc = new SolrInputDocument();
                                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                                 doc.addField(SolrConstants.IDDOC, iddoc);
+                                if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
+                                    doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                                }
                                 doc.addField(SolrConstants.GROUPFIELD, iddoc);
                                 doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
                                 doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
