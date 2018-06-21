@@ -202,14 +202,4 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
     public void cleanUpNamedEntityValue_shouldThrowIllegalArgumentExceptionGivenNull() throws Exception {
         AbstractIndexer.cleanUpNamedEntityValue(null);
     }
-
-    /**
-     * @see AbstractIndexer#generateUserGeneratedContentDocsForPage(SolrInputDocument,Path,String,int,String)
-     * @verifies construct docs correctly
-     */
-    @Test
-    public void generateUserGeneratedContentDocsForPage_shouldConstructDocsCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
-    }
 }
