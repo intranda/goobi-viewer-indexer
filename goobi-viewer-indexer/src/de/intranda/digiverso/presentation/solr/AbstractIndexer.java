@@ -410,148 +410,151 @@ public abstract class AbstractIndexer {
 
     /**
      * Parses the user generated content XML file for the given page and creates a Solr doc for each content entry. In addition, all content strings
-     * are written into the given page's own search field.
+     * are written into the UGC doc's own search field. To make sure the IDDOC_OWNER value is matches the one in the corresponding page, make sure
+     * this method is called after all docstruct to page mapping is finished.
      * 
      * @param pageDoc
      * @param folder
      * @param order
      * @param fileNameRoot
-     * @return
+     * @return List of Solr input documents for the UGC contents
      * @throws FatalIndexerException
      * @should
      */
     List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, int order, String fileNameRoot)
             throws FatalIndexerException {
-        List<SolrInputDocument> ret = new ArrayList<>();
-
         if (folder != null && Files.isDirectory(folder)) {
             Path file = Paths.get(folder.toAbsolutePath().toString(), fileNameRoot + AbstractIndexer.XML_EXTENSION);
-            if (Files.isRegularFile(file)) {
-                try (FileInputStream fis = new FileInputStream(file.toFile())) {
-                    Document xmlDoc = new SAXBuilder().build(fis);
-                    if (xmlDoc != null && xmlDoc.getRootElement() != null) {
-                        List<Element> eleContentList = xmlDoc.getRootElement().getChildren();
-                        if (eleContentList != null) {
-                            //                            logger.info("Found " + eleContentList.size() + " user generated contents for file " + file.getName());
-                            StringBuilder sbAllTerms = new StringBuilder();
-                            for (Element eleContent : eleContentList) {
-                                StringBuilder sbTerms = new StringBuilder();
-                                SolrInputDocument doc = new SolrInputDocument();
-                                long iddoc = getNextIddoc(hotfolder.getSolrHelper());
-                                doc.addField(SolrConstants.IDDOC, iddoc);
-                                if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
-                                    doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER));
-                                }
-                                doc.addField(SolrConstants.GROUPFIELD, iddoc);
-                                doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
-                                doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
-                                doc.addField(SolrConstants.ORDER, order);
-                                List<Element> eleFieldList = eleContent.getChildren();
-                                switch (eleContent.getName()) {
-                                    case "UserGeneratedPerson":
-                                        doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_PERSON);
-                                        break;
-                                    case "UserGeneratedCorporation":
-                                        doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_CORPORATION);
-                                        break;
-                                    case "UserGeneratedAddress":
-                                        doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
-                                        break;
-                                    case "UserGeneratedComment":
-                                        doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
-                                        break;
-                                    default:
-                                        // nothing
-                                }
-                                for (Element eleField : eleFieldList) {
-                                    if (StringUtils.isNotEmpty(eleField.getValue())) {
-                                        switch (eleField.getName()) {
-                                            case "area":
-                                                doc.addField(SolrConstants.UGCCOORDS,
-                                                        MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "firstname":
-                                                doc.addField("MD_FIRSTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "lastname":
-                                                doc.addField("MD_LASTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "personIdentifier":
-                                                doc.addField("MD_PERSONIDENTIFIER",
-                                                        MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "title":
-                                                doc.addField("MD_CORPORATION", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "address":
-                                                doc.addField("MD_ADDRESS", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "corporationIdentifier":
-                                                doc.addField("MD_CORPORATIONIDENTIFIER",
-                                                        MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "street":
-                                                doc.addField("MD_STREET", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "houseNumber":
-                                                doc.addField("MD_HOUSENUMBER", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "district":
-                                                doc.addField("MD_DISTRICT", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "city":
-                                                doc.addField("MD_CITY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "country":
-                                                doc.addField("MD_COUNTRY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "coordinateX":
-                                                doc.addField("MD_COORDX", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "coordinateY":
-                                                doc.addField("MD_COORDY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            case "text":
-                                                doc.addField("MD_TEXT", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
-                                                break;
-                                            default:
-                                                // nothing
+            if (!Files.isRegularFile(file)) {
+                return Collections.emptyList();
+            }
 
-                                        }
-                                        // Collect all terms in one string
-                                        if (!"area".equals(eleField.getName())) {
-                                            String terms = MetadataHelper.applyValueDefaultModifications(eleField.getValue().trim());
-                                            String termsWithSpaces = " " + terms + " ";
-                                            if (!sbTerms.toString().contains(termsWithSpaces)) {
-                                                sbTerms.append(termsWithSpaces);
-                                            }
+            try (FileInputStream fis = new FileInputStream(file.toFile())) {
+                Document xmlDoc = new SAXBuilder().build(fis);
+                if (xmlDoc != null && xmlDoc.getRootElement() != null) {
+                    List<SolrInputDocument> ret = new ArrayList<>();
+                    List<Element> eleContentList = xmlDoc.getRootElement().getChildren();
+                    if (eleContentList != null) {
+                        //                            logger.info("Found " + eleContentList.size() + " user generated contents for file " + file.getName());
+                        StringBuilder sbAllTerms = new StringBuilder();
+                        for (Element eleContent : eleContentList) {
+                            StringBuilder sbTerms = new StringBuilder();
+                            SolrInputDocument doc = new SolrInputDocument();
+                            long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                            doc.addField(SolrConstants.IDDOC, iddoc);
+                            if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
+                                doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                            }
+                            doc.addField(SolrConstants.GROUPFIELD, iddoc);
+                            doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
+                            doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+                            doc.addField(SolrConstants.ORDER, order);
+                            List<Element> eleFieldList = eleContent.getChildren();
+                            switch (eleContent.getName()) {
+                                case "UserGeneratedPerson":
+                                    doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_PERSON);
+                                    break;
+                                case "UserGeneratedCorporation":
+                                    doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_CORPORATION);
+                                    break;
+                                case "UserGeneratedAddress":
+                                    doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                                    break;
+                                case "UserGeneratedComment":
+                                    doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                                    break;
+                                default:
+                                    // nothing
+                            }
+                            for (Element eleField : eleFieldList) {
+                                if (StringUtils.isNotEmpty(eleField.getValue())) {
+                                    switch (eleField.getName()) {
+                                        case "area":
+                                            doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "firstname":
+                                            doc.addField("MD_FIRSTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "lastname":
+                                            doc.addField("MD_LASTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "personIdentifier":
+                                            doc.addField("MD_PERSONIDENTIFIER", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "title":
+                                            doc.addField("MD_CORPORATION", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "address":
+                                            doc.addField("MD_ADDRESS", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "corporationIdentifier":
+                                            doc.addField("MD_CORPORATIONIDENTIFIER",
+                                                    MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "street":
+                                            doc.addField("MD_STREET", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "houseNumber":
+                                            doc.addField("MD_HOUSENUMBER", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "district":
+                                            doc.addField("MD_DISTRICT", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "city":
+                                            doc.addField("MD_CITY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "country":
+                                            doc.addField("MD_COUNTRY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "coordinateX":
+                                            doc.addField("MD_COORDX", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "coordinateY":
+                                            doc.addField("MD_COORDY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        case "text":
+                                            doc.addField("MD_TEXT", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
+                                        default:
+                                            // nothing
+
+                                    }
+                                    // Collect all terms in one string
+                                    if (!"area".equals(eleField.getName())) {
+                                        String terms = MetadataHelper.applyValueDefaultModifications(eleField.getValue().trim());
+                                        String termsWithSpaces = " " + terms + " ";
+                                        if (!sbTerms.toString().contains(termsWithSpaces)) {
+                                            sbTerms.append(termsWithSpaces);
                                         }
                                     }
                                 }
-                                if (StringUtils.isNotBlank(sbTerms.toString())) {
-                                    doc.addField(SolrConstants.UGCTERMS, sbTerms.toString());
-                                    sbAllTerms.append(sbTerms.toString()).append(" ");
-                                }
-                                ret.add(doc);
                             }
-                            // Add plaintext terms to a search field in the page doc
-                            //                            if (StringUtils.isNotBlank(sbAllTerms.toString())) {
-                            // pageDoc.addField(SolrConstants.UGCTERMS, sbAllTerms.toString());
-                            // logger.info("Added search terms to page " + order + " :" + sbTerms.toString().trim());
-                            //                            }
+                            if (StringUtils.isNotBlank(sbTerms.toString())) {
+                                doc.addField(SolrConstants.UGCTERMS, sbTerms.toString());
+                                sbAllTerms.append(sbTerms.toString()).append(" ");
+                            }
+                            ret.add(doc);
                         }
+                        // Add plaintext terms to a search field in the page doc
+                        //                            if (StringUtils.isNotBlank(sbAllTerms.toString())) {
+                        // pageDoc.addField(SolrConstants.UGCTERMS, sbAllTerms.toString());
+                        // logger.info("Added search terms to page " + order + " :" + sbTerms.toString().trim());
+                        //                            }
                     }
-                } catch (FileNotFoundException e) {
-                    logger.error(e.getMessage());
-                } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
+
+                    return ret;
                 }
+            } catch (FileNotFoundException e) {
+                logger.error(e.getMessage());
+            } catch (JDOMException e) {
+                logger.error(e.getMessage(), e);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
             }
         }
 
-        return ret;
+        return Collections.emptyList();
+
     }
 
     /**

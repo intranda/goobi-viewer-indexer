@@ -567,7 +567,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
                 // Finalize previous docstruct
                 if (currentIndexObj != null) {
-                    finalizeChildDocstruct(currentIndexObj, writeStrategy);
+                    finalizeChildDocstruct(currentIndexObj, dataFolders, writeStrategy);
                 }
 
                 // Create new docstruct object
@@ -718,14 +718,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 }
             }
 
-            // Add used-generated content docs
-            int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
-            if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
-                writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                        String.valueOf(rootIndexObj.getTopstructPI()), order, pageFileBaseName));
-                ugcAddedChecklist.add(order);
-            }
-
             // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
             if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || depth > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(currentIndexObj.getIddoc()));
@@ -757,7 +749,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
         // Finalize last docstruct
         if (currentIndexObj != null) {
-            finalizeChildDocstruct(currentIndexObj, writeStrategy);
+            finalizeChildDocstruct(currentIndexObj, dataFolders, writeStrategy);
         }
 
         // Set root doc thumbnail
@@ -772,11 +764,14 @@ public class WorldViewsIndexer extends AbstractIndexer {
     /**
      * 
      * @param indexObj
+     * @param dataFolders
      * @param writeStrategy
+     * @throws FatalIndexerException
      */
-    private static void finalizeChildDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy) {
-        // Write number of pages and first/last page labels
+    private void finalizeChildDocstruct(IndexObject indexObj, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy)
+            throws FatalIndexerException {
         if (indexObj.getNumPages() > 0) {
+            // Write number of pages and first/last page labels
             indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
             if (indexObj.getFirstPageLabel() != null) {
                 indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
@@ -787,6 +782,22 @@ public class WorldViewsIndexer extends AbstractIndexer {
             if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
                 indexObj.addToLucene("MD_ORDERLABELRANGE",
                         new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
+            }
+
+            // Add used-generated content docs
+            for (int i = 0; i < writeStrategy.getPageDocsSize(); ++i) {
+                SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
+                if (pageDoc == null) {
+                    logger.error("Page {} not found, cannot check for UGC contents.");
+                    continue;
+                }
+                int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
+                String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
+                if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
+                    writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                            String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
+                    ugcAddedChecklist.add(order);
+                }
             }
         }
 

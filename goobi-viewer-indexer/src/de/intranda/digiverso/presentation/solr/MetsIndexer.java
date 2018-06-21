@@ -633,8 +633,8 @@ public class MetsIndexer extends AbstractIndexer {
                     indexedChildrenFileList = true;
                 }
 
-                // Write number of pages
                 if (indexObj.getNumPages() > 0) {
+                    // Write number of pages
                     indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
                     if (indexObj.getFirstPageLabel() != null) {
                         indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
@@ -645,6 +645,22 @@ public class MetsIndexer extends AbstractIndexer {
                     if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
                         indexObj.addToLucene("MD_ORDERLABELRANGE",
                                 new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
+                    }
+
+                    // Add used-generated content docs
+                    for (int i = 0; i < writeStrategy.getPageDocsSize(); ++i) {
+                        SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
+                        if (pageDoc == null) {
+                            logger.error("Page {} not found, cannot check for UGC contents.");
+                            continue;
+                        }
+                        int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
+                        String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
+                        if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
+                            writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                                    String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
+                            ugcAddedChecklist.add(order);
+                        }
                     }
                 }
             } else {
@@ -756,6 +772,7 @@ public class MetsIndexer extends AbstractIndexer {
                 }
 
                 // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
+                // TODO
                 if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || depth > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
                     pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
                     pageDoc.setField("MDNUM_OWNERDEPTH", depth);
@@ -833,14 +850,6 @@ public class MetsIndexer extends AbstractIndexer {
                         // Only one instance of each SORT_ field may exist
                         pageDoc.addField(field.getField(), field.getValue());
                     }
-                }
-
-                // Add used-generated content docs
-                int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
-                if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
-                    writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                            String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
-                    ugcAddedChecklist.add(order);
                 }
 
                 // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
@@ -972,7 +981,6 @@ public class MetsIndexer extends AbstractIndexer {
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
         if (order == null) {
-            // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
             order = Integer.parseInt(eleStructMapPhysical.getAttributeValue("ORDER"));
         }
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().getId());

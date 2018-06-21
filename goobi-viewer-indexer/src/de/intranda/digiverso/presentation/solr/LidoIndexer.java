@@ -261,8 +261,26 @@ public class LidoIndexer extends AbstractIndexer {
             indexObj.addToLucene(SolrConstants.ISWORK, "true");
             logger.trace("ISWORK: {}", indexObj.getLuceneFieldWithName(SolrConstants.ISWORK).getValue());
 
-            // Write number of pages
-            indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(writeStrategy.getPageDocsSize()));
+            if (indexObj.getNumPages() > 0) {
+                // Write number of pages
+                indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(writeStrategy.getPageDocsSize()));
+
+                // Add used-generated content docs
+                for (int i = 0; i < writeStrategy.getPageDocsSize(); ++i) {
+                    SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
+                    if (pageDoc == null) {
+                        logger.error("Page {} not found, cannot check for UGC contents.");
+                        continue;
+                    }
+                    int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
+                    String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
+                    if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
+                        writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                                String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
+                        ugcAddedChecklist.add(order);
+                    }
+                }
+            }
 
             // Write created/updated timestamps
             indexObj.writeDateModified(!noTimestampUpdate);
@@ -460,14 +478,6 @@ public class LidoIndexer extends AbstractIndexer {
                         // Only one instance of each SORT_ field may exist
                         pageDoc.addField(field.getField(), field.getValue());
                     }
-                }
-
-                // Add used-generated content docs
-                int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
-                if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
-                    writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                            String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
-                    ugcAddedChecklist.add(order);
                 }
 
                 // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
