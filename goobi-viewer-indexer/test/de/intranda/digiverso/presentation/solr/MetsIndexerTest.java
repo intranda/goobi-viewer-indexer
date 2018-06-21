@@ -759,25 +759,30 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         File dataFolder = new File("resources/test/image_size");
 
         int i = 0;
-        for (String filename : filenames) {
+        File outputFolder = new File(dataFolder, "output");
+        try {
+            for (String filename : filenames) {
+                if (outputFolder.isDirectory()) {
+                    FileUtils.deleteDirectory(outputFolder);
+                }
+                outputFolder.mkdirs();
 
-            File outputFolder = new File(dataFolder, "output");
+                Map<String, Path> dataFolders = new HashMap<>();
+                dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
+
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.setField(SolrConstants.FILENAME, filename);
+
+                Optional<Dimension> dim = MetsIndexer.getSize(dataFolders, doc);
+                Assert.assertTrue(dim.isPresent());
+                Assert.assertEquals(imageSizes[i], dim.get());
+
+                i++;
+            }
+        } finally {
             if (outputFolder.isDirectory()) {
                 FileUtils.deleteDirectory(outputFolder);
             }
-            outputFolder.mkdir();
-
-            Map<String, Path> dataFolders = new HashMap<>();
-            dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
-
-            SolrInputDocument doc = new SolrInputDocument();
-            doc.setField(SolrConstants.FILENAME, filename);
-
-            Optional<Dimension> dim = MetsIndexer.getSize(dataFolders, doc);
-            Assert.assertTrue(dim.isPresent());
-            Assert.assertEquals(imageSizes[i], dim.get());
-
-            i++;
         }
     }
 
