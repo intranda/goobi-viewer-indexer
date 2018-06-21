@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -224,15 +225,15 @@ public class DocUpdateIndexer extends AbstractIndexer {
             if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
                 SolrDocumentList ugcDocList = hotfolder.getSolrHelper().search(
                         SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
-                        null);
-                if (ugcDocList != null && ugcDocList.isEmpty()) {
+                        Collections.singletonList(SolrConstants.IDDOC));
+                if (ugcDocList != null && !ugcDocList.isEmpty()) {
                     // Collect delete old UGC docs
                     List<String> oldIddocs = new ArrayList<>(ugcDocList.size());
-                    for(SolrDocument oldDoc : ugcDocList) {
+                    for (SolrDocument oldDoc : ugcDocList) {
                         oldIddocs.add((String) oldDoc.getFieldValue(SolrConstants.IDDOC));
                     }
                     hotfolder.getSolrHelper().deleteDocuments(oldIddocs);
-                    
+
                     // Add new UGC docs
                     SolrInputDocument dummyDoc = new SolrInputDocument();
                     List<SolrInputDocument> newUgcDocList =
