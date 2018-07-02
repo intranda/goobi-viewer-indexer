@@ -77,7 +77,9 @@
 		<piSplittingCharOccurrence>1</piSplittingCharOccurrence>
 
 		<namespaces>
-			<!-- <list> </list> -->
+			<list>
+			    <intranda>http://intranda.com/</intranda>
+			</list>
 		</namespaces>
 		
 		<!-- pageCountStart: Order number for the first page. Default is 1. -->
@@ -1995,24 +1997,6 @@
 			</list>
 		</MD_REGION>
 
-		<MD_FORMAT>
-			<list>
-				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type="source
-								dimensions"]
-							</item>
-							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:displayObjectMeasurements
-							</item>
-						</list>
-					</xpath>
-					<addToDefault>false</addToDefault>
-					<onefield>false</onefield>
-				</item>
-			</list>
-		</MD_FORMAT>
-
 		<MD_FORMATDDC>
 			<list>
 				<item>
@@ -2377,7 +2361,7 @@
 				</item>
 			</list>
 		</MD_PURPOSE>
-
+		
 		<MD_PHYSICALDESCRIPTIONEXTENT>
 			<list>
 				<item>
@@ -2391,16 +2375,36 @@
 				</item>
 			</list>
 		</MD_PHYSICALDESCRIPTIONEXTENT>
-
-		<MD_NOTESOURCEDIMENSIONS>
+		<!-- Copy of MD_PHYSICALDESCRIPTIONEXTENT (so that the field name is that same as in Goobi) -->
+		<MD_SIZESOURCEPRINT>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type="source dimensions"]
+					<xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent
+                            </item>
+                        </list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
-		</MD_NOTESOURCEDIMENSIONS>
+		</MD_SIZESOURCEPRINT>
+
+		<MD_FORMATSOURCEPRINT>
+			<list>
+				<item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:note[@type="source dimensions"]
+                            </item>
+                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:displayObjectMeasurements
+                            </item>
+                        </list>
+                    </xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_FORMATSOURCEPRINT>
 
 		<MD_IDENTIFIERLOCAL>
 			<list>
