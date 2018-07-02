@@ -3296,6 +3296,21 @@
             </list>
         </MD_SENTENCE>
         
+        <MD_STATEMENTOFRESPONSIBILITY>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/intranda:intranda/#intranda:note[@type="statement of responsibility"]
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                </item>
+            </list>
+        </MD_STATEMENTOFRESPONSIBILITY>
+        
         <MD_UNIGOE_ICONCLASS>
             <list>
                 <item> 
