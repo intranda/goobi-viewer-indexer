@@ -841,35 +841,35 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 doc.getFieldValue(SolrConstants.FILENAME));
     }
 
-    /**
-     * @see MetsIndexer#generatePageDocument(Element,String,Integer,ISolrWriteStrategy,Map)
-     * @verifies create ALTO file from fileId if none provided in data folders
-     */
-    @Test
-    public void generatePageDocument_shouldCreateALTOFileFromFileIdIfNoneProvidedInDataFolders() throws Exception {
-        MetsIndexer indexer = new MetsIndexer(hotfolder);
-        indexer.initJDomXP(Paths.get("resources/test/METS/ppn750542047_intrandatest.dv.mets.xml"));
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
-        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
-        List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        Assert.assertNotNull(eleStructMapPhysicalList);
-        Assert.assertFalse(eleStructMapPhysicalList.isEmpty());
-
-        Map<String, Path> dataFolders = new HashMap<>();
-        Path altoPath = Paths.get("build/viewer/alto/750542047");
-        Utils.checkAndCreateDirectory(altoPath);
-        Assert.assertTrue(Files.isDirectory(altoPath));
-        dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, altoPath);
-
-        int page = 5;
-        IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSolrHelper())), "ppn750542047", page, writeStrategy, dataFolders,
-                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, dataFolders, solrHelper)[0]));
-        SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
-        Assert.assertNotNull(doc);
-        Assert.assertTrue(Files.isRegularFile(Paths.get(altoPath.toAbsolutePath().toString(), "00000005.xml")));
-    }
+//    /**
+//     * @see MetsIndexer#generatePageDocument(Element,String,Integer,ISolrWriteStrategy,Map)
+//     * @verifies create ALTO file from fileId if none provided in data folders
+//     */
+//    @Test
+//    public void generatePageDocument_shouldCreateALTOFileFromFileIdIfNoneProvidedInDataFolders() throws Exception {
+//        MetsIndexer indexer = new MetsIndexer(hotfolder);
+//        indexer.initJDomXP(Paths.get("resources/test/METS/ppn750542047_intrandatest.dv.mets.xml"));
+//        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
+//        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
+//        List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
+//        Assert.assertNotNull(eleStructMapPhysicalList);
+//        Assert.assertFalse(eleStructMapPhysicalList.isEmpty());
+//
+//        Map<String, Path> dataFolders = new HashMap<>();
+//        Path altoPath = Paths.get("build/viewer/alto/750542047");
+//        Utils.checkAndCreateDirectory(altoPath);
+//        Assert.assertTrue(Files.isDirectory(altoPath));
+//        dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, altoPath);
+//
+//        int page = 5;
+//        IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
+//        Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+//                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSolrHelper())), "ppn750542047", page, writeStrategy, dataFolders,
+//                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, dataFolders, solrHelper)[0]));
+//        SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
+//        Assert.assertNotNull(doc);
+//        Assert.assertTrue(Files.isRegularFile(Paths.get(altoPath.toAbsolutePath().toString(), "00000005.xml")));
+//    }
 
     /**
      * @see MetsIndexer#generatePageDocument(Element,String,Integer,ISolrWriteStrategy,Map)
