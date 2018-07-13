@@ -1189,6 +1189,10 @@ public class MetsIndexer extends AbstractIndexer {
                             // Add full URL
                             doc.addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), filePath);
                             break;
+                        case "object":
+                            doc.addField(SolrConstants.FILENAME, fileName);
+                            doc.addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
+                            break;
                         default:
                             doc.addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
                     }
