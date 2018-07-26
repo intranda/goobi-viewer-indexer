@@ -91,6 +91,7 @@ public class MetsIndexer extends AbstractIndexer {
 
     public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
     public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
+    public static final String OBJECT_FILEGROUP = "OBJECT";
     public static final String ALTO_FILEGROUP = "FULLTEXT";
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
     public static final String DEFAULT_FULLTEXT_CHARSET = "UTF-8";
@@ -1017,6 +1018,9 @@ public class MetsIndexer extends AbstractIndexer {
             } else if (fileID.contains(DEFAULT_FILEGROUP_2)) {
                 useFileGroup = DEFAULT_FILEGROUP_2;
                 useFileID = fileID;
+            } else if (fileID.contains(OBJECT_FILEGROUP)) {
+                useFileGroup = OBJECT_FILEGROUP;
+                useFileID = fileID;
             }
         }
         if (StringUtils.isEmpty(useFileID)) {
@@ -1078,7 +1082,7 @@ public class MetsIndexer extends AbstractIndexer {
             logger.debug("Found file group: {}", fileGroup);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
             if ((useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
-                    && (DEFAULT_FILEGROUP_1.equals(fileGroup) || DEFAULT_FILEGROUP_2.equals(fileGroup))) {
+                    && (DEFAULT_FILEGROUP_1.equals(fileGroup) || DEFAULT_FILEGROUP_2.equals(fileGroup) || OBJECT_FILEGROUP.equals(fileGroup))) {
                 useFileGroup = fileGroup;
             }
             String fileId = null;
@@ -1184,6 +1188,10 @@ public class MetsIndexer extends AbstractIndexer {
                         case "html-sandboxed":
                             // Add full URL
                             doc.addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), filePath);
+                            break;
+                        case "object":
+                            doc.addField(SolrConstants.FILENAME, fileName);
+                            doc.addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
                             break;
                         default:
                             doc.addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
