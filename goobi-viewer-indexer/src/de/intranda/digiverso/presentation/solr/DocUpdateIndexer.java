@@ -223,6 +223,8 @@ public class DocUpdateIndexer extends AbstractIndexer {
             }
             // UGC
             if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
+                String query =
+                        SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
                 SolrDocumentList ugcDocList = hotfolder.getSolrHelper().search(
                         SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
                         Collections.singletonList(SolrConstants.IDDOC));
@@ -232,7 +234,11 @@ public class DocUpdateIndexer extends AbstractIndexer {
                     for (SolrDocument oldDoc : ugcDocList) {
                         oldIddocs.add((String) oldDoc.getFieldValue(SolrConstants.IDDOC));
                     }
-                    hotfolder.getSolrHelper().deleteDocuments(oldIddocs);
+                    if (!oldIddocs.isEmpty()) {
+                        hotfolder.getSolrHelper().deleteDocuments(oldIddocs);
+                    } else {
+                        logger.error("No IDDOC values found in docs matching query: {}", query);
+                    }
 
                     // Add new UGC docs
                     SolrInputDocument dummyDoc = new SolrInputDocument();
