@@ -111,10 +111,10 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
             SolrInputDocument doc = new SolrInputDocument();
             doc.addField(SolrConstants.IDDOC, iddoc);
             doc.addField(SolrConstants.GROUPFIELD, iddoc);
-            doc.addField(SolrConstants.ALTO, "alto");
             doc.addField(SolrConstants.FULLTEXT, "fulltext");
             doc.addField("MD_FULLTEXT", "fulltext");
             doc.addField(SolrConstants.DATEUPDATED, System.currentTimeMillis());
+            doc.addField(SolrConstants.PI_TOPSTRUCT, "PPN123");
             Assert.assertTrue(solrHelper.writeToIndex(doc));
             solrHelper.commit(false);
         }
@@ -125,16 +125,9 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
             Assert.assertFalse(ret.isEmpty());
             SolrDocument doc = ret.get(0);
             Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
-            Assert.assertEquals("alto", doc.getFieldValue(SolrConstants.ALTO));
-            // ssert.assertEquals("fulltext", doc.getFieldValue(SolrConstants.FULLTEXT));
             Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
 
             Map<String, Map<String, Object>> partialUpdates = new HashMap<>();
-            {
-                Map<String, Object> update = new HashMap<>();
-                update.put("set", "new alto");
-                partialUpdates.put(SolrConstants.ALTO, update);
-            }
             {
                 Map<String, Object> update = new HashMap<>();
                 update.put("set", "new fulltext");
@@ -155,9 +148,9 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
             Assert.assertFalse(ret.isEmpty());
             SolrDocument doc = ret.get(0);
             Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
-            Assert.assertEquals("new alto", doc.getFieldValue(SolrConstants.ALTO));
             Assert.assertEquals("new fulltext", doc.getFieldValues("MD_FULLTEXT").iterator().next());
             Assert.assertEquals(2, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            Assert.assertEquals("PPN123", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
         }
     }
 }

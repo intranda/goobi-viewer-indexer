@@ -1067,7 +1067,7 @@ public class MetadataHelper {
      */
     @SuppressWarnings("unchecked")
     protected static GroupedMetadata getGroupedMetadata(Element ele, MultiMap groupEntityFields, String groupLabel) throws FatalIndexerException {
-        logger.trace("getGroupedMetadata: {}", groupLabel);
+        logger.info("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
 
@@ -1089,12 +1089,12 @@ public class MetadataHelper {
             List<String> xpathList = (List<String>) groupEntityFields.get(field);
             if (xpathList != null) {
                 for (String xpath : xpathList) {
-                    //                    logger.info("XPath: {}", xpath);
+                                        logger.info("XPath: {}", xpath);
                     List<Object> values = JDomXP.evaluate(xpath, ele, Filters.fpassthrough());
                     if (values != null && !values.isEmpty()) {
                         String fieldName = (String) field;
                         String fieldValue = JDomXP.objectToString(values.get(0));
-                        //                        logger.info("found: {}:{}", fieldName, fieldValue);
+                                                logger.info("found: {}:{}", fieldName, fieldValue);
                         if (fieldValue != null) {
                             fieldValue = fieldValue.trim();
                         }
