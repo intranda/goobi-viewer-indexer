@@ -131,22 +131,46 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
-                    + ":1 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
-            Assert.assertEquals(1, docList.size());
-            SolrDocument doc = docList.get(0);
+            {
+                SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
+                        + ":1 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
+                Assert.assertEquals(1, docList.size());
+                SolrDocument doc = docList.get(0);
 
-            // Check for updated ALTO file in file system
-            String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
-            Assert.assertNotNull(altoFileName);
-            Path altoFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), altoFileName);
-            Assert.assertTrue("File not found at " + altoFile.toAbsolutePath().toString(), Files.isRegularFile(altoFile));
-            String altoText = TextHelper.readFileToString(altoFile.toFile());
-            Assert.assertNotNull(altoText);
-            Assert.assertTrue(altoText.contains("Bollywood!"));
+                // Check for updated ALTO file in file system
+                String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
+                Assert.assertNotNull(altoFileName);
+                Path altoFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), altoFileName);
+                Assert.assertTrue("File not found at " + altoFile.toAbsolutePath().toString(), Files.isRegularFile(altoFile));
+                String altoText = TextHelper.readFileToString(altoFile.toFile());
+                Assert.assertNotNull(altoText);
+                Assert.assertTrue(altoText.contains("Bollywood!"));
+                Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+            }
 
-            Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
             //Assert.assertTrue(((String) doc.getFieldValue(SolrConstants.UGCTERMS)).contains("Hütchenspieler"));
+
+            // Check for new UGC docs
+            {
+                SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
+                        + ":1 AND " + SolrConstants.DOCTYPE + ":" + DocType.UGC.name(), null);
+                Assert.assertEquals(2, docList.size());
+                {
+                    SolrDocument doc = docList.get(0);
+                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+                    Assert.assertEquals(SolrConstants._UGC_TYPE_PERSON, doc.getFieldValue(SolrConstants.UGCTYPE));
+                    Assert.assertEquals("1290.0, 1384.0, 1930.0, 1523.0", doc.getFieldValue(SolrConstants.UGCCOORDS));
+                    Assert.assertEquals("Felix", doc.getFirstValue("MD_FIRSTNAME"));
+                    Assert.assertEquals("Klein", doc.getFirstValue("MD_LASTNAME"));
+                    Assert.assertEquals("Hütchenspieler", doc.getFirstValue("MD_OCCUPATION"));
+                }
+                {
+                    SolrDocument doc = docList.get(1);
+                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+                    Assert.assertEquals(SolrConstants._UGC_TYPE_COMMENT, doc.getFieldValue(SolrConstants.UGCTYPE));
+                    Assert.assertEquals("new comment text", doc.getFirstValue("MD_TEXT"));
+                }
+            }
         }
 
         dataFolders.clear();

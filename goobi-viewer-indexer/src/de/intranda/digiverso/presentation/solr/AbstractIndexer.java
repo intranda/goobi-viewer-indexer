@@ -487,6 +487,9 @@ public abstract class AbstractIndexer {
                                         case "address":
                                             doc.addField("MD_ADDRESS", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                             break;
+                                        case "occupation":
+                                            doc.addField("MD_OCCUPATION", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                            break;
                                         case "corporationIdentifier":
                                             doc.addField("MD_CORPORATIONIDENTIFIER",
                                                     MetadataHelper.applyValueDefaultModifications(eleField.getValue()));

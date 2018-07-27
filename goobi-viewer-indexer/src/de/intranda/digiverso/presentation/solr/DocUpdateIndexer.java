@@ -254,12 +254,15 @@ public class DocUpdateIndexer extends AbstractIndexer {
                 //                partialUpdates.put(SolrConstants.UGCTERMS, update);
             }
 
-            // Update doc (only if partialUpdates is not empty, otherwise all fields but IDDOC will be deleted!)
             if (!partialUpdates.isEmpty()) {
+                // Update doc (only if partialUpdates is not empty, otherwise all fields but IDDOC will be deleted!)
                 if (!hotfolder.getSolrHelper().updateDoc(doc, partialUpdates)) {
                     ret[1] = "Could not update document for IDDOC=" + iddoc;
                     return ret;
                 }
+            } else {
+                // Otherwise just commit the new UGC docs
+                hotfolder.getSolrHelper().commit(false);
             }
 
             ret[0] = pi;
