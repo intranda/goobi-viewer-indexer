@@ -170,11 +170,6 @@
 			<Münze>Coin</Münze>
 		</list>
 	</docstructmapping>
-	
-	<fieldOptions>
-	   <yearRangeStartField></yearRangeStartField>
-	   <yearRangeEndField>MD_YEAR</yearRangeEndField>
-	</fieldOptions>
 
 	<!-- Index field configuration (via XPath expressions). -->
 	<fields>
@@ -3301,7 +3296,7 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/intranda:intranda/#intranda:note[@type="statement of responsibility"]
+                            <item>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:note[@type="statement of responsibility"]
                             </item>
                         </list>
                     </xpath>
@@ -3446,6 +3441,23 @@
                 </item>
             </list>
         </MD_KENOM_HERSTELLER_VERLEGER_MUENZMEISTER_KUENSTLER>
+        
+        <MD_ARTIST_GROUP>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:subject[mods:name[@type="personal"]/mods:role/mods:roleTerm[@type="code"]/text() = "art"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <groupEntity type="PERSON">
+                        <field name="MD_VALUE">mods:name/mods:namePart[@type="family"]</field>
+                        <field name="MD_PERSON_NAME">mods:name/mods:namePart[@type="family"]</field>
+                        <field name="MD_PERSON_QUALIFIER">mods:name/mods:namePart[@type="qualifier"]</field>
+                        <field name="MD_PLACE_NAME">mods:extension/intranda:place</field>
+                        <field name="MD_PLACE_QUALIFIER">mods:extension/intranda:placeQualifier</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_ARTIST_GROUP>
         
 	</fields>
 
