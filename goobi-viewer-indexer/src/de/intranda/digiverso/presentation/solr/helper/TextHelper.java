@@ -70,6 +70,12 @@ public final class TextHelper {
     private static final String ALTO_HEIGHT = "HEIGHT";
     private static final String ALTO_CONTENT = "CONTENT";
     private static final String ALTO_SUBS_CONTENT = "SUBS_CONTENT";
+    private static final String ALTO_SUBS_TYPE = "SUBS_TYPE";    
+    private static final String ALTO_SUBS_TYPE_FIRST_WORD = "HypPart1";
+    private static final String ALTO_SUBS_TYPE_SECOND_WORD = "HypPart2";
+
+
+
 
     /**
      * Uses ICU4J to determine the charset of the given InputStream.
@@ -296,10 +302,12 @@ public final class TextHelper {
                     if (eleWordList.indexOf(eleWord) > 0) {
                         sbFulltext.append(' ');
                     }
-                    String subContent = eleWord.getAttributeValue(ALTO_SUBS_CONTENT);
-                    if(StringUtils.isNotBlank(subContent)) {                        
-                        sbFulltext.append(subContent);
-                    } else {
+                    /*for hyphenated words, only add the SUBS_CONTENT (content of complete word) 
+                    of the first word to the fulltext, and ignore the second word
+                    */
+                    if(ALTO_SUBS_TYPE_FIRST_WORD.equals(eleWord.getAttributeValue(ALTO_SUBS_TYPE))) {                        
+                        sbFulltext.append(eleWord.getAttributeValue(ALTO_SUBS_CONTENT));
+                    } else if(!ALTO_SUBS_TYPE_SECOND_WORD.equals(eleWord.getAttributeValue(ALTO_SUBS_TYPE))){
                         sbFulltext.append(eleWord.getAttributeValue(ALTO_CONTENT));
                     }
                 }
