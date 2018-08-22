@@ -772,9 +772,14 @@ public class MetsIndexer extends AbstractIndexer {
                     thumbnailSet = true;
                 }
 
+                int currentDepth = 0;
+                if (pageDoc.getField("MDNUM_OWNERDEPTH") != null) {
+                    currentDepth = (int) pageDoc.getField("MDNUM_OWNERDEPTH").getValue();
+                }
+
                 // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
                 // TODO
-                if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || depth > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
+                if (depth > currentDepth) {
                     pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
                     pageDoc.setField("MDNUM_OWNERDEPTH", depth);
 
@@ -821,7 +826,12 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                 }
                 for (String s : indexObj.getAccessConditions()) {
-                    if (!SolrConstants.OPEN_ACCESS_VALUE.equals(s) && !existingAccessConditions.contains(s)) {
+                    if (!existingAccessConditions.contains(s) && !SolrConstants.OPEN_ACCESS_VALUE.equals(s)) {
+                        // Only add new access conditions that aren't OPENACCESS
+                        pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
+                    } else if (SolrConstants.OPEN_ACCESS_VALUE.equals(s) && depth > currentDepth) {
+                        // If OPENACCESS is on a lower docstruct, however, remove all previous access conditions and override with OPENACCESS
+                        pageDoc.removeField(SolrConstants.ACCESSCONDITION);
                         pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
                     }
                 }
