@@ -35,6 +35,7 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.configuration.SubsetConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -68,6 +69,7 @@ public final class TextHelper {
     private static final String ALTO_WIDTH = "WIDTH";
     private static final String ALTO_HEIGHT = "HEIGHT";
     private static final String ALTO_CONTENT = "CONTENT";
+    private static final String ALTO_SUBS_CONTENT = "SUBS_CONTENT";
 
     /**
      * Uses ICU4J to determine the charset of the given InputStream.
@@ -294,7 +296,12 @@ public final class TextHelper {
                     if (eleWordList.indexOf(eleWord) > 0) {
                         sbFulltext.append(' ');
                     }
-                    sbFulltext.append(eleWord.getAttributeValue(ALTO_CONTENT));
+                    String subContent = eleWord.getAttributeValue(ALTO_SUBS_CONTENT);
+                    if(StringUtils.isNotBlank(subContent)) {                        
+                        sbFulltext.append(subContent);
+                    } else {
+                        sbFulltext.append(eleWord.getAttributeValue(ALTO_CONTENT));
+                    }
                 }
                 if (wordWrapper.word1 != null) {
                     Element eleWord2 = eleWordList.get(0);
