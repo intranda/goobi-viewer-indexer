@@ -637,7 +637,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 Collection<Object> values = doc.getFieldValues(SolrConstants.ACCESSCONDITION);
                 Assert.assertNotNull(values);
-                Assert.assertEquals(1, values.size());
+                Assert.assertEquals(values.toString(), 1, values.size());
                 Assert.assertEquals("bib_network", values.iterator().next());
             }
         }
