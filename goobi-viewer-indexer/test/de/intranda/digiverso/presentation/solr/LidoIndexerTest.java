@@ -86,13 +86,18 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotEquals("ERROR", ret[0]);
         }
         
-        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + videoPI, null);
-        Assert.assertEquals("video PI not in doclist. Total pi hits: " + hotfolder.getSolrHelper().getNumHits(SolrConstants.PI + ":*"), 1, docList.size());
+        
+        
+        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":*" , null);
+        Assert.assertEquals(1, docList.size());
+        SolrDocument doc = docList.get(0);
+        String docPi = (String) doc.getFieldValue(SolrConstants.PI);
+        Assert.assertEquals("Document PI was expected to be " + videoPI + ", but was " + docPi, videoPI, docPi);
         
         docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":"
                 + videoPI + " AND " + SolrConstants.FILENAME + ":*", null);
         Assert.assertEquals("video page not in doclist. Total page hits: " + hotfolder.getSolrHelper().getNumHits(SolrConstants.FILENAME + ":*"),1, docList.size());
-        SolrDocument doc = docList.get(0);
+        doc = docList.get(0);
         
         Assert.assertEquals("video", doc.getFieldValue(SolrConstants.MIMETYPE));
     }
