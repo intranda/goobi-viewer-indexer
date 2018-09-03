@@ -37,6 +37,7 @@ import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
@@ -64,7 +65,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    public void LidoIndexer_shouldSetAttributesCorrectly() throws Exception {
+    public void LidoIndexer_shouldSDataRepositoryetAttributesCorrectly() throws Exception {
         LidoIndexer indexer = new LidoIndexer(hotfolder);
         Assert.assertEquals(hotfolder, indexer.hotfolder);
     }
@@ -72,11 +73,13 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void testIndexMimeType() throws Exception {
         File lidoVideoFile = new File("resources/test/LIDO/1292624.xml");
+        File lidoVideoMediaFolder = new File("resources/test/LIDO/1292624_media");
         String videoPI = "1292624";
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoVideoFile);
         Assert.assertEquals(1, lidoDocs.size());
         
         Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_MEDIA, lidoVideoMediaFolder.getAbsoluteFile().toPath());
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1, Configuration.getInstance().getList(
                     "init.lido.imageXPath"), false);
@@ -84,6 +87,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         }
         SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":"
                 + videoPI + " AND " + SolrConstants.FILENAME + ":*", null);
+        Assert.assertEquals(1, docList.size());
         SolrDocument doc = docList.get(0);
         
         Assert.assertEquals("video", doc.getFieldValue(SolrConstants.MIMETYPE));
