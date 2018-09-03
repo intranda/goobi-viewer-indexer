@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
+import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 
@@ -68,6 +69,26 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(hotfolder, indexer.hotfolder);
     }
 
+    @Test
+    public void testIndexMimeType() throws Exception {
+        File lidoVideoFile = new File("resources/test/LIDO/1292624.xml");
+        String videoPI = "1292624";
+        List<Document> lidoDocs = JDomXP.splitLidoFile(lidoVideoFile);
+        Assert.assertEquals(1, lidoDocs.size());
+        
+        Map<String, Path> dataFolders = new HashMap<>();
+        for (Document lidoDoc : lidoDocs) {
+            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1, Configuration.getInstance().getList(
+                    "init.lido.imageXPath"), false);
+            Assert.assertNotEquals("ERROR", ret[0]);
+        }
+        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":"
+                + videoPI + " AND " + SolrConstants.FILENAME + ":*", null);
+        SolrDocument doc = docList.get(0);
+        
+        Assert.assertEquals("video", doc.getFieldValue(SolrConstants.MIMETYPE));
+    }
+    
     /**
      * @see LidoIndexer#index(Document,File,File)
      * @verifies index record correctly

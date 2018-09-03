@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,6 +32,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.activation.MimetypesFileTypeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -647,8 +650,23 @@ public class LidoIndexer extends AbstractIndexer {
                     doc.addField(SolrConstants.FILENAME, fileName);
                 }
 
-                String mimetype = "image"; // TODO other types?
+                String mimetype = "image";
+                if (doc.containsKey(SolrConstants.FILENAME)) {
+                    String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
+                    try {
+                        mimetype = Files.probeContentType(Paths.get(filename));
+                        if(StringUtils.isBlank(mimetype)) {
+                            mimetype = "image";
+                        } else if(mimetype.contains("/")) {
+                            mimetype = mimetype.substring(0, mimetype.indexOf("/"));
+                        }
+                    } catch (IOException e) {
+                        logger.warn("Cannot guess MimeType from " + filename + ". using 'image'");
+                    }
+
+                }
                 doc.addField(SolrConstants.MIMETYPE, mimetype);
+
             }
 
             // Add file size

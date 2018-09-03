@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lido:lido xmlns:lido="http://www.lido-schema.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.lido-schema.org http://www.lido-schema.org/schema/v1.0/lido-v1.0.xsd">
+    <lido:lidoRecID lido:type="local">khm:1292624</lido:lidoRecID>
+    <lido:category />
+    <lido:descriptiveMetadata xml:lang="de">
+        <lido:objectClassificationWrap>
+            <lido:objectWorkTypeWrap>
+                <lido:objectWorkType>
+                    <lido:term lido:addedSearchTerm="no">Abzug</lido:term>
+                </lido:objectWorkType>
+            </lido:objectWorkTypeWrap>
+        </lido:objectClassificationWrap>
+        <lido:objectIdentificationWrap>
+            <lido:titleWrap>
+                <lido:titleSet>
+                    <lido:appellationValue>Feldseite Kröpeliner Tor, Kinder im Vordergrund</lido:appellationValue>
+                </lido:titleSet>
+            </lido:titleWrap>
+            <lido:repositoryWrap>
+                <lido:repositorySet lido:type="current">
+                    <lido:repositoryName>
+                        <lido:legalBodyName>
+                            <lido:appellationValue>Kulturhistorisches Museum Rostock</lido:appellationValue>
+                        </lido:legalBodyName>
+                        <lido:legalBodyWeblink>http://kulturhistorisches-museum-rostock.de</lido:legalBodyWeblink>
+                    </lido:repositoryName>
+                    <lido:workID lido:type="inventory number">PH 1</lido:workID>
+                </lido:repositorySet>
+            </lido:repositoryWrap>
+            <lido:objectMeasurementsWrap>
+                <lido:objectMeasurementsSet>
+                    <lido:displayObjectMeasurements>H: 16 cm</lido:displayObjectMeasurements>
+                    <lido:displayObjectMeasurements>B: 11,8 cm</lido:displayObjectMeasurements>
+                </lido:objectMeasurementsSet>
+            </lido:objectMeasurementsWrap>
+        </lido:objectIdentificationWrap>
+        <lido:eventWrap>
+            <lido:eventSet>
+                <lido:event>
+                    <lido:eventType>
+                        <lido:term lido:addedSearchTerm="no">Production</lido:term>
+                    </lido:eventType>
+                    <lido:eventName>
+                        <lido:appellationValue>Herstellung</lido:appellationValue>
+                    </lido:eventName>
+                    <lido:eventDate>
+                        <lido:displayDate>um 1910</lido:displayDate>
+                        <lido:date>
+                            <lido:earliestDate>1900</lido:earliestDate>
+                            <lido:latestDate>1920</lido:latestDate>
+                        </lido:date>
+                    </lido:eventDate>
+                    <lido:eventMaterialsTech>
+                        <lido:materialsTech>
+                            <lido:termMaterialsTech>
+                                <lido:term
+                                    lido:addedSearchTerm="no">Papier, schwarz-weiß</lido:term>
+                            </lido:termMaterialsTech>
+                        </lido:materialsTech>
+                    </lido:eventMaterialsTech>
+                </lido:event>
+            </lido:eventSet>
+        </lido:eventWrap>
+    </lido:descriptiveMetadata>
+    <lido:administrativeMetadata xml:lang="de">
+        <lido:rightsWorkWrap>
+            <lido:rightsWorkSet>
+                <lido:rightsHolder>
+                    <lido:legalBodyName>
+                        <lido:appellationValue>Kulturhistorisches Museum Rostock</lido:appellationValue>
+                    </lido:legalBodyName>
+                    <lido:legalBodyWeblink>http://kulturhistorisches-museum-rostock.de</lido:legalBodyWeblink>
+                </lido:rightsHolder>
+            </lido:rightsWorkSet>
+        </lido:rightsWorkWrap>
+        <lido:recordWrap>
+            <lido:recordID lido:type="local (default)">V0011127</lido:recordID>
+            <lido:recordType>
+                <lido:term>item</lido:term>
+            </lido:recordType>
+            <lido:recordSource>
+                <lido:legalBodyName>
+                    <lido:appellationValue>mmm_sammlungen#200khmrostock#0750fotografien</lido:appellationValue>
+                </lido:legalBodyName>
+                <lido:legalBodyWeblink>http://kulturhistorisches-museum-rostock.de</lido:legalBodyWeblink>
+            </lido:recordSource>
+            <lido:recordRights>
+                <lido:rightsHolder>
+                    <lido:legalBodyName>
+                        <lido:appellationValue>Kulturhistorisches Museum Rostock</lido:appellationValue>
+                    </lido:legalBodyName>
+                    <lido:legalBodyWeblink>http://kulturhistorisches-museum-rostock.de</lido:legalBodyWeblink>
+                </lido:rightsHolder>
+            </lido:recordRights>
+        </lido:recordWrap>
+        <lido:resourceWrap>
+            <lido:resourceSet>
+                <lido:resourceID
+                    lido:type="http://terminology.lido-schema.org/identifier_type/local_identifier"
+                    lido:source="kuniweb">record_kuniweb_1292624_media/Film77.mp4</lido:resourceID>
+                <lido:rightsResource>
+                    <lido:rightsType>
+                        <lido:term>Urheberrecht</lido:term>
+                    </lido:rightsType>
+                    <lido:rightsHolder>
+                        <lido:legalBodyName>
+                            <lido:appellationValue>Jochen Weise</lido:appellationValue>
+                        </lido:legalBodyName>
+                    </lido:rightsHolder>
+                </lido:rightsResource>
+                <lido:rightsResource>
+                    <lido:rightsType>
+                        <lido:term>Verwertungsrecht</lido:term>
+                    </lido:rightsType>
+                    <lido:rightsHolder>
+                        <lido:legalBodyName>
+                            <lido:appellationValue>Jochen Weise</lido:appellationValue>
+                        </lido:legalBodyName>
+                    </lido:rightsHolder>
+                </lido:rightsResource>
+                <lido:rightsResource>
+                    <lido:rightsType>
+                        <lido:conceptID
+                            lido:type="http://terminology.lido-schema.org/identifier_type/uri">https://creativecommons.org/licenses/by-nc/4.0/deed.de</lido:conceptID>
+                        <lido:term>Namensnennung-Nicht kommerziell 4.0 Deutschland (CC BY-NC 4.0 DE)</lido:term>
+                        <lido:term xml:lang="en">Attribution-NonCommercial 4.0 Germany (CC BY-NC 4.0 DE)</lido:term>
+                    </lido:rightsType>
+                </lido:rightsResource>
+            </lido:resourceSet>
+        </lido:resourceWrap>
+    </lido:administrativeMetadata>
+</lido:lido>
