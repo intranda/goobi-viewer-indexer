@@ -74,7 +74,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     public void testIndexMimeType() throws Exception {
         File lidoVideoFile = new File("resources/test/LIDO/1292624.xml");
         File lidoVideoMediaFolder = new File("resources/test/LIDO/1292624_media");
-        String videoPI = "V1292624";
+        String videoPI = "1292624";
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoVideoFile);
         Assert.assertEquals(1, lidoDocs.size());
         
