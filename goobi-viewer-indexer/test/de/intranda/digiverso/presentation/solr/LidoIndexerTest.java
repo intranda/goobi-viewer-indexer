@@ -100,6 +100,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         doc = docList.get(0);
         
         Assert.assertEquals("video", doc.getFieldValue(SolrConstants.MIMETYPE));
+        Assert.assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
     }
     
     /**

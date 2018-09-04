@@ -651,21 +651,36 @@ public class LidoIndexer extends AbstractIndexer {
                 }
 
                 String mimetype = "image";
+                String subMimetype = "";
                 if (doc.containsKey(SolrConstants.FILENAME)) {
                     String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
                     try {
                         mimetype = Files.probeContentType(Paths.get(filename));
-                        if(StringUtils.isBlank(mimetype)) {
+                        if (StringUtils.isBlank(mimetype)) {
                             mimetype = "image";
-                        } else if(mimetype.contains("/")) {
+                        } else if (mimetype.contains("/")) {
+                            subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
                             mimetype = mimetype.substring(0, mimetype.indexOf("/"));
                         }
                     } catch (IOException e) {
                         logger.warn("Cannot guess MimeType from " + filename + ". using 'image'");
                     }
-
+                    if (StringUtils.isNotBlank(subMimetype)) {
+                        switch (mimetype.toLowerCase()) {
+                            case "video":
+                            case "audio":
+                            case "html-sandboxed":
+                                doc.addField(SolrConstants.MIMETYPE, mimetype);
+                                doc.addField(SolrConstants.FILENAME + "_" + subMimetype.toUpperCase(), filename);
+                                break;
+                            case "object":
+                                doc.addField(SolrConstants.MIMETYPE, subMimetype);
+                                break;
+                            default:
+                                doc.addField(SolrConstants.MIMETYPE, mimetype);
+                        }
+                    }
                 }
-                doc.addField(SolrConstants.MIMETYPE, mimetype);
 
             }
 
