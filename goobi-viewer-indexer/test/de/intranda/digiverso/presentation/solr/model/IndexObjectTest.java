@@ -115,7 +115,6 @@ public class IndexObjectTest {
         io.setLabel("&lt;b&gt;LABEL&lt;/b&gt;");
         io.setDmdid("DMD0000");
         io.setLogId("LOG0000");
-        io.setPartnerId("PARTNER");
         io.setDataRepository("DATA");
 
         IndexObject io2 = new IndexObject(2);
@@ -152,9 +151,6 @@ public class IndexObjectTest {
 
         Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.LOGID));
         Assert.assertEquals("LOG0000", io.getLuceneFieldWithName(SolrConstants.LOGID).getValue());
-
-        Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PARTNERID));
-        Assert.assertEquals("PARTNER", io.getLuceneFieldWithName(SolrConstants.PARTNERID).getValue());
 
         Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT));
         Assert.assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT).getValue());

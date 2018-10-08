@@ -60,7 +60,6 @@ public class IndexObject {
     private String urn;
     private List<String> imageUrns;
     private final Set<String> accessConditions = new HashSet<>();
-    private String partnerId = null;
     private String thumbnailRepresent = null;
     private String dataRepository;
     private final List<LuceneField> luceneFields = new ArrayList<>();
@@ -118,10 +117,6 @@ public class IndexObject {
                 top = top.getParent();
             }
             addToLucene(SolrConstants.IDDOC_TOPSTRUCT, String.valueOf(top.getIddoc()));
-        }
-
-        if (StringUtils.isNotEmpty(getPartnerId())) {
-            addToLucene(SolrConstants.PARTNERID, getPartnerId());
         }
 
         addToLucene(SolrConstants.DOCSTRCT, getType());
@@ -510,20 +505,6 @@ public class IndexObject {
 
     public Set<String> getAccessConditions() {
         return accessConditions;
-    }
-
-    /**
-     * @return the partnerId
-     */
-    public String getPartnerId() {
-        return partnerId;
-    }
-
-    /**
-     * @param partnerId the partnerId to set
-     */
-    public void setPartnerId(String partnerId) {
-        this.partnerId = partnerId;
     }
 
     /**

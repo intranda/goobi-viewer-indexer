@@ -167,31 +167,6 @@ public class MetsIndexer extends AbstractIndexer {
                 logger.debug("preQuery: {}", preQuery);
                 String pi = MetadataHelper.getPIFromXML(preQuery, xp);
                 if (StringUtils.isNotBlank(pi)) {
-                    if (Boolean.valueOf(Configuration.getInstance().getConfiguration("piContainsPartnerId"))) {
-                        // Detach partner ID, if configured to do so
-                        String splittingChar = Configuration.getInstance().getConfiguration("piSplittingChar");
-                        int occurrence = Integer.valueOf(Configuration.getInstance().getConfiguration("piSplittingCharOccurrence"));
-                        // String sub = pi;
-                        int index = 0;
-                        int found = 0;
-                        for (int i = 0; i < pi.length(); ++i) {
-                            if (pi.charAt(i) == splittingChar.charAt(0)) {
-                                found++;
-                                if (found == (occurrence + 1)) {
-                                    index = i;
-                                    break;
-                                }
-                            }
-                        }
-                        if (index > -1) {
-                            String partnerId = pi.substring(0, index);
-                            if (StringUtils.isNotBlank(partnerId)) {
-                                logger.debug("Partner ID found: {}", partnerId);
-                                indexObj.setPartnerId(partnerId);
-                            }
-                        }
-                    }
-
                     pi = MetadataHelper.applyIdentifierModifications(pi);
                     logger.info("Record PI: {}", pi);
 

@@ -87,7 +87,6 @@ public final class SolrConstants {
     public static final String ORDERLABELLAST = "ORDERLABELLAST";
     public static final String OVERVIEWPAGE_DESCRIPTION = "OVERVIEWPAGE_DESCRIPTION";
     public static final String OVERVIEWPAGE_PUBLICATIONTEXT = "OVERVIEWPAGE_PUBLICATIONTEXT";
-    public static final String PARTNERID = "PARTNERID";
     public static final String PHYSID = "PHYSID";
     public static final String PI = "PI";
     public static final String PI_ANCHOR = "PI_ANCHOR";

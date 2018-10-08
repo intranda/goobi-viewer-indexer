@@ -160,6 +160,7 @@
 		<field name="OVERVIEWPAGEFORCE" type="boolean" indexed="true" stored="true" />
 		<!-- PAGEURNS: DEPRECATED -->
 		<field name="PAGEURNS" type="text_ws" indexed="true" stored="true" />
+		<!-- PARTNERID: DEPRECATED -->
 		<field name="PARTNERID" type="string" indexed="true" stored="true" />
 		<field name="PHYSID" type="string" indexed="true" stored="true" />
 		<field name="PI" type="string" indexed="true" stored="true" />

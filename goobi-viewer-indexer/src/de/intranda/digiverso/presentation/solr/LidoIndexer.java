@@ -197,22 +197,6 @@ public class LidoIndexer extends AbstractIndexer {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
 
-            // Set partner ID
-            if (Boolean.valueOf(Configuration.getInstance().getConfiguration("piContainsPartnerId"))) {
-                String lidoRecID = xp.evaluateToString("/lido:lido/lido:lidoRecID[@lido:type='local']/text()", structNode);
-                if (StringUtils.isNotEmpty(lidoRecID)) {
-                    String[] lidoRecIDSplit = lidoRecID.split("/");
-                    if (lidoRecIDSplit.length > 0) {
-                        String partnerId = lidoRecIDSplit[0];
-                        if (partnerId.contains(":")) {
-                            partnerId = partnerId.substring(0, partnerId.indexOf(':'));
-                        }
-                        indexObj.setPartnerId(partnerId);
-                        logger.debug("partnerId: {}", partnerId);
-                    }
-                }
-            }
-
             // Set source doc format
             indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, SolrConstants._LIDO);
 

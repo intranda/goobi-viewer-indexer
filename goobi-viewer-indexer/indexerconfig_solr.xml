@@ -66,15 +66,6 @@
 		<!-- If true, all collection names from volumes will be added to their 
 			corresponding anchor record (default is false) -->
 		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
-		<!-- If true, the PI will be split at the configured character, and the 
-			left part will be used as the partner ID. -->
-		<piContainsPartnerId>true</piContainsPartnerId>
-		<!-- Splitting character that separates the partner ID from the record 
-			identifier (if 'piContainsPartner' is true) -->
-		<piSplittingChar>_</piSplittingChar>
-		<!-- Occurrence of the splitting character in the string that separates 
-			the partner ID from the record identifier (e.g. '1' means second occurrence) -->
-		<piSplittingCharOccurrence>1</piSplittingCharOccurrence>
 
 		<namespaces>
 			<list>
