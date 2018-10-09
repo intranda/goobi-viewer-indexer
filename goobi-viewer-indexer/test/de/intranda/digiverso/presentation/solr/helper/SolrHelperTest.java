@@ -99,6 +99,25 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see SolrHelper#checkAndCreateGroupDoc(String,String,Map,long)
+     * @verifies add default field
+     */
+    @Test
+    public void checkAndCreateGroupDoc_shouldAddDefaultField() throws Exception {
+        Map<String, String> moreMetadata = new HashMap<>();
+        moreMetadata.put("MD_SHELFMARK", "shelfmark");
+        moreMetadata.put("MD_TITLE", "title");
+        SolrInputDocument doc = solrHelper.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        Assert.assertNotNull(doc);
+        Assert.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
+        String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
+        Assert.assertNotNull(defaultValue);
+        Assert.assertTrue(defaultValue.contains("id10T"));
+        Assert.assertTrue(defaultValue.contains("shelfmark"));
+        Assert.assertTrue(defaultValue.contains("title"));
+    }
+
+    /**
      * @see SolrHelper#updateDoc(SolrDocument,Map)
      * @verifies update doc correctly
      */

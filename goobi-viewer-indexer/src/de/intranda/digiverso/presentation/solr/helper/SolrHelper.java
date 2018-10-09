@@ -446,8 +446,8 @@ public final class SolrHelper {
                 // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
                 httpServer.setConnectionTimeout(30000);
                 HttpClient client = ((HttpSolrServer) server).getHttpClient();
-                HttpGet httpGet = new HttpGet(Configuration.getInstance().getConfiguration("solrUrl")
-                        + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml");
+                HttpGet httpGet = new HttpGet(
+                        Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml");
                 ResponseHandler<String> responseHandler = new BasicResponseHandler();
                 String responseBody = client.execute(httpGet, responseHandler);
                 try (StringReader sr = new StringReader(responseBody)) {
@@ -502,6 +502,7 @@ public final class SolrHelper {
      * @return Group SolrInputDocument, if created.
      * @should create new document with all values if none exists
      * @should create updated document with all values if one already exists
+     * @should add default field
      */
     public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, long iddoc) {
         try {
@@ -528,12 +529,16 @@ public final class SolrHelper {
             doc.setField(SolrConstants.PI, groupId);
             doc.setField(SolrConstants.PI_TOPSTRUCT, groupId);
             doc.setField(SolrConstants.GROUPTYPE, groupIdField);
+            StringBuilder sbDefault = new StringBuilder();
+            sbDefault.append(groupId).append(' ');
             if (metadata != null) {
                 for (String fieldName : metadata.keySet()) {
                     String fieldValue = metadata.get(fieldName);
                     doc.setField(fieldName, fieldValue);
+                    sbDefault.append(fieldValue).append(' ');
                 }
             }
+            doc.setField(SolrConstants.DEFAULT, sbDefault.toString().trim());
             return doc;
         } catch (SolrServerException e) {
             logger.error(e.getMessage(), e);
