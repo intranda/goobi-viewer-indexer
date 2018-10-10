@@ -367,6 +367,20 @@ public class IndexObjectTest {
     }
 
     /**
+     * @see IndexObject#removeExistingFields(String)
+     * @verifies remove existing boolean fields
+     */
+    @Test
+    public void removeExistingFields_shouldRemoveExistingBooleanFields() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        indexObj.addToLucene("BOOL_TEST", "false");
+        Assert.assertEquals(1, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
+
+        indexObj.removeExistingFields("BOOL_TEST");
+        Assert.assertEquals(0, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
+    }
+
+    /**
      * @see IndexObject#writeLanguages()
      * @verifies add languages from metadata fields
      */

@@ -3450,6 +3450,17 @@
             </list>
         </MD_ARTIST_GROUP>
         
+        
+        <BOOL_CONTAINSIMAGE>
+               <list>
+                       <item>
+                               <xpath>string(boolean(mets:fileSec/mets:fileGrp[@USE="PRESENTATION"]))</xpath>
+                               <addToDefault>false</addToDefault>
+                               <addSortField>true</addSortField>
+                       </item>
+               </list>
+        </BOOL_CONTAINSIMAGE>
+            
 	</fields>
 
 </root>

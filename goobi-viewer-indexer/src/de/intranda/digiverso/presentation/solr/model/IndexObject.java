@@ -257,6 +257,8 @@ public class IndexObject {
      */
     public boolean addToLucene(String field, String value) {
         addToGroupIds(field, value);
+        removeExistingFields(field);
+
         return luceneFields.add(new LuceneField(field, value));
     }
 
@@ -267,8 +269,33 @@ public class IndexObject {
      * @return
      */
     public boolean addToLucene(LuceneField luceneField) {
+        if (luceneField == null) {
+            throw new IllegalArgumentException("luceneField may not be null");
+        }
+        
         addToGroupIds(luceneField.getField(), luceneField.getValue());
+        removeExistingFields(luceneField.getField());
+
         return luceneFields.add(luceneField);
+    }
+
+    /**
+     * Removes existing instances of boolean fields with the given name from collected lucene fields.
+     * 
+     * @param field
+     * @should remove existing boolean fields
+     */
+    void removeExistingFields(String field) {
+        if (field == null) {
+            throw new IllegalArgumentException("field may not be null");
+        }
+
+        if (field.startsWith("BOOL_")) {
+            List<LuceneField> existing = getLuceneFieldsWithName(field);
+            if (!existing.isEmpty()) {
+                luceneFields.removeAll(existing);
+            }
+        }
     }
 
     /**

@@ -36,7 +36,7 @@ public final class SolrIndexerDaemon {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
-    public static final String VERSION = "3.2.20181009";
+    public static final String VERSION = "3.2.20181010";
     private static final int MIN_SCHEMA_VERSION = 20170906;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
