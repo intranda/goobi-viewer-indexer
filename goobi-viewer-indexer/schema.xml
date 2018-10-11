@@ -30,7 +30,7 @@
 	request -->
 
 
-<schema name="goobi_viewer-20170906" version="1.5">
+<schema name="goobi_viewer-20181011" version="1.5">
 	<!-- attribute "name" is the name of this schema and is only used for display 
 		purposes. version="x.y" is Solr's version number for the schema syntax and 
 		semantics. It should not normally be changed by applications. 1.0: multiValued 
@@ -244,7 +244,7 @@
 	<copyField source="MD_*" dest="FACET_*" maxChars="10000" />
 	<copyField source="URN" dest="URN_UNTOKENIZED" />
 	<copyField source="IMAGEURN" dest="IMAGEURN_UNTOKENIZED"  />
-	<copyField source="IMAGEURN_OAI" dest="MIMAGEURN_OAI_UNTOKENIZED"  />
+	<copyField source="IMAGEURN_OAI" dest="IMAGEURN_OAI_UNTOKENIZED"  />
 
 	<types>
 		<!-- field type definitions. The "name" attribute is just a label to be 
@@ -512,6 +512,8 @@
 				<filter class="solr.ReversedWildcardFilterFactory"
 					withOriginal="true" maxPosAsterisk="3" maxPosQuestion="2"
 					maxFractionAsterisk="0.33" />
+                <charFilter class="solr.MappingCharFilterFactory"
+                    mapping="mapping-ISOLatin1Accent.txt" />
 			</analyzer>
 			<analyzer type="query">
 				<tokenizer class="solr.StandardTokenizerFactory" />
@@ -520,6 +522,8 @@
 				<filter class="solr.StopFilterFactory" ignoreCase="true"
 					words="lang/stopwords.txt" enablePositionIncrements="true" />
 				<filter class="solr.LowerCaseFilterFactory" />
+                <charFilter class="solr.MappingCharFilterFactory"
+                    mapping="mapping-ISOLatin1Accent.txt" />
 			</analyzer>
 		</fieldType>
 
