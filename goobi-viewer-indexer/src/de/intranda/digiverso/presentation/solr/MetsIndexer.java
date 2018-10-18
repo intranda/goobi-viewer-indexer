@@ -424,7 +424,6 @@ public class MetsIndexer extends AbstractIndexer {
             }
 
             // write opac url
-            // TODO maybe via indexerconfig?
             String opacXpath =
                     "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()";
             String opacUrl = xp.evaluateToString(opacXpath, null);
@@ -582,21 +581,8 @@ public class MetsIndexer extends AbstractIndexer {
                 }
             }
 
-            // Add aggregated metadata groups as separate documents
-            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
-                SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
-                long iddoc = getNextIddoc(hotfolder.getSolrHelper());
-                doc.addField(SolrConstants.IDDOC, iddoc);
-                if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                    logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
-                            doc.getFieldValue(SolrConstants.LABEL));
-                    doc.addField(SolrConstants.GROUPFIELD, iddoc);
-                }
-                doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
-                doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-                doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getPi());
-                writeStrategy.addDoc(doc);
-            }
+            // Add grouped metadata as separate documents
+            addGroupedMetadataDocs(writeStrategy, indexObj);
 
             boolean indexedChildrenFileList = false;
             if (!indexObj.isAnchor()) {

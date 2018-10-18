@@ -625,30 +625,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 currentIndexObj.writeAccessConditions(rootIndexObj);
 
                 // Add grouped metadata as separate documents
-                List<LuceneField> dcFields = currentIndexObj.getLuceneFieldsWithName(SolrConstants.DC);
-                for (GroupedMetadata gmd : currentIndexObj.getGroupedMetadataFields()) {
-                    SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
-                    long iddoc = getNextIddoc(hotfolder.getSolrHelper());
-                    doc.addField(SolrConstants.IDDOC, iddoc);
-                    if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                        logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
-                                doc.getFieldValue(SolrConstants.LABEL));
-                        doc.addField(SolrConstants.GROUPFIELD, iddoc);
-                    }
-                    // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped. Since child docstructs are added recursively, this should be the case without further conditions.
-                    doc.addField(SolrConstants.IDDOC_OWNER, rootIndexObj.getIddoc());
-                    doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-                    doc.addField(SolrConstants.PI_TOPSTRUCT, rootIndexObj.getTopstructPI());
-
-                    // Add DC values to metadata doc
-                    if (dcFields != null) {
-                        for (LuceneField field : dcFields) {
-                            doc.addField(field.getField(), field.getValue());
-                        }
-                    }
-
-                    writeStrategy.addDoc(doc);
-                }
+                addGroupedMetadataDocs(writeStrategy, currentIndexObj);
 
                 // Add own and all ancestor LABEL values to the DEFAULT field
                 StringBuilder sbDefaultValue = new StringBuilder();

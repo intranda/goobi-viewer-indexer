@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.activation.MimetypesFileTypeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -286,21 +283,8 @@ public class LidoIndexer extends AbstractIndexer {
             // Add event docs to the main list
             writeStrategy.addDocs(events);
 
-            // Add aggregated metadata groups as separate documents
-            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
-                SolrInputDocument mdDoc = SolrHelper.createDocument(gmd.getFields());
-                long iddoc = getNextIddoc(hotfolder.getSolrHelper());
-                mdDoc.addField(SolrConstants.IDDOC, iddoc);
-                if (!mdDoc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                    logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
-                            mdDoc.getFieldValue(SolrConstants.LABEL));
-                    mdDoc.addField(SolrConstants.GROUPFIELD, iddoc);
-                }
-                mdDoc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
-                mdDoc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-                mdDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getPi());
-                writeStrategy.addDoc(mdDoc);
-            }
+            // Add grouped metadata as separate documents
+            addGroupedMetadataDocs(writeStrategy, indexObj);
 
             // Add root doc
             SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());

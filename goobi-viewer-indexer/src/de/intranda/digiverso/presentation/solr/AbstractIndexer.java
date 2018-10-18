@@ -60,11 +60,14 @@ import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
+import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
+import de.intranda.digiverso.presentation.solr.model.IndexObject;
 import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
+import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
 
 public abstract class AbstractIndexer {
 
@@ -711,6 +714,41 @@ public abstract class AbstractIndexer {
         } else {
             logger.trace("Cannot deskew ALTO: Image file is {} and alto text has length of {}", filename, alto != null ? alto.length() : "0");
         }
+    }
+
+    /**
+     * 
+     * @param writeStrategy
+     * @param indexObj
+     * @return number of created docs
+     * @throws FatalIndexerException
+     * @should add docs correctly
+     */
+    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
+        // Add grouped metadata as separate documents
+        int count = 0;
+        for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+            SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
+            long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+            doc.addField(SolrConstants.IDDOC, iddoc);
+            if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
+                logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
+                        doc.getFieldValue(SolrConstants.LABEL));
+                doc.addField(SolrConstants.GROUPFIELD, iddoc);
+            }
+            doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
+            doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
+            doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getPi());
+            // Add access conditions
+            for (String s : indexObj.getAccessConditions()) {
+                doc.addField(SolrConstants.ACCESSCONDITION, s);
+            }
+
+            writeStrategy.addDoc(doc);
+            count++;
+        }
+
+        return count;
     }
 
     /**
