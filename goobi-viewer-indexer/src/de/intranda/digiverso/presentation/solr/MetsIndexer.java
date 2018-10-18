@@ -125,7 +125,7 @@ public class MetsIndexer extends AbstractIndexer {
      * @param pageCountStart Order number for the first page.
      * @return
      * @should index record correctly
-     * @should index aggregated metadata correctly
+     * @should index metadata groups correctly
      * @should index multi volume records correctly
      * @should update record correctly
      * @should set access conditions correctly
