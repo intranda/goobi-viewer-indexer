@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.SynchronousQueue;
 
 import org.apache.commons.collections.MultiMap;
 import org.jdom2.Document;
@@ -251,7 +250,7 @@ public class MetadataHelperTest {
         String metadataType = null;
         String corporation = null;
         String lastName = null;
-        String firstName = null;
+        List<String> givenNameList = new ArrayList<>(2);
         String displayForm = null;
         String groupField = null;
         String date = null;
@@ -272,7 +271,7 @@ public class MetadataHelperTest {
                     lastName = field.getValue();
                     break;
                 case "MD_FIRSTNAME":
-                    firstName = field.getValue();
+                    givenNameList.add(field.getValue());
                     break;
                 case "MD_DISPLAYFORM":
                     displayForm = field.getValue();
@@ -294,7 +293,9 @@ public class MetadataHelperTest {
         Assert.assertEquals(MetadataGroupType.PERSON.name(), metadataType);
         Assert.assertEquals("corporate_name", corporation);
         Assert.assertEquals("last", lastName);
-        Assert.assertEquals("first", firstName);
+        Assert.assertEquals(2, givenNameList.size());
+        Assert.assertEquals("first", givenNameList.get(0));
+        Assert.assertEquals("second", givenNameList.get(1));
         Assert.assertEquals("display_form", displayForm);
         Assert.assertEquals("date", date);
         Assert.assertEquals("terms_of_address", termsOfAddress);

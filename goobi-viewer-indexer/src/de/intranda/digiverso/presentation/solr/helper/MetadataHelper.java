@@ -1081,7 +1081,7 @@ public class MetadataHelper {
             }
         }
         boolean normUriFound = false;
-        Map<String, String> collectedValues = new HashMap<>();
+        Map<String, List<String>> collectedValues = new HashMap<>();
         for (Object field : groupEntityFields.keySet()) {
             if ("type".equals(field)) {
                 continue;
@@ -1093,17 +1093,22 @@ public class MetadataHelper {
                     List<Object> values = JDomXP.evaluate(xpath, ele, Filters.fpassthrough());
                     if (values != null && !values.isEmpty()) {
                         String fieldName = (String) field;
-                        String fieldValue = JDomXP.objectToString(values.get(0));
-                        logger.debug("found: {}:{}", fieldName, fieldValue);
-                        if (fieldValue != null) {
-                            fieldValue = fieldValue.trim();
-                        }
-                        ret.getFields().add(new LuceneField(fieldName, fieldValue));
-                        collectedValues.put(fieldName, fieldValue);
+                        for (Object val : values) {
+                            String fieldValue = JDomXP.objectToString(val);
+                            logger.debug("found: {}:{}", fieldName, fieldValue);
+                            if (fieldValue != null) {
+                                fieldValue = fieldValue.trim();
+                            }
+                            ret.getFields().add(new LuceneField(fieldName, fieldValue));
+                            if (!collectedValues.containsKey(fieldValue)) {
+                                collectedValues.put(fieldName, new ArrayList<>(values.size()));
+                            }
+                            collectedValues.get(fieldName).add(fieldValue);
 
-                        if (NormDataImporter.FIELD_URI.equals(field)) {
-                            normUriFound = true;
-                            ret.setNormUri(fieldValue);
+                            if (NormDataImporter.FIELD_URI.equals(field)) {
+                                normUriFound = true;
+                                ret.setNormUri(fieldValue);
+                            }
                         }
                     }
                 }
@@ -1123,14 +1128,14 @@ public class MetadataHelper {
             StringBuilder sbValue = new StringBuilder();
             switch (type) {
                 case "PERSON":
-                    if (collectedValues.containsKey("MD_LASTNAME")) {
-                        sbValue.append(collectedValues.get("MD_LASTNAME"));
+                    if (collectedValues.containsKey("MD_LASTNAME") && !collectedValues.get("MD_LASTNAME").isEmpty()) {
+                        sbValue.append(collectedValues.get("MD_LASTNAME").get(0));
                     }
-                    if (collectedValues.containsKey("MD_FIRSTNAME")) {
+                    if (collectedValues.containsKey("MD_FIRSTNAME") && !collectedValues.get("MD_FIRSTNAME").isEmpty()) {
                         if (sbValue.length() > 0) {
                             sbValue.append(", ");
                         }
-                        sbValue.append(collectedValues.get("MD_FIRSTNAME"));
+                        sbValue.append(collectedValues.get("MD_FIRSTNAME").get(0));
                     }
                     break;
             }

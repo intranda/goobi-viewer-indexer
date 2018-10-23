@@ -10,6 +10,7 @@
 		<mods:namePart>corporate_name</mods:namePart>
 		<mods:namePart type="family">last</mods:namePart>
 		<mods:namePart type="given">first</mods:namePart>
+		<mods:namePart type="given">second</mods:namePart>
 		<mods:namePart type="date">date</mods:namePart>
 		<mods:namePart type="termsOfAddress">terms_of_address</mods:namePart>
 		<mods:displayForm>display_form</mods:displayForm>
