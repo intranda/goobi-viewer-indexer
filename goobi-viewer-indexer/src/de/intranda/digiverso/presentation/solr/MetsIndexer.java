@@ -92,7 +92,8 @@ public class MetsIndexer extends AbstractIndexer {
     public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
     public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
     public static final String OBJECT_FILEGROUP = "OBJECT";
-    public static final String ALTO_FILEGROUP = "FULLTEXT";
+    public static final String ALTO_FILEGROUP = "ALTO";
+    public static final String FULLTEXT_FILEGROUP = "FULLTEXT";
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
     public static final String DEFAULT_FULLTEXT_CHARSET = "UTF-8";
 
@@ -1160,7 +1161,7 @@ public class MetsIndexer extends AbstractIndexer {
                         doc.addField("MDNUM_FILESIZE", -1);
                     }
                 }
-            } else if (fileGroup.equals(ALTO_FILEGROUP)) {
+            } else if (fileGroup.equals(ALTO_FILEGROUP) || fileGroup.equals(ALTO_FILEGROUP)) {
                 altoURL = filePath;
             } else {
                 String fieldName = SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase();
@@ -1291,7 +1292,7 @@ public class MetsIndexer extends AbstractIndexer {
                     logger.warn(e.getMessage());
                 }
                 if (altoData != null) {
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
+                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
                         doc.addField(SolrConstants.FILENAME_ALTO, dataRepository.getDir(DataRepository.PARAM_ALTO).getFileName().toString() + '/' + pi
                                 + '/' + baseFileName + XML_EXTENSION);
                         altoWritten = true;
