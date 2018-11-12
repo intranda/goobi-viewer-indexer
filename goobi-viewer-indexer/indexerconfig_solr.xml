@@ -611,7 +611,7 @@
 		<ACCESSCONDITION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:accessCondition[not(@type)]
+					<xpath>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']
 					</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
@@ -3490,6 +3490,31 @@
                        </item>
                </list>
         </BOOL_CONTAINSIMAGE>
+        
+        <MD_HAAB_PROVENIENCE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:provenience
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">intranda:previousOwner</field>
+                        <field name="MD_CODE">intranda:code</field>
+                        <field name="MD_PREVIOUS_OWNER">intranda:previousOwner</field>
+                        <field name="MD_CHARACTERISTIC">intranda:characteristic</field>
+                        <field name="MD_DATE">intranda:date</field>
+                        <field name="MD_EXPLANATION">intranda:explanation</field>
+                        <field name="NORM_URI_RECORD">intranda:gnd</field>
+                        <field name="NORM_URI">intranda:previousOwner/@valueURI</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_HAAB_PROVENIENCE>
             
 	</fields>
 
