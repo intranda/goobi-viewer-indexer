@@ -1099,16 +1099,24 @@ public class MetadataHelper {
                             if (fieldValue != null) {
                                 fieldValue = fieldValue.trim();
                             }
+
+                            if (fieldName.startsWith(NormDataImporter.FIELD_URI)) {
+                                if (NormDataImporter.FIELD_URI.equals(fieldName)) {
+                                    normUriFound = true;
+                                    ret.setNormUri(fieldValue);
+                                }
+                                // Add GND URL part, if the value is not a URL
+                                if (!fieldName.startsWith("http")) {
+                                    fieldValue = "http://d-nb.info/gnd/" + fieldValue;
+                                }
+                            }
+
                             ret.getFields().add(new LuceneField(fieldName, fieldValue));
                             if (!collectedValues.containsKey(fieldValue)) {
                                 collectedValues.put(fieldName, new ArrayList<>(values.size()));
                             }
                             collectedValues.get(fieldName).add(fieldValue);
 
-                            if (NormDataImporter.FIELD_URI.equals(field)) {
-                                normUriFound = true;
-                                ret.setNormUri(fieldValue);
-                            }
                         }
                     }
                 }
