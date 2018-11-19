@@ -1106,7 +1106,7 @@ public class MetadataHelper {
                                     ret.setNormUri(fieldValue);
                                 }
                                 // Add GND URL part, if the value is not a URL
-                                if (!fieldName.startsWith("http")) {
+                                if (!fieldValue.startsWith("http")) {
                                     fieldValue = "http://d-nb.info/gnd/" + fieldValue;
                                 }
                             }
