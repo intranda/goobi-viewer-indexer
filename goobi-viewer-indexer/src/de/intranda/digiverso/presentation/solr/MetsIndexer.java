@@ -183,8 +183,8 @@ public class MetsIndexer extends AbstractIndexer {
                     logger.debug("PI: {}", indexObj.getPi());
 
                     // Determine the data repository to use
-                    DataRepository[] repositories = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, metsFile, dataFolders, hotfolder
-                            .getSolrHelper());
+                    DataRepository[] repositories =
+                            hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, metsFile, dataFolders, hotfolder.getSolrHelper());
                     dataRepository = repositories[0];
                     previousDataRepository = repositories[1];
                     if (StringUtils.isNotEmpty(dataRepository.getPath())) {
@@ -194,8 +194,8 @@ public class MetsIndexer extends AbstractIndexer {
                     ret[0] = new StringBuilder(indexObj.getPi()).append(AbstractIndexer.XML_EXTENSION).toString();
                     if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
                         // Use the old media folder
-                        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_MEDIA,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
                             dataFolders.put(DataRepository.PARAM_MEDIA, null);
                         } else {
@@ -204,8 +204,8 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
                         // Use the old text folder
-                        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_FULLTEXT,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXT))) {
                             dataFolders.put(DataRepository.PARAM_FULLTEXT, null);
                         } else {
@@ -214,19 +214,19 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
                         // Use the old crowdsourcing text folder
-                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD))) {
                             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, null);
                         } else {
-                            logger.info("Using old crowdsourcing text folder '{}'.", dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD)
-                                    .toAbsolutePath());
+                            logger.info("Using old crowdsourcing text folder '{}'.",
+                                    dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath());
                         }
                     }
                     if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
                         // Use the old ABBYY folder
-                        dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get(dataRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_ABBYY,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY))) {
                             dataFolders.put(DataRepository.PARAM_ABBYY, null);
                         } else {
@@ -235,8 +235,8 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
                         // Use the old TEI word coordinate folder
-                        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_TEIWC,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIWC))) {
                             dataFolders.put(DataRepository.PARAM_TEIWC, null);
                         } else {
@@ -245,15 +245,15 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
                         // Use the old ALTO folder
-                        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_ALTO,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO))) {
                             dataFolders.put(DataRepository.PARAM_ALTO, null);
 
                             // Create ALTO dir for converted ABBYY or TEI files
                             if (dataFolders.get(DataRepository.PARAM_ABBYY) != null || dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
-                                dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO)
-                                        .toAbsolutePath().toString(), pi));
+                                dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
+                                        Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
                                 Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
                             }
                         } else {
@@ -262,19 +262,19 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
                         // Use the old crowdsourcing ALTO folder
-                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_ALTOCROWD,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD))) {
                             dataFolders.put(DataRepository.PARAM_ALTOCROWD, null);
                         } else {
-                            logger.info("Using old crowdsourcing ALTO folder '{}'.", dataFolders.get(DataRepository.PARAM_ALTOCROWD)
-                                    .toAbsolutePath());
+                            logger.info("Using old crowdsourcing ALTO folder '{}'.",
+                                    dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath());
                         }
                     }
                     if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
                         // Use the old MIX folder
-                        dataFolders.put(DataRepository.PARAM_MIX, Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_MIX,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
                             dataFolders.put(DataRepository.PARAM_MIX, null);
                         } else {
@@ -283,8 +283,8 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
                         // Use the old user generated content folder
-                        dataFolders.put(DataRepository.PARAM_UGC, Paths.get(dataRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_UGC,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_UGC))) {
                             dataFolders.put(DataRepository.PARAM_UGC, null);
                         } else {
@@ -293,8 +293,8 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_OVERVIEW) == null) {
                         // Use the old overview config folder
-                        dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toAbsolutePath()
-                                .toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_OVERVIEW,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_OVERVIEW))) {
                             dataFolders.put(DataRepository.PARAM_OVERVIEW, null);
                         } else {
@@ -303,8 +303,8 @@ public class MetsIndexer extends AbstractIndexer {
                     }
                     if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
                         // Use the old TEI metadata folder
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA)
-                                .toAbsolutePath().toString(), pi));
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
                         if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
                             dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
                         } else {
@@ -383,8 +383,8 @@ public class MetsIndexer extends AbstractIndexer {
                     String[] fields = { SolrConstants.IDDOC, SolrConstants.DOCSTRCT };
                     String parentIddoc = null;
                     String parentDocstrct = null;
-                    SolrDocumentList hits = hotfolder.getSolrHelper().search(new StringBuilder().append(SolrConstants.PI).append(":").append(parentPi)
-                            .toString(), Arrays.asList(fields));
+                    SolrDocumentList hits = hotfolder.getSolrHelper()
+                            .search(new StringBuilder().append(SolrConstants.PI).append(":").append(parentPi).toString(), Arrays.asList(fields));
                     if (hits != null && hits.getNumFound() > 0) {
                         parentIddoc = (String) hits.get(0).getFieldValue(SolrConstants.IDDOC);
                         parentDocstrct = (String) hits.get(0).getFieldValue(SolrConstants.DOCSTRCT);
@@ -454,8 +454,8 @@ public class MetsIndexer extends AbstractIndexer {
             if (indexObj.isVolume() && indexObj.getAccessConditions().isEmpty()) {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
-                    SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(
-                            SolrConstants.ACCESSCONDITION));
+                    SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + anchorPi,
+                            Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && !hits.isEmpty()) {
                         Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
                         if (fields != null) {
@@ -509,8 +509,13 @@ public class MetsIndexer extends AbstractIndexer {
             } else {
                 // Anchors
                 indexObj.addToLucene(SolrConstants.ISANCHOR, "true");
-                long numVolumes = hotfolder.getSolrHelper().getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":").append(indexObj.getPi())
-                        .append(" AND ").append(SolrConstants.ISWORK).append(":true").toString());
+                long numVolumes = hotfolder.getSolrHelper()
+                        .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":")
+                                .append(indexObj.getPi())
+                                .append(" AND ")
+                                .append(SolrConstants.ISWORK)
+                                .append(":true")
+                                .toString());
                 indexObj.addToLucene(SolrConstants.NUMVOLUMES, String.valueOf(numVolumes));
                 logger.info("Added number of volumes: {}", numVolumes);
             }
@@ -601,8 +606,8 @@ public class MetsIndexer extends AbstractIndexer {
                         indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
                     }
                     if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
-                        indexObj.addToLucene("MD_ORDERLABELRANGE", new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj
-                                .getLastPageLabel()).toString());
+                        indexObj.addToLucene("MD_ORDERLABELRANGE",
+                                new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
                     }
 
                     // Add used-generated content docs
@@ -615,8 +620,8 @@ public class MetsIndexer extends AbstractIndexer {
                         int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
                         String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
                         if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
-                            writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC), String
-                                    .valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
+                            writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                                    String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
                             ugcAddedChecklist.add(order);
                         }
                     }
@@ -1000,7 +1005,7 @@ public class MetsIndexer extends AbstractIndexer {
                 useFileID = fileID;
             }
         }
-        if (StringUtils.isEmpty(useFileID)) {
+        if (useFileGroup != null && StringUtils.isEmpty(useFileID)) {
             logger.warn("FILEID not found for file group {}", useFileGroup);
             useFileID = "";
         }
@@ -1058,8 +1063,8 @@ public class MetsIndexer extends AbstractIndexer {
             String fileGroup = eleFileGrp.getAttributeValue("USE");
             logger.debug("Found file group: {}", fileGroup);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if ((useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup)) && (DEFAULT_FILEGROUP_1.equals(fileGroup) || DEFAULT_FILEGROUP_2
-                    .equals(fileGroup) || OBJECT_FILEGROUP.equals(fileGroup))) {
+            if ((useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
+                    && (DEFAULT_FILEGROUP_1.equals(fileGroup) || DEFAULT_FILEGROUP_2.equals(fileGroup) || OBJECT_FILEGROUP.equals(fileGroup))) {
                 useFileGroup = fileGroup;
             }
             String fileId = null;
@@ -1070,10 +1075,15 @@ public class MetsIndexer extends AbstractIndexer {
             } else {
                 fileId = fileIdRoot;
             }
-            logger.trace("fileIdLocal: {}", fileId);
+            logger.debug("fileId: {}", fileId);
+
+            // If fileId is not null, use an XPath expression for the appropriate file element; otherwise get all file elements and get the one with the index of the page order
+            String fileIdXPathCondition = fileId != null ? "[@ID=\"" + fileId + "\"]" : "";
+            int attrListIndex = fileId != null ? 0 : order - 1;
 
             // Check whether the fileId_fileGroup pattern applies for this file group, otherwise just use the fileId
-            xpath = "mets:file[@ID=\"" + fileId + "\"]/mets:FLocat/@xlink:href";
+            xpath = "mets:file" + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
+            logger.debug(xpath);
             List<Attribute> filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
             //            if (filepathAttrList == null || filepathAttrList.isEmpty()) {
             //                fileId = useFileID;
@@ -1081,13 +1091,14 @@ public class MetsIndexer extends AbstractIndexer {
             //                filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
             //            }
             logger.trace(xpath);
-            if (filepathAttrList == null || filepathAttrList.isEmpty()) {
+            if (filepathAttrList == null || filepathAttrList.size() <= attrListIndex) {
                 // Skip silently
                 logger.debug("Skipping file group {}", fileGroup);
                 continue;
             }
 
-            String filePath = filepathAttrList.get(0).getValue();
+            String filePath = filepathAttrList.get(attrListIndex).getValue();
+            logger.trace("filePath: " + filePath);
             if (StringUtils.isEmpty(filePath)) {
                 logger.warn("{}: file path not found in file group '{}'.", fileId, fileGroup);
                 //                break;
@@ -1095,14 +1106,14 @@ public class MetsIndexer extends AbstractIndexer {
             String fileName = FilenameUtils.getName(filePath);
 
             // Mime type
-            xpath = "mets:file[@ID=\"" + fileId + "\"]/@MIMETYPE";
+            xpath = "mets:file" + fileIdXPathCondition + "/@MIMETYPE";
             List<Attribute> mimetypeAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
             if (mimetypeAttrList == null || mimetypeAttrList.isEmpty()) {
                 logger.error("{}: mime type not found in file group '{}'.", fileId, fileGroup);
                 break;
             }
 
-            String mimetype = mimetypeAttrList.get(0).getValue();
+            String mimetype = mimetypeAttrList.get(attrListIndex).getValue();
             if (StringUtils.isEmpty(mimetype)) {
                 logger.error("{}: mime type is blank in file group '{}'.", fileId, fileGroup);
                 break;
@@ -1179,7 +1190,7 @@ public class MetsIndexer extends AbstractIndexer {
 
             if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
                 // Width + height (invalid)
-                xpath = "mets:file[@ID=\"" + fileId + "\"]/@WIDTH";
+                xpath = "mets:file" + fileIdXPathCondition + "/@WIDTH";
                 List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
                 Integer width = null;
                 Integer height = null;
@@ -1187,7 +1198,7 @@ public class MetsIndexer extends AbstractIndexer {
                     width = Integer.valueOf(widthAttrList.get(0).getValue());
                     logger.warn("mets:file[@ID='{}'] contains illegal WIDTH attribute. It will still be used, though.", fileId);
                 }
-                xpath = "mets:file[@ID=\"" + fileId + "\"]/@HEIGHT";
+                xpath = "mets:file" + fileIdXPathCondition + "/@HEIGHT";
                 List<Attribute> heightAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
                 if (heightAttrList != null && !heightAttrList.isEmpty() && StringUtils.isNotBlank(heightAttrList.get(0).getValue())) {
                     height = Integer.valueOf(heightAttrList.get(0).getValue());
@@ -1199,7 +1210,7 @@ public class MetsIndexer extends AbstractIndexer {
                 }
 
                 // Width + height (from techMD)
-                xpath = "mets:file[@ID=\"" + fileId + "\"]/@ADMID";
+                xpath = "mets:file" + fileIdXPathCondition + "/@ADMID";
                 List<Attribute> amdIdAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
                 if (amdIdAttrList != null && !amdIdAttrList.isEmpty() && StringUtils.isNotBlank(amdIdAttrList.get(0).getValue())) {
                     String amdId = amdIdAttrList.get(0).getValue();
@@ -1230,8 +1241,8 @@ public class MetsIndexer extends AbstractIndexer {
             boolean altoWritten = false;
             if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
                 try {
-                    altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(),
-                            baseFileName + XML_EXTENSION));
+                    altoData = TextHelper.readAltoFile(
+                            new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
                 } catch (JDOMException | IOException e) {
@@ -1265,8 +1276,8 @@ public class MetsIndexer extends AbstractIndexer {
 
             // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
             if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
-                        false);
+                String fulltext =
+                        TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD), false);
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
@@ -1276,11 +1287,11 @@ public class MetsIndexer extends AbstractIndexer {
                 }
             }
             // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
-            if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null) && dataFolders
-                    .get(DataRepository.PARAM_ALTO) != null) {
+            if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
+                    && dataFolders.get(DataRepository.PARAM_ALTO) != null) {
                 try {
-                    altoData = TextHelper.readAltoFile(new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName
-                            + XML_EXTENSION));
+                    altoData = TextHelper.readAltoFile(
+                            new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1326,25 +1337,27 @@ public class MetsIndexer extends AbstractIndexer {
             if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null) {
                 try {
                     try {
-                        altoData = TextHelper.readAbbyyToAlto(new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
-                                baseFileName + XML_EXTENSION));
+                        altoData = TextHelper.readAbbyyToAlto(
+                                new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                         if (altoData != null) {
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(
-                                    SolrConstants.FILENAME_ALTO) == null) {
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))
+                                    && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
                                 if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                    doc.addField(SolrConstants.FILENAME_ALTO, dataRepository.getDir(DataRepository.PARAM_ALTO_CONVERTED).getFileName()
-                                            .toString() + '/' + pi + '/' + baseFileName + XML_EXTENSION);
+                                    doc.addField(SolrConstants.FILENAME_ALTO,
+                                            dataRepository.getDir(DataRepository.PARAM_ALTO_CONVERTED).getFileName().toString() + '/' + pi + '/'
+                                                    + baseFileName + XML_EXTENSION);
                                     // Write converted ALTO file
-                                    FileUtils.writeStringToFile(new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName
-                                            + XML_EXTENSION), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+                                    FileUtils.writeStringToFile(
+                                            new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName + XML_EXTENSION),
+                                            (String) altoData.get(SolrConstants.ALTO), "UTF-8");
                                     altoWritten = true;
                                     logger.debug("Added ALTO from regular ALTO for page {}", order);
                                 } else {
                                     logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
                                 }
                             }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(
-                                    SolrConstants.FULLTEXT) == null) {
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
+                                    && doc.getField(SolrConstants.FULLTEXT) == null) {
                                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                                 logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
                             }
@@ -1373,16 +1386,18 @@ public class MetsIndexer extends AbstractIndexer {
             // Read word coords from TEI only if none has been read from ALTO for this page yet
             if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
                 try {
-                    altoData = TextHelper.readTeiToAlto(new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName
-                            + XML_EXTENSION));
+                    altoData = TextHelper.readTeiToAlto(
+                            new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                     if (altoData != null) {
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
                             if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent()
-                                        .getFileName().toString() + '/' + pi + '/' + baseFileName + XML_EXTENSION);
+                                doc.addField(SolrConstants.FILENAME_ALTO,
+                                        dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent().getFileName().toString() + '/' + pi + '/'
+                                                + baseFileName + XML_EXTENSION);
                                 logger.debug("Added ALTO from regular ALTO for page {}", order);
-                                FileUtils.writeStringToFile(new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName
-                                        + XML_EXTENSION), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+                                FileUtils.writeStringToFile(
+                                        new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName + XML_EXTENSION),
+                                        (String) altoData.get(SolrConstants.ALTO), "UTF-8");
                                 altoWritten = true;
                                 // Write converted ALTO file
                             } else {
@@ -1416,11 +1431,11 @@ public class MetsIndexer extends AbstractIndexer {
 
             if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
                 try {
-                    Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                            baseFileName + XML_EXTENSION));
+                    Map<String, String> mixData = TextHelper
+                            .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                     for (String key : mixData.keySet()) {
-                        if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null) && !(key.equals(SolrConstants.HEIGHT)
-                                && doc.getField(SolrConstants.HEIGHT) != null)) {
+                        if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
+                                && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
                             doc.addField(key, mixData.get(key));
                         }
                     }
@@ -1432,8 +1447,8 @@ public class MetsIndexer extends AbstractIndexer {
             }
 
             // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
-            if (!altoWritten && !foundCrowdsourcingData && altoURL != null && !altoURL.startsWith(Configuration.getInstance().getString(
-                    "init.viewerUrl", "missing?"))) {
+            if (!altoWritten && !foundCrowdsourcingData && altoURL != null
+                    && !altoURL.startsWith(Configuration.getInstance().getString("init.viewerUrl", "missing?"))) {
                 try {
                     logger.debug("Downloading ALTO from {}", altoURL);
                     String alto = Utils.callUrl(altoURL);
@@ -1444,8 +1459,9 @@ public class MetsIndexer extends AbstractIndexer {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                                 if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
                                     String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + XML_EXTENSION;
-                                    doc.addField(SolrConstants.FILENAME_ALTO, dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent()
-                                            .getFileName().toString() + '/' + pi + '/' + fileName);
+                                    doc.addField(SolrConstants.FILENAME_ALTO,
+                                            dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent().getFileName().toString() + '/' + pi + '/'
+                                                    + fileName);
                                     // Write ALTO file
                                     File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
                                     FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), "UTF-8");
@@ -1455,8 +1471,8 @@ public class MetsIndexer extends AbstractIndexer {
                                     logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
                                 }
                             }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(
-                                    SolrConstants.FULLTEXT) == null) {
+                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
+                                    && doc.getField(SolrConstants.FULLTEXT) == null) {
                                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                                 logger.debug("Added FULLTEXT from downloaded ALTO for page {}", order);
                             }
@@ -1510,8 +1526,8 @@ public class MetsIndexer extends AbstractIndexer {
      */
     private void anchorMerge(IndexObject indexObj) throws IndexerException, IOException, SolrServerException, FatalIndexerException {
         logger.debug("anchorMerge: {}", indexObj.getPi());
-        SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI_PARENT + ":" + indexObj.getPi() + " AND " + SolrConstants.ISWORK
-                + ":true", null);
+        SolrDocumentList hits =
+                hotfolder.getSolrHelper().search(SolrConstants.PI_PARENT + ":" + indexObj.getPi() + " AND " + SolrConstants.ISWORK + ":true", null);
         if (hits.isEmpty()) {
             logger.warn("Anchor '{}' has no volumes, no merge needed.", indexObj.getPi());
             return;
@@ -1606,15 +1622,15 @@ public class MetsIndexer extends AbstractIndexer {
         // Merge anchor and volume collections and add them all to the anchor
         boolean newAnchorCollections = false;
         if (hotfolder.isAddVolumeCollectionsToAnchor()) {
-            List<Element> eleDmdSecList = xp.evaluateToElements("/mets:mets/mets:dmdSec[@ID='" + indexObj.getDmdid()
-                    + "']/mets:mdWrap[@MDTYPE='MODS']", null);
+            List<Element> eleDmdSecList =
+                    xp.evaluateToElements("/mets:mets/mets:dmdSec[@ID='" + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']", null);
             if (eleDmdSecList != null && !eleDmdSecList.isEmpty()) {
                 Element eleDmdSec = eleDmdSecList.get(0);
                 List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec);
                 if (eleModsList != null && !eleModsList.isEmpty()) {
                     Element eleMods = eleModsList.get(0);
-                    List<FieldConfig> collectionConfigFields = Configuration.getInstance().getMetadataConfigurationManager()
-                            .getConfigurationListForField(SolrConstants.DC);
+                    List<FieldConfig> collectionConfigFields =
+                            Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.DC);
                     if (collectionConfigFields != null) {
                         logger.debug("Found {} config items for DC", collectionConfigFields.size());
                         for (FieldConfig item : collectionConfigFields) {
@@ -1744,8 +1760,8 @@ public class MetsIndexer extends AbstractIndexer {
             extension = ANCHOR_UPDATE_EXTENSION;
         }
 
-        Path updatedAnchorFile = Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolder().toAbsolutePath().toString(), indexObj.getPi(), "#",
-                extension);
+        Path updatedAnchorFile =
+                Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolder().toAbsolutePath().toString(), indexObj.getPi(), "#", extension);
         try {
             xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
             if (Files.exists(updatedAnchorFile)) {
@@ -1769,8 +1785,11 @@ public class MetsIndexer extends AbstractIndexer {
         logger.debug("copyAndReIndexAnchor: {}", indexObj.getPi());
         if (indexObj.getParent() != null) {
             String piParent = indexObj.getParent().getPi();
-            String indexedAnchorFilePath = new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString())
-                    .append("/").append(piParent).append(AbstractIndexer.XML_EXTENSION).toString();
+            String indexedAnchorFilePath =
+                    new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
+                            .append(piParent)
+                            .append(AbstractIndexer.XML_EXTENSION)
+                            .toString();
             Path indexedAnchor = Paths.get(indexedAnchorFilePath);
             if (Files.exists(indexedAnchor)) {
                 hotfolder.getReindexQueue().add(indexedAnchor);
@@ -1789,8 +1808,13 @@ public class MetsIndexer extends AbstractIndexer {
      */
     private void updateAllAnchorChildren(IndexObject indexObj) throws IOException, SolrServerException {
         logger.debug("Scheduling all METS files that belong to this anchor for re-indexing...");
-        SolrDocumentList hits = hotfolder.getSolrHelper().search(new StringBuilder(SolrConstants.PI_PARENT).append(":").append(indexObj.getPi())
-                .append(" AND ").append(SolrConstants.ISWORK).append(":true").toString(), null);
+        SolrDocumentList hits = hotfolder.getSolrHelper()
+                .search(new StringBuilder(SolrConstants.PI_PARENT).append(":")
+                        .append(indexObj.getPi())
+                        .append(" AND ")
+                        .append(SolrConstants.ISWORK)
+                        .append(":true")
+                        .toString(), null);
         if (hits.isEmpty()) {
             logger.debug("No volume METS files found for this anchor.");
             return;
@@ -1798,14 +1822,14 @@ public class MetsIndexer extends AbstractIndexer {
         for (SolrDocument doc : hits) {
             // Do not use PI here, as older documents might not have that field, use PPN instead
             String pi = doc.getFieldValue(SolrConstants.PI).toString();
-            if (doc.getFieldValue(SolrConstants.IDDOC_PARENT) != null && doc.getFieldValue(SolrConstants.IDDOC_PARENT).toString().equals(String
-                    .valueOf(indexObj.getIddoc()))) {
+            if (doc.getFieldValue(SolrConstants.IDDOC_PARENT) != null
+                    && doc.getFieldValue(SolrConstants.IDDOC_PARENT).toString().equals(String.valueOf(indexObj.getIddoc()))) {
                 logger.debug("{} already has the correct parent, skipping.", pi);
                 continue;
             }
             // String indexedMetsFilePath = URLEncoder.encode(Hotfolder.getIndexedMets() + File.separator + pi + AbstractIndexer.XML_EXTENSION, "utf-8");
-            String indexedMetsFilePath = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi
-                    + AbstractIndexer.XML_EXTENSION;
+            String indexedMetsFilePath =
+                    dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + AbstractIndexer.XML_EXTENSION;
             Path indexedMets = Paths.get(indexedMetsFilePath);
             if (Files.exists(indexedMets)) {
                 hotfolder.getReindexQueue().add(indexedMets);
@@ -1864,8 +1888,8 @@ public class MetsIndexer extends AbstractIndexer {
             hotfolder.getSolrHelper().deleteDocument(String.valueOf(indexObj.getIddoc()));
             // Delete secondary docs (aggregated metadata, events)
             List<String> iddocsToDelete = new ArrayList<>();
-            hits = hotfolder.getSolrHelper().search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(
-                    SolrConstants.IDDOC));
+            hits = hotfolder.getSolrHelper().search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(),
+                    Collections.singletonList(SolrConstants.IDDOC));
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
@@ -1957,8 +1981,8 @@ public class MetsIndexer extends AbstractIndexer {
                 long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                 doc.addField(SolrConstants.IDDOC, iddoc);
                 if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                    logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD, doc.getFieldValue(
-                            SolrConstants.LABEL));
+                    logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
+                            doc.getFieldValue(SolrConstants.LABEL));
                     doc.addField(SolrConstants.GROUPFIELD, iddoc);
                 }
                 // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped. Since child docstructs are added recursively, this should be the case without further conditions.
@@ -1993,8 +2017,8 @@ public class MetsIndexer extends AbstractIndexer {
                             indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
                         }
                         if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
-                            indexObj.addToLucene("MD_ORDERLABELRANGE", new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj
-                                    .getLastPageLabel()).toString());
+                            indexObj.addToLucene("MD_ORDERLABELRANGE",
+                                    new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
                         }
                     }
 
@@ -2249,8 +2273,10 @@ public class MetsIndexer extends AbstractIndexer {
                 Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed);
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
-                String oldMetsFilename = new StringBuilder(FilenameUtils.getBaseName(sbNewFilename.toString())).append("_").append(
-                        MetadataHelper.formatterBasicDateTime.print(System.currentTimeMillis())).append(".xml").toString();
+                String oldMetsFilename = new StringBuilder(FilenameUtils.getBaseName(sbNewFilename.toString())).append("_")
+                        .append(MetadataHelper.formatterBasicDateTime.print(System.currentTimeMillis()))
+                        .append(".xml")
+                        .toString();
                 Files.move(indexed, Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename));
                 logger.debug("Old anchor file copied to '{}{}{}'.", updatedMetsFolder.toAbsolutePath(), File.separator, oldMetsFilename);
                 // Then copy the new file again, overwriting the old
