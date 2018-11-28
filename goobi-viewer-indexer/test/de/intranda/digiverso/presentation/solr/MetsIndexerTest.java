@@ -162,7 +162,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("00000002.tif", doc.getFieldValue(SolrConstants.THUMBNAIL)); // representative image is set
             Assert.assertEquals("00000002.tif", doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT)); // not really used
             Assert.assertEquals(2, doc.getFieldValue(SolrConstants.THUMBPAGENO)); // representative image should not affect the number
-            Assert.assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
+            Assert.assertEquals(" - ", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
             Assert.assertEquals("urn:nbn:de:hebis:66:fuldig-1946", doc.getFieldValue(SolrConstants.URN));
             Assert.assertNull(doc.getFieldValue(SolrConstants.IMAGEURN_OAI)); // only docs representing deleted records should have this field
             Assert.assertEquals("http://opac.sub.uni-goettingen.de/DB=1/PPN?PPN=517154005", doc.getFieldValue(SolrConstants.OPACURL));
