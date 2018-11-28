@@ -88,7 +88,7 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
         //            Assert.assertEquals("Q8 Content 2.jpg", doc.getFieldValue(SolrConstants.THUMBNAIL)); // representative image is set
         //            Assert.assertEquals("Q8 Content 2.jpg", doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT)); // not really used
         //            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.THUMBPAGENO)); // representative image should not affect the number
-        //            Assert.assertEquals(" - ", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
+        //            Assert.assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
         //            Assert.assertNull(doc.getFieldValue(SolrConstants.IMAGEURN_OAI)); // only docs representing deleted records should have this field
         //            // Assert.assertEquals("", doc.getFieldValue(SolrConstants.OPACURL));
         //            // Assert.assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));

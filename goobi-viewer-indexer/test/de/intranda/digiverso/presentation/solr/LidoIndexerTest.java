@@ -156,7 +156,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(SolrConstants._LIDO, doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
             Assert.assertEquals("PH_1.jpg", doc.getFieldValue(SolrConstants.THUMBNAIL));
             Assert.assertEquals(1, doc.getFieldValue(SolrConstants.THUMBPAGENO));
-            Assert.assertEquals(" - ", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
+            Assert.assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_TITLE");
                 Assert.assertNotNull(mdList);
