@@ -163,6 +163,15 @@ public final class MetadataConfigurationManager {
                 configurationItem.setAddSortField(true);
             }
         }
+        
+        if (configurationMap.containsKey("addSortFieldToTopstruct")) {
+            if (((String) configurationMap.get("addSortFieldToTopstruct")).equals(FALSE)) {
+                configurationItem.setAddSortFieldToTopstruct(false);
+            } else {
+                configurationItem.setAddSortFieldToTopstruct(true);
+            }
+        }
+
 
         if (configurationMap.containsKey("normalizeYear")) {
             if (((String) configurationMap.get("normalizeYear")).equals(FALSE)) {

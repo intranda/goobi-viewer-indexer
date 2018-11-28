@@ -43,6 +43,7 @@ public class FieldConfig {
     private boolean lowercase = false;
     private String splittingCharacter = null;
     private boolean addSortField = false;
+    private boolean addSortFieldToTopstruct = false;
     private boolean normalizeYear = false;
     private boolean interpolateYears = false;
     private int normalizeYearMinDigits = 3;
@@ -266,6 +267,20 @@ public class FieldConfig {
      */
     public void setAddSortField(boolean addSortField) {
         this.addSortField = addSortField;
+    }
+
+    /**
+     * @return the addSortFieldToTopstruct
+     */
+    public boolean isAddSortFieldToTopstruct() {
+        return addSortFieldToTopstruct;
+    }
+
+    /**
+     * @param addSortFieldToTopstruct the addSortFieldToTopstruct to set
+     */
+    public void setAddSortFieldToTopstruct(boolean addSortFieldToTopstruct) {
+        this.addSortFieldToTopstruct = addSortFieldToTopstruct;
     }
 
     /**

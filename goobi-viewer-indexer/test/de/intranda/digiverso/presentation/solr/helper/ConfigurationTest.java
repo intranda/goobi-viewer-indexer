@@ -76,7 +76,7 @@ public class ConfigurationTest {
         Assert.assertNotNull(fieldInformation);
         Assert.assertEquals(1, fieldInformation.size());
         Map<String, Object> fieldValues = fieldInformation.get(0);
-        Assert.assertEquals(19, fieldValues.size());
+        Assert.assertEquals(20, fieldValues.size());
 
         List<String> xpath = (List<String>) fieldValues.get("xpath");
         Assert.assertNotNull(xpath);
@@ -111,6 +111,9 @@ public class ConfigurationTest {
 
         Assert.assertNotNull(fieldValues.get("addSortField"));
         Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("addSortField")));
+
+        Assert.assertNotNull(fieldValues.get("addSortFieldToTopstruct"));
+        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("addSortFieldToTopstruct")));
 
         Assert.assertNotNull(fieldValues.get("splittingCharacter"));
         Assert.assertEquals("#", fieldValues.get("splittingCharacter"));
@@ -171,6 +174,7 @@ public class ConfigurationTest {
         Assert.assertTrue(configItem.isAddToDefault());
         Assert.assertFalse(configItem.isAddUntokenizedVersion());
         Assert.assertTrue(configItem.isAddSortField());
+        Assert.assertTrue(configItem.isAddSortFieldToTopstruct());
         Assert.assertEquals("#", configItem.getSplittingCharacter());
         Assert.assertTrue(configItem.isNormalizeYear());
         Assert.assertTrue(configItem.isInterpolateYears());

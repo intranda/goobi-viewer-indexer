@@ -58,6 +58,7 @@ import de.intranda.digiverso.presentation.solr.model.IndexerException;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
+import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.MetadataConfigurationManager;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
@@ -739,7 +740,7 @@ public class LidoIndexer extends AbstractIndexer {
                 List<GroupedMetadata> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
                 List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eleEvent, "", indexObj, xp);
 
-                // Add aggregated metadata groups as separate documents
+                // Add grouped metadata as separate documents
                 if (indexObj.getGroupedMetadataFields().size() > groupedFieldsBackup.size()) {
                     // Newly added items in IndexObject.groupedMetadataFields come from the event, so just use these new items
                     List<GroupedMetadata> eventGroupedFields =
@@ -775,6 +776,21 @@ public class LidoIndexer extends AbstractIndexer {
                 for (LuceneField field : fields) {
                     eventDoc.addField(field.getField(), field.getValue());
                     logger.debug("Added {}:{} to event '{}'.", field.getField(), field.getValue(), type);
+
+                    // Check whether this field is configured to be added as a sort field to topstruct
+                    List<FieldConfig> fieldConfigList =
+                            Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(field.getField());
+                    if (fieldConfigList != null && !fieldConfigList.isEmpty()) {
+                        FieldConfig fieldConfig = fieldConfigList.get(0);
+                        if (fieldConfig.isAddSortFieldToTopstruct()) {
+                            List<LuceneField> retList = new ArrayList<>(1);
+                            MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.SORT_,
+                                    fieldConfig.getNonSortConfigurations(), retList);
+                            if (!retList.isEmpty()) {
+                                indexObj.addToLucene(retList.get(0));
+                            }
+                        }
+                    }
                 }
 
                 // Use the main IndexObject's default value field to collect default values for the events, then restore the original value

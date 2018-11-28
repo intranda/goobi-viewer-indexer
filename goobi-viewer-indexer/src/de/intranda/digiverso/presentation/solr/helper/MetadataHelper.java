@@ -392,7 +392,7 @@ public class MetadataHelper {
                 }
 
                 for (String fieldValue : fieldValues) {
-                    // CURRENTNOSORT must be along  value
+                    // CURRENTNOSORT must be an integer value
                     if (fieldName.equals(SolrConstants.CURRENTNOSORT)) {
                         try {
                             fieldValue = String.valueOf(Integer.valueOf(fieldValue));
@@ -730,7 +730,7 @@ public class MetadataHelper {
      * @should add numerical sort fields correctly
      * @should not add existing fields
      */
-    static void addSortField(String fieldName, String fieldValue, String sortFieldPrefix, List<NonSortConfiguration> nonSortConfigurations,
+    public static void addSortField(String fieldName, String fieldValue, String sortFieldPrefix, List<NonSortConfiguration> nonSortConfigurations,
             List<LuceneField> retList) {
         if (fieldName == null) {
             throw new IllegalArgumentException("fieldName may not be null");

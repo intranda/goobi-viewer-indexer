@@ -297,6 +297,7 @@
 					</xpath>
 					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
+					<addSortFieldToTopstruct>true</addSortFieldToTopstruct>
 					<onefield>false</onefield>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<normalizeYear>true</normalizeYear>

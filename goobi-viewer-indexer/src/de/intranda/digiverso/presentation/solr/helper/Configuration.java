@@ -259,7 +259,7 @@ public final class Configuration {
     public int getPageCountStart() {
         return config.getInt("init.pageCountStart", 1);
     }
-    
+
     /**
      * 
      * @return
@@ -330,8 +330,8 @@ public final class Configuration {
                 if (items > -1) {
                     // Multiple XPath items
                     for (int j = 0; j <= items; j++) {
-                        SubnodeConfiguration xpathNode = config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath.list.item(" + j
-                                + ")");
+                        SubnodeConfiguration xpathNode =
+                                config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath.list.item(" + j + ")");
                         String xpath = xpathNode.getString(".");
                         if (StringUtils.isEmpty(xpath)) {
                             logger.error("Found empty XPath configuration for field: {}", fieldname);
@@ -366,6 +366,7 @@ public final class Configuration {
                 fieldValues.put("addUntokenizedVersion", config.getString("fields." + fieldname + ".list.item(" + i + ").addUntokenizedVersion"));
                 fieldValues.put("lowercase", config.getString("fields." + fieldname + ".list.item(" + i + ").lowercase"));
                 fieldValues.put("addSortField", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortField"));
+                fieldValues.put("addSortFieldToTopstruct", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortFieldToTopstruct"));
                 fieldValues.put("aggregateEntity", config.getString("fields." + fieldname + ".list.item(" + i + ").aggregateEntity"));
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
