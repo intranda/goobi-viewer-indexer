@@ -259,6 +259,15 @@ public final class Configuration {
     public int getPageCountStart() {
         return config.getInt("init.pageCountStart", 1);
     }
+    
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public String getEmptyOrderLabelReplacement() {
+        return getString("init.emptyOrderLabelReplacement", " - ");
+    }
 
     /**
      * 

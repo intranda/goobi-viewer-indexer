@@ -869,7 +869,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
         doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
         doc.addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(order));
         doc.addField(SolrConstants.ORDER, order);
-        doc.addField(SolrConstants.ORDERLABEL, " - ");
+        doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
 
         boolean displayImage = Boolean.valueOf(eleImage.getChildText("displayImage"));
         if (displayImage) {

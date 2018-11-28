@@ -82,6 +82,10 @@
 	    
 	    <!-- labelCleanup: If true, non-sort character sequences will be removed from the string -->
 	    <labelCleanup>true</labelCleanup>
+	    
+	    <!-- emptyOrderLabelReplacement: String that will be put into the field ORDERLABEL if no
+	        value is found. Default is " - ". -->
+	    <emptyOrderLabelReplacement> - </emptyOrderLabelReplacement>
 
         <!-- addNormDataFieldsToDefault: Norm data fields whose values should be 
             added to DEFAULT (e.g. alternative person names). -->
@@ -544,7 +548,6 @@
             </list>
         </MD_PUBLICATIONRUN>
 		
-		<!--
         <MDNUM_PUBLICRELEASEYEAR>
             <list>
                 <item>
@@ -561,8 +564,8 @@
                 </item>
             </list>
         </MDNUM_PUBLICRELEASEYEAR>
-        -->
         
+        <!--
         <DATE_PUBLICRELEASEDATE>
             <list>
                 <item>
@@ -579,6 +582,7 @@
                 </item>
             </list>
         </DATE_PUBLICRELEASEDATE>
+        -->
 
 		<DC>
 			<list>

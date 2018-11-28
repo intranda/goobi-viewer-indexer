@@ -565,7 +565,7 @@ public class LidoIndexer extends AbstractIndexer {
         if (StringUtils.isNotEmpty(orderLabel)) {
             doc.addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
-            doc.addField(SolrConstants.ORDERLABEL, " - ");
+            doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
         }
 
         if (imageXPaths != null && !imageXPaths.isEmpty()) {

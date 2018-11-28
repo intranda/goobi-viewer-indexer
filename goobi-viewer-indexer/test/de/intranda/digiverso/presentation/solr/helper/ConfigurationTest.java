@@ -210,4 +210,13 @@ public class ConfigurationTest {
     public void getViewerHome_shouldReturnCorrectValue() throws Exception {
         Assert.assertEquals("build/viewer/", Configuration.getInstance().getViewerHome());
     }
+
+    /**
+     * @see Configuration#getEmptyOrderLabelReplacement()
+     * @verifies return correct value
+     */
+    @Test
+    public void getEmptyOrderLabelReplacement_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals("X", Configuration.getInstance().getEmptyOrderLabelReplacement());
+    }
 }

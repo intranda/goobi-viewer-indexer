@@ -89,6 +89,10 @@
             docstruct documents. Default is false. -->
         <addLabelToChildren>true</addLabelToChildren>
         
+        <!-- emptyOrderLabelReplacement: String that will be put into the field ORDERLABEL if no
+            value is found. Default is " - ". -->
+        <emptyOrderLabelReplacement>X</emptyOrderLabelReplacement>
+        
         <lido>
             <!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
             <imageXPath>lido:resourceRepresentation[@lido:type='image_master']/lido:linkResource</imageXPath>

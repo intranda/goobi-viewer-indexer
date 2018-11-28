@@ -1039,7 +1039,7 @@ public class MetsIndexer extends AbstractIndexer {
         if (StringUtils.isNotEmpty(orderLabel)) {
             doc.addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
-            doc.addField(SolrConstants.ORDERLABEL, " - ");
+            doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
         }
         String contentIDs = eleStructMapPhysical.getAttributeValue("CONTENTIDS");
         if (Utils.isUrn(contentIDs)) {
