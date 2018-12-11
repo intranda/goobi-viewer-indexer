@@ -440,7 +440,7 @@ public class DataRepository {
         //        } else if (PARAM_FULLTEXTCROWD.equals(paramName)) {
         //            paramName = PARAM_FULLTEXT;
         //        }
-        logger.info("Copying {} files from '{}'...", paramName, srcFolder);
+        logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath().toString());
         int counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
         logger.info("{} {} files copied.", counter, paramName);
         if (!Utils.deleteDirectory(srcFolder)) {
