@@ -221,27 +221,27 @@ public class DocUpdateIndexer extends AbstractIndexer {
                     }
                 }
             }
-            // UGC
-            if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
-                String query =
-                        SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
-                SolrDocumentList ugcDocList = hotfolder.getSolrHelper().search(
-                        SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
-                        Collections.singletonList(SolrConstants.IDDOC));
-                if (ugcDocList != null && !ugcDocList.isEmpty()) {
-                    // Collect delete old UGC docs for deletion
-                    List<String> oldIddocs = new ArrayList<>(ugcDocList.size());
-                    for (SolrDocument oldDoc : ugcDocList) {
-                        oldIddocs.add((String) oldDoc.getFieldValue(SolrConstants.IDDOC));
-                    }
-                    if (!oldIddocs.isEmpty()) {
-                        hotfolder.getSolrHelper().deleteDocuments(oldIddocs);
-                    } else {
-                        logger.error("No IDDOC values found in docs matching query: {}", query);
-                    }
+            
+            // Remove old UGC
+            String query =
+                    SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
+            SolrDocumentList ugcDocList = hotfolder.getSolrHelper().search(
+                    SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
+                    Collections.singletonList(SolrConstants.IDDOC));
+            if (ugcDocList != null && !ugcDocList.isEmpty()) {
+                // Collect delete old UGC docs for deletion
+                List<String> oldIddocs = new ArrayList<>(ugcDocList.size());
+                for (SolrDocument oldDoc : ugcDocList) {
+                    oldIddocs.add((String) oldDoc.getFieldValue(SolrConstants.IDDOC));
                 }
-                
-                // Add new UGC docs
+                if (!oldIddocs.isEmpty()) {
+                    hotfolder.getSolrHelper().deleteDocuments(oldIddocs);
+                } else {
+                    logger.error("No IDDOC values found in docs matching query: {}", query);
+                }
+            }
+            // Add new UGC docs
+            if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
                 SolrInputDocument dummyDoc = new SolrInputDocument();
                 List<SolrInputDocument> newUgcDocList =
                         generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC), pi, order, pageFileBaseName);
