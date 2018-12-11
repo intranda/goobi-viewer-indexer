@@ -972,6 +972,7 @@ public class MetsIndexer extends AbstractIndexer {
         sbXPath.append("/mets:mets/mets:structLink/mets:smLink[@xlink:to=\"").append(id).append("\"]");
         List<Element> eleStructLinkList = xp.evaluateToElements(sbXPath.toString(), null);
         if (eleStructLinkList.isEmpty()) {
+            logger.warn("Page {} is not mapped to a structure element, skipping...", order);
             return false;
         }
 
