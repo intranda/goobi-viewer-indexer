@@ -49,6 +49,7 @@ public final class SolrConstants {
     public static final String DEFAULT = "DEFAULT";
     public static final String DMDID = "DMDID";
     public static final String DOCSTRCT = "DOCSTRCT";
+    public static final String DOCSTRCT_SUB = "DOCSTRCT_SUB";
     public static final String DOCTYPE = "DOCTYPE";
     public static final String EVENTDATE = "EVENTDATE";
     public static final String EVENTDATEEND = "EVENTDATEEND";

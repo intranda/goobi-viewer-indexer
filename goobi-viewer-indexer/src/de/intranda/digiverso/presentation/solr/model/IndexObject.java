@@ -120,6 +120,10 @@ public class IndexObject {
         }
 
         addToLucene(SolrConstants.DOCSTRCT, getType());
+        // Add DOCSTRCT_SUB to true subelements (no volumes)
+        if (parent != null && pi == null) {
+            addToLucene(SolrConstants.DOCSTRCT_SUB, getType());
+        }
         addToLucene(SolrConstants.DATAREPOSITORY, getDataRepository());
     }
 
@@ -272,7 +276,7 @@ public class IndexObject {
         if (luceneField == null) {
             throw new IllegalArgumentException("luceneField may not be null");
         }
-        
+
         addToGroupIds(luceneField.getField(), luceneField.getValue());
         removeExistingFields(luceneField.getField());
 
