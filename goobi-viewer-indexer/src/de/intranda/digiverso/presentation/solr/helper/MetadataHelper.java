@@ -1041,13 +1041,18 @@ public class MetadataHelper {
             }
             if (!oldValues.isEmpty()) {
                 Collections.sort(oldValues);
+                int count = 0;
                 for (int i = oldValues.get(0); i < oldValues.get(oldValues.size() - 1); ++i) {
                     if (!oldValues.contains(i)) {
                         if (skipValues != null && skipValues.contains(i)) {
                             continue;
                         }
                         newValues.add(new LuceneField(fieldName, String.valueOf(i)));
-                        logger.debug("Added implicit {}: {}", fieldName, i);
+                        logger.info("Added implicit {}: {}", fieldName, i);
+                        count++;
+                    }
+                    if (count == 10) {
+                        break;
                     }
                 }
             }
