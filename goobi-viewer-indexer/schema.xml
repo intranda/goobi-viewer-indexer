@@ -30,7 +30,7 @@
 	request -->
 
 
-<schema name="goobi_viewer-20181213" version="1.5">
+<schema name="goobi_viewer-20181214" version="1.5">
 	<!-- attribute "name" is the name of this schema and is only used for display 
 		purposes. version="x.y" is Solr's version number for the schema syntax and 
 		semantics. It should not normally be changed by applications. 1.0: multiValued 
@@ -99,7 +99,6 @@
 			stored="true" />
 		<field name="DMDID" type="string" indexed="true" stored="false" />
 		<field name="DOCSTRCT" type="string" indexed="true" stored="true" />
-		<field name="DOCSTRCT_SUB" type="string" indexed="true" stored="true" />
 		<field name="DOCTYPE" type="string" indexed="true" stored="true" />
 		<field name="EVENTDATE" type="string" indexed="true" stored="true"
 			multiValued="true" />
@@ -229,6 +228,8 @@
 			stored="true" multiValued="true" />
 		<dynamicField name="BOOL_*" type="boolean" indexed="true"
             stored="true" />
+        <dynamicField name="DOCSTRCT_*" type="string" indexed="true"
+            stored="true" />
             
 		<dynamicField name="random_*" type="random" />
 
@@ -243,7 +244,7 @@
 	<copyField source="CENTURY" dest="FACET_CENTURY" />
 	<copyField source="DC" dest="FACET_DC" />
 	<copyField source="DOCSTRCT" dest="FACET_DOCSTRCT" />
-	<copyField source="DOCSTRCT_SUB" dest="FACET_DOCSTRCT_SUB" />
+	<copyField source="DOCSTRCT_*" dest="FACET_DOCSTRCT_*" />
 	<copyField source="YEAR" dest="FACET_YEAR" />
 	<copyField source="MD_*" dest="FACET_*" maxChars="10000" />
 	<copyField source="MD2_*" dest="FACET_*" maxChars="10000" />

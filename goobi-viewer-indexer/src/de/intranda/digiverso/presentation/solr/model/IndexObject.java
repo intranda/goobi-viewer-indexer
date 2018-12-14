@@ -120,9 +120,18 @@ public class IndexObject {
         }
 
         addToLucene(SolrConstants.DOCSTRCT, getType());
-        // Add DOCSTRCT_SUB to true subelements (no volumes)
-        if (parent != null && pi == null) {
+        if (this.parent != null && pi == null) {
+            // Add own type value as DOCSTRCT_SUB to true subelements (no volumes)
             addToLucene(SolrConstants.DOCSTRCT_SUB, getType());
+            // Add topstruct type value as DOCSTRCT_TOP 
+            IndexObject p = this.parent;
+            while (p.getParent() != null) {
+                p = p.getParent();
+            }
+            addToLucene(SolrConstants.DOCSTRCT_TOP, p.getType());
+        } else {
+            // Add topstruct type value as DOCSTRsCT_TOP as well
+            addToLucene(SolrConstants.DOCSTRCT_TOP, getType());
         }
         addToLucene(SolrConstants.DATAREPOSITORY, getDataRepository());
     }
