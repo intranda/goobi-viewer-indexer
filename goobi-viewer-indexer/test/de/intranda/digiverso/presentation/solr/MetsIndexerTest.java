@@ -244,7 +244,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals(DocType.DOCSTRCT.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
                 Assert.assertEquals(doc.getFieldValue(SolrConstants.DOCSTRCT), doc.getFieldValue(SolrConstants.DOCSTRCT_SUB));
-                Assert.assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_SUB));
+                Assert.assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
                     Assert.assertNotNull(mdList);
