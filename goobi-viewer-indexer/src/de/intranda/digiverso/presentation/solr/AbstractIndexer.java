@@ -685,7 +685,7 @@ public abstract class AbstractIndexer {
             if (imageSize.width > 0 && imageSize.height > 0) {
                 doc.setField(SolrConstants.WIDTH, imageSize.width);
                 doc.setField(SolrConstants.HEIGHT, imageSize.height);
-                logger.info("Image dimensions for {}: {}x{}", filename, imageSize.width, imageSize.height);
+                logger.debug("Image dimensions for {}: {}x{}", filename, imageSize.width, imageSize.height);
             }
         } catch (ImageProcessingException | IOException e) {
             if (e.getMessage().contains("File format is not supported")) {
