@@ -1497,8 +1497,11 @@ public class MetsIndexer extends AbstractIndexer {
                 }
 
             }
-            // De-skew ALTO if necessary
-            // deskewAlto(dataFolders, doc);
+            
+            // Add image dimension values from EXIF
+            if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
+                readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
+            }
 
             // If the doc has FULLTEXT, indicate it so that the main doc can get a FULLTEXTAVAILABLE field later
             if (doc.getField(SolrConstants.FULLTEXT) != null) {

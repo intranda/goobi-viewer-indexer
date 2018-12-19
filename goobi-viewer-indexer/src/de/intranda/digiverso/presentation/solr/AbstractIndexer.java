@@ -430,7 +430,7 @@ public abstract class AbstractIndexer {
             logger.info("No new UGC found.");
             return Collections.emptyList();
         }
-        
+
         Path file = Paths.get(folder.toAbsolutePath().toString(), fileNameRoot + AbstractIndexer.XML_EXTENSION);
         if (!Files.isRegularFile(file)) {
             return Collections.emptyList();
@@ -647,74 +647,53 @@ public abstract class AbstractIndexer {
 
     /**
      * 
-     * @param dataFolders
-     * @param doc
+     * @param mediaFolder Folder containing image files
+     * @param doc Solr input document to which to add the dimension values
      */
-    static void deskewAlto(Map<String, Path> dataFolders, SolrInputDocument doc) {
-        logger.trace("deskewAlto");
-        String alto = (String) doc.getFieldValue(SolrConstants.ALTO);
+    static void readImageDimensionsFromEXIF(Path mediaFolder, SolrInputDocument doc) {
+        logger.trace("readImageDimensionsFromEXIF");
+        if (doc == null) {
+            throw new IllegalArgumentException("doc may not be null");
+        }
+
         String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
-        if (filename != null && alto != null && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
-            File imageFile = new File(filename);
-            imageFile = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), imageFile.getName());
-            if (!imageFile.isFile()) {
-                return;
-            }
-            logger.trace("Found image file {}", imageFile.getAbsolutePath());
-            Dimension imageSize = new Dimension(0, 0);
+        if (filename == null || mediaFolder == null || !Files.isDirectory(mediaFolder)) {
+            return;
+        }
+        File imageFile = new File(filename);
+        imageFile = new File(mediaFolder.toAbsolutePath().toString(), imageFile.getName());
+        if (!imageFile.isFile()) {
+            return;
+        }
+        logger.trace("Found image file {}", imageFile.getAbsolutePath());
+        Dimension imageSize = new Dimension(0, 0);
+        try {
+            Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
+            Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
+            Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
             try {
-                AltoDocument altoDoc = AltoDocument.getDocumentFromString(alto);
-                Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
-                Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
-                Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-                try {
-                    imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
-                    imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
-                } catch (NullPointerException e) {
-                }
-                try {
-                    imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
-                    imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
-                } catch (NullPointerException e) {
-                }
+                imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
+                imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
+            } catch (NullPointerException e) {
+            }
+            try {
+                imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
+                imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
+            } catch (NullPointerException e) {
+            }
 
-                String solrWidthString = (String) doc.getFieldValue(SolrConstants.WIDTH);
-                if (solrWidthString == null) {
-                    logger.debug("{} not found, cannot deskew ALTO.", SolrConstants.WIDTH);
-                    return;
-                }
-                int solrWidth = Integer.parseInt(solrWidthString);
-                //                int solrHeight = Integer.parseInt((String) doc.getFieldValue(SolrConstants.HEIGHT));
-
-                if (imageSize.width > 0 && doc.getFieldValue(SolrConstants.WIDTH) != null && delta(imageSize.width, solrWidth) > 2) {
-
-                    if (delta(imageSize.width, solrWidth) > 0.15 * imageSize.width) {
-                        return; //if alto-size differs more than 15% in width from image size, don't deskew
-                    }
-
-                    logger.trace("Rotating alto coordinates to size {}x{}", imageSize.width, imageSize.height);
-                    AltoDeskewer deskewer = new AltoDeskewer();
-                    AltoDocument outputDoc = deskewer.deskewAlto(altoDoc, imageSize, "tr");
-                    String output = AltoDocument.getStringFromDomDocument(new Document(outputDoc.writeToDom()));
-                    if (output != null && !output.isEmpty()) {
-                        doc.setField(SolrConstants.ALTO, output);
-                        doc.setField(SolrConstants.WIDTH, outputDoc.getFirstPage().getWidth());
-                        doc.setField(SolrConstants.HEIGHT, outputDoc.getFirstPage().getHeight());
-                    }
-                }
-
-            } catch (ImageProcessingException | IOException e) {
-                if (e.getMessage().contains("File format is not supported")) {
-                    logger.warn("{}: {}", e.getMessage(), filename);
-                } else {
-                    logger.error("Could not deskew ALTO for image '{}', please check the image file.", imageFile.getAbsolutePath());
-                    logger.error(e.getMessage(), e);
-                }
-            } catch (JDOMException e) {
+            if (imageSize.width > 0 && imageSize.height > 0) {
+                doc.setField(SolrConstants.WIDTH, imageSize.width);
+                doc.setField(SolrConstants.HEIGHT, imageSize.height);
+                logger.info("Image dimensions for {}: {}x{}", filename, imageSize.width, imageSize.height);
+            }
+        } catch (ImageProcessingException | IOException e) {
+            if (e.getMessage().contains("File format is not supported")) {
+                logger.warn("{}: {}", e.getMessage(), filename);
+            } else {
+                logger.error("Could not deskew ALTO for image '{}', please check the image file.", imageFile.getAbsolutePath());
                 logger.error(e.getMessage(), e);
             }
-        } else {
-            logger.trace("Cannot deskew ALTO: Image file is {} and alto text has length of {}", filename, alto != null ? alto.length() : "0");
         }
     }
 

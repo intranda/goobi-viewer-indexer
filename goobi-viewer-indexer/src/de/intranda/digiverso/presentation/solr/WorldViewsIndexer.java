@@ -1134,16 +1134,16 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 });
             }
 
-            //Do not deskew ALTO. This may lead to incorrect results since the point around which the ALTO is
-            //rotated is not known 
-            //            deskewAlto(dataFolders, doc);
+            // Add image dimension values from EXIF
+            if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
+                readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
+            }
 
             // If the doc has FULLTEXT, indicate it so that the main doc can get a FULLTEXTAVAILABLE field later
             if (doc.getField(SolrConstants.FULLTEXT) != null) {
                 doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
                 hasFulltext = true;
             }
-
         }
 
         writeStrategy.addPageDoc(doc);

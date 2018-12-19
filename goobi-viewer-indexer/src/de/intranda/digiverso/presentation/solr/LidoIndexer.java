@@ -689,7 +689,11 @@ public class LidoIndexer extends AbstractIndexer {
                 } catch (IOException e) {
                     logger.warn(e.getMessage());
                 }
+            }
 
+            // Add image dimension values from EXIF
+            if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
+                readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
             }
         }
 
