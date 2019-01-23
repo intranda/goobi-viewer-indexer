@@ -407,9 +407,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             }
 
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
-            if (hasFulltext) {
-                indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, "true");
-            }
+            indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(hasFulltext));
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
             generateChildDocstructDocuments(indexObj, true, writeStrategy, dataFolders, workDepth);
@@ -458,8 +456,9 @@ public class WorldViewsIndexer extends AbstractIndexer {
                     moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
                     moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
                 }
-                SolrInputDocument doc = hotfolder.getSolrHelper().checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField),
-                        moreMetadata, getNextIddoc(hotfolder.getSolrHelper()));
+                SolrInputDocument doc = hotfolder.getSolrHelper()
+                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
+                                getNextIddoc(hotfolder.getSolrHelper()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -1143,6 +1142,8 @@ public class WorldViewsIndexer extends AbstractIndexer {
             if (doc.getField(SolrConstants.FULLTEXT) != null) {
                 doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
                 hasFulltext = true;
+            } else {
+                doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
             }
         }
 

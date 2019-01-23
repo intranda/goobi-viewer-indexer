@@ -373,8 +373,9 @@ public class MetsIndexer extends AbstractIndexer {
                 // Find anchor document for this volume
                 workDepth = 1;
                 StringBuilder sbXpath = new StringBuilder(170);
-                sbXpath.append("/mets:mets/mets:dmdSec[@ID='").append(structNode.getAttributeValue("DMDID")).append(
-                        "']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier");
+                sbXpath.append("/mets:mets/mets:dmdSec[@ID='")
+                        .append(structNode.getAttributeValue("DMDID"))
+                        .append("']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier");
                 List<Element> piList = xp.evaluateToElements(sbXpath.toString(), null);
                 if (!piList.isEmpty()) {
                     String parentPi = piList.get(0).getText().trim();
@@ -454,8 +455,8 @@ public class MetsIndexer extends AbstractIndexer {
             if (indexObj.isVolume() && indexObj.getAccessConditions().isEmpty()) {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
-                    SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + anchorPi,
-                            Collections.singletonList(SolrConstants.ACCESSCONDITION));
+                    SolrDocumentList hits = hotfolder.getSolrHelper()
+                            .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && !hits.isEmpty()) {
                         Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
                         if (fields != null) {
@@ -490,9 +491,7 @@ public class MetsIndexer extends AbstractIndexer {
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
 
                 // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
-                if (hasFulltext) {
-                    indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, "true");
-                }
+                indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(hasFulltext));
 
                 // write all page URNs sequentially into one field
                 generatePageUrns(indexObj);
@@ -572,8 +571,9 @@ public class MetsIndexer extends AbstractIndexer {
                     moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
                     moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
                 }
-                SolrInputDocument doc = hotfolder.getSolrHelper().checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField),
-                        moreMetadata, getNextIddoc(hotfolder.getSolrHelper()));
+                SolrInputDocument doc = hotfolder.getSolrHelper()
+                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
+                                getNextIddoc(hotfolder.getSolrHelper()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -1497,7 +1497,7 @@ public class MetsIndexer extends AbstractIndexer {
                 }
 
             }
-            
+
             // Add image dimension values from EXIF
             if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
                 readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
@@ -1507,6 +1507,8 @@ public class MetsIndexer extends AbstractIndexer {
             if (doc.getField(SolrConstants.FULLTEXT) != null) {
                 doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
                 hasFulltext = true;
+            } else {
+                doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
             }
 
         }
@@ -1892,8 +1894,8 @@ public class MetsIndexer extends AbstractIndexer {
             hotfolder.getSolrHelper().deleteDocument(String.valueOf(indexObj.getIddoc()));
             // Delete secondary docs (aggregated metadata, events)
             List<String> iddocsToDelete = new ArrayList<>();
-            hits = hotfolder.getSolrHelper().search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(),
-                    Collections.singletonList(SolrConstants.IDDOC));
+            hits = hotfolder.getSolrHelper()
+                    .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(SolrConstants.IDDOC));
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
