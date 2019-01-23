@@ -170,6 +170,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             }
             Assert.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", doc.getFieldValue("SORT_TITLE"));
             Assert.assertEquals("1900", doc.getFieldValue("SORT_" + SolrConstants.EVENTDATESTART));
+            Assert.assertFalse((boolean) doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
         }
 
         // Pages
@@ -331,6 +332,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(iddoc);
             iddocMap.put(iddoc, true);
             Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
+            Assert.assertFalse((boolean) doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
         }
 
         // Pages
