@@ -212,8 +212,8 @@ public class LidoIndexer extends AbstractIndexer {
             if (indexObj.isVolume()) {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
-                    SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + anchorPi,
-                            Collections.singletonList(SolrConstants.ACCESSCONDITION));
+                    SolrDocumentList hits = hotfolder.getSolrHelper()
+                            .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && hits.getNumFound() > 0) {
                         Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
                         for (Object o : fields) {
@@ -269,6 +269,9 @@ public class LidoIndexer extends AbstractIndexer {
 
             // Write created/updated timestamps
             indexObj.writeDateModified(!noTimestampUpdate);
+
+            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
+            indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Generate event documents (must happen before writing the DEFAULT field!)
             this.events = generateEvents(indexObj);
@@ -694,6 +697,14 @@ public class LidoIndexer extends AbstractIndexer {
             // Add image dimension values from EXIF
             if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
                 readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
+            }
+
+            // FULLTEXTAVAILABLE indicates whether this page has full-text
+            if (doc.getField(SolrConstants.FULLTEXT) != null) {
+                doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
+                recordHasFulltext = true;
+            } else {
+                doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
             }
         }
 

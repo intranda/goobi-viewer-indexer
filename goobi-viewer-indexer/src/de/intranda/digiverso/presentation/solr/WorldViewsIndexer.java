@@ -83,8 +83,6 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private boolean hasFulltext = false;
-
     /**
      * Constructor.
      * 
@@ -407,7 +405,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             }
 
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
-            indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(hasFulltext));
+            indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
             generateChildDocstructDocuments(indexObj, true, writeStrategy, dataFolders, workDepth);
@@ -1138,10 +1136,10 @@ public class WorldViewsIndexer extends AbstractIndexer {
                 readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
             }
 
-            // If the doc has FULLTEXT, indicate it so that the main doc can get a FULLTEXTAVAILABLE field later
+            // FULLTEXTAVAILABLE indicates whether this page has full-text
             if (doc.getField(SolrConstants.FULLTEXT) != null) {
                 doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
-                hasFulltext = true;
+                recordHasFulltext = true;
             } else {
                 doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
             }

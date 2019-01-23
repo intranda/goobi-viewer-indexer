@@ -53,8 +53,6 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
 
-import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
-import de.intranda.digiverso.ocr.alto.utils.AltoDeskewer;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
@@ -94,6 +92,9 @@ public abstract class AbstractIndexer {
     protected StringBuilder sbLog = new StringBuilder();
 
     protected final Set<Integer> ugcAddedChecklist = new HashSet<>();
+
+    /** Indicates whether any of this record's pages has full-text. */
+    protected boolean recordHasFulltext = false;
 
     /**
      * Removes the document represented by the given METS or LIDO file from the index.

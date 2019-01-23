@@ -102,7 +102,6 @@ public class MetsIndexer extends AbstractIndexer {
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
     private volatile String useFileGroup = null;
-    private boolean hasFulltext = false;
 
     /**
      * Constructor.
@@ -491,7 +490,7 @@ public class MetsIndexer extends AbstractIndexer {
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
 
                 // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
-                indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(hasFulltext));
+                indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
                 // write all page URNs sequentially into one field
                 generatePageUrns(indexObj);
@@ -1503,10 +1502,10 @@ public class MetsIndexer extends AbstractIndexer {
                 readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
             }
 
-            // If the doc has FULLTEXT, indicate it so that the main doc can get a FULLTEXTAVAILABLE field later
+            // FULLTEXTAVAILABLE indicates whether this page has full-text
             if (doc.getField(SolrConstants.FULLTEXT) != null) {
                 doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
-                hasFulltext = true;
+                recordHasFulltext = true;
             } else {
                 doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
             }
