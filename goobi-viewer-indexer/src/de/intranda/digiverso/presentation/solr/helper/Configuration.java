@@ -37,8 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
-import de.intranda.digiverso.presentation.solr.model.NonSortConfiguration;
 import de.intranda.digiverso.presentation.solr.model.config.MetadataConfigurationManager;
+import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration;
+import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer;
+import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
 import de.intranda.digiverso.presentation.solr.model.config.XPathConfig;
 
 public final class Configuration {
@@ -417,6 +419,18 @@ public final class Configuration {
                             nonSortConfigurations.add(new NonSortConfiguration(prefix, suffix));
                         }
                         fieldValues.put("nonSortConfigurations", nonSortConfigurations);
+                    }
+                }
+
+                {
+                    List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeValue");
+                    if (elements != null && !elements.isEmpty()) {
+                        HierarchicalConfiguration sub = (HierarchicalConfiguration) elements.get(0);
+                        int length = sub.getInt("[@length]");
+                        char filler = sub.getString("[@filler]", "0").charAt(0);
+                        String position = sub.getString("[@position]");
+                        ValueNormalizer normalizer = new ValueNormalizer(length, filler, ValueNormalizerPosition.getByName(position));
+                        fieldValues.put("valueNormalizer", normalizer);
                     }
                 }
 

@@ -22,8 +22,6 @@ import java.util.Map;
 import org.apache.commons.collections.MultiMap;
 import org.apache.commons.collections.map.MultiValueMap;
 
-import de.intranda.digiverso.presentation.solr.model.NonSortConfiguration;
-
 /**
  * Configuration object for a single metadata field configuration.
  */
@@ -52,6 +50,7 @@ public class FieldConfig {
     private List<NonSortConfiguration> nonSortConfigurations;
     private boolean addToChildren = false;
     private boolean addToPages = false;
+    private ValueNormalizer valueNormalizer;
 
     /**
      * Constructor.
@@ -397,5 +396,19 @@ public class FieldConfig {
      */
     public void setAddToPages(boolean addToPages) {
         this.addToPages = addToPages;
+    }
+
+    /**
+     * @return the valueNormalizer
+     */
+    public ValueNormalizer getValueNormalizer() {
+        return valueNormalizer;
+    }
+
+    /**
+     * @param valueNormalizer the valueNormalizer to set
+     */
+    public void setValueNormalizer(ValueNormalizer valueNormalizer) {
+        this.valueNormalizer = valueNormalizer;
     }
 }

@@ -13,37 +13,21 @@
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.intranda.digiverso.presentation.solr.model;
+package de.intranda.digiverso.presentation.solr.model.config;
 
-public class NonSortConfiguration {
+import org.junit.Assert;
+import org.junit.Test;
 
-    private String prefix;
-    private String suffix;
-
-    /**
-     * Constructor.
-     * 
-     * @param prefix
-     * @param suffix
-     * @should set attributes correctly
-     */
-    public NonSortConfiguration(String prefix, String suffix) {
-        this.prefix = prefix;
-        this.suffix = suffix;
-    }
+public class NonSortConfigurationTest {
 
     /**
-     * @return the prefix
+     * @see NonSortConfiguration#NonSortConfiguration(String,String)
+     * @verifies set attributes correctly
      */
-    public String getPrefix() {
-        return prefix;
+    @Test
+    public void NonSortConfiguration_shouldSetAttributesCorrectly() throws Exception {
+        NonSortConfiguration nsc = new NonSortConfiguration("prefix_value", "suffix_value");
+        Assert.assertEquals("prefix_value", nsc.getPrefix());
+        Assert.assertEquals("suffix_value", nsc.getSuffix());
     }
-
-    /**
-     * @return the suffix
-     */
-    public String getSuffix() {
-        return suffix;
-    }
-
 }

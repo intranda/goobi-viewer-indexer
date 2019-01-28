@@ -389,6 +389,18 @@
 				</item>
 			</list>
 		</SORT_TITLE>
+		
+        <SORT_TEST>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:location/mods:shelfLocator
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <replace string="/"></replace>
+                    <normalizeValue length="12" filler="0" position="front" />
+                </item>
+            </list>
+        </SORT_TEST>
 
 		<MD_TITLE>
 			<list>

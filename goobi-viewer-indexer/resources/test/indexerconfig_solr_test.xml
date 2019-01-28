@@ -188,6 +188,7 @@
 					<replace string="stringToReplace1">replace1</replace>
 					<replace regex="[ ]*stringToReplace2[ ]*">replace2</replace>
 					<nonSortCharacters prefix="nonSortPrefix" suffix="nonSortSuffix" />
+					<normalizeValue length="5" filler="a" position="front" />
 				</item>
 			</list>
 		</MD_TESTFIELD>

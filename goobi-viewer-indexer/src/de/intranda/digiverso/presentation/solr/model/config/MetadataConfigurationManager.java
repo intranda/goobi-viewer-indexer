@@ -26,7 +26,6 @@ import org.apache.commons.collections.MultiMap;
 
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
-import de.intranda.digiverso.presentation.solr.model.NonSortConfiguration;
 
 /**
  * Object holding field configurations.
@@ -163,7 +162,7 @@ public final class MetadataConfigurationManager {
                 configurationItem.setAddSortField(true);
             }
         }
-        
+
         if (configurationMap.containsKey("addSortFieldToTopstruct")) {
             if (((String) configurationMap.get("addSortFieldToTopstruct")).equals(FALSE)) {
                 configurationItem.setAddSortFieldToTopstruct(false);
@@ -171,7 +170,6 @@ public final class MetadataConfigurationManager {
                 configurationItem.setAddSortFieldToTopstruct(true);
             }
         }
-
 
         if (configurationMap.containsKey("normalizeYear")) {
             if (((String) configurationMap.get("normalizeYear")).equals(FALSE)) {
@@ -219,6 +217,9 @@ public final class MetadataConfigurationManager {
             } else {
                 configurationItem.setAddToPages(false);
             }
+        }
+        if (configurationMap.containsKey("valueNormalizer")) {
+            configurationItem.setValueNormalizer((ValueNormalizer) configurationMap.get("valueNormalizer"));
         }
 
         return configurationItem;

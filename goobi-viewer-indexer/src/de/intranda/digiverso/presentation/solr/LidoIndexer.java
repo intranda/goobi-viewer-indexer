@@ -800,7 +800,7 @@ public class LidoIndexer extends AbstractIndexer {
                         if (fieldConfig.isAddSortFieldToTopstruct()) {
                             List<LuceneField> retList = new ArrayList<>(1);
                             MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.SORT_,
-                                    fieldConfig.getNonSortConfigurations(), retList);
+                                    fieldConfig.getNonSortConfigurations(), fieldConfig.getValueNormalizer(), retList);
                             if (!retList.isEmpty()) {
                                 indexObj.addToLucene(retList.get(0));
                             }

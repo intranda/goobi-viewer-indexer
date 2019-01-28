@@ -55,9 +55,10 @@ import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
 import de.intranda.digiverso.presentation.solr.model.LuceneField;
-import de.intranda.digiverso.presentation.solr.model.NonSortConfiguration;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
+import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration;
+import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer;
 import de.intranda.digiverso.presentation.solr.model.config.XPathConfig;
 
 public class MetadataHelper {
@@ -415,7 +416,7 @@ public class MetadataHelper {
                         // Add sort fields for normalized years, centuries, etc.
                         for (LuceneField normalizedDateField : normalizedFields) {
                             addSortField(normalizedDateField.getField(), normalizedDateField.getValue(), SolrConstants.SORTNUM_,
-                                    configurationItem.getNonSortConfigurations(), ret);
+                                    configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizer(), ret);
                         }
                     }
                     // Add Solr field
@@ -425,7 +426,7 @@ public class MetadataHelper {
                     // Make sure non-sort characters are removed before adding _UNTOKENIZED and SORT_ fields
                     if (configurationItem.isAddSortField()) {
                         addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.SORT_, configurationItem.getNonSortConfigurations(),
-                                ret);
+                                configurationItem.getValueNormalizer(), ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
                         ret.add(new LuceneField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(), fieldValue));
@@ -624,13 +625,11 @@ public class MetadataHelper {
         if (configurationItem.getNonSortConfigurations() != null) {
             for (NonSortConfiguration nonSortConfig : configurationItem.getNonSortConfigurations()) {
                 // Remove non-sort characters
-                if (nonSortConfig.getPrefix() != null) {
-                    fieldValue = fieldValue.replaceAll(nonSortConfig.getPrefix(), "");
-                }
-                if (nonSortConfig.getSuffix() != null) {
-                    fieldValue = fieldValue.replaceAll(nonSortConfig.getSuffix(), "");
-                }
+                fieldValue = nonSortConfig.apply(fieldValue);
             }
+        }
+        if (configurationItem.getValueNormalizer() != null) {
+            fieldValue = configurationItem.getValueNormalizer().normalize(fieldValue);
         }
 
         return fieldValue;
@@ -731,7 +730,7 @@ public class MetadataHelper {
      * @should not add existing fields
      */
     public static void addSortField(String fieldName, String fieldValue, String sortFieldPrefix, List<NonSortConfiguration> nonSortConfigurations,
-            List<LuceneField> retList) {
+            ValueNormalizer valueNormalizer, List<LuceneField> retList) {
         if (fieldName == null) {
             throw new IllegalArgumentException("fieldName may not be null");
         }
@@ -752,18 +751,11 @@ public class MetadataHelper {
         if (nonSortConfigurations != null && !nonSortConfigurations.isEmpty()) {
             for (NonSortConfiguration nonSortConfig : nonSortConfigurations) {
                 // remove non-sort characters and anything between them
-                StringBuilder regex = new StringBuilder();
-                if (nonSortConfig.getPrefix() != null) {
-                    regex.append(nonSortConfig.getPrefix());
-                }
-                regex.append("[\\w|\\W]*");
-                if (nonSortConfig.getSuffix() != null) {
-                    regex.append(nonSortConfig.getSuffix());
-                }
-                fieldValue = fieldValue.replaceAll(regex.toString(), "").trim();
-                // logger.info("Non-sort regex: {}", regex);
-                // logger.info("fieldValue: {}", fieldValue);
+                fieldValue = nonSortConfig.apply(fieldValue);
             }
+        }
+        if (valueNormalizer != null) {
+            fieldValue = valueNormalizer.normalize(fieldValue);
         }
         logger.debug("Adding sorting field {}: {}", sortFieldName, fieldValue);
         retList.add(new LuceneField(sortFieldName, fieldValue));
@@ -1163,7 +1155,8 @@ public class MetadataHelper {
 
         // Add SORT_DISPLAYFORM so that there is a single-valued field by which to group metadata search hits
         if (mdValue != null) {
-            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValue).toString(), "", null, ret.getFields());
+            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValue).toString(), "", null, null,
+                    ret.getFields());
         }
 
         // Add norm data URI, if available (GND only)

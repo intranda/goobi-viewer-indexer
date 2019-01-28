@@ -30,8 +30,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.intranda.digiverso.presentation.solr.model.NonSortConfiguration;
 import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
+import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration;
+import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
 
 public class ConfigurationTest {
 
@@ -184,6 +185,10 @@ public class ConfigurationTest {
         Assert.assertEquals(1, configItem.getNonSortConfigurations().size());
         Assert.assertEquals("nonSortPrefix", configItem.getNonSortConfigurations().get(0).getPrefix());
         Assert.assertEquals("nonSortSuffix", configItem.getNonSortConfigurations().get(0).getSuffix());
+        Assert.assertNotNull(configItem.getValueNormalizer());
+        Assert.assertEquals(5, configItem.getValueNormalizer().getLength());
+        Assert.assertEquals('a', configItem.getValueNormalizer().getFiller());
+        Assert.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizer().getPosition());
     }
 
     /**
