@@ -77,7 +77,7 @@ public class ConfigurationTest {
         Assert.assertNotNull(fieldInformation);
         Assert.assertEquals(1, fieldInformation.size());
         Map<String, Object> fieldValues = fieldInformation.get(0);
-        Assert.assertEquals(20, fieldValues.size());
+        Assert.assertEquals(21, fieldValues.size());
 
         List<String> xpath = (List<String>) fieldValues.get("xpath");
         Assert.assertNotNull(xpath);
