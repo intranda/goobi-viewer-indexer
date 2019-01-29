@@ -125,6 +125,7 @@ public class DocUpdateIndexer extends AbstractIndexer {
                                     partialUpdates.put(SolrConstants.OVERVIEWPAGE_DESCRIPTION, update);
                                 }
                                     break;
+                                case "literature.xml":
                                 case "publicationtext.xml": {
                                     String content = TextHelper.readFileToString(file);
                                     Map<String, Object> update = new HashMap<>();

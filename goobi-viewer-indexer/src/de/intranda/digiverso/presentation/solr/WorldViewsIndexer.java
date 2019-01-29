@@ -433,6 +433,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                                     indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_DESCRIPTION, TextHelper.cleanUpHtmlTags(content));
                                 }
                                     break;
+                                case "literature.xml":
                                 case "publicationtext.xml": {
                                     String content = TextHelper.readFileToString(file);
                                     indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, TextHelper.cleanUpHtmlTags(content));
