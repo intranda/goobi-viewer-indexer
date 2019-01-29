@@ -99,14 +99,11 @@ public class ValueNormalizer {
             List<String> parts = new ArrayList<>();
             while (m.find()) {
                 relevantPart = s.substring(m.start(), m.end());
-                System.out.println("relevant part: " + relevantPart);
                 if (m.start() > 0) {
                     prefix = s.substring(0, m.start());
-                    System.out.println("prefix: " + prefix);
                 }
                 if (m.end() < s.length()) {
                     suffix = s.substring(m.end());
-                    System.out.println("suffix: " + suffix);
                 }
             }
         }
