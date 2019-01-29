@@ -99,6 +99,7 @@ public class ValueNormalizer {
             List<String> parts = new ArrayList<>();
             while (m.find()) {
                 if (m.groupCount() > 0) {
+                    // With capture group
                     relevantPart = m.group(1);
                     if (m.start(1) > 0) {
                         prefix = s.substring(0, m.start(1));
@@ -106,8 +107,8 @@ public class ValueNormalizer {
                     if (m.end(1) < s.length()) {
                         suffix = s.substring(m.end(1));
                     }
-                    System.out.println(prefix + " - " + suffix);
                 } else {
+                    // Without capture group
                     relevantPart = m.group();
                     if (m.start() > 0) {
                         prefix = s.substring(0, m.start());
