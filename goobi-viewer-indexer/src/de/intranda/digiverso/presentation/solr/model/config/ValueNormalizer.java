@@ -15,6 +15,13 @@
  */
 package de.intranda.digiverso.presentation.solr.model.config;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Normalizes string values to the configured length, either by adding a filler character or by truncating.
  */
@@ -48,6 +55,7 @@ public class ValueNormalizer {
     private final char filler;
     /** Position at which to fill/truncate the string */
     private final ValueNormalizerPosition position;
+    private final String relevantPartRegex;
 
     /**
      * Constructor.
@@ -55,11 +63,13 @@ public class ValueNormalizer {
      * @param length Target string length
      * @param filler Filler character
      * @param position Position at which to fill/truncate the string
+     * @param filterRegex
      */
-    public ValueNormalizer(int length, char filler, ValueNormalizerPosition position) {
+    public ValueNormalizer(int length, char filler, ValueNormalizerPosition position, String relevantPartRegex) {
         this.length = length;
         this.filler = filler;
         this.position = position;
+        this.relevantPartRegex = relevantPartRegex;
     }
 
     /**
@@ -68,41 +78,68 @@ public class ValueNormalizer {
      * 
      * @param s
      * @return Normalized value
+     * @should do nothing if length ok
      * @should normalize too short strings correctly
      * @should normalize too long strings correctly
+     * @should keep parts not matching regex unchanged
      */
     public String normalize(String s) {
         if (s == null) {
             return null;
         }
 
-        if (s.length() == length) {
+        String relevantPart = s;
+
+        // If a regex is provided, only normalize part matching it
+        String prefix = "";
+        String suffix = "";
+        if (StringUtils.isNotEmpty(relevantPartRegex)) {
+            Pattern p = Pattern.compile(relevantPartRegex);
+            Matcher m = p.matcher(relevantPart);
+            List<String> parts = new ArrayList<>();
+            while (m.find()) {
+                relevantPart = s.substring(m.start(), m.end());
+                System.out.println("relevant part: " + relevantPart);
+                if (m.start() > 0) {
+                    prefix = s.substring(0, m.start());
+                    System.out.println("prefix: " + prefix);
+                }
+                if (m.end() < s.length()) {
+                    suffix = s.substring(m.end());
+                    System.out.println("suffix: " + suffix);
+                }
+            }
+        }
+
+        if (relevantPart.length() == length) {
             return s;
         }
 
-        if (s.length() < length) {
+        if (relevantPart.length() < length) {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < length - s.length(); ++i) {
+            sb.append(prefix);
+            for (int i = 0; i < length - relevantPart.length(); ++i) {
                 sb.append(filler);
             }
             switch (position) {
                 case FRONT:
-                    sb.append(s);
+                    sb.append(relevantPart);
                     break;
                 case REAR:
-                    sb.insert(0, s);
+                    sb.insert(prefix.length(), relevantPart);
                     break;
             }
+            sb.append(suffix);
             return sb.toString();
         }
 
         switch (position) {
             case FRONT:
-                return s.substring(s.length() - length);
+                return prefix + relevantPart.substring(relevantPart.length() - length) + suffix;
             case REAR:
-                return s.substring(0, length);
+                return prefix + relevantPart.substring(0, length) + suffix;
             default:
-                return s;
+                return prefix + relevantPart + suffix;
         }
     }
 

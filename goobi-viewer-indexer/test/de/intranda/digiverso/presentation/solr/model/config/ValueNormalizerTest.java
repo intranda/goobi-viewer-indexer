@@ -21,7 +21,17 @@ import org.junit.Test;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
 
 public class ValueNormalizerTest {
-    
+
+    /**
+     * @see ValueNormalizer#normalize(String)
+     * @verifies do nothing if length ok
+     */
+    @Test
+    public void normalize_shouldDoNothingIfLengthOk() throws Exception {
+        ValueNormalizer vn = new ValueNormalizer(3, '0', ValueNormalizerPosition.FRONT, null);
+        Assert.assertEquals("123", vn.normalize("123"));
+    }
+
     /**
      * @see ValueNormalizer#normalize(String)
      * @verifies normalize too short strings correctly
@@ -29,11 +39,11 @@ public class ValueNormalizerTest {
     @Test
     public void normalize_shouldNormalizeTooShortStringsCorrectly() throws Exception {
         {
-            ValueNormalizer vn = new ValueNormalizer(5, '0', ValueNormalizerPosition.FRONT);
+            ValueNormalizer vn = new ValueNormalizer(5, '0', ValueNormalizerPosition.FRONT, null);
             Assert.assertEquals("00123", vn.normalize("123"));
         }
         {
-            ValueNormalizer vn = new ValueNormalizer(5, '0', ValueNormalizerPosition.REAR);
+            ValueNormalizer vn = new ValueNormalizer(5, '0', ValueNormalizerPosition.REAR, null);
             Assert.assertEquals("12300", vn.normalize("123"));
         }
     }
@@ -45,12 +55,40 @@ public class ValueNormalizerTest {
     @Test
     public void normalize_shouldNormalizeTooLongStringsCorrectly() throws Exception {
         {
-            ValueNormalizer vn = new ValueNormalizer(3, '0', ValueNormalizerPosition.FRONT);
+            ValueNormalizer vn = new ValueNormalizer(3, '0', ValueNormalizerPosition.FRONT, null);
             Assert.assertEquals("bar", vn.normalize("foobar"));
         }
         {
-            ValueNormalizer vn = new ValueNormalizer(3, '0', ValueNormalizerPosition.REAR);
+            ValueNormalizer vn = new ValueNormalizer(3, '0', ValueNormalizerPosition.REAR, null);
             Assert.assertEquals("foo", vn.normalize("foobar"));
+        }
+    }
+
+    /**
+     * @see ValueNormalizer#normalize(String)
+     * @verifies keep parts not matching regex unchanged
+     */
+    @Test
+    public void normalize_shouldKeepPartsNotMatchingRegexUnchanged() throws Exception {
+        {
+            // front, too short
+            ValueNormalizer vn = new ValueNormalizer(5, '0', ValueNormalizerPosition.FRONT, "[0-9]+");
+            Assert.assertEquals("foo00123bar", vn.normalize("foo123bar"));
+        }
+        {
+            // rear, too short
+            ValueNormalizer vn = new ValueNormalizer(5, '0', ValueNormalizerPosition.REAR, "[0-9]+");
+            Assert.assertEquals("foo12300bar", vn.normalize("foo123bar"));
+        }
+        {
+            // front, too long
+            ValueNormalizer vn = new ValueNormalizer(2, '0', ValueNormalizerPosition.FRONT, "[0-9]+");
+            Assert.assertEquals("foo23bar", vn.normalize("foo123bar"));
+        }
+        {
+            // rear, too long
+            ValueNormalizer vn = new ValueNormalizer(2, '0', ValueNormalizerPosition.REAR, "[0-9]+");
+            Assert.assertEquals("foo12bar", vn.normalize("foo123bar"));
         }
     }
 }

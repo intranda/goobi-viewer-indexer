@@ -429,7 +429,9 @@ public final class Configuration {
                         int length = sub.getInt("[@length]");
                         char filler = sub.getString("[@filler]", "0").charAt(0);
                         String position = sub.getString("[@position]");
-                        ValueNormalizer normalizer = new ValueNormalizer(length, filler, ValueNormalizerPosition.getByName(position));
+                        String relevantPartRegex = sub.getString("[@relevantPartRegex]");
+                        ValueNormalizer normalizer =
+                                new ValueNormalizer(length, filler, ValueNormalizerPosition.getByName(position), relevantPartRegex);
                         fieldValues.put("valueNormalizer", normalizer);
                     }
                 }
