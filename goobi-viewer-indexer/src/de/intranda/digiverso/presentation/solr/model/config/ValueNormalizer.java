@@ -98,12 +98,23 @@ public class ValueNormalizer {
             Matcher m = p.matcher(relevantPart);
             List<String> parts = new ArrayList<>();
             while (m.find()) {
-                relevantPart = s.substring(m.start(), m.end());
-                if (m.start() > 0) {
-                    prefix = s.substring(0, m.start());
-                }
-                if (m.end() < s.length()) {
-                    suffix = s.substring(m.end());
+                if (m.groupCount() > 0) {
+                    relevantPart = m.group(1);
+                    if (m.start(1) > 0) {
+                        prefix = s.substring(0, m.start(1));
+                    }
+                    if (m.end(1) < s.length()) {
+                        suffix = s.substring(m.end(1));
+                    }
+                    System.out.println(prefix + " - " + suffix);
+                } else {
+                    relevantPart = m.group();
+                    if (m.start() > 0) {
+                        prefix = s.substring(0, m.start());
+                    }
+                    if (m.end() < s.length()) {
+                        suffix = s.substring(m.end());
+                    }
                 }
             }
         }

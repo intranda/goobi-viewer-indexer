@@ -90,5 +90,10 @@ public class ValueNormalizerTest {
             ValueNormalizer vn = new ValueNormalizer(2, '0', ValueNormalizerPosition.REAR, "[0-9]+");
             Assert.assertEquals("foo12bar", vn.normalize("foo123bar"));
         }
+        {
+            // with a specified capture group
+            ValueNormalizer vn = new ValueNormalizer(5, '0', ValueNormalizerPosition.FRONT, "1656\\/[0-9]\\/[0-9]\\/([0-9]+).*$");
+            Assert.assertEquals("1656/1/2/00123a", vn.normalize("1656/1/2/123a"));
+        }
     }
 }
