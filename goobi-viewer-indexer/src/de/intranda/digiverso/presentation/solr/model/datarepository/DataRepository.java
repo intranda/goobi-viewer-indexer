@@ -472,6 +472,25 @@ public class DataRepository {
     }
 
     /**
+     * Returns (probable) absolute path to the data repository with the given name. Used to properly detect old-style data repositories.
+     * 
+     * @param dataRepository
+     * @return Absolute path to the given data repository name
+     * @throws FatalIndexerException
+     * @should return correct path
+     */
+    public static String getAbsolutePath(String dataRepository) throws FatalIndexerException {
+        if (dataRepository != null && !Paths.get(dataRepository).isAbsolute()) {
+            logger.warn("Data repository value type is deprecated: {}", dataRepository);
+            dataRepository = Configuration.getInstance().getViewerHome() + "/data/" + dataRepository;
+            dataRepository = dataRepository.replaceAll("//", "/");
+            logger.warn("Assuming absolute path to be: {}", dataRepository);
+        }
+
+        return dataRepository;
+    }
+
+    /**
      * @return the valid
      */
     public boolean isValid() {

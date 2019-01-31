@@ -388,4 +388,13 @@ public class DataRepositoryTest {
         Assert.assertFalse(oldDataFile.exists());
         Assert.assertFalse(oldDataFolder.exists());
     }
+
+    /**
+     * @see DataRepository#getAbsolutePath(String)
+     * @verifies return correct path
+     */
+    @Test
+    public void getAbsolutePath_shouldReturnCorrectPath() throws Exception {
+        Assert.assertEquals("build/viewer/data/1", DataRepository.getAbsolutePath("1"));
+    }
 }

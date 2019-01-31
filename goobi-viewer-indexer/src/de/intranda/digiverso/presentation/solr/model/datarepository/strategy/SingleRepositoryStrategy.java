@@ -16,6 +16,7 @@
 package de.intranda.digiverso.presentation.solr.model.datarepository.strategy;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -92,10 +93,11 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
                 ret[0] = new DataRepository("");
                 return ret;
             }
-
+            // Make sure previous repository name is converted to an absolute path
+            previousRepository = DataRepository.getAbsolutePath(previousRepository);
             // Find previous repository
             for (DataRepository repository : dataRepositories) {
-                if (previousRepository.equals(repository.getPath())) {
+                if (Paths.get(previousRepository).equals(Paths.get(repository.getPath()))) {
                     logger.info(
                             "'{}' is currently indexed in data repository '{}'. Since 'SingleRepositoryStrategy' is configured, the record will be moved to out of the repository.",
                             pi, previousRepository);

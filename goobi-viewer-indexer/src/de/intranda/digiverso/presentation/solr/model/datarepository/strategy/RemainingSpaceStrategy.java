@@ -139,10 +139,12 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
                 logger.info(
                         "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
             } else {
+                // Make sure previous repository name is converted to an absolute path
+                previousRepository = DataRepository.getAbsolutePath(previousRepository);
                 // Find previous repository
                 boolean found = false;
                 for (DataRepository repository : dataRepositories) {
-                    if (previousRepository.equals(repository.getPath())) {
+                    if (Paths.get(previousRepository).equals(Paths.get(repository.getPath()))) {
                         found = true;
                         if (recordSize < repository.getUsableSpace()) {
                             logger.info("Using previous data repository for '{}': {}", pi, previousRepository);

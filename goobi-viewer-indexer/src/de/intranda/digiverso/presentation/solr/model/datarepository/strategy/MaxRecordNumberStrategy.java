@@ -17,6 +17,7 @@ package de.intranda.digiverso.presentation.solr.model.datarepository.strategy;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -102,9 +103,11 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
                 logger.info(
                         "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
             } else {
+                // Make sure previous repository name is converted to an absolute path
+                previousRepository = DataRepository.getAbsolutePath(previousRepository);
                 // Find previous repository
                 for (DataRepository repository : dataRepositories) {
-                    if (previousRepository.equals(repository.getPath())) {
+                    if (Paths.get(previousRepository).equals(Paths.get(repository.getPath()))) {
                         logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
                         ret[0] = repository;
                         return ret;
