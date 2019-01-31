@@ -41,21 +41,11 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleRepositoryStrategy.class);
 
-    private final List<DataRepository> dataRepositories = new ArrayList<>();
+    private final List<DataRepository> dataRepositories;
 
-    @SuppressWarnings("unchecked")
     public SingleRepositoryStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
-        List<String> dataRepositoryPaths = config.getList("init.dataRepositories.dataRepository");
-        if (dataRepositoryPaths != null) {
-            for (String path : dataRepositoryPaths) {
-                DataRepository dataRepository = new DataRepository(path);
-                if (dataRepository.isValid()) {
-                    dataRepositories.add(dataRepository);
-                    logger.info("Found configured data repository: {}", path);
-                }
-            }
-        }
+        dataRepositories = DataRepository.loadDataRepositories(config);
     }
 
     /* (non-Javadoc)

@@ -21,7 +21,10 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -29,8 +32,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
+import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.Utils;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 
@@ -116,6 +119,37 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_MIX);
         checkAndCreateDataSubdir(PARAM_OVERVIEW);
         valid = true;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((path == null) ? 0 : path.hashCode());
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        DataRepository other = (DataRepository) obj;
+        if (path == null) {
+            if (other.path != null)
+                return false;
+        } else if (!path.equals(other.path))
+            return false;
+        return true;
     }
 
     private void checkAndCreateDataSubdir(String name) throws FatalIndexerException {
@@ -354,8 +388,10 @@ public class DataRepository {
      * @param dataFolders Map with source data folders
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
      * @throws IOException
+     * @throws FatalIndexerException
      */
-    public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) throws IOException {
+    public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
@@ -401,15 +437,30 @@ public class DataRepository {
      * @param param Folder parameter name
      * @return
      * @throws IOException
+     * @throws FatalIndexerException
      */
     public int checkCopyAndDeleteDataFolder(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param)
-            throws IOException {
+            throws IOException, FatalIndexerException {
         if (param == null) {
             throw new IllegalArgumentException("param may not be null");
         }
 
         if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
             return copyAndDeleteDataFolder(dataFolders.get(param), param, pi);
+        } else if (reindexSettings.get(param) != null || reindexSettings.get(param)) {
+            // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
+            List<DataRepository> repos = loadDataRepositories(Configuration.getInstance());
+            for (DataRepository repo : repos) {
+                if (!repo.equals(this)) {
+                    Path misplacedDataDir = Paths.get(repo.getDir(param).toAbsolutePath().toString(), pi);
+                    if (Files.isDirectory(misplacedDataDir)) {
+                        logger.warn("Found data folder for this record in different data repository: {}",
+                                misplacedDataDir.toAbsolutePath().toString());
+                        logger.warn("Moving data folder to new repository...");
+                        repo.moveDataFolderToRepository(this, pi, param);
+                    }
+                }
+            }
         }
 
         return 0;
@@ -488,6 +539,34 @@ public class DataRepository {
         }
 
         return dataRepository;
+    }
+
+    /**
+     * 
+     * @return List of properly configured data repositories
+     * @throws FatalIndexerException
+     */
+    @SuppressWarnings("unchecked")
+    public static List<DataRepository> loadDataRepositories(Configuration config) throws FatalIndexerException {
+        if (config == null) {
+            throw new IllegalArgumentException("config may not be null");
+        }
+
+        List<String> dataRepositoryPaths = config.getList("init.dataRepositories.dataRepository");
+        if (dataRepositoryPaths == null) {
+            return Collections.emptyList();
+        }
+
+        List<DataRepository> ret = new ArrayList<>(dataRepositoryPaths.size());
+        for (String path : dataRepositoryPaths) {
+            DataRepository dataRepository = new DataRepository(path);
+            if (dataRepository.isValid()) {
+                ret.add(dataRepository);
+                logger.info("Found configured data repository: {}", path);
+            }
+        }
+
+        return ret;
     }
 
     /**
