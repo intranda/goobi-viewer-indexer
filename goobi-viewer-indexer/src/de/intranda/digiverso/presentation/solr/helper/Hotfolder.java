@@ -938,31 +938,40 @@ public class Hotfolder {
         boolean errors = false;
         try {
             for (Document doc : lidoDocs) {
-                currentIndexer = new LidoIndexer(this);
-                resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
-                        Configuration.getInstance().getList("init.lido.imageXPath"),
-                        dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+                DataRepository dataRepository;
+                DataRepository previousDataRepository;
+                try {
+                    currentIndexer = new LidoIndexer(this);
+                    resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
+                            Configuration.getInstance().getList("init.lido.imageXPath"),
+                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+                } finally {
+                    dataRepository = currentIndexer.getDataRepository();
+                    previousDataRepository = currentIndexer.getPreviousDataRepository();
+                    currentIndexer = null;
+                }
+                //                resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
+                //                        Configuration.getInstance().getList("init.lido.imageXPath"),
+                //                        dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
                 if (!"ERROR".equals(resp[0])) {
                     // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
                     String identifier = resp[0];
                     String newLidoFileName = identifier + ".xml";
 
                     // Write individual LIDO records as separate files
-                    Path indexed = Paths.get(currentIndexer.getDataRepository().getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(),
-                            newLidoFileName);
+                    Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), newLidoFileName);
                     try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
                         outputter.output(doc, out);
                     }
 
                     // Move non-repository data directories to the selected repository
-                    if (currentIndexer.getPreviousDataRepository() != null) {
-                        currentIndexer.getPreviousDataRepository().moveDataFoldersToRepository(currentIndexer.getDataRepository(), identifier);
+                    if (previousDataRepository != null) {
+                        previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
                     }
 
                     // copy media files
                     boolean mediaFilesCopied = false;
-                    Path destMediaDir =
-                            Paths.get(currentIndexer.getDataRepository().getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
+                    Path destMediaDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
                     if (!Files.exists(destMediaDir)) {
                         Files.createDirectory(destMediaDir);
                     }
@@ -988,14 +997,30 @@ public class Hotfolder {
                     }
                     if (!mediaFilesCopied) {
                         logger.warn("No media folder found for '{}'.", lidoFile);
+
+                        // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
+                        if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null || reindexSettings.get(DataRepository.PARAM_MEDIA)) {
+                            List<DataRepository> repos = DataRepository.loadDataRepositories(Configuration.getInstance());
+                            for (DataRepository repo : repos) {
+                                if (!repo.equals(this)) {
+                                    Path misplacedDataDir =
+                                            Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
+                                    if (Files.isDirectory(misplacedDataDir)) {
+                                        logger.warn("Found data folder for this record in different data repository: {}",
+                                                misplacedDataDir.toAbsolutePath().toString());
+                                        logger.warn("Moving data folder to new repository...");
+                                        repo.moveDataFolderToRepository(dataRepository, identifier, DataRepository.PARAM_MEDIA);
+                                    }
+                                }
+                            }
+                        }
                     } else {
                         logger.info("{} media file(s) copied.", imageCounter);
                     }
 
                     // Copy and delete MIX files
                     if (!reindexSettings.get(DataRepository.PARAM_MIX)) {
-                        Path destMixDir = Paths.get(currentIndexer.getDataRepository().getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                                identifier);
+                        Path destMixDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), identifier);
                         if (!Files.exists(destMixDir)) {
                             Files.createDirectory(destMixDir);
                         }
