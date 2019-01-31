@@ -1002,7 +1002,7 @@ public class Hotfolder {
                         if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null || reindexSettings.get(DataRepository.PARAM_MEDIA)) {
                             List<DataRepository> repos = DataRepository.loadDataRepositories(Configuration.getInstance());
                             for (DataRepository repo : repos) {
-                                if (!repo.equals(this)) {
+                                if (!repo.equals(dataRepository)) {
                                     Path misplacedDataDir =
                                             Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
                                     if (Files.isDirectory(misplacedDataDir)) {
