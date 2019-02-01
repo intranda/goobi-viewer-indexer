@@ -19,19 +19,16 @@
 			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
 			<strategy>SingleRepositoryStrategy</strategy>
 
-			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 
-				10000) -->
+			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 10000) -->
 			<maxRecords>10000</maxRecords>
 			
-			<!-- Data repository folders (absolute paths to be used (a new folder structure will be 
-				created for each dataRepository) -->
+			<!-- Data repository folders (absolute paths to be used (a new folder structure will be created for each dataRepository) -->
 			<dataRepository>C:/digiverso/viewer/data/1</dataRepository>
 			<dataRepository>C:/digiverso/viewer/data/2</dataRepository>
 			<dataRepository>C:/digiverso/viewer/data/3</dataRepository>
 		</dataRepositories>
 
-		<!-- Data subfolder names (path is relative to either a data repository 
-			or viewerHome) -->
+		<!-- Data subfolder names (path is relative to either a data repository or viewerHome) -->
 		<mediaFolder>media</mediaFolder>
 		<altoFolder>alto</altoFolder>
 		<altoCrowdsourcingFolder>alto_crowd</altoCrowdsourcingFolder>
@@ -57,14 +54,13 @@
 		<errorMets>C:/digiverso/viewer/error_mets/</errorMets>
 		<origLido>C:/digiverso/viewer/orig_lido/</origLido>
 
-		<!-- Encoding that full-text files will be expected to have (default is 
-			'UTF-8'). -->
+		<!-- Encoding that full-text files will be expected to have (default is 'UTF-8'). -->
 		<fulltextEncoding>UTF-8</fulltextEncoding>
-		<!-- Delete images, full-texts, etc. from the hotfolder if indexing has 
-			failed (default is false) -->
+
+		<!-- Delete images, full-texts, etc. from the hotfolder if indexing has failed (default is false) -->
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
-		<!-- If true, all collection names from volumes will be added to their 
-			corresponding anchor record (default is false) -->
+
+		<!-- If true, all collection names from volumes will be added to their corresponding anchor record (default is false) -->
 		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
 
 		<namespaces>
@@ -76,78 +72,76 @@
 		<!-- pageCountStart: Order number for the first page. Default is 1. -->
 		<pageCountStart>1</pageCountStart>
 
-	    <!-- addLabelToChildren: If true, LABEL values will be propagated to child 
-		    docstruct documents. Default is false. -->
-	    <addLabelToChildren>false</addLabelToChildren>
-	    
-	    <!-- labelCleanup: If true, non-sort character sequences will be removed from the string -->
-	    <labelCleanup>true</labelCleanup>
-	    
-	    <!-- emptyOrderLabelReplacement: String that will be put into the field ORDERLABEL if no
-	        value is found. Default is " - ". -->
-	    <emptyOrderLabelReplacement> - </emptyOrderLabelReplacement>
+		<!-- addLabelToChildren: If true, LABEL values will be propagated to child docstruct documents. Default is false. -->
+		<addLabelToChildren>false</addLabelToChildren>
+		
+		<!-- labelCleanup: If true, non-sort character sequences will be removed from the string -->
+		<labelCleanup>true</labelCleanup>
+		
+		<!-- emptyOrderLabelReplacement: String that will be put into the field ORDERLABEL if no value is found. Default is " - ". -->
+		<emptyOrderLabelReplacement> - </emptyOrderLabelReplacement>
+		
+		<!-- addNormDataFieldsToDefault: Norm data fields whose values should be added to DEFAULT (e.g. alternative person names). -->
+		<addNormDataFieldsToDefault>
+			<field>NORM_IDENTIFIER</field>
+			<field>NORM_NAME</field>
+			<field>NORM_ALTNAME</field>
+		</addNormDataFieldsToDefault>
+		
+		<aggregateRecords>true</aggregateRecords>
 
-        <!-- addNormDataFieldsToDefault: Norm data fields whose values should be 
-            added to DEFAULT (e.g. alternative person names). -->
-        <addNormDataFieldsToDefault>
-            <field>NORM_IDENTIFIER</field>
-            <field>NORM_NAME</field>
-            <field>NORM_ALTNAME</field>
-        </addNormDataFieldsToDefault>
-        
-        <aggregateRecords>true</aggregateRecords>
-        
-        <lido>
-            <!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
-            <imageXPath>lido:resourceRepresentation[@lido:type='image_master']/lido:linkResource</imageXPath>
-            <imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/resourceRepresentation_type/provided_representation']/lido:linkResource</imageXPath>
-            <imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/lido00464']/lido:linkResource</imageXPath>
-            <imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
-            <imageXPath>lido:resourceID</imageXPath>
-        </lido>
-	    
-	    <email>
-	        <recipients></recipients>
-            <smtpServer></smtpServer>
-            <smtpUser></smtpUser>
-            <smtpPassword></smtpPassword>
-            <smtpSenderAddress></smtpSenderAddress>
-            <smtpSenderName>Goobi viewer - Indexer</smtpSenderName>
-            <smtpSecurity>SSL</smtpSecurity>
-	    </email>
-	   
+		<lido>
+			<!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
+			<imageXPath>lido:resourceRepresentation[@lido:type='image_master']/lido:linkResource</imageXPath>
+			<imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/resourceRepresentation_type/provided_representation']/lido:linkResource</imageXPath>
+			<imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/lido00464']/lido:linkResource</imageXPath>
+			<imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
+			<imageXPath>lido:resourceID</imageXPath>
+		</lido>
+    
+		<email>
+			<recipients></recipients>
+			<smtpServer></smtpServer>
+			<smtpUser></smtpUser>
+			<smtpPassword></smtpPassword>
+			<smtpSenderAddress></smtpSenderAddress>
+			<smtpSenderName>Goobi viewer - Indexer</smtpSenderName>
+			<smtpSecurity>SSL</smtpSecurity>
+		</email>
+   
 	</init>
-	
+
+
+
 	<!-- TODO add to manual -->
 	<performance>
-        <!-- If the METS file size exceeds the given number (in bytes), an alternate 
-            Solr write strategy will be used to avoid memory overflows (default is 10485760 
-            bytes) -->
-        <metsFileSizeThreshold>10485760</metsFileSizeThreshold>
-        
-        <!-- If a data folder size exceeds the given number (in bytes), an alternate 
-            Solr write strategy will be used to avoid memory overflows (default is 157286400 
-            bytes) -->
-        <dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
-        
-        <!-- If true, an optimize query will be sent to Solr after every indexed 
-            object. -->
-        <autoOptimize>false</autoOptimize>
-        
-        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
-        <threads>4</threads>
+	        <!-- If the METS file size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 10485760 bytes) -->
+	        <metsFileSizeThreshold>10485760</metsFileSizeThreshold>
+	        
+	        <!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
+	        <dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
+	        
+	        <!-- If true, an optimize query will be sent to Solr after every indexed object. -->
+	        <autoOptimize>false</autoOptimize>
+	        
+	        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
+	        <threads>4</threads>
 	</performance>
-	
-    <!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
-    <languageMapping>
-        <eng>en</eng>
-        <ger>de</ger>
-    </languageMapping>
+
+
+
+	<!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
+	<languageMapping>
+		<eng>en</eng>
+		<ger>de</ger>
+	</languageMapping>
+
+
 
 	<docstructmapping>
-		<!-- If true, the docstruct in docstructmapping/list/_default will be used 
-			if the docstruct name could not be determined. -->
+		<!-- If true, the docstruct in docstructmapping/list/_default will be used if the docstruct name could not be determined. -->
 		<useDefaultDocstruct>false</useDefaultDocstruct>
+
 		<list>
 			<_default>OtherDocStrct</_default>
 			<monograph>Monograph</monograph>
@@ -166,6 +160,8 @@
 		</list>
 	</docstructmapping>
 
+
+
 	<!-- Index field configuration (via XPath expressions). -->
 	<fields>
 
@@ -174,11 +170,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="urn" or
-								@type="URN"]
-							</item>
-							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier[@source="urn"]
-							</item>
+							<item>mets:xmlData/mods:mods/mods:identifier[@type="urn" or @type="URN"]</item>
+							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier[@source="urn"]</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -188,26 +181,19 @@
 			</list>
 		</URN>
 
+		<!-- This field is mandatory and contains the primary identifier of the indexed record. Is must be unique in the installation. -->
 		<PI>
 			<list>
 				<item>
 					<xpath>
 						<list>
-                            <item>lido:lidoRecID</item>
-							<!-- <item>mets:xmlData/mods:mods/mods:identifier[@type="urn" or @type="URN"]</item> -->
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]
-							</item>
-							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier
-							</item>
-							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier[@source="gbv-ppn"]
-                            </item>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]
-							</item>
-                            <item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]
-                            </item>
-							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID
-							</item>
-							<!-- item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier</item> -->
+							<item>lido:lidoRecID</item>
+							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]</item>
+							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier</item>
+							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier[@source="gbv-ppn"]</item>
+							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]</item>
+							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
+							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -220,22 +206,21 @@
 		</PI>
 		
 		<MD_PROCESSID>
-            <list>
-                <item>
-                    <xpath>@OBJID</xpath>
-                    <addToDefault>false</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </MD_PROCESSID>
+			<list>
+				<item>
+					<xpath>@OBJID</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</MD_PROCESSID>
 
 		<CURRENTNO>
 			<list>
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:part/mods:detail/mods:number
-							</item>
+							<item>mets:xmlData/mods:mods/mods:part/mods:detail/mods:number</item>
 							<item>mets:xmlData/mods:mods/mods:titleInfo/mods:partName</item>
 						</list>
 					</xpath>
@@ -252,11 +237,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:titleInfo/mods:partNumber
-							</item>
-							<item>mets:xmlData/mods:mods/mods:part[@type="host" or
-								not(@type)]/attribute::order
-							</item>
+							<item>mets:xmlData/mods:mods/mods:titleInfo/mods:partNumber</item>
+							<item>mets:xmlData/mods:mods/mods:part[@type="host" or not(@type)]/attribute::order</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -271,9 +253,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>
-								lido:eventDate/lido:displayDate
-							</item>
+							<item>lido:eventDate/lido:displayDate</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -290,9 +270,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>
-								lido:eventDate/lido:date/lido:earliestDate
-							</item>
+							<item>lido:eventDate/lido:date/lido:earliestDate</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -310,9 +288,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>
-								lido:eventDate/lido:date/lido:latestDate
-							</item>
+							<item>lido:eventDate/lido:date/lido:latestDate</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -324,115 +300,91 @@
 			</list>
 		</EVENTDATEEND>
 		
-        <GROUPID_CONVOLUTE>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:note[@type='convoluteid']
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </GROUPID_CONVOLUTE>
-        
-        <GROUPORDER_CONVOLUTE>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:note[@type='convoluteorder']
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </GROUPORDER_CONVOLUTE>
-        
-        <GROUPID_SERIES>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:recordInfo/mods:recordIdentifier
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </GROUPID_SERIES>
-        
-        <GROUPORDER_SERIES>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:part/@order
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </GROUPORDER_SERIES>
-        
-        <MD_SERIESTITLE>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:titleInfo/mods:title
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addUntokenizedVersion>true</addUntokenizedVersion>
-                </item>
-            </list>
-        </MD_SERIESTITLE>
-
-		<SORT_TITLE>
+	        <GROUPID_CONVOLUTE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:titleInfo[@type='uniform']/mods:title
-					</xpath>
-					<getnode>first</getnode>
+					<xpath>mets:xmlData/mods:mods/mods:note[@type='convoluteid']</xpath>
 					<addToDefault>true</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-		</SORT_TITLE>
-		
-        <SORT_TEST>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:location/mods:shelfLocator
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <replace string="/"></replace>
-                    <normalizeValue length="12" filler="0" position="front" />
-                </item>
-            </list>
-        </SORT_TEST>
+	        </GROUPID_CONVOLUTE>
+	        
+	        <GROUPORDER_CONVOLUTE>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:note[@type='convoluteorder']</xpath>
+					<addToDefault>true</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+	        </GROUPORDER_CONVOLUTE>
+	        
+	        <GROUPID_SERIES>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:recordInfo/mods:recordIdentifier</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</GROUPID_SERIES>
+	        
+	        <GROUPORDER_SERIES>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:part/@order</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+	        </GROUPORDER_SERIES>
+        
+	        <MD_SERIESTITLE>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:titleInfo/mods:title</xpath>
+					<addToDefault>true</addToDefault>
+					<addUntokenizedVersion>true</addUntokenizedVersion>
+				</item>
+			</list>
+	        </MD_SERIESTITLE>
 
+		<!-- This field is important for COinS -->
 		<MD_TITLE>
 			<list>
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
-							</item>
-							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
-							</item>						
+							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title</item>
+							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>						
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<replace string="&lt;ns&gt;"></replace>
 					<replace string="&lt;/ns&gt;"></replace>
-                    <replace string="&lt;&lt;"></replace>
-                    <replace string="&gt;&gt;"></replace>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
 					<replace string="¬"></replace>
 				</item>
 			</list>
 		</MD_TITLE>
 
+		<SORT_TITLE>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:titleInfo[@type='uniform']/mods:title</xpath>
+					<getnode>first</getnode>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</SORT_TITLE>
+	
 		<MD_SUBTITLE>
 			<list>
 				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:subTitle
-							</item>
-						</list>
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:subTitle</xpath>
 					<addToDefault>true</addToDefault>
 					<addToMetadata>false</addToMetadata>
 				</item>
@@ -442,64 +394,54 @@
 		<MD_ALTERNATETITLE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:titleInfo[@type='alternative']/mods:title
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:titleInfo[@type='alternative']/mods:title</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
 			</list>
 		</MD_ALTERNATETITLE>
 
+		<!-- This field is important for COinS -->
 		<MD_PUBLISHER>
 			<list>
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:publisher
-							</item>
-							<item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Verlag']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:publisher</item>
+							<item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Verlag']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<groupEntity type="ORIGININFO">
-					   <field name="MD_VALUE">text()</field>
-					   <field name="MD_PUBLISHER">text()</field>
-					   <field name="MD_PUBLISHER">lido:actor/lido:nameActorSet/lido:appellationValue</field>
-<!-- 					   <field name="NORM_URI">@valueURI</field> -->
-					   <field name="NORM_URI">lido:actor/lido:actorID</field>
+						<field name="MD_VALUE">text()</field>
+						<field name="MD_PUBLISHER">text()</field>
+						<field name="MD_PUBLISHER">lido:actor/lido:nameActorSet/lido:appellationValue</field>
+						<field name="NORM_URI">lido:actor/lido:actorID</field>
 					</groupEntity>
 				</item>
 			</list>
 		</MD_PUBLISHER>
 
+		<!-- This field is important for COinS -->
 		<MD_PLACEPUBLISH>
 			<list>
 				<item>
-					<xpath>
-					    <list>
-                            <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
-                            </item>
-                        </list>
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
 		</MD_PLACEPUBLISH>
 
+		<!-- This field is important for COinS -->
 		<MD_YEARPUBLISH>
 			<list>
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@keyDate="yes"][@encoding="w3cdtf"]
-							</item>
-							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@keyDate)][@encoding="w3cdtf"]
-							</item>
-							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@encoding)][not(@point)]
-							</item>
-							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue
-							</item>
+							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@keyDate="yes"][@encoding="w3cdtf"]</item>
+							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@keyDate)][@encoding="w3cdtf"]	</item>
+							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@encoding)][not(@point)]</item>
+							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -512,12 +454,7 @@
 		<MD_YEARPUBLISHSTART>
 			<list>
 				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@point='start']
-							</item>
-						</list>
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@point='start']</xpath>
 					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
@@ -529,12 +466,7 @@
 		<MD_YEARPUBLISHEND>
 			<list>
 				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@point='end']
-							</item>
-						</list>
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@point='end']</xpath>
 					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
@@ -543,73 +475,41 @@
 			</list>
 		</MD_YEARPUBLISHEND>
 		
-        <MD_PUBLICATIONRUN>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateOther[@type="text"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                    <addSortField>false</addSortField>
-                    <normalizeYear>true</normalizeYear>
-                    <interpolateYears>true</interpolateYears>
-                </item>
-            </list>
-        </MD_PUBLICATIONRUN>
-		
-        <MDNUM_PUBLICRELEASEYEAR>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                    <addToChildren>true</addToChildren>
-                    <addToPages>true</addToPages>
-                </item>
-            </list>
-        </MDNUM_PUBLICRELEASEYEAR>
-        
-        <!--
-        <DATE_PUBLICRELEASEDATE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                    <addToChildren>true</addToChildren>
-                    <addToPages>true</addToPages>
-                </item>
-            </list>
-        </DATE_PUBLICRELEASEDATE>
-        -->
+		<MD_PUBLICATIONRUN>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateOther[@type="text"]</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+					<addSortField>false</addSortField>
+					<normalizeYear>true</normalizeYear>
+					<interpolateYears>true</interpolateYears>
+				</item>
+			</list>
+		</MD_PUBLICATIONRUN>
+			
+		<MDNUM_PUBLICRELEASEYEAR>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']<xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+					<addToChildren>true</addToChildren>
+					<addToPages>true</addToPages>
+				</item>
+			</list>
+		</MDNUM_PUBLICRELEASEYEAR>
 
+		<!-- This field contains the digital collections -->
 		<DC>
 			<list>
 				<item>
 					<xpath>
 						<list>
-							<!-- <item>mets:xmlData/mods:mods/mods:extension/zvdd:zvddWrap/zvdd:collectionIdentifier</item> -->
 							<item>mets:xmlData/mods:mods/mods:classification[not(@*)]</item>
-							<item>mets:xmlData/mods:mods/mods:classification[@authority="ivdcc" or @authority="GDZ"]
-							</item>
-							<item>mets:xmlData/mods:mods/mods:relatedItem[@type='host']/@ID
-							</item>
-							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordSource/lido:legalBodyName/lido:appellationValue
-							</item>
+							<item>mets:xmlData/mods:mods/mods:classification[@authority="ivdcc" or @authority="GDZ"]</item>
+							<item>mets:xmlData/mods:mods/mods:relatedItem[@type='host']/@ID</item>
+							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordSource/lido:legalBodyName/lido:appellationValue</item>
 						</list>
 					</xpath>
 					<getparents>all</getparents>
@@ -625,11 +525,11 @@
 			</list>
 		</DC>
 
+		<!-- If you want to configure access restrictions in the Goobi viewer, make sure you write the information to this field -->
 		<ACCESSCONDITION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
@@ -679,9 +579,7 @@
             </list>
         </MD_EVENT_DESCRIPTION>
 
-        <!-- PERSONS -->
 
-		<!-- All persons from LIDO events -->
 		<MD_EVENTACTOR>
 			<list>
 				<item>
@@ -700,6 +598,7 @@
 				</item>
 			</list>
 		</MD_EVENTACTOR>
+
         <MD_EVENTARTIST>
             <list>
                 <item>
@@ -743,7 +642,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -783,7 +681,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -813,7 +710,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -843,7 +739,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -873,7 +768,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -922,7 +816,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -952,7 +845,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
 				</item>
 			</list>
@@ -982,7 +874,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1017,6 +908,7 @@
             </list>
         </MD_CORRESPONDENT>
         
+	<!-- This field is important for COinS, it should possibly include the Author -->
         <MD_CREATOR>
             <list>
                 <item>
@@ -1100,7 +992,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1159,7 +1050,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1189,7 +1079,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1219,7 +1108,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
 				</item>
 			</list>
@@ -1249,7 +1137,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1279,7 +1166,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1338,7 +1224,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1372,7 +1257,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
 				</item>
 			</list>
@@ -1402,7 +1286,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1450,7 +1333,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1479,7 +1361,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1509,7 +1390,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
 				</item>
 			</list>
@@ -1539,7 +1419,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1569,7 +1448,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1598,7 +1476,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
                 </item>
             </list>
@@ -1628,7 +1505,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
 				</item>
 			</list>
@@ -1658,12 +1534,12 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
 				</item>
 			</list>
 		</MD_WOODENGRAVER>
 		
+		<!-- This field is important for COinS -->
         <MD_SUBJECT>
                         <list>
                                 <item>
@@ -1674,13 +1550,11 @@
                                         <groupEntity type="SUBJECT">
                                             <field name="MD_VALUE">text()</field>
                                             <field name="MD_SUBJECT">text()</field>
-<!--                                             <field name="NORM_URI">@valueURI</field> -->
                                         </groupEntity>
                                 </item>
                         </list>
         </MD_SUBJECT>
 		
-		<!-- CORPORATIONS -->
 
 		<MD_CORPORATIONSEARCH>
 			<list>
@@ -1692,6 +1566,7 @@
 			</list>
 		</MD_CORPORATIONSEARCH>
 
+		<!-- This field is important for COinS -->
 		<MD_CORPORATION>
 			<list>
 				<item>
@@ -1706,7 +1581,6 @@
                         <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
                         <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
                         <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<!--                         <field name="NORM_URI">@valueURI</field> -->
                     </groupEntity>
 				</item>
 			</list>
@@ -1893,6 +1767,7 @@
 			</list>
 		</MD_CORPORATEWITNESS>
 
+		<!-- This field is important for COinS -->
 		<MD_ISBN>
 			<list>
 				<item>
@@ -1905,6 +1780,7 @@
 			</list>
 		</MD_ISBN>
 
+		<!-- This field is important for COinS -->
 		<MD_ISSN>
 			<list>
 				<item>
@@ -1983,6 +1859,18 @@
 				</item>
 			</list>
 		</MD_SHELFMARK>
+	
+	        <SORT_TEST>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:location/mods:shelfLocator</xpath>
+					<addToDefault>true</addToDefault>
+					<replace string="/"></replace>
+					<normalizeValue length="12" filler="0" position="front" />
+				</item>
+			</list>
+	        </SORT_TEST>
+
 
 		<MD_OLDSHELFMARK>
 			<list>
@@ -2302,6 +2190,7 @@
 			</list>
 		</MD_CONDITION>
 
+		<!-- This field is important for COinS -->
 		<MD_LANGUAGE>
 			<list>
 				<item>
@@ -2531,7 +2420,6 @@
 			</list>
 		</MD_ACCESSCONDITIONCOPYRIGHTURL>
 
-		<!-- All LIDO event places -->
 		<MD_EVENTPLACE>
 			<list>
 				<item>
@@ -2545,7 +2433,6 @@
 					<groupEntity type="OTHER">
 					   <field name="MD_VALUE">lido:place/lido:namePlaceSet/lido:appellationValue</field>
 					   <field name="MD_EVENTPLACE">lido:place/lido:namePlaceSet/lido:appellationValue</field>
-<!-- 					   <field name="NORM_URI">lido:placeID[@type="uri"]</field> -->
 					</groupEntity>
 				</item>
 			</list>
@@ -2665,6 +2552,7 @@
 			</list>
 		</MD_LETTERNUMBER>
 
+		<!-- This field is important for COinS -->
 		<MD_EDITION>
 			<list>
 				<item>
@@ -2734,6 +2622,7 @@
 			</list>
 		</MD_OBJECTTYPE>
 
+		<!-- This field is important for COinS -->
 		<MD_SERIES>
 			<list>
 				<item>
@@ -2871,67 +2760,6 @@
 				</item>
 			</list>
 		</MD_PLACESALL>
-
-		<!-- GBV Niedersachsenportal -->
-		<MD_TAGCLOUD>
-			<list>
-				<!-- Name -->
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<!-- Zugehörigkeit -->
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/titleInfo/title
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<!-- Angaben zu Personen und Körperschaften -->
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name/mods:namePart</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:name/mods:namePart
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<!-- Schlagwort -->
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:topic</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<!-- Materialart / Technik -->
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:form
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<!-- Verlag / Drucker -->
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:publisher
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<!-- Ort -->
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='creation']
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='discovery']
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-			</list>
-		</MD_TAGCLOUD>
 
 		<MD_DV_OWNER>
 			<list>
