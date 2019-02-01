@@ -17,7 +17,6 @@ package de.intranda.digiverso.presentation.solr.model.datarepository.strategy;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +45,17 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
     public SingleRepositoryStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
         dataRepositories = DataRepository.loadDataRepositories(config);
+        if (dataRepositories.isEmpty()) {
+            throw new FatalIndexerException("No data repositories found, exiting...");
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy#getAllDataRepositories()
+     */
+    @Override
+    public List<DataRepository> getAllDataRepositories() {
+        return dataRepositories;
     }
 
     /* (non-Javadoc)
@@ -102,5 +112,4 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
         ret[0] = new DataRepository("");
         return ret;
     }
-
 }

@@ -16,6 +16,7 @@
 package de.intranda.digiverso.presentation.solr.model.datarepository.strategy;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
@@ -23,6 +24,12 @@ import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 public interface IDataRepositoryStrategy {
+
+    /**
+     * 
+     * @return
+     */
+    public List<DataRepository> getAllDataRepositories();
 
     /**
      * Selects available data repository for the given record. If no repository could be selected, the indexer MUST be halted.

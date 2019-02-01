@@ -89,8 +89,8 @@ public class DataRepository {
 
         if (Files.exists(rootDir)) {
             if (Files.isRegularFile(rootDir)) {
-                logger.error("Data repository '{}' is defined but is a file, not a directory. This repository will not be used.",
-                        rootDir.getFileName());
+                logger.error("Data repository '{}' is defined but is a file, not a directory. This repository will not be used.", rootDir
+                        .getFileName());
                 return;
             }
         } else {
@@ -387,11 +387,12 @@ public class DataRepository {
      * @param pi Record identifier
      * @param dataFolders Map with source data folders
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
+     * @param dataRepositories
      * @throws IOException
      * @throws FatalIndexerException
      */
-    public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings,
+            List<DataRepository> dataRepositories) throws IOException, FatalIndexerException {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
@@ -400,31 +401,31 @@ public class DataRepository {
         }
 
         // Copy and delete ALTO folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTO);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTO, dataRepositories);
         // Copy and delete crowdsourcing ALTO folder (AFTER regular ALTO!)
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD, dataRepositories);
         // Copy and delete fulltext folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT, dataRepositories);
         // Copy and delete crowdsourcing fulltext folder (AFTER regular FULLTEXT!)
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXTCROWD, dataRepositories);
         // Copy and delete CMDI metadata folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_CMDI);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_CMDI, dataRepositories);
         // Copy and delete TEI metadata folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA, dataRepositories);
         // Copy and delete TEI word coordinates folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIWC);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_TEIWC, dataRepositories);
         // Copy and delete ABBYY word coordinates folder
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ABBYY);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ABBYY, dataRepositories);
         // Copy and delete MIX files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MIX);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MIX, dataRepositories);
         // Copy and delete page PDF files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_PAGEPDF);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_PAGEPDF, dataRepositories);
         // Copy and delete original content files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_SOURCE, dataRepositories);
         // Copy and delete user generated content files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_UGC);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_UGC, dataRepositories);
         // Copy and delete overview page text files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_OVERVIEW);
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_OVERVIEW, dataRepositories);
     }
 
     /**
@@ -435,27 +436,27 @@ public class DataRepository {
      * @param dataFolders Map with source data folders
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
      * @param param Folder parameter name
+     * @param dataRepositories
      * @return
      * @throws IOException
      * @throws FatalIndexerException
      */
-    public int checkCopyAndDeleteDataFolder(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param)
-            throws IOException, FatalIndexerException {
+    public int checkCopyAndDeleteDataFolder(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param,
+            List<DataRepository> dataRepositories) throws IOException, FatalIndexerException {
         if (param == null) {
             throw new IllegalArgumentException("param may not be null");
         }
 
         if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
             return copyAndDeleteDataFolder(dataFolders.get(param), param, pi);
-        } else if (reindexSettings.get(param) != null || reindexSettings.get(param)) {
+        } else if (reindexSettings.get(param) != null || reindexSettings.get(param) && dataRepositories != null) {
             // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
-            List<DataRepository> repos = loadDataRepositories(Configuration.getInstance());
-            for (DataRepository repo : repos) {
+            for (DataRepository repo : dataRepositories) {
                 if (!repo.equals(this)) {
                     Path misplacedDataDir = Paths.get(repo.getDir(param).toAbsolutePath().toString(), pi);
                     if (Files.isDirectory(misplacedDataDir)) {
-                        logger.warn("Found data folder for this record in different data repository: {}",
-                                misplacedDataDir.toAbsolutePath().toString());
+                        logger.warn("Found data folder for this record in different data repository: {}", misplacedDataDir.toAbsolutePath()
+                                .toString());
                         logger.warn("Moving data folder to new repository...");
                         repo.moveDataFolderToRepository(this, pi, param);
                     }

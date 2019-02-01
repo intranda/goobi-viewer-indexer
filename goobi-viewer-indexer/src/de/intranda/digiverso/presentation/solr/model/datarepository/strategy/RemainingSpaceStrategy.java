@@ -48,23 +48,14 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(RemainingSpaceStrategy.class);
 
-    private final List<DataRepository> dataRepositories = new ArrayList<>();
+    private final List<DataRepository> dataRepositories;
 
     private final Path viewerHomePath;
 
     @SuppressWarnings("unchecked")
     public RemainingSpaceStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
-        List<String> dataRepositoryPaths = config.getList("init.dataRepositories.dataRepository");
-        if (dataRepositoryPaths != null) {
-            for (String path : dataRepositoryPaths) {
-                DataRepository dataRepository = new DataRepository(path);
-                if (dataRepository.isValid()) {
-                    dataRepositories.add(dataRepository);
-                    logger.info("Found configured data repository: {}", path);
-                }
-            }
-        }
+        dataRepositories = DataRepository.loadDataRepositories(config);
         if (dataRepositories.isEmpty()) {
             throw new FatalIndexerException("No data repositories found, exiting...");
         }
@@ -79,6 +70,14 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
             logger.error("<viewerHome> not defined, exiting...");
             throw new FatalIndexerException("Configuration error, see log for details.");
         }
+    }
+
+    /* (non-Javadoc)
+     * @see de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy#getAllDataRepositories()
+     */
+    @Override
+    public List<DataRepository> getAllDataRepositories() {
+        return dataRepositories;
     }
 
     /* (non-Javadoc)
@@ -252,5 +251,4 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
 
         return ret;
     }
-
 }

@@ -42,28 +42,27 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(MaxRecordNumberStrategy.class);
 
-    private final List<DataRepository> dataRepositories = new ArrayList<>();
+    private final List<DataRepository> dataRepositories;
 
     private final int dataRepositoriesMaxRecords;
 
     @SuppressWarnings("unchecked")
     public MaxRecordNumberStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
-        List<String> dataRepositoryPaths = config.getList("init.dataRepositories.dataRepository");
-        if (dataRepositoryPaths != null) {
-            for (String path : dataRepositoryPaths) {
-                DataRepository dataRepository = new DataRepository(path);
-                if (dataRepository.isValid()) {
-                    dataRepositories.add(dataRepository);
-                    logger.info("Found configured data repository: {}", path);
-                }
-            }
-        }
+        dataRepositories = DataRepository.loadDataRepositories(config);
         if (dataRepositories.isEmpty()) {
             throw new FatalIndexerException("No data repositories found, exiting...");
         }
 
         dataRepositoriesMaxRecords = config.getInt("init.dataRepositories.maxRecords", 10000);
+    }
+
+    /* (non-Javadoc)
+     * @see de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy#getAllDataRepositories()
+     */
+    @Override
+    public List<DataRepository> getAllDataRepositories() {
+        return dataRepositories;
     }
 
     /* (non-Javadoc)
