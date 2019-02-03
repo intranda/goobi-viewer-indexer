@@ -15,13 +15,13 @@
 		<hotFolder>C:/digiverso/viewer/hotfolder/</hotFolder>
 		<tempFolder>C:/digiverso/indexer/temp/</tempFolder>
 		<viewerHome>C:/digiverso/viewer/</viewerHome>
-		<dataRepositories>	
+		<dataRepositories>
 			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
 			<strategy>SingleRepositoryStrategy</strategy>
 
 			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 10000) -->
 			<maxRecords>10000</maxRecords>
-			
+
 			<!-- Data repository folders (absolute paths to be used (a new folder structure will be created for each dataRepository) -->
 			<dataRepository>C:/digiverso/viewer/data/1</dataRepository>
 			<dataRepository>C:/digiverso/viewer/data/2</dataRepository>
@@ -43,7 +43,7 @@
 		<overviewFolder>overview</overviewFolder>
 		<teiFolder>tei</teiFolder>
 		<cmdiFolder>cmdi</cmdiFolder>
-		
+
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
 
@@ -68,26 +68,26 @@
 			    <intranda>http://intranda.com/</intranda>
 			</list>
 		</namespaces>
-		
+
 		<!-- pageCountStart: Order number for the first page. Default is 1. -->
 		<pageCountStart>1</pageCountStart>
 
 		<!-- addLabelToChildren: If true, LABEL values will be propagated to child docstruct documents. Default is false. -->
 		<addLabelToChildren>false</addLabelToChildren>
-		
+
 		<!-- labelCleanup: If true, non-sort character sequences will be removed from the string -->
 		<labelCleanup>true</labelCleanup>
-		
+
 		<!-- emptyOrderLabelReplacement: String that will be put into the field ORDERLABEL if no value is found. Default is " - ". -->
 		<emptyOrderLabelReplacement> - </emptyOrderLabelReplacement>
-		
+
 		<!-- addNormDataFieldsToDefault: Norm data fields whose values should be added to DEFAULT (e.g. alternative person names). -->
 		<addNormDataFieldsToDefault>
 			<field>NORM_IDENTIFIER</field>
 			<field>NORM_NAME</field>
 			<field>NORM_ALTNAME</field>
 		</addNormDataFieldsToDefault>
-		
+
 		<aggregateRecords>true</aggregateRecords>
 
 		<lido>
@@ -98,7 +98,7 @@
 			<imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
 			<imageXPath>lido:resourceID</imageXPath>
 		</lido>
-    
+
 		<email>
 			<recipients></recipients>
 			<smtpServer></smtpServer>
@@ -108,7 +108,7 @@
 			<smtpSenderName>Goobi viewer - Indexer</smtpSenderName>
 			<smtpSecurity>SSL</smtpSecurity>
 		</email>
-   
+
 	</init>
 
 
@@ -117,13 +117,13 @@
 	<performance>
 	        <!-- If the METS file size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 10485760 bytes) -->
 	        <metsFileSizeThreshold>10485760</metsFileSizeThreshold>
-	        
+
 	        <!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
 	        <dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
-	        
+
 	        <!-- If true, an optimize query will be sent to Solr after every indexed object. -->
 	        <autoOptimize>false</autoOptimize>
-	        
+
 	        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
 	        <threads>4</threads>
 	</performance>
@@ -336,7 +336,7 @@
 				</item>
 			</list>
 		</EVENTDATEEND>
-		
+
 	        <GROUPID_CONVOLUTE>
 			<list>
 				<item>
@@ -346,7 +346,7 @@
 				</item>
 			</list>
 	        </GROUPID_CONVOLUTE>
-	        
+
 	        <GROUPORDER_CONVOLUTE>
 			<list>
 				<item>
@@ -356,7 +356,7 @@
 				</item>
 			</list>
 	        </GROUPORDER_CONVOLUTE>
-	        
+
 	        <GROUPID_SERIES>
 			<list>
 				<item>
@@ -366,7 +366,7 @@
 				</item>
 			</list>
 		</GROUPID_SERIES>
-	        
+
 	        <GROUPORDER_SERIES>
 			<list>
 				<item>
@@ -376,7 +376,7 @@
 				</item>
 			</list>
 	        </GROUPORDER_SERIES>
-        
+
 	        <MD_SERIESTITLE>
 			<list>
 				<item>
@@ -394,7 +394,7 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title</item>
-							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>						
+							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -417,7 +417,7 @@
 				</item>
 			</list>
 		</SORT_TITLE>
-	
+
 		<MD_SUBTITLE>
 			<list>
 				<item>
@@ -579,7 +579,7 @@
 				</item>
 			</list>
 		</MD_SUBJECT>
-		
+
 		<!-- This field is important, see chapter 3.13 of the manual -->
 		<MD_CORPORATION>
 			<list>
@@ -625,7 +625,7 @@
 		<MD_EDITION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo/mods:edition[not(text() = '[Electronic ed.]')]</xpath>				
+					<xpath>mets:xmlData/mods:mods/mods:originInfo/mods:edition[not(text() = '[Electronic ed.]')]</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -655,7 +655,7 @@
 				</item>
 			</list>
 		</MD_PUBLICATIONRUN>
-			
+
 		<MDNUM_PUBLICRELEASEYEAR>
 			<list>
 				<item>
@@ -690,7 +690,7 @@
 				</item>
 			</list>
 		</MD_PHYSICALCOPY>
-		
+
 		<MD_EVENT_DESCRIPTION>
 			<list>
 				<item>
@@ -728,7 +728,7 @@
 				</item>
 			</list>
 		</MD_EVENTARTIST>
-		
+
 		<MD_ADDRESSEE>
 			<list>
 				<item>
@@ -752,7 +752,7 @@
 				</item>
 			</list>
 		</MD_ADDRESSEE>
-		
+
 		<MD_ARTIST>
 			<list>
 				<item>
@@ -785,65 +785,55 @@
 				</item>
 			</list>
 		</MD_ARTIST>
-		
+
 		<MD_ASSOCIATEDPERSON>
-		    <list>
-		        <item>
-		            <xpath>
-		                <list>
-		                    <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="asn"[@authority='marcrelator'][@type='code']]/mods:displayForm
-		                    </item>
-		                </list>
-		            </xpath>
-		            <addToDefault>true</addToDefault>
-		            <addSortField>true</addSortField>
-		            <replace string="&lt;&lt;"></replace>
-		            <replace string="&gt;&gt;"></replace>
-		            <replace char="152"></replace>
-		            <replace char="156"></replace>
-		            <groupEntity type="PERSON">
-		                <field name="MD_VALUE">mods:displayForm</field>
-		                <field name="MD_DISPLAYFORM">mods:displayForm</field>
-		                <field name="MD_LINK">@xlink:href</field>
-		                <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-		                <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-		                <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-		                <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-		                <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-		            </groupEntity>
-		        </item>
-		    </list>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="asn"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_DISPLAYFORM">mods:displayForm</field>
+						<field name="MD_LINK">@xlink:href</field>
+						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+					</groupEntity>
+				</item>
+			</list>
 		</MD_ASSOCIATEDPERSON>
-		
+
 		<MD_AUTHOR>
-		    <list>
-		        <item>
-		            <xpath>
-		                <list>
-		                    <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm
-		                    </item>                      
-		                </list>
-		            </xpath>
-		            <addToDefault>true</addToDefault>
-		            <addSortField>true</addSortField>
-		            <replace string="&lt;&lt;"></replace>
-		            <replace string="&gt;&gt;"></replace>
-		            <replace char="152"></replace>
-		            <replace char="156"></replace>
-		            <groupEntity type="PERSON">
-		                <field name="MD_VALUE">mods:displayForm</field>
-		                <field name="MD_DISPLAYFORM">mods:displayForm</field>
-		                <field name="MD_LINK">@xlink:href</field>
-		                <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-		                <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-		                <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-		                <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-		                <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-		            </groupEntity>
-		        </item>
-		    </list>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_DISPLAYFORM">mods:displayForm</field>
+						<field name="MD_LINK">@xlink:href</field>
+						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+					</groupEntity>
+				</item>
+			</list>
 		</MD_AUTHOR>
-		
+
 		<MD_CARTOGRAPHER>
 		    <list>
 		        <item>
@@ -872,7 +862,7 @@
 		        </item>
 		    </list>
 		</MD_CARTOGRAPHER>
-		
+
 		<MD_COINMASTER>
 		    <list>
 		        <item>
@@ -891,7 +881,7 @@
 		        </item>
 		    </list>
 		</MD_COINMASTER>
-		
+
 		<MD_COLLABORATOR>
 		    <list>
 		        <item>
@@ -920,7 +910,7 @@
 		        </item>
 		    </list>
 		</MD_COLLABORATOR>
-		
+
 			<MD_COMPOSER>
 				<list>
 					<item>
@@ -949,7 +939,7 @@
 					</item>
 				</list>
 			</MD_COMPOSER>
-			
+
 		<MD_CONTRIBUTOR>
 		    <list>
 		        <item>
@@ -978,7 +968,7 @@
 		        </item>
 		    </list>
 		</MD_CONTRIBUTOR>
-        
+
         <MD_CORRESPONDENT>
             <list>
                 <item>
@@ -1007,8 +997,8 @@
                 </item>
             </list>
         </MD_CORRESPONDENT>
-        
-       
+
+
         <MD_CREATORS>
             <list>
                 <item>
@@ -1030,7 +1020,7 @@
                 </item>
             </list>
         </MD_CREATORS>
-        
+
         <MD_DEDICATEE>
             <list>
                 <item>
@@ -1059,7 +1049,7 @@
                 </item>
             </list>
         </MD_DEDICATEE>
-        
+
         <MD_DEPICTEDPERSON>
             <list>
                 <item>
@@ -1088,7 +1078,7 @@
                 </item>
             </list>
         </MD_DEPICTEDPERSON>
-        
+
         <MD_DIRECTOR>
             <list>
                 <item>
@@ -1117,7 +1107,7 @@
                 </item>
             </list>
         </MD_DIRECTOR>
-        
+
         <MD_DRAFTSMAN>
             <list>
                 <item>
@@ -1175,7 +1165,7 @@
 				</item>
 			</list>
 		</MD_EDITOR>
-		
+
         <MD_ENGRAVER>
             <list>
                 <item>
@@ -1204,7 +1194,7 @@
                 </item>
             </list>
         </MD_ENGRAVER>
-        
+
         <MD_FIRSTDESCRIBER>
             <list>
                 <item>
@@ -1233,7 +1223,7 @@
                 </item>
             </list>
         </MD_FIRSTDESCRIBER>
-        
+
         <MD_FORMEROWNER>
             <list>
                 <item>
@@ -1262,7 +1252,7 @@
                 </item>
             </list>
         </MD_FORMEROWNER>
-        
+
         <MD_HONOREE>
             <list>
                 <item>
@@ -1324,7 +1314,7 @@
 				</item>
 			</list>
 		</MD_ILLUSTRATOR>
-		
+
         <MD_LITHOGRAPHER>
             <list>
                 <item>
@@ -1353,7 +1343,7 @@
                 </item>
             </list>
         </MD_LITHOGRAPHER>
-        
+
         <MD_MEDALIST>
             <list>
                 <item>
@@ -1372,7 +1362,7 @@
                 </item>
             </list>
         </MD_MEDALIST>
-        
+
         <MD_ORIGINATOR>
             <list>
                 <item>
@@ -1400,7 +1390,7 @@
                 </item>
             </list>
         </MD_ORIGINATOR>
-        
+
         <MD_OTHERPERSON>
             <list>
                 <item>
@@ -1457,7 +1447,7 @@
 				</item>
 			</list>
 		</MD_PHOTOGRAPHER>
-		
+
         <MD_PRINTER>
             <list>
                 <item>
@@ -1486,7 +1476,7 @@
                 </item>
             </list>
         </MD_PRINTER>
-		
+
         <MD_SCREENWRITER>
             <list>
                 <item>
@@ -1515,7 +1505,7 @@
                 </item>
             </list>
         </MD_SCREENWRITER>
-        
+
         <MD_SUBJECTPERSON>
             <list>
                 <item>
@@ -1601,8 +1591,8 @@
 				</item>
 			</list>
 		</MD_WOODENGRAVER>
-		
-	
+
+
 
 		<MD_CORPORATIONSEARCH>
 			<list>
@@ -1613,7 +1603,7 @@
 				</item>
 			</list>
 		</MD_CORPORATIONSEARCH>
-		
+
 		<MD_CORPORATEADDRESSEE>
             <list>
                 <item>
@@ -1632,7 +1622,7 @@
                 </item>
             </list>
         </MD_CORPORATEADDRESSEE>
-		
+
 		<MD_CORPORATEARTIST>
             <list>
                 <item>
@@ -1651,7 +1641,7 @@
                 </item>
             </list>
         </MD_CORPORATEARTIST>
-		
+
 		<MD_CORPORATEAUTHOR>
             <list>
                 <item>
@@ -1689,7 +1679,7 @@
 				</item>
 			</list>
 		</MD_CORPORATECONTRIBUTOR>
-		
+
 		<MD_CORPORATECORRESPONDENT>
             <list>
                 <item>
@@ -1708,7 +1698,7 @@
                 </item>
             </list>
         </MD_CORPORATECORRESPONDENT>
-		
+
 		<MD_CORPORATECREATOR>
             <list>
                 <item>
@@ -1727,7 +1717,7 @@
                 </item>
             </list>
         </MD_CORPORATECREATOR>
-        
+
         <MD_CORPORATEDEPICTED>
             <list>
                 <item>
@@ -1746,7 +1736,7 @@
                 </item>
             </list>
         </MD_CORPORATEDEPICTED>
-		
+
 		<MD_CORPORATEFORMEROWNER>
             <list>
                 <item>
@@ -1765,7 +1755,7 @@
                 </item>
             </list>
         </MD_CORPORATEFORMEROWNER>
-        
+
         <MD_CORPORATEORIGINATOR>
             <list>
                 <item>
@@ -1856,7 +1846,7 @@
 				</item>
 			</list>
 		</MD_SHELFMARK>
-	
+
 	        <SORT_TEST>
 			<list>
 				<item>
@@ -2234,7 +2224,7 @@
 				</item>
 			</list>
 		</MD_PURPOSE>
-		
+
 		<MD_PHYSICALDESCRIPTIONEXTENT>
 			<list>
 				<item>
@@ -2719,7 +2709,7 @@
 				</item>
 			</list>
 		</MD_DV_OWNERCONTACT>
-		
+
 		<MD_OCCASION>
             <list>
                 <item>
@@ -2730,7 +2720,7 @@
                 </item>
             </list>
         </MD_OCCASION>
-        
+
         <MD_OCCASIONDATE>
             <list>
                 <item>
@@ -2741,7 +2731,7 @@
                 </item>
             </list>
         </MD_OCCASIONDATE>
-        
+
         <MD_PROVENIENCE>
             <list>
                 <item>
@@ -2756,7 +2746,7 @@
                 </item>
             </list>
         </MD_PROVENIENCE>
-        
+
         <MD_SUBJECTGEOGRAPHIC>
             <list>
                 <item>
@@ -2766,7 +2756,7 @@
                 </item>
             </list>
         </MD_SUBJECTGEOGRAPHIC>
-        
+
         <MD_SUBJECTTOPIC>
             <list>
                 <item>
@@ -2776,7 +2766,7 @@
                 </item>
             </list>
         </MD_SUBJECTTOPIC>
-        
+
         <MD_OBJECTMEASUREMENTSET>
             <list>
                 <item>
@@ -2795,7 +2785,7 @@
             </list>
         </MD_OBJECTMEASUREMENTSET>
 
-	
+
 	    <MD_COURTDIS>
             <list>
                 <item>
@@ -2810,7 +2800,7 @@
                 </item>
             </list>
         </MD_COURTDIS>
-        
+
         <MD_COURTADM>
             <list>
                 <item>
@@ -2825,7 +2815,7 @@
                 </item>
             </list>
         </MD_COURTADM>
-        
+
         <MD_COURTASSEMBLY>
             <list>
                 <item>
@@ -2840,7 +2830,7 @@
                 </item>
             </list>
         </MD_COURTASSEMBLY>
-        
+
         <MD_COURTNAME>
             <list>
                 <item>
@@ -2855,7 +2845,7 @@
                 </item>
             </list>
         </MD_COURTNAME>
-        
+
         <MD_COURTTYPE>
             <list>
                 <item>
@@ -2870,7 +2860,7 @@
                 </item>
             </list>
         </MD_COURTTYPE>
-        
+
         <MD_COURTID>
             <list>
                 <item>
@@ -2885,7 +2875,7 @@
                 </item>
             </list>
         </MD_COURTID>
-        
+
         <MD_RECORDID>
             <list>
                 <item>
@@ -2900,7 +2890,7 @@
                 </item>
             </list>
         </MD_RECORDID>
-        	
+
         <MD_PERSON_DFD>
             <list>
                 <item>
@@ -2915,7 +2905,7 @@
                 </item>
             </list>
         </MD_PERSON_DFD>
-        
+
         <MD_PERSON_MOTHER>
             <list>
                 <item>
@@ -2930,7 +2920,7 @@
                 </item>
             </list>
         </MD_PERSON_MOTHER>
-        
+
         <MD_PERSON_FATHER>
             <list>
                 <item>
@@ -2945,7 +2935,7 @@
                 </item>
             </list>
         </MD_PERSON_FATHER>
-        
+
         <MD_OCCUPATION>
             <list>
                 <item>
@@ -2960,7 +2950,7 @@
                 </item>
             </list>
         </MD_OCCUPATION>
-        
+
         <MD_CLASSIFICATION>
             <list>
                 <item>
@@ -2975,7 +2965,7 @@
                 </item>
             </list>
         </MD_CLASSIFICATION>
-        
+
         <MD_SEX>
             <list>
                 <item>
@@ -2992,7 +2982,7 @@
                 </item>
             </list>
         </MD_SEX>
-        
+
         <MD_TRIALDATE>
             <list>
                 <item>
@@ -3007,7 +2997,7 @@
                 </item>
             </list>
         </MD_TRIALDATE>
-        
+
         <MD_CITIZENSHIP>
             <list>
                 <item>
@@ -3022,7 +3012,7 @@
                 </item>
             </list>
         </MD_CITIZENSHIP>
-        
+
         <MD_SENTENCE>
             <list>
                 <item>
@@ -3037,7 +3027,7 @@
                 </item>
             </list>
         </MD_SENTENCE>
-        
+
         <MD_STATEMENTOFRESPONSIBILITY>
             <list>
                 <item>
@@ -3052,54 +3042,38 @@
                 </item>
             </list>
         </MD_STATEMENTOFRESPONSIBILITY>
-        
-        
-        <MD_HOSTID>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type='references']/mods:recordInfo/mods:recordIdentifier[@source="DE-361"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addSortField>false</addSortField>
-                </item>
-            </list>
-        </MD_HOSTID>
-        
-        <MD_PREVIOUS_VERSION>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="otherVersion"]/mods:recordInfo/mods:recordIdentifier[@source="preceding"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addSortField>false</addSortField>
-                </item>
-            </list>
-        </MD_PREVIOUS_VERSION>
-        
-        <MD_NEXT_VERSION>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="otherVersion"]/mods:recordInfo/mods:recordIdentifier[@source="succeeding"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addSortField>false</addSortField>
-                </item>
-            </list>
-        </MD_NEXT_VERSION>
-        
-        
+
+
+		<MD_HOSTID>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='references']/mods:recordInfo/mods:recordIdentifier[@source="DE-361"]</xpath>
+					<addToDefault>false</addToDefault>
+					<addSortField>false</addSortField>
+				</item>
+			</list>
+		</MD_HOSTID>
+
+		<MD_PREVIOUS_VERSION>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="otherVersion"]/mods:recordInfo/mods:recordIdentifier[@source="preceding"]</xpath>
+					<addToDefault>false</addToDefault>
+					<addSortField>false</addSortField>
+				</item>
+			</list>
+		</MD_PREVIOUS_VERSION>
+
+		<MD_NEXT_VERSION>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="otherVersion"]/mods:recordInfo/mods:recordIdentifier[@source="succeeding"]</xpath>
+					<addToDefault>false</addToDefault>
+					<addSortField>false</addSortField>
+				</item>
+			</list>
+		</MD_NEXT_VERSION>
+
 		<MD_ARTIST_GROUP>
 			<list>
 				<item>
@@ -3128,7 +3102,7 @@
 				</item>
 			</list>
 		</BOOL_HIDE>
-		
+
 		<BOOL_CONTAINSIMAGE>
 		       <list>
 				<item>
@@ -3138,7 +3112,7 @@
 				</item>
 		       </list>
 		</BOOL_CONTAINSIMAGE>
-		
+
 		<MD_HAAB_PROVENIENCE>
 			<list>
 				<item>
@@ -3158,6 +3132,6 @@
 				</item>
 			</list>
 		</MD_HAAB_PROVENIENCE>
-            
+
 	</fields>
 </root>
