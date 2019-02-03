@@ -393,7 +393,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title</item>
+							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
 						</list>
 					</xpath>
@@ -417,6 +417,61 @@
 				</item>
 			</list>
 		</SORT_TITLE>
+
+                <MD_TITLE_LANG_FR>
+                        <list>
+                                <item>
+                                        <xpath>
+                                                <list>
+                                                        <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@lang="fre"]</item>
+                                                </list>
+                                        </xpath>
+                                        <addToDefault>true</addToDefault>
+                                        <addSortField>true</addSortField>
+                                        <replace string="&lt;ns&gt;"></replace>
+                                        <replace string="&lt;/ns&gt;"></replace>
+                                        <replace string="&lt;&lt;"></replace>
+                                        <replace string="&gt;&gt;"></replace>
+                                        <replace string="¬"></replace>
+                                </item>
+                        </list>
+                </MD_TITLE_LANG_FR>
+                <MD_TITLE_LANG_DE>
+                        <list>
+                                <item>
+                                        <xpath>
+                                                <list>
+                                                        <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@lang="ger"]</item>
+                                                </list>
+                                        </xpath>
+                                        <addToDefault>true</addToDefault>
+                                        <addSortField>true</addSortField>
+                                        <replace string="&lt;ns&gt;"></replace>
+                                        <replace string="&lt;/ns&gt;"></replace>
+                                        <replace string="&lt;&lt;"></replace>
+                                        <replace string="&gt;&gt;"></replace>
+                                        <replace string="¬"></replace>
+                                </item>
+                        </list>
+                </MD_TITLE_LANG_DE>
+                <MD_TITLE_LANG_EN>
+                        <list>
+                                <item>
+                                        <xpath>
+                                                <list>
+                                                        <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@lang="eng"]</item>
+                                                </list>
+                                        </xpath>
+                                        <addToDefault>true</addToDefault>
+                                        <addSortField>true</addSortField>
+                                        <replace string="&lt;ns&gt;"></replace>
+                                        <replace string="&lt;/ns&gt;"></replace>
+                                        <replace string="&lt;&lt;"></replace>
+                                        <replace string="&gt;&gt;"></replace>
+                                        <replace string="¬"></replace>
+                                </item>
+                        </list>
+                </MD_TITLE_LANG_EN>
 
 		<MD_SUBTITLE>
 			<list>
