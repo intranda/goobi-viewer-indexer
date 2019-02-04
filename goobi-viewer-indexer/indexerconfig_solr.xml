@@ -714,7 +714,7 @@
 		<MDNUM_PUBLICRELEASEYEAR>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']<xpath>
+					<xpath>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<addToChildren>true</addToChildren>
@@ -759,7 +759,7 @@
 		<MD_EVENTACTOR>
 			<list>
 				<item>
-					<xpath>lido:eventActor/lido:actorInRole/lido:actor/lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]<xpath>
+					<xpath>lido:eventActor/lido:actorInRole/lido:actor/lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>false</addSortField>
 					<replace string="&lt;&lt;"></replace>
