@@ -449,7 +449,7 @@ public class DataRepository {
 
         if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
             return copyAndDeleteDataFolder(dataFolders.get(param), param, pi);
-        } else if (reindexSettings.get(param) != null || reindexSettings.get(param) && dataRepositories != null) {
+        } else if (reindexSettings.get(param) != null && reindexSettings.get(param) && dataRepositories != null) {
             // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
             for (DataRepository repo : dataRepositories) {
                 if (!repo.equals(this)) {
