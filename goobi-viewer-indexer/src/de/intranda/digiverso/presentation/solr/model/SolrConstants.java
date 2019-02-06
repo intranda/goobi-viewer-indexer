@@ -87,8 +87,8 @@ public final class SolrConstants {
     public static final String ORDERLABEL = "ORDERLABEL";
     public static final String ORDERLABELFIRST = "ORDERLABELFIRST";
     public static final String ORDERLABELLAST = "ORDERLABELLAST";
-    public static final String OVERVIEWPAGE_DESCRIPTION = "OVERVIEWPAGE_DESCRIPTION";
-    public static final String OVERVIEWPAGE_PUBLICATIONTEXT = "OVERVIEWPAGE_PUBLICATIONTEXT";
+//    public static final String OVERVIEWPAGE_DESCRIPTION = "OVERVIEWPAGE_DESCRIPTION";
+//    public static final String OVERVIEWPAGE_PUBLICATIONTEXT = "OVERVIEWPAGE_PUBLICATIONTEXT";
     public static final String PHYSID = "PHYSID";
     public static final String PI = "PI";
     public static final String PI_ANCHOR = "PI_ANCHOR";
@@ -115,6 +115,7 @@ public final class SolrConstants {
 
     public static final String OPEN_ACCESS_VALUE = "OPENACCESS";
 
+    public static final String CMS_TEXT_ = "CMS_TEXT_";
     public static final String GROUPID_ = "GROUPID_";
     public static final String GROUPORDER_ = "GROUPORDER_";
     public static final String SORT_ = "SORT_";

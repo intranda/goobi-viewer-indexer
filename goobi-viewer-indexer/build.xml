@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Goobi Solr Indexer 3.2" basedir="." default="deploy_withtests" xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="Goobi Solr Indexer 3.4" basedir="." default="deploy_withtests" xmlns:jacoco="antlib:org.jacoco.ant">
 
 	<property name="jar.file" value="solrIndexer.jar" />
 	<property name="main.class" value="de.intranda.digiverso.presentation.solr.SolrIndexerDaemon" />

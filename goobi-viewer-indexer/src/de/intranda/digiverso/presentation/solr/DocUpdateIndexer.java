@@ -111,29 +111,35 @@ public class DocUpdateIndexer extends AbstractIndexer {
             //  Find files in data folders and populate update map
             Map<String, Map<String, Object>> partialUpdates = new HashMap<>();
 
-            if (dataFolders.get(DataRepository.PARAM_OVERVIEW) != null) {
-                Path staticPageFolder = dataFolders.get(DataRepository.PARAM_OVERVIEW);
+            if (dataFolders.get(DataRepository.PARAM_CMS) != null) {
+                Path staticPageFolder = dataFolders.get(DataRepository.PARAM_CMS);
                 if (Files.isDirectory(staticPageFolder)) {
                     File[] files = staticPageFolder.toFile().listFiles(xml);
                     if (files.length > 0) {
                         for (File file : files) {
-                            switch (file.getName()) {
-                                case "description.xml": {
-                                    String content = TextHelper.readFileToString(file);
-                                    Map<String, Object> update = new HashMap<>();
-                                    update.put("set", TextHelper.cleanUpHtmlTags(content));
-                                    partialUpdates.put(SolrConstants.OVERVIEWPAGE_DESCRIPTION, update);
-                                }
-                                    break;
-                                case "literature.xml":
-                                case "publicationtext.xml": {
-                                    String content = TextHelper.readFileToString(file);
-                                    Map<String, Object> update = new HashMap<>();
-                                    update.put("set", TextHelper.cleanUpHtmlTags(content));
-                                    partialUpdates.put(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, update);
-                                }
-                                    break;
-                            }
+                            //                            switch (file.getName()) {
+                            //                                case "description.xml": {
+                            //                                    String content = TextHelper.readFileToString(file);
+                            //                                    Map<String, Object> update = new HashMap<>();
+                            //                                    update.put("set", TextHelper.cleanUpHtmlTags(content));
+                            //                                    partialUpdates.put(SolrConstants.OVERVIEWPAGE_DESCRIPTION, update);
+                            //                                }
+                            //                                    break;
+                            //                                case "literature.xml":
+                            //                                case "publicationtext.xml": {
+                            //                                    String content = TextHelper.readFileToString(file);
+                            //                                    Map<String, Object> update = new HashMap<>();
+                            //                                    update.put("set", TextHelper.cleanUpHtmlTags(content));
+                            //                                    partialUpdates.put(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, update);
+                            //                                }
+                            //                                    break;
+                            //                            }
+
+                            String field = FilenameUtils.getBaseName(file.getName()).toUpperCase();
+                            String content = TextHelper.readFileToString(file);
+                            Map<String, Object> update = new HashMap<>();
+                            update.put("set", TextHelper.cleanUpHtmlTags(content));
+                            partialUpdates.put(SolrConstants.CMS_TEXT_ + field, update);
                         }
                     }
                 }
@@ -222,13 +228,12 @@ public class DocUpdateIndexer extends AbstractIndexer {
                     }
                 }
             }
-            
+
             // Remove old UGC
-            String query =
-                    SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
-            SolrDocumentList ugcDocList = hotfolder.getSolrHelper().search(
-                    SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
-                    Collections.singletonList(SolrConstants.IDDOC));
+            String query = SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
+            SolrDocumentList ugcDocList = hotfolder.getSolrHelper()
+                    .search(SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
+                            Collections.singletonList(SolrConstants.IDDOC));
             if (ugcDocList != null && !ugcDocList.isEmpty()) {
                 // Collect delete old UGC docs for deletion
                 List<String> oldIddocs = new ArrayList<>(ugcDocList.size());

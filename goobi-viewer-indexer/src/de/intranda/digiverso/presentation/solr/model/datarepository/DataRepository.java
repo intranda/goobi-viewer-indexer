@@ -48,6 +48,7 @@ public class DataRepository {
     public static final String PARAM_ALTO_CONVERTED = "altoFolder";
     public static final String PARAM_ALTOCROWD = "altoCrowdsourcingFolder";
     public static final String PARAM_ABBYY = "abbyyFolder";
+    public static final String PARAM_CMS = "cmsFolder";
     public static final String PARAM_DOWNLOAD_IMAGES_TRIGGER = "downloadImages";
     public static final String PARAM_FULLTEXT = "fulltextFolder";
     public static final String PARAM_FULLTEXTCROWD = "fulltextCrowdsourcingFolder";
@@ -58,7 +59,6 @@ public class DataRepository {
     public static final String PARAM_SOURCE = "sourceContentFolder";
     public static final String PARAM_UGC = "userGeneratedContentFolder";
     public static final String PARAM_MIX = "mixFolder";
-    public static final String PARAM_OVERVIEW = "overviewFolder";
 
     //    public static int dataRepositoriesMaxRecords = 10000;
 
@@ -89,8 +89,8 @@ public class DataRepository {
 
         if (Files.exists(rootDir)) {
             if (Files.isRegularFile(rootDir)) {
-                logger.error("Data repository '{}' is defined but is a file, not a directory. This repository will not be used.", rootDir
-                        .getFileName());
+                logger.error("Data repository '{}' is defined but is a file, not a directory. This repository will not be used.",
+                        rootDir.getFileName());
                 return;
             }
         } else {
@@ -117,7 +117,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_SOURCE);
         checkAndCreateDataSubdir(PARAM_UGC);
         checkAndCreateDataSubdir(PARAM_MIX);
-        checkAndCreateDataSubdir(PARAM_OVERVIEW);
+        checkAndCreateDataSubdir(PARAM_CMS);
         valid = true;
     }
 
@@ -188,7 +188,7 @@ public class DataRepository {
      * @should delete user generated content folder correctly
      * @should delete MIX folder correctly
      * @should delete page PDF folder correctly
-     * @should delete overview folder correctly
+     * @should delete CMS folder correctly
      */
     public void deleteDataFoldersForRecord(String baseFileName) {
         deleteFolder(Paths.get(getDir(PARAM_ALTO).toAbsolutePath().toString(), baseFileName));
@@ -204,7 +204,7 @@ public class DataRepository {
         deleteFolder(Paths.get(getDir(PARAM_UGC).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_MIX).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_PAGEPDF).toAbsolutePath().toString(), baseFileName));
-        deleteFolder(Paths.get(getDir(PARAM_OVERVIEW).toAbsolutePath().toString(), baseFileName));
+        deleteFolder(Paths.get(getDir(PARAM_CMS).toAbsolutePath().toString(), baseFileName));
     }
 
     /**
@@ -287,7 +287,7 @@ public class DataRepository {
         moveDataFolderToRepository(toRepository, pi, PARAM_SOURCE);
         moveDataFolderToRepository(toRepository, pi, PARAM_UGC);
         moveDataFolderToRepository(toRepository, pi, PARAM_MIX);
-        moveDataFolderToRepository(toRepository, pi, PARAM_OVERVIEW);
+        moveDataFolderToRepository(toRepository, pi, PARAM_CMS);
 
         // METS
         Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_METS).toAbsolutePath().toString(), pi + ".xml");
@@ -356,7 +356,7 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ABBYY);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_MIX);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_UGC);
-        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_OVERVIEW);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_CMS);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_PAGEPDF);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
 
@@ -377,7 +377,7 @@ public class DataRepository {
         }
 
         if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
-            Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_OVERVIEW));
+            Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_CMS));
         }
     }
 
@@ -424,8 +424,8 @@ public class DataRepository {
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_SOURCE, dataRepositories);
         // Copy and delete user generated content files
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_UGC, dataRepositories);
-        // Copy and delete overview page text files
-        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_OVERVIEW, dataRepositories);
+        // Copy and delete CMS page text files
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_CMS, dataRepositories);
     }
 
     /**
@@ -455,8 +455,8 @@ public class DataRepository {
                 if (!repo.equals(this)) {
                     Path misplacedDataDir = Paths.get(repo.getDir(param).toAbsolutePath().toString(), pi);
                     if (Files.isDirectory(misplacedDataDir)) {
-                        logger.warn("Found data folder for this record in different data repository: {}", misplacedDataDir.toAbsolutePath()
-                                .toString());
+                        logger.warn("Found data folder for this record in different data repository: {}",
+                                misplacedDataDir.toAbsolutePath().toString());
                         logger.warn("Moving data folder to new repository...");
                         repo.moveDataFolderToRepository(this, pi, param);
                     }

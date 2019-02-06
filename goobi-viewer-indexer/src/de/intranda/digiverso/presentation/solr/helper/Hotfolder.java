@@ -110,8 +110,8 @@ public class Hotfolder {
     public static FilenameFilter filterDataFile = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
-            return (name.toLowerCase().endsWith(AbstractIndexer.XML_EXTENSION) || name.toLowerCase().endsWith(".delete") || name.toLowerCase()
-                    .endsWith(".purge") || name.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION));
+            return (name.toLowerCase().endsWith(AbstractIndexer.XML_EXTENSION) || name.toLowerCase().endsWith(".delete")
+                    || name.toLowerCase().endsWith(".purge") || name.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION));
         }
     };
 
@@ -307,8 +307,10 @@ public class Hotfolder {
             context.getRootLogger().removeAppender(secondaryAppender);
         }
 
-        final PatternLayout layout = PatternLayout.newBuilder().withPattern(
-                "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n").withConfiguration(config).build();
+        final PatternLayout layout = PatternLayout.newBuilder()
+                .withPattern("%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n")
+                .withConfiguration(config)
+                .build();
         secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", true, true);
         secondaryAppender.start();
         config.addAppender(secondaryAppender);
@@ -395,8 +397,8 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_UGC, true);
             noerror = handleDataFile(fileToReindex, true, reindexSettings);
             if (swSecondaryLog != null) {
-                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")", swSecondaryLog
-                        .toString());
+                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")",
+                        swSecondaryLog.toString());
             }
         } else {
             // Check for the shutdown trigger file first
@@ -439,8 +441,8 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleDataFile(recordFile, false, reindexSettings);
                         // logger.error("for the lulz");
-                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")", swSecondaryLog
-                                .toString());
+                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")",
+                                swSecondaryLog.toString());
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
                         Files.delete(recordFile);
@@ -467,8 +469,8 @@ public class Hotfolder {
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (swSecondaryLog != null) {
-                checkAndSendErrorReport("Record indexing failed due to insufficient space (v" + SolrIndexerDaemon.VERSION + ")", swSecondaryLog
-                        .toString());
+                checkAndSendErrorReport("Record indexing failed due to insufficient space (v" + SolrIndexerDaemon.VERSION + ")",
+                        swSecondaryLog.toString());
             }
             throw new FatalIndexerException("Insufficient free space");
         }
@@ -574,11 +576,11 @@ public class Hotfolder {
                 return;
             }
 
-            Path actualXmlFile = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), baseFileName
-                    + ".xml");
+            Path actualXmlFile =
+                    Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), baseFileName + ".xml");
             if (!Files.exists(actualXmlFile)) {
-                actualXmlFile = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName
-                        + ".xml");
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName + ".xml");
             }
             FileFormat format = FileFormat.UNKNOWN;
             if (!Files.exists(actualXmlFile)) {
@@ -659,8 +661,8 @@ public class Hotfolder {
      * @throws FatalIndexerException
      * 
      */
-    private void addMetsToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException,
-            FatalIndexerException {
+    private void addMetsToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
         // index file
         String[] resp = { null, null };
         Map<String, Path> dataFolders = new HashMap<>();
@@ -714,8 +716,8 @@ public class Hotfolder {
                     case "_ugc":
                         dataFolders.put(DataRepository.PARAM_UGC, path);
                         break;
-                    case "_overview":
-                        dataFolders.put(DataRepository.PARAM_OVERVIEW, path);
+                    case "_cms":
+                        dataFolders.put(DataRepository.PARAM_CMS, path);
                         break;
                     case "_tei":
                         dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
@@ -754,8 +756,8 @@ public class Hotfolder {
         if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
             reindexSettings.put(DataRepository.PARAM_UGC, true);
         }
-        if (dataFolders.get(DataRepository.PARAM_OVERVIEW) == null) {
-            reindexSettings.put(DataRepository.PARAM_OVERVIEW, true);
+        if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
+            reindexSettings.put(DataRepository.PARAM_CMS, true);
         }
         if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
             reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
@@ -765,8 +767,8 @@ public class Hotfolder {
         DataRepository previousDataRepository;
         try {
             currentIndexer = new MetsIndexer(this);
-            resp = ((MetsIndexer) currentIndexer).index(metsFile, fromReindexQueue, dataFolders, null, Configuration.getInstance()
-                    .getPageCountStart());
+            resp = ((MetsIndexer) currentIndexer).index(metsFile, fromReindexQueue, dataFolders, null,
+                    Configuration.getInstance().getPageCountStart());
         } finally {
             dataRepository = currentIndexer.getDataRepository();
             previousDataRepository = currentIndexer.getPreviousDataRepository();
@@ -798,8 +800,8 @@ public class Hotfolder {
             }
 
             // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA, dataRepositoryStrategy
-                    .getAllDataRepositories()) > 0) {
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+                    dataRepositoryStrategy.getAllDataRepositories()) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
                 if (msg != null) {
                     logger.info(msg);
@@ -847,8 +849,8 @@ public class Hotfolder {
 
                     @Override
                     public boolean accept(Path entry) throws IOException {
-                        return Files.isDirectory(entry) && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString()
-                                .endsWith("_media"));
+                        return Files.isDirectory(entry)
+                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith("_media"));
                     }
                 });) {
                     for (Path path : stream) {
@@ -941,8 +943,9 @@ public class Hotfolder {
                 DataRepository previousDataRepository;
                 try {
                     currentIndexer = new LidoIndexer(this);
-                    resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(), Configuration
-                            .getInstance().getList("init.lido.imageXPath"), dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+                    resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
+                            Configuration.getInstance().getList("init.lido.imageXPath"),
+                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
                 } finally {
                     dataRepository = currentIndexer.getDataRepository();
                     previousDataRepository = currentIndexer.getPreviousDataRepository();
@@ -1000,11 +1003,11 @@ public class Hotfolder {
                         if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null || reindexSettings.get(DataRepository.PARAM_MEDIA)) {
                             for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
                                 if (!repo.equals(dataRepository)) {
-                                    Path misplacedDataDir = Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(),
-                                            identifier);
+                                    Path misplacedDataDir =
+                                            Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
                                     if (Files.isDirectory(misplacedDataDir)) {
-                                        logger.warn("Found data folder for this record in different data repository: {}", misplacedDataDir
-                                                .toAbsolutePath().toString());
+                                        logger.warn("Found data folder for this record in different data repository: {}",
+                                                misplacedDataDir.toAbsolutePath().toString());
                                         logger.warn("Moving data folder to new repository...");
                                         repo.moveDataFolderToRepository(dataRepository, identifier, DataRepository.PARAM_MEDIA);
                                     }
@@ -1059,19 +1062,20 @@ public class Hotfolder {
         } catch (IOException e) {
             logger.error("'{}' could not be deleted; please delete it manually.", lidoFile.toAbsolutePath());
         }
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA)) && !Utils
-                .deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
+        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
+                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
             logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
         }
-        if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null && Files.isDirectory(dataFolders.get(
-                DataRepository.PARAM_MIX)) && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
+        if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
+                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))
+                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
             logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath());
         }
-        if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null && Files.isDirectory(dataFolders.get(
-                DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) && !Utils.deleteDirectory(dataFolders.get(
-                        DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)
-                    .toAbsolutePath());
+        if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
+                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))
+                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
+            logger.warn("'{}' could not be deleted; please delete it manually.",
+                    dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath());
         }
 
         if (deleteContentFilesOnFailure) {
@@ -1079,12 +1083,12 @@ public class Hotfolder {
             if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
             }
-            if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null && Files.isDirectory(dataFolders
-                    .get(DataRepository.PARAM_MIX))) {
+            if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
+                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
             }
-            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null && Files.isDirectory(dataFolders.get(
-                    DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
+            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
+                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
             }
         }
@@ -1100,8 +1104,8 @@ public class Hotfolder {
      * @throws FatalIndexerException
      * 
      */
-    private void addWorldViewsToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException,
-            FatalIndexerException {
+    private void addWorldViewsToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
         String[] resp = { null, null };
         Map<String, Path> dataFolders = new HashMap<>();
@@ -1146,8 +1150,8 @@ public class Hotfolder {
         DataRepository previousDataRepository;
         try {
             currentIndexer = new WorldViewsIndexer(this);
-            resp = ((WorldViewsIndexer) currentIndexer).index(mainFile, fromReindexQueue, dataFolders, null, Configuration.getInstance()
-                    .getPageCountStart());
+            resp = ((WorldViewsIndexer) currentIndexer).index(mainFile, fromReindexQueue, dataFolders, null,
+                    Configuration.getInstance().getPageCountStart());
         } finally {
             dataRepository = currentIndexer.getDataRepository();
             previousDataRepository = currentIndexer.getPreviousDataRepository();
@@ -1179,8 +1183,8 @@ public class Hotfolder {
             }
 
             // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA, dataRepositoryStrategy
-                    .getAllDataRepositories()) > 0) {
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+                    dataRepositoryStrategy.getAllDataRepositories()) > 0) {
                 String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
                 if (msg != null) {
                     logger.info(msg);
@@ -1228,8 +1232,8 @@ public class Hotfolder {
 
                     @Override
                     public boolean accept(Path entry) throws IOException {
-                        return Files.isDirectory(entry) && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString()
-                                .endsWith("_media"));
+                        return Files.isDirectory(entry)
+                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith("_media"));
                     }
                 });) {
                     for (Path path : stream) {
@@ -1281,8 +1285,8 @@ public class Hotfolder {
                     case "_ugc":
                         dataFolders.put(DataRepository.PARAM_UGC, path);
                         break;
-                    case "_overview":
-                        dataFolders.put(DataRepository.PARAM_OVERVIEW, path);
+                    case "_cms":
+                        dataFolders.put(DataRepository.PARAM_CMS, path);
                         break;
                     default:
                         // nothing
@@ -1342,8 +1346,8 @@ public class Hotfolder {
 
                     @Override
                     public boolean accept(Path entry) throws IOException {
-                        return Files.isDirectory(entry) && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString()
-                                .endsWith("_media"));
+                        return Files.isDirectory(entry)
+                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith("_media"));
                     }
                 });) {
                     for (Path path : stream) {

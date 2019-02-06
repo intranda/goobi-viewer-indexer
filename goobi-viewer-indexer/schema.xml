@@ -154,7 +154,9 @@
 			stored="true" />
 		<!-- OVERVIEWPAGE: DEPRECATED -->
 		<field name="OVERVIEWPAGE" type="string" indexed="false" stored="true" />
+		<!-- OVERVIEWPAGE_DESCRIPTION: DEPRECATED -->
 		<field name="OVERVIEWPAGE_DESCRIPTION" type="text_general_rev" indexed="true" stored="false" />
+		<!-- OVERVIEWPAGE_PUBLICATIONTEXT: DEPRECATED -->
 		<field name="OVERVIEWPAGE_PUBLICATIONTEXT" type="text_general_rev" indexed="true" stored="false" />
 		<!-- OVERVIEWPAGEFORCE: DEPRECATED -->
 		<field name="OVERVIEWPAGEFORCE" type="boolean" indexed="true" stored="true" />
@@ -230,6 +232,8 @@
             stored="true" />
         <dynamicField name="DOCSTRCT_*" type="string" indexed="true"
             stored="true" />
+        <dynamicField name="CMS_TEXT_*" type="text_general_rev"
+            indexed="true" stored="false" multiValued="true" />
             
 		<dynamicField name="random_*" type="random" />
 

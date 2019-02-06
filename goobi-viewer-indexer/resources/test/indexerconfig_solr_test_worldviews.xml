@@ -46,7 +46,7 @@
 		<sourceContentFolder>source</sourceContentFolder>
 		<userGeneratedContentFolder>ugc</userGeneratedContentFolder>
 		<mixFolder>mix</mixFolder>
-		<overviewFolder>overview</overviewFolder>
+		<cmsFolder>cms</cmsFolder>
 		<teiFolder>tei</teiFolder>
 		<cmdiFolder>cmdi</cmdiFolder>
 		

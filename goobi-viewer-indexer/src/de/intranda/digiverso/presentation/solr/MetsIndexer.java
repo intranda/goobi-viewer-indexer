@@ -129,7 +129,7 @@ public class MetsIndexer extends AbstractIndexer {
      * @should index multi volume records correctly
      * @should update record correctly
      * @should set access conditions correctly
-     * @should write overview page texts into index
+     * @should write cms page texts into index
      */
     public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
@@ -290,14 +290,14 @@ public class MetsIndexer extends AbstractIndexer {
                             logger.info("Using old user generated content folder '{}'.", dataFolders.get(DataRepository.PARAM_UGC).toAbsolutePath());
                         }
                     }
-                    if (dataFolders.get(DataRepository.PARAM_OVERVIEW) == null) {
-                        // Use the old overview config folder
-                        dataFolders.put(DataRepository.PARAM_OVERVIEW,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_OVERVIEW))) {
-                            dataFolders.put(DataRepository.PARAM_OVERVIEW, null);
+                    if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
+                        // Use the old CMS folder
+                        dataFolders.put(DataRepository.PARAM_CMS,
+                                Paths.get(dataRepository.getDir(DataRepository.PARAM_CMS).toAbsolutePath().toString(), pi));
+                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_CMS))) {
+                            dataFolders.put(DataRepository.PARAM_CMS, null);
                         } else {
-                            logger.info("Using old overview config folder '{}'.", dataFolders.get(DataRepository.PARAM_OVERVIEW).toAbsolutePath());
+                            logger.info("Using old CMS folder '{}'.", dataFolders.get(DataRepository.PARAM_CMS).toAbsolutePath());
                         }
                     }
                     if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
@@ -524,38 +524,43 @@ public class MetsIndexer extends AbstractIndexer {
                 indexObj.setDefaultValue("");
             }
 
-            if (dataFolders.get(DataRepository.PARAM_OVERVIEW) != null) {
-                Path staticPageFolder = dataFolders.get(DataRepository.PARAM_OVERVIEW);
+            if (dataFolders.get(DataRepository.PARAM_CMS) != null) {
+                Path staticPageFolder = dataFolders.get(DataRepository.PARAM_CMS);
                 if (Files.isDirectory(staticPageFolder)) {
                     // TODO NIO
                     File[] files = staticPageFolder.toFile().listFiles(xml);
                     if (files.length > 0) {
                         for (File file : files) {
-                            switch (file.getName()) {
-                                case "description.xml": {
-                                    String content = TextHelper.readFileToString(file);
-                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_DESCRIPTION, TextHelper.cleanUpHtmlTags(content));
-                                }
-                                    break;
-                                case "literature.xml":
-                                case "publicationtext.xml": {
-                                    String content = TextHelper.readFileToString(file);
-                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, TextHelper.cleanUpHtmlTags(content));
-                                }
-                                    break;
-                                default: {
-                                    // Legacy overview page ingest (IKFN)
-                                    // String content = TextHelper.readFileToString(file);
-                                    // if (StringUtils.isNotEmpty(content)) {
-                                    //     indexObj.addToLucene(SolrConstants.OVERVIEWPAGE, content);
-                                    //     if (StringUtils.containsIgnoreCase(content, "<force>true</force>")) {
-                                    //         indexObj.addToLucene(SolrConstants.OVERVIEWPAGEFORCE, "true");
-                                    //     }
-                                    // } else {
-                                    //     logger.warn("Overview page config file is empty: {}", file.getName());
-                                    // }
-                                }
-                            }
+                            //                            switch (file.getName()) {
+                            //                                case "description.xml": {
+                            //                                    String content = TextHelper.readFileToString(file);
+                            //                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_DESCRIPTION, TextHelper.cleanUpHtmlTags(content));
+                            //                                }
+                            //                                    break;
+                            //                                case "literature.xml":
+                            //                                case "publicationtext.xml": {
+                            //                                    String content = TextHelper.readFileToString(file);
+                            //                                    indexObj.addToLucene(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, TextHelper.cleanUpHtmlTags(content));
+                            //                                }
+                            //                                    break;
+                            //                                default: {
+                            //                                    // Legacy overview page ingest (IKFN)
+                            //                                    // String content = TextHelper.readFileToString(file);
+                            //                                    // if (StringUtils.isNotEmpty(content)) {
+                            //                                    //     indexObj.addToLucene(SolrConstants.OVERVIEWPAGE, content);
+                            //                                    //     if (StringUtils.containsIgnoreCase(content, "<force>true</force>")) {
+                            //                                    //         indexObj.addToLucene(SolrConstants.OVERVIEWPAGEFORCE, "true");
+                            //                                    //     }
+                            //                                    // } else {
+                            //                                    //     logger.warn("Overview page config file is empty: {}", file.getName());
+                            //                                    // }
+                            //                                }
+                            //                            }
+
+                            // Add a new CMS_TEXT_* field for each file
+                            String field = FilenameUtils.getBaseName(file.getName()).toUpperCase();
+                            String content = TextHelper.readFileToString(file);
+                            indexObj.addToLucene(SolrConstants.CMS_TEXT_ + field, TextHelper.cleanUpHtmlTags(content));
                         }
                     }
                 }

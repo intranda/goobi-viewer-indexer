@@ -90,7 +90,7 @@ public class DataRepositoryTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_SOURCE).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_UGC).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MIX).toFile().isDirectory());
-        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_CMS).toFile().isDirectory());
     }
 
     /**
@@ -114,7 +114,7 @@ public class DataRepositoryTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_SOURCE).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_UGC).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MIX).toFile().isDirectory());
-        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_OVERVIEW).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_CMS).toFile().isDirectory());
     }
 
     /**
@@ -351,12 +351,12 @@ public class DataRepositoryTest {
 
     /**
      * @see DataRepository#deleteDataFoldersForRecord(String)
-     * @verifies delete overview folder correctly
+     * @verifies delete CMS folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteOverviewFolderCorrectly() throws Exception {
+    public void deleteDataFoldersForRecord_shouldDeleteCMSFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("build/viewer/data/");
-        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_OVERVIEW).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_CMS).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
         useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);

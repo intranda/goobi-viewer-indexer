@@ -39,8 +39,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.intranda.digiverso.ocr.alto.model.structureclasses.lineelements.Word;
-import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
@@ -114,7 +112,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
+        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
         Assert.assertEquals(PI + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
@@ -654,23 +652,23 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see MetsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int)
-     * @verifies write overview page texts into index
+     * @verifies write cms page texts into index
      */
     @Test
-    public void index_shouldWriteOverviewPageTextsIntoIndex() throws Exception {
+    public void index_shouldWriteCmsPageTextsIntoIndex() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
+        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
 
         {
-            // Overview page description is not stored and must be searched for (and should have any HTML tags removed)
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.OVERVIEWPAGE_DESCRIPTION + ":\"test description\"", null);
+            // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.CMS_TEXT_ + "DESCRIPTION" + ":\"test description\"", null);
             Assert.assertEquals(1, docList.size());
         }
         {
-            // Overview page publication text is not stored and must be searched for (and should have any HTML tags removed)
+            // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT + ":\"test publication text\"", null);
+                    hotfolder.getSolrHelper().search(SolrConstants.CMS_TEXT_ + "PUBLICATIONTEXT" + ":\"test publication text\"", null);
             Assert.assertEquals(1, docList.size());
         }
     }

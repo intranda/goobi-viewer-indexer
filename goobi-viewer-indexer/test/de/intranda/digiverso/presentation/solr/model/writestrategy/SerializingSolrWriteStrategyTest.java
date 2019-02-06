@@ -97,15 +97,15 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
+        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
         SolrHelper sh = new SolrHelper(server);
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
         indexer.index(metsFile, false, dataFolders, strat, 1);
-        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":"
-                + DocType.DOCSTRCT.name(), null);
+        SolrDocumentList docList = hotfolder.getSolrHelper()
+                .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.DOCSTRCT.name(), null);
         Assert.assertEquals(4, docList.size());
     }
 
@@ -118,15 +118,15 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_OVERVIEW, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_overview"));
+        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
         SolrHelper sh = new SolrHelper(server);
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
         indexer.index(metsFile, false, dataFolders, strat, 1);
-        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":"
-                + DocType.PAGE.name(), null);
+        SolrDocumentList docList = hotfolder.getSolrHelper()
+                .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
         Assert.assertEquals(16, docList.size());
     }
 }
