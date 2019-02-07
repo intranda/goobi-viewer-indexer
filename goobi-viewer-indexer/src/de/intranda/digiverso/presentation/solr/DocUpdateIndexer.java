@@ -140,6 +140,8 @@ public class DocUpdateIndexer extends AbstractIndexer {
                             Map<String, Object> update = new HashMap<>();
                             update.put("set", TextHelper.cleanUpHtmlTags(content));
                             partialUpdates.put(SolrConstants.CMS_TEXT_ + field, update);
+                            partialUpdates.put(SolrConstants.CMS_TEXT_ALL, update);
+                            
                         }
                     }
                 }

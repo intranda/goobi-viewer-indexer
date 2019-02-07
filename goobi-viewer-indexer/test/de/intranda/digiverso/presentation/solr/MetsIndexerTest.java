@@ -662,13 +662,21 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         {
             // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.CMS_TEXT_ + "DESCRIPTION" + ":\"test description\"", null);
+            SolrDocumentList docList =
+                    hotfolder.getSolrHelper().search("+" + SolrConstants.CMS_TEXT_ + "DESCRIPTION" + ":\"test description\"", null);
             Assert.assertEquals(1, docList.size());
         }
         {
             // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.CMS_TEXT_ + "PUBLICATIONTEXT" + ":\"test publication text\"", null);
+                    hotfolder.getSolrHelper().search("+" + SolrConstants.CMS_TEXT_ + "PUBLICATIONTEXT" + ":\"test publication text\"", null);
+            Assert.assertEquals(1, docList.size());
+        }
+        {
+            // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
+            SolrDocumentList docList = hotfolder.getSolrHelper()
+                    .search("+" + SolrConstants.CMS_TEXT_ALL + ":\"test description\" +" + SolrConstants.CMS_TEXT_ALL + ":\"test publication text\"",
+                            null);
             Assert.assertEquals(1, docList.size());
         }
     }

@@ -456,7 +456,9 @@ public class WorldViewsIndexer extends AbstractIndexer {
                             // Add a new CMS_TEXT_* field for each file
                             String field = FilenameUtils.getBaseName(file.getName()).toUpperCase();
                             String content = TextHelper.readFileToString(file);
-                            indexObj.addToLucene(SolrConstants.CMS_TEXT_ + field, TextHelper.cleanUpHtmlTags(content));
+                            String value = TextHelper.cleanUpHtmlTags(content);
+                            indexObj.addToLucene(SolrConstants.CMS_TEXT_ + field, value);
+                            indexObj.addToLucene(SolrConstants.CMS_TEXT_ALL, value);
                         }
                     }
                 }

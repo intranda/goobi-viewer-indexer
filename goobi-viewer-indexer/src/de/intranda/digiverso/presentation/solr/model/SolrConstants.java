@@ -39,6 +39,7 @@ public final class SolrConstants {
     @Deprecated
     public static final String ALTO = "ALTO";
     public static final String CENTURY = "CENTURY";
+    public static final String CMS_TEXT_ALL = "CMS_TEXT_ALL";
     public static final String COLORSPACE = "COLORSPACE";
     public static final String CURRENTNOSORT = "CURRENTNOSORT";
     public static final String DATAREPOSITORY = "DATAREPOSITORY";
