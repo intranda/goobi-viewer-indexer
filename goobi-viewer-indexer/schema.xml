@@ -30,7 +30,7 @@
 	request -->
 
 
-<schema name="goobi_viewer-20181214" version="1.5">
+<schema name="goobi_viewer-20190206" version="1.5">
 	<!-- attribute "name" is the name of this schema and is only used for display 
 		purposes. version="x.y" is Solr's version number for the schema syntax and 
 		semantics. It should not normally be changed by applications. 1.0: multiValued 
