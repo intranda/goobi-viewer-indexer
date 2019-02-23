@@ -890,168 +890,138 @@
 		</MD_AUTHOR>
 
 		<MD_CARTOGRAPHER>
-		    <list>
-		        <item>
-		            <xpath>
-		                <list>
-		                    <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="ctg"[@authority='marcrelator'][@type='code']]/mods:displayForm
-		                    </item>
-		                </list>
-		            </xpath>
-		            <addToDefault>true</addToDefault>
-		            <addSortField>true</addSortField>
-		            <replace string="&lt;&lt;"></replace>
-		            <replace string="&gt;&gt;"></replace>
-		            <replace char="152"></replace>
-		            <replace char="156"></replace>
-		            <groupEntity type="PERSON">
-		                <field name="MD_VALUE">mods:displayForm</field>
-		                <field name="MD_DISPLAYFORM">mods:displayForm</field>
-		                <field name="MD_LINK">@xlink:href</field>
-		                <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-		                <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-		                <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-		                <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-		                <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-		            </groupEntity>
-		        </item>
-		    </list>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="ctg"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_DISPLAYFORM">mods:displayForm</field>
+						<field name="MD_LINK">@xlink:href</field>
+						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+					</groupEntity>
+				</item>
+			</list>
 		</MD_CARTOGRAPHER>
 
 		<MD_COINMASTER>
-		    <list>
-		        <item>
-		            <xpath>
-		                <list>
-		                    <item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Münzmeister']/lido:actor/lido:nameActorSet/lido:appellationValue
-		                    </item>
-		                </list>
-		            </xpath>
-		            <addToDefault>true</addToDefault>
-		            <addSortField>true</addSortField>
-		            <replace string="&lt;&lt;"></replace>
-		            <replace string="&gt;&gt;"></replace>
-		            <replace char="152"></replace>
-		            <replace char="156"></replace>
-		        </item>
-		    </list>
+			<list>
+				<item>
+					<xpath>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Münzmeister']/lido:actor/lido:nameActorSet/lido:appellationValue</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+				</item>
+			</list>
 		</MD_COINMASTER>
 
 		<MD_COLLABORATOR>
-		    <list>
-		        <item>
-		            <xpath>
-		                <list>
-		                    <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="cor"[@authority='marcrelator'][@type='code']]/mods:displayForm
-		                    </item>
-		                </list>
-		            </xpath>
-		            <addToDefault>true</addToDefault>
-		            <addSortField>true</addSortField>
-		            <replace string="&lt;&lt;"></replace>
-		            <replace string="&gt;&gt;"></replace>
-		            <replace char="152"></replace>
-		            <replace char="156"></replace>
-		            <groupEntity type="PERSON">
-		                <field name="MD_VALUE">mods:displayForm</field>
-		                <field name="MD_DISPLAYFORM">mods:displayForm</field>
-		                <field name="MD_LINK">@xlink:href</field>
-		                <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-		                <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-		                <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-		                <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-		                <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-		            </groupEntity>
-		        </item>
-		    </list>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="cor"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_DISPLAYFORM">mods:displayForm</field>
+						<field name="MD_LINK">@xlink:href</field>
+						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+					</groupEntity>
+				</item>
+			</list>
 		</MD_COLLABORATOR>
 
-			<MD_COMPOSER>
-				<list>
-					<item>
-						<xpath>
-							<list>
-								<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="cmp"[@authority='marcrelator'][@type='code']]/mods:displayForm
-								</item>
-							</list>
-						</xpath>
-						<addToDefault>true</addToDefault>
-		            <addSortField>true</addSortField>
-		            <replace string="&lt;&lt;"></replace>
-		            <replace string="&gt;&gt;"></replace>
-		            <replace char="152"></replace>
-		            <replace char="156"></replace>
-		            <groupEntity type="PERSON">
-		                <field name="MD_VALUE">mods:displayForm</field>
-		                <field name="MD_DISPLAYFORM">mods:displayForm</field>
-		                <field name="MD_LINK">@xlink:href</field>
-		                <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-		                <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-		                <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-		                <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-		                <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-		            </groupEntity>
-					</item>
-				</list>
-			</MD_COMPOSER>
+		<MD_COMPOSER>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="cmp"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_DISPLAYFORM">mods:displayForm</field>
+						<field name="MD_LINK">@xlink:href</field>
+						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_COMPOSER>
 
 		<MD_CONTRIBUTOR>
-		    <list>
-		        <item>
-		            <xpath>
-		                <list>
-		                    <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="ctb"[@authority='marcrelator'][@type='code']]/mods:displayForm
-		                    </item>
-		                </list>
-		            </xpath>
-		            <addToDefault>true</addToDefault>
-		            <addSortField>true</addSortField>
-		            <replace string="&lt;&lt;"></replace>
-		            <replace string="&gt;&gt;"></replace>
-		            <replace char="152"></replace>
-		            <replace char="156"></replace>
-		            <groupEntity type="PERSON">
-		                <field name="MD_VALUE">mods:displayForm</field>
-		                <field name="MD_DISPLAYFORM">mods:displayForm</field>
-		                <field name="MD_LINK">@xlink:href</field>
-		                <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-		                <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-		                <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-		                <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-		                <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-		            </groupEntity>
-		        </item>
-		    </list>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="ctb"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_DISPLAYFORM">mods:displayForm</field>
+						<field name="MD_LINK">@xlink:href</field>
+						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+					</groupEntity>
+				</item>
+			</list>
 		</MD_CONTRIBUTOR>
 
-        <MD_CORRESPONDENT>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="crp"[@authority='marcrelator'][@type='code']]/mods:displayForm
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                    <replace string="&lt;&lt;"></replace>
-                    <replace string="&gt;&gt;"></replace>
-                    <replace char="152"></replace>
-                    <replace char="156"></replace>
-                    <groupEntity type="PERSON">
-                        <field name="MD_VALUE">mods:displayForm</field>
-                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
-                        <field name="MD_LINK">@xlink:href</field>
-                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_CORRESPONDENT>
+		<MD_CORRESPONDENT>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="crp"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_DISPLAYFORM">mods:displayForm</field>
+						<field name="MD_LINK">@xlink:href</field>
+						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_CORRESPONDENT>
 
 
         <MD_CREATORS>
@@ -1830,17 +1800,6 @@
             </list>
         </MD_CORPORATEORIGINATOR>
 
-		<MD_CORPORATEWITNESS>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type='corporate'][mods:role/mods:roleTerm="wit"[@authority='marcrelator'][@type='code']]
-					</xpath>
-					<aggregateEntity>true</aggregateEntity>
-				</item>
-			</list>
-		</MD_CORPORATEWITNESS>
-
-
 		<MD_ZDB>
 			<list>
 				<item>
@@ -2612,20 +2571,6 @@
 				</item>
 			</list>
 		</MD_TOC>
-
-		<MD_LINK>
-			<list>
-				<item>
-					<xpath>mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@MDTYPE='OTHER'
-						and @MIMETYPE='text/xml' and
-						@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:presentation
-					</xpath>
-					<addToDefault>false</addToDefault>
-					<addUntokenizedVersion>false</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_LINK>
-
 		<MD_ATTACHMENT>
 			<list>
 				<item>
@@ -2713,115 +2658,6 @@
 				</item>
 			</list>
 		</MD_PREPARATIONTYPE>
-
-
-		<MD_DV_OWNER>
-			<list>
-				<item>
-					<xpath>mets:amdSec[@ID="AMD"]/mets:rightsMD[@ID="RIGHTS"]/mets:mdWrap[@MDTYPE='OTHER'
-						and @MIMETYPE='text/xml' and
-						@OTHERMDTYPE='DVRIGHTS']/mets:xmlData/dv:rights/dv:owner
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-			</list>
-		</MD_DV_OWNER>
-
-		<MD_DV_OWNERLOGO>
-			<list>
-				<item>
-					<xpath>mets:amdSec[@ID="AMD"]/mets:rightsMD[@ID="RIGHTS"]/mets:mdWrap[@MDTYPE='OTHER'
-						and @MIMETYPE='text/xml' and
-						@OTHERMDTYPE='DVRIGHTS']/mets:xmlData/dv:rights/dv:ownerLogo
-					</xpath>
-					<addToDefault>false</addToDefault>
-					<addUntokenizedVersion>false</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_DV_OWNERLOGO>
-
-		<MD_DV_OWNERSITEURL>
-			<list>
-				<item>
-					<xpath>mets:amdSec[@ID="AMD"]/mets:rightsMD[@ID="RIGHTS"]/mets:mdWrap[@MDTYPE='OTHER'
-						and @MIMETYPE='text/xml' and
-						@OTHERMDTYPE='DVRIGHTS']/mets:xmlData/dv:rights/dv:ownerSiteURL
-					</xpath>
-					<addToDefault>false</addToDefault>
-					<addUntokenizedVersion>false</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_DV_OWNERSITEURL>
-
-		<MD_DV_OWNERCONTACT>
-			<list>
-				<item>
-					<xpath>mets:amdSec[@ID="AMD"]/mets:rightsMD[@ID="RIGHTS"]/mets:mdWrap[@MDTYPE='OTHER'
-						and @MIMETYPE='text/xml' and
-						@OTHERMDTYPE='DVRIGHTS']/mets:xmlData/dv:rights/dv:ownerContact
-					</xpath>
-					<addToDefault>false</addToDefault>
-				</item>
-			</list>
-		</MD_DV_OWNERCONTACT>
-
-		<MD_OCCASION>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:subject[@authority="ikfn"][@usage="cause"]/mods:topic
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_OCCASION>
-
-        <MD_OCCASIONDATE>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:subject[@authority="ikfn"][@usage="cause"]/mods:temporal[@encoding='w3cdtf']
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_OCCASIONDATE>
-
-        <MD_PROVENIENCE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalLocation[not(@type)]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_PROVENIENCE>
-
-        <MD_SUBJECTGEOGRAPHIC>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:geographic
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                </item>
-            </list>
-        </MD_SUBJECTGEOGRAPHIC>
-
-        <MD_SUBJECTTOPIC>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:topic
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                </item>
-            </list>
-        </MD_SUBJECTTOPIC>
-
         <MD_OBJECTMEASUREMENTSET>
             <list>
                 <item>
@@ -2841,262 +2677,125 @@
         </MD_OBJECTMEASUREMENTSET>
 
 
-	    <MD_COURTDIS>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="corporate"][mods:role/mods:roleTerm="court-dis"[@type='text']]/mods:namePart
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_COURTDIS>
+		<!-- Information from DFG-Viewer namespace-->
+		<MD_DV_OWNER>
+			<list>
+				<item>
+					<xpath>mets:amdSec[@ID="AMD"]/mets:rightsMD[@ID="RIGHTS"]/mets:mdWrap[@MDTYPE='OTHER' and @MIMETYPE='text/xml' and @OTHERMDTYPE='DVRIGHTS']/mets:xmlData/dv:rights/dv:owner</xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_DV_OWNER>
 
-        <MD_COURTADM>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="corporate"][mods:role/mods:roleTerm="court-adm"[@type='text']]/mods:namePart
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_COURTADM>
+		<MD_DV_OWNERLOGO>
+			<list>
+				<item>
+					<xpath>mets:amdSec[@ID="AMD"]/mets:rightsMD[@ID="RIGHTS"]/mets:mdWrap[@MDTYPE='OTHER' and @MIMETYPE='text/xml' and @OTHERMDTYPE='DVRIGHTS']/mets:xmlData/dv:rights/dv:ownerLogo</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</MD_DV_OWNERLOGO>
 
-        <MD_COURTASSEMBLY>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="corporate"][mods:role/mods:roleTerm="court-assembly"[@type='text']]/mods:namePart
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_COURTASSEMBLY>
+		<MD_DV_OWNERSITEURL>
+			<list>
+				<item>
+					<xpath>mets:amdSec[@ID="AMD"]/mets:rightsMD[@ID="RIGHTS"]/mets:mdWrap[@MDTYPE='OTHER' and @MIMETYPE='text/xml' and @OTHERMDTYPE='DVRIGHTS']/mets:xmlData/dv:rights/dv:ownerSiteURL</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</MD_DV_OWNERSITEURL>
 
-        <MD_COURTNAME>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="corporate"][mods:role/mods:roleTerm="court-name"[@type='text']]/mods:namePart
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_COURTNAME>
+		<MD_DV_OWNERCONTACT>
+			<list>
+				<item>
+					<xpath>mets:amdSec[@ID="AMD"]/mets:rightsMD[@ID="RIGHTS"]/mets:mdWrap[@MDTYPE='OTHER' and @MIMETYPE='text/xml' and @OTHERMDTYPE='DVRIGHTS']/mets:xmlData/dv:rights/dv:ownerContact </xpath>
+					<addToDefault>false</addToDefault>
+				</item>
+			</list>
+		</MD_DV_OWNERCONTACT>
 
-        <MD_COURTTYPE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/mods:court_type
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_COURTTYPE>
+		<MD_DV_LINK>
+			<list>
+				<item>
+					<xpath>mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@MDTYPE='OTHER' and @MIMETYPE='text/xml' and @OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:presentation</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</MD_DV_LINK>
 
-        <MD_COURTID>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:identifier[@type="court"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_COURTID>
 
-        <MD_RECORDID>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:identifier[@type="record"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_RECORDID>
+		<MD_PROVENIENCE>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:physicalLocation[not(@type)]</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+				</item>
+			</list>
+		</MD_PROVENIENCE>
 
-        <MD_PERSON_DFD>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="personal"][mods:role/mods:roleTerm="dfd"[@authority='marcrelator'][@type='code']]/mods:displayForm
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_PERSON_DFD>
+		<MD_SUBJECTGEOGRAPHIC>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:geographic</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_SUBJECTGEOGRAPHIC>
 
-        <MD_PERSON_MOTHER>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="personal"][mods:role/mods:roleTerm="mother"[@type='text']]/mods:displayForm
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_PERSON_MOTHER>
+		<MD_SUBJECTTOPIC>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:topic</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_SUBJECTTOPIC>
 
-        <MD_PERSON_FATHER>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="personal"][mods:role/mods:roleTerm="father"[@type='text']]/mods:displayForm
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_PERSON_FATHER>
 
-        <MD_OCCUPATION>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:occupation
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_OCCUPATION>
+		<MD_RECORDID>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="record"]</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+				</item>
+			</list>
+		</MD_RECORDID>
 
-        <MD_CLASSIFICATION>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:classification[not(@*)]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_CLASSIFICATION>
+		<MD_OCCUPATION>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:occupation</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+				</item>
+			</list>
+		</MD_OCCUPATION>
 
-        <MD_SEX>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/mods:sex
-                            </item>
-                            <item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Geschlecht']/lido:term
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_SEX>
+		<MD_CLASSIFICATION>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:classification[not(@*)]</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+				</item>
+			</list>
+		</MD_CLASSIFICATION>
 
-        <MD_TRIALDATE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/mods:trial_date
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_TRIALDATE>
+		<MD_SEX>
+			<list>
+				<item>
+					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Geschlecht']/lido:term</xpath>
+					<addToDefault>true</addToDefault>
+					<addSortField>true</addSortField>
+				</item>
+			</list>
+		</MD_SEX>
 
-        <MD_CITIZENSHIP>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/mods:citizenship
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_CITIZENSHIP>
-
-        <MD_SENTENCE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/mods:sentence
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_SENTENCE>
-
-        <MD_STATEMENTOFRESPONSIBILITY>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:note[@type="statement of responsibility"]
-                            </item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addSortField>true</addSortField>
-                </item>
-            </list>
-        </MD_STATEMENTOFRESPONSIBILITY>
 
 
 		<MD_HOSTID>
