@@ -481,7 +481,13 @@ public class MetadataHelper {
         if (!url.startsWith("http")) {
             url = "http://d-nb.info/gnd/" + url;
         }
-        Map<String, List<NormData>> normDataListMap = NormDataImporter.importNormData(url);
+        Map<String, List<NormData>> normDataListMap = null;
+        try {
+            normDataListMap = NormDataImporter.importNormData(url);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+            return ret;
+        }
         for (String key : normDataListMap.keySet()) {
             if (normDataListMap.get(key) == null) {
                 logger.warn("No normdata set found.");
