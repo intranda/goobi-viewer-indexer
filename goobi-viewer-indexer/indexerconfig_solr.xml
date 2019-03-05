@@ -278,7 +278,13 @@
 		<ACCESSCONDITION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']</xpath>
+					<xpath>
+						<list>
+							<item>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']</item>
+							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</item>
+						</list>
+					</xpath>
+
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
@@ -2298,11 +2304,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='dz']
-							</item>
-							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction
-								on access']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='dz']</item>
+							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2315,8 +2318,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:note[@type='restriction']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:note[@type='restriction']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
