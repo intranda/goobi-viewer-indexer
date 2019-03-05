@@ -165,7 +165,7 @@ public class DataRepository {
                 logger.info("Created directory: {}", dataSubdir.toAbsolutePath());
             } catch (IOException e) {
                 logger.error("Could not create directory: {}", dataSubdir.toAbsolutePath());
-                return;
+                throw new FatalIndexerException("Data directories could not be created, please check directory ownership.");
             }
         }
         dirMap.put(name, dataSubdir);
