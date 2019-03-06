@@ -483,7 +483,7 @@ public class MetadataHelper {
         }
         Map<String, List<NormData>> normDataListMap = null;
         try {
-            normDataListMap = NormDataImporter.importNormData(url);
+            normDataListMap = NormDataImporter.importNormData(url.trim());
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage());
             return ret;
