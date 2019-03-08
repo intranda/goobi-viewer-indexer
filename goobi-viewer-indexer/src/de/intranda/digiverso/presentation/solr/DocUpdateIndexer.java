@@ -117,31 +117,13 @@ public class DocUpdateIndexer extends AbstractIndexer {
                     File[] files = staticPageFolder.toFile().listFiles(xml);
                     if (files.length > 0) {
                         for (File file : files) {
-                            //                            switch (file.getName()) {
-                            //                                case "description.xml": {
-                            //                                    String content = TextHelper.readFileToString(file);
-                            //                                    Map<String, Object> update = new HashMap<>();
-                            //                                    update.put("set", TextHelper.cleanUpHtmlTags(content));
-                            //                                    partialUpdates.put(SolrConstants.OVERVIEWPAGE_DESCRIPTION, update);
-                            //                                }
-                            //                                    break;
-                            //                                case "literature.xml":
-                            //                                case "publicationtext.xml": {
-                            //                                    String content = TextHelper.readFileToString(file);
-                            //                                    Map<String, Object> update = new HashMap<>();
-                            //                                    update.put("set", TextHelper.cleanUpHtmlTags(content));
-                            //                                    partialUpdates.put(SolrConstants.OVERVIEWPAGE_PUBLICATIONTEXT, update);
-                            //                                }
-                            //                                    break;
-                            //                            }
-
                             String field = FilenameUtils.getBaseName(file.getName()).toUpperCase();
                             String content = TextHelper.readFileToString(file);
                             Map<String, Object> update = new HashMap<>();
                             update.put("set", TextHelper.cleanUpHtmlTags(content));
                             partialUpdates.put(SolrConstants.CMS_TEXT_ + field, update);
                             partialUpdates.put(SolrConstants.CMS_TEXT_ALL, update);
-                            
+
                         }
                     }
                 }
@@ -253,7 +235,11 @@ public class DocUpdateIndexer extends AbstractIndexer {
                 SolrInputDocument dummyDoc = new SolrInputDocument();
                 List<SolrInputDocument> newUgcDocList =
                         generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC), pi, order, pageFileBaseName);
-                hotfolder.getSolrHelper().writeToIndex(newUgcDocList);
+                if (!newUgcDocList.isEmpty()) {
+                    hotfolder.getSolrHelper().writeToIndex(newUgcDocList);
+                } else {
+                    logger.warn("No user generated content values found for page {}.", order);
+                }
 
                 //                SolrInputDocument dummyDoc = new SolrInputDocument();
                 //                generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC), pi, order, pageFileBaseName);
