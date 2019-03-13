@@ -45,9 +45,6 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
     public SingleRepositoryStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
         dataRepositories = DataRepository.loadDataRepositories(config);
-        if (dataRepositories.isEmpty()) {
-            throw new FatalIndexerException("No data repositories found, exiting...");
-        }
     }
 
     /* (non-Javadoc)
