@@ -42,9 +42,15 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
 
     private final List<DataRepository> dataRepositories;
 
+    /**
+     * Constructor.
+     * 
+     * @param config
+     * @throws FatalIndexerException
+     */
     public SingleRepositoryStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
-        dataRepositories = DataRepository.loadDataRepositories(config);
+        dataRepositories = DataRepository.loadDataRepositories(config, false);
     }
 
     /* (non-Javadoc)
@@ -87,7 +93,7 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {
                 // Record is already indexed, but not in a data repository
-                ret[0] = new DataRepository("");
+                ret[0] = new DataRepository("", true);
                 return ret;
             }
             // Make sure previous repository name is converted to an absolute path
@@ -98,7 +104,7 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
                     logger.info(
                             "'{}' is currently indexed in data repository '{}'. Since 'SingleRepositoryStrategy' is configured, the record will be moved to out of the repository.",
                             pi, previousRepository);
-                    ret[0] = new DataRepository("");
+                    ret[0] = new DataRepository("", true);
                     ret[1] = repository;
                     return ret;
                 }
@@ -106,7 +112,7 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
             logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
         }
 
-        ret[0] = new DataRepository("");
+        ret[0] = new DataRepository("", true);
         return ret;
     }
 }

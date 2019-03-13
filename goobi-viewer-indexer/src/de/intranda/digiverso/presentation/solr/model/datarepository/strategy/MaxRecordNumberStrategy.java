@@ -18,7 +18,6 @@ package de.intranda.digiverso.presentation.solr.model.datarepository.strategy;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,10 +45,15 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
 
     private final int dataRepositoriesMaxRecords;
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Constructor.
+     * 
+     * @param config
+     * @throws FatalIndexerException
+     */
     public MaxRecordNumberStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
-        dataRepositories = DataRepository.loadDataRepositories(config);
+        dataRepositories = DataRepository.loadDataRepositories(config, true);
         if (dataRepositories.isEmpty()) {
             throw new FatalIndexerException("No data repositories found, exiting...");
         }
@@ -98,7 +102,7 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {
                 // Record is already indexed, but not in a data repository
-                ret[1] = new DataRepository("");
+                ret[1] = new DataRepository("", false);
                 logger.info(
                         "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
             } else {

@@ -20,7 +20,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +51,15 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
 
     private final Path viewerHomePath;
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Constructor.
+     * 
+     * @param config
+     * @throws FatalIndexerException
+     */
     public RemainingSpaceStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
-        dataRepositories = DataRepository.loadDataRepositories(config);
+        dataRepositories = DataRepository.loadDataRepositories(config, true);
         if (dataRepositories.isEmpty()) {
             throw new FatalIndexerException("No data repositories found, exiting...");
         }
@@ -134,7 +138,7 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {
                 // Record is already indexed, but not in a data repository
-                ret[1] = new DataRepository("");
+                ret[1] = new DataRepository("", false);
                 logger.info(
                         "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
             } else {

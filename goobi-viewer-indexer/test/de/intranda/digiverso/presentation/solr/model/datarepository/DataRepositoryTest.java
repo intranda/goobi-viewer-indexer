@@ -75,7 +75,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void DataRepository_shouldCreateDummyRepositoryCorrectly() throws Exception {
-        DataRepository dataRepository = new DataRepository(Configuration.getInstance().getString("init.viewerHome"));
+        DataRepository dataRepository = new DataRepository(Configuration.getInstance().getString("init.viewerHome"), true);
         Assert.assertTrue(dataRepository.isValid());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
@@ -99,7 +99,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void DataRepository_shouldCreateRealRepositoryCorrectly() throws Exception {
-        DataRepository dataRepository = new DataRepository("build/viewer/data/1");
+        DataRepository dataRepository = new DataRepository("build/viewer/data/1", true);
         Assert.assertTrue(dataRepository.isValid());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
@@ -123,7 +123,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void DataRepository_shouldSetRootDirToViewerHomePathIfEmptyStringWasGiven() throws Exception {
-        DataRepository dataRepository = new DataRepository("");
+        DataRepository dataRepository = new DataRepository("", false);
         Assert.assertEquals("", dataRepository.getPath());
         Assert.assertEquals(Paths.get(Configuration.getInstance().getViewerHome()), dataRepository.getRootDir());
     }
@@ -134,7 +134,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void getNumRecords_shouldCalculateNumberCorrectly() throws Exception {
-        DataRepository dataRepository = new DataRepository(Configuration.getInstance().getString("init.viewerHome"));
+        DataRepository dataRepository = new DataRepository(Configuration.getInstance().getString("init.viewerHome"), true);
 
         File srcFile = new File("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         File destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), srcFile.getName());
@@ -173,7 +173,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteALTOFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -187,7 +187,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteALTOCrowdsourcingFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -201,7 +201,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteFulltextFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -215,7 +215,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteFulltextCrowdsourcingFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -229,7 +229,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteCMDIFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_CMDI).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -243,7 +243,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteTEIFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -257,7 +257,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -271,7 +271,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteABBYYFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -285,7 +285,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteMediaFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -299,7 +299,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteSourceFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_SOURCE).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -313,7 +313,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteUserGeneratedContentFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -327,7 +327,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteMIXFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -341,7 +341,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeletePagePDFFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_PAGEPDF).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -355,7 +355,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void deleteDataFoldersForRecord_shouldDeleteCMSFolderCorrectly() throws Exception {
-        DataRepository useRepository = new DataRepository("build/viewer/data/");
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_CMS).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
@@ -369,7 +369,7 @@ public class DataRepositoryTest {
      */
     @Test
     public void moveDataFolderToRepository_shouldMoveDataFolderCorrectly() throws Exception {
-        DataRepository oldRepository = new DataRepository("build/viewer/data/old");
+        DataRepository oldRepository = new DataRepository("build/viewer/data/old", true);
         File oldDataFolder = new File(oldRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(oldDataFolder.mkdirs());
         Assert.assertTrue(oldDataFolder.exists());
@@ -377,7 +377,7 @@ public class DataRepositoryTest {
         Assert.assertTrue(oldDataFile.createNewFile());
         Assert.assertTrue(oldDataFile.exists());
 
-        DataRepository newRepository = new DataRepository("build/viewer/data/new");
+        DataRepository newRepository = new DataRepository("build/viewer/data/new", true);
         oldRepository.moveDataFolderToRepository(newRepository, BASE_FILE_NAME, DataRepository.PARAM_MEDIA);
 
         File newDataFolder = new File(newRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);

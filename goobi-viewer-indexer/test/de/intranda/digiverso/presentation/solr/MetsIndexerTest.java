@@ -937,7 +937,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Files.createFile(metsFile);
         Assert.assertTrue(Files.isRegularFile(metsFile));
 
-        DataRepository dataRepository = new DataRepository(viewerRootFolder.toAbsolutePath().toString());
+        DataRepository dataRepository = new DataRepository(viewerRootFolder.toAbsolutePath().toString(), true);
         MetsIndexer.superupdate(metsFile, updatedMetsFolder, dataRepository);
 
         Path newMetsFile = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), "PPN123.xml");
@@ -955,7 +955,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Path updatedMetsFolder = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "updated_mets");
         Assert.assertTrue(Files.isDirectory(updatedMetsFolder));
 
-        DataRepository dataRepository = new DataRepository(viewerRootFolder.toAbsolutePath().toString());
+        DataRepository dataRepository = new DataRepository(viewerRootFolder.toAbsolutePath().toString(), true);
         Path metsFile = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "PPN123.UPDATED");
         Files.createFile(metsFile);
         Assert.assertTrue(Files.isRegularFile(metsFile));

@@ -70,7 +70,7 @@ public class DataRepository {
     /**
      * Constructor for unit tests.
      */
-    public DataRepository(final String path, final boolean dummy) {
+    public DataRepository(final String path) {
         this.path = path;
     }
 
@@ -83,7 +83,7 @@ public class DataRepository {
      * @should create real repository correctly
      * @should set rootDir to viewerHome path if empty string was given
      */
-    public DataRepository(final String path) throws FatalIndexerException {
+    public DataRepository(final String path, final boolean createFolders) throws FatalIndexerException {
         this.path = path;
         rootDir = "".equals(path) ? Paths.get(Configuration.getInstance().getViewerHome()) : Paths.get(path);
 
@@ -93,7 +93,7 @@ public class DataRepository {
                         rootDir.getFileName());
                 return;
             }
-        } else {
+        } else if (createFolders) {
             try {
                 Files.createDirectories(rootDir);
                 logger.info("Repository directory '{}' created.", rootDir.toAbsolutePath());
@@ -102,23 +102,27 @@ public class DataRepository {
                 return;
             }
         }
-        checkAndCreateDataSubdir(PARAM_INDEXED_METS);
-        checkAndCreateDataSubdir(PARAM_INDEXED_LIDO);
-        checkAndCreateDataSubdir(PARAM_MEDIA);
-        checkAndCreateDataSubdir(PARAM_ALTO);
-        checkAndCreateDataSubdir(PARAM_ALTOCROWD);
-        checkAndCreateDataSubdir(PARAM_FULLTEXT);
-        checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
-        checkAndCreateDataSubdir(PARAM_CMDI);
-        checkAndCreateDataSubdir(PARAM_TEIMETADATA);
-        checkAndCreateDataSubdir(PARAM_TEIWC);
-        checkAndCreateDataSubdir(PARAM_ABBYY);
-        checkAndCreateDataSubdir(PARAM_PAGEPDF);
-        checkAndCreateDataSubdir(PARAM_SOURCE);
-        checkAndCreateDataSubdir(PARAM_UGC);
-        checkAndCreateDataSubdir(PARAM_MIX);
-        checkAndCreateDataSubdir(PARAM_CMS);
-        valid = true;
+        if (createFolders) {
+            checkAndCreateDataSubdir(PARAM_INDEXED_METS);
+            checkAndCreateDataSubdir(PARAM_INDEXED_LIDO);
+            checkAndCreateDataSubdir(PARAM_MEDIA);
+            checkAndCreateDataSubdir(PARAM_ALTO);
+            checkAndCreateDataSubdir(PARAM_ALTOCROWD);
+            checkAndCreateDataSubdir(PARAM_FULLTEXT);
+            checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
+            checkAndCreateDataSubdir(PARAM_CMDI);
+            checkAndCreateDataSubdir(PARAM_TEIMETADATA);
+            checkAndCreateDataSubdir(PARAM_TEIWC);
+            checkAndCreateDataSubdir(PARAM_ABBYY);
+            checkAndCreateDataSubdir(PARAM_PAGEPDF);
+            checkAndCreateDataSubdir(PARAM_SOURCE);
+            checkAndCreateDataSubdir(PARAM_UGC);
+            checkAndCreateDataSubdir(PARAM_MIX);
+            checkAndCreateDataSubdir(PARAM_CMS);
+        }
+        if (Files.exists(rootDir)) {
+            valid = true;
+        }
     }
 
     /* (non-Javadoc)
@@ -543,12 +547,13 @@ public class DataRepository {
     }
 
     /**
-     * 
+     * @param config
+     * @param createFolders
      * @return List of properly configured data repositories
      * @throws FatalIndexerException
      */
     @SuppressWarnings("unchecked")
-    public static List<DataRepository> loadDataRepositories(Configuration config) throws FatalIndexerException {
+    public static List<DataRepository> loadDataRepositories(Configuration config, boolean createFolders) throws FatalIndexerException {
         if (config == null) {
             throw new IllegalArgumentException("config may not be null");
         }
@@ -560,7 +565,7 @@ public class DataRepository {
 
         List<DataRepository> ret = new ArrayList<>(dataRepositoryPaths.size());
         for (String path : dataRepositoryPaths) {
-            DataRepository dataRepository = new DataRepository(path);
+            DataRepository dataRepository = new DataRepository(path, createFolders);
             if (dataRepository.isValid()) {
                 ret.add(dataRepository);
                 logger.info("Found configured data repository: {}", path);
