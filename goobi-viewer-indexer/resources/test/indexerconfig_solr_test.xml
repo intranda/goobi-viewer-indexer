@@ -24,9 +24,9 @@
 			<maxRecords>10000</maxRecords>
 			<!-- Data repository folders to be used (a new folder structure will be 
 				created for each dataRepository element unter dataRepositoriesHome -->
-			<dataRepository>build/viewer/data/1</dataRepository>
-			<dataRepository>build/viewer/data/2</dataRepository>
-			<dataRepository>build/viewer/data/3</dataRepository>
+			<dataRepository buffer="10G">build/viewer/data/1</dataRepository>
+			<dataRepository buffer="100M">build/viewer/data/2</dataRepository>
+			<dataRepository buffer="1000B">build/viewer/data/3</dataRepository>
 		</dataRepositories>
 
 		<!-- Data subfolder names (path is relative to either a data repository 

@@ -33,12 +33,13 @@ import org.slf4j.LoggerFactory;
 import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 public class ConfigurationTest {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationTest.class);
-
+    
     private static Hotfolder hotfolder;
 
     @BeforeClass
@@ -227,5 +228,21 @@ public class ConfigurationTest {
     @Test
     public void getEmptyOrderLabelReplacement_shouldReturnCorrectValue() throws Exception {
         Assert.assertEquals("X", Configuration.getInstance().getEmptyOrderLabelReplacement());
+    }
+
+    /**
+     * @see Configuration#getDataRepositoryConfigurations()
+     * @verifies return all items
+     */
+    @Test
+    public void getDataRepositoryConfigurations_shouldReturnAllItems() throws Exception {
+        List<DataRepository> resp = Configuration.getInstance().getDataRepositoryConfigurations();
+        Assert.assertEquals(3, resp.size());
+        Assert.assertEquals("build/viewer/data/1", resp.get(0).getPath());
+        Assert.assertEquals("build/viewer/data/2", resp.get(1).getPath());
+        Assert.assertEquals("build/viewer/data/3", resp.get(2).getPath());
+        Assert.assertEquals(10737418240L, resp.get(0).getBuffer());
+        Assert.assertEquals(104857600L, resp.get(1).getBuffer());
+        Assert.assertEquals(1000L, resp.get(2).getBuffer());
     }
 }

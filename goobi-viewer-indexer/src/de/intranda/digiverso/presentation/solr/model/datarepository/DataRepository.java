@@ -65,6 +65,7 @@ public class DataRepository {
     private boolean valid = false;
     private String path;
     private Path rootDir;
+    private long buffer = 0;
     private final Map<String, Path> dirMap = new HashMap<>();
 
     /**
@@ -558,17 +559,18 @@ public class DataRepository {
             throw new IllegalArgumentException("config may not be null");
         }
 
-        List<String> dataRepositoryPaths = config.getList("init.dataRepositories.dataRepository");
-        if (dataRepositoryPaths == null) {
+        List<DataRepository> dataRepositoryConfigs = config.getDataRepositoryConfigurations();
+        if (dataRepositoryConfigs.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<DataRepository> ret = new ArrayList<>(dataRepositoryPaths.size());
-        for (String path : dataRepositoryPaths) {
-            DataRepository dataRepository = new DataRepository(path, createFolders);
+        List<DataRepository> ret = new ArrayList<>(dataRepositoryConfigs.size());
+        for (DataRepository conf : dataRepositoryConfigs) {
+            DataRepository dataRepository = new DataRepository(conf.getPath(), createFolders);
             if (dataRepository.isValid()) {
+                dataRepository.setBuffer(conf.getBuffer());
                 ret.add(dataRepository);
-                logger.info("Found configured data repository: {}", path);
+                logger.info("Found configured data repository: {}", dataRepository.getPath());
             }
         }
 
@@ -594,6 +596,20 @@ public class DataRepository {
      */
     public Path getRootDir() {
         return rootDir;
+    }
+
+    /**
+     * @return the buffer
+     */
+    public long getBuffer() {
+        return buffer;
+    }
+
+    /**
+     * @param buffer the buffer to set
+     */
+    public void setBuffer(long buffer) {
+        this.buffer = buffer;
     }
 
     public Path getDir(String name) {

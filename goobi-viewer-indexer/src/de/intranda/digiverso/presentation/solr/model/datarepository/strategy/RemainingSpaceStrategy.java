@@ -149,7 +149,8 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
                 for (DataRepository repository : dataRepositories) {
                     if (Paths.get(previousRepository).equals(Paths.get(repository.getPath()))) {
                         found = true;
-                        if (recordSize < repository.getUsableSpace()) {
+                        // Use this repository if its remaining space (minus the reserved buffer) is larger than the record size
+                        if (recordSize < repository.getUsableSpace() - repository.getBuffer()) {
                             logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
                             ret[0] = repository;
                             return ret;

@@ -16,6 +16,7 @@
 package de.intranda.digiverso.presentation.solr.helper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -42,6 +43,7 @@ import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
 import de.intranda.digiverso.presentation.solr.model.config.XPathConfig;
+import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
 public final class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
@@ -186,6 +188,21 @@ public final class Configuration {
     @SuppressWarnings({ "rawtypes" })
     public List getList(String inPath) {
         return config.getList(inPath, config.getList(inPath));
+    }
+
+    /**
+     * 
+     * @param inPath
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    protected List<HierarchicalConfiguration> getLocalConfigurationsAt(String inPath) {
+        List<HierarchicalConfiguration> ret = config.configurationsAt(inPath);
+        if (ret == null || ret.isEmpty()) {
+            ret = config.configurationsAt(inPath);
+        }
+
+        return ret;
     }
 
     /**
@@ -479,6 +496,45 @@ public final class Configuration {
                 fieldConfiguration.put(fieldname, fieldInformation);
             }
         }
+    }
+
+    /**
+     * 
+     * @return
+     * @should return all items
+     */
+    public List<DataRepository> getDataRepositoryConfigurations() {
+        List<HierarchicalConfiguration> elements = getLocalConfigurationsAt("init.dataRepositories.dataRepository");
+        if (elements == null) {
+            return Collections.emptyList();
+        }
+
+        List<DataRepository> ret = new ArrayList<>(elements.size());
+        for (Iterator<HierarchicalConfiguration> it2 = elements.iterator(); it2.hasNext();) {
+            HierarchicalConfiguration sub = it2.next();
+            String path = sub.getString(".");
+            long buffer = 0;
+            String bufferString = sub.getString("[@buffer]");
+            // Parse buffer string
+            if (!StringUtils.isEmpty(bufferString)) {
+                if (bufferString.endsWith("G")) {
+                    bufferString = bufferString.substring(0, bufferString.length() - 1);
+                    buffer = Long.valueOf(bufferString) * 1073741824;
+                } else if (bufferString.endsWith("M")) {
+                    bufferString = bufferString.substring(0, bufferString.length() - 1);
+                    buffer = Long.valueOf(bufferString) * 1048576;
+                } else if (bufferString.endsWith("B")) {
+                    bufferString = bufferString.substring(0, bufferString.length() - 1);
+                    buffer = Long.valueOf(bufferString);
+                } else {
+                    buffer = Long.valueOf(bufferString);
+                }
+            }
+            DataRepository repo = new DataRepository(path);
+            repo.setBuffer(buffer);
+            ret.add(repo);
+        }
+        return ret;
     }
 
     /**
