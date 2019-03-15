@@ -457,7 +457,7 @@ public class DataRepository {
         } else if (reindexSettings.get(param) != null && reindexSettings.get(param) && dataRepositories != null) {
             // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
             for (DataRepository repo : dataRepositories) {
-                if (!repo.equals(this)) {
+                if (!repo.equals(this) && repo.getDir(param) != null) {
                     Path misplacedDataDir = Paths.get(repo.getDir(param).toAbsolutePath().toString(), pi);
                     if (Files.isDirectory(misplacedDataDir)) {
                         logger.warn("Found data folder for this record in different data repository: {}",
@@ -553,7 +553,6 @@ public class DataRepository {
      * @return List of properly configured data repositories
      * @throws FatalIndexerException
      */
-    @SuppressWarnings("unchecked")
     public static List<DataRepository> loadDataRepositories(Configuration config, boolean createFolders) throws FatalIndexerException {
         if (config == null) {
             throw new IllegalArgumentException("config may not be null");
