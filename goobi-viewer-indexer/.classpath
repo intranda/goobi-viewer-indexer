@@ -43,7 +43,7 @@
 	<classpathentry kind="lib" path="lib-build/lucene-test-framework-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib-build/lucene-grouping-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib-build/lucene-join-4.10.4.jar"/>
-	<classpathentry kind="lib" path="lib-build/org.restlet-2.1.1.jar"/>
+	<classpathentry kind="lib" path="lib-build/org.restlet-2.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/joda-time-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/alto.jar"/>
 	<classpathentry kind="lib" path="lib/metadata-extractor-2.8.1.jar"/>
