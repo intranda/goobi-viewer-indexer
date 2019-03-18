@@ -20,8 +20,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.MultiMap;
 import org.jdom2.Document;
@@ -531,5 +533,44 @@ public class MetadataHelperTest {
         Assert.assertTrue(fulltext.contains("ENGLISH"));
         Assert.assertTrue(fulltext.contains("FRENCH"));
         Assert.assertTrue(fulltext.contains("Systematische Übersicht über die Elemente für die Auszeichnung von Quellen"));
+    }
+
+    /**
+     * @see MetadataHelper#parseDatesAndCenturies(Set,String,int)
+     * @verifies parse centuries and dates correctly
+     */
+    @Test
+    public void parseDatesAndCenturies_shouldParseCenturiesAndDatesCorrectly() throws Exception {
+        String date = "2019-03-18";
+        Set<Integer> centuries = new HashSet<>(1);
+        List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4);
+        Assert.assertEquals(4, result.size());
+        result.get(0).getField().equals(SolrConstants.YEAR);
+        result.get(0).getValue().equals("2019");
+        result.get(1).getField().equals(SolrConstants.YEARMONTH);
+        result.get(1).getValue().equals("201903");
+        result.get(2).getField().equals(SolrConstants.YEARMONTHDAY);
+        result.get(2).getValue().equals("20190318");
+        result.get(3).getField().equals(SolrConstants.CENTURY);
+        result.get(3).getValue().equals("21");
+        Assert.assertTrue(centuries.contains(21));
+    }
+
+    /**
+     * @see MetadataHelper#parseDatesAndCenturies(Set,String,int)
+     * @verifies normalize year digits
+     */
+    @Test
+    public void parseDatesAndCenturies_shouldNormalizeYearDigits() throws Exception {
+        String date = "190-03-18";
+        Set<Integer> centuries = new HashSet<>(1);
+        List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4);
+        Assert.assertEquals(4, result.size());
+        result.get(0).getField().equals(SolrConstants.YEAR);
+        result.get(0).getValue().equals("0190");
+        result.get(1).getField().equals(SolrConstants.YEARMONTH);
+        result.get(1).getValue().equals("019003");
+        result.get(2).getField().equals(SolrConstants.YEARMONTHDAY);
+        result.get(2).getValue().equals("01900318");
     }
 }

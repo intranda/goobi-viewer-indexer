@@ -841,28 +841,34 @@ public class MetadataHelper {
      * @param value
      * @param normalizeYearMinDigits
      * @return List of generated LuceneFields.
+     * @should parse centuries and dates correctly
+     * @should normalize year digits
      */
-    private static List<LuceneField> parseDatesAndCenturies(Set<Integer> centuries, String value, int normalizeYearMinDigits) {
+    static List<LuceneField> parseDatesAndCenturies(Set<Integer> centuries, String value, int normalizeYearMinDigits) {
+        if (StringUtils.isEmpty(value)) {
+            return Collections.emptyList();
+        }
+        
         List<LuceneField> ret = new ArrayList<>();
-
-        if (StringUtils.isNotEmpty(value)) {
-            for (PrimitiveDate date : normalizeDate(value, normalizeYearMinDigits)) {
-                if (date.getYear() != null) {
-                    ret.add(new LuceneField(SolrConstants.YEAR, String.valueOf(date.getYear())));
-                    int century = getCentury(date.getYear());
-                    if (!centuries.contains(century)) {
-                        ret.add(new LuceneField(SolrConstants.CENTURY, String.valueOf(century)));
-                        centuries.add(century);
-                    }
-                    if (date.getMonth() != null) {
-                        ret.add(new LuceneField(SolrConstants.YEARMONTH, date.getYear() + FORMAT_TWO_DIGITS.get().format(date.getMonth())));
-                        if (date.getDay() != null) {
-                            ret.add(new LuceneField(SolrConstants.YEARMONTHDAY, date.getYear() + FORMAT_TWO_DIGITS.get().format(date.getMonth())
-                                    + FORMAT_TWO_DIGITS.get().format(date.getDay())));
-                        }
-                    }
+        for (PrimitiveDate date : normalizeDate(value, normalizeYearMinDigits)) {
+            if (date.getYear() == null) {
+                continue;
+            }
+            ret.add(new LuceneField(SolrConstants.YEAR, String.valueOf(date.getYear())));
+            int century = getCentury(date.getYear());
+            if (!centuries.contains(century)) {
+                ret.add(new LuceneField(SolrConstants.CENTURY, String.valueOf(century)));
+                centuries.add(century);
+            }
+            if (date.getMonth() != null) {
+                String year = FORMAT_FOUR_DIGITS.get().format(date.getYear());
+                ret.add(new LuceneField(SolrConstants.YEARMONTH, year + FORMAT_TWO_DIGITS.get().format(date.getMonth())));
+                if (date.getDay() != null) {
+                    ret.add(new LuceneField(SolrConstants.YEARMONTHDAY,
+                            year + FORMAT_TWO_DIGITS.get().format(date.getMonth()) + FORMAT_TWO_DIGITS.get().format(date.getDay())));
                 }
             }
+
         }
 
         return ret;
