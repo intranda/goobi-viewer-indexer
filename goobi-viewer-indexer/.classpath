@@ -24,7 +24,6 @@
 	<classpathentry kind="lib" path="lib/solr-solrj-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib/wstx-asl-3.2.7.jar"/>
 	<classpathentry kind="lib" path="lib/xpp3_min-1.1.4c.jar"/>
-	<classpathentry kind="lib" path="lib-build/guava-14.0.1.jar"/>
 	<classpathentry kind="lib" path="lib-build/junit-4.12.jar"/>
 	<classpathentry kind="lib" path="lib-build/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="lib-build/servlet-api.jar"/>
@@ -43,7 +42,6 @@
 	<classpathentry kind="lib" path="lib-build/lucene-test-framework-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib-build/lucene-grouping-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib-build/lucene-join-4.10.4.jar"/>
-	<classpathentry kind="lib" path="lib-build/org.restlet-2.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/joda-time-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/alto.jar"/>
 	<classpathentry kind="lib" path="lib/metadata-extractor-2.8.1.jar"/>
