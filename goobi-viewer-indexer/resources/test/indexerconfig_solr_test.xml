@@ -181,7 +181,7 @@
 					<groupEntity type="TYPE">
 						<field name="field1">xpath1</field>
 						<field name="field1">xpath2</field>
-						<field name="field2">xpath3</field>
+						<field name="field2" multivalued="false">xpath3</field>
 					</groupEntity>
 					<splittingCharacter>#</splittingCharacter>
 					<constantValue>XXX</constantValue>

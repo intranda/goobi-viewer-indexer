@@ -19,7 +19,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.MultiMap;
 import org.apache.commons.collections.map.MultiValueMap;
 
 /**
@@ -45,7 +44,7 @@ public class FieldConfig {
     private boolean normalizeYear = false;
     private boolean interpolateYears = false;
     private int normalizeYearMinDigits = 3;
-    private MultiMap groupEntityFields = new MultiValueMap();
+    private Map<String, Object> groupEntityFields = new MultiValueMap();
     private Map<Object, String> replaceRules = new LinkedHashMap<>();
     private List<NonSortConfiguration> nonSortConfigurations;
     private boolean addToChildren = false;
@@ -331,14 +330,14 @@ public class FieldConfig {
     /**
      * @return the groupEntityFields
      */
-    public MultiMap getGroupEntityFields() {
+    public Map<String, Object> getGroupEntityFields() {
         return groupEntityFields;
     }
 
     /**
      * @param groupEntityFields the groupEntityFields to set
      */
-    public void setGroupEntityFields(MultiMap groupEntityFields) {
+    public void setGroupEntityFields(Map<String, Object> groupEntityFields) {
         this.groupEntityFields = groupEntityFields;
     }
 

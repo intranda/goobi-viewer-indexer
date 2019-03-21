@@ -33,7 +33,6 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.MultiMap;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Attribute;
@@ -58,6 +57,7 @@ import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration;
+import de.intranda.digiverso.presentation.solr.model.config.SubfieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer;
 import de.intranda.digiverso.presentation.solr.model.config.XPathConfig;
 
@@ -848,7 +848,7 @@ public class MetadataHelper {
         if (StringUtils.isEmpty(value)) {
             return Collections.emptyList();
         }
-        
+
         List<LuceneField> ret = new ArrayList<>();
         for (PrimitiveDate date : normalizeDate(value, normalizeYearMinDigits)) {
             if (date.getYear() == null) {
@@ -1074,61 +1074,62 @@ public class MetadataHelper {
      * @throws FatalIndexerException
      * @should group correctly
      */
-    @SuppressWarnings("unchecked")
-    protected static GroupedMetadata getGroupedMetadata(Element ele, MultiMap groupEntityFields, String groupLabel) throws FatalIndexerException {
+    protected static GroupedMetadata getGroupedMetadata(Element ele, Map<String, Object> groupEntityFields, String groupLabel)
+            throws FatalIndexerException {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
 
         String type = null;
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
+        // Grouped metadata type
         if (groupEntityFields.get("type") != null) {
-            List<String> values = (List<String>) groupEntityFields.get("type");
-            if (values != null && !values.isEmpty()) {
-                type = values.get(0).trim();
-                ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type));
-            }
+            type = (String) groupEntityFields.get("type");
+            ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.trim()));
         }
         boolean normUriFound = false;
         Map<String, List<String>> collectedValues = new HashMap<>();
         for (Object field : groupEntityFields.keySet()) {
-            if ("type".equals(field)) {
+            if ("type".equals(field) || !(groupEntityFields.get(field) instanceof SubfieldConfig)) {
                 continue;
             }
-            List<String> xpathList = (List<String>) groupEntityFields.get(field);
-            if (xpathList != null) {
-                for (String xpath : xpathList) {
-                    logger.debug("XPath: {}", xpath);
-                    List<Object> values = JDomXP.evaluate(xpath, ele, Filters.fpassthrough());
-                    if (values != null && !values.isEmpty()) {
-                        String fieldName = (String) field;
-                        for (Object val : values) {
-                            String fieldValue = JDomXP.objectToString(val);
-                            logger.debug("found: {}:{}", fieldName, fieldValue);
-                            if (fieldValue != null) {
-                                fieldValue = fieldValue.trim();
-                            }
+            SubfieldConfig subfield = (SubfieldConfig) groupEntityFields.get(field);
+            for (String xpath : subfield.getXpaths()) {
+                logger.debug("XPath: {}", xpath);
+                List<Object> values = JDomXP.evaluate(xpath, ele, Filters.fpassthrough());
+                if (values == null || values.isEmpty()) {
+                    continue;
+                }
+                // Trim down to the first value if subfield is not multivalued
+                if (!subfield.isMultivalued() && values.size() > 1) {
+                    logger.info("{} is not multivalued", subfield.getFieldname());
+                    values = values.subList(0, 1);
+                }
+                for (Object val : values) {
+                    String fieldValue = JDomXP.objectToString(val);
+                    logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
+                    if (fieldValue != null) {
+                        fieldValue = fieldValue.trim();
+                    }
 
-                            if (fieldName.startsWith(NormDataImporter.FIELD_URI)) {
-                                if (NormDataImporter.FIELD_URI.equals(fieldName)) {
-                                    normUriFound = true;
-                                    ret.setNormUri(fieldValue);
-                                }
-                                // Add GND URL part, if the value is not a URL
-                                if (!fieldValue.startsWith("http")) {
-                                    fieldValue = "http://d-nb.info/gnd/" + fieldValue;
-                                }
-                            }
-
-                            ret.getFields().add(new LuceneField(fieldName, fieldValue));
-                            if (!collectedValues.containsKey(fieldValue)) {
-                                collectedValues.put(fieldName, new ArrayList<>(values.size()));
-                            }
-                            collectedValues.get(fieldName).add(fieldValue);
-
+                    if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
+                        if (NormDataImporter.FIELD_URI.equals(subfield.getFieldname())) {
+                            normUriFound = true;
+                            ret.setNormUri(fieldValue);
+                        }
+                        // Add GND URL part, if the value is not a URL
+                        if (!fieldValue.startsWith("http")) {
+                            fieldValue = "http://d-nb.info/gnd/" + fieldValue;
                         }
                     }
+
+                    ret.getFields().add(new LuceneField(subfield.getFieldname(), fieldValue));
+                    if (!collectedValues.containsKey(fieldValue)) {
+                        collectedValues.put(subfield.getFieldname(), new ArrayList<>(values.size()));
+                    }
+                    collectedValues.get(subfield.getFieldname()).add(fieldValue);
                 }
+
             }
         }
 

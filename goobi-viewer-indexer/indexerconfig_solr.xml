@@ -65,7 +65,7 @@
 
 		<namespaces>
 			<list>
-			    <intranda>http://intranda.com/</intranda>
+			    <intranda>http://intranda.com/MODS/</intranda>
 			</list>
 		</namespaces>
 
@@ -2878,7 +2878,7 @@
 					<groupEntity type="OTHER">
 						<field name="MD_VALUE">intranda:previousOwner</field>
 						<field name="MD_CODE">intranda:code</field>
-						<field name="MD_PREVIOUS_OWNER">intranda:previousOwner</field>
+						<field name="MD_PREVIOUS_OWNER" multivalued="false">intranda:previousOwner</field>
 						<field name="MD_CHARACTERISTIC">intranda:characteristic</field>
 						<field name="MD_DATE">intranda:date</field>
 						<field name="MD_EXPLANATION">intranda:explanation</field>

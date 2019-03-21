@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.MultiMap;
-
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 
@@ -191,7 +189,7 @@ public final class MetadataConfigurationManager {
         }
 
         if (configurationMap.containsKey("groupEntity")) {
-            configurationItem.setGroupEntityFields((MultiMap) configurationMap.get("groupEntity"));
+            configurationItem.setGroupEntityFields((Map<String, Object>) configurationMap.get("groupEntity"));
         }
 
         if (configurationMap.containsKey("replaceRules")) {

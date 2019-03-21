@@ -20,7 +20,6 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.MultiMap;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -32,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration;
+import de.intranda.digiverso.presentation.solr.model.config.SubfieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
@@ -39,7 +39,7 @@ public class ConfigurationTest {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationTest.class);
-    
+
     private static Hotfolder hotfolder;
 
     @BeforeClass
@@ -129,18 +129,26 @@ public class ConfigurationTest {
         Assert.assertNotNull(fieldValues.get("aggregateEntity"));
         Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("aggregateEntity")));
 
-        MultiMap groupEntity = (MultiMap) fieldValues.get("groupEntity");
+        Map<String, Object> groupEntity = (Map<String, Object>) fieldValues.get("groupEntity");
         Assert.assertNotNull(groupEntity);
         Assert.assertEquals(3, groupEntity.size());
-        List<String> typeList = (List<String>) groupEntity.get("type");
-        Assert.assertNotNull(typeList);
-        Assert.assertFalse(typeList.isEmpty());
-        Assert.assertEquals("TYPE", typeList.get(0));
-        List<String> xpathList = (List<String>) groupEntity.get("field1");
-        Assert.assertNotNull(xpathList);
-        Assert.assertEquals(2, xpathList.size());
-        Assert.assertEquals("xpath1", xpathList.get(0));
-        Assert.assertEquals("xpath2", xpathList.get(1));
+        String type = (String) groupEntity.get("type");
+        Assert.assertEquals("TYPE", type);
+        {
+            SubfieldConfig fieldSubconfig = (SubfieldConfig) groupEntity.get("field1");
+            Assert.assertNotNull(fieldSubconfig);
+            Assert.assertEquals(2, fieldSubconfig.getXpaths().size());
+            Assert.assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
+            Assert.assertEquals("xpath2", fieldSubconfig.getXpaths().get(1));
+            Assert.assertTrue(fieldSubconfig.isMultivalued());
+        }
+        {
+            SubfieldConfig fieldSubconfig = (SubfieldConfig) groupEntity.get("field2");
+            Assert.assertNotNull(fieldSubconfig);
+            Assert.assertEquals(1, fieldSubconfig.getXpaths().size());
+            Assert.assertEquals("xpath3", fieldSubconfig.getXpaths().get(0));
+            Assert.assertFalse(fieldSubconfig.isMultivalued());
+        }
 
         Map<Object, String> replaceRules = (Map<Object, String>) fieldValues.get("replaceRules");
         Assert.assertNotNull(replaceRules);

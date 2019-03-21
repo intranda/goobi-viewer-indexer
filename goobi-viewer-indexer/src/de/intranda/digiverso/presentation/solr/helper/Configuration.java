@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.collections.MultiMap;
-import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
@@ -40,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.config.MetadataConfigurationManager;
 import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration;
+import de.intranda.digiverso.presentation.solr.model.config.SubfieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
 import de.intranda.digiverso.presentation.solr.model.config.XPathConfig;
@@ -403,7 +402,7 @@ public final class Configuration {
 
                 // Grouped entity config
                 {
-                    MultiMap groupedSubfieldConfigurations = new MultiValueMap();
+                    Map<String, Object> groupedSubfieldConfigurations = new HashMap<>();
                     String type = config.getString("fields." + fieldname + ".list.item(" + i + ").groupEntity[@type]");
                     if (type != null) {
                         groupedSubfieldConfigurations.put("type", type);
@@ -413,9 +412,10 @@ public final class Configuration {
                         for (Iterator it = elements.iterator(); it.hasNext();) {
                             HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
                             String name = sub.getString("[@name]", null);
+                            boolean multivalued = sub.getBoolean("[@multivalued]", true);
                             String xpathExp = sub.getString("");
                             if (StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(xpathExp)) {
-                                groupedSubfieldConfigurations.put(name, xpathExp);
+                                groupedSubfieldConfigurations.put(name, new SubfieldConfig(name, xpathExp, multivalued));
                                 logger.debug("Loaded group entity field: {} - {}", name, xpathExp);
                             } else {
                                 logger.warn("Found incomplete groupEntity configuration for field '{}', skipping...", fieldname);
