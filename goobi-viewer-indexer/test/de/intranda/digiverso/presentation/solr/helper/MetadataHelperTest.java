@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.MultiMap;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Assert;
@@ -228,6 +227,7 @@ public class MetadataHelperTest {
      * @see MetadataHelper#getGroupedMetadata(Element,MultiMap,String)
      * @verifies group correctly
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void getGroupedMetadata_shouldGroupCorrectly() throws Exception {
         Map<String, List<Map<String, Object>>> fieldConfigurations = Configuration.getInstance().getFieldConfiguration();
@@ -235,7 +235,7 @@ public class MetadataHelperTest {
         Assert.assertNotNull(fieldInformation);
         Assert.assertEquals(1, fieldInformation.size());
         Map<String, Object> fieldValues = fieldInformation.get(0);
-        MultiMap groupEntity = (MultiMap) fieldValues.get("groupEntity");
+        Map<String, Object> groupEntity = (Map<String, Object>) fieldValues.get("groupEntity");
         Assert.assertNotNull(groupEntity);
 
         Document docMods = JDomXP.readXmlFile("resources/test/METS/aggregation_mods_test.xml");
