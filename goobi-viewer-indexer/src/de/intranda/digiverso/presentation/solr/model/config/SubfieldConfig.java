@@ -31,12 +31,11 @@ public class SubfieldConfig {
      * Constructor.
      * 
      * @param fieldname {@link String}
-     * @param xpath
+     * @param multivalued
      * @should set attributes correctly
      */
-    public SubfieldConfig(String fieldname, String xpath, boolean multivalued) {
+    public SubfieldConfig(String fieldname, boolean multivalued) {
         this.fieldname = fieldname;
-        xpaths.add(xpath);
         this.multivalued = multivalued;
     }
 

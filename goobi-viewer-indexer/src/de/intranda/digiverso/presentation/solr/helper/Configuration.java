@@ -415,7 +415,12 @@ public final class Configuration {
                             boolean multivalued = sub.getBoolean("[@multivalued]", true);
                             String xpathExp = sub.getString("");
                             if (StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(xpathExp)) {
-                                groupedSubfieldConfigurations.put(name, new SubfieldConfig(name, xpathExp, multivalued));
+                                SubfieldConfig config = (SubfieldConfig) groupedSubfieldConfigurations.get(name);
+                                if (config == null) {
+                                    config = new SubfieldConfig(name, multivalued);
+                                    groupedSubfieldConfigurations.put(name, config);
+                                }
+                                config.getXpaths().add(xpathExp);
                                 logger.debug("Loaded group entity field: {} - {}", name, xpathExp);
                             } else {
                                 logger.warn("Found incomplete groupEntity configuration for field '{}', skipping...", fieldname);
