@@ -71,6 +71,7 @@ import de.intranda.digiverso.presentation.solr.WorldViewsIndexer;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP.FileFormat;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
+import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDataRepositoryStrategy;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.MaxRecordNumberStrategy;
@@ -587,7 +588,7 @@ public class Hotfolder {
                 logger.warn("XML file '{}' not found.", actualXmlFile.getFileName().toString());
             }
             // Determine document format
-            String[] fields = { SolrConstants.SOURCEDOCFORMAT, SolrConstants.DATEDELETED };
+            String[] fields = { SolrConstants.SOURCEDOCFORMAT, SolrConstants.DATEDELETED, SolrConstants.DOCTYPE };
             SolrDocumentList result = solrHelper.search(SolrConstants.PI + ":" + baseFileName, Arrays.asList(fields));
             if (!result.isEmpty()) {
                 SolrDocument doc = result.get(0);
@@ -603,6 +604,10 @@ public class Hotfolder {
                         format = FileFormat.METS;
                         trace = false;
                         logger.info("Record '{}' is already a trace document and will be removed without a trace.", baseFileName);
+                    } else if (DocType.GROUP.name().equals(doc.getFirstValue(SolrConstants.DOCTYPE))) {
+                        format = FileFormat.METS;
+                        trace = false;
+                        logger.info("Record '{}' is a group document and will be removed without a trace.", baseFileName);
                     }
                 }
             } else {
