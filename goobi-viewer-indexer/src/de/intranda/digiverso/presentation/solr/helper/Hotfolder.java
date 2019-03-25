@@ -1007,7 +1007,7 @@ public class Hotfolder {
                         // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
                         if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null || reindexSettings.get(DataRepository.PARAM_MEDIA)) {
                             for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
-                                if (!repo.equals(dataRepository)) {
+                                if (!repo.equals(dataRepository) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
                                     Path misplacedDataDir =
                                             Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
                                     if (Files.isDirectory(misplacedDataDir)) {
