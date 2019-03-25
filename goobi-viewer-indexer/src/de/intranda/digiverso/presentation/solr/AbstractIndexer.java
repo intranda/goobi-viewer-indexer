@@ -678,12 +678,12 @@ public abstract class AbstractIndexer {
             try {
                 imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
                 imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
-            } catch (NullPointerException e) {
+            } catch (NullPointerException | NumberFormatException e) {
             }
             try {
                 imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
                 imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
-            } catch (NullPointerException e) {
+            } catch (NullPointerException | NumberFormatException e) {
             }
 
             if (imageSize.width > 0 && imageSize.height > 0) {
