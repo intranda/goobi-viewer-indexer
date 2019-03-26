@@ -383,7 +383,7 @@
 			</list>
 	        </GROUPORDER_SERIES>
 
-	        <MD_SERIESTITLE>
+	        <MD_TITLE_SERIES>
 			<list>
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:titleInfo/mods:title</xpath>
@@ -391,7 +391,7 @@
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
 			</list>
-	        </MD_SERIESTITLE>
+	        </MD_TITLE_SERIES>
 
 		<!-- This field is important, see chapter 3.13 of the manual -->
 		<MD_TITLE>

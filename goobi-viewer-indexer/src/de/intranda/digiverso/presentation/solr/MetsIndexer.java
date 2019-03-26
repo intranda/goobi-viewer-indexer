@@ -544,13 +544,15 @@ public class MetsIndexer extends AbstractIndexer {
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
+                String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
                 Map<String, String> moreMetadata = new HashMap<>();
                 //                if (indexObj.getLuceneFieldWithName("MD_SHELFMARK") != null) {
                 //                    moreMetadata.put("MD_SHELFMARK", indexObj.getLuceneFieldWithName("MD_SHELFMARK").getValue());
                 //                }
-                if (indexObj.getLuceneFieldWithName("MD_SERIESTITLE") != null) {
-                    moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
-                    moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
+                String titleField = "MD_TITLE_" + groupSuffix;
+                if (indexObj.getLuceneFieldWithName(titleField) != null) {
+                    moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName(titleField).getValue());
+                    moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName(titleField).getValue());
                 }
                 SolrInputDocument doc = hotfolder.getSolrHelper()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
@@ -625,7 +627,9 @@ public class MetsIndexer extends AbstractIndexer {
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
-        } catch (Exception e) {
+        } catch (
+
+        Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();

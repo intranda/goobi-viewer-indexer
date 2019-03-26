@@ -440,13 +440,15 @@ public class WorldViewsIndexer extends AbstractIndexer {
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
+                String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
                 Map<String, String> moreMetadata = new HashMap<>();
-                if (indexObj.getLuceneFieldWithName("MD_SHELFMARK") != null) {
-                    moreMetadata.put("MD_SHELFMARK", indexObj.getLuceneFieldWithName("MD_SHELFMARK").getValue());
-                }
-                if (indexObj.getLuceneFieldWithName("MD_SERIESTITLE") != null) {
-                    moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
-                    moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName("MD_SERIESTITLE").getValue());
+                //                if (indexObj.getLuceneFieldWithName("MD_SHELFMARK") != null) {
+                //                    moreMetadata.put("MD_SHELFMARK", indexObj.getLuceneFieldWithName("MD_SHELFMARK").getValue());
+                //                }
+                String titleField = "MD_TITLE_" + groupSuffix;
+                if (indexObj.getLuceneFieldWithName(titleField) != null) {
+                    moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName(titleField).getValue());
+                    moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName(titleField).getValue());
                 }
                 SolrInputDocument doc = hotfolder.getSolrHelper()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
