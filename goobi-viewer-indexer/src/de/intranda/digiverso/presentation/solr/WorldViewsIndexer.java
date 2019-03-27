@@ -442,13 +442,17 @@ public class WorldViewsIndexer extends AbstractIndexer {
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
                 String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
                 Map<String, String> moreMetadata = new HashMap<>();
-                //                if (indexObj.getLuceneFieldWithName("MD_SHELFMARK") != null) {
-                //                    moreMetadata.put("MD_SHELFMARK", indexObj.getLuceneFieldWithName("MD_SHELFMARK").getValue());
-                //                }
                 String titleField = "MD_TITLE_" + groupSuffix;
-                if (indexObj.getLuceneFieldWithName(titleField) != null) {
-                    moreMetadata.put("LABEL", indexObj.getLuceneFieldWithName(titleField).getValue());
-                    moreMetadata.put("MD_TITLE", indexObj.getLuceneFieldWithName(titleField).getValue());
+                for (LuceneField field : indexObj.getLuceneFields()) {
+                    if (titleField.equals(field.getField())) {
+                        // Add title/label
+                        moreMetadata.put("LABEL", field.getValue());
+                        moreMetadata.put("MD_TITLE", field.getValue());
+                    } else if (field.getField().endsWith(groupSuffix)
+                            && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
+                        // Add any MD_*_GROUPSUFFIX field to the group doc
+                        moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
+                    }
                 }
                 SolrInputDocument doc = hotfolder.getSolrHelper()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
