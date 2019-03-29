@@ -40,6 +40,7 @@
 	<classpathentry kind="lib" path="lib/jaxen-1.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/jcl-over-slf4j-1.7.26.jar"/>
 	<classpathentry kind="lib" path="lib/jdom-2.0.6.jar"/>
+	<classpathentry kind="lib" path="lib/jul-to-slf4j-1.7.26.jar"/>
 	<classpathentry kind="lib" path="lib/noggit-0.5.jar"/>
 	<classpathentry kind="lib" path="lib/normdataimporter.jar" sourcepath="/NormDataImporter"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.26.jar"/>
