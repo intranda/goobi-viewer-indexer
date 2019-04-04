@@ -70,12 +70,9 @@ public final class TextHelper {
     private static final String ALTO_HEIGHT = "HEIGHT";
     private static final String ALTO_CONTENT = "CONTENT";
     private static final String ALTO_SUBS_CONTENT = "SUBS_CONTENT";
-    private static final String ALTO_SUBS_TYPE = "SUBS_TYPE";    
+    private static final String ALTO_SUBS_TYPE = "SUBS_TYPE";
     private static final String ALTO_SUBS_TYPE_FIRST_WORD = "HypPart1";
     private static final String ALTO_SUBS_TYPE_SECOND_WORD = "HypPart2";
-
-
-
 
     /**
      * Uses ICU4J to determine the charset of the given InputStream.
@@ -227,12 +224,13 @@ public final class TextHelper {
                                     readAltoTextBlock(eleBlock, sbFulltext, wordWrapper);
                                     break;
                                 case "ComposedBlock":
-                                    List<Element> textBlocks = eleBlock.getChildren("TextBlock", null);
-                                    if (textBlocks != null) {
-                                        for (Element eleTextBlock : textBlocks) {
-                                            readAltoTextBlock(eleTextBlock, sbFulltext, wordWrapper);
-                                        }
-                                    }
+                                    handleAltoComposedBlock(eleBlock, sbFulltext, wordWrapper);
+                                    //                                    List<Element> textBlocks = eleBlock.getChildren("TextBlock", null);
+                                    //                                    if (textBlocks != null) {
+                                    //                                        for (Element eleTextBlock : textBlocks) {
+                                    //                                            readAltoTextBlock(eleTextBlock, sbFulltext, wordWrapper);
+                                    //                                        }
+                                    //                                    }
                                     break;
                                 default:
                                     // nothing
@@ -265,6 +263,31 @@ public final class TextHelper {
     }
 
     /**
+     * An ALTO ComposedBlock can theoretically contain n levels of nested ComposedBlocks. Collect all words from contained TextBlocks recursively.
+     *
+     * @param eleComposedBlock
+     * @return
+     * @should return all words from nested ComposedBlocks
+     */
+    public static void handleAltoComposedBlock(Element eleComposedBlock, StringBuilder sbFulltext, WordWrapper wordWrapper) {
+        List<Element> words = new ArrayList<>();
+
+        // Words from TextBlocks
+        for (Element eleTextBlock : eleComposedBlock.getChildren("TextBlock", null)) {
+            readAltoTextBlock(eleTextBlock, sbFulltext, wordWrapper);
+
+        }
+
+        // Nested ComposedBlocks
+        List<Element> eleListNextedComposedBlocks = eleComposedBlock.getChildren("ComposedBlock", null);
+        if (eleListNextedComposedBlocks != null) {
+            for (Element eleNestedComposedBlock : eleComposedBlock.getChildren("ComposedBlock", null)) {
+                handleAltoComposedBlock(eleNestedComposedBlock, sbFulltext, wordWrapper);
+            }
+        }
+    }
+
+    /**
      * @param tag
      * @return
      */
@@ -292,54 +315,56 @@ public final class TextHelper {
         List<Element> lines = eleTextBlock.getChildren("TextLine", null);
         for (Element eleLine : lines) {
             List<Element> eleWordList = eleLine.getChildren("String", null);
-            if (eleWordList != null && !eleWordList.isEmpty()) {
-                if (sbFulltext.length() > 0) {
-                    // Add a line break in the full-text if a new line starts
-                    sbFulltext.append('\n');
-                }
-                // Add unaltered words to the full-text
-                for (Element eleWord : eleWordList) {
-                    if (eleWordList.indexOf(eleWord) > 0) {
-                        sbFulltext.append(' ');
-                    }
-                    /*for hyphenated words, only add the SUBS_CONTENT (content of complete word) 
-                    of the first word to the fulltext, and ignore the second word
-                    */
-                    if(ALTO_SUBS_TYPE_FIRST_WORD.equals(eleWord.getAttributeValue(ALTO_SUBS_TYPE))) {                        
-                        sbFulltext.append(eleWord.getAttributeValue(ALTO_SUBS_CONTENT));
-                    } else if(!ALTO_SUBS_TYPE_SECOND_WORD.equals(eleWord.getAttributeValue(ALTO_SUBS_TYPE))){
-                        sbFulltext.append(eleWord.getAttributeValue(ALTO_CONTENT));
-                    }
-                }
-                if (wordWrapper.word1 != null) {
-                    Element eleWord2 = eleWordList.get(0);
-                    String word2 = eleWord2.getAttributeValue(ALTO_CONTENT);
-                    // If the current text block has one one line, assume it's the page number and do not combine
-                    if (word2 != null && eleWordList.size() > 1) {
-                        word2 = word2.trim();
-                        String newWord = wordWrapper.word1 + word2;
-                        wordWrapper.eleWord1.setAttribute(ALTO_CONTENT, newWord);
-                        eleWord2.setAttribute(ALTO_CONTENT, newWord);
-                        //                        logger.debug("Combined ALTO words in file '" + fileName + "': " + word1 + " + " + word2 + " ==> " + newWord);
-                    }
-                    wordWrapper.eleWord1 = null;
-                    wordWrapper.word1 = null;
-                }
+            if (eleWordList == null || eleWordList.isEmpty()) {
+                continue;
+            }
 
-                // Analyze the last word of every line
-                Element eleLastWord = eleWordList.get(eleWordList.size() - 1);
-                String word = eleLastWord.getAttributeValue(ALTO_CONTENT);
-                if (word != null) {
-                    word = word.trim();
-                    // logger.info("Last word: " + word);
-                    // Check whether the last word on the current line ends with a hyphen etc.
-                    // if (word.length() > 1 && (word.endsWith("¬") || word.endsWith("-") || word.endsWith("­"))) {
-                    //                    if (word.length() > 1 && (word.endsWith("\u00AC") || word.endsWith("\u002D") || word.endsWith("\u00AD"))) {
-                    //                        wordWrapper.eleWord1 = eleLastWord;
-                    //                        wordWrapper.word1 = word.substring(0, word.length() - 1);
-                    //                        // logger.info("Found hyphenated last word: " + word1);
-                    //                    }
+            if (sbFulltext.length() > 0) {
+                // Add a line break in the full-text if a new line starts
+                sbFulltext.append('\n');
+            }
+            // Add unaltered words to the full-text
+            for (Element eleWord : eleWordList) {
+                if (eleWordList.indexOf(eleWord) > 0) {
+                    sbFulltext.append(' ');
                 }
+                /*for hyphenated words, only add the SUBS_CONTENT (content of complete word) 
+                of the first word to the fulltext, and ignore the second word
+                */
+                if (ALTO_SUBS_TYPE_FIRST_WORD.equals(eleWord.getAttributeValue(ALTO_SUBS_TYPE))) {
+                    sbFulltext.append(eleWord.getAttributeValue(ALTO_SUBS_CONTENT));
+                } else if (!ALTO_SUBS_TYPE_SECOND_WORD.equals(eleWord.getAttributeValue(ALTO_SUBS_TYPE))) {
+                    sbFulltext.append(eleWord.getAttributeValue(ALTO_CONTENT));
+                }
+            }
+            if (wordWrapper.word1 != null) {
+                Element eleWord2 = eleWordList.get(0);
+                String word2 = eleWord2.getAttributeValue(ALTO_CONTENT);
+                // If the current text block has one one line, assume it's the page number and do not combine
+                if (word2 != null && eleWordList.size() > 1) {
+                    word2 = word2.trim();
+                    String newWord = wordWrapper.word1 + word2;
+                    wordWrapper.eleWord1.setAttribute(ALTO_CONTENT, newWord);
+                    eleWord2.setAttribute(ALTO_CONTENT, newWord);
+                    //                        logger.debug("Combined ALTO words in file '" + fileName + "': " + word1 + " + " + word2 + " ==> " + newWord);
+                }
+                wordWrapper.eleWord1 = null;
+                wordWrapper.word1 = null;
+            }
+
+            // Analyze the last word of every line
+            Element eleLastWord = eleWordList.get(eleWordList.size() - 1);
+            String word = eleLastWord.getAttributeValue(ALTO_CONTENT);
+            if (word != null) {
+                word = word.trim();
+                // logger.info("Last word: " + word);
+                // Check whether the last word on the current line ends with a hyphen etc.
+                // if (word.length() > 1 && (word.endsWith("¬") || word.endsWith("-") || word.endsWith("­"))) {
+                //                    if (word.length() > 1 && (word.endsWith("\u00AC") || word.endsWith("\u002D") || word.endsWith("\u00AD"))) {
+                //                        wordWrapper.eleWord1 = eleLastWord;
+                //                        wordWrapper.word1 = word.substring(0, word.length() - 1);
+                //                        // logger.info("Found hyphenated last word: " + word1);
+                //                    }
             }
         }
         if (sbFulltext.length() > 0) {
@@ -409,8 +434,8 @@ public final class TextHelper {
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
      */
-    public static Map<String, Object> readAbbyyToAlto(File file) throws FileNotFoundException, IOException, XMLStreamException,
-            FatalIndexerException {
+    public static Map<String, Object> readAbbyyToAlto(File file)
+            throws FileNotFoundException, IOException, XMLStreamException, FatalIndexerException {
         logger.trace("readAbbyy: {}", file.getAbsolutePath());
         if (!FileFormat.ABBYYXML.equals(JDomXP.determineFileFormat(file))) {
             throw new IOException(file.getAbsolutePath() + " is not a valid ABBYY XML document.");
@@ -447,8 +472,8 @@ public final class TextHelper {
         try (FileInputStream fis = new FileInputStream(file)) {
             Document doc = new SAXBuilder().build(fis);
             // Image width
-            List<Object> values = JDomXP.evaluate("mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageWidth", doc, Filters
-                    .fstring());
+            List<Object> values =
+                    JDomXP.evaluate("mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageWidth", doc, Filters.fstring());
             if (values != null && !values.isEmpty()) {
                 try {
                     String str = (String) values.get(0);
@@ -538,6 +563,7 @@ public final class TextHelper {
 
     /**
      * Strips the given string of HTML tags, etc.
+     * 
      * @param text
      * @return
      * @should clean up string correctly

@@ -36,7 +36,6 @@ public final class SolrConstants {
     }
 
     public static final String ACCESSCONDITION = "ACCESSCONDITION";
-    @Deprecated
     public static final String ALTO = "ALTO";
     public static final String CENTURY = "CENTURY";
     public static final String CMS_TEXT_ALL = "CMS_TEXT_ALL";

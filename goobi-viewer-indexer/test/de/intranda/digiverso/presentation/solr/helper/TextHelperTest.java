@@ -126,13 +126,23 @@ public class TextHelperTest {
     public void readAltoFile_shouldExtractFulltextCorrectly() throws Exception {
         File folder = new File("resources/test/ALTO");
         Assert.assertTrue(folder.isDirectory());
-        Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "birdsbeneficialt00froh_0031.xml"));
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
-        // Plain TextBlock
-        Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Mus."));
-        // TextBlock embedded in a ComposedBlock
-        Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Stone-Curlew"));
+        {
+            Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "birdsbeneficialt00froh_0031.xml"));
+            Assert.assertNotNull(result);
+            Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
+            // Plain TextBlock
+            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Mus."));
+            // TextBlock embedded in a ComposedBlock
+            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Stone-Curlew"));
+        }
+        {
+            Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "00000010.xml"));
+            Assert.assertNotNull(result);
+            Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
+            // SUBS_CONTENT
+            System.out.println((String) result.get(SolrConstants.FULLTEXT));
+            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Eheschliessungen"));
+        }
     }
 
     /**
@@ -195,8 +205,8 @@ public class TextHelperTest {
      */
     @Test
     public void readTeiToAlto_shouldConvertToALTOCorrectly() throws Exception {
-        Map<String, Object> result = TextHelper.readTeiToAlto(new File(
-                "resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
+        Map<String, Object> result =
+                TextHelper.readTeiToAlto(new File("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.get(SolrConstants.ALTO));
     }
