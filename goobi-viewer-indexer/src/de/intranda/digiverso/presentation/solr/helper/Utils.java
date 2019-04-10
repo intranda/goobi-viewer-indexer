@@ -113,8 +113,8 @@ public class Utils {
      * @throws UnsupportedEncodingException
      */
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
-            final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity) throws MessagingException,
-            UnsupportedEncodingException {
+            final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity)
+            throws MessagingException, UnsupportedEncodingException {
         if (recipients == null) {
             throw new IllegalArgumentException("recipients may not be null");
         }
@@ -222,7 +222,7 @@ public class Utils {
      * @throws FatalIndexerException
      */
     public static String removeRecordImagesFromCache(String pi) throws FatalIndexerException {
-        String viewerUrl = Configuration.getInstance().getConfiguration("viewerUrl");
+        String viewerUrl = Configuration.getInstance().getViewerUrl();
         if (StringUtils.isEmpty(viewerUrl)) {
             return "<viewerUrl> is not configured.";
         }
@@ -248,8 +248,8 @@ public class Utils {
      */
     public static String callUrl(String url) throws IOException {
         HttpGet httpGet = new HttpGet(url);
-        RequestConfig defaultRequestConfig = RequestConfig.custom().setSocketTimeout(10000).setConnectTimeout(10000).setConnectionRequestTimeout(
-                10000).build();
+        RequestConfig defaultRequestConfig =
+                RequestConfig.custom().setSocketTimeout(10000).setConnectTimeout(10000).setConnectionRequestTimeout(10000).build();
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
             try (CloseableHttpResponse response = httpClient.execute(httpGet); StringWriter writer = new StringWriter()) {
                 switch (response.getStatusLine().getStatusCode()) {
@@ -360,5 +360,27 @@ public class Utils {
         }
 
         return null;
+    }
+
+    /**
+     * 
+     * @param url
+     * @return
+     * @should extract file name correctly
+     */
+    public static String getFileNameFromIiifUrl(String url) {
+        if (StringUtils.isEmpty(url)) {
+            return null;
+        }
+
+        String[] filePathSplit = url.split("/");
+        if (filePathSplit.length < 5) {
+            return null;
+        }
+
+        String baseFileName = FilenameUtils.getBaseName(filePathSplit[filePathSplit.length - 5]);
+        String extension = FilenameUtils.getExtension(filePathSplit[filePathSplit.length - 1]);
+
+        return baseFileName + "." + extension;
     }
 }

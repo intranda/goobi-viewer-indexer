@@ -201,6 +201,15 @@ public class ConfigurationTest {
     }
 
     /**
+     * @see Configuration#getViewerUrl()
+     * @verifies return correct value
+     */
+    @Test
+    public void getViewerUrl_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals("http://localhost:8080/viewer", Configuration.getInstance().getViewerUrl());
+    }
+
+    /**
      * @see Configuration#getPageCountStart()
      * @verifies return correct value
      */

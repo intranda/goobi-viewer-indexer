@@ -93,4 +93,16 @@ public class UtilsTest {
         Assert.assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123.UPDATED")));
         Assert.assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123#0.UPDATED")));
     }
+
+    /**
+     * @see Utils#getFileNameFromIiifUrl(String)
+     * @verifies extract file name correctly
+     */
+    @Test
+    public void getFileNameFromIiifUrl_shouldExtractFileNameCorrectly() throws Exception {
+        Assert.assertEquals("00000001.jpg",
+                Utils.getFileNameFromIiifUrl("http://localhost:8080/viewer/rest/image/AC05725455/00000001.tif/full/!400,400/0/default.jpg"));
+        Assert.assertEquals("AFE_1284_1999-17-557-1_a.jpg", Utils
+                .getFileNameFromIiifUrl("http://pecunia2.zaw.uni-heidelberg.de:49200/iiif/2/AFE_1284_1999-17-557-1_a.jpg/full/full/0/default.jpg"));
+    }
 }

@@ -8,8 +8,7 @@
 		<minStorageSpace>2048</minStorageSpace>
 
 		<solrUrl>http://localhost:8081/solr</solrUrl>
-
-
+        <viewerUrl>http://localhost:8080/viewer</viewerUrl>
 
 		<!-- Folder configuration -->
 		<hotFolder>build/viewer/hotfolder/</hotFolder>

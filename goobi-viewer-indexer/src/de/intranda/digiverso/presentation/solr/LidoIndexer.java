@@ -51,6 +51,7 @@ import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
+import de.intranda.digiverso.presentation.solr.helper.Utils;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
@@ -572,140 +573,148 @@ public class LidoIndexer extends AbstractIndexer {
             doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
         }
 
-        if (imageXPaths != null && !imageXPaths.isEmpty()) {
+        if (imageXPaths == null || imageXPaths.isEmpty()) {
+            writeStrategy.addPageDoc(doc);
+            return true;
+        }
 
-            String filePath = null;
-            for (String xpath : imageXPaths) {
-                filePath = xp.evaluateToString(xpath, eleResourceSet);
-                if (StringUtils.isNotEmpty(filePath)) {
-                    logger.info("Found image in {}", xpath);
-                    break;
-                }
-            }
-
-            String fileName;
-            if (StringUtils.isNotEmpty(filePath) && filePath.contains("/")) {
-                fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-            } else {
-                fileName = filePath;
-            }
-
+        String filePath = null;
+        for (String xpath : imageXPaths) {
+            filePath = xp.evaluateToString(xpath, eleResourceSet);
             if (StringUtils.isNotEmpty(filePath)) {
-                // External image
-                if (filePath.startsWith("http")) {
-                    // Download image, if so requested (and not a IIIF resource)
-                    String baseFileName = FilenameUtils.getBaseName(fileName);
-                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && !"default".equals(baseFileName)) {
-                        try {
-                            File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
-                            FileUtils.copyURLToFile(new URL(filePath), file);
-                            if (file.isFile()) {
-                                logger.info("Downloaded {}", file);
-                                sbImgFileNames.append(';').append(fileName);
-                                doc.addField(SolrConstants.FILENAME, fileName);
-                            } else {
-                                logger.warn("Could not download file: {}", filePath);
-                            }
-                        } catch (IOException e) {
-                            logger.error(e.getMessage());
-                        }
-                    } else {
-                        doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
-                    }
-                } else {
-                    // For non-remote file, add the file name to the list
-                    sbImgFileNames.append(';').append(fileName);
-                }
+                logger.info("Found image in {}", xpath);
+                break;
+            }
+        }
 
-                // Add full path if this is a local file or download has failed or is disabled
-                if (!doc.containsKey(SolrConstants.FILENAME)) {
-                    doc.addField(SolrConstants.FILENAME, fileName);
-                }
+        String fileName;
+        if (StringUtils.isNotEmpty(filePath) && filePath.contains("/")) {
+            if (filePath.endsWith("default.jpg")) {
+                // Extract correct original file name from IIIF
+                fileName = Utils.getFileNameFromIiifUrl(filePath);
+            } else {
+                fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+            }
+        } else {
+            fileName = filePath;
+        }
 
-                String mimetype = "image";
-                String subMimetype = "";
-                if (doc.containsKey(SolrConstants.FILENAME)) {
-                    String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
+        if (StringUtils.isNotEmpty(filePath)) {
+            // External image
+            if (filePath.startsWith("http")) {
+                // Download image, if so requested (and not a local resource)
+                String baseFileName = FilenameUtils.getBaseName(fileName);
+                String viewerUrl = Configuration.getInstance().getViewerUrl();
+                if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
+                        && !filePath.startsWith(viewerUrl)) {
                     try {
-                        mimetype = Files.probeContentType(Paths.get(filename));
-                        if (StringUtils.isBlank(mimetype)) {
-                            mimetype = "image";
-                        } else if (mimetype.contains("/")) {
-                            subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
-                            mimetype = mimetype.substring(0, mimetype.indexOf("/"));
+                        File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
+                        FileUtils.copyURLToFile(new URL(filePath), file);
+                        if (file.isFile()) {
+                            logger.info("Downloaded {}", file);
+                            sbImgFileNames.append(';').append(fileName);
+                            doc.addField(SolrConstants.FILENAME, fileName);
+                        } else {
+                            logger.warn("Could not download file: {}", filePath);
                         }
                     } catch (IOException e) {
-                        logger.warn("Cannot guess MimeType from " + filename + ". using 'image'");
+                        logger.error(e.getMessage());
                     }
-                    if (StringUtils.isNotBlank(subMimetype)) {
-                        switch (mimetype.toLowerCase()) {
-                            case "video":
-                            case "audio":
-                            case "html-sandboxed":
-                                doc.addField(SolrConstants.MIMETYPE, mimetype);
-                                doc.addField(SolrConstants.FILENAME + "_" + subMimetype.toUpperCase(), filename);
-                                break;
-                            case "object":
-                                doc.addField(SolrConstants.MIMETYPE, subMimetype);
-                                break;
-                            default:
-                                doc.addField(SolrConstants.MIMETYPE, mimetype);
-                        }
-                    }
+                } else {
+                    doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                 }
-
-            }
-
-            // Add file size
-            if (dataFolders != null) {
-                try {
-                    Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                    // TODO other mime types/folders
-                    if (dataFolder != null) {
-                        Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                        if (Files.isRegularFile(path)) {
-                            doc.addField("MDNUM_FILESIZE", Files.size(path));
-                        }
-                    }
-                } catch (IllegalArgumentException | IOException e) {
-                    logger.warn(e.getMessage());
-                }
-                if (!doc.containsKey("MDNUM_FILESIZE")) {
-                    doc.addField("MDNUM_FILESIZE", -1);
-                }
-            }
-
-            String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
-
-            if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
-                try {
-                    Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                            baseFileName + AbstractIndexer.XML_EXTENSION));
-                    for (String key : mixData.keySet()) {
-                        if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
-                                && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
-                            doc.addField(key, mixData.get(key));
-                        }
-                    }
-                } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
-                }
-            }
-
-            // Add image dimension values from EXIF
-            if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
-                readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
-            }
-
-            // FULLTEXTAVAILABLE indicates whether this page has full-text
-            if (doc.getField(SolrConstants.FULLTEXT) != null) {
-                doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
-                recordHasFulltext = true;
             } else {
-                doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
+                // For non-remote file, add the file name to the list
+                sbImgFileNames.append(';').append(fileName);
             }
+
+            // Add full path if this is a local file or download has failed or is disabled
+            if (!doc.containsKey(SolrConstants.FILENAME)) {
+                doc.addField(SolrConstants.FILENAME, fileName);
+            }
+
+            String mimetype = "image";
+            String subMimetype = "";
+            if (doc.containsKey(SolrConstants.FILENAME)) {
+                String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
+                try {
+                    mimetype = Files.probeContentType(Paths.get(filename));
+                    if (StringUtils.isBlank(mimetype)) {
+                        mimetype = "image";
+                    } else if (mimetype.contains("/")) {
+                        subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
+                        mimetype = mimetype.substring(0, mimetype.indexOf("/"));
+                    }
+                } catch (IOException e) {
+                    logger.warn("Cannot guess MimeType from " + filename + ". using 'image'");
+                }
+                if (StringUtils.isNotBlank(subMimetype)) {
+                    switch (mimetype.toLowerCase()) {
+                        case "video":
+                        case "audio":
+                        case "html-sandboxed":
+                            doc.addField(SolrConstants.MIMETYPE, mimetype);
+                            doc.addField(SolrConstants.FILENAME + "_" + subMimetype.toUpperCase(), filename);
+                            break;
+                        case "object":
+                            doc.addField(SolrConstants.MIMETYPE, subMimetype);
+                            break;
+                        default:
+                            doc.addField(SolrConstants.MIMETYPE, mimetype);
+                    }
+                }
+            }
+        }
+
+        // Add file size
+        if (dataFolders != null) {
+            try {
+                Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
+                // TODO other mime types/folders
+                if (dataFolder != null) {
+                    Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
+                    if (Files.isRegularFile(path)) {
+                        doc.addField("MDNUM_FILESIZE", Files.size(path));
+                    }
+                }
+            } catch (IllegalArgumentException | IOException e) {
+                logger.warn(e.getMessage());
+            }
+            if (!doc.containsKey("MDNUM_FILESIZE")) {
+                doc.addField("MDNUM_FILESIZE", -1);
+            }
+        }
+
+        String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
+
+        if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
+            try {
+                Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
+                        baseFileName + AbstractIndexer.XML_EXTENSION));
+                for (String key : mixData.keySet()) {
+                    if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
+                            && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
+                        doc.addField(key, mixData.get(key));
+                    }
+                }
+            } catch (JDOMException e) {
+                logger.error(e.getMessage(), e);
+            } catch (IOException e) {
+                logger.warn(e.getMessage());
+            }
+        }
+
+        // Add image dimension values from EXIF
+        if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
+            readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
+        }
+
+        // FULLTEXTAVAILABLE indicates whether this page has full-text
+        if (doc.getField(SolrConstants.FULLTEXT) != null) {
+            doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
+            recordHasFulltext = true;
+        } else {
+            doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
         }
 
         writeStrategy.addPageDoc(doc);
@@ -719,105 +728,106 @@ public class LidoIndexer extends AbstractIndexer {
      * @throws FatalIndexerException
      */
     private List<SolrInputDocument> generateEvents(IndexObject indexObj) throws FatalIndexerException {
-        List<SolrInputDocument> ret = new ArrayList<>();
-
         String query = "/lido:lido/lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event";
         List<Element> eventList = xp.evaluateToElements(query, null);
-        if (eventList != null && !eventList.isEmpty()) {
-            logger.info("Found {} event(s).", eventList.size());
-            String defaultFieldBackup = indexObj.getDefaultValue();
-            for (Element eleEvent : eventList) {
-                SolrInputDocument eventDoc = new SolrInputDocument();
-                long iddocEvent = getNextIddoc(hotfolder.getSolrHelper());
-                eventDoc.addField(SolrConstants.IDDOC, iddocEvent);
-                eventDoc.addField(SolrConstants.GROUPFIELD, iddocEvent);
-                eventDoc.addField(SolrConstants.DOCTYPE, DocType.EVENT.name());
-                List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
-                if (dcFields != null) {
-                    for (LuceneField field : dcFields) {
-                        eventDoc.addField(field.getField(), field.getValue());
-                    }
-                }
-                eventDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                eventDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getPi());
+        if (eventList == null || eventList.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-                // Find event type
-                query = "lido:eventType/lido:term/text()";
-                String type = xp.evaluateToString(query, eleEvent);
-                if (StringUtils.isNotBlank(type)) {
-                    eventDoc.addField(SolrConstants.EVENTTYPE, type);
-                    indexObj.setDefaultValue(type);
-                } else {
-                    logger.error("Event type not found.");
-                }
-
-                // Create a backup of the current grouped metadata list of the parent docstruct
-                List<GroupedMetadata> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
-                List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eleEvent, "", indexObj, xp);
-
-                // Add grouped metadata as separate documents
-                if (indexObj.getGroupedMetadataFields().size() > groupedFieldsBackup.size()) {
-                    // Newly added items in IndexObject.groupedMetadataFields come from the event, so just use these new items
-                    List<GroupedMetadata> eventGroupedFields =
-                            indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj.getGroupedMetadataFields().size());
-                    for (GroupedMetadata gmd : eventGroupedFields) {
-                        SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
-                        long iddoc = getNextIddoc(hotfolder.getSolrHelper());
-                        doc.addField(SolrConstants.IDDOC, iddoc);
-                        if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                            logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
-                                    doc.getFieldValue(SolrConstants.LABEL));
-                            doc.addField(SolrConstants.GROUPFIELD, iddoc);
-                        }
-                        // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped. Since child docstructs are added recursively, this should be the case without further conditions.
-                        doc.addField(SolrConstants.IDDOC_OWNER, iddocEvent);
-                        doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-                        doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
-
-                        // Add DC values to metadata doc
-                        if (dcFields != null) {
-                            for (LuceneField field : dcFields) {
-                                doc.addField(field.getField(), field.getValue());
-                            }
-                        }
-
-                        ret.add(doc);
-                    }
-
-                    // Grouped metadata fields are written directly into the IndexObject, which is not desired. Replace the metadata from the backup.{
-                    indexObj.setGroupedMetadataFields(groupedFieldsBackup);
-                }
-
-                for (LuceneField field : fields) {
+        logger.info("Found {} event(s).", eventList.size());
+        String defaultFieldBackup = indexObj.getDefaultValue();
+        List<SolrInputDocument> ret = new ArrayList<>(eventList.size());
+        for (Element eleEvent : eventList) {
+            SolrInputDocument eventDoc = new SolrInputDocument();
+            long iddocEvent = getNextIddoc(hotfolder.getSolrHelper());
+            eventDoc.addField(SolrConstants.IDDOC, iddocEvent);
+            eventDoc.addField(SolrConstants.GROUPFIELD, iddocEvent);
+            eventDoc.addField(SolrConstants.DOCTYPE, DocType.EVENT.name());
+            List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
+            if (dcFields != null) {
+                for (LuceneField field : dcFields) {
                     eventDoc.addField(field.getField(), field.getValue());
-                    logger.debug("Added {}:{} to event '{}'.", field.getField(), field.getValue(), type);
+                }
+            }
+            eventDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
+            eventDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getPi());
 
-                    // Check whether this field is configured to be added as a sort field to topstruct
-                    List<FieldConfig> fieldConfigList =
-                            Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(field.getField());
-                    if (fieldConfigList != null && !fieldConfigList.isEmpty()) {
-                        FieldConfig fieldConfig = fieldConfigList.get(0);
-                        if (fieldConfig.isAddSortFieldToTopstruct()) {
-                            List<LuceneField> retList = new ArrayList<>(1);
-                            MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.SORT_,
-                                    fieldConfig.getNonSortConfigurations(), fieldConfig.getValueNormalizer(), retList);
-                            if (!retList.isEmpty()) {
-                                indexObj.addToLucene(retList.get(0));
-                            }
+            // Find event type
+            query = "lido:eventType/lido:term/text()";
+            String type = xp.evaluateToString(query, eleEvent);
+            if (StringUtils.isNotBlank(type)) {
+                eventDoc.addField(SolrConstants.EVENTTYPE, type);
+                indexObj.setDefaultValue(type);
+            } else {
+                logger.error("Event type not found.");
+            }
+
+            // Create a backup of the current grouped metadata list of the parent docstruct
+            List<GroupedMetadata> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
+            List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eleEvent, "", indexObj, xp);
+
+            // Add grouped metadata as separate documents
+            if (indexObj.getGroupedMetadataFields().size() > groupedFieldsBackup.size()) {
+                // Newly added items in IndexObject.groupedMetadataFields come from the event, so just use these new items
+                List<GroupedMetadata> eventGroupedFields =
+                        indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj.getGroupedMetadataFields().size());
+                for (GroupedMetadata gmd : eventGroupedFields) {
+                    SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
+                    long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                    doc.addField(SolrConstants.IDDOC, iddoc);
+                    if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
+                        logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
+                                doc.getFieldValue(SolrConstants.LABEL));
+                        doc.addField(SolrConstants.GROUPFIELD, iddoc);
+                    }
+                    // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped. Since child docstructs are added recursively, this should be the case without further conditions.
+                    doc.addField(SolrConstants.IDDOC_OWNER, iddocEvent);
+                    doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
+                    doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
+
+                    // Add DC values to metadata doc
+                    if (dcFields != null) {
+                        for (LuceneField field : dcFields) {
+                            doc.addField(field.getField(), field.getValue());
+                        }
+                    }
+
+                    ret.add(doc);
+                }
+
+                // Grouped metadata fields are written directly into the IndexObject, which is not desired. Replace the metadata from the backup.{
+                indexObj.setGroupedMetadataFields(groupedFieldsBackup);
+            }
+
+            for (LuceneField field : fields) {
+                eventDoc.addField(field.getField(), field.getValue());
+                logger.debug("Added {}:{} to event '{}'.", field.getField(), field.getValue(), type);
+
+                // Check whether this field is configured to be added as a sort field to topstruct
+                List<FieldConfig> fieldConfigList =
+                        Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(field.getField());
+                if (fieldConfigList != null && !fieldConfigList.isEmpty()) {
+                    FieldConfig fieldConfig = fieldConfigList.get(0);
+                    if (fieldConfig.isAddSortFieldToTopstruct()) {
+                        List<LuceneField> retList = new ArrayList<>(1);
+                        MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.SORT_, fieldConfig.getNonSortConfigurations(),
+                                fieldConfig.getValueNormalizer(), retList);
+                        if (!retList.isEmpty()) {
+                            indexObj.addToLucene(retList.get(0));
                         }
                     }
                 }
-
-                // Use the main IndexObject's default value field to collect default values for the events, then restore the original value
-                if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-                    eventDoc.addField(SolrConstants.DEFAULT, indexObj.getDefaultValue());
-                    // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
-                    indexObj.setDefaultValue(defaultFieldBackup);
-                }
-
-                ret.add(eventDoc);
-                logger.debug(eventDoc.getFieldNames().toString());
             }
+
+            // Use the main IndexObject's default value field to collect default values for the events, then restore the original value
+            if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
+                eventDoc.addField(SolrConstants.DEFAULT, indexObj.getDefaultValue());
+                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
+                indexObj.setDefaultValue(defaultFieldBackup);
+            }
+
+            ret.add(eventDoc);
+            logger.debug(eventDoc.getFieldNames().toString());
         }
 
         return ret;

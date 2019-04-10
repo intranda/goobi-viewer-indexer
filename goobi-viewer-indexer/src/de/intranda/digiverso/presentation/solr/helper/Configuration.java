@@ -194,7 +194,6 @@ public final class Configuration {
      * @param inPath
      * @return
      */
-    @SuppressWarnings("unchecked")
     protected List<HierarchicalConfiguration> getLocalConfigurationsAt(String inPath) {
         List<HierarchicalConfiguration> ret = config.configurationsAt(inPath);
         if (ret == null || ret.isEmpty()) {
@@ -202,6 +201,15 @@ public final class Configuration {
         }
 
         return ret;
+    }
+
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public String getViewerUrl() {
+        return getString("init.viewerUrl");
     }
 
     /**
