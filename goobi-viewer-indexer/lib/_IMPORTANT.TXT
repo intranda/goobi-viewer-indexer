@@ -1,1 +1,0 @@
-!!! When adding/replacing JARs, make sure all JAR names are listed in build.xml property 'jar.list' !!

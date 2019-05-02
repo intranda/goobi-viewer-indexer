@@ -16,6 +16,7 @@
 	<Loggers>
 		<Logger name="de.intranda" level="INFO" additivity="true" />
 		<Logger name="de.intranda.digiverso.ocr" level="WARN" additivity="true" />
+		<Logger name="org.apache" level="ERROR" additivity="true" />
 		<Root level="info">
 			<AppenderRef ref="stdout" />
 			<AppenderRef ref="rolling" />
