@@ -13,7 +13,9 @@
 			<unpack>true</unpack>
 			<scope>runtime</scope>
 			<excludes>
+			    <exclude>commons-logging:commons-logging</exclude>
 				<exclude>junit:junit</exclude>
+				<exclude>org.apache.lucene:*</exclude>
 			</excludes>
 		</dependencySet>
 	</dependencySets>

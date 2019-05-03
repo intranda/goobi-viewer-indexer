@@ -7,7 +7,7 @@
 <application generated-by="eclipse" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.zeroturnaround.com" xsi:schemaLocation="http://www.zeroturnaround.com http://update.zeroturnaround.com/jrebel/rebel-2_1.xsd">
 
 	<classpath>
-		<dir name="C:/Users/andre_000/git/goobi-viewer-indexer/goobi-viewer-indexer/bin">
+		<dir name="${git.home}/goobi-viewer-indexer/goobi-viewer-indexer/bin">
 		</dir>
 	</classpath>
 
