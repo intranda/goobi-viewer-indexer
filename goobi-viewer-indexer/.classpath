@@ -42,7 +42,7 @@
 	<classpathentry kind="lib" path="lib/jdom-2.0.6.jar"/>
 	<classpathentry kind="lib" path="lib/jul-to-slf4j-1.7.26.jar"/>
 	<classpathentry kind="lib" path="lib/noggit-0.5.jar"/>
-	<classpathentry kind="lib" path="lib/normdataimporter.jar" sourcepath="/NormDataImporter"/>
+	<classpathentry kind="lib" path="lib/normdataimporter-1.2.5.jar" sourcepath="/NormDataImporter"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.26.jar"/>
 	<classpathentry kind="lib" path="lib/solr-solrj-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib/wstx-asl-3.2.7.jar"/>
