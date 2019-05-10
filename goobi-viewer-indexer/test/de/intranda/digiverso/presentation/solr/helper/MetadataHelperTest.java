@@ -15,6 +15,7 @@
  */
 package de.intranda.digiverso.presentation.solr.helper;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -572,5 +574,18 @@ public class MetadataHelperTest {
         result.get(1).getValue().equals("019003");
         result.get(2).getField().equals(SolrConstants.YEARMONTHDAY);
         result.get(2).getValue().equals("01900318");
+    }
+
+    /**
+     * @see MetadataHelper#getPIFromXML(String,JDomXP)
+     * @verifies extract DenkXweb PI correctly
+     */
+    @Test
+    public void getPIFromXML_shouldExtractDenkXwebPICorrectly() throws Exception {
+        Path path = Paths.get("resources/test/DenkXweb/denkxweb_30596824.xml");
+        Assert.assertTrue(Files.isRegularFile(path));
+        List<Document> docs = JDomXP.splitDenkXwebFile(path.toFile());
+        String pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));
+        Assert.assertEquals("30596824", pi);
     }
 }

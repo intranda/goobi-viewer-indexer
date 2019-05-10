@@ -67,6 +67,7 @@ import de.intranda.digiverso.presentation.solr.helper.MetadataHelper;
 import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 import de.intranda.digiverso.presentation.solr.helper.TextHelper;
 import de.intranda.digiverso.presentation.solr.helper.Utils;
+import de.intranda.digiverso.presentation.solr.helper.XmlTools;
 import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
@@ -1443,7 +1444,7 @@ public class MetsIndexer extends AbstractIndexer {
                     logger.debug("Downloading ALTO from {}", altoURL);
                     String alto = Utils.callUrl(altoURL);
                     if (StringUtils.isNotEmpty(alto)) {
-                        Document altoDoc = Utils.getDocumentFromString(alto, null);
+                        Document altoDoc = XmlTools.getDocumentFromString(alto, null);
                         altoData = TextHelper.readAltoDoc(altoDoc, altoURL);
                         if (altoData != null) {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {

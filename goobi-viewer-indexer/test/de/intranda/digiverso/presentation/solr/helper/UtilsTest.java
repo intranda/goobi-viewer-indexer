@@ -21,26 +21,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom2.Document;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class UtilsTest {
-
-    /**
-     * @see Utils#getDocumentFromString(String,String)
-     * @verifies build document correctly
-     */
-    @Test
-    public void getDocumentFromString_shouldBuildDocumentCorrectly() throws Exception {
-        String xml = "<root><child>child1</child><child>child2</child></root>";
-        Document doc = Utils.getDocumentFromString(xml, null);
-        Assert.assertNotNull(doc);
-        Assert.assertNotNull(doc.getRootElement());
-        Assert.assertEquals("root", doc.getRootElement().getName());
-        Assert.assertNotNull(doc.getRootElement().getChildren("child"));
-        Assert.assertEquals(2, doc.getRootElement().getChildren("child").size());
-    }
 
     /**
      * @see Utils#getCollisionFreeDataFilePath(String,String,String,String)

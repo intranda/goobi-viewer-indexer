@@ -123,60 +123,60 @@ public class LidoIndexer extends AbstractIndexer {
             {
                 String preQuery = "/lido:lido/";
                 pi = MetadataHelper.getPIFromXML(preQuery, xp);
-                if (StringUtils.isNotBlank(pi)) {
-                    // Remove prefix
-                    if (pi.contains(":")) {
-                        pi = pi.substring(pi.lastIndexOf(':') + 1);
-                    }
-                    if (pi.contains("/")) {
-                        pi = pi.substring(pi.lastIndexOf('/') + 1);
-                    }
-                    pi = MetadataHelper.applyIdentifierModifications(pi);
-                    // Do not allow identifiers with illegal characters
-                    Pattern p = Pattern.compile("[^\\w|-]");
-                    Matcher m = p.matcher(pi);
-                    if (m.find()) {
-                        ret[1] = "PI contains illegal characters: " + pi;
-                        throw new IndexerException(ret[1]);
-                    }
-                    indexObj.setPi(pi);
-                    indexObj.setTopstructPI(pi);
-                    logger.debug("PI: {}", indexObj.getPi());
-
-                    // Determine the data repository to use
-                    DataRepository[] repositories =
-                            hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder.getSolrHelper());
-                    dataRepository = repositories[0];
-                    previousDataRepository = repositories[1];
-                    if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                        indexObj.setDataRepository(dataRepository.getPath());
-                    }
-
-                    ret[0] = indexObj.getPi();
-
-                    if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
-                        // Use the old MIX folder
-                        dataFolders.put(DataRepository.PARAM_MIX,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-                            dataFolders.put(DataRepository.PARAM_MIX, null);
-                        } else {
-                            logger.info("Using old MIX folder '{}'.", dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-                        // Use the old TEI metadata folder
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
-                            dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
-                        } else {
-                            logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIMETADATA).toAbsolutePath());
-                        }
-                    }
-                } else {
+                if (StringUtils.isBlank(pi)) {
                     ret[1] = "PI not found.";
                     throw new IndexerException(ret[1]);
+                }
+                
+                // Remove prefix
+                if (pi.contains(":")) {
+                    pi = pi.substring(pi.lastIndexOf(':') + 1);
+                }
+                if (pi.contains("/")) {
+                    pi = pi.substring(pi.lastIndexOf('/') + 1);
+                }
+                pi = MetadataHelper.applyIdentifierModifications(pi);
+                // Do not allow identifiers with illegal characters
+                Pattern p = Pattern.compile("[^\\w|-]");
+                Matcher m = p.matcher(pi);
+                if (m.find()) {
+                    ret[1] = "PI contains illegal characters: " + pi;
+                    throw new IndexerException(ret[1]);
+                }
+                indexObj.setPi(pi);
+                indexObj.setTopstructPI(pi);
+                logger.debug("PI: {}", indexObj.getPi());
+
+                // Determine the data repository to use
+                DataRepository[] repositories =
+                        hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder.getSolrHelper());
+                dataRepository = repositories[0];
+                previousDataRepository = repositories[1];
+                if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+                    indexObj.setDataRepository(dataRepository.getPath());
+                }
+
+                ret[0] = indexObj.getPi();
+
+                if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
+                    // Use the old MIX folder
+                    dataFolders.put(DataRepository.PARAM_MIX,
+                            Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), pi));
+                    if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
+                        dataFolders.put(DataRepository.PARAM_MIX, null);
+                    } else {
+                        logger.info("Using old MIX folder '{}'.", dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath());
+                    }
+                }
+                if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+                    // Use the old TEI metadata folder
+                    dataFolders.put(DataRepository.PARAM_TEIMETADATA,
+                            Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
+                    if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
+                    } else {
+                        logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIMETADATA).toAbsolutePath());
+                    }
                 }
             }
 

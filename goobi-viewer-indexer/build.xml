@@ -68,7 +68,7 @@
 			<classpath refid="test.classpath" />
 			<formatter type="xml" usefile="true" />
 			<batchtest todir="${dir.tests.report}">
-				<fileset dir="${dir.tests.classes}" includes="de/intranda/digiverso/presentation/solr/**/*Test.class" excludes="de/intranda/digiverso/presentation/solr/**/AbstractSolr*" />
+				<fileset dir="${dir.tests.classes}" includes="de/intranda/digiverso/presentation/solr/**/DenkXwebIndexerTest.class" excludes="de/intranda/digiverso/presentation/solr/**/AbstractSolr*" />
 			</batchtest>
 		</junit>
 		<delete dir="${dir.tests.classes}" />

@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
@@ -49,25 +50,34 @@ public class JDomXP {
         UNKNOWN,
         METS,
         LIDO,
+        DENKXWEB,
         WORLDVIEWS,
         ALTO,
         ABBYYXML,
         TEI;
 
         public static FileFormat getByName(String name) {
-            if ("METS".equalsIgnoreCase(name)) {
-                return METS;
-            } else if ("LIDO".equalsIgnoreCase(name)) {
-                return LIDO;
-            } else if ("WORLDVIEWS".equalsIgnoreCase(name)) {
-                return WORLDVIEWS;
-            } else if ("ABBYY".equalsIgnoreCase(name) || "ABBYYXML".equalsIgnoreCase(name)) {
-                return ABBYYXML;
-            } else if ("TEI".equalsIgnoreCase(name)) {
-                return TEI;
+            if (name == null) {
+                return UNKNOWN;
             }
 
-            return UNKNOWN;
+            switch (name.toUpperCase()) {
+                case "METS":
+                    return METS;
+                case "LIDO":
+                    return LIDO;
+                case "DENKXWEB":
+                    return DENKXWEB;
+                case "WORLDVIEWS":
+                    return WORLDVIEWS;
+                case "ABBYY":
+                case "ABBYYXML":
+                    return ABBYYXML;
+                case "TEI":
+                    return TEI;
+                default:
+                    return UNKNOWN;
+            }
         }
     }
 
@@ -108,7 +118,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link List}
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
     public List<Object> evaluate(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
@@ -124,7 +134,7 @@ public class JDomXP {
      * @param parent If not null, the expression is evaluated relative to this element.
      * @param filter Return type filter.
      * @return
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static List<Object> evaluate(String expr, Object parent, Filter filter) throws FatalIndexerException {
@@ -145,7 +155,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link ArrayList} or null
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should return all values
      */
     public List<Element> evaluateToElements(String expr, Object parent) throws FatalIndexerException {
@@ -172,7 +182,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link ArrayList} or null
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should return all values
      */
     public List<Attribute> evaluateToAttributes(String expr, Object parent) throws FatalIndexerException {
@@ -199,7 +209,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should return value correctly
      */
     public String evaluateToAttributeStringValue(String expr, Object parent) throws FatalIndexerException {
@@ -223,7 +233,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link String} or null
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should return value correctly
      */
     public String evaluateToString(String expr, Object parent) throws FatalIndexerException {
@@ -250,7 +260,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link ArrayList} or null
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should return all values
      */
     public List<String> evaluateToStringList(String expr, Object parent) throws FatalIndexerException {
@@ -276,7 +286,7 @@ public class JDomXP {
      * @param expr
      * @param parent
      * @return
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should return value correctly
      */
     public String evaluateToCdata(String expr, Object parent) throws FatalIndexerException {
@@ -373,43 +383,95 @@ public class JDomXP {
      * @should split multi record documents correctly
      * @should leave single record documents as is
      * @should return empty list for non lido documents
-     * @should return empty list for non-exsting files
+     * @should return empty list for non-existing files
      * @should return empty list given null
      */
-    public static List<Document> splitLidoFile(File lidoFile) throws FatalIndexerException {
-        List<Document> ret = new ArrayList<>();
-
-        if (lidoFile != null) {
-            try {
-                JDomXP xp = new JDomXP(lidoFile);
-                if (xp.doc.getRootElement().getName().equals("lidoWrap")) {
-                    // Multiple LIDO document file
-                    Namespace nsXsi = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                    List<Element> lidoElements = xp.doc.getRootElement().getChildren("lido", Configuration.getInstance().getNamespaces().get("lido"));
-                    if (lidoElements != null) {
-                        for (Element eleLidoDoc : lidoElements) {
-                            Document doc = new Document();
-                            doc.setRootElement(eleLidoDoc.clone());
-                            doc.getRootElement().addNamespaceDeclaration(nsXsi);
-                            doc.getRootElement().setAttribute(new Attribute("schemaLocation",
-                                    "http://www.lido-schema.org http://www.lido-schema.org/schema/v1.0/lido-v1.0.xsd", nsXsi));
-                            ret.add(doc);
-                        }
-                    }
-                } else if (xp.doc.getRootElement().getName().equals("lido")) {
-                    // Single LIDO document file
-                    ret.add(xp.doc);
-                } else {
-                    logger.error("Unknown root element: {}", xp.doc.getRootElement().getName());
-                }
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            } catch (JDOMException e) {
-                logger.error(e.getMessage());
-            }
+    public static List<Document> splitLidoFile(File file) throws FatalIndexerException {
+        if (file == null) {
+            return Collections.emptyList();
         }
 
-        return ret;
+        try {
+            JDomXP xp = new JDomXP(file);
+            if (xp.doc.getRootElement().getName().equals("lidoWrap")) {
+                // Multiple LIDO document file
+                Namespace nsXsi = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                List<Element> lidoElements = xp.doc.getRootElement().getChildren("lido", Configuration.getInstance().getNamespaces().get("lido"));
+                if (lidoElements != null) {
+                    List<Document> ret = new ArrayList<>(lidoElements.size());
+                    for (Element eleLidoDoc : lidoElements) {
+                        Document doc = new Document();
+                        doc.setRootElement(eleLidoDoc.clone());
+                        doc.getRootElement().addNamespaceDeclaration(nsXsi);
+                        doc.getRootElement()
+                                .setAttribute(new Attribute("schemaLocation",
+                                        "http://www.lido-schema.org http://www.lido-schema.org/schema/v1.0/lido-v1.0.xsd", nsXsi));
+                        ret.add(doc);
+                    }
+                    return ret;
+                }
+            } else if (xp.doc.getRootElement().getName().equals("lido")) {
+                // Single LIDO document file
+                return Collections.singletonList(xp.doc);
+            } else {
+                logger.error("Unknown root element: {}", xp.doc.getRootElement().getName());
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        } catch (JDOMException e) {
+            logger.error(e.getMessage());
+        }
+
+        return Collections.emptyList();
+    }
+
+    /**
+     * Splits a multi-record DenkXweb document into a list of individual record documents.
+     * 
+     * @param lidoFile
+     * @return
+     * @throws FatalIndexerException
+     * @should split multi record documents correctly
+     * @should leave single record documents as is
+     * @should return empty list for non lido documents
+     * @should return empty list for non-existing files
+     * @should return empty list given null
+     */
+    public static List<Document> splitDenkXwebFile(File file) throws FatalIndexerException {
+        if (file == null) {
+            return Collections.emptyList();
+        }
+
+        try {
+            JDomXP xp = new JDomXP(file);
+            if (xp.doc.getRootElement().getName().equals("monuments")) {
+                // Multiple DenkXweb document file
+                //                Namespace nsXsi = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                List<Element> eleListRecord =
+                        xp.doc.getRootElement().getChildren("monument", Configuration.getInstance().getNamespaces().get("denkxweb"));
+                if (eleListRecord != null) {
+                    List<Document> ret = new ArrayList<>(eleListRecord.size());
+                    for (Element eleDoc : eleListRecord) {
+                        Document doc = new Document();
+                        doc.setRootElement(eleDoc.clone());
+                        //                        doc.getRootElement().addNamespaceDeclaration(nsXsi);
+                        ret.add(doc);
+                    }
+                    return ret;
+                }
+            } else if (xp.doc.getRootElement().getName().equals("monument")) {
+                // Single DenkXweb document file
+                return Collections.singletonList((xp.doc));
+            } else {
+                logger.error("Unknown root element: {}", xp.doc.getRootElement().getName());
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        } catch (JDOMException e) {
+            logger.error(e.getMessage());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -460,6 +522,7 @@ public class JDomXP {
      * @throws FatalIndexerException
      * @should detect mets files correctly
      * @should detect lido files correctly
+     * @should detect denkxweb files correctly
      * @should detect worldviews files correctly
      * @should detect abbyy files correctly
      * @should detect tei files correctly
@@ -467,22 +530,28 @@ public class JDomXP {
     public static FileFormat determineFileFormat(File file) throws IOException, FatalIndexerException {
         try {
             JDomXP xp = new JDomXP(file);
-            if (xp.doc.getRootElement() != null) {
-                if (xp.doc.getRootElement().getNamespace("mets") != null) {
-                    return FileFormat.METS;
-                }
-                if (xp.doc.getRootElement().getNamespace("lido") != null) {
-                    return FileFormat.LIDO;
-                }
-                if (xp.doc.getRootElement().getName().equals("worldviews")) {
-                    return FileFormat.WORLDVIEWS;
-                }
-                if (xp.doc.getRootElement().getNamespace().getURI().contains("abbyy")) {
-                    return FileFormat.ABBYYXML;
-                }
-                if (xp.doc.getRootElement().getName().equals("TEI.2")) {
-                    return FileFormat.TEI;
-                }
+            if (xp.doc.getRootElement() == null) {
+                return FileFormat.UNKNOWN;
+            }
+
+            if (xp.doc.getRootElement().getNamespace("mets") != null) {
+                return FileFormat.METS;
+            }
+            if (xp.doc.getRootElement().getNamespace("lido") != null) {
+                return FileFormat.LIDO;
+            }
+            if (xp.doc.getRootElement().getNamespace() != null
+                    && xp.doc.getRootElement().getNamespace().getURI().toString().equals("http://denkxweb.de/")) {
+                return FileFormat.DENKXWEB;
+            }
+            if (xp.doc.getRootElement().getName().equals("worldviews")) {
+                return FileFormat.WORLDVIEWS;
+            }
+            if (xp.doc.getRootElement().getNamespace().getURI().contains("abbyy")) {
+                return FileFormat.ABBYYXML;
+            }
+            if (xp.doc.getRootElement().getName().equals("TEI.2")) {
+                return FileFormat.TEI;
             }
         } catch (JDOMException e) {
             logger.error(e.getMessage());

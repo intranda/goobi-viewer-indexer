@@ -811,24 +811,21 @@ public class MetadataHelper {
      * @param xp
      * @return String or null
      * @throws FatalIndexerException
+     * @should extract DenkXweb PI correctly
      */
     @SuppressWarnings({ "unchecked" })
     public static String getPIFromXML(String prefix, JDomXP xp) throws FatalIndexerException {
         List<Map<String, Object>> piConfig = Configuration.getInstance().getFieldConfiguration().get(SolrConstants.PI);
-        if (piConfig != null) {
-            List<XPathConfig> xPathConfigurations = (ArrayList<XPathConfig>) piConfig.get(0).get("xpath");
-            for (XPathConfig xPathConfig : xPathConfigurations) {
-                String query = prefix + xPathConfig.getxPath();
-                List<String> list = new ArrayList<>();
-                List<Object> oList = xp.evaluate(query, null);
-                if ((oList != null) && (!oList.isEmpty())) {
-                    for (Object object : oList) {
-                        list.add(JDomXP.objectToString(object));
-                    }
-                    if (!list.isEmpty() && StringUtils.isNotBlank(list.get(0))) {
-                        return list.get(0);
-                    }
-                }
+        if (piConfig == null) {
+            return null;
+        }
+
+        List<XPathConfig> xPathConfigurations = (ArrayList<XPathConfig>) piConfig.get(0).get("xpath");
+        for (XPathConfig xPathConfig : xPathConfigurations) {
+            String query = prefix + xPathConfig.getxPath();
+            String pi = xp.evaluateToString(query, null);
+            if (StringUtils.isNotEmpty(pi)) {
+                return pi;
             }
         }
 
@@ -1449,7 +1446,7 @@ public class MetadataHelper {
                     for (Element ele : eleBody.getChildren()) {
                         eleNewRoot.addContent(ele.clone());
                     }
-                    String body = TextHelper.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "").trim();
+                    String body = XmlTools.getStringFromElement(eleNewRoot, null).replace("<tempRoot>", "").replace("</tempRoot>", "").trim();
                     sbFulltext.append(TextHelper.cleanUpHtmlTags(body)).append('\n');
                 } else {
                     logger.warn("No text body found in TEI");

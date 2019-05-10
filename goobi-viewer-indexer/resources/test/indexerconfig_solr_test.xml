@@ -216,8 +216,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or
-								@type="PPN"]
+							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]
 							</item>
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier
 							</item>
@@ -225,6 +224,7 @@
 							</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID
 							</item>
+                            <item>//denkxweb:recid</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>

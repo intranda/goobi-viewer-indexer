@@ -35,7 +35,6 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.SubsetConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -64,7 +63,7 @@ public final class TextHelper {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(TextHelper.class);
 
-    private static final String DEFAULT_ENCODING = "UTF-8";
+    public static final String DEFAULT_ENCODING = "UTF-8";
 
     private static final String ALTO_WIDTH = "WIDTH";
     private static final String ALTO_HEIGHT = "HEIGHT";
@@ -533,32 +532,6 @@ public final class TextHelper {
         }
 
         return null;
-    }
-
-    /**
-     * 
-     * @param element
-     * @param encoding
-     * @return
-     */
-    public static String getStringFromElement(Element element, String encoding) {
-        if (element == null) {
-            throw new IllegalArgumentException("element may not be null");
-        }
-        if (encoding == null) {
-            encoding = DEFAULT_ENCODING;
-        }
-        Format format = Format.getRawFormat();
-        XMLOutputter outputter = new XMLOutputter(format);
-        Format xmlFormat = outputter.getFormat();
-        if (StringUtils.isNotEmpty(encoding)) {
-            xmlFormat.setEncoding(encoding);
-        }
-        xmlFormat.setExpandEmptyElements(true);
-        outputter.setFormat(xmlFormat);
-        String docString = outputter.outputString(element);
-
-        return docString;
     }
 
     /**

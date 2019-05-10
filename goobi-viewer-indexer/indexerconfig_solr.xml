@@ -194,6 +194,7 @@
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
+							<item>//denkxweb:recid</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
