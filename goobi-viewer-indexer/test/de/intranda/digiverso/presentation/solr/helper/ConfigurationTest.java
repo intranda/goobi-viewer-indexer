@@ -225,7 +225,7 @@ public class ConfigurationTest {
     @Test
     public void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
         Configuration.getInstance().initNamespaces();
-        Assert.assertEquals(11, Configuration.getInstance().getNamespaces().size());
+        Assert.assertEquals(12, Configuration.getInstance().getNamespaces().size());
         Assert.assertNotNull(Configuration.getInstance().getNamespaces().get("intranda"));
     }
 
