@@ -52,6 +52,18 @@ public class JDomXPTest {
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
     }
+    
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect denkxweb files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
+        File file = new File("resources/test/DenkXWeb/denkxweb_30596824.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.DENKXWEB, JDomXP.determineFileFormat(file));
+    }
 
     /**
      * @see JDomXP#determineFileFormat(File)
@@ -124,10 +136,10 @@ public class JDomXPTest {
 
     /**
      * @see JDomXP#splitLidoFile(File)
-     * @verifies return empty list for non-exsting files
+     * @verifies return empty list for non-existing files
      */
     @Test
-    public void splitLidoFile_shouldReturnEmptyListForNonexstingFiles() throws Exception {
+    public void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
         File file = new File("no.xml");
         Assert.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -141,6 +153,52 @@ public class JDomXPTest {
     @Test
     public void splitLidoFile_shouldReturnEmptyListGivenNull() throws Exception {
         List<Document> docs = JDomXP.splitLidoFile(null);
+        Assert.assertEquals(0, docs.size());
+    }
+    
+    /**
+     * @see JDomXP#splitDenkXwebFile(File)
+     * @verifies split multi record documents correctly
+     */
+    @Test
+    public void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
+        File file = new File("resources/test/DenkXweb/denkxweb_30596824.xml");
+        Assert.assertTrue(file.isFile());
+        List<Document> docs = JDomXP.splitDenkXwebFile(file);
+        Assert.assertEquals(117, docs.size());
+    }
+
+    /**
+     * @see JDomXP#splitDenkXwebFile(File)
+     * @verifies return empty list for non lido documents
+     */
+    @Test
+    public void splitDenkXwebFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
+        File file = new File("resources/test/METS/H030001_mets.xml");
+        Assert.assertTrue(file.isFile());
+        List<Document> docs = JDomXP.splitDenkXwebFile(file);
+        Assert.assertEquals(0, docs.size());
+    }
+
+    /**
+     * @see JDomXP#splitDenkXwebFile(File)
+     * @verifies return empty list for non-existing files
+     */
+    @Test
+    public void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
+        File file = new File("no.xml");
+        Assert.assertFalse(file.isFile());
+        List<Document> docs = JDomXP.splitDenkXwebFile(file);
+        Assert.assertEquals(0, docs.size());
+    }
+
+    /**
+     * @see JDomXP#splitDenkXwebFile(File)
+     * @verifies return empty list given null
+     */
+    @Test
+    public void splitDenkXwebFile_shouldReturnEmptyListGivenNull() throws Exception {
+        List<Document> docs = JDomXP.splitDenkXwebFile(null);
         Assert.assertEquals(0, docs.size());
     }
 

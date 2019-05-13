@@ -67,6 +67,9 @@ public class Utils {
      * @return
      */
     public static boolean checkAndCreateDirectory(Path path) {
+        if (path == null) {
+            return false;
+        }
         if (!Files.isDirectory(path)) {
             try {
                 Files.createDirectories(path);
@@ -267,37 +270,6 @@ public class Utils {
         }
 
         return null;
-    }
-
-    /**
-     * Create a JDOM document from an XML string.
-     *
-     * @param string
-     * @return
-     * @throws IOException
-     * @throws JDOMException
-     * @should build document correctly
-     */
-    public static Document getDocumentFromString(String string, String encoding) throws JDOMException, IOException {
-        if (string == null) {
-            throw new IllegalArgumentException("string may not be null");
-        }
-        if (encoding == null) {
-            encoding = "UTF-8";
-        }
-
-        byte[] byteArray = null;
-        try {
-            byteArray = string.getBytes(encoding);
-        } catch (UnsupportedEncodingException e) {
-        }
-        ByteArrayInputStream baos = new ByteArrayInputStream(byteArray);
-
-        // Reader reader = new StringReader(hOCRText);
-        SAXBuilder builder = new SAXBuilder();
-        Document document = builder.build(baos);
-
-        return document;
     }
 
     public static boolean isUrn(String urn) {

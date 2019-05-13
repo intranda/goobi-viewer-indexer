@@ -115,6 +115,7 @@ public final class Configuration {
         namespaces.put("mix", Namespace.getNamespace("mix", "http://www.loc.gov/mix/v20"));
         namespaces.put("mm", Namespace.getNamespace("mm", "http://www.mycore.de/metsmaker/v1"));
         namespaces.put("tei", Namespace.getNamespace("tei", "http://www.tei-c.org/ns/1.0"));
+        namespaces.put("denkxweb", Namespace.getNamespace("denkxweb", "http://denkxweb.de/"));
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         if (additionalNamespaces != null) {

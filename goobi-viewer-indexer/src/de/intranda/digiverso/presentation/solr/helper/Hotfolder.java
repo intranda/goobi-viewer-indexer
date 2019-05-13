@@ -63,6 +63,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.AbstractIndexer;
+import de.intranda.digiverso.presentation.solr.DenkXwebIndexer;
 import de.intranda.digiverso.presentation.solr.DocUpdateIndexer;
 import de.intranda.digiverso.presentation.solr.LidoIndexer;
 import de.intranda.digiverso.presentation.solr.MetsIndexer;
@@ -77,6 +78,7 @@ import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.IDa
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.MaxRecordNumberStrategy;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.RemainingSpaceStrategy;
 import de.intranda.digiverso.presentation.solr.model.datarepository.strategy.SingleRepositoryStrategy;
+import jdk.nashorn.internal.runtime.regexp.joni.Config;
 
 public class Hotfolder {
 
@@ -84,6 +86,11 @@ public class Hotfolder {
 
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
     private static final int WAIT_IF_FILE_EMPTY = 5000;
+
+    public static boolean metsEnabled = true;
+    public static boolean lidoEnabled = true;
+    public static boolean denkxwebEnabled = true;
+    public static boolean worldviewsEnabled = true;
 
     private StringWriter swSecondaryLog;
     private WriterAppender secondaryAppender;
@@ -102,6 +109,7 @@ public class Hotfolder {
     private Path deletedMets;
     private Path errorMets;
     private Path origLido;
+    private Path origDenkxWeb;
     private Path success;
 
     private AbstractIndexer currentIndexer;
@@ -204,13 +212,18 @@ public class Hotfolder {
                 dataRepositoryStrategy = new SingleRepositoryStrategy(config);
         }
 
+        // METS folders
+        if (config.getConfiguration("indexedMets") == null) {
+            metsEnabled = false;
+            logger.warn("<indexedMets> not defined - METS indexing is disabled.");
+        }
         try {
             updatedMets = Paths.get(config.getConfiguration("updatedMets"));
             if (!Utils.checkAndCreateDirectory(updatedMets)) {
                 throw new FatalIndexerException("Could not create directory : " + updatedMets.toAbsolutePath().toString());
             }
         } catch (Exception e) {
-            logger.error("<updatedMets> not defined.");
+            throw new FatalIndexerException("<updatedMets> not defined.");
         }
         try {
             deletedMets = Paths.get(config.getConfiguration("deletedMets"));
@@ -218,7 +231,7 @@ public class Hotfolder {
                 throw new FatalIndexerException("Could not create directory : " + deletedMets.toAbsolutePath().toString());
             }
         } catch (Exception e) {
-            logger.error("<deletedMets> not defined.");
+            throw new FatalIndexerException("<deletedMets> not defined.");
         }
         try {
             errorMets = Paths.get(config.getConfiguration("errorMets"));
@@ -226,34 +239,49 @@ public class Hotfolder {
                 throw new FatalIndexerException("Could not create directory : " + errorMets.toAbsolutePath().toString());
             }
         } catch (Exception e) {
-            logger.error("<errorMets> not defined.");
+            throw new FatalIndexerException("<errorMets> not defined.");
         }
-        try {
+
+        // LIDO folders
+        if (config.getConfiguration("indexedLido") == null) {
+            lidoEnabled = false;
+            logger.warn("<indexedLido> not defined - LIDO indexing is disabled.");
+        }
+        if (config.getConfiguration("origLido") != null) {
             origLido = Paths.get(config.getConfiguration("origLido"));
             if (!Utils.checkAndCreateDirectory(origLido)) {
                 throw new FatalIndexerException("Could not create directory : " + origLido.toAbsolutePath().toString());
             }
-        } catch (Exception e) {
-            logger.error("<origLido> not defined.");
+        } else {
+            lidoEnabled = false;
+            logger.warn("<origLido> not defined - LIDO indexing is disabled.");
         }
+
+        // DenkXweb folders
+        if (config.getConfiguration("indexedDenkXweb") == null) {
+            lidoEnabled = false;
+            logger.warn("<indexedDenkXweb> not defined - DenkXweb indexing is disabled.");
+        }
+        if (config.getConfiguration("origDenkXweb") != null) {
+            origDenkxWeb = Paths.get(config.getConfiguration("origDenkXweb"));
+            if (!Utils.checkAndCreateDirectory(origDenkxWeb)) {
+                throw new FatalIndexerException("Could not create directory : " + origDenkxWeb.toAbsolutePath().toString());
+            }
+        } else {
+            denkxwebEnabled = false;
+            logger.warn("<origDenkXweb> not defined - DenkXweb indexing is disabled.");
+        }
+
         try {
             success = Paths.get(config.getConfiguration("successFolder"));
             if (!Utils.checkAndCreateDirectory(success)) {
                 throw new FatalIndexerException("Could not create directory : " + success.toAbsolutePath().toString());
             }
         } catch (Exception e) {
-            logger.error("<successFolder> not defined.");
+            throw new FatalIndexerException("<successFolder> not defined.");
         }
-        try {
-            metsFileSizeThreshold = Configuration.getInstance().getInt("performance.metsFileSizeThreshold", 10485760);
-        } catch (Exception e) {
-            logger.error("<metsFileSizeThreshold> not defined.");
-        }
-        try {
-            dataFolderSizeThreshold = Configuration.getInstance().getInt("performance.dataFolderSizeThreshold", 157286400);
-        } catch (Exception e) {
-            logger.error("<dataFolderSizeThreshold> not defined.");
-        }
+        metsFileSizeThreshold = Configuration.getInstance().getInt("performance.metsFileSizeThreshold", 10485760);
+        dataFolderSizeThreshold = Configuration.getInstance().getInt("performance.dataFolderSizeThreshold", 157286400);
 
         SolrHelper.optimize = Boolean.valueOf(Configuration.getInstance().isAutoOptimize());
         logger.info("Auto-optimize: {}", SolrHelper.optimize);
@@ -509,13 +537,36 @@ public class Hotfolder {
                 FileFormat fileType = JDomXP.determineFileFormat(dataFile.toFile());
                 switch (fileType) {
                     case METS:
-                        addMetsToIndex(dataFile, fromReindexQueue, reindexSettings);
+                        if (metsEnabled) {
+                            addMetsToIndex(dataFile, fromReindexQueue, reindexSettings);
+                        } else {
+                            logger.error("METS indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(dataFile);
+                        }
                         break;
                     case LIDO:
-                        addLidoToIndex(dataFile, reindexSettings);
+                        if (lidoEnabled) {
+                            addLidoToIndex(dataFile, reindexSettings);
+                        } else {
+                            logger.error("LIDO indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(dataFile);
+                        }
+                        break;
+                    case DENKXWEB:
+                        if (denkxwebEnabled) {
+                            addDenkXwebToIndex(dataFile, reindexSettings);
+                        } else {
+                            logger.error("DenkXweb indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(dataFile);
+                        }
                         break;
                     case WORLDVIEWS:
-                        addWorldViewsToIndex(dataFile, fromReindexQueue, reindexSettings);
+                        if (worldviewsEnabled) {
+                            addWorldViewsToIndex(dataFile, fromReindexQueue, reindexSettings);
+                        } else {
+                            logger.error("WorldViews indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(dataFile);
+                        }
                         break;
                     default:
                         logger.error("Unknown file format, deleting: {}", filename);
@@ -619,6 +670,7 @@ public class Hotfolder {
             switch (format) {
                 case METS:
                 case LIDO:
+                case DENKXWEB:
                 case WORLDVIEWS:
                     if (trace) {
                         logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());
@@ -1091,6 +1143,174 @@ public class Hotfolder {
             if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
                     && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
+            }
+            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
+                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
+                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+            }
+        }
+    }
+
+    /**
+     * Indexes the given DenkXweb file.
+     * 
+     * @param denkxwebFile {@link File}
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * 
+     */
+    private void addDenkXwebToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        if (denkxwebFile == null) {
+            throw new IllegalArgumentException("denkxwebFile may not be null");
+        }
+
+        logger.debug("Indexing DenkXweb file '{}'...", denkxwebFile.getFileName());
+        String[] resp = { null, null };
+        Map<String, Path> dataFolders = new HashMap<>();
+        String fileNameRoot = FilenameUtils.getBaseName(denkxwebFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
+            for (Path path : stream) {
+                logger.info("Found data folder: {}", path.getFileName());
+                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
+                switch (fileNameSansRoot) {
+                    case "_tif":
+                    case "_media":
+                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
+                        break;
+                    default:
+                        // nothing;
+                }
+            }
+        }
+
+        if (dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) {
+            logger.info("External images will be downloaded.");
+            Path newMediaFolder = Paths.get(hotfolderPath.toString(), fileNameRoot + "_tif");
+            dataFolders.put(DataRepository.PARAM_MEDIA, newMediaFolder);
+            if (!Files.exists(newMediaFolder)) {
+                Files.createDirectory(newMediaFolder);
+                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath().toString());
+            }
+        }
+
+        // Use existing folders for those missing in the hotfolder
+        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
+            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
+        }
+
+        List<Document> denkxwebDocs = JDomXP.splitDenkXwebFile(denkxwebFile.toFile());
+        logger.info("File contains {} DenkXweb documents.", denkxwebDocs.size());
+        XMLOutputter outputter = new XMLOutputter();
+        boolean errors = false;
+        try {
+            for (Document doc : denkxwebDocs) {
+                DataRepository dataRepository;
+                DataRepository previousDataRepository;
+                try {
+                    currentIndexer = new DenkXwebIndexer(this);
+                    resp = ((DenkXwebIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart());
+                } finally {
+                    dataRepository = currentIndexer.getDataRepository();
+                    previousDataRepository = currentIndexer.getPreviousDataRepository();
+                    currentIndexer = null;
+                }
+                if (!"ERROR".equals(resp[0])) {
+                    String identifier = resp[0];
+                    String newDenkXwebFileName = identifier + ".xml";
+
+                    // Write individual LIDO records as separate files
+                    Path indexed =
+                            Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), newDenkXwebFileName);
+                    try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
+                        outputter.output(doc, out);
+                    }
+
+                    // Move non-repository data directories to the selected repository
+                    if (previousDataRepository != null) {
+                        previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
+                    }
+
+                    // copy media files
+                    boolean mediaFilesCopied = false;
+                    Path destMediaDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
+                    if (!Files.exists(destMediaDir)) {
+                        Files.createDirectory(destMediaDir);
+                    }
+
+                    int imageCounter = 0;
+                    if (StringUtils.isNotEmpty(resp[1]) && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
+                        logger.info("Copying image files...");
+                        String[] imgFileNamesSplit = resp[1].split(";");
+                        Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
+                        try (DirectoryStream<Path> mediaFileStream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MEDIA))) {
+                            for (Path mediaFile : mediaFileStream) {
+                                if (Files.isRegularFile(mediaFile) && imgFileNames.contains(mediaFile.getFileName().toString())) {
+                                    logger.info("Copying file {} to {}", mediaFile.toAbsolutePath(), destMediaDir.toAbsolutePath());
+                                    Files.copy(mediaFile, Paths.get(destMediaDir.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
+                                            StandardCopyOption.REPLACE_EXISTING);
+                                    imageCounter++;
+                                }
+                            }
+                        }
+                        mediaFilesCopied = true;
+                    } else {
+                        //                        logger.warn("No media file names could be extracted from '{}'.", identifier);
+                    }
+                    if (!mediaFilesCopied) {
+                        logger.debug("No media folder found for '{}'.", denkxwebFile);
+
+                        // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
+                        if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null || reindexSettings.get(DataRepository.PARAM_MEDIA)) {
+                            for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
+                                if (!repo.equals(dataRepository) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
+                                    Path misplacedDataDir =
+                                            Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
+                                    if (Files.isDirectory(misplacedDataDir)) {
+                                        logger.warn("Found data folder for this record in different data repository: {}",
+                                                misplacedDataDir.toAbsolutePath().toString());
+                                        logger.warn("Moving data folder to new repository...");
+                                        repo.moveDataFolderToRepository(dataRepository, identifier, DataRepository.PARAM_MEDIA);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        logger.info("{} media file(s) copied.", imageCounter);
+                    }
+                }
+            }
+        } finally {
+            currentIndexer = null;
+        }
+
+        // Copy original DenkXweb file into the orig folder
+        Path orig = Paths.get(origDenkxWeb.toAbsolutePath().toString(), denkxwebFile.getFileName().toString());
+        Files.copy(denkxwebFile, orig, StandardCopyOption.REPLACE_EXISTING);
+
+        // Delete files from the hotfolder
+        try {
+            Files.delete(denkxwebFile);
+        } catch (IOException e) {
+            logger.error("'{}' could not be deleted; please delete it manually.", denkxwebFile.toAbsolutePath());
+        }
+        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
+                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
+            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
+        }
+        if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
+                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))
+                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
+            logger.warn("'{}' could not be deleted; please delete it manually.",
+                    dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath());
+        }
+
+        if (deleteContentFilesOnFailure) {
+            // Delete all folders
+            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
+                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
             }
             if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
                     && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
