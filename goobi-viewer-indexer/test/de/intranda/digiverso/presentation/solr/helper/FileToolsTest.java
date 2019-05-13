@@ -78,7 +78,7 @@ public class FileToolsTest {
      */
     @Test
     public void getCharset_shouldDetectCharsetCorrectly() throws Exception {
-        File file = new File("resources/test/stopwords.txt");
+        File file = new File("resources/test/stopwords_de_en.txt");
         try (FileInputStream fis = new FileInputStream(file)) {
             Assert.assertEquals("UTF-8", FileTools.getCharset(fis));
         }
