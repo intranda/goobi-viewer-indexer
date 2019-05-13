@@ -2535,6 +2535,18 @@
 				</item>
 			</list>
 		</MD_SCALE>
+		
+        <MD_GML_COORDINATES>
+            <list>
+                <item>
+                    <xpath>//denkxweb:georeference
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <onefield>false</onefield>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_GML_COORDINATES>
 
 		<MD_COORDINATES>
 			<list>
