@@ -60,7 +60,7 @@ public class JDomXPTest {
      */
     @Test
     public void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
-        File file = new File("resources/test/DenkXWeb/denkxweb_30596824.xml");
+        File file = new File("resources/test/DenkXweb/denkxweb_30596824.xml");
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.DENKXWEB, JDomXP.determineFileFormat(file));
     }
