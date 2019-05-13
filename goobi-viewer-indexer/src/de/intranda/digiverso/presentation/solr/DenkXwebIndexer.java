@@ -111,7 +111,7 @@ public class DenkXwebIndexer extends AbstractIndexer {
                     ret[1] = "PI not found.";
                     throw new IndexerException(ret[1]);
                 }
-                
+
                 // Remove prefix
                 if (pi.contains(":")) {
                     pi = pi.substring(pi.lastIndexOf(':') + 1);
@@ -332,16 +332,17 @@ public class DenkXwebIndexer extends AbstractIndexer {
      * @param indexObj {@link IndexObject}
      * @throws FatalIndexerException
      */
-    private void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
+    private static void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
         Element structNode = indexObj.getRootStructNode();
 
         // Set type
-        List<String> values = xp.evaluateToStringList(
-                "lido:descriptiveMetadata/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType/lido:term/text()", structNode);
-        if (values != null && !values.isEmpty()) {
-            indexObj.setType(MetadataConfigurationManager.mapDocStrct((values.get(0)).trim()));
+        {
+            String value = structNode.getAttributeValue("type");
+            if (StringUtils.isNotEmpty(value)) {
+                indexObj.setType(MetadataConfigurationManager.mapDocStrct(value).trim());
+            }
+            logger.trace("TYPE: {}", indexObj.getType());
         }
-        logger.trace("TYPE: {}", indexObj.getType());
 
         // Set label
         {

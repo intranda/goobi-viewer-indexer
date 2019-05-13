@@ -46,6 +46,7 @@
 
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
+		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 
 		<!-- Misc folders -->
 		<successFolder>C:/digiverso/viewer/success/</successFolder>
@@ -53,6 +54,7 @@
 		<deletedMets>C:/digiverso/viewer/deleted_mets/</deletedMets>
 		<errorMets>C:/digiverso/viewer/error_mets/</errorMets>
 		<origLido>C:/digiverso/viewer/orig_lido/</origLido>
+		<origDenkXweb>C:/digiverso/viewer/orig_denkxweb/</origDenkXweb>
 
 		<!-- Encoding that full-text files will be expected to have (default is 'UTF-8'). -->
 		<fulltextEncoding>UTF-8</fulltextEncoding>
@@ -2119,6 +2121,8 @@
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='Orginaletikett'
 								or @lido:type='description']/lido:descriptiveNoteValue
 							</item>
+                            <item>//denkxweb:description
+                            </item>
 						</list>
 					</xpath>
 					<onefield>false</onefield>

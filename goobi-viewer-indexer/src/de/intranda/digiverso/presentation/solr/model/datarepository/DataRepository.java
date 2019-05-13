@@ -43,6 +43,7 @@ public class DataRepository {
 
     public static final String PARAM_INDEXED_METS = "indexedMets";
     public static final String PARAM_INDEXED_LIDO = "indexedLido";
+    public static final String PARAM_INDEXED_DENKXWEB = "indexedDenkXweb";
     public static final String PARAM_MEDIA = "mediaFolder";
     public static final String PARAM_ALTO = "altoFolder";
     public static final String PARAM_ALTO_CONVERTED = "altoFolder";
@@ -106,6 +107,7 @@ public class DataRepository {
         if (createFolders) {
             checkAndCreateDataSubdir(PARAM_INDEXED_METS);
             checkAndCreateDataSubdir(PARAM_INDEXED_LIDO);
+            checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB);
             checkAndCreateDataSubdir(PARAM_MEDIA);
             checkAndCreateDataSubdir(PARAM_ALTO);
             checkAndCreateDataSubdir(PARAM_ALTOCROWD);
@@ -157,10 +159,26 @@ public class DataRepository {
         return true;
     }
 
+    /**
+     * 
+     * @param name
+     * @throws FatalIndexerException
+     */
     private void checkAndCreateDataSubdir(String name) throws FatalIndexerException {
+        if (name == null) {
+            throw new IllegalArgumentException("name may not be null");
+        }
         String config = Configuration.getInstance().getConfiguration(name);
         if (StringUtils.isEmpty(config)) {
-            throw new FatalIndexerException("No configuration found for '" + name + "', exiting...");
+            switch (name) {
+                case PARAM_INDEXED_METS:
+                case PARAM_INDEXED_LIDO:
+                case PARAM_INDEXED_DENKXWEB:
+                    return;
+                default:
+                    throw new FatalIndexerException("No configuration found for '" + name + "', exiting...");
+            }
+
         }
         //        File dataSubdir = new File(rootDir, config);
         Path dataSubdir = Paths.get(rootDir.toAbsolutePath().toString(), config);
@@ -238,14 +256,14 @@ public class DataRepository {
      * @should calculate number correctly
      */
     public int getNumRecords() throws IOException {
-        Path metsDir = getDir(PARAM_INDEXED_METS);
-        Path lidoDir = getDir(PARAM_INDEXED_LIDO);
-        int metsRecords = countFiles(metsDir);
+        int metsRecords = countFiles(getDir(PARAM_INDEXED_METS));
         logger.info("Data repository '{}' contains {} METS records.", path, metsRecords);
-        int lidoRecords = countFiles(lidoDir);
+        int lidoRecords = countFiles(getDir(PARAM_INDEXED_LIDO));
         logger.info("Data repository '{}' contains {} LIDO records.", path, lidoRecords);
+        int denkxwebRecords = countFiles(getDir(PARAM_INDEXED_DENKXWEB));
+        logger.info("Data repository '{}' contains {} DenkXweb records.", path, denkxwebRecords);
 
-        return metsRecords + lidoRecords;
+        return metsRecords + lidoRecords + denkxwebRecords;
     }
 
     /**
@@ -312,6 +330,16 @@ public class DataRepository {
                 logger.info("Deleted old repository LIDO file: {}", oldRecordFile.toAbsolutePath());
             } catch (IOException e) {
                 logger.error("Could not delete old repository LIDO file: {}", oldRecordFile.toAbsolutePath());
+            }
+        }
+        // DENKXWEB
+        oldRecordFile = Paths.get(getDir(PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), pi + ".xml");
+        if (Files.isRegularFile(oldRecordFile)) {
+            try {
+                Files.delete(oldRecordFile);
+                logger.info("Deleted old repository DenkXweb file: {}", oldRecordFile.toAbsolutePath());
+            } catch (IOException e) {
+                logger.error("Could not delete old repository DenkXweb file: {}", oldRecordFile.toAbsolutePath());
             }
         }
     }
@@ -491,12 +519,6 @@ public class DataRepository {
             throw new IllegalArgumentException("identifier may not be null");
         }
 
-        // Copy crowdsourcing data folders into their regular counterparts, overwriting regular files
-        //        if (PARAM_ALTOCROWD.equals(paramName)) {
-        //            paramName = PARAM_ALTO;
-        //        } else if (PARAM_FULLTEXTCROWD.equals(paramName)) {
-        //            paramName = PARAM_FULLTEXT;
-        //        }
         logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath().toString());
         int counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
         logger.info("{} {} files copied.", counter, paramName);
@@ -514,13 +536,15 @@ public class DataRepository {
      * @throws IOException
      */
     public static int countFiles(Path dir) throws IOException {
+        if (dir == null || !Files.isDirectory(dir)) {
+            return 0;
+        }
+
         int c = 0;
-        if (Files.isDirectory(dir)) {
-            try (DirectoryStream<Path> files = Files.newDirectoryStream(dir)) {
-                for (Path file : files) {
-                    if (Files.isRegularFile(file) || Files.isSymbolicLink(file)) {
-                        c++;
-                    }
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(dir)) {
+            for (Path file : files) {
+                if (Files.isRegularFile(file) || Files.isSymbolicLink(file)) {
+                    c++;
                 }
             }
         }

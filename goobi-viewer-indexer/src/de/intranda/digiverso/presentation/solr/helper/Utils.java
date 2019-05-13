@@ -67,6 +67,9 @@ public class Utils {
      * @return
      */
     public static boolean checkAndCreateDirectory(Path path) {
+        if (path == null) {
+            return false;
+        }
         if (!Files.isDirectory(path)) {
             try {
                 Files.createDirectories(path);

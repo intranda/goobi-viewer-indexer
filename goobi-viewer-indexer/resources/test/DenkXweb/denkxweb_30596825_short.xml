@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<monuments xmlns="http://denkxweb.de/">
+	<monument type="Baudenkmal">
+		<recid>30596824</recid>
+		<partof>???</partof>
+		<country>DE</country>
+		<state>Niedersachsen</state>
+		<district>Region Hannover</district>
+		<municipality>Hannover, Stadt</municipality>
+		<area>Bothfeld</area>
+		<zipcode>???</zipcode>
+		<address>???</address>
+		<name>Geha</name>
+		<description>Viergesch. Stahlbetonskelettbau mit Rasterfassade,
+			markanter Treppenhausturm an der Straßenecke, zeittypische
+			Materialien erb. 1955 von Ernst Zinsser. Einheit mit Podbielskistr.
+			323 und 325!</description>
+		<recorganization>NLD</recorganization>
+		<recdate>2005-05-03T16:01:21</recdate>
+		<reclastchangedate>2011-07-07T14:52:08.819957</reclastchangedate>
+		<buildingcategory>Oberbegriff aus Objekttyp-Thesaurus ?
+		</buildingcategory>
+		<buildingtype>Büro-/Fertigungsgebäude</buildingtype>
+		<dating>unbekannt</dating>
+		<authoritativerepresentation>https://www.adabweb.niedersachsen.de/???
+		</authoritativerepresentation>
+		<images>???</images>
+		<notablepersons>???</notablepersons>
+		<bibliography>???</bibliography>
+		<cadastralreference>???</cadastralreference>
+		<georeference>&lt;gml:Polygon
+			srsName="EPSG:31467"&gt;&lt;gml:outerBoundaryIs&gt;&lt;gml:LinearRing&gt;&lt;gml:coordinates&gt;3554544.390000000130385,5808458.070000000298023
+			3554574.540000000037253,5808478.96999999973923
+			3554583.390000000130385,5808465.480000000447035
+			3554552.979999999981374,5808444.190000000409782
+			3554552.060000000055879,5808445.509999999776483
+			3554547.959999999962747,5808443.129999999888241
+			3554541.350000000093132,5808451.459999999962747
+			3554546.240000000223517,5808455.03000000026077
+			3554544.390000000130385,5808458.070000000298023&lt;/gml:coordinates&gt;&lt;/gml:LinearRing&gt;&lt;/gml:outerBoundaryIs&gt;&lt;/gml:Polygon&gt;
+		</georeference>
+		<reccopyright>???</reccopyright>
+	</monument>
+	<monument type="Baudenkmal">
+		<recid>30598324</recid>
+		<partof>???</partof>
+		<country>DE</country>
+		<state>Niedersachsen</state>
+		<district>Region Hannover</district>
+		<municipality>Hannover, Stadt</municipality>
+		<area>Bothfeld</area>
+		<zipcode>???</zipcode>
+		<address>???</address>
+		<name>Geha</name>
+		<description>Einheit mit Podbielskistr. 321 und 325!</description>
+		<recorganization>NLD</recorganization>
+		<recdate>2005-05-03T16:01:21</recdate>
+		<reclastchangedate>2011-07-07T14:55:03.752411</reclastchangedate>
+		<buildingcategory>Oberbegriff aus Objekttyp-Thesaurus ?
+		</buildingcategory>
+		<buildingtype>Büro-/Fertigungsgebäude</buildingtype>
+		<dating>unbekannt</dating>
+		<authoritativerepresentation>https://www.adabweb.niedersachsen.de/???
+		</authoritativerepresentation>
+		<images>???</images>
+		<notablepersons>???</notablepersons>
+		<bibliography>???</bibliography>
+		<cadastralreference>???</cadastralreference>
+		<georeference>&lt;gml:Polygon
+			srsName="EPSG:31467"&gt;&lt;gml:outerBoundaryIs&gt;&lt;gml:LinearRing&gt;&lt;gml:coordinates&gt;3554605.160000000149012,5808499.559999999590218
+			3554573.819999999832362,5808478.799999999813735
+			3554583.740000000223517,5808465.309999999590218
+			3554614.540000000037253,5808486.209999999962747
+			3554605.160000000149012,5808499.559999999590218&lt;/gml:coordinates&gt;&lt;/gml:LinearRing&gt;&lt;/gml:outerBoundaryIs&gt;&lt;/gml:Polygon&gt;
+		</georeference>
+		<reccopyright>???</reccopyright>
+	</monument>
+</monuments>
