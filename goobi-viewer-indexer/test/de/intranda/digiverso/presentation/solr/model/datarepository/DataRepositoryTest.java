@@ -46,6 +46,8 @@ public class DataRepositoryTest extends AbstractTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        AbstractTest.setUpClass();
+        
         hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
     }
 
