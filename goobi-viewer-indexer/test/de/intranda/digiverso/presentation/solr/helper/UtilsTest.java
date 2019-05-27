@@ -24,7 +24,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class UtilsTest {
+import de.intranda.digiverso.presentation.solr.AbstractTest;
+
+public class UtilsTest extends AbstractTest {
 
     /**
      * @see Utils#getCollisionFreeDataFilePath(String,String,String,String)

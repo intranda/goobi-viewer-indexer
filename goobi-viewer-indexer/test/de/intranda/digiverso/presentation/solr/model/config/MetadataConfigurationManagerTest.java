@@ -18,7 +18,9 @@ package de.intranda.digiverso.presentation.solr.model.config;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class MetadataConfigurationManagerTest {
+import de.intranda.digiverso.presentation.solr.AbstractTest;
+
+public class MetadataConfigurationManagerTest extends AbstractTest {
 
     /**
      * @see MetadataConfigurationManager#getLanguageMapping(String)

@@ -18,9 +18,10 @@ package de.intranda.digiverso.presentation.solr.model.config;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
 
-public class ValueNormalizerTest {
+public class ValueNormalizerTest extends AbstractTest {
 
     /**
      * @see ValueNormalizer#normalize(String)

@@ -13,23 +13,22 @@
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package de.intranda.digiverso.presentation.solr.model.config;
+package de.intranda.digiverso.presentation.solr;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
-import de.intranda.digiverso.presentation.solr.AbstractTest;
+/**
+ * JUnit test classes that extend this class will have test-specific logging configurations.
+ */
+public abstract class AbstractTest {
 
-public class NonSortConfigurationTest extends AbstractTest {
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        System.setProperty("log4j.configurationFile", "resources/test/log4j2.test.xml");
+    }
 
-    /**
-     * @see NonSortConfiguration#NonSortConfiguration(String,String)
-     * @verifies set attributes correctly
-     */
-    @Test
-    public void NonSortConfiguration_shouldSetAttributesCorrectly() throws Exception {
-        NonSortConfiguration nsc = new NonSortConfiguration("prefix_value", "suffix_value");
-        Assert.assertEquals("prefix_value", nsc.getPrefix());
-        Assert.assertEquals("suffix_value", nsc.getSuffix());
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
 }

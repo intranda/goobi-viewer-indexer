@@ -18,10 +18,11 @@ package de.intranda.digiverso.presentation.solr.model.config;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
 
-public class FieldConfigTest {
-    
+public class FieldConfigTest extends AbstractTest {
+
     /**
      * @see FieldConfig#ConfigurationItem(String)
      * @verifies set attributes correctly

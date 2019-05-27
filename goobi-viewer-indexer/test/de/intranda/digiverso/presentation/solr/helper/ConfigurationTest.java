@@ -29,13 +29,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.model.config.FieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.NonSortConfiguration;
 import de.intranda.digiverso.presentation.solr.model.config.SubfieldConfig;
 import de.intranda.digiverso.presentation.solr.model.config.ValueNormalizer.ValueNormalizerPosition;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
-public class ConfigurationTest {
+public class ConfigurationTest extends AbstractTest {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationTest.class);

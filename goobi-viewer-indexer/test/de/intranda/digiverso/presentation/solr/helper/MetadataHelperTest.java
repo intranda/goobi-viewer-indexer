@@ -15,7 +15,6 @@
  */
 package de.intranda.digiverso.presentation.solr.helper;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,13 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.MultiMap;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.helper.MetadataHelper.PrimitiveDate;
 import de.intranda.digiverso.presentation.solr.model.GroupedMetadata;
 import de.intranda.digiverso.presentation.solr.model.IndexObject;
@@ -40,7 +40,7 @@ import de.intranda.digiverso.presentation.solr.model.LuceneField;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.MetadataGroupType;
 
-public class MetadataHelperTest {
+public class MetadataHelperTest extends AbstractTest {
 
     @SuppressWarnings("unused")
     private static Hotfolder hotfolder;

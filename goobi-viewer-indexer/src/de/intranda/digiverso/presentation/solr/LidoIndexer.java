@@ -66,7 +66,7 @@ import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStr
 import de.intranda.digiverso.presentation.solr.model.writestrategy.LazySolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.SerializingSolrWriteStrategy;
 
-public class LidoIndexer extends AbstractIndexer {
+public class LidoIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(LidoIndexer.class);
@@ -690,7 +690,7 @@ public class LidoIndexer extends AbstractIndexer {
         if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
             try {
                 Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                        baseFileName + AbstractIndexer.XML_EXTENSION));
+                        baseFileName + Indexer.XML_EXTENSION));
                 for (String key : mixData.keySet()) {
                     if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
                             && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {

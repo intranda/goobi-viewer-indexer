@@ -69,7 +69,7 @@ import de.intranda.digiverso.presentation.solr.model.writestrategy.SerializingSo
 /**
  * Indexer implementation for WorldViews documents.
  */
-public class WorldViewsIndexer extends AbstractIndexer {
+public class WorldViewsIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(WorldViewsIndexer.class);
@@ -151,7 +151,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
                         indexObj.setDataRepository(dataRepository.getPath());
                     }
 
-                    ret[0] = new StringBuilder(indexObj.getPi()).append(AbstractIndexer.XML_EXTENSION).toString();
+                    ret[0] = new StringBuilder(indexObj.getPi()).append(Indexer.XML_EXTENSION).toString();
                     if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
                         // Use the old media folder
                         dataFolders.put(DataRepository.PARAM_MEDIA,
@@ -1164,7 +1164,7 @@ public class WorldViewsIndexer extends AbstractIndexer {
             String indexedAnchorFilePath =
                     new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
                             .append(piParent)
-                            .append(AbstractIndexer.XML_EXTENSION)
+                            .append(Indexer.XML_EXTENSION)
                             .toString();
             Path indexedAnchor = Paths.get(indexedAnchorFilePath);
             if (Files.exists(indexedAnchor)) {

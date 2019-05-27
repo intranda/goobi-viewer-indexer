@@ -86,7 +86,7 @@ import de.intranda.digiverso.presentation.solr.model.writestrategy.SerializingSo
 /**
  * Indexer implementation for METS documents.
  */
-public class MetsIndexer extends AbstractIndexer {
+public class MetsIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(MetsIndexer.class);
@@ -192,7 +192,7 @@ public class MetsIndexer extends AbstractIndexer {
                         indexObj.setDataRepository(dataRepository.getPath());
                     }
 
-                    ret[0] = new StringBuilder(indexObj.getPi()).append(AbstractIndexer.XML_EXTENSION).toString();
+                    ret[0] = new StringBuilder(indexObj.getPi()).append(Indexer.XML_EXTENSION).toString();
                     if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
                         // Use the old media folder
                         dataFolders.put(DataRepository.PARAM_MEDIA,
@@ -1750,7 +1750,7 @@ public class MetsIndexer extends AbstractIndexer {
         // Write XML file
         String extension;
         if (newAnchorCollections) {
-            extension = AbstractIndexer.XML_EXTENSION;
+            extension = Indexer.XML_EXTENSION;
             logger.info("Anchor document '{}' has received new collection entries and will be reindexed immediately.", indexObj.getPi());
         } else {
             extension = ANCHOR_UPDATE_EXTENSION;
@@ -1784,7 +1784,7 @@ public class MetsIndexer extends AbstractIndexer {
             String indexedAnchorFilePath =
                     new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
                             .append(piParent)
-                            .append(AbstractIndexer.XML_EXTENSION)
+                            .append(Indexer.XML_EXTENSION)
                             .toString();
             Path indexedAnchor = Paths.get(indexedAnchorFilePath);
             if (Files.exists(indexedAnchor)) {
@@ -1825,7 +1825,7 @@ public class MetsIndexer extends AbstractIndexer {
             }
             // String indexedMetsFilePath = URLEncoder.encode(Hotfolder.getIndexedMets() + File.separator + pi + AbstractIndexer.XML_EXTENSION, "utf-8");
             String indexedMetsFilePath =
-                    dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + AbstractIndexer.XML_EXTENSION;
+                    dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + Indexer.XML_EXTENSION;
             Path indexedMets = Paths.get(indexedMetsFilePath);
             if (Files.exists(indexedMets)) {
                 hotfolder.getReindexQueue().add(indexedMets);

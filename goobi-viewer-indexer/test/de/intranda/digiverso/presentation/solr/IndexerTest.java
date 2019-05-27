@@ -35,7 +35,7 @@ import de.intranda.digiverso.presentation.solr.helper.JDomXP;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
-public class AbstractIndexerTest extends AbstractSolrEnabledTest {
+public class IndexerTest extends AbstractSolrEnabledTest {
 
     private static Hotfolder hotfolder;
 
@@ -54,7 +54,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see AbstractIndexer#delete(String,boolean)
+     * @see Indexer#delete(String,boolean)
      * @verifies delete METS record from index completely
      */
     @Test
@@ -71,7 +71,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertEquals(22, docList.size());
         }
-        Assert.assertTrue(AbstractIndexer.delete(pi, false, hotfolder.getSolrHelper()));
+        Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSolrHelper()));
         {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertTrue(docList.isEmpty());
@@ -79,7 +79,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see AbstractIndexer#delete(String,boolean)
+     * @see Indexer#delete(String,boolean)
      * @verifies delete LIDO record from index completely
      */
     @SuppressWarnings("unchecked")
@@ -103,7 +103,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
                     + ":" + iddoc, null);
             Assert.assertEquals(3, docList.size());
         }
-        Assert.assertTrue(AbstractIndexer.delete(pi, false, hotfolder.getSolrHelper()));
+        Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSolrHelper()));
         {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER
                     + ":" + iddoc, null);
@@ -112,7 +112,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see AbstractIndexer#delete(String,boolean)
+     * @see Indexer#delete(String,boolean)
      * @verifies leave trace document for METS record if requested
      */
     @Test
@@ -129,7 +129,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertEquals(22, docList.size());
         }
-        Assert.assertTrue(AbstractIndexer.delete(pi, true, hotfolder.getSolrHelper()));
+        Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSolrHelper()));
         {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
@@ -142,7 +142,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see AbstractIndexer#delete(String,boolean)
+     * @see Indexer#delete(String,boolean)
      * @verifies leave trace document for LIDO record if requested
      */
     @SuppressWarnings("unchecked")
@@ -166,7 +166,7 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
                     + ":" + iddoc, null);
             Assert.assertEquals(3, docList.size());
         }
-        Assert.assertTrue(AbstractIndexer.delete(pi, true, hotfolder.getSolrHelper()));
+        Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSolrHelper()));
         {
             SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
@@ -177,29 +177,29 @@ public class AbstractIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see AbstractIndexer#cleanUpDefaultField(String)
+     * @see Indexer#cleanUpDefaultField(String)
      * @verifies replace irrelevant chars with spaces correctly
      */
     @Test
     public void cleanUpDefaultField_shouldReplaceIrrelevantCharsWithSpacesCorrectly() throws Exception {
-        Assert.assertEquals("A B C D", AbstractIndexer.cleanUpDefaultField(" A,B;C:D,  "));
+        Assert.assertEquals("A B C D", Indexer.cleanUpDefaultField(" A,B;C:D,  "));
     }
 
     /**
-     * @see AbstractIndexer#cleanUpNamedEntityValue(String)
+     * @see Indexer#cleanUpNamedEntityValue(String)
      * @verifies clean up value correctly
      */
     @Test
     public void cleanUpNamedEntityValue_shouldCleanUpValueCorrectly() throws Exception {
-        Assert.assertEquals("abcd", AbstractIndexer.cleanUpNamedEntityValue("\"(abcd,\""));
+        Assert.assertEquals("abcd", Indexer.cleanUpNamedEntityValue("\"(abcd,\""));
     }
 
     /**
-     * @see AbstractIndexer#cleanUpNamedEntityValue(String)
+     * @see Indexer#cleanUpNamedEntityValue(String)
      * @verifies throw IllegalArgumentException given null
      */
     @Test(expected = IllegalArgumentException.class)
     public void cleanUpNamedEntityValue_shouldThrowIllegalArgumentExceptionGivenNull() throws Exception {
-        AbstractIndexer.cleanUpNamedEntityValue(null);
+        Indexer.cleanUpNamedEntityValue(null);
     }
 }

@@ -21,9 +21,10 @@ import java.util.TreeMap;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
-public class RemainingSpaceStrategyTest {
+public class RemainingSpaceStrategyTest extends AbstractTest {
 
     /**
      * @see RemainingSpaceStrategy#selectRepository(SortedMap,long)

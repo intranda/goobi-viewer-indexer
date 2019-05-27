@@ -21,12 +21,13 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class FileToolsTest {
+import de.intranda.digiverso.presentation.solr.AbstractTest;
+
+public class FileToolsTest extends AbstractTest {
 
     private File tempDir = new File("build/temp");
 

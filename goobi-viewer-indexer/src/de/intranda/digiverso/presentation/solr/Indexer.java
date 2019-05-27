@@ -67,10 +67,10 @@ import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
 
-public abstract class AbstractIndexer {
+public abstract class Indexer {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(AbstractIndexer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
 
     public static final String XML_EXTENSION = ".xml";
     public static final String TXT_EXTENSION = ".txt";
@@ -431,7 +431,7 @@ public abstract class AbstractIndexer {
             return Collections.emptyList();
         }
 
-        Path file = Paths.get(folder.toAbsolutePath().toString(), fileNameRoot + AbstractIndexer.XML_EXTENSION);
+        Path file = Paths.get(folder.toAbsolutePath().toString(), fileNameRoot + Indexer.XML_EXTENSION);
         if (!Files.isRegularFile(file)) {
             logger.warn("'{}' is not a file.", file.getFileName().toString());
             return Collections.emptyList();
@@ -776,7 +776,7 @@ public abstract class AbstractIndexer {
 
         @Override
         public boolean accept(File dir, String name) {
-            return name.endsWith(AbstractIndexer.XML_EXTENSION);
+            return name.endsWith(Indexer.XML_EXTENSION);
         }
     };
 }

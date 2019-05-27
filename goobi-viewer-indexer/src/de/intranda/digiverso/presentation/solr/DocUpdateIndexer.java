@@ -46,7 +46,7 @@ import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 
-public class DocUpdateIndexer extends AbstractIndexer {
+public class DocUpdateIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(DocUpdateIndexer.class);

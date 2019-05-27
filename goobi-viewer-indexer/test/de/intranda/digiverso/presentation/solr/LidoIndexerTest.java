@@ -28,13 +28,10 @@ import org.jdom2.Document;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
-import de.intranda.digiverso.presentation.solr.model.FatalIndexerException;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
@@ -42,7 +39,7 @@ import de.intranda.digiverso.presentation.solr.model.datarepository.DataReposito
 public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(LidoIndexerTest.class);
+    //    private static final Logger logger = LoggerFactory.getLogger(LidoIndexerTest.class);
 
     private static final String PI = "V0011127";
 

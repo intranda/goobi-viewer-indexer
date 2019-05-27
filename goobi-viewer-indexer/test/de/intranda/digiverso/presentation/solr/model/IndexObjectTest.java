@@ -20,9 +20,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 
-public class IndexObjectTest {
+public class IndexObjectTest extends AbstractTest {
 
     /**
      * @see IndexObject#IndexObject(long,String)

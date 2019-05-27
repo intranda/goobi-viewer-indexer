@@ -30,16 +30,18 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 
-public class DataRepositoryTest {
+public class DataRepositoryTest extends AbstractTest {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(DataRepositoryTest.class);
 
     private static final String BASE_FILE_NAME = "12345";
 
+    @SuppressWarnings("unused")
     private static Hotfolder hotfolder;
 
     @BeforeClass

@@ -36,7 +36,7 @@ import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 /**
  * JUnit test classes that extend this class can use the embedded Solr server setup with an empty index.
  */
-public abstract class AbstractSolrEnabledTest {
+public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(AbstractSolrEnabledTest.class);
@@ -44,13 +44,15 @@ public abstract class AbstractSolrEnabledTest {
     private static final String CORE_NAME = "test-indexer";
 
     private static String solrPath = "/opt/digiverso/viewer/apache-solr/";
-    
+
     private CoreContainer coreContainer;
     protected EmbeddedSolrServer server;
     protected SolrHelper solrHelper;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        AbstractTest.setUpClass();
+
         String os = System.getProperty("os.name").toLowerCase();
         if (os.indexOf("win") >= 0) {
             solrPath = "C:/digiverso/viewer/apache-solr-test/";

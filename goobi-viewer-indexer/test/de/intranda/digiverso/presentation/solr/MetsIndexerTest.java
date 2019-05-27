@@ -36,8 +36,6 @@ import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.helper.Configuration;
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
@@ -55,7 +53,7 @@ import de.intranda.digiverso.presentation.solr.model.writestrategy.LazySolrWrite
 public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(MetsIndexerTest.class);
+    //    private static final Logger logger = LoggerFactory.getLogger(MetsIndexerTest.class);
 
     private static final String PI = "PPN517154005";
     private static final String PI2 = "H030001";
@@ -301,7 +299,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
                     Assert.assertNotNull(value);
-                    Assert.assertEquals("fulltext/PPN517154005/" + FilenameUtils.getBaseName(fileName) + AbstractIndexer.TXT_EXTENSION, value);
+                    Assert.assertEquals("fulltext/PPN517154005/" + FilenameUtils.getBaseName(fileName) + Indexer.TXT_EXTENSION, value);
                     Assert.assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
                 }
                 {

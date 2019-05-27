@@ -19,7 +19,9 @@ import org.apache.solr.common.SolrInputField;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class LuceneFieldTest {
+import de.intranda.digiverso.presentation.solr.AbstractTest;
+
+public class LuceneFieldTest extends AbstractTest {
 
     /**
      * @see LuceneField#LuceneField(String,String)

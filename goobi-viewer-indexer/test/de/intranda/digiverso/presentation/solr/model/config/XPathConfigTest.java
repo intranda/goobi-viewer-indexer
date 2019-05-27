@@ -18,7 +18,9 @@ package de.intranda.digiverso.presentation.solr.model.config;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class XPathConfigTest {
+import de.intranda.digiverso.presentation.solr.AbstractTest;
+
+public class XPathConfigTest extends AbstractTest {
 
     /**
      * @see XPathConfig#XPathConfig(String,String,String)

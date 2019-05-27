@@ -27,9 +27,10 @@ import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP.FileFormat;
 
-public class JDomXPTest {
+public class JDomXPTest extends AbstractTest {
 
     /**
      * @see JDomXP#determineFileFormat(File)
@@ -52,7 +53,6 @@ public class JDomXPTest {
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
     }
-    
 
     /**
      * @see JDomXP#determineFileFormat(File)
@@ -155,7 +155,7 @@ public class JDomXPTest {
         List<Document> docs = JDomXP.splitLidoFile(null);
         Assert.assertEquals(0, docs.size());
     }
-    
+
     /**
      * @see JDomXP#splitDenkXwebFile(File)
      * @verifies split multi record documents correctly

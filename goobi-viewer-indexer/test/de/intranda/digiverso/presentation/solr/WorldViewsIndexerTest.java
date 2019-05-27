@@ -1,26 +1,17 @@
 package de.intranda.digiverso.presentation.solr;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
-import de.intranda.digiverso.presentation.solr.model.SolrConstants;
-import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
-import de.intranda.digiverso.presentation.solr.model.datarepository.DataRepository;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStrategy;
 
 public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
 
+    @SuppressWarnings("unused")
     private Hotfolder hotfolder;
 
     @Override
@@ -34,7 +25,7 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
      * @see WorldViewsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int)
      * @verifies index record correctly
      */
-    @SuppressWarnings("unchecked")
+//    @SuppressWarnings("unchecked")
     @Test
     public void index_shouldIndexRecordCorrectly() throws Exception {
         //        String pi = "gei_test_sthe_quelle_01";

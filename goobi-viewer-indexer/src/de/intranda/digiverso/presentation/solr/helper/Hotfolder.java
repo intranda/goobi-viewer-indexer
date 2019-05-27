@@ -62,7 +62,7 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.intranda.digiverso.presentation.solr.AbstractIndexer;
+import de.intranda.digiverso.presentation.solr.Indexer;
 import de.intranda.digiverso.presentation.solr.DenkXwebIndexer;
 import de.intranda.digiverso.presentation.solr.DocUpdateIndexer;
 import de.intranda.digiverso.presentation.solr.LidoIndexer;
@@ -112,14 +112,14 @@ public class Hotfolder {
     private Path origDenkxWeb;
     private Path success;
 
-    private AbstractIndexer currentIndexer;
+    private Indexer currentIndexer;
     private boolean addVolumeCollectionsToAnchor = false;
     private boolean deleteContentFilesOnFailure = true;
 
     public static FilenameFilter filterDataFile = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
-            return (name.toLowerCase().endsWith(AbstractIndexer.XML_EXTENSION) || name.toLowerCase().endsWith(".delete")
+            return (name.toLowerCase().endsWith(Indexer.XML_EXTENSION) || name.toLowerCase().endsWith(".delete")
                     || name.toLowerCase().endsWith(".purge") || name.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION));
         }
     };
@@ -677,7 +677,7 @@ public class Hotfolder {
                     } else {
                         logger.info("Deleting {} file '{}' (no trace document will be created)...", format.name(), actualXmlFile.getFileName());
                     }
-                    success = AbstractIndexer.delete(baseFileName, trace, solrHelper);
+                    success = Indexer.delete(baseFileName, trace, solrHelper);
                     break;
                 default:
                     logger.error("Unknown format: {}", format);

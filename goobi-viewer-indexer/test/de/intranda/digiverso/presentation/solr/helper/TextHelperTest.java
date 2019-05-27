@@ -31,9 +31,10 @@ import org.jdom2.Document;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.intranda.digiverso.presentation.solr.AbstractTest;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
 
-public class TextHelperTest {
+public class TextHelperTest extends AbstractTest {
     /**
      * @see TextHelper#readFileToString(File)
      * @verifies read file correctly
@@ -112,7 +113,7 @@ public class TextHelperTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
         String altoRead = (String) result.get(SolrConstants.ALTO);
-        String altoOrig = org.apache.commons.io.FileUtils.readFileToString(origFile);
+        String altoOrig = TextHelper.readFileToString(origFile);
         Assert.assertTrue(altoRead.contains("NamedEntityTag") && altoRead.contains("TAGREFS"));
         Assert.assertTrue("person_Heinrich".equals(((List<String>) result.get("NAMEDENTITIES")).get(0)));
         //        Assert.assertEquals(altoOrig.replaceAll("\\s", "").toLowerCase(), altoRead.replaceAll("\\s", "").toLowerCase());

@@ -25,7 +25,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class XmlToolsTest {
+import de.intranda.digiverso.presentation.solr.AbstractTest;
+
+public class XmlToolsTest extends AbstractTest {
 
     private File tempDir = new File("build/temp");
 

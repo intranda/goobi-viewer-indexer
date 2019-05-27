@@ -28,8 +28,6 @@ import org.jdom2.Document;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.helper.Hotfolder;
 import de.intranda.digiverso.presentation.solr.helper.JDomXP;
@@ -39,10 +37,10 @@ import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStr
 public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(DenkXwebIndexerTest.class);
+    //    private static final Logger logger = LoggerFactory.getLogger(DenkXwebIndexerTest.class);
 
     private static Hotfolder hotfolder;
-    
+
     private static final String PI = "30596824";
 
     private File denkxwebFile;
@@ -72,7 +70,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1);
             Assert.assertNotEquals(ret[1], "ERROR", ret[0]);
         }
-        
+
         Map<String, Boolean> iddocMap = new HashMap<>();
         String iddoc;
 

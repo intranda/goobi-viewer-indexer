@@ -55,7 +55,7 @@ import de.intranda.digiverso.presentation.solr.model.writestrategy.ISolrWriteStr
 import de.intranda.digiverso.presentation.solr.model.writestrategy.LazySolrWriteStrategy;
 import de.intranda.digiverso.presentation.solr.model.writestrategy.SerializingSolrWriteStrategy;
 
-public class DenkXwebIndexer extends AbstractIndexer {
+public class DenkXwebIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(DenkXwebIndexer.class);

@@ -25,8 +25,6 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.presentation.solr.AbstractSolrEnabledTest;
 import de.intranda.digiverso.presentation.solr.model.SolrConstants;
@@ -35,7 +33,7 @@ import de.intranda.digiverso.presentation.solr.model.SolrConstants.DocType;
 public class SolrHelperTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(SolrHelperTest.class);
+    //    private static final Logger logger = LoggerFactory.getLogger(SolrHelperTest.class);
 
     /**
      * @see SolrHelper#deleteDocuments(List)
