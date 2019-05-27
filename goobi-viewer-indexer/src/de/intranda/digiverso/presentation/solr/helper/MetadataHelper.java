@@ -39,6 +39,7 @@ import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.filter.Filters;
+import org.joda.time.DateTimeZone;
 import org.joda.time.MutableDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -357,7 +358,7 @@ public class MetadataHelper {
                                             fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
                                         }
                                         if (fieldName.startsWith("DATE_")) {
-                                            if ((fieldValue = convertDateStringForSolrField(fieldValue)) == null) {
+                                            if ((fieldValue = convertDateStringForSolrField(fieldValue, false)) == null) {
                                                 continue;
                                             }
                                         }
@@ -1336,16 +1337,17 @@ public class MetadataHelper {
     /**
      * 
      * @param value
-     * @return
+     * @param useUTC If true, UTC time zone will be used; default time zone otherwise
+     * @return Converted datetime string
      * @should convert date correctly
      */
-    static String convertDateStringForSolrField(String value) {
+    static String convertDateStringForSolrField(String value, boolean useUTC) {
         List<PrimitiveDate> dates = normalizeDate(value, 4);
         if (!dates.isEmpty()) {
             PrimitiveDate date = dates.get(0);
             if (date.getYear() != null) {
                 MutableDateTime mdt = new MutableDateTime(date.getYear(), date.getMonth() != null ? date.getMonth() : 1,
-                        date.getDay() != null ? date.getDay() : 1, 0, 0, 0, 0);
+                        date.getDay() != null ? date.getDay() : 1, 0, 0, 0, 0, useUTC ? DateTimeZone.UTC : DateTimeZone.getDefault());
                 return formatterISO8601DateTimeFullWithTimeZone.print(mdt);
             }
         }
