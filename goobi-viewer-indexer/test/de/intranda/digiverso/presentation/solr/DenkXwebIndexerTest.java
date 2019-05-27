@@ -51,7 +51,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
         super.setUp();
         hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", server);
 
-        denkxwebFile = new File("resources/test/DenkXweb/denkxweb_30596824.xml");
+        denkxwebFile = new File("resources/test/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(denkxwebFile.isFile());
     }
 
@@ -63,7 +63,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void index_shouldIndexRecordCorrectly() throws Exception {
         List<Document> recordDocs = JDomXP.splitDenkXwebFile(denkxwebFile);
-        Assert.assertEquals(117, recordDocs.size());
+        Assert.assertEquals(2, recordDocs.size());
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document recordDoc : recordDocs) {
