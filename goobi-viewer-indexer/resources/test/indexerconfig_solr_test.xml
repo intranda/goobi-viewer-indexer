@@ -48,6 +48,7 @@
 		
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
+		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 
 		<!-- Misc folders -->
 		<successFolder>build/viewer/success/</successFolder>
@@ -55,6 +56,7 @@
 		<deletedMets>build/viewer/deleted_mets/</deletedMets>
 		<errorMets>build/viewer/error_mets/</errorMets>
 		<origLido>build/viewer/orig_lido/</origLido>
+		<origDenkXweb>build/viewer/orig_denkxweb/</origDenkXweb>
 
 		<!-- Encoding that full-text files will be expected to have (default is 
 			'Cp1250'). -->

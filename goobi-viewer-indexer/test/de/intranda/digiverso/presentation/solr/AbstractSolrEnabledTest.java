@@ -39,7 +39,7 @@ import de.intranda.digiverso.presentation.solr.helper.SolrHelper;
 public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(AbstractSolrEnabledTest.class);
+    private static Logger logger;
 
     private static final String CORE_NAME = "test-indexer";
 
@@ -53,6 +53,8 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
+        logger = LoggerFactory.getLogger(AbstractSolrEnabledTest.class);
+        
         String os = System.getProperty("os.name").toLowerCase();
         if (os.indexOf("win") >= 0) {
             solrPath = "C:/digiverso/viewer/apache-solr-test/";

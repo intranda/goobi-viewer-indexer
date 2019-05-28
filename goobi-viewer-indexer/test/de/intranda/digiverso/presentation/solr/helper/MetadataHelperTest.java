@@ -584,7 +584,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void getPIFromXML_shouldExtractDenkXwebPICorrectly() throws Exception {
-        Path path = Paths.get("resources/test/DenkXweb/denkxweb_30596824.xml");
+        Path path = Paths.get("resources/test/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(Files.isRegularFile(path));
         List<Document> docs = JDomXP.splitDenkXwebFile(path.toFile());
         String pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));
