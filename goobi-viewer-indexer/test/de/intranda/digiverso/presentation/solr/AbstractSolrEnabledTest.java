@@ -51,7 +51,6 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        logger.info("setUpClass");
         AbstractTest.setUpClass();
 
         String os = System.getProperty("os.name").toLowerCase();
