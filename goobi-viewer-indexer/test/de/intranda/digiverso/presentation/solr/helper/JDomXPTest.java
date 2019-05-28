@@ -60,7 +60,7 @@ public class JDomXPTest extends AbstractTest {
      */
     @Test
     public void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
-        File file = new File("resources/test/DenkXweb/denkxweb_30596824.xml");
+        File file = new File("resources/test/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.DENKXWEB, JDomXP.determineFileFormat(file));
     }
@@ -162,10 +162,10 @@ public class JDomXPTest extends AbstractTest {
      */
     @Test
     public void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
-        File file = new File("resources/test/DenkXweb/denkxweb_30596824.xml");
+        File file = new File("resources/test/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
-        Assert.assertEquals(117, docs.size());
+        Assert.assertEquals(2, docs.size());
     }
 
     /**
