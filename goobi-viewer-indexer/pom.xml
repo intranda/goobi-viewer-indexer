@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>indexer</artifactId>
-	<version>3.4</version>
+	<version>3.4-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -24,6 +24,19 @@
 			<url>https://nexus.intranda.com/repository/intranda</url>
 		</repository>
 	</repositories>
+
+
+	<distributionManagement>
+		<repository>
+			<id>intranda</id>
+			<url>https://nexus.intranda.com/repository/intranda</url>
+		</repository>
+		<snapshotRepository>
+			<id>maven-intranda-snapshots</id>
+			<url>https://nexus.intranda.com/repository/maven-intranda-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 
 
 	<dependencies>
