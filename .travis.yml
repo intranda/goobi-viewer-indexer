@@ -3,4 +3,4 @@ dist: trusty
 jdk:
 - openjdk8
 install:
-- cd goobi-viewer-indexer; mvn -DskipTests=true install -B -V
+- cd goobi-viewer-indexer; mvn compile -B -V
