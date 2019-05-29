@@ -1,6 +1,12 @@
+# Travis continuous integration
+
 language: java
+
 dist: trusty
+
 jdk:
-- openjdk8
-install:
-- cd goobi-viewer-indexer; mvn compile -B -V
+  - openjdk8
+
+script:
+  - cd goobi-viewer-indexer
+  - mvn clean compile -B -V
