@@ -1,14 +1,22 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>indexer</artifactId>
 	<version>3.4</version>
+
+
 	<name>Goobi viewer - Indexer</name>
-	
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+	<url>https://github.com/intranda/goobi-viewer-indexer</url>
+
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 
 	<repositories>
 		<repository>
@@ -17,8 +25,8 @@
 		</repository>
 	</repositories>
 
-	<dependencies>
 
+	<dependencies>
 		<dependency>
 			<groupId>de.intranda.goobi</groupId>
 			<artifactId>alto</artifactId>
@@ -44,12 +52,12 @@
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>1.10</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
@@ -72,26 +80,26 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
-		
-        <!-- EXCLUDE: https://mvnrepository.com/artifact/commons-logging/commons-logging -->
-        <dependency>
-            <artifactId>commons-logging</artifactId>
-            <groupId>commons-logging</groupId>
-            <version>1.2</version>
-            <scope>provided</scope>
-        </dependency>
+
+		<!-- EXCLUDE: https://mvnrepository.com/artifact/commons-logging/commons-logging -->
+		<dependency>
+			<artifactId>commons-logging</artifactId>
+			<groupId>commons-logging</groupId>
+			<version>1.2</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.5.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
@@ -369,15 +377,15 @@
 			<version>3.4.6</version>
 			<type>pom</type>
 			<scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-
 	</dependencies>
+
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -410,11 +418,8 @@
 					</execution>
 				</executions>
 				<configuration>
-				    <finalName>solrIndexer</finalName>
-				    <appendAssemblyId>false</appendAssemblyId>
-<!-- 					<descriptorRefs> -->
-<!-- 						<descriptorRef>jar-with-dependencies</descriptorRef> -->
-<!-- 					</descriptorRefs> -->
+					<finalName>solrIndexer</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
 					<descriptors>
 						<descriptor>assembly.xml</descriptor>
 					</descriptors>
