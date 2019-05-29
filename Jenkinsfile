@@ -31,7 +31,7 @@ pipeline {
         }
       }
       steps {
-        sh 'mvn -f goobi-viewer-indexer/pom.xml deploy'
+        sh 'mvn -f goobi-viewer-indexer/pom.xml deploy -DskipTests=true'
       }
     }
   }
