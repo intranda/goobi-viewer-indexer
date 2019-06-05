@@ -32,7 +32,7 @@
 			<url>https://nexus.intranda.com/repository/maven-releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>maven-snapshots</id>
+			<id>intranda-snapshots</id>
 			<url>https://nexus.intranda.com/repository/maven-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
