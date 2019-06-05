@@ -20,20 +20,20 @@
 
 	<repositories>
 		<repository>
-			<id>intranda</id>
-			<url>https://nexus.intranda.com/repository/intranda</url>
+			<id>intranda-public</id>
+			<url>https://nexus.intranda.com/repository/maven-public</url>
 		</repository>
 	</repositories>
 
 
 	<distributionManagement>
 		<repository>
-			<id>intranda</id>
-			<url>https://nexus.intranda.com/repository/intranda</url>
+			<id>intranda-releases</id>
+			<url>https://nexus.intranda.com/repository/maven-releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>maven-intranda-snapshots</id>
-			<url>https://nexus.intranda.com/repository/maven-intranda-snapshots</url>
+			<id>maven-snapshots</id>
+			<url>https://nexus.intranda.com/repository/maven-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 
