@@ -2,7 +2,7 @@
 <project name="Goobi Solr Indexer 3.4" basedir="." default="deploy_withtests" xmlns:jacoco="antlib:org.jacoco.ant">
 
 	<property name="jar.file" value="solrIndexer.jar" />
-	<property name="main.class" value="de.intranda.digiverso.presentation.solr.SolrIndexerDaemon" />
+	<property name="main.class" value="io.goobi.viewer.indexer.SolrIndexerDaemon" />
 	<property name="dir.src" location="./src" />
 	<property name="dir.build" location="./build" />
 	<property name="dir.build.classes" value="${dir.build}/classes" />
@@ -184,7 +184,7 @@
 			-dontusemixedcaseclassnames
 			-keeppackagenames
 			-keep class org.eclipse.*
-			-keep public class de.intranda.digiverso.presentation.solr.SolrIndexerDaemon {
+			-keep public class io.goobi.viewer.indexer.SolrIndexerDaemon {
 			public static void main(java.lang.String[]);
 			}
 		</proguard>

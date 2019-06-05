@@ -438,7 +438,7 @@
 					</descriptors>
 					<archive>
 						<manifest>
-							<mainClass>de.intranda.digiverso.presentation.solr.SolrIndexerDaemon</mainClass>
+							<mainClass>io.goobi.viewer.indexer.SolrIndexerDaemon</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
