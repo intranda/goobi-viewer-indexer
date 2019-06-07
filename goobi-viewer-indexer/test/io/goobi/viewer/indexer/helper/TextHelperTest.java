@@ -142,7 +142,6 @@ public class TextHelperTest extends AbstractTest {
             Assert.assertNotNull(result);
             Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
             // SUBS_CONTENT
-            System.out.println((String) result.get(SolrConstants.FULLTEXT));
             Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Eheschliessungen"));
         }
     }
