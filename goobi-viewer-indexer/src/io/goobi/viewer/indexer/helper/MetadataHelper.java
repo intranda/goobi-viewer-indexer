@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
+import de.intranda.digiverso.normdataimporter.model.MarcRecord;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
@@ -482,9 +483,14 @@ public class MetadataHelper {
         if (!url.startsWith("http")) {
             url = "http://d-nb.info/gnd/" + url;
         }
-        Map<String, List<NormData>> normDataListMap = null;
+        Map<String, List<NormData>> normDataListMap = new HashMap<>(1);
         try {
-            normDataListMap = NormDataImporter.importNormData(url.trim());
+            //            normDataListMap = NormDataImporter.importNormData(url.trim());
+            MarcRecord marcRecord = NormDataImporter.getSingleMarcRecord(url.trim());
+            if (marcRecord == null) {
+                return ret;
+            }
+            normDataListMap.put("GND", marcRecord.getDisplayableData());
         } catch (IllegalArgumentException e) {
             logger.error(e.getMessage());
             return ret;
@@ -495,54 +501,56 @@ public class MetadataHelper {
                 continue;
             }
             for (NormData normData : normDataListMap.get(key)) {
-                if (normData.getKey().startsWith("NORM_")) {
-                    // IKFN norm data browsing hack
-                    for (NormDataValue val : normData.getValues()) {
-                        if (StringUtils.isNotBlank(val.getText()) && !normData.getKey().equals("NORM_STATICPAGE")) {
-                            String textValue = val.getText();
-                            if (replaceRules != null) {
-                                textValue = applyReplaceRules(textValue, replaceRules);
-                            }
-                            // Remove 'start of string' and 'string terminator' chars to prevent values like "Albach, Julius ˜vonœ"
-                            //                            if (StringUtils.contains(textValue, '\u0098') && StringUtils.contains(textValue, '\u009C')) {
-                            //                                StringUtils.replaceChars(textValue, '\u0098', '\u0000');
-                            //                                StringUtils.replaceChars(textValue, '\u009C', '\u0000');
-                            //                                logger.info("Cleaned up '{}'", textValue);
-                            //                            }
+                if (!normData.getKey().startsWith("NORM_")) {
+                    continue;
+                }
+                // IKFN norm data browsing hack
+                for (NormDataValue val : normData.getValues()) {
+                    if (StringUtils.isBlank(val.getText()) || normData.getKey().equals("NORM_STATICPAGE")) {
+                        continue;
+                    }
+                    String textValue = val.getText();
+                    if (replaceRules != null) {
+                        textValue = applyReplaceRules(textValue, replaceRules);
+                    }
+                    // Remove 'start of string' and 'string terminator' chars to prevent values like "Albach, Julius ˜vonœ"
+                    //                            if (StringUtils.contains(textValue, '\u0098') && StringUtils.contains(textValue, '\u009C')) {
+                    //                                StringUtils.replaceChars(textValue, '\u0098', '\u0000');
+                    //                                StringUtils.replaceChars(textValue, '\u009C', '\u0000');
+                    //                                logger.info("Cleaned up '{}'", textValue);
+                    //                            }
 
-                            ret.add(new LuceneField(normData.getKey(), textValue));
-                            ret.add(new LuceneField(normData.getKey() + SolrConstants._UNTOKENIZED, textValue));
+                    ret.add(new LuceneField(normData.getKey(), textValue));
+                    ret.add(new LuceneField(normData.getKey() + SolrConstants._UNTOKENIZED, textValue));
 
-                            String valWithSpaces = new StringBuilder(" ").append(textValue).append(' ').toString();
+                    String valWithSpaces = new StringBuilder(" ").append(textValue).append(' ').toString();
 
-                            // Add to DEFAULT
-                            if (addToDefaultFields != null && !addToDefaultFields.isEmpty() && addToDefaultFields.contains(normData.getKey())
-                                    && !sbDefaultMetadataValues.toString().contains(valWithSpaces)) {
-                                addValueToDefault(textValue, sbDefaultMetadataValues);
-                                logger.trace("Added to DEFAULT: {}", textValue);
-                            }
+                    // Add to DEFAULT
+                    if (addToDefaultFields != null && !addToDefaultFields.isEmpty() && addToDefaultFields.contains(normData.getKey())
+                            && !sbDefaultMetadataValues.toString().contains(valWithSpaces)) {
+                        addValueToDefault(textValue, sbDefaultMetadataValues);
+                        logger.trace("Added to DEFAULT: {}", textValue);
+                    }
 
-                            // Add to the norm data search field NORMDATATERMS
-                            if (!normData.getKey().startsWith("NORM_URI") && !sbNormDataTerms.toString().contains(valWithSpaces)) {
-                                sbNormDataTerms.append(valWithSpaces);
-                                logger.trace("Added to NORMDATATERMS: {}", textValue);
-                            }
+                    // Add to the norm data search field NORMDATATERMS
+                    if (!normData.getKey().startsWith("NORM_URI") && !sbNormDataTerms.toString().contains(valWithSpaces)) {
+                        sbNormDataTerms.append(valWithSpaces);
+                        logger.trace("Added to NORMDATATERMS: {}", textValue);
+                    }
 
-                            // Add aggregated Aggregate place fields into the same untokenized field for term browsing
-                            if (normData.getKey().equals("NORM_ALTNAME")) {
-                                ret.add(new LuceneField("NORM_NAME_SEARCH", textValue));
-                                ret.add(new LuceneField("NORM_NAME" + SolrConstants._UNTOKENIZED, textValue));
-                            } else if (normData.getKey().startsWith("NORM_PLACE")) {
-                                ret.add(new LuceneField("NORM_PLACE_SEARCH", textValue));
-                                ret.add(new LuceneField("NORM_PLACE" + SolrConstants._UNTOKENIZED, textValue));
-                            } else if (normData.getKey().equals("NORM_LIFEPERIOD")) {
-                                String[] valueSplit = textValue.split("-");
-                                if (valueSplit.length > 0) {
-                                    for (String date : valueSplit) {
-                                        ret.add(new LuceneField("NORM_DATE_SEARCH", date.trim()));
-                                        ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
-                                    }
-                                }
+                    // Add aggregated Aggregate place fields into the same untokenized field for term browsing
+                    if (normData.getKey().equals("NORM_ALTNAME")) {
+                        ret.add(new LuceneField("NORM_NAME_SEARCH", textValue));
+                        ret.add(new LuceneField("NORM_NAME" + SolrConstants._UNTOKENIZED, textValue));
+                    } else if (normData.getKey().startsWith("NORM_PLACE")) {
+                        ret.add(new LuceneField("NORM_PLACE_SEARCH", textValue));
+                        ret.add(new LuceneField("NORM_PLACE" + SolrConstants._UNTOKENIZED, textValue));
+                    } else if (normData.getKey().equals("NORM_LIFEPERIOD")) {
+                        String[] valueSplit = textValue.split("-");
+                        if (valueSplit.length > 0) {
+                            for (String date : valueSplit) {
+                                ret.add(new LuceneField("NORM_DATE_SEARCH", date.trim()));
+                                ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
                             }
                         }
                     }
