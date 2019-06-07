@@ -16,9 +16,7 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -26,7 +24,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.FileTools;
 
 public class FileToolsTest extends AbstractTest {
 
@@ -72,18 +69,6 @@ public class FileToolsTest extends AbstractTest {
         String text = "Lorem ipsum dolor sit amet";
         FileTools.getFileFromString(text, file.getAbsolutePath(), null, false);
         Assert.assertTrue(file.isFile());
-    }
-
-    /**
-     * @see FileTools#getCharset(InputStream)
-     * @verifies detect charset correctly
-     */
-    @Test
-    public void getCharset_shouldDetectCharsetCorrectly() throws Exception {
-        File file = new File("resources/test/stopwords_de_en.txt");
-        try (FileInputStream fis = new FileInputStream(file)) {
-            Assert.assertEquals("UTF-8", FileTools.getCharset(fis));
-        }
     }
 
 }

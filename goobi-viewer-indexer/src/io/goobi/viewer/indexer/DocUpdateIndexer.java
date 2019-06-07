@@ -118,7 +118,7 @@ public class DocUpdateIndexer extends Indexer {
                     if (files.length > 0) {
                         for (File file : files) {
                             String field = FilenameUtils.getBaseName(file.getName()).toUpperCase();
-                            String content = TextHelper.readFileToString(file);
+                            String content = TextHelper.readFileToString(file, null);
                             Map<String, Object> update = new HashMap<>();
                             update.put("set", TextHelper.cleanUpHtmlTags(content));
                             partialUpdates.put(SolrConstants.CMS_TEXT_ + field, update);
@@ -295,7 +295,7 @@ public class DocUpdateIndexer extends Indexer {
                             ret.add(altoData);
                         }
                     } else if (recordFile.getFileName().toString().endsWith(".txt")) {
-                        String value = TextHelper.readFileToString(path.toFile());
+                        String value = TextHelper.readFileToString(path.toFile(), null);
                         ret.add(value);
                     } else {
                         logger.warn("Incompatible data file found: {}", recordFile.toAbsolutePath());

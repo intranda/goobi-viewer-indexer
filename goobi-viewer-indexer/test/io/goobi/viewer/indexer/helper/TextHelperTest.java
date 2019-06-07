@@ -44,7 +44,7 @@ public class TextHelperTest extends AbstractTest {
     public void readFileToString_shouldReadFileCorrectly() throws Exception {
         File file = new File("resources/test/stopwords_de_en.txt");
         Assert.assertTrue(file.isFile());
-        String text = TextHelper.readFileToString(file);
+        String text = TextHelper.readFileToString(file, null);
         Assert.assertTrue(StringUtils.isNotEmpty(text));
     }
 
@@ -56,7 +56,7 @@ public class TextHelperTest extends AbstractTest {
     public void readFileToString_shouldThrowIOExceptionIfFileNotFound() throws Exception {
         File file = new File("resources/test/filenotfound.txt");
         Assert.assertFalse(file.isFile());
-        TextHelper.readFileToString(file);
+        TextHelper.readFileToString(file, null);
     }
 
     /**
@@ -114,7 +114,7 @@ public class TextHelperTest extends AbstractTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
         String altoRead = (String) result.get(SolrConstants.ALTO);
-        String altoOrig = TextHelper.readFileToString(origFile);
+        String altoOrig = TextHelper.readFileToString(origFile, null);
         Assert.assertTrue(altoRead.contains("NamedEntityTag") && altoRead.contains("TAGREFS"));
         Assert.assertTrue("person_Heinrich".equals(((List<String>) result.get("NAMEDENTITIES")).get(0)));
         //        Assert.assertEquals(altoOrig.replaceAll("\\s", "").toLowerCase(), altoRead.replaceAll("\\s", "").toLowerCase());
