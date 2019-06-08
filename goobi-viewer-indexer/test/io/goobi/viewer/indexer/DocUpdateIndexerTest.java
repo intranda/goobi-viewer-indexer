@@ -144,7 +144,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertNotNull(altoFileName);
                 Path altoFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), altoFileName);
                 Assert.assertTrue("File not found at " + altoFile.toAbsolutePath().toString(), Files.isRegularFile(altoFile));
-                String altoText = TextHelper.readFileToString(altoFile.toFile());
+                String altoText = TextHelper.readFileToString(altoFile.toFile(), null);
                 Assert.assertNotNull(altoText);
                 Assert.assertTrue(altoText.contains("Bollywood!"));
                 Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
@@ -200,7 +200,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(textFileName);
             Path textFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), textFileName);
             Assert.assertTrue(Files.isRegularFile(textFile));
-            String altoText = TextHelper.readFileToString(textFile.toFile());
+            String altoText = TextHelper.readFileToString(textFile.toFile(), null);
             Assert.assertNotNull(altoText);
             Assert.assertEquals("updated text file", altoText.trim());
         }

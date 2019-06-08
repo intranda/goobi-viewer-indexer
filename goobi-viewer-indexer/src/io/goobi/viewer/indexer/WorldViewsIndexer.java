@@ -429,7 +429,7 @@ public class WorldViewsIndexer extends Indexer {
                         for (Path file : stream) {
                             // Add a new CMS_TEXT_* field for each file
                             String field = FilenameUtils.getBaseName(file.getFileName().toString()).toUpperCase();
-                            String content = TextHelper.readFileToString(file.toFile());
+                            String content = TextHelper.readFileToString(file.toFile(), null);
                             String value = TextHelper.cleanUpHtmlTags(content);
                             indexObj.addToLucene(SolrConstants.CMS_TEXT_ + field, value);
                             indexObj.addToLucene(SolrConstants.CMS_TEXT_ALL, value);

@@ -15,7 +15,6 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,12 +38,8 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.FileWriterWithEncoding;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
 
 /**
  * File I/O utilities.
@@ -60,26 +55,6 @@ public class FileTools {
         }
     };
 
-    /**
-     * Uses ICU4J to determine the charset of the given InputStream.
-     * 
-     * @param input
-     * @return Detected charset name; null if not detected.
-     * @throws IOException
-     * @should detect charset correctly
-     */
-    public static String getCharset(InputStream input) throws IOException {
-        CharsetDetector cd = new CharsetDetector();
-        try (BufferedInputStream bis = new BufferedInputStream(input)) {
-            cd.setText(bis);
-            CharsetMatch cm = cd.detect();
-            if (cm != null) {
-                return cm.getName();
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Reads a String from a byte array
