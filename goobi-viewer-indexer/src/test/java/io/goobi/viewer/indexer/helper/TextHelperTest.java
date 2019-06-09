@@ -227,7 +227,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void generateFulltext_shouldReturnTextIfFulltextFileExists() throws Exception {
-        Path folder = Paths.get("resources/test");
+        Path folder = Paths.get("src/test/resources");
         Assert.assertTrue(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false);
         Assert.assertTrue(StringUtils.isNotEmpty(text));
@@ -239,7 +239,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() throws Exception {
-        Path folder = Paths.get("resources/test");
+        Path folder = Paths.get("src/test/resources");
         Assert.assertTrue(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("filenotfound.txt", folder, false);
         Assert.assertNull(text);
@@ -251,7 +251,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void generateFulltext_shouldReturnNullOfFulltextFolderDoesNotExist() throws Exception {
-        Path folder = Paths.get("resources/dirnotfound");
+        Path folder = Paths.get("src/test/resources/dirnotfound");
         Assert.assertFalse(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false);
         Assert.assertNull(text);
