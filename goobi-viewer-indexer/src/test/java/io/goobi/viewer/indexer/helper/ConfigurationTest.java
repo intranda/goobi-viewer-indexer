@@ -49,7 +49,7 @@ public class ConfigurationTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
         
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
     }
 
     @Before
@@ -220,7 +220,7 @@ public class ConfigurationTest extends AbstractTest {
      */
     @Test
     public void getPageCountStart_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals(0, Configuration.getInstance("resources/test/indexerconfig_solr_test.xml").getPageCountStart());
+        Assert.assertEquals(0, Configuration.getInstance("src/test/resources/indexerconfig_solr_test.xml").getPageCountStart());
     }
 
     /**

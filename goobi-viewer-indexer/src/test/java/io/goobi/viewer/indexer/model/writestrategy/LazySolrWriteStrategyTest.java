@@ -44,14 +44,14 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
 
     private static Hotfolder hotfolder;
 
-    private Path metsFile = Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
+    private Path metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", server);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", server);
     }
 
     /**
@@ -92,9 +92,9 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
     @Test
     public void writeDocs_shouldWriteAllStructureDocsCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
         SolrHelper sh = new SolrHelper(server);
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
@@ -113,9 +113,9 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
     @Test
     public void writeDocs_shouldWriteAllPageDocsCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
         SolrHelper sh = new SolrHelper(server);
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);

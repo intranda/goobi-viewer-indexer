@@ -29,14 +29,14 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     @SuppressWarnings("unused")
     private static Hotfolder hotfolder;
 
-    //    private Path metsFile = Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
+    //    private Path metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", server);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", server);
     }
 
     /**

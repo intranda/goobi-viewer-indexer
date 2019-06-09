@@ -52,9 +52,9 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", server);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", server);
 
-        lidoFile = new File("resources/test/LIDO/khm_lido_export.xml");
+        lidoFile = new File("src/test/resources/LIDO/khm_lido_export.xml");
         Assert.assertTrue(lidoFile.isFile());
     }
 
@@ -71,8 +71,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testIndexMimeType() throws Exception {
-        File lidoVideoFile = new File("resources/test/LIDO/1292624.xml");
-        File lidoVideoMediaFolder = new File("resources/test/LIDO/1292624_media");
+        File lidoVideoFile = new File("src/test/resources/LIDO/1292624.xml");
+        File lidoVideoMediaFolder = new File("src/test/resources/LIDO/1292624_media");
         String videoPI = "1292624";
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoVideoFile);
         Assert.assertEquals(1, lidoDocs.size());

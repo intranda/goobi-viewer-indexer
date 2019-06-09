@@ -74,21 +74,21 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", server);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", server);
 
-        metsFile = Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
+        metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile));
-        metsFile2 = Paths.get("resources/test/METS/H030001_mets.xml");
+        metsFile2 = Paths.get("src/test/resources/METS/H030001_mets.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile2));
-        metsFile3 = Paths.get("resources/test/METS/AC06736966.xml");
+        metsFile3 = Paths.get("src/test/resources/METS/AC06736966.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile3));
-        metsFileVol1 = Paths.get("resources/test/METS/baltst_559838239/baltst_559838239_NF_75.xml");
+        metsFileVol1 = Paths.get("src/test/resources/METS/baltst_559838239/baltst_559838239_NF_75.xml");
         Assert.assertTrue(Files.isRegularFile(metsFileVol1));
-        metsFileVol2 = Paths.get("resources/test/METS/baltst_559838239/baltst_559838239_NF_78.xml");
+        metsFileVol2 = Paths.get("src/test/resources/METS/baltst_559838239/baltst_559838239_NF_78.xml");
         Assert.assertTrue(Files.isRegularFile(metsFileVol2));
-        metsFileAnchor1 = Paths.get("resources/test/METS/baltst_559838239/baltst_559838239_NF_75_anchor.xml");
+        metsFileAnchor1 = Paths.get("src/test/resources/METS/baltst_559838239/baltst_559838239_NF_75_anchor.xml");
         Assert.assertTrue(Files.isRegularFile(metsFileAnchor1));
-        metsFileAnchor2 = Paths.get("resources/test/METS/baltst_559838239/baltst_559838239_NF_78_anchor.xml");
+        metsFileAnchor2 = Paths.get("src/test/resources/METS/baltst_559838239/baltst_559838239_NF_78_anchor.xml");
         Assert.assertTrue(Files.isRegularFile(metsFileAnchor2));
     }
 
@@ -110,9 +110,9 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void index_shouldIndexRecordCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
         Assert.assertEquals(PI + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
@@ -485,8 +485,8 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void index_shouldUpdateRecordCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
         Assert.assertEquals(PI + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
@@ -657,7 +657,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void index_shouldWriteCmsPageTextsIntoIndex() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
+        dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
 
         {
@@ -721,7 +721,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Dimension[] imageSizes = { new Dimension(4678, 6205), new Dimension(2794, 3838) };
 
         MetsIndexer indexer = new MetsIndexer(hotfolder);
-        File dataFolder = new File("resources/test/image_size");
+        File dataFolder = new File("src/test/resources/image_size");
 
         int i = 0;
         File outputFolder = new File(dataFolder, "output");
@@ -786,7 +786,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void generatePageDocument_shouldAddFILENAME_HTMLSANDBOXEDFieldForUrlPaths() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
-        indexer.initJDomXP(Paths.get("resources/test/METS/ppn750544996.dv.mets.xml"));
+        indexer.initJDomXP(Paths.get("src/test/resources/METS/ppn750544996.dv.mets.xml"));
         ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
@@ -813,7 +813,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     //    @Test
     //    public void generatePageDocument_shouldCreateALTOFileFromFileIdIfNoneProvidedInDataFolders() throws Exception {
     //        MetsIndexer indexer = new MetsIndexer(hotfolder);
-    //        indexer.initJDomXP(Paths.get("resources/test/METS/ppn750542047_intrandatest.dv.mets.xml"));
+    //        indexer.initJDomXP(Paths.get("src/test/resources/METS/ppn750542047_intrandatest.dv.mets.xml"));
     //        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
     //        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
     //        List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
@@ -847,7 +847,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Utils.checkAndCreateDirectory(altoPath);
         Assert.assertTrue(Files.isDirectory(altoPath));
         dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, altoPath);
-        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
 
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
@@ -873,7 +873,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void generatePageDocument_shouldAddFulltextFieldCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
 
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);

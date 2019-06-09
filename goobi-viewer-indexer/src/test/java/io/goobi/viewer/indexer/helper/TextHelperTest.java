@@ -42,7 +42,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void readFileToString_shouldReadFileCorrectly() throws Exception {
-        File file = new File("resources/test/stopwords_de_en.txt");
+        File file = new File("src/test/resources/stopwords_de_en.txt");
         Assert.assertTrue(file.isFile());
         String text = TextHelper.readFileToString(file, null);
         Assert.assertTrue(StringUtils.isNotEmpty(text));
@@ -54,7 +54,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test(expected = IOException.class)
     public void readFileToString_shouldThrowIOExceptionIfFileNotFound() throws Exception {
-        File file = new File("resources/test/filenotfound.txt");
+        File file = new File("src/test/resources/filenotfound.txt");
         Assert.assertFalse(file.isFile());
         TextHelper.readFileToString(file, null);
     }
@@ -65,7 +65,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void readXmlFileToDoc_shouldReadXMLFileCorrectly() throws Exception {
-        File folder = new File("resources/test/ALTO");
+        File folder = new File("src/test/resources/ALTO");
         Assert.assertTrue(folder.isDirectory());
         Document doc = TextHelper.readXmlFileToDoc(new File(folder, "birdsbeneficialt00froh_0031.xml"));
         Assert.assertNotNull(doc);
@@ -86,7 +86,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void getCharset_shouldDetectCharsetCorrectly() throws Exception {
-        File file = new File("resources/test/stopwords_de_en.txt");
+        File file = new File("src/test/resources/stopwords_de_en.txt");
         try (FileInputStream fis = new FileInputStream(file)) {
             Assert.assertEquals("UTF-8", TextHelper.getCharset(fis));
         }
@@ -98,7 +98,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void readAltoFile_shouldReadALTODocumentCorrectly() throws Exception {
-        File folder = new File("resources/test/ALTO");
+        File folder = new File("src/test/resources/ALTO");
         Assert.assertTrue(folder.isDirectory());
         Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "birdsbeneficialt00froh_0031.xml"));
         Assert.assertNotNull(result);
@@ -108,7 +108,7 @@ public class TextHelperTest extends AbstractTest {
     @SuppressWarnings("unchecked")
     @Test
     public void readAltoFile_shouldRetainTags() throws Exception {
-        File origFile = new File("resources/test/ALTO/altoWithTags.xml");
+        File origFile = new File("src/test/resources/ALTO/altoWithTags.xml");
         Assert.assertTrue(origFile.isFile());
         Map<String, Object> result = TextHelper.readAltoFile(origFile);
         Assert.assertNotNull(result);
@@ -126,7 +126,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void readAltoFile_shouldExtractFulltextCorrectly() throws Exception {
-        File folder = new File("resources/test/ALTO");
+        File folder = new File("src/test/resources/ALTO");
         Assert.assertTrue(folder.isDirectory());
         {
             Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "birdsbeneficialt00froh_0031.xml"));
@@ -152,7 +152,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void readAltoFile_shouldExtractPageDimensionsCorrectly() throws Exception {
-        File folder = new File("resources/test/ALTO");
+        File folder = new File("src/test/resources/ALTO");
         Assert.assertTrue(folder.isDirectory());
         Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "AC04987957_00000124.xml"));
         Assert.assertNotNull(result);
@@ -166,7 +166,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test(expected = FileNotFoundException.class)
     public void readAltoFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
-        File folder = new File("resources/test/ALTO");
+        File folder = new File("src/test/resources/ALTO");
         Assert.assertTrue(folder.isDirectory());
         TextHelper.readAltoFile(new File(folder, "filenotfound"));
     }
@@ -186,7 +186,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test
     public void readAbbyyToAlto_shouldConvertToALTOCorrectly() throws Exception {
-        Map<String, Object> result = TextHelper.readAbbyyToAlto(new File("resources/test/ABBYYXML/00000001.xml"));
+        Map<String, Object> result = TextHelper.readAbbyyToAlto(new File("src/test/resources/ABBYYXML/00000001.xml"));
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.get(SolrConstants.ALTO));
     }
@@ -197,7 +197,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test(expected = IOException.class)
     public void readAbbyyToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
-        TextHelper.readAbbyyToAlto(new File("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
+        TextHelper.readAbbyyToAlto(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
     }
 
     /**
@@ -207,7 +207,7 @@ public class TextHelperTest extends AbstractTest {
     @Test
     public void readTeiToAlto_shouldConvertToALTOCorrectly() throws Exception {
         Map<String, Object> result =
-                TextHelper.readTeiToAlto(new File("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
+                TextHelper.readTeiToAlto(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.get(SolrConstants.ALTO));
     }
@@ -218,7 +218,7 @@ public class TextHelperTest extends AbstractTest {
      */
     @Test(expected = IOException.class)
     public void readTeiToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
-        TextHelper.readTeiToAlto(new File("resources/test/ABBYYXML/00000001.xml"));
+        TextHelper.readTeiToAlto(new File("src/test/resources/ABBYYXML/00000001.xml"));
     }
 
     /**

@@ -53,7 +53,7 @@ public class MetadataHelperTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
         
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
     }
 
     /**
@@ -246,7 +246,7 @@ public class MetadataHelperTest extends AbstractTest {
         Map<String, Object> groupEntity = (Map<String, Object>) fieldValues.get("groupEntity");
         Assert.assertNotNull(groupEntity);
 
-        Document docMods = JDomXP.readXmlFile("resources/test/METS/aggregation_mods_test.xml");
+        Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
         Assert.assertNotNull(docMods);
         Assert.assertNotNull(docMods.getRootElement());
 
@@ -532,7 +532,7 @@ public class MetadataHelperTest extends AbstractTest {
     @Test
     public void processTEIMetadataFiles_shouldAppendFulltextFromAllFiles() throws Exception {
         IndexObject obj = new IndexObject(1L);
-        Path teiFolder = Paths.get("resources/test/WorldViews/gei_test_sthe_quelle_01_tei");
+        Path teiFolder = Paths.get("src/test/resources/WorldViews/gei_test_sthe_quelle_01_tei");
         Assert.assertTrue(Files.isDirectory(teiFolder));
         MetadataHelper.processTEIMetadataFiles(obj, teiFolder);
         Assert.assertNotNull(obj.getLuceneFieldWithName(SolrConstants.FULLTEXT));
@@ -588,7 +588,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void getPIFromXML_shouldExtractDenkXwebPICorrectly() throws Exception {
-        Path path = Paths.get("resources/test/DenkXweb/denkxweb_30596824_short.xml");
+        Path path = Paths.get("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(Files.isRegularFile(path));
         List<Document> docs = JDomXP.splitDenkXwebFile(path.toFile());
         String pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));

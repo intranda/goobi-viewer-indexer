@@ -49,10 +49,10 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", server);
-        metsFile = Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", server);
+        metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile));
-        lidoFile = Paths.get("resources/test/LIDO/khm_lido_export.xml");
+        lidoFile = Paths.get("src/test/resources/LIDO/khm_lido_export.xml");
         Assert.assertTrue(Files.isRegularFile(lidoFile));
     }
 
@@ -64,9 +64,9 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     public void delete_shouldDeleteMETSRecordFromIndexCompletely() throws Exception {
         String pi = "PPN517154005";
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
-        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
         Assert.assertEquals(pi + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
@@ -122,9 +122,9 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     public void delete_shouldLeaveTraceDocumentForMETSRecordIfRequested() throws Exception {
         String pi = "PPN517154005";
         Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
-        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+        dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
         Assert.assertEquals(pi + ".xml", ret[0]);
         Assert.assertNull(ret[1]);

@@ -19,7 +19,7 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test_worldviews.xml", server);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test_worldviews.xml", server);
     }
 
     /**
@@ -31,9 +31,9 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldIndexRecordCorrectly() throws Exception {
         //        String pi = "gei_test_sthe_quelle_01";
         //        Map<String, Path> dataFolders = new HashMap<>();
-        //        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get("resources/test/WorldViews/gei_test_sthe_quelle_01_tei"));
+        //        dataFolders.put(DataRepository.PARAM_TEIMETADATA, Paths.get("src/test/resources/WorldViews/gei_test_sthe_quelle_01_tei"));
         //
-        //        Path file = Paths.get("resources/test/WorldViews/gei_test_sthe_quelle_01.xml");
+        //        Path file = Paths.get("src/test/resources/WorldViews/gei_test_sthe_quelle_01.xml");
         //        String[] ret = new WorldViewsIndexer(hotfolder).index(file, false, dataFolders, null, 1);
         //        Assert.assertEquals(pi + ".xml", ret[0]);
         //        Assert.assertNull(ret[1]);

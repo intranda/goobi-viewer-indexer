@@ -49,7 +49,7 @@ public class DataRepositoryTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
         
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", null);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
     }
 
     @Before
@@ -141,17 +141,17 @@ public class DataRepositoryTest extends AbstractTest {
     public void getNumRecords_shouldCalculateNumberCorrectly() throws Exception {
         DataRepository dataRepository = new DataRepository(Configuration.getInstance().getString("init.viewerHome"), true);
 
-        File srcFile = new File("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
+        File srcFile = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         File destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), srcFile.getName());
         FileUtils.copyFile(srcFile, destFile);
         Assert.assertTrue(destFile.isFile());
 
-        srcFile = new File("resources/test/METS/baltst_559838239/baltst_559838239_NF_75.xml");
+        srcFile = new File("src/test/resources/METS/baltst_559838239/baltst_559838239_NF_75.xml");
         destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), srcFile.getName());
         FileUtils.copyFile(srcFile, destFile);
         Assert.assertTrue(destFile.isFile());
 
-        srcFile = new File("resources/test/METS/baltst_559838239/baltst_559838239_NF_75.xml");
+        srcFile = new File("src/test/resources/METS/baltst_559838239/baltst_559838239_NF_75.xml");
         destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), srcFile.getName());
         FileUtils.copyFile(srcFile, destFile);
         Assert.assertTrue(destFile.isFile());

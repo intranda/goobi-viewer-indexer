@@ -25,7 +25,7 @@ public abstract class AbstractTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        System.setProperty("log4j.configurationFile", "resources/test/log4j2.test.xml");
+        System.setProperty("log4j.configurationFile", "src/test/resources/log4j2.test.xml");
     }
 
     @AfterClass

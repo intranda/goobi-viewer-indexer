@@ -50,8 +50,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        hotfolder = new Hotfolder("resources/test/indexerconfig_solr_test.xml", server);
-        metsFile = Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", server);
+        metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile));
     }
 
@@ -78,9 +78,9 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
         // Index original doc and make sure all fields that will be updated already exist
         {
-            dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
-            dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_alto"));
-            dataFolders.put(DataRepository.PARAM_UGC, Paths.get("resources/test/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ugc"));
+            dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+            dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_alto"));
+            dataFolders.put(DataRepository.PARAM_UGC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ugc"));
             String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
             Assert.assertEquals(PI + ".xml", ret[0]);
             Assert.assertNull(ret[1]);
@@ -100,7 +100,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
         {
             // New ALTO content
             Path updateCrowdsourcingAltoFolderSourcePath =
-                    Paths.get("resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_altocrowd");
+                    Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_altocrowd");
             Path updateCrowdsourcingAltoFolderHotfolderPath =
                     Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_altocrowd");
             Files.createDirectory(updateCrowdsourcingAltoFolderHotfolderPath);
@@ -110,7 +110,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
             // New FULLTEXT (should be ignored because ALTO is present)
             Path updateCrowdsourcingTextFolderSourcePath =
-                    Paths.get("resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
+                    Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
             Path updateCrowdsourcingTextFolderHotfolderPath =
                     Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
             Files.createDirectory(updateCrowdsourcingTextFolderHotfolderPath);
@@ -120,7 +120,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
             // New UGC
             Path updateCrowdsourcingUgcFolderSourcePath =
-                    Paths.get("resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_ugc");
+                    Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_ugc");
             Path updateCrowdsourcingUgcFolderHotfolderPath =
                     Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_ugc");
             Files.createDirectory(updateCrowdsourcingUgcFolderHotfolderPath);
@@ -180,7 +180,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
         // Update just the FULLTEXT
         {
             Path updateCrowdsourcingTextFolderSourcePath =
-                    Paths.get("resources/test/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
+                    Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
             Path updateCrowdsourcingTextFolderHotfolderPath =
                     Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
             Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath.toFile(), updateCrowdsourcingTextFolderHotfolderPath.toFile());
