@@ -28,7 +28,7 @@ public class LanguageHelper {
         if (helper == null) {
             helper = new LanguageHelper();
             try {
-                config = new XMLConfiguration("src/main/resources/languages.xml");
+                config = new XMLConfiguration("languages.xml");
             } catch (ConfigurationException e) {
                 config = new XMLConfiguration();
             }
