@@ -145,12 +145,6 @@ public final class SolrIndexerDaemon {
             logger.warn("<sleep> must contain an numerical value, using default interval of {} ms instead.", DEFAULT_SLEEP_INTERVAL);
         }
 
-        MetsIndexer.fulltextCharset = Configuration.getInstance().getConfiguration("fulltextEncoding");
-        if (StringUtils.isBlank(MetsIndexer.fulltextCharset)) {
-            MetsIndexer.fulltextCharset = MetsIndexer.DEFAULT_FULLTEXT_CHARSET;
-        }
-        logger.info("Full-text encoding is '{}'.", MetsIndexer.fulltextCharset);
-
         logger.info("Using {} CPU thread(s).", Configuration.getInstance().getThreads());
 
         // main loop

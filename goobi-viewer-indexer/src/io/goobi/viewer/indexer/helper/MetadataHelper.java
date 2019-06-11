@@ -488,6 +488,7 @@ public class MetadataHelper {
             //            normDataListMap = NormDataImporter.importNormData(url.trim());
             MarcRecord marcRecord = NormDataImporter.getSingleMarcRecord(url.trim());
             if (marcRecord == null) {
+                logger.warn("No record found at {}", url);
                 return ret;
             }
             normDataListMap.put("GND", marcRecord.getDisplayableData());
@@ -1186,6 +1187,7 @@ public class MetadataHelper {
                 String valueURI = ele.getAttributeValue("valueURI");
                 if (valueURI != null) {
                     ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
+                    ret.setNormUri(valueURI);
                 }
             } else {
                 String authorityURI = ele.getAttributeValue("authorityURI");
