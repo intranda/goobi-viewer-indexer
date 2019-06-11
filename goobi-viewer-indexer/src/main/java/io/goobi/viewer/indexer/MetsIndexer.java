@@ -99,8 +99,6 @@ public class MetsIndexer extends Indexer {
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
     public static final String DEFAULT_FULLTEXT_CHARSET = "UTF-8";
 
-    public static String fulltextCharset = DEFAULT_FULLTEXT_CHARSET;
-
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
     private volatile String useFileGroup = null;
@@ -1824,8 +1822,7 @@ public class MetsIndexer extends Indexer {
                 continue;
             }
             // String indexedMetsFilePath = URLEncoder.encode(Hotfolder.getIndexedMets() + File.separator + pi + AbstractIndexer.XML_EXTENSION, "utf-8");
-            String indexedMetsFilePath =
-                    dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + Indexer.XML_EXTENSION;
+            String indexedMetsFilePath = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + Indexer.XML_EXTENSION;
             Path indexedMets = Paths.get(indexedMetsFilePath);
             if (Files.exists(indexedMets)) {
                 hotfolder.getReindexQueue().add(indexedMets);

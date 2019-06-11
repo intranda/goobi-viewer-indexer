@@ -56,9 +56,6 @@
 		<origLido>C:/digiverso/viewer/orig_lido/</origLido>
 		<origDenkXweb>C:/digiverso/viewer/orig_denkxweb/</origDenkXweb>
 
-		<!-- Encoding that full-text files will be expected to have (default is 'UTF-8'). -->
-		<fulltextEncoding>UTF-8</fulltextEncoding>
-
 		<!-- Delete images, full-texts, etc. from the hotfolder if indexing has failed (default is false) -->
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
 
