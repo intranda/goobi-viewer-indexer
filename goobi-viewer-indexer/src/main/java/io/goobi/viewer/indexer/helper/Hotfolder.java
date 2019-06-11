@@ -259,7 +259,7 @@ public class Hotfolder {
 
         // DenkXweb folders
         if (config.getConfiguration("indexedDenkXweb") == null) {
-            lidoEnabled = false;
+            denkxwebEnabled = false;
             logger.warn("<indexedDenkXweb> not defined - DenkXweb indexing is disabled.");
         }
         if (config.getConfiguration("origDenkXweb") != null) {
