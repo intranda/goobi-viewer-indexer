@@ -601,51 +601,53 @@ public abstract class Indexer {
      * @param dataFolders The data folders which must include the {@link DataRepository#PARAM_MEDIA} folder containing the image
      * @param doc the page document pertaining to the image
      * @return
+     * @should return size correctly
      */
     static Optional<Dimension> getSize(Map<String, Path> dataFolders, SolrInputDocument doc) {
-        logger.trace("deskewAlto");
+        logger.trace("getSize");
         String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
-        if (filename != null && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
-            File imageFile = new File(filename);
-            imageFile = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), imageFile.getName());
-            if (!imageFile.isFile()) {
-                return Optional.empty();
-            }
-            logger.trace("Found image file {}", imageFile.getAbsolutePath());
-            Dimension imageSize = new Dimension(0, 0);
+        if (filename == null || dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
+            return Optional.empty();
+        }
+        File imageFile = new File(filename);
+        imageFile = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), imageFile.getName());
+        if (!imageFile.isFile()) {
+            return Optional.empty();
+        }
+        logger.trace("Found image file {}", imageFile.getAbsolutePath());
+        Dimension imageSize = new Dimension(0, 0);
+        try {
+            Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
+            Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
+            Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            Directory pngDirectory = imageMetadata.getFirstDirectoryOfType(PngDirectory.class);
             try {
-                Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
-                Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
-                Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-                Directory pngDirectory = imageMetadata.getFirstDirectoryOfType(PngDirectory.class);
-                try {
-                    imageSize.width = Integer.valueOf(pngDirectory.getDescription(1).replaceAll("\\D", ""));
-                    imageSize.height = Integer.valueOf(pngDirectory.getDescription(2).replaceAll("\\D", ""));
-                } catch (NullPointerException e) {
-                }
-                try {
-                    imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
-                    imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
-                } catch (NullPointerException e) {
-                }
-                try {
-                    imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
-                    imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
-                } catch (NullPointerException e) {
-                }
+                imageSize.width = Integer.valueOf(pngDirectory.getDescription(1).replaceAll("\\D", ""));
+                imageSize.height = Integer.valueOf(pngDirectory.getDescription(2).replaceAll("\\D", ""));
+            } catch (NullPointerException e) {
+            }
+            try {
+                imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
+                imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
+            } catch (NullPointerException e) {
+            }
+            try {
+                imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
+                imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
+            } catch (NullPointerException e) {
+            }
 
-                if (imageSize.getHeight() * imageSize.getHeight() > 0) {
-                    return Optional.of(imageSize);
-                }
-
-            } catch (ImageProcessingException | IOException e) {
-                if (e.getMessage().contains("File format is not supported")) {
-                    logger.warn("{}: {}", e.getMessage(), filename);
-                } else {
-                    logger.error(e.getMessage(), e);
-                }
+            if (imageSize.getHeight() * imageSize.getHeight() > 0) {
+                return Optional.of(imageSize);
+            }
+        } catch (ImageProcessingException | IOException e) {
+            if (e.getMessage().contains("File format is not supported")) {
+                logger.warn("{}: {}", e.getMessage(), filename);
+            } else {
+                logger.error(e.getMessage(), e);
             }
         }
+        
         return Optional.empty();
     }
 

@@ -15,15 +15,20 @@
  */
 package io.goobi.viewer.indexer;
 
+import java.awt.Dimension;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.junit.Assert;
 import org.junit.Before;
@@ -204,5 +209,46 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     @Test(expected = IllegalArgumentException.class)
     public void cleanUpNamedEntityValue_shouldThrowIllegalArgumentExceptionGivenNull() throws Exception {
         Indexer.cleanUpNamedEntityValue(null);
+    }
+
+    /**
+     * @see Indexer#getSize(Map,SolrInputDocument)
+     * @verifies return size correctly
+     */
+    @Test
+    public void getSize_shouldReturnSizeCorrectly() throws Exception {
+        String[] filenames = { "00000005.tif", "00225231.png" };
+
+        Dimension[] imageSizes = { new Dimension(4678, 6205), new Dimension(2794, 3838) };
+
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        File dataFolder = new File("src/test/resources/image_size");
+
+        int i = 0;
+        File outputFolder = new File(dataFolder, "output");
+        try {
+            for (String filename : filenames) {
+                if (outputFolder.isDirectory()) {
+                    FileUtils.deleteDirectory(outputFolder);
+                }
+                outputFolder.mkdirs();
+
+                Map<String, Path> dataFolders = new HashMap<>();
+                dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
+
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.setField(SolrConstants.FILENAME, filename);
+
+                Optional<Dimension> dim = Indexer.getSize(dataFolders, doc);
+                Assert.assertTrue(dim.isPresent());
+                Assert.assertEquals(imageSizes[i], dim.get());
+
+                i++;
+            }
+        } finally {
+            if (outputFolder.isDirectory()) {
+                FileUtils.deleteDirectory(outputFolder);
+            }
+        }
     }
 }
