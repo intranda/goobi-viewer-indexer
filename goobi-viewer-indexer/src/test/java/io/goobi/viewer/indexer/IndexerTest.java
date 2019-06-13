@@ -96,8 +96,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1, Configuration.getInstance().getList(
-                "init.lido.imageXPath"), false);
+        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
+                Configuration.getInstance().getList("init.lido.imageXPath"), false);
         Assert.assertEquals("ERROR: " + ret[1], pi, ret[0]);
         String iddoc;
         {
@@ -107,14 +107,14 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(iddoc);
         }
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER
-                    + ":" + iddoc, null);
+            SolrDocumentList docList =
+                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertEquals(3, docList.size());
         }
         Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSolrHelper()));
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER
-                    + ":" + iddoc, null);
+            SolrDocumentList docList =
+                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertTrue(docList.isEmpty());
         }
     }
@@ -159,8 +159,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,Configuration.getInstance().getList(
-                "init.lido.imageXPath"), false);
+        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
+                Configuration.getInstance().getList("init.lido.imageXPath"), false);
         Assert.assertEquals(pi, ret[0]);
         String iddoc;
         {
@@ -170,8 +170,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(iddoc);
         }
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER
-                    + ":" + iddoc, null);
+            SolrDocumentList docList =
+                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertEquals(3, docList.size());
         }
         Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSolrHelper()));
@@ -217,9 +217,10 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getSize_shouldReturnSizeCorrectly() throws Exception {
-        String[] filenames = { "00000005.tif", "00225231.png" };
-
-        Dimension[] imageSizes = { new Dimension(4678, 6205), new Dimension(2794, 3838) };
+        //        String[] filenames = { "00000005.tif", "00225231.png" };
+        //        Dimension[] imageSizes = { new Dimension(4678, 6205), new Dimension(2794, 3838) };
+        String[] filenames = { "00225231.png" };
+        Dimension[] imageSizes = { new Dimension(2794, 3838) };
 
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         File dataFolder = new File("src/test/resources/image_size");
