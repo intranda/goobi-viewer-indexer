@@ -804,14 +804,13 @@ public class MetadataHelper {
      * @throws FatalIndexerException
      * @should extract DenkXweb PI correctly
      */
-    @SuppressWarnings({ "unchecked" })
     public static String getPIFromXML(String prefix, JDomXP xp) throws FatalIndexerException {
-        List<Map<String, Object>> piConfig = Configuration.getInstance().getFieldConfiguration().get(SolrConstants.PI);
+        List<FieldConfig> piConfig = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
             return null;
         }
 
-        List<XPathConfig> xPathConfigurations = (ArrayList<XPathConfig>) piConfig.get(0).get("xpath");
+        List<XPathConfig> xPathConfigurations = piConfig.get(0).getxPathConfigurations();
         for (XPathConfig xPathConfig : xPathConfigurations) {
             String query = prefix + xPathConfig.getxPath();
             String pi = xp.evaluateToString(query, null);

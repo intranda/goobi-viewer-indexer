@@ -19,15 +19,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.lang.StringUtils;
@@ -37,24 +36,25 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
-import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
-import io.goobi.viewer.indexer.model.config.SubfieldConfig;
-import io.goobi.viewer.indexer.model.config.ValueNormalizer;
-import io.goobi.viewer.indexer.model.config.XPathConfig;
-import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public final class Configuration {
+
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
+    private static final Object lock = new Object();
+
     private final XMLConfiguration config;
-    private Map<String, List<Map<String, Object>>> fieldConfiguration;
-    private final MetadataConfigurationManager metadataConfigurationManager;
-    private final Map<String, Namespace> namespaces;
+    //    private Map<String, List<Map<String, Object>>> fieldConfiguration;
+    private MetadataConfigurationManager metadataConfigurationManager;
+    private Map<String, Namespace> namespaces;
 
     /* default */
     private static String configPath = "indexerconfig_solr.xml";
     private static Configuration instance = null;
+
+    /** Timer that checks for changes in the config file and repopulates some configuration objects. */
+    private Timer reloadTimer = new Timer();
 
     /**
      * Re-inits the instance with the given config file name.
@@ -77,14 +77,23 @@ public final class Configuration {
      * @return
      */
     public static synchronized Configuration getInstance() throws FatalIndexerException {
-        if (instance == null) {
-            try {
-                instance = new Configuration();
-            } catch (ConfigurationException e) {
-                logger.error(e.getMessage(), e);
-                throw new FatalIndexerException("Cannot read configuration file '" + configPath + "', shutting down...");
+        Configuration conf = instance;
+        if (conf == null) {
+            synchronized (lock) {
+                // Another thread might have initialized instance by now
+                conf = instance;
+                if (conf == null) {
+                    try {
+                        conf = new Configuration();
+                        instance = conf;
+                    } catch (ConfigurationException e) {
+                        logger.error(e.getMessage(), e);
+                        throw new FatalIndexerException("Cannot read configuration file '" + configPath + "', shutting down...");
+                    }
+                }
             }
         }
+
         return instance;
     }
 
@@ -93,7 +102,27 @@ public final class Configuration {
         AbstractConfiguration.setDelimiter('&');
         config = new XMLConfiguration(configPath);
         config.setReloadingStrategy(new FileChangedReloadingStrategy());
-        metadataConfigurationManager = new MetadataConfigurationManager(this);
+        reloadConfig(config);
+
+        // Check every 10 seconds for changed config files and refresh maps if necessary
+        reloadTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (config != null && config.getReloadingStrategy() != null && config.getReloadingStrategy().reloadingRequired()) {
+                    logger.info("Reloading configuration...");
+                    reloadConfig(config);
+                }
+            }
+        }, 0, 10000);
+
+    }
+
+    /**
+     * 
+     * @param config
+     */
+    private void reloadConfig(XMLConfiguration config) {
+        metadataConfigurationManager = new MetadataConfigurationManager(config);
         namespaces = new HashMap<>();
         initNamespaces();
     }
@@ -301,7 +330,6 @@ public final class Configuration {
      * @param elementName element name to search for
      * @return HashMap with key and value for each element of 'elementName'
      */
-    @SuppressWarnings("unchecked")
     public Map<String, String> getListConfiguration(String elementName) {
         Map<String, String> answerList = new HashMap<>();
         Iterator<String> it = config.getKeys(elementName + ".list");
@@ -310,206 +338,6 @@ public final class Configuration {
             answerList.put(key.substring(key.lastIndexOf('.') + 1), config.getString(key));
         }
         return answerList;
-    }
-
-    /**
-     * Loads and returns index field configurations.
-     * 
-     * <li>fields - > ArrayList < HashMap >
-     * 
-     * <li>HashMap - > HashMap < String, Object >
-     * 
-     * <li>Object - > String (for store, index, addToDefault, addToMetadata) or ArrayList (for xpath)
-     * 
-     * 
-     * @return HashMap < String, ArrayList < HashMap < String, Object>>> fields
-     */
-    public Map<String, List<Map<String, Object>>> getFieldConfiguration() {
-        if (fieldConfiguration == null) {
-            loadFieldConfiguration();
-        }
-
-        return fieldConfiguration;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void loadFieldConfiguration() {
-        fieldConfiguration = new HashMap<>();
-        Iterator<String> fields = config.getKeys("fields");
-        ArrayList<String> newFields = new ArrayList<>();
-        // each field only once
-        while (fields.hasNext()) {
-            String fieldname = fields.next();
-            fieldname = fieldname.substring(7);
-            fieldname = fieldname.substring(0, fieldname.indexOf('.'));
-            if (!newFields.contains(fieldname)) {
-                newFields.add(fieldname);
-            }
-        }
-        for (String fieldname : newFields) {
-            int count = config.getMaxIndex("fields." + fieldname + ".list.item");
-            List<Map<String, Object>> fieldInformation = new ArrayList<>();
-            for (int i = 0; i <= count; i++) {
-                Map<String, Object> fieldValues = new HashMap<>();
-                List<XPathConfig> xPathConfigurations = new ArrayList<>();
-
-                int items = config.getMaxIndex("fields." + fieldname + ".list.item(" + i + ").xpath.list.item");
-                if (items > -1) {
-                    // Multiple XPath items
-                    for (int j = 0; j <= items; j++) {
-                        SubnodeConfiguration xpathNode =
-                                config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath.list.item(" + j + ")");
-                        String xpath = xpathNode.getString(".");
-                        if (StringUtils.isEmpty(xpath)) {
-                            logger.error("Found empty XPath configuration for field: {}", fieldname);
-                            continue;
-                        }
-                        String prefix = xpathNode.getString("[@prefix]");
-                        String suffix = xpathNode.getString("[@suffix]");
-                        xPathConfigurations.add(new XPathConfig(xpath, prefix, suffix));
-                    }
-                } else {
-                    // Single XPath item
-                    SubnodeConfiguration xpathNode = config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath");
-                    String xpath = xpathNode.getString(".");
-                    if (StringUtils.isEmpty(xpath)) {
-                        logger.error("Found empty XPath configuration for field: {}", fieldname);
-                    } else {
-                        String prefix = xpathNode.getString("[@prefix]");
-                        String suffix = xpathNode.getString("[@suffix]");
-                        xPathConfigurations.add(new XPathConfig(xpath, prefix, suffix));
-                    }
-                }
-
-                fieldValues.put("xpath", xPathConfigurations);
-                fieldValues.put("getparents", config.getString("fields." + fieldname + ".list.item(" + i + ").getparents"));
-                fieldValues.put("getchildren", config.getString("fields." + fieldname + ".list.item(" + i + ").getchildren"));
-                fieldValues.put("onetoken", config.getString("fields." + fieldname + ".list.item(" + i + ").onetoken"));
-                fieldValues.put("onefield", config.getString("fields." + fieldname + ".list.item(" + i + ").onefield"));
-                fieldValues.put("constantValue", config.getString("fields." + fieldname + ".list.item(" + i + ").constantValue"));
-                fieldValues.put("splittingCharacter", config.getString("fields." + fieldname + ".list.item(" + i + ").splittingCharacter"));
-                fieldValues.put("getnode", config.getString("fields." + fieldname + ".list.item(" + i + ").getnode"));
-                fieldValues.put("addToDefault", config.getString("fields." + fieldname + ".list.item(" + i + ").addToDefault"));
-                fieldValues.put("addUntokenizedVersion", config.getString("fields." + fieldname + ".list.item(" + i + ").addUntokenizedVersion"));
-                fieldValues.put("lowercase", config.getString("fields." + fieldname + ".list.item(" + i + ").lowercase"));
-                fieldValues.put("addSortField", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortField"));
-                fieldValues.put("addSortFieldToTopstruct", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortFieldToTopstruct"));
-                fieldValues.put("aggregateEntity", config.getString("fields." + fieldname + ".list.item(" + i + ").aggregateEntity"));
-                fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
-                fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
-
-                {
-                    // Normalize and interpolate years
-                    List eleNormalizeYearList = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeYear");
-                    if (eleNormalizeYearList != null && !eleNormalizeYearList.isEmpty()) {
-                        SubnodeConfiguration eleNormalizeYear = (SubnodeConfiguration) eleNormalizeYearList.get(0);
-                        fieldValues.put("normalizeYear", eleNormalizeYear.getString(""));
-                        fieldValues.put("normalizeYearMinDigits", eleNormalizeYear.getInt("[@minYearDigits]", 3));
-                        fieldValues.put("interpolateYears", config.getString("fields." + fieldname + ".list.item(" + i + ").interpolateYears"));
-                    }
-                }
-
-                // Grouped entity config
-                {
-                    Map<String, Object> groupedSubfieldConfigurations = new HashMap<>();
-                    String type = config.getString("fields." + fieldname + ".list.item(" + i + ").groupEntity[@type]");
-                    if (type != null) {
-                        groupedSubfieldConfigurations.put("type", type);
-                    }
-                    List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").groupEntity.field");
-                    if (elements != null) {
-                        for (Iterator it = elements.iterator(); it.hasNext();) {
-                            HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
-                            String name = sub.getString("[@name]", null);
-                            boolean multivalued = sub.getBoolean("[@multivalued]", true);
-                            String xpathExp = sub.getString("");
-                            if (StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(xpathExp)) {
-                                SubfieldConfig config = (SubfieldConfig) groupedSubfieldConfigurations.get(name);
-                                if (config == null) {
-                                    config = new SubfieldConfig(name, multivalued);
-                                    groupedSubfieldConfigurations.put(name, config);
-                                }
-                                config.getXpaths().add(xpathExp);
-                                logger.debug("Loaded group entity field: {} - {}", name, xpathExp);
-                            } else {
-                                logger.warn("Found incomplete groupEntity configuration for field '{}', skipping...", fieldname);
-                            }
-                        }
-                        fieldValues.put("groupEntity", groupedSubfieldConfigurations);
-                    }
-                }
-
-                {
-                    List<NonSortConfiguration> nonSortConfigurations = new ArrayList<>();
-                    List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").nonSortCharacters");
-                    if (elements != null) {
-                        for (Iterator it = elements.iterator(); it.hasNext();) {
-                            HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
-                            String prefix = sub.getString("[@prefix]");
-                            String suffix = sub.getString("[@suffix]");
-                            nonSortConfigurations.add(new NonSortConfiguration(prefix, suffix));
-                        }
-                        fieldValues.put("nonSortConfigurations", nonSortConfigurations);
-                    }
-                }
-
-                {
-                    List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeValue");
-                    if (elements != null && !elements.isEmpty()) {
-                        HierarchicalConfiguration sub = (HierarchicalConfiguration) elements.get(0);
-                        int length = sub.getInt("[@length]");
-                        char filler = sub.getString("[@filler]", "0").charAt(0);
-                        String position = sub.getString("[@position]");
-                        String relevantPartRegex = sub.getString("[@relevantPartRegex]");
-                        ValueNormalizer normalizer =
-                                new ValueNormalizer(length, filler, ValueNormalizerPosition.getByName(position), relevantPartRegex);
-                        fieldValues.put("valueNormalizer", normalizer);
-                    }
-                }
-
-                {
-                    // A field can only be configured with chars or strings to be replaced, not both!
-                    Map<Object, String> replaceRules = new LinkedHashMap<>();
-                    List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").replace");
-                    if (elements != null) {
-                        for (Iterator it = elements.iterator(); it.hasNext();) {
-                            HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
-                            Character character = null;
-                            try {
-                                int charIndex = sub.getInt("[@char]");
-                                character = (char) charIndex;
-                            } catch (NoSuchElementException e) {
-                            }
-                            String string = null;
-                            try {
-                                string = sub.getString("[@string]");
-                            } catch (NoSuchElementException e) {
-                            }
-                            String regex = null;
-                            try {
-                                regex = sub.getString("[@regex]");
-                            } catch (NoSuchElementException e) {
-                            }
-                            String replaceWith = sub.getString("");
-                            if (replaceWith == null) {
-                                replaceWith = "";
-                            }
-                            if (character != null) {
-                                replaceRules.put(character, replaceWith);
-                            } else if (string != null) {
-                                replaceRules.put(string, replaceWith);
-                            } else if (regex != null) {
-                                replaceRules.put("REGEX:" + regex, replaceWith);
-                            }
-                        }
-                        fieldValues.put("replaceRules", replaceRules);
-                    }
-                }
-
-                fieldInformation.add(fieldValues);
-                fieldConfiguration.put(fieldname, fieldInformation);
-            }
-        }
     }
 
     /**

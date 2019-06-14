@@ -36,6 +36,7 @@ import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
+import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public class ConfigurationTest extends AbstractTest {
@@ -48,7 +49,7 @@ public class ConfigurationTest extends AbstractTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
-        
+
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
     }
 
@@ -75,66 +76,34 @@ public class ConfigurationTest extends AbstractTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void configItemTest() throws Exception {
-        Map<String, List<Map<String, Object>>> fieldConfigurations = Configuration.getInstance().getFieldConfiguration();
-        Assert.assertEquals(120, fieldConfigurations.size());
-        List<Map<String, Object>> fieldInformation = fieldConfigurations.get("MD_TESTFIELD");
-        Assert.assertNotNull(fieldInformation);
-        Assert.assertEquals(1, fieldInformation.size());
-        Map<String, Object> fieldValues = fieldInformation.get(0);
-        Assert.assertEquals(21, fieldValues.size());
+        List<String> fieldNames = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
+        Assert.assertEquals(120, fieldNames.size());
+        List<FieldConfig> fieldConfigList =
+                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
+        Assert.assertNotNull(fieldConfigList);
+        Assert.assertEquals(1, fieldConfigList.size());
+        FieldConfig fieldConfig = fieldConfigList.get(0);
 
-        List<String> xpath = (List<String>) fieldValues.get("xpath");
-        Assert.assertNotNull(xpath);
-        Assert.assertEquals(2, xpath.size());
+        Assert.assertNotNull(fieldConfig.getxPathConfigurations());
+        Assert.assertEquals(2, fieldConfig.getxPathConfigurations().size());
+        Assert.assertEquals("all", fieldConfig.getParents());
+        Assert.assertEquals("false", fieldConfig.getChild());
+        Assert.assertEquals("first", fieldConfig.getNode());
+        Assert.assertTrue(fieldConfig.isOneToken());
+        Assert.assertTrue(fieldConfig.isOneField());
+        Assert.assertEquals("XXX", fieldConfig.getConstantValue());
+        Assert.assertTrue(fieldConfig.isLowercase());
+        Assert.assertTrue(fieldConfig.isAddToDefault());
+        Assert.assertFalse(fieldConfig.isAddUntokenizedVersion());
+        Assert.assertTrue(fieldConfig.isAddSortField());
+        Assert.assertTrue(fieldConfig.isAddSortFieldToTopstruct());
+        Assert.assertEquals("#", fieldConfig.getSplittingCharacter());
+        Assert.assertTrue(fieldConfig.isNormalizeYear());
+        Assert.assertEquals(2, fieldConfig.getNormalizeYearMinDigits());
+        Assert.assertTrue(fieldConfig.isGroupEntity());
 
-        Assert.assertNotNull(fieldValues.get("getparents"));
-        Assert.assertEquals("all", fieldValues.get("getparents"));
-
-        Assert.assertNotNull(fieldValues.get("getchildren"));
-        Assert.assertEquals("false", fieldValues.get("getchildren"));
-
-        Assert.assertNotNull(fieldValues.get("getnode"));
-        Assert.assertEquals("first", fieldValues.get("getnode"));
-
-        Assert.assertNotNull(fieldValues.get("onetoken"));
-        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("onetoken")));
-
-        Assert.assertNotNull(fieldValues.get("onefield"));
-        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("onefield")));
-
-        Assert.assertNotNull(fieldValues.get("constantValue"));
-        Assert.assertEquals("XXX", fieldValues.get("constantValue"));
-
-        Assert.assertNotNull(fieldValues.get("lowercase"));
-        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("lowercase")));
-
-        Assert.assertNotNull(fieldValues.get("addToDefault"));
-        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("addToDefault")));
-
-        Assert.assertNotNull(fieldValues.get("addUntokenizedVersion"));
-        Assert.assertFalse(Boolean.valueOf((String) fieldValues.get("addUntokenizedVersion")));
-
-        Assert.assertNotNull(fieldValues.get("addSortField"));
-        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("addSortField")));
-
-        Assert.assertNotNull(fieldValues.get("addSortFieldToTopstruct"));
-        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("addSortFieldToTopstruct")));
-
-        Assert.assertNotNull(fieldValues.get("splittingCharacter"));
-        Assert.assertEquals("#", fieldValues.get("splittingCharacter"));
-
-        Assert.assertNotNull(fieldValues.get("normalizeYear"));
-        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("normalizeYear")));
-
-        Assert.assertNotNull(fieldValues.get("normalizeYearMinDigits"));
-        Assert.assertEquals(2, (int) fieldValues.get("normalizeYearMinDigits"));
-
-        Assert.assertNotNull(fieldValues.get("aggregateEntity"));
-        Assert.assertTrue(Boolean.valueOf((String) fieldValues.get("aggregateEntity")));
-
-        Map<String, Object> groupEntity = (Map<String, Object>) fieldValues.get("groupEntity");
+        Map<String, Object> groupEntity = fieldConfig.getGroupEntityFields();
         Assert.assertNotNull(groupEntity);
         Assert.assertEquals(3, groupEntity.size());
         String type = (String) groupEntity.get("type");
@@ -155,14 +124,14 @@ public class ConfigurationTest extends AbstractTest {
             Assert.assertFalse(fieldSubconfig.isMultivalued());
         }
 
-        Map<Object, String> replaceRules = (Map<Object, String>) fieldValues.get("replaceRules");
+        Map<Object, String> replaceRules = fieldConfig.getReplaceRules();
         Assert.assertNotNull(replaceRules);
         Assert.assertEquals(2, replaceRules.size());
         logger.info(replaceRules.keySet().toString());
         Assert.assertEquals("replace1", replaceRules.get("stringToReplace1"));
         Assert.assertEquals("replace2", replaceRules.get("REGEX:[ ]*stringToReplace2[ ]*"));
 
-        List<NonSortConfiguration> nonSortConfigurations = (List<NonSortConfiguration>) fieldValues.get("nonSortConfigurations");
+        List<NonSortConfiguration> nonSortConfigurations = fieldConfig.getNonSortConfigurations();
         Assert.assertNotNull(nonSortConfigurations);
         Assert.assertEquals(1, nonSortConfigurations.size());
         Assert.assertEquals("nonSortPrefix", nonSortConfigurations.get(0).getPrefix());

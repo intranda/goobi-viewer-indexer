@@ -33,16 +33,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.helper.Hotfolder;
-import io.goobi.viewer.indexer.helper.JDomXP;
-import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.MetadataHelper.PrimitiveDate;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
+import io.goobi.viewer.indexer.model.config.FieldConfig;
 
 public class MetadataHelperTest extends AbstractTest {
 
@@ -52,7 +49,7 @@ public class MetadataHelperTest extends AbstractTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
-        
+
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
     }
 
@@ -235,16 +232,15 @@ public class MetadataHelperTest extends AbstractTest {
      * @see MetadataHelper#getGroupedMetadata(Element,MultiMap,String)
      * @verifies group correctly
      */
-    @SuppressWarnings("unchecked")
     @Test
     public void getGroupedMetadata_shouldGroupCorrectly() throws Exception {
-        Map<String, List<Map<String, Object>>> fieldConfigurations = Configuration.getInstance().getFieldConfiguration();
-        List<Map<String, Object>> fieldInformation = fieldConfigurations.get("MD_AUTHOR");
-        Assert.assertNotNull(fieldInformation);
-        Assert.assertEquals(1, fieldInformation.size());
-        Map<String, Object> fieldValues = fieldInformation.get(0);
-        Map<String, Object> groupEntity = (Map<String, Object>) fieldValues.get("groupEntity");
-        Assert.assertNotNull(groupEntity);
+        List<FieldConfig> fieldConfigurations =
+                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
+        Assert.assertNotNull(fieldConfigurations);
+        Assert.assertEquals(1, fieldConfigurations.size());
+        FieldConfig fieldConfig = fieldConfigurations.get(0);
+        Map<String, Object> groupEntity = fieldConfig.getGroupEntityFields();
+        Assert.assertNotNull(fieldConfig.getGroupEntityFields());
 
         Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
         Assert.assertNotNull(docMods);

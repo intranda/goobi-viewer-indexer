@@ -176,7 +176,7 @@
 					<getnode>first</getnode>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
-				</item>
+				</item> 
 			</list>
 		</URN>
 
