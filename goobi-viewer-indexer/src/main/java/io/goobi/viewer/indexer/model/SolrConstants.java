@@ -87,8 +87,6 @@ public final class SolrConstants {
     public static final String ORDERLABEL = "ORDERLABEL";
     public static final String ORDERLABELFIRST = "ORDERLABELFIRST";
     public static final String ORDERLABELLAST = "ORDERLABELLAST";
-//    public static final String OVERVIEWPAGE_DESCRIPTION = "OVERVIEWPAGE_DESCRIPTION";
-//    public static final String OVERVIEWPAGE_PUBLICATIONTEXT = "OVERVIEWPAGE_PUBLICATIONTEXT";
     public static final String PHYSID = "PHYSID";
     public static final String PI = "PI";
     public static final String PI_ANCHOR = "PI_ANCHOR";
@@ -120,7 +118,6 @@ public final class SolrConstants {
     public static final String GROUPORDER_ = "GROUPORDER_";
     public static final String SORT_ = "SORT_";
     public static final String SORTNUM_ = "SORTNUM_";
-    // public static final String VIDEO_ = "VIDEO_";
     public static final String _LANG_ = "_LANG_";
     public static final String _NOESCAPE = "_NOESCAPE";
     public static final String _UNTOKENIZED = "_UNTOKENIZED";
