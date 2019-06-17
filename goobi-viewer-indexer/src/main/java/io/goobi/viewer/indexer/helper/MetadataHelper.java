@@ -1183,7 +1183,6 @@ public class MetadataHelper {
                             valueURI = valueURI.trim();
                             if (StringUtils.isNotEmpty(authorityURI) && !valueURI.startsWith(authorityURI)) {
                                 ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, authorityURI + valueURI));
-                                ret.getFields().add(new LuceneField("NORM_IDENTIFIER", valueURI));
                             } else {
                                 ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
                             }
