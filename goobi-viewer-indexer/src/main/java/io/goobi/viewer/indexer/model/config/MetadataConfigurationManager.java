@@ -129,7 +129,6 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("lowercase", config.getString("fields." + fieldname + ".list.item(" + i + ").lowercase"));
                 fieldValues.put("addSortField", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortField"));
                 fieldValues.put("addSortFieldToTopstruct", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortFieldToTopstruct"));
-                fieldValues.put("aggregateEntity", config.getString("fields." + fieldname + ".list.item(" + i + ").aggregateEntity"));
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
 
