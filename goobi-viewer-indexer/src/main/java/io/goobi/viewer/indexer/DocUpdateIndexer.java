@@ -44,6 +44,7 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public class DocUpdateIndexer extends Indexer {
@@ -85,20 +86,30 @@ public class DocUpdateIndexer extends Indexer {
         }
 
         String pi = fileNameSplit[0];
-        String iddoc = fileNameSplit[1];
+        int order = Integer.valueOf(fileNameSplit[1]);
+        String iddoc = null;
         dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, null, hotfolder.getSolrHelper())[0];
         try {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.IDDOC + ":" + iddoc, null);
+            SolrDocumentList docList = hotfolder.getSolrHelper()
+                    .search(new StringBuilder().append('+')
+                            .append(SolrConstants.PI_TOPSTRUCT)
+                            .append(':')
+                            .append(pi)
+                            .append(" +")
+                            .append(SolrConstants.ORDER)
+                            .append(':')
+                            .append(order)
+                            .append(" +")
+                            .append(SolrConstants.DOCTYPE)
+                            .append(':')
+                            .append(DocType.PAGE.name())
+                            .toString(), null);
             if (docList == null || docList.isEmpty()) {
-                ret[1] = "IDDOC not found in index: " + iddoc;
+                ret[1] = "Page not found in index: " + order;
                 return ret;
             }
             SolrDocument doc = docList.get(0);
-            if (!doc.containsKey(SolrConstants.ORDER)) {
-                ret[1] = "Document " + iddoc + " contains no " + SolrConstants.ORDER + " field, please checks the index.";
-                return ret;
-            }
-            int order = (int) doc.getFieldValue(SolrConstants.ORDER);
+            iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             String pageFileName = doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")
                     ? (String) doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
