@@ -131,6 +131,7 @@ public class DocUpdateIndexer extends Indexer {
             }
             SolrDocument doc = docList.get(0);
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
+            order = (int) doc.getFieldValue(SolrConstants.ORDER);
             String pageFileName = doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")
                     ? (String) doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
