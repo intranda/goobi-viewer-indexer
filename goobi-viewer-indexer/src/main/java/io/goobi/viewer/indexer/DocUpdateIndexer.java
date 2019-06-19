@@ -105,7 +105,7 @@ public class DocUpdateIndexer extends Indexer {
                     .append(DocType.PAGE.name())
                     .toString();
         } catch (NumberFormatException e) {
-            logger.warn("Could not parse page number '{}', attempting to use as IDDOC. Please udpate your Goobi viewer core.");
+            logger.warn("Could not parse page number '{}', attempting to use as IDDOC. Please update your Goobi viewer core.");
             iddoc = fileNameSplit[1];
             query = new StringBuilder().append('+')
                     .append(SolrConstants.PI_TOPSTRUCT)
