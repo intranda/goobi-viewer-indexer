@@ -86,26 +86,46 @@ public class DocUpdateIndexer extends Indexer {
         }
 
         String pi = fileNameSplit[0];
-        int order = Integer.valueOf(fileNameSplit[1]);
+        Integer order = null;
         String iddoc = null;
-        dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, null, hotfolder.getSolrHelper())[0];
+        String query = null;
         try {
-            SolrDocumentList docList = hotfolder.getSolrHelper()
-                    .search(new StringBuilder().append('+')
-                            .append(SolrConstants.PI_TOPSTRUCT)
-                            .append(':')
-                            .append(pi)
-                            .append(" +")
-                            .append(SolrConstants.ORDER)
-                            .append(':')
-                            .append(order)
-                            .append(" +")
-                            .append(SolrConstants.DOCTYPE)
-                            .append(':')
-                            .append(DocType.PAGE.name())
-                            .toString(), null);
+            order = Integer.valueOf(fileNameSplit[1]);
+            query = new StringBuilder().append('+')
+                    .append(SolrConstants.PI_TOPSTRUCT)
+                    .append(':')
+                    .append(pi)
+                    .append(" +")
+                    .append(SolrConstants.ORDER)
+                    .append(':')
+                    .append(order)
+                    .append(" +")
+                    .append(SolrConstants.DOCTYPE)
+                    .append(':')
+                    .append(DocType.PAGE.name())
+                    .toString();
+        } catch (NumberFormatException e) {
+            logger.warn("Could not parse page number '{}', attempting to use as IDDOC. Please udpate your Goobi viewer core.");
+            iddoc = fileNameSplit[1];
+            query = new StringBuilder().append('+')
+                    .append(SolrConstants.PI_TOPSTRUCT)
+                    .append(':')
+                    .append(pi)
+                    .append(" +")
+                    .append(SolrConstants.IDDOC)
+                    .append(':')
+                    .toString();
+        }
+        dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, null, hotfolder.getSolrHelper())[0];
+
+        try {
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(query, null);
             if (docList == null || docList.isEmpty()) {
-                ret[1] = "Page not found in index: " + order;
+                if (order != null) {
+                    ret[1] = "Page not found in index: " + order;
+                } else {
+                    ret[1] = "IDDOC not found in index: " + iddoc;
+                }
                 return ret;
             }
             SolrDocument doc = docList.get(0);
@@ -225,7 +245,7 @@ public class DocUpdateIndexer extends Indexer {
             }
 
             // Remove old UGC
-            String query = SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
+            query = SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
             SolrDocumentList ugcDocList = hotfolder.getSolrHelper()
                     .search(SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
                             Collections.singletonList(SolrConstants.IDDOC));
