@@ -88,8 +88,6 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.FULLTEXT + ":*", null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assert.assertNotNull(iddoc);
             Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
             // TODO check new UGC docs
         }
@@ -129,13 +127,14 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             dataFolders.put(DataRepository.PARAM_UGC, updateCrowdsourcingUgcFolderHotfolderPath);
 
             // Update doc and check updated values
-            Path updateFile = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), PI + '#' + iddoc + DocUpdateIndexer.FILE_EXTENSION);
+            Path updateFile = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
             {
-                SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
-                        + ":1 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
+                SolrDocumentList docList = hotfolder.getSolrHelper()
+                        .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.DOCTYPE + ":"
+                                + DocType.PAGE.name(), null);
                 Assert.assertEquals(1, docList.size());
                 SolrDocument doc = docList.get(0);
 
@@ -154,8 +153,9 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
             // Check for new UGC docs
             {
-                SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
-                        + ":1 AND " + SolrConstants.DOCTYPE + ":" + DocType.UGC.name(), null);
+                SolrDocumentList docList = hotfolder.getSolrHelper()
+                        .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.DOCTYPE + ":"
+                                + DocType.UGC.name(), null);
                 Assert.assertEquals(2, docList.size());
                 {
                     SolrDocument doc = docList.get(0);
@@ -186,12 +186,13 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath.toFile(), updateCrowdsourcingTextFolderHotfolderPath.toFile());
             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, updateCrowdsourcingTextFolderHotfolderPath);
 
-            Path updateFile = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), PI + '#' + iddoc + DocUpdateIndexer.FILE_EXTENSION);
+            Path updateFile = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER
-                    + ":1  AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
+            SolrDocumentList docList = hotfolder.getSolrHelper()
+                    .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1  AND " + SolrConstants.DOCTYPE + ":"
+                            + DocType.PAGE.name(), null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
 
