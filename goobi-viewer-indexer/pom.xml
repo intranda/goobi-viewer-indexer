@@ -328,6 +328,11 @@
 			<artifactId>xstream</artifactId>
 			<version>${xstream.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>de.digitalcollections.imageio</groupId>
+			<artifactId>imageio-openjpeg</artifactId>
+			<version>0.3.0</version>
+		</dependency>
 	</dependencies>
 
 

@@ -219,8 +219,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     public void getSize_shouldReturnSizeCorrectly() throws Exception {
 //                String[] filenames = { "00000005.tif", "00225231.png" };
 //                Dimension[] imageSizes = { new Dimension(4678, 6205), new Dimension(2794, 3838) };
-        String[] filenames = { "00225231.png" };
-        Dimension[] imageSizes = { new Dimension(2794, 3838) };
+        String[] filenames = { "00225231.png", "test1.jp2" };
+        Dimension[] imageSizes = { new Dimension(2794, 3838), new Dimension(3448,6499) };
 
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         File dataFolder = new File("src/test/resources/image_size");
@@ -234,13 +234,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
                 }
                 outputFolder.mkdirs();
 
-                Map<String, Path> dataFolders = new HashMap<>();
-                dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get(dataFolder.getAbsolutePath()));
-
-                SolrInputDocument doc = new SolrInputDocument();
-                doc.setField(SolrConstants.FILENAME, filename);
-
-                Optional<Dimension> dim = Indexer.getSize(dataFolders, doc);
+                Optional<Dimension> dim = Indexer.getSize(dataFolder.toPath(), filename);
                 Assert.assertTrue(dim.isPresent());
                 Assert.assertEquals(imageSizes[i], dim.get());
 

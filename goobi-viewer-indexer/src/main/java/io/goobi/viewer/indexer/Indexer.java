@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer;
 
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
@@ -603,14 +606,13 @@ public abstract class Indexer {
      * @return
      * @should return size correctly
      */
-    static Optional<Dimension> getSize(Map<String, Path> dataFolders, SolrInputDocument doc) {
+    static Optional<Dimension> getSize(Path mediaFolder, String filename) {
         logger.trace("getSize");
-        String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
-        if (filename == null || dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
+        if (filename == null || mediaFolder == null) {
             return Optional.empty();
         }
         File imageFile = new File(filename);
-        imageFile = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), imageFile.getName());
+        imageFile = new File(mediaFolder.toAbsolutePath().toString(), imageFile.getName());
         if (!imageFile.isFile()) {
             return Optional.empty();
         }
@@ -641,66 +643,17 @@ public abstract class Indexer {
                 return Optional.of(imageSize);
             }
         } catch (ImageProcessingException | IOException e) {
-            if (e.getMessage().contains("File format is not supported")) {
-                logger.warn("{}: {}", e.getMessage(), filename);
-            } else {
-                logger.error(e.getMessage(), e);
+            try {
+                BufferedImage image = ImageIO.read(imageFile);
+                if(image != null) {                    
+                    return Optional.of(new Dimension(image.getWidth(), image.getHeight()));
+                }
+            } catch (IOException e1) {
+                logger.error("Unable to read image size: {}: {}", e.getMessage(), filename);
             }
         }
         
         return Optional.empty();
-    }
-
-    /**
-     * 
-     * @param mediaFolder Folder containing image files
-     * @param doc Solr input document to which to add the dimension values
-     */
-    static void readImageDimensionsFromEXIF(Path mediaFolder, SolrInputDocument doc) {
-        logger.trace("readImageDimensionsFromEXIF");
-        if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
-        }
-
-        String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
-        if (filename == null || mediaFolder == null || !Files.isDirectory(mediaFolder)) {
-            return;
-        }
-        File imageFile = new File(filename);
-        imageFile = new File(mediaFolder.toAbsolutePath().toString(), imageFile.getName());
-        if (!imageFile.isFile()) {
-            return;
-        }
-        logger.trace("Found image file {}", imageFile.getAbsolutePath());
-        Dimension imageSize = new Dimension(0, 0);
-        try {
-            Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
-            Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
-            Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-            try {
-                imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
-                imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
-            } catch (NullPointerException | NumberFormatException e) {
-            }
-            try {
-                imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
-                imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
-            } catch (NullPointerException | NumberFormatException e) {
-            }
-
-            if (imageSize.width > 0 && imageSize.height > 0) {
-                doc.setField(SolrConstants.WIDTH, imageSize.width);
-                doc.setField(SolrConstants.HEIGHT, imageSize.height);
-                logger.debug("Image dimensions for {}: {}x{}", filename, imageSize.width, imageSize.height);
-            }
-        } catch (ImageProcessingException | IOException e) {
-            if (e.getMessage().contains("File format is not supported")) {
-                logger.warn("{}: {}", e.getMessage(), filename);
-            } else {
-                logger.error("Could not deskew ALTO for image '{}', please check the image file.", imageFile.getAbsolutePath());
-                logger.error(e.getMessage(), e);
-            }
-        }
     }
 
     /**

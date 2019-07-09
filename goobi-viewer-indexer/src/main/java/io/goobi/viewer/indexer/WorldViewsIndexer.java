@@ -1123,18 +1123,13 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             //get width/height from image file if it is an actual image and width/height haven't been set
-            if (doc.getFieldValue(SolrConstants.MIMETYPE) != null && "image".equalsIgnoreCase(doc.getFieldValue(SolrConstants.MIMETYPE).toString())
-                    && doc.getField(SolrConstants.HEIGHT) == null || doc.getField(SolrConstants.WIDTH) == null) {
-                getSize(dataFolders, doc).ifPresent(dimension -> {
+            if (doc.getField(SolrConstants.HEIGHT) == null || doc.getField(SolrConstants.WIDTH) == null) {
+                getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
                     doc.addField(SolrConstants.WIDTH, dimension.width);
                     doc.addField(SolrConstants.HEIGHT, dimension.height);
                 });
             }
 
-            // Add image dimension values from EXIF
-            if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
-                readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
-            }
 
             // FULLTEXTAVAILABLE indicates whether this page has full-text
             if (doc.getField(SolrConstants.FULLTEXT) != null) {

@@ -937,4 +937,5 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(files[0].startsWith("PPN123"));
         Assert.assertTrue(files[0].endsWith(".xml"));
     }
+
 }

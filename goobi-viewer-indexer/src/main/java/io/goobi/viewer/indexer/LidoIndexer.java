@@ -706,7 +706,10 @@ public class LidoIndexer extends Indexer {
 
         // Add image dimension values from EXIF
         if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
-            readImageDimensionsFromEXIF(dataFolders.get(DataRepository.PARAM_MEDIA), doc);
+            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
+                doc.addField(SolrConstants.WIDTH, dimension.width);
+                doc.addField(SolrConstants.HEIGHT, dimension.height);
+            });
         }
 
         // FULLTEXTAVAILABLE indicates whether this page has full-text
