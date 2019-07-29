@@ -486,7 +486,7 @@ public class MetadataHelper {
 
         MarcRecord marcRecord = NormDataImporter.getSingleMarcRecord(url.trim());
         if (marcRecord == null) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
         
         List<LuceneField> ret = new ArrayList<>(marcRecord.getNormDataList().size());
