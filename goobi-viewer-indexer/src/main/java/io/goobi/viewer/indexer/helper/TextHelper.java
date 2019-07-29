@@ -150,7 +150,7 @@ public final class TextHelper {
                 }
             }
             // Force conversion to target charset, if different charset detected
-            if (charsetDetected && convertFileToCharset != null && !charset.equals(convertFileToCharset) && !charset.equals("ISO-8859-1")) {
+            if (charsetDetected && convertFileToCharset != null && !charset.equals(convertFileToCharset)) {
                 try {
                     Charset toCharset = Charset.forName(convertFileToCharset);
                     FileUtils.write(file, sb.toString(), toCharset);
