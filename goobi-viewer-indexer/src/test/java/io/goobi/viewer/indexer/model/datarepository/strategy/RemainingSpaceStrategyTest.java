@@ -15,6 +15,7 @@
  */
 package io.goobi.viewer.indexer.model.datarepository.strategy;
 
+import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -23,7 +24,7 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
-import io.goobi.viewer.indexer.model.datarepository.strategy.RemainingSpaceStrategy;
+import io.goobi.viewer.indexer.model.datarepository.DummyDataRepository;
 
 public class RemainingSpaceStrategyTest extends AbstractTest {
 
@@ -53,5 +54,18 @@ public class RemainingSpaceStrategyTest extends AbstractTest {
         repositorySpaceMap.put(20L, new DataRepository("/opt/digiverso/viewer/data/2"));
         repositorySpaceMap.put(10L, new DataRepository("/opt/digiverso/viewer/data/1"));
         Assert.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
+    }
+
+    /**
+     * @see RemainingSpaceStrategy#generateRepositorySpaceMap()
+     * @verifies subtract the buffer size from available space
+     */
+    @Test
+    public void generateRepositorySpaceMap_shouldSubtractTheBufferSizeFromAvailableSpace() throws Exception {
+        DummyDataRepository repo = new DummyDataRepository("/opt/digiverso/viewer/data/1", 30L, 3L);
+
+        SortedMap<Long, DataRepository> repositorySpaceMap = RemainingSpaceStrategy.generateRepositorySpaceMap(Collections.singletonList(repo));
+        Assert.assertEquals(1, repositorySpaceMap.size());
+        Assert.assertEquals(repo, repositorySpaceMap.get(27L));
     }
 }

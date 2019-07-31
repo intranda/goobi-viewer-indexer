@@ -120,14 +120,7 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
             logger.warn("dataFile is null, skipping record size calculation.");
         }
 
-        SortedMap<Long, DataRepository> repositorySpaceMap = new TreeMap<>();
-        for (DataRepository repository : dataRepositories) {
-            long size = repository.getUsableSpace();
-            if (size > 0) {
-                repositorySpaceMap.put(size, repository);
-            }
-        }
-
+        SortedMap<Long, DataRepository> repositorySpaceMap = generateRepositorySpaceMap(dataRepositories);
         String previousRepository = null;
         try {
             // Look up previous repository in the index
@@ -156,7 +149,8 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
                             return ret;
                         }
                         logger.info(
-                                "Record is currently in repository '{}', but its space is insufficient. Record will be moved to a new repository.");
+                                "Record is currently in repository '{}', but its space is insufficient. Record will be moved to a new repository.",
+                                repository.getPath());
                         ret[1] = repository;
                     }
                 }
@@ -169,13 +163,31 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
         // Record not yet indexed; find available repository
         DataRepository repository = selectRepository(repositorySpaceMap, recordSize);
         if (repository != null) {
-            logger.info("Repository selected for '{}': {} ({} bytes available).", pi, repository.getPath(), repository.getUsableSpace());
+            logger.info("Repository selected for '{}': {} ({} Bytes available).", pi, repository.getPath(), repository.getUsableSpace());
             ret[0] = repository;
             return ret;
         }
 
         logger.error("No data repository available for indexing. Please configure additional repositories. Exiting...");
         throw new FatalIndexerException("No data repository available for indexing. Please configure additional repositories. Exiting...");
+    }
+
+    /**
+     * @param dataRepositories
+     * @return Map
+     * @should
+     * @should subtract the buffer size from available space
+     */
+    static SortedMap<Long, DataRepository> generateRepositorySpaceMap(List<DataRepository> dataRepositories) {
+        SortedMap<Long, DataRepository> ret = new TreeMap<>();
+        for (DataRepository repository : dataRepositories) {
+            long size = repository.getUsableSpace() - repository.getBuffer();
+            if (size > 0) {
+                ret.put(size, repository);
+            }
+        }
+
+        return ret;
     }
 
     /**
