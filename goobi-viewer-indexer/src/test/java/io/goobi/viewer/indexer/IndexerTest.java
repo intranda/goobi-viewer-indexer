@@ -235,7 +235,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
 
                 Optional<Dimension> dim = Indexer.getSize(dataFolder.toPath(), filename);
                 Assert.assertTrue(dim.isPresent());
-                Assert.assertEquals(imageSizes[i], dim.get());
+                Assert.assertEquals("image size of " + filename + " is " + dim + ", but should be " + imageSizes[i], imageSizes[i], dim.get());
 
                 i++;
             }

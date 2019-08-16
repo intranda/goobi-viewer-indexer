@@ -22,18 +22,22 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
@@ -644,16 +648,52 @@ public abstract class Indexer {
             }
         } catch (ImageProcessingException | IOException e) {
             try {
-                BufferedImage image = ImageIO.read(imageFile);
-                if(image != null) {                    
-                    return Optional.of(new Dimension(image.getWidth(), image.getHeight()));
+                imageSize = getSizeForJp2(imageFile.toPath());
+                return Optional.ofNullable(imageSize);
+            } catch (IOException e2) {
+                logger.warn(e2.toString());
+                try {
+                    BufferedImage image = ImageIO.read(imageFile);
+                    if (image != null) {
+                        return Optional.of(new Dimension(image.getWidth(), image.getHeight()));
+                    }
+                } catch (NullPointerException | IOException e1) {
+                    logger.error("Unable to read image size: {}: {}", e.getMessage(), filename);
                 }
-            } catch (IOException e1) {
-                logger.error("Unable to read image size: {}: {}", e.getMessage(), filename);
             }
         }
-        
+
         return Optional.empty();
+    }
+
+    private static Dimension getSizeForJp2(Path image) throws IOException {
+
+        if (image.getFileName().toString().matches("(?i).*\\.jp(2|x|2000)")) {
+            logger.debug("Reading with jpeg2000 ImageReader");
+            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpeg2000");
+
+            while (readers.hasNext()) {
+                ImageReader reader = readers.next();
+                if (reader != null) {
+                    try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
+                        reader.setInput(iis);
+                        int width = reader.getWidth(0);
+                        int height = reader.getHeight(0);
+                        if (width * height > 0) {
+                            return new Dimension(width, height);
+                        } else {
+                            logger.error("Error reading image dimensions of " + image + " with image reader " + reader.getClass().getSimpleName());
+                            continue;
+                        }
+                    } catch (IOException e) {
+                        logger.error("Error reading " + image + " with image reader " + reader.getClass().getSimpleName());
+                        continue;
+                    }
+                }
+            }
+        }
+        throw new IOException("No valid image reader found for 'jpeg2000'");
+
     }
 
     /**
