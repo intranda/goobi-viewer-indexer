@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -238,7 +237,7 @@ public class DenkXwebIndexer extends Indexer {
                     String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
                     if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
                         writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                                String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
+                                indexObj.getTopstructPI(), indexObj.getAnchorPI(), order, pageFileBaseName));
                         ugcAddedChecklist.add(order);
                     }
                 }

@@ -127,7 +127,7 @@ public class LidoIndexer extends Indexer {
                     ret[1] = "PI not found.";
                     throw new IndexerException(ret[1]);
                 }
-                
+
                 // Remove prefix
                 if (pi.contains(":")) {
                     pi = pi.substring(pi.lastIndexOf(':') + 1);
@@ -262,7 +262,7 @@ public class LidoIndexer extends Indexer {
                     String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
                     if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
                         writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                                String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
+                                indexObj.getTopstructPI(), indexObj.getAnchorPI(), order, pageFileBaseName));
                         ugcAddedChecklist.add(order);
                     }
                 }
@@ -334,7 +334,7 @@ public class LidoIndexer extends Indexer {
      * @return
      * @throws FatalIndexerException
      */
-    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
+    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
             Map<String, Path> dataFolders, int depth) throws FatalIndexerException {
         List<LuceneField> ret = new ArrayList<>();
 
@@ -366,7 +366,7 @@ public class LidoIndexer extends Indexer {
                 String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
 
                 // Add thumbnail information from the representative page
-                if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && filePathBanner.equals(pageFileName)) {
+                if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && pageFileName.equals(filePathBanner)) {
                     ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
                     // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
                     ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
@@ -689,8 +689,8 @@ public class LidoIndexer extends Indexer {
 
         if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
             try {
-                Map<String, String> mixData = TextHelper.readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                        baseFileName + Indexer.XML_EXTENSION));
+                Map<String, String> mixData = TextHelper.readMix(
+                        new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + Indexer.XML_EXTENSION));
                 for (String key : mixData.keySet()) {
                     if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
                             && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
