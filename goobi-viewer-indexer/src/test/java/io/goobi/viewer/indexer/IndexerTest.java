@@ -217,11 +217,10 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getSize_shouldReturnSizeCorrectly() throws Exception {
-//                String[] filenames = { "00000005.tif", "00225231.png" };
-//                Dimension[] imageSizes = { new Dimension(4678, 6205), new Dimension(2794, 3838) };
-        String[] filenames = { "00225231.png" };
-        Dimension[] imageSizes = { new Dimension(2794, 3838), new Dimension(3448,6499) };
-
+        
+        String[] filenames = { "00000001.tif", "00225231.png", "test1.jp2" };
+        Dimension[] imageSizes = { new Dimension(3192, 4790), new Dimension(2794, 3838), new Dimension(3448, 6499) };
+        
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         File dataFolder = new File("src/test/resources/image_size");
 
