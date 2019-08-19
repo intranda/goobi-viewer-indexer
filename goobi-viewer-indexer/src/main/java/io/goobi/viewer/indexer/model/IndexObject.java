@@ -320,12 +320,13 @@ public class IndexObject {
      * @should collect group id fields correctly
      */
     protected void addToGroupIds(String field, String value) {
-        if (field != null && value != null && field.startsWith(SolrConstants.GROUPID_)) {
-            if (groupIds.get(field) == null) {
-                groupIds.put(field, value);
-            } else {
-                logger.warn("Multiple values for group field '{}'.", field);
-            }
+        if (field == null || value == null || !field.startsWith(SolrConstants.GROUPID_)) {
+            return;
+        }
+        if (groupIds.get(field) == null) {
+            groupIds.put(field, value);
+        } else {
+            logger.warn("Multiple values for group field '{}'.", field);
         }
     }
 
