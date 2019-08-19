@@ -433,8 +433,8 @@ public abstract class Indexer {
      * @return List of Solr input documents for the UGC contents
      * @throws FatalIndexerException
      */
-    List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, String anchorPi, int order,
-            String fileNameRoot) throws FatalIndexerException {
+    List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, String anchorPi,
+            Map<String, String> groupIds, int order, String fileNameRoot) throws FatalIndexerException {
         if (folder == null || !Files.isDirectory(folder)) {
             logger.info("UGC folder is empty.");
             return Collections.emptyList();
@@ -471,10 +471,16 @@ public abstract class Indexer {
                 doc.addField(SolrConstants.GROUPFIELD, iddoc);
                 doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
                 doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+                doc.addField(SolrConstants.ORDER, order);
                 if (StringUtils.isNotEmpty(anchorPi)) {
                     doc.addField(SolrConstants.PI_ANCHOR, anchorPi);
                 }
-                doc.addField(SolrConstants.ORDER, order);
+                // Add GROUPID_* fields
+                if (groupIds != null && !groupIds.isEmpty()) {
+                    for (String fieldName : groupIds.keySet()) {
+                        doc.addField(fieldName, groupIds.get(fieldName));
+                    }
+                }
                 List<Element> eleFieldList = eleContent.getChildren();
                 switch (eleContent.getName()) {
                     case "UserGeneratedPerson":

@@ -237,7 +237,7 @@ public class DenkXwebIndexer extends Indexer {
                     String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
                     if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
                         writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                                indexObj.getTopstructPI(), indexObj.getAnchorPI(), order, pageFileBaseName));
+                                indexObj.getTopstructPI(), indexObj.getAnchorPI(), indexObj.getGroupIds(), order, pageFileBaseName));
                         ugcAddedChecklist.add(order);
                     }
                 }
