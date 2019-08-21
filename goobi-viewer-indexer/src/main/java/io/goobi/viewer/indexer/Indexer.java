@@ -37,6 +37,7 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
 import org.apache.commons.lang.CharUtils;
@@ -677,14 +678,15 @@ public abstract class Indexer {
         return Optional.empty();
     }
 
-    private static Dimension getSizeForJp2(Path image) throws IOException {
+    public static Dimension getSizeForJp2(Path image) throws IOException {
 
         if (image.getFileName().toString().matches("(?i).*\\.jp(2|x|2000)")) {
-            logger.debug("Reading with jpeg2000 ImageReader");
+           logger.debug("Reading with jpeg2000 ImageReader");
             Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpeg2000");
 
             while (readers.hasNext()) {
                 ImageReader reader = readers.next();
+                logger.trace("Found reader " + reader);
                 if (reader != null) {
                     try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
                         reader.setInput(iis);
@@ -701,10 +703,45 @@ public abstract class Indexer {
                     }
                 }
             }
+            ImageReader reader = getOpenJpegReader();
+            if(reader != null) {
+                logger.trace("found openjpeg reader");
+                try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
+                    reader.setInput(iis);
+                    int width = reader.getWidth(0);
+                    int height = reader.getHeight(0);
+                    if (width * height > 0) {
+                        return new Dimension(width, height);
+                    }
+                    logger.error("Error reading image dimensions of " + image + " with image reader " + reader.getClass().getSimpleName());
+                } catch (IOException e) {
+                    logger.error("Error reading " + image + " with image reader " + reader.getClass().getSimpleName());
+                }
+            } else {
+                logger.debug("Not openjpeg image reader found");
+            }
         }
+        
+        
         throw new IOException("No valid image reader found for 'jpeg2000'");
 
     }
+    
+    private static ImageReader getOpenJpegReader()  {
+        ImageReader reader;
+        try {
+            Object readerSpi = Class.forName("de.digitalcollections.openjpeg.imageio.OpenJp2ImageReaderSpi").newInstance();
+            reader = ((ImageReaderSpi)readerSpi).createReaderInstance();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e); 
+            return null;
+        } catch(NoClassDefFoundError | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+            logger.warn("No openjpeg reader");
+            return null;
+        }
+        return reader;
+    }
+
 
     /**
      * 
