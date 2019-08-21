@@ -334,6 +334,16 @@
 			<version>1.0_01</version>
 		</dependency>
 		<dependency>
+			<groupId>de.intranda.other.jai</groupId>
+			<artifactId>jai_codec</artifactId>
+			<version>1.1.2_01</version>
+		</dependency>
+		<dependency>
+			<groupId>de.intranda.other.jai</groupId>
+			<artifactId>jai_core</artifactId>
+			<version>1.1.2_01</version>
+		</dependency>
+		<dependency>
 			<groupId>de.digitalcollections.imageio</groupId>
 			<artifactId>imageio-openjpeg</artifactId>
 			<version>0.3.0</version>
