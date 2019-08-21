@@ -15,7 +15,6 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,9 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -37,8 +34,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.Indexer;
-import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -419,33 +414,63 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         String piVol1 = "PPN612054551";
         String piVol2 = "PPN612060039";
         String piAnchor = "PPN559838239";
+        Map<String, Path> dataFolders = new HashMap<>();
 
         // Index first volume
-        Map<String, Path> dataFolders = new HashMap<>();
-        String[] ret = new MetsIndexer(hotfolder).index(metsFileVol1, false, dataFolders, null, 1);
-        Assert.assertEquals(piVol1 + ".xml", ret[0]);
-        Assert.assertNull(ret[1]);
+        {
+            String[] ret = new MetsIndexer(hotfolder).index(metsFileVol1, false, dataFolders, null, 1);
+            Assert.assertEquals(piVol1 + ".xml", ret[0]);
+            Assert.assertNull(ret[1]);
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol1, null);
+            Assert.assertEquals(1, docList.size());
+            SolrDocument doc = docList.get(0);
+            Assert.assertEquals(piAnchor, doc.getFieldValue(SolrConstants.PI_PARENT));
+            Assert.assertEquals(piAnchor, doc.getFieldValue(SolrConstants.PI_ANCHOR));
 
-        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol1, null);
-        Assert.assertEquals(1, docList.size());
-        SolrDocument doc = docList.get(0);
-        Assert.assertEquals(piAnchor, doc.getFieldValue(SolrConstants.PI_PARENT));
-        Assert.assertEquals(piAnchor, doc.getFieldValue(SolrConstants.PI_ANCHOR));
+            // All child docstructs should have the PI_ANCHOR field
+            SolrDocumentList vol1Children = hotfolder.getSolrHelper()
+                    .search(new StringBuilder().append('+')
+                            .append(SolrConstants.PI_TOPSTRUCT)
+                            .append(":")
+                            .append(piVol1)
+                            .append(" +")
+                            .append(SolrConstants.DOCTYPE)
+                            .append(':')
+                            .append(DocType.DOCSTRCT)
+                            .append(" +")
+                            .append(SolrConstants.PI_ANCHOR)
+                            .append(':')
+                            .append(piAnchor)
+                            .toString(), null);
+            Assert.assertEquals(95, vol1Children.size());
 
-        // All child docstructs should have the PI_ANCHOR field
-        SolrDocumentList vol1Chidlren = hotfolder.getSolrHelper()
-                .search(SolrConstants.PI_TOPSTRUCT + ":" + piVol1 + " AND " + SolrConstants.PI_ANCHOR + ":" + piAnchor, null);
-        Assert.assertEquals(95, vol1Chidlren.size());
+            // All pages should have the PI_ANCHOR field
+            SolrDocumentList vol1Pages = hotfolder.getSolrHelper()
+                    .search(new StringBuilder().append('+')
+                            .append(SolrConstants.PI_TOPSTRUCT)
+                            .append(":")
+                            .append(piVol1)
+                            .append(" +")
+                            .append(SolrConstants.DOCTYPE)
+                            .append(':')
+                            .append(DocType.PAGE)
+                            .append(" +")
+                            .append(SolrConstants.PI_ANCHOR)
+                            .append(':')
+                            .append(piAnchor)
+                            .toString(), null);
+            Assert.assertEquals(162, vol1Pages.size());
+        }
 
         // Index anchor
         String anchorIddoc;
         {
-            ret = new MetsIndexer(hotfolder).index(metsFileAnchor1, false, dataFolders, null, 1);
+            String[] ret = new MetsIndexer(hotfolder).index(metsFileAnchor1, false, dataFolders, null, 1);
             Assert.assertEquals(piAnchor + ".xml", ret[0]);
             Assert.assertNull(ret[1]);
-            docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piAnchor, null);
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piAnchor, null);
             Assert.assertEquals(1, docList.size());
-            doc = docList.get(0);
+            SolrDocument doc = docList.get(0);
             anchorIddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(anchorIddoc);
             Assert.assertEquals(anchorIddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
@@ -453,27 +478,27 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Re-index first volume
         {
-            ret = new MetsIndexer(hotfolder).index(metsFileVol1, false, dataFolders, null, 1);
+            String[] ret = new MetsIndexer(hotfolder).index(metsFileVol1, false, dataFolders, null, 1);
             Assert.assertNull(ret[1]);
-            docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol1, null);
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol1, null);
             Assert.assertEquals(1, docList.size());
-            doc = docList.get(0);
+            SolrDocument doc = docList.get(0);
             Assert.assertEquals(anchorIddoc, doc.getFieldValue(SolrConstants.IDDOC_PARENT));
         }
 
         // Index second volume
         {
-            ret = new MetsIndexer(hotfolder).index(metsFileVol2, false, dataFolders, null, 1);
+            String[] ret = new MetsIndexer(hotfolder).index(metsFileVol2, false, dataFolders, null, 1);
             Assert.assertNull(ret[1]);
-            docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol2, null);
+            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol2, null);
             Assert.assertEquals(1, docList.size());
-            doc = docList.get(0);
+            SolrDocument doc = docList.get(0);
             Assert.assertEquals(anchorIddoc, doc.getFieldValue(SolrConstants.IDDOC_PARENT));
         }
 
         Assert.assertEquals(1, hotfolder.getReindexQueue().size());
 
-        ret = new MetsIndexer(hotfolder).index(hotfolder.getReindexQueue().poll(), true, dataFolders, null, 1);
+        String[] ret = new MetsIndexer(hotfolder).index(hotfolder.getReindexQueue().poll(), true, dataFolders, null, 1);
         Assert.assertEquals(piAnchor + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
     }

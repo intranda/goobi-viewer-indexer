@@ -454,6 +454,7 @@ public class MetsIndexer extends Indexer {
             if (indexObj.isVolume() && indexObj.getAccessConditions().isEmpty()) {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
+                    indexObj.setAnchorPI(anchorPi);
                     SolrDocumentList hits = hotfolder.getSolrHelper()
                             .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && !hits.isEmpty()) {
@@ -607,7 +608,7 @@ public class MetsIndexer extends Indexer {
                         String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
                         if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
                             writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                                    String.valueOf(indexObj.getTopstructPI()), order, pageFileBaseName));
+                                    indexObj.getTopstructPI(), indexObj.getAnchorPI(), indexObj.getGroupIds(), order, pageFileBaseName));
                             ugcAddedChecklist.add(order);
                         }
                     }
@@ -630,9 +631,7 @@ public class MetsIndexer extends Indexer {
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
-        } catch (
-
-        Exception e) {
+        } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
@@ -727,8 +726,7 @@ public class MetsIndexer extends Indexer {
                     currentDepth = (int) pageDoc.getField("MDNUM_OWNERDEPTH").getValue();
                 }
 
-                // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-                // TODO
+                // Make sure IDDOC_OWNER of a page contains the IDDOC of the lowest possible mapped docstruct
                 if (depth > currentDepth) {
                     pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
                     pageDoc.setField("MDNUM_OWNERDEPTH", depth);
@@ -756,9 +754,23 @@ public class MetsIndexer extends Indexer {
                     }
                 }
 
+                // Add PI_TOPSTRUCT
                 if (pageDoc.getField(SolrConstants.PI_TOPSTRUCT) == null) {
                     pageDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
                 }
+                // Add PI_ANCHOR
+                if (StringUtils.isNotEmpty(indexObj.getAnchorPI()) && pageDoc.getField(SolrConstants.PI_ANCHOR) == null) {
+                    pageDoc.addField(SolrConstants.PI_ANCHOR, indexObj.getAnchorPI());
+                }
+                // Add GROUPID_*
+                if (!indexObj.getGroupIds().isEmpty()) {
+                    for (String groupId : indexObj.getGroupIds().keySet()) {
+                        if (!pageDoc.containsKey(groupId)) {
+                            pageDoc.addField(groupId, indexObj.getLuceneFieldWithName(groupId).getValue());
+                        }
+                    }
+                }
+                // Add DATAREPOSITORY
                 if (pageDoc.getField(SolrConstants.DATAREPOSITORY) == null && indexObj.getDataRepository() != null) {
                     pageDoc.addField(SolrConstants.DATAREPOSITORY, indexObj.getDataRepository());
                 }
@@ -1941,9 +1953,15 @@ public class MetsIndexer extends Indexer {
                 MetadataHelper.writeMetadataToObject(indexObj, xp.getMdWrap(indexObj.getDmdid()), "", xp);
             }
 
-            // Propagate PI_ANCHOR value
+            // Inherit PI_ANCHOR value
             if (parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null) {
                 indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR));
+            }
+            // Inherit GROUPID_* fields
+            if (!parentIndexObject.getGroupIds().isEmpty()) {
+                for (String groupId : parentIndexObject.getGroupIds().keySet()) {
+                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId));
+                }
             }
 
             // Add parent's metadata and SORT_* fields to this docstruct

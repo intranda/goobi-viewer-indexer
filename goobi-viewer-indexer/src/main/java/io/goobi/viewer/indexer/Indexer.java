@@ -426,13 +426,15 @@ public abstract class Indexer {
      * 
      * @param pageDoc
      * @param folder
+     * @param pi
+     * @param anchorPi
      * @param order
      * @param fileNameRoot
      * @return List of Solr input documents for the UGC contents
      * @throws FatalIndexerException
      */
-    List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, int order, String fileNameRoot)
-            throws FatalIndexerException {
+    List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, String anchorPi,
+            Map<String, String> groupIds, int order, String fileNameRoot) throws FatalIndexerException {
         if (folder == null || !Files.isDirectory(folder)) {
             logger.info("UGC folder is empty.");
             return Collections.emptyList();
@@ -470,6 +472,15 @@ public abstract class Indexer {
                 doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
                 doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
                 doc.addField(SolrConstants.ORDER, order);
+                if (StringUtils.isNotEmpty(anchorPi)) {
+                    doc.addField(SolrConstants.PI_ANCHOR, anchorPi);
+                }
+                // Add GROUPID_* fields
+                if (groupIds != null && !groupIds.isEmpty()) {
+                    for (String fieldName : groupIds.keySet()) {
+                        doc.addField(fieldName, groupIds.get(fieldName));
+                    }
+                }
                 List<Element> eleFieldList = eleContent.getChildren();
                 switch (eleContent.getName()) {
                     case "UserGeneratedPerson":
@@ -681,10 +692,9 @@ public abstract class Indexer {
                         int height = reader.getHeight(0);
                         if (width * height > 0) {
                             return new Dimension(width, height);
-                        } else {
-                            logger.error("Error reading image dimensions of " + image + " with image reader " + reader.getClass().getSimpleName());
-                            continue;
                         }
+                        logger.error("Error reading image dimensions of " + image + " with image reader " + reader.getClass().getSimpleName());
+                        continue;
                     } catch (IOException e) {
                         logger.error("Error reading " + image + " with image reader " + reader.getClass().getSimpleName());
                         continue;

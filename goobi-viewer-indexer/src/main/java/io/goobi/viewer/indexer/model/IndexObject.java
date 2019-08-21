@@ -56,6 +56,7 @@ public class IndexObject {
     private String defaultValue = "";
     private String parentPI = "";
     private String topstructPI = "";
+    private String anchorPI = "";
     private final Map<String, String> groupIds = new HashMap<>();
     private String urn;
     private List<String> imageUrns;
@@ -319,12 +320,13 @@ public class IndexObject {
      * @should collect group id fields correctly
      */
     protected void addToGroupIds(String field, String value) {
-        if (field != null && value != null && field.startsWith(SolrConstants.GROUPID_)) {
-            if (groupIds.get(field) == null) {
-                groupIds.put(field, value);
-            } else {
-                logger.warn("Multiple values for group field '{}'.", field);
-            }
+        if (field == null || value == null || !field.startsWith(SolrConstants.GROUPID_)) {
+            return;
+        }
+        if (groupIds.get(field) == null) {
+            groupIds.put(field, value);
+        } else {
+            logger.warn("Multiple values for group field '{}'.", field);
         }
     }
 
@@ -534,6 +536,20 @@ public class IndexObject {
      */
     public void setTopstructPI(String topstructPI) {
         this.topstructPI = topstructPI;
+    }
+
+    /**
+     * @return the anchorPI
+     */
+    public String getAnchorPI() {
+        return anchorPI;
+    }
+
+    /**
+     * @param anchorPI the anchorPI to set
+     */
+    public void setAnchorPI(String anchorPI) {
+        this.anchorPI = anchorPI;
     }
 
     /**

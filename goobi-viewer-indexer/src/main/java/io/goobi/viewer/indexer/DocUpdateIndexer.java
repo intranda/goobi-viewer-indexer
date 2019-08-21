@@ -88,6 +88,8 @@ public class DocUpdateIndexer extends Indexer {
         String pi = fileNameSplit[0];
         Integer order = null;
         String iddoc = null;
+        String anchorPi = null;
+        Map<String, String> groupIds = new HashMap<>();
         String query = null;
         try {
             order = Integer.valueOf(fileNameSplit[1]);
@@ -132,6 +134,12 @@ public class DocUpdateIndexer extends Indexer {
             SolrDocument doc = docList.get(0);
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             order = (int) doc.getFieldValue(SolrConstants.ORDER);
+            anchorPi = (String) doc.getFieldValue(SolrConstants.PI_ANCHOR);
+            for (String fieldName : doc.getFieldNames()) {
+                if (fieldName.startsWith(SolrConstants.GROUPID_)) {
+                    groupIds.put(fieldName, (String) doc.getFieldValue(fieldName));
+                }
+            }
             String pageFileName = doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")
                     ? (String) doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
@@ -266,8 +274,8 @@ public class DocUpdateIndexer extends Indexer {
             // Add new UGC docs
             if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
                 SolrInputDocument dummyDoc = new SolrInputDocument();
-                List<SolrInputDocument> newUgcDocList =
-                        generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC), pi, order, pageFileBaseName);
+                List<SolrInputDocument> newUgcDocList = generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                        pi, anchorPi, groupIds, order, pageFileBaseName);
                 if (!newUgcDocList.isEmpty()) {
                     hotfolder.getSolrHelper().writeToIndex(newUgcDocList);
                 } else {
