@@ -17,6 +17,7 @@ package io.goobi.viewer.indexer;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,19 +25,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringTokenizer;
+
+import javax.imageio.ImageReader;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.Indexer;
-import io.goobi.viewer.indexer.LidoIndexer;
-import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -49,6 +53,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
 
     private Path metsFile;
     private Path lidoFile;
+    private static String libraryPath = "";
 
     @Override
     @Before
@@ -59,6 +64,20 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(Files.isRegularFile(metsFile));
         lidoFile = Paths.get("src/test/resources/LIDO/khm_lido_export.xml");
         Assert.assertTrue(Files.isRegularFile(lidoFile));
+    }
+    
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        File libraryFile = new File("src/test/resources/lib/libopenjp2.so");
+        libraryPath = System.getProperty("java.library.path");
+        System.setProperty("java.library.path", libraryPath + ":" + libraryFile.getParentFile().getAbsolutePath());
+    }
+    
+    @AfterClass
+    public static void cleanUpAfterClass() {
+        if(StringUtils.isNotBlank(libraryPath)) {            
+            System.setProperty("java.library.path", libraryPath);
+        }
     }
 
     /**
@@ -234,8 +253,9 @@ public class IndexerTest extends AbstractSolrEnabledTest {
                 outputFolder.mkdirs();
 
                 Optional<Dimension> dim = Indexer.getSize(dataFolder.toPath(), filename);
-                Assert.assertTrue(dim.isPresent());
-                Assert.assertEquals("image size of " + filename + " is " + dim + ", but should be " + imageSizes[i], imageSizes[i], dim.get());
+                // jp2 image files cannot be read because of missing jp2 library
+                    Assert.assertTrue(dim.isPresent());
+                    Assert.assertEquals("image size of " + filename + " is " + dim + ", but should be " + imageSizes[i], imageSizes[i], dim.get());
 
                 i++;
             }
@@ -246,3 +266,4 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         }
     }
 }
+

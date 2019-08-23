@@ -672,6 +672,8 @@ public abstract class Indexer {
                 } catch (NullPointerException | IOException e1) {
                     logger.error("Unable to read image size: {}: {}", e.getMessage(), filename);
                 }
+            } catch(UnsatisfiedLinkError e3) {
+                logger.error("Unable to load jpeg2000 ImageReader: " + e.toString());
             }
         }
 
@@ -727,7 +729,7 @@ public abstract class Indexer {
 
     }
     
-    private static ImageReader getOpenJpegReader()  {
+    public static ImageReader getOpenJpegReader()  {
         ImageReader reader;
         try {
             Object readerSpi = Class.forName("de.digitalcollections.openjpeg.imageio.OpenJp2ImageReaderSpi").newInstance();
