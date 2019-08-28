@@ -137,7 +137,7 @@ public class JDomXP {
      * @throws FatalIndexerException
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static List<Object> evaluate(String expr, Object parent, Filter filter) throws FatalIndexerException {
+    private static List<Object> evaluate(String expr, Object parent, Filter filter) throws FatalIndexerException {
         XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
         // Add all namespaces
         for (String key : Configuration.getInstance().getNamespaces().keySet()) {
@@ -235,6 +235,7 @@ public class JDomXP {
      * @return {@link String} or null
      * @throws FatalIndexerException
      * @should return value correctly
+     * @should convert string to NFC
      */
     public String evaluateToString(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
@@ -262,12 +263,25 @@ public class JDomXP {
      * @return {@link ArrayList} or null
      * @throws FatalIndexerException
      * @should return all values
+     * @should convert strings to NFC
      */
     public List<String> evaluateToStringList(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
             parent = doc;
         }
-
+        
+        return evaluateToStringListStatic(expr, parent);
+    }
+    
+    /**
+     * Evaluates the given XPath expression to a list of strings.
+     * 
+     * @param expr XPath expression to evaluate.
+     * @param parent If not null, the expression is evaluated relative to this element.
+     * @return {@link ArrayList} or null
+     * @throws FatalIndexerException
+     */
+    public static List<String> evaluateToStringListStatic(String expr, Object parent) throws FatalIndexerException {
         List<Object> list = evaluate(expr, parent, Filters.fpassthrough());
         if (list == null) {
             return null;
@@ -312,24 +326,25 @@ public class JDomXP {
      * 
      * @param object
      * @return String
+     * @should convert string to NFC
      */
     public static String objectToString(Object object) {
         if (object instanceof Element) {
-            return ((Element) object).getText();
+            return TextHelper.normalizeSequence(((Element) object).getText());
         } else if (object instanceof Attribute) {
-            return ((Attribute) object).getValue();
+            return TextHelper.normalizeSequence(((Attribute) object).getValue());
         } else if (object instanceof Text) {
-            return ((Text) object).getText();
+            return TextHelper.normalizeSequence(((Text) object).getText());
         } else if (object instanceof CDATA) {
-            return ((CDATA) object).getText();
+            return TextHelper.normalizeSequence(((CDATA) object).getText());
         } else if (object instanceof Comment) {
-            return ((Comment) object).getText();
+            return TextHelper.normalizeSequence(((Comment) object).getText());
         } else if (object instanceof Double) {
             return String.valueOf(object);
         } else if (object instanceof Boolean) {
             return String.valueOf(object);
         } else if (object instanceof String) {
-            return (String) object;
+            return TextHelper.normalizeSequence((String) object);
         } else if (object != null) {
             logger.error("Unknown object type: {}", object.getClass().getName());
             return null;

@@ -38,7 +38,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.filter.Filters;
 import org.joda.time.DateTimeZone;
 import org.joda.time.MutableDateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -236,161 +235,160 @@ public class MetadataHelper {
                         if (list == null) {
                             continue;
                         }
-                            for (Object xpathAnswerObject : list) {
-                                if (configurationItem.isGroupEntity()) {
-                                    // Aggregated / grouped metadata
-                                    Element eleMods = (Element) xpathAnswerObject;
-                                    GroupedMetadata gmd =
-                                            getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
-                                    List<LuceneField> normData = new ArrayList<>();
-                                    boolean groupFieldAlreadyReplaced = false;
-                                    String normIdentifier = null;
-                                    StringBuilder sbNormDataTerms = new StringBuilder();
+                        for (Object xpathAnswerObject : list) {
+                            if (configurationItem.isGroupEntity()) {
+                                // Aggregated / grouped metadata
+                                Element eleMods = (Element) xpathAnswerObject;
+                                GroupedMetadata gmd =
+                                        getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
+                                List<LuceneField> normData = new ArrayList<>();
+                                boolean groupFieldAlreadyReplaced = false;
+                                String normIdentifier = null;
+                                StringBuilder sbNormDataTerms = new StringBuilder();
 
-                                    // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
-                                    if (gmd.getMainValue() != null) {
-                                        fieldValue = gmd.getMainValue();
-                                        // Apply XPath prefix
-                                        if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
-                                            fieldValue = xpathConfig.getPrefix() + fieldValue;
-                                        }
-                                        // Apply XPath suffix
-                                        if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
-                                            fieldValue = fieldValue + xpathConfig.getSuffix();
-                                        }
-                                        fieldValues.add(fieldValue);
+                                // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
+                                if (gmd.getMainValue() != null) {
+                                    fieldValue = gmd.getMainValue();
+                                    // Apply XPath prefix
+                                    if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
+                                        fieldValue = xpathConfig.getPrefix() + fieldValue;
                                     }
-
-                                    // Retrieve normdata
-                                    if (gmd.getNormUri() != null) {
-                                        normData.addAll(retrieveNormData(sbDefaultMetadataValues, sbNormDataTerms, gmd.getNormUri(),
-                                                addNormDataFieldsToDefault, configurationItem.getReplaceRules()));
-                                        // Add default norm data name to the docstruct doc so that it can be searched
-                                        for (LuceneField normField : normData) {
-                                            switch (normField.getField()) {
-                                                case "NORM_NAME":
-                                                    // Add NORM_NAME as MD_*_UNTOKENIZED and to DEFAULT to the docstruct
-                                                    if (StringUtils.isNotBlank(normField.getValue())) {
-                                                        // fieldValues.add(normField.getValue());
-                                                        if (configurationItem.isAddToDefault()) {
-                                                            // Add norm value to DEFAULT
-                                                            addValueToDefault(normField.getValue(), sbDefaultMetadataValues);
-                                                        }
-                                                        if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
-                                                            ret.add(new LuceneField(
-                                                                    new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(),
-                                                                    normField.getValue()));
-                                                        }
-                                                    }
-                                                    break;
-                                                case "NORM_IDENTIFIER":
-                                                    // If a NORM_IDENTIFIER exists for this metadata group, use it to replace the value of GROUPFIELD
-                                                    for (LuceneField groupField : gmd.getFields()) {
-                                                        if (groupField.getField().equals(SolrConstants.GROUPFIELD)) {
-                                                            groupField.setValue(normField.getValue());
-                                                            groupFieldAlreadyReplaced = true;
-                                                            break;
-                                                        }
-                                                        normIdentifier = normField.getValue();
-                                                    }
-                                                    break;
-                                                default: // nothing
-                                            }
-                                        }
+                                    // Apply XPath suffix
+                                    if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
+                                        fieldValue = fieldValue + xpathConfig.getSuffix();
                                     }
-                                    for (LuceneField field : gmd.getFields()) {
-                                        // Apply modifications configured for the main field to all the group field values
-                                        String moddedValue = applyAllModifications(configurationItem, field.getValue());
-                                        field.setValue(moddedValue);
+                                    fieldValues.add(fieldValue);
+                                }
 
-                                        if (configurationItem.isAddToDefault()) {
-                                            // Add main value to DEFAULT
-                                            if (StringUtils.isNotBlank(fieldValue)) {
-                                                addValueToDefault(fieldValue, sbDefaultMetadataValues);
-                                            }
-                                            // Add grouped metadata field to DEFAULT
-                                            if (StringUtils.isNotEmpty(field.getValue()) && !moddedValue.equals(fieldValue)) {
-                                                switch (field.getField()) {
-                                                    case SolrConstants.LABEL:
-                                                    case SolrConstants.METADATATYPE:
-                                                        // skip
-                                                        break;
-                                                    default:
-                                                        addValueToDefault(moddedValue, sbDefaultMetadataValues);
+                                // Retrieve normdata
+                                if (gmd.getNormUri() != null) {
+                                    normData.addAll(retrieveAuthorityData(sbDefaultMetadataValues, sbNormDataTerms, gmd.getNormUri(),
+                                            addNormDataFieldsToDefault, configurationItem.getReplaceRules()));
+                                    // Add default norm data name to the docstruct doc so that it can be searched
+                                    for (LuceneField normField : normData) {
+                                        switch (normField.getField()) {
+                                            case "NORM_NAME":
+                                                // Add NORM_NAME as MD_*_UNTOKENIZED and to DEFAULT to the docstruct
+                                                if (StringUtils.isNotBlank(normField.getValue())) {
+                                                    // fieldValues.add(normField.getValue());
+                                                    if (configurationItem.isAddToDefault()) {
+                                                        // Add norm value to DEFAULT
+                                                        addValueToDefault(normField.getValue(), sbDefaultMetadataValues);
+                                                    }
+                                                    if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
+                                                        ret.add(new LuceneField(
+                                                                new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(),
+                                                                normField.getValue()));
+                                                    }
                                                 }
-                                            }
+                                                break;
+                                            case "NORM_IDENTIFIER":
+                                                // If a NORM_IDENTIFIER exists for this metadata group, use it to replace the value of GROUPFIELD
+                                                for (LuceneField groupField : gmd.getFields()) {
+                                                    if (groupField.getField().equals(SolrConstants.GROUPFIELD)) {
+                                                        groupField.setValue(normField.getValue());
+                                                        groupFieldAlreadyReplaced = true;
+                                                        break;
+                                                    }
+                                                    normIdentifier = normField.getValue();
+                                                }
+                                                break;
+                                            default: // nothing
                                         }
-                                    }
-
-                                    // If there was no existing GROUPFIELD in the group metadata, add one now using the norm identifier
-                                    if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(normIdentifier)) {
-                                        gmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, normIdentifier));
-                                    }
-                                    // Add MD_VALUE as DEFAULT to the metadata doc
-                                    if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
-                                        gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, fieldValue));
-                                    }
-                                    gmd.getFields().addAll(normData); // Add norm data outside the loop over groupMetadata
-
-                                    if (!indexObj.getGroupedMetadataFields().contains(gmd)) {
-                                        indexObj.getGroupedMetadataFields().add(gmd);
-                                    }
-                                    // NORMDATATERMS is now in the metadata docs, not docstructs
-                                    if (sbNormDataTerms.length() > 0) {
-                                        gmd.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
-                                    }
-                                } else {
-                                    // Regular metadata
-                                    String xpathAnswerString = JDomXP.objectToString(xpathAnswerObject);
-                                    if (StringUtils.isNotBlank(xpathAnswerString)) {
-                                        xpathAnswerString = xpathAnswerString.trim();
-                                        xpathAnswerString =
-                                                new StringBuilder(xpathAnswerString).append(configurationItem.getValuepostfix()).toString();
-                                        fieldValue = xpathAnswerString.trim();
-                                        if (configurationItem.getSplittingCharacter() != null) {
-                                            // Hack to prevent empty concatenated collection names
-                                            if (configurationItem.getSplittingCharacter().equals(fieldValue)) {
-                                                continue;
-                                            }
-                                            // Hack to prevent collection names ending with a separator
-                                            if (fieldValue.endsWith(configurationItem.getSplittingCharacter())) {
-                                                fieldValue = fieldValue.substring(0, fieldValue.length() - 1);
-                                            }
-                                        }
-                                        if (configurationItem.isOneToken()) {
-                                            fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
-                                        }
-                                        if (fieldName.startsWith("DATE_")) {
-                                            if ((fieldValue = convertDateStringForSolrField(fieldValue, false)) == null) {
-                                                continue;
-                                            }
-                                        }
-                                        // Apply XPath prefix
-                                        if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
-                                            fieldValue = xpathConfig.getPrefix() + fieldValue;
-                                        }
-                                        // Apply XPath suffix
-                                        if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
-                                            fieldValue = fieldValue + xpathConfig.getSuffix();
-                                        }
-                                        if (configurationItem.isOneField()) {
-                                            if (fieldValues.isEmpty()) {
-                                                fieldValues.add("");
-                                            }
-                                            StringBuilder sb = new StringBuilder();
-                                            sb.append(fieldValues.get(0));
-                                            if (sb.length() > 0) {
-                                                sb.append(multiValueSeparator);
-                                            }
-                                            sb.append(fieldValue);
-                                            fieldValues.set(0, sb.toString());
-                                        } else {
-                                            fieldValues.add(fieldValue);
-                                        }
-                                    } else {
-                                        logger.debug("Null or empty string value returned for XPath query '{}'.", query);
                                     }
                                 }
+                                for (LuceneField field : gmd.getFields()) {
+                                    // Apply modifications configured for the main field to all the group field values
+                                    String moddedValue = applyAllModifications(configurationItem, field.getValue());
+                                    field.setValue(moddedValue);
+
+                                    if (configurationItem.isAddToDefault()) {
+                                        // Add main value to DEFAULT
+                                        if (StringUtils.isNotBlank(fieldValue)) {
+                                            addValueToDefault(fieldValue, sbDefaultMetadataValues);
+                                        }
+                                        // Add grouped metadata field to DEFAULT
+                                        if (StringUtils.isNotEmpty(field.getValue()) && !moddedValue.equals(fieldValue)) {
+                                            switch (field.getField()) {
+                                                case SolrConstants.LABEL:
+                                                case SolrConstants.METADATATYPE:
+                                                    // skip
+                                                    break;
+                                                default:
+                                                    addValueToDefault(moddedValue, sbDefaultMetadataValues);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // If there was no existing GROUPFIELD in the group metadata, add one now using the norm identifier
+                                if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(normIdentifier)) {
+                                    gmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, normIdentifier));
+                                }
+                                // Add MD_VALUE as DEFAULT to the metadata doc
+                                if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
+                                    gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, fieldValue));
+                                }
+                                gmd.getFields().addAll(normData); // Add norm data outside the loop over groupMetadata
+
+                                if (!indexObj.getGroupedMetadataFields().contains(gmd)) {
+                                    indexObj.getGroupedMetadataFields().add(gmd);
+                                }
+                                // NORMDATATERMS is now in the metadata docs, not docstructs
+                                if (sbNormDataTerms.length() > 0) {
+                                    gmd.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
+                                }
+                            } else {
+                                // Regular metadata
+                                String xpathAnswerString = JDomXP.objectToString(xpathAnswerObject);
+                                if (StringUtils.isNotBlank(xpathAnswerString)) {
+                                    xpathAnswerString = xpathAnswerString.trim();
+                                    xpathAnswerString = new StringBuilder(xpathAnswerString).append(configurationItem.getValuepostfix()).toString();
+                                    fieldValue = xpathAnswerString.trim();
+                                    if (configurationItem.getSplittingCharacter() != null) {
+                                        // Hack to prevent empty concatenated collection names
+                                        if (configurationItem.getSplittingCharacter().equals(fieldValue)) {
+                                            continue;
+                                        }
+                                        // Hack to prevent collection names ending with a separator
+                                        if (fieldValue.endsWith(configurationItem.getSplittingCharacter())) {
+                                            fieldValue = fieldValue.substring(0, fieldValue.length() - 1);
+                                        }
+                                    }
+                                    if (configurationItem.isOneToken()) {
+                                        fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
+                                    }
+                                    if (fieldName.startsWith("DATE_")) {
+                                        if ((fieldValue = convertDateStringForSolrField(fieldValue, false)) == null) {
+                                            continue;
+                                        }
+                                    }
+                                    // Apply XPath prefix
+                                    if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
+                                        fieldValue = xpathConfig.getPrefix() + fieldValue;
+                                    }
+                                    // Apply XPath suffix
+                                    if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
+                                        fieldValue = fieldValue + xpathConfig.getSuffix();
+                                    }
+                                    if (configurationItem.isOneField()) {
+                                        if (fieldValues.isEmpty()) {
+                                            fieldValues.add("");
+                                        }
+                                        StringBuilder sb = new StringBuilder();
+                                        sb.append(fieldValues.get(0));
+                                        if (sb.length() > 0) {
+                                            sb.append(multiValueSeparator);
+                                        }
+                                        sb.append(fieldValue);
+                                        fieldValues.set(0, sb.toString());
+                                    } else {
+                                        fieldValues.add(fieldValue);
+                                    }
+                                } else {
+                                    logger.debug("Null or empty string value returned for XPath query '{}'.", query);
+                                }
+                            }
                         }
                     }
                 }
@@ -467,7 +465,7 @@ public class MetadataHelper {
      * @param url URL to query.
      * @return
      */
-    private static List<LuceneField> retrieveNormData(StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms, String url,
+    private static List<LuceneField> retrieveAuthorityData(StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms, String url,
             List<String> addToDefaultFields, Map<Object, String> replaceRules) {
         logger.trace("retrieveNormData: {}", url);
         if (sbDefaultMetadataValues == null) {
@@ -488,7 +486,7 @@ public class MetadataHelper {
         if (marcRecord == null) {
             return Collections.emptyList();
         }
-        
+
         List<LuceneField> ret = new ArrayList<>(marcRecord.getNormDataList().size());
         for (NormData normData : marcRecord.getNormDataList()) {
             if (!normData.getKey().startsWith("NORM_")) {
@@ -499,7 +497,7 @@ public class MetadataHelper {
                 if (StringUtils.isBlank(val.getText()) || normData.getKey().equals("NORM_STATICPAGE")) {
                     continue;
                 }
-                String textValue = val.getText();
+                String textValue = TextHelper.normalizeSequence(val.getText());
                 if (replaceRules != null) {
                     textValue = applyReplaceRules(textValue, replaceRules);
                 }
@@ -510,7 +508,7 @@ public class MetadataHelper {
 
                 // Add to DEFAULT
                 if (addToDefaultFields != null && !addToDefaultFields.isEmpty() && addToDefaultFields.contains(normData.getKey())
-                    && !sbDefaultMetadataValues.toString().contains(valWithSpaces)) {
+                        && !sbDefaultMetadataValues.toString().contains(valWithSpaces)) {
                     addValueToDefault(textValue, sbDefaultMetadataValues);
                     logger.trace("Added to DEFAULT: {}", textValue);
                 }
@@ -532,8 +530,8 @@ public class MetadataHelper {
                     String[] valueSplit = textValue.split("-");
                     if (valueSplit.length > 0) {
                         for (String date : valueSplit) {
-                             ret.add(new LuceneField("NORM_DATE_SEARCH", date.trim()));
-                             ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
+                            ret.add(new LuceneField("NORM_DATE_SEARCH", date.trim()));
+                            ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
                         }
                     }
                 }
@@ -876,7 +874,7 @@ public class MetadataHelper {
      * @should parse single years correctly
      * @should throw IllegalArgumentException if normalizeYearMinDigits less than 1
      */
-    protected static List<PrimitiveDate> normalizeDate(String dateString, int normalizeYearMinDigits) {
+    static List<PrimitiveDate> normalizeDate(String dateString, int normalizeYearMinDigits) {
         if (normalizeYearMinDigits < 1) {
             throw new IllegalArgumentException("normalizeYearMinDigits must be at least 1");
         }
@@ -965,7 +963,7 @@ public class MetadataHelper {
      * @should detect negative century correctly
      * @should detect first century correctly
      */
-    protected static int getCentury(long year) {
+    static int getCentury(long year) {
         boolean bc = false;
         String yearString = String.valueOf(year);
         if (yearString.charAt(0) == '-') {
@@ -999,7 +997,7 @@ public class MetadataHelper {
      * @return
      * @should complete centuries correctly
      */
-    protected static List<LuceneField> completeCenturies(List<LuceneField> fields) {
+    static List<LuceneField> completeCenturies(List<LuceneField> fields) {
         return completeIntegerValues(fields, SolrConstants.CENTURY, new HashSet<>(Collections.singletonList(0)));
     }
 
@@ -1010,7 +1008,7 @@ public class MetadataHelper {
      * @return
      * @should complete years correctly
      */
-    protected static List<LuceneField> completeYears(List<LuceneField> fields) {
+    static List<LuceneField> completeYears(List<LuceneField> fields) {
         return completeIntegerValues(fields, SolrConstants.YEAR, null);
     }
 
@@ -1057,12 +1055,12 @@ public class MetadataHelper {
      * @param ele
      * @param groupEntityFields
      * @param groupLabel
+     * @param xp
      * @return
      * @throws FatalIndexerException
      * @should group correctly
      */
-    protected static GroupedMetadata getGroupedMetadata(Element ele, Map<String, Object> groupEntityFields, String groupLabel)
-            throws FatalIndexerException {
+    static GroupedMetadata getGroupedMetadata(Element ele, Map<String, Object> groupEntityFields, String groupLabel) throws FatalIndexerException {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
@@ -1083,7 +1081,7 @@ public class MetadataHelper {
             SubfieldConfig subfield = (SubfieldConfig) groupEntityFields.get(field);
             for (String xpath : subfield.getXpaths()) {
                 logger.debug("XPath: {}", xpath);
-                List<Object> values = JDomXP.evaluate(xpath, ele, Filters.fpassthrough());
+                List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
                 if (values == null || values.isEmpty()) {
                     continue;
                 }
@@ -1228,7 +1226,7 @@ public class MetadataHelper {
         private Integer month;
         private Integer day;
 
-        /** Individual values contructor. */
+        /** Individual values constructor. */
         public PrimitiveDate(Integer year, Integer month, Integer day) {
             this.year = year;
             this.month = month;
@@ -1281,7 +1279,7 @@ public class MetadataHelper {
      * @should throw IllegalArgumentException if value is null
      * @should throw IllegalArgumentException if sbDefaultMetadataValues is null
      */
-    protected static void addValueToDefault(String value, StringBuilder sbDefaultMetadataValues) {
+    static void addValueToDefault(String value, StringBuilder sbDefaultMetadataValues) {
         if (value == null) {
             throw new IllegalArgumentException("value may not be null");
         }

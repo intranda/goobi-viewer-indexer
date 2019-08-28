@@ -33,6 +33,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,7 +46,6 @@ import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.jsoup.Jsoup;
@@ -77,6 +77,19 @@ public final class TextHelper {
     private static final String ALTO_SUBS_TYPE = "SUBS_TYPE";
     private static final String ALTO_SUBS_TYPE_FIRST_WORD = "HypPart1";
     private static final String ALTO_SUBS_TYPE_SECOND_WORD = "HypPart2";
+
+    /**
+     * 
+     * @param s
+     * @return
+     */
+    public static String normalizeSequence(String s) {
+        if (s == null) {
+            return null;
+        }
+
+        return Normalizer.normalize(s, Normalizer.Form.NFC);
+    }
 
     /**
      * Uses ICU4J to determine the charset of the given InputStream.
@@ -515,11 +528,11 @@ public final class TextHelper {
         try (FileInputStream fis = new FileInputStream(file)) {
             Document doc = new SAXBuilder().build(fis);
             // Image width
-            List<Object> values =
-                    JDomXP.evaluate("mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageWidth", doc, Filters.fstring());
+            List<String> values =
+                    JDomXP.evaluateToStringListStatic("mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageWidth", doc);
             if (values != null && !values.isEmpty()) {
                 try {
-                    String str = (String) values.get(0);
+                    String str = values.get(0);
                     Integer.parseInt(str);
                     ret.put(SolrConstants.WIDTH, str);
                     // logger.info(SolrConstants.WIDTH + ":" + str);
@@ -527,10 +540,10 @@ public final class TextHelper {
                 }
             }
             // Image height
-            values = JDomXP.evaluate("mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageHeight", doc, Filters.fstring());
+            values = JDomXP.evaluateToStringListStatic("mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageHeight", doc);
             if (values != null && !values.isEmpty()) {
                 try {
-                    String str = (String) values.get(0);
+                    String str = values.get(0);
                     Integer.parseInt(str);
                     ret.put(SolrConstants.HEIGHT, str);
                     // logger.info(SolrConstants.HEIGHT + ":" + str);
@@ -538,10 +551,10 @@ public final class TextHelper {
                 }
             }
             // Color space
-            values = JDomXP.evaluate("mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:PhotometricInterpretation/mix:colorSpace",
-                    doc, Filters.fstring());
+            values = JDomXP.evaluateToStringListStatic(
+                    "mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:PhotometricInterpretation/mix:colorSpace", doc);
             if (values != null && !values.isEmpty()) {
-                String str = (String) values.get(0);
+                String str = values.get(0);
                 ret.put(SolrConstants.COLORSPACE, str);
             }
             // logger.info(SolrConstants.COLORSPACE + ":" + str);

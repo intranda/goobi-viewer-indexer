@@ -1432,8 +1432,8 @@ public class MetsIndexer extends Indexer {
 
             if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
                 try {
-                    Map<String, String> mixData = TextHelper
-                            .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
+                    Map<String, String> mixData = TextHelper.readMix(
+                            new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                     for (String key : mixData.keySet()) {
                         if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
                                 && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
@@ -2085,12 +2085,14 @@ public class MetsIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // DMDID
-        indexObj.setDmdid(structNode.getAttributeValue("DMDID"));
-        logger.trace("DMDID: {}", indexObj.getDmdid());
+        {
+            indexObj.setDmdid(TextHelper.normalizeSequence(structNode.getAttributeValue("DMDID")));
+            logger.trace("DMDID: {}", indexObj.getDmdid());
+        }
 
         // LOGID
         {
-            String value = structNode.getAttributeValue("ID");
+            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("ID"));
             if (value != null) {
                 indexObj.setLogId(value);
             }
@@ -2099,16 +2101,16 @@ public class MetsIndexer extends Indexer {
 
         // TYPE
         {
-            String value = structNode.getAttributeValue("TYPE");
+            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("TYPE"));
             if (value != null) {
-                indexObj.setType(MetadataConfigurationManager.mapDocStrct(value));
+                indexObj.setType(value);
             }
         }
         logger.trace("TYPE: {}", indexObj.getType());
 
         // LABEL
         {
-            String value = structNode.getAttributeValue("LABEL");
+            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("LABEL"));
             if (value != null) {
                 // Remove non-sort characters from LABEL, if configured to do so
                 if (Configuration.getInstance().isLabelCleanup()) {

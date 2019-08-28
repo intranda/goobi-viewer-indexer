@@ -1107,8 +1107,8 @@ public class WorldViewsIndexer extends Indexer {
 
             if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
                 try {
-                    Map<String, String> mixData = TextHelper
-                            .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
+                    Map<String, String> mixData = TextHelper.readMix(
+                            new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                     for (String key : mixData.keySet()) {
                         if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
                                 && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
