@@ -36,7 +36,7 @@ public final class SolrIndexerDaemon {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
-    public static final String VERSION = "3.5.20190828";
+    public static final String VERSION = "3.5.20190829";
     private static final int MIN_SCHEMA_VERSION = 20190206;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
@@ -86,6 +86,7 @@ public final class SolrIndexerDaemon {
             logger.error(e.getMessage());
             System.exit(-1);
         }
+        System.exit(0);
     }
 
     /**
@@ -161,6 +162,11 @@ public final class SolrIndexerDaemon {
 
     public void stop() {
         logger.info("Stopping indexer...");
+        try {
+            Configuration.getInstance().killReloadTimer();
+        } catch (FatalIndexerException e) {
+            logger.error(e.getMessage());
+        }
         running = false;
     }
 

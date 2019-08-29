@@ -128,6 +128,16 @@ public final class Configuration {
     }
 
     /**
+     * 
+     */
+    public void killReloadTimer() {
+        if (reloadTimer != null) {
+            reloadTimer.cancel();
+            reloadTimer.purge();
+        }
+    }
+
+    /**
      * Adds relevant XML namespaces to the list of available namespace objects.
      * 
      * @should add custom namespaces correctly
