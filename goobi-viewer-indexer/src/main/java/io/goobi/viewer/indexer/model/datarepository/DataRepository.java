@@ -60,6 +60,7 @@ public class DataRepository {
     public static final String PARAM_SOURCE = "sourceContentFolder";
     public static final String PARAM_UGC = "userGeneratedContentFolder";
     public static final String PARAM_MIX = "mixFolder";
+    public static final String PARAM_ANNOTATIONS = "annotationFolder";
 
     //    public static int dataRepositoriesMaxRecords = 10000;
 
@@ -122,6 +123,7 @@ public class DataRepository {
             checkAndCreateDataSubdir(PARAM_UGC);
             checkAndCreateDataSubdir(PARAM_MIX);
             checkAndCreateDataSubdir(PARAM_CMS);
+            checkAndCreateDataSubdir(PARAM_ANNOTATIONS);
         }
         if (Files.exists(rootDir)) {
             valid = true;
@@ -212,6 +214,7 @@ public class DataRepository {
      * @should delete MIX folder correctly
      * @should delete page PDF folder correctly
      * @should delete CMS folder correctly
+     * @should delete annotations folder correctly
      */
     public void deleteDataFoldersForRecord(String baseFileName) {
         deleteFolder(Paths.get(getDir(PARAM_ALTO).toAbsolutePath().toString(), baseFileName));
@@ -228,6 +231,7 @@ public class DataRepository {
         deleteFolder(Paths.get(getDir(PARAM_MIX).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_PAGEPDF).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_CMS).toAbsolutePath().toString(), baseFileName));
+        deleteFolder(Paths.get(getDir(PARAM_ANNOTATIONS).toAbsolutePath().toString(), baseFileName));
     }
 
     /**
@@ -311,6 +315,7 @@ public class DataRepository {
         moveDataFolderToRepository(toRepository, pi, PARAM_UGC);
         moveDataFolderToRepository(toRepository, pi, PARAM_MIX);
         moveDataFolderToRepository(toRepository, pi, PARAM_CMS);
+        moveDataFolderToRepository(toRepository, pi, PARAM_ANNOTATIONS);
 
         // METS
         Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_METS).toAbsolutePath().toString(), pi + ".xml");
@@ -392,6 +397,7 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_CMS);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_PAGEPDF);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS);
 
         // Delete unsupported data folders
         //                List<File> unknownDirs = Arrays.asList(hotfolderPath.listFiles(getDataFolderFilter(fileNameRoot + "_")));
@@ -459,6 +465,8 @@ public class DataRepository {
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_UGC, dataRepositories);
         // Copy and delete CMS page text files
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_CMS, dataRepositories);
+        // Copy and delete WebAnnotation files
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS, dataRepositories);
     }
 
     /**

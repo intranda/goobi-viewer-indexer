@@ -1,0 +1,27 @@
+{
+	"id": "http://localhost:8080/viewer/rest/annotations/3",
+	"type": "Annotation",
+	"body": {
+		"type": "TextualBody",
+		"format": "text/plain",
+		"value": "Leipzig"
+	},
+	"target": {
+		"type": "SpecificResource",
+		"selector": {
+			"value": "xywh=1378,3795,486,113",
+			"type": "FragmentSelector"
+		},
+		"source": "http://localhost:8080/viewer/rest/iiif/manifests/PPN517154005/canvas/1"
+	},
+	"creator": {
+		"id": "http://localhost:8080/viewer/rest/users/45",
+		"type": "Person",
+		"name": "Andrey (admin)"
+	},
+	"generator": {
+		"id": "http://localhost:8080/viewer/rest/crowdsourcing/campaigns/1/questions/2",
+		"type": "Software",
+		"name": "Campaign 1"
+	}
+}

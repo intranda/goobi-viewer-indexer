@@ -78,7 +78,6 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStra
 import io.goobi.viewer.indexer.model.datarepository.strategy.MaxRecordNumberStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.RemainingSpaceStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.SingleRepositoryStrategy;
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 
 public class Hotfolder {
 
@@ -779,6 +778,9 @@ public class Hotfolder {
                     case "_tei":
                         dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
                         break;
+                    case "_annotations":
+                        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
+                        break;
                     default:
                         // nothing
                 }
@@ -818,6 +820,9 @@ public class Hotfolder {
         }
         if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
             reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
+            reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
         }
 
         DataRepository dataRepository;

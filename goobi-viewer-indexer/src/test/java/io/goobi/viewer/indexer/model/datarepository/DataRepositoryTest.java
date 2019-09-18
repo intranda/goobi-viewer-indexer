@@ -48,7 +48,7 @@ public class DataRepositoryTest extends AbstractTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
-        
+
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
     }
 
@@ -362,6 +362,20 @@ public class DataRepositoryTest extends AbstractTest {
     public void deleteDataFoldersForRecord_shouldDeleteCMSFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("build/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_CMS).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+        useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);
+        Assert.assertFalse(dataFolder.exists());
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersForRecord(String)
+     * @verifies delete annotations folder correctly
+     */
+    @Test
+    public void deleteDataFoldersForRecord_shouldDeleteAnnotationsFolderCorrectly() throws Exception {
+        DataRepository useRepository = new DataRepository("build/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ANNOTATIONS).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
         useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);

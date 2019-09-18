@@ -158,33 +158,18 @@ public class LidoIndexer extends Indexer {
 
                 ret[0] = indexObj.getPi();
 
-                if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
-                    // Use the old MIX folder
-                    dataFolders.put(DataRepository.PARAM_MIX,
-                            Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), pi));
-                    if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-                        dataFolders.put(DataRepository.PARAM_MIX, null);
-                    } else {
-                        logger.info("Using old MIX folder '{}'.", dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath());
-                    }
-                }
-                if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-                    // Use the old TEI metadata folder
-                    dataFolders.put(DataRepository.PARAM_TEIMETADATA,
-                            Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
-                    if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
-                    } else {
-                        logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIMETADATA).toAbsolutePath());
-                    }
-                }
+                // Check and use old data folders, if no new ones found
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
             }
 
             if (writeStrategy == null) {
                 boolean useSerializingStrategy = false;
                 if (useSerializingStrategy) {
                     writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSolrHelper(), hotfolder.getTempFolder());
-
                 }
                 //                else if (IndexerConfig.getInstance().getBoolean("init.aggregateRecords")) {
                 //                    writeStrategy = new HierarchicalLazySolrWriteStrategy(hotfolder.getSolrHelper());

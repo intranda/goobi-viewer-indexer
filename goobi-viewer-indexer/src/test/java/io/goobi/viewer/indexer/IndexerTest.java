@@ -17,17 +17,14 @@ package io.goobi.viewer.indexer;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.StringTokenizer;
-
-import javax.imageio.ImageReader;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -65,17 +62,17 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         lidoFile = Paths.get("src/test/resources/LIDO/khm_lido_export.xml");
         Assert.assertTrue(Files.isRegularFile(lidoFile));
     }
-    
+
     @BeforeClass
     public static void setUpBeforeClass() {
         File libraryFile = new File("src/test/resources/lib/libopenjp2.so");
         libraryPath = System.getProperty("java.library.path");
         System.setProperty("java.library.path", libraryPath + ":" + libraryFile.getParentFile().getAbsolutePath());
     }
-    
+
     @AfterClass
     public static void cleanUpAfterClass() {
-        if(StringUtils.isNotBlank(libraryPath)) {            
+        if (StringUtils.isNotBlank(libraryPath)) {
             System.setProperty("java.library.path", libraryPath);
         }
     }
@@ -236,10 +233,10 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getSize_shouldReturnSizeCorrectly() throws Exception {
-        
+
         String[] filenames = { "00000001.tif", "00225231.png", "test1.jp2" };
         Dimension[] imageSizes = { new Dimension(3192, 4790), new Dimension(2794, 3838), new Dimension(3448, 6499) };
-        
+
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         File dataFolder = new File("src/test/resources/image_size");
 
@@ -254,8 +251,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
 
                 Optional<Dimension> dim = Indexer.getSize(dataFolder.toPath(), filename);
                 // jp2 image files cannot be read because of missing jp2 library
-                    Assert.assertTrue(dim.isPresent());
-                    Assert.assertEquals("image size of " + filename + " is " + dim + ", but should be " + imageSizes[i], imageSizes[i], dim.get());
+                Assert.assertTrue(dim.isPresent());
+                Assert.assertEquals("image size of " + filename + " is " + dim + ", but should be " + imageSizes[i], imageSizes[i], dim.get());
 
                 i++;
             }
@@ -265,5 +262,27 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             }
         }
     }
-}
 
+    /**
+     * @see Indexer#generateAnnotationDocs(Map,Path,String,String,Map)
+     * @verifies create docs correctly
+     */
+    @Test
+    public void generateAnnotationDocs_shouldCreateDocsCorrectly() throws Exception {
+        SolrInputDocument pageDoc = new SolrInputDocument();
+        pageDoc.setField(SolrConstants.IDDOC, 123);
+        pageDoc.setField(SolrConstants.ORDER, 1);
+
+        Path dataFolder = Paths.get("src/test/resources/WebAnnotations");
+        Assert.assertTrue(Files.isDirectory(dataFolder));
+
+        List<SolrInputDocument> docs =
+                new MetsIndexer(hotfolder).generateAnnotationDocs(Collections.singletonMap(1, pageDoc), dataFolder, "PPN517154005", null, null);
+        Assert.assertEquals(1, docs.size());
+        Assert.assertEquals("PPN517154005", docs.get(0).getFieldValue(SolrConstants.PI_TOPSTRUCT));
+        Assert.assertEquals(1, docs.get(0).getFieldValue(SolrConstants.ORDER));
+        Assert.assertEquals(123, docs.get(0).getFieldValue(SolrConstants.IDDOC_OWNER));
+        Assert.assertEquals("Leipzig", docs.get(0).getFieldValue("MD_TEXT"));
+        Assert.assertEquals("xywh=1378,3795,486,113",  docs.get(0).getFieldValue(SolrConstants.UGCCOORDS));
+    }
+}

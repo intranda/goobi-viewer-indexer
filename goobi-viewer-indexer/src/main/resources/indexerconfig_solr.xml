@@ -39,6 +39,7 @@
 		<pagePdfFolder>pdf</pagePdfFolder>
 		<sourceContentFolder>source</sourceContentFolder>
 		<userGeneratedContentFolder>ugc</userGeneratedContentFolder>
+		<annotationFolder>annotations</annotationFolder>
 		<mixFolder>mix</mixFolder>
 		<cmsFolder>cms</cmsFolder>
 		<teiFolder>tei</teiFolder>

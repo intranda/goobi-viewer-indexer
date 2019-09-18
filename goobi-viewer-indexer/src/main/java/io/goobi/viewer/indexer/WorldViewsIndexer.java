@@ -152,108 +152,20 @@ public class WorldViewsIndexer extends Indexer {
                     }
 
                     ret[0] = new StringBuilder(indexObj.getPi()).append(Indexer.XML_EXTENSION).toString();
-                    if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-                        // Use the old media folder
-                        dataFolders.put(DataRepository.PARAM_MEDIA,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-                            dataFolders.put(DataRepository.PARAM_MEDIA, null);
-                        } else {
-                            logger.info("Using old media folder '{}'.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
-                        // Use the old text folder
-                        dataFolders.put(DataRepository.PARAM_FULLTEXT,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXT))) {
-                            dataFolders.put(DataRepository.PARAM_FULLTEXT, null);
-                        } else {
-                            logger.info("Using old text folder '{}'.", dataFolders.get(DataRepository.PARAM_FULLTEXT).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
-                        // Use the old crowdsourcing text folder
-                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD))) {
-                            dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, null);
-                        } else {
-                            logger.info("Using old crowdsourcing text folder '{}'.",
-                                    dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-                        // Use the old TEI metadata folder
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIMETADATA))) {
-                            dataFolders.put(DataRepository.PARAM_TEIMETADATA, null);
-                        } else {
-                            logger.info("Using old TEI metadata folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIMETADATA).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
-                        // Use the old TEI word coordinate folder
-                        dataFolders.put(DataRepository.PARAM_TEIWC,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_TEIWC))) {
-                            dataFolders.put(DataRepository.PARAM_TEIWC, null);
-                        } else {
-                            logger.info("Using old TEI word coordinate folder '{}'.", dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
-                        // Use the old ALTO folder
-                        dataFolders.put(DataRepository.PARAM_ALTO,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO))) {
-                            dataFolders.put(DataRepository.PARAM_ALTO, null);
-                        } else {
-                            logger.info("Using old ALTO folder '{}'.", dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
-                        // Use the old crowdsourcing ALTO folder
-                        dataFolders.put(DataRepository.PARAM_ALTOCROWD,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD))) {
-                            dataFolders.put(DataRepository.PARAM_ALTOCROWD, null);
-                        } else {
-                            logger.info("Using old crowdsourcing ALTO folder '{}'.",
-                                    dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
-                        // Use the old ABBYY folder
-                        dataFolders.put(DataRepository.PARAM_ABBYY,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY))) {
-                            dataFolders.put(DataRepository.PARAM_ABBYY, null);
-                        } else {
-                            logger.info("Using old ABBYY folder '{}'.", dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
-                        // Use the old user generated content folder
-                        dataFolders.put(DataRepository.PARAM_UGC,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_UGC))) {
-                            dataFolders.put(DataRepository.PARAM_UGC, null);
-                        } else {
-                            logger.info("Using old user generated content folder '{}'.", dataFolders.get(DataRepository.PARAM_UGC).toAbsolutePath());
-                        }
-                    }
-                    if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
-                        // Use the old CMS folder
-                        dataFolders.put(DataRepository.PARAM_CMS,
-                                Paths.get(dataRepository.getDir(DataRepository.PARAM_CMS).toAbsolutePath().toString(), pi));
-                        if (!Files.isDirectory(dataFolders.get(DataRepository.PARAM_CMS))) {
-                            dataFolders.put(DataRepository.PARAM_CMS, null);
-                        } else {
-                            logger.info("Using old CMS folder '{}'.", dataFolders.get(DataRepository.PARAM_CMS).toAbsolutePath());
-                        }
-                    }
+
+                    // Check and use old data folders, if no new ones found
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
+                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
                 } else {
                     ret[1] = "PI not found.";
                     throw new IndexerException(ret[1]);
@@ -1107,8 +1019,8 @@ public class WorldViewsIndexer extends Indexer {
 
             if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
                 try {
-                    Map<String, String> mixData = TextHelper.readMix(
-                            new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
+                    Map<String, String> mixData = TextHelper
+                            .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                     for (String key : mixData.keySet()) {
                         if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
                                 && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {

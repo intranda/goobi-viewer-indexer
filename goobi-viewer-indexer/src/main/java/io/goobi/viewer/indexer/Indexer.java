@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,11 +61,19 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.intranda.api.annotation.ISelector;
+import de.intranda.api.annotation.wa.FragmentSelector;
+import de.intranda.api.annotation.wa.SpecificResource;
+import de.intranda.api.annotation.wa.TextualResource;
+import de.intranda.api.annotation.wa.WebAnnotation;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.TextHelper;
+import io.goobi.viewer.indexer.helper.WebAnnotationTools;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -426,7 +435,7 @@ public abstract class Indexer {
      * this method is called after all docstruct to page mapping is finished.
      * 
      * @param pageDoc
-     * @param folder
+     * @param dataFolder
      * @param pi
      * @param anchorPi
      * @param order
@@ -434,14 +443,14 @@ public abstract class Indexer {
      * @return List of Solr input documents for the UGC contents
      * @throws FatalIndexerException
      */
-    List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path folder, String pi, String anchorPi,
+    List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
             Map<String, String> groupIds, int order, String fileNameRoot) throws FatalIndexerException {
-        if (folder == null || !Files.isDirectory(folder)) {
+        if (dataFolder == null || !Files.isDirectory(dataFolder)) {
             logger.info("UGC folder is empty.");
             return Collections.emptyList();
         }
 
-        Path file = Paths.get(folder.toAbsolutePath().toString(), fileNameRoot + Indexer.XML_EXTENSION);
+        Path file = Paths.get(dataFolder.toAbsolutePath().toString(), fileNameRoot + Indexer.XML_EXTENSION);
         if (!Files.isRegularFile(file)) {
             logger.warn("'{}' is not a file.", file.getFileName().toString());
             return Collections.emptyList();
@@ -589,6 +598,94 @@ public abstract class Indexer {
     }
 
     /**
+     * 
+     * @param pageDocs
+     * @param dataFolder
+     * @param pi
+     * @param anchorPi
+     * @param groupIds
+     * @param order
+     * @return
+     * @throws FatalIndexerException
+     * @should create docs correctly
+     */
+    protected List<SolrInputDocument> generateAnnotationDocs(Map<Integer, SolrInputDocument> pageDocs, Path dataFolder, String pi, String anchorPi,
+            Map<String, String> groupIds) throws FatalIndexerException {
+        if (dataFolder == null || !Files.isDirectory(dataFolder)) {
+            logger.info("Annotation folder is empty.");
+            return Collections.emptyList();
+        }
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolder, "*.{json}")) {
+            List<SolrInputDocument> ret = new ArrayList<>();
+            for (Path path : stream) {
+                try (FileInputStream fis = new FileInputStream(path.toFile())) {
+                    String json = TextHelper.readFileToString(path.toFile(), TextHelper.DEFAULT_ENCODING);
+                    WebAnnotation annotation = new ObjectMapper().readValue(json, WebAnnotation.class);
+                    if (annotation == null) {
+                        continue;
+                    }
+                    
+                    SolrInputDocument doc = new SolrInputDocument();
+                    long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                    doc.addField(SolrConstants.IDDOC, iddoc);
+                    doc.addField(SolrConstants.GROUPFIELD, iddoc);
+                    doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
+                    doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+                    Integer pageOrder = WebAnnotationTools.parsePageOrder(annotation.getTarget().getId());
+                    if (pageOrder == null) {
+                        // Map all non-page-specific annotations to page 1 for now
+                        pageOrder = 1;
+                    }
+                    doc.setField(SolrConstants.ORDER, pageOrder);
+
+                    // Look up owner page doc
+                    SolrInputDocument pageDoc = pageDocs.get(pageOrder);
+                    if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
+                        doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
+                    }
+
+                    if (StringUtils.isNotEmpty(anchorPi)) {
+                        doc.addField(SolrConstants.PI_ANCHOR, anchorPi);
+                    }
+                    // Add GROUPID_* fields
+                    if (groupIds != null && !groupIds.isEmpty()) {
+                        for (String fieldName : groupIds.keySet()) {
+                            doc.addField(fieldName, groupIds.get(fieldName));
+                        }
+                    }
+
+                    // Value
+                    if (annotation.getBody() instanceof TextualResource) {
+                        doc.addField("MD_TEXT", ((TextualResource) annotation.getBody()).getText());
+                    }
+
+                    // Coords
+                    if (annotation.getTarget() instanceof SpecificResource) {
+                        ISelector selector = ((SpecificResource) annotation.getTarget()).getSelector();
+                        if (selector instanceof FragmentSelector) {
+                            String coords = ((FragmentSelector) selector).getValue();
+                            doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
+                        }
+                    }
+
+                    ret.add(doc);
+                } catch (FileNotFoundException e) {
+                    logger.error(e.getMessage());
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+
+            return ret;
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return Collections.emptyList();
+    }
+
+    /**
      * Creates the JDomXP instance for this indexer using the given XML file.
      * 
      * @param xmlFile
@@ -672,7 +769,7 @@ public abstract class Indexer {
                 } catch (NullPointerException | IOException e1) {
                     logger.error("Unable to read image size: {}: {}", e.getMessage(), filename);
                 }
-            } catch(UnsatisfiedLinkError e3) {
+            } catch (UnsatisfiedLinkError e3) {
                 logger.error("Unable to load jpeg2000 ImageReader: " + e.toString());
             }
         }
@@ -683,7 +780,7 @@ public abstract class Indexer {
     public static Dimension getSizeForJp2(Path image) throws IOException {
 
         if (image.getFileName().toString().matches("(?i).*\\.jp(2|x|2000)")) {
-           logger.debug("Reading with jpeg2000 ImageReader");
+            logger.debug("Reading with jpeg2000 ImageReader");
             Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpeg2000");
 
             while (readers.hasNext()) {
@@ -706,7 +803,7 @@ public abstract class Indexer {
                 }
             }
             ImageReader reader = getOpenJpegReader();
-            if(reader != null) {
+            if (reader != null) {
                 logger.trace("found openjpeg reader");
                 try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
                     reader.setInput(iis);
@@ -723,27 +820,25 @@ public abstract class Indexer {
                 logger.debug("Not openjpeg image reader found");
             }
         }
-        
-        
+
         throw new IOException("No valid image reader found for 'jpeg2000'");
 
     }
-    
-    public static ImageReader getOpenJpegReader()  {
+
+    public static ImageReader getOpenJpegReader() {
         ImageReader reader;
         try {
             Object readerSpi = Class.forName("de.digitalcollections.openjpeg.imageio.OpenJp2ImageReaderSpi").newInstance();
-            reader = ((ImageReaderSpi)readerSpi).createReaderInstance();
+            reader = ((ImageReaderSpi) readerSpi).createReaderInstance();
         } catch (IOException e) {
-            logger.error(e.getMessage(), e); 
+            logger.error(e.getMessage(), e);
             return null;
-        } catch(NoClassDefFoundError | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+        } catch (NoClassDefFoundError | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             logger.warn("No openjpeg reader");
             return null;
         }
         return reader;
     }
-
 
     /**
      * 
@@ -778,6 +873,44 @@ public abstract class Indexer {
         }
 
         return count;
+    }
+
+    /**
+     * Checks for old data folder of the <code>paramName</code> type and puts it into <code>dataFolders</code>, if none yet present.
+     * 
+     * @param dataFolders
+     * @param paramName
+     * @param pi
+     * @throws IOException
+     */
+    protected void checkOldDataFolder(Map<String, Path> dataFolders, String paramName, String pi) throws IOException {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+        if (paramName == null) {
+            throw new IllegalArgumentException("paramName may not be null");
+        }
+        if (pi == null) {
+            throw new IllegalArgumentException("pi may not be null");
+        }
+
+        if (dataFolders.get(paramName) == null) {
+            // Use the old data folder
+            dataFolders.put(paramName, Paths.get(dataRepository.getDir(paramName).toAbsolutePath().toString(), pi));
+            if (!Files.isDirectory(dataFolders.get(paramName))) {
+                dataFolders.put(paramName, null);
+
+                // Create ALTO dir for converted ABBYY or TEI files
+                if (DataRepository.PARAM_ALTO.equals(paramName) && dataRepository.getDir(DataRepository.PARAM_ALTO) != null
+                        && (dataFolders.get(DataRepository.PARAM_ABBYY) != null || dataFolders.get(DataRepository.PARAM_TEIWC) != null)) {
+                    dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
+                            Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
+                    Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
+                }
+            } else {
+                logger.info("Using old '{}' content folder '{}'.", paramName, dataFolders.get(paramName).toAbsolutePath());
+            }
+        }
     }
 
     /**
