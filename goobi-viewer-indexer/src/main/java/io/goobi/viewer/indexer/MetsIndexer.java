@@ -491,31 +491,8 @@ public class MetsIndexer extends Indexer {
                                 new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
                     }
 
-                    Map<Integer, SolrInputDocument> pageDocs = new HashMap<>(writeStrategy.getPageDocsSize());
-
-                    // Add used-generated content docs from legacy crowdsourcing
-                    for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
-                        SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
-                        if (pageDoc == null) {
-                            logger.error("Page {} not found, cannot check for UGC contents.", i);
-                            continue;
-                        }
-                        int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
-                        String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
-                        if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
-                            writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                                    indexObj.getTopstructPI(), indexObj.getAnchorPI(), indexObj.getGroupIds(), order, pageFileBaseName));
-                            ugcAddedChecklist.add(order);
-                        }
-
-                        pageDocs.put(order, pageDoc);
-                    }
-
-                    // Add user generated content docs from annotations
-                    if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) != null) {
-                        writeStrategy.addDocs(generateAnnotationDocs(pageDocs, dataFolders.get(DataRepository.PARAM_ANNOTATIONS),
-                                indexObj.getTopstructPI(), indexObj.getAnchorPI(), indexObj.getGroupIds()));
-                    }
+                    // Add used-generated content docs
+                    writeUserGeneratedContents(writeStrategy, dataFolders, indexObj);
                 }
             } else {
                 // Create and index new anchor file that includes all currently indexed children

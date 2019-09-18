@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +42,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -625,7 +627,7 @@ public abstract class Indexer {
                     if (annotation == null) {
                         continue;
                     }
-                    
+
                     SolrInputDocument doc = new SolrInputDocument();
                     long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                     doc.addField(SolrConstants.IDDOC, iddoc);
@@ -683,6 +685,44 @@ public abstract class Indexer {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Generates Solr docs for legacy UGC and WebAnnotation files and adds them to the write strategy.
+     * 
+     * @param writeStrategy
+     * @param dataFolders
+     * @param indexObj
+     * @throws FatalIndexerException
+     */
+    protected void writeUserGeneratedContents(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, IndexObject indexObj)
+            throws FatalIndexerException {
+        // Collect page docs for annotation<->page mapping
+        Map<Integer, SolrInputDocument> pageDocs = new HashMap<>(writeStrategy.getPageDocsSize());
+
+        // Add used-generated content docs from legacy crowdsourcing
+        for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
+            SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
+            if (pageDoc == null) {
+                logger.error("Page {} not found, cannot check for UGC contents.", i);
+                continue;
+            }
+            int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
+            String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
+            if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
+                writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                        indexObj.getTopstructPI(), indexObj.getAnchorPI(), indexObj.getGroupIds(), order, pageFileBaseName));
+                ugcAddedChecklist.add(order);
+            }
+
+            pageDocs.put(order, pageDoc);
+        }
+
+        // Add user generated content docs from annotations
+        if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) != null) {
+            writeStrategy.addDocs(generateAnnotationDocs(pageDocs, dataFolders.get(DataRepository.PARAM_ANNOTATIONS), indexObj.getTopstructPI(),
+                    indexObj.getAnchorPI(), indexObj.getGroupIds()));
+        }
     }
 
     /**

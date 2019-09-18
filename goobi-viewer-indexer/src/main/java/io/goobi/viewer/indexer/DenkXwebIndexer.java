@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -211,20 +212,7 @@ public class DenkXwebIndexer extends Indexer {
                 indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(writeStrategy.getPageDocsSize()));
 
                 // Add used-generated content docs
-                for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
-                    SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
-                    if (pageDoc == null) {
-                        logger.error("Page {} not found, cannot check for UGC contents.", i);
-                        continue;
-                    }
-                    int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
-                    String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
-                    if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
-                        writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                                indexObj.getTopstructPI(), indexObj.getAnchorPI(), indexObj.getGroupIds(), order, pageFileBaseName));
-                        ugcAddedChecklist.add(order);
-                    }
-                }
+                writeUserGeneratedContents(writeStrategy, dataFolders, indexObj);
             }
 
             // Write created/updated timestamps
