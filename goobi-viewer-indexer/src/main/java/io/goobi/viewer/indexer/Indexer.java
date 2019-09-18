@@ -611,7 +611,7 @@ public abstract class Indexer {
      * @throws FatalIndexerException
      * @should create docs correctly
      */
-    protected List<SolrInputDocument> generateAnnotationDocs(Map<Integer, SolrInputDocument> pageDocs, Path dataFolder, String pi, String anchorPi,
+    List<SolrInputDocument> generateAnnotationDocs(Map<Integer, SolrInputDocument> pageDocs, Path dataFolder, String pi, String anchorPi,
             Map<String, String> groupIds) throws FatalIndexerException {
         if (dataFolder == null || !Files.isDirectory(dataFolder)) {
             logger.info("Annotation folder is empty.");
@@ -659,6 +659,7 @@ public abstract class Indexer {
 
                     // Value
                     if (annotation.getBody() instanceof TextualResource) {
+                        doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
                         doc.addField("MD_TEXT", ((TextualResource) annotation.getBody()).getText());
                     }
 
