@@ -471,7 +471,6 @@ public abstract class Indexer {
                 return Collections.emptyList();
             }
             logger.info("Found {} user generated contents in  file '{}'.", eleContentList.size(), file.getFileName().toString());
-            StringBuilder sbAllTerms = new StringBuilder();
             for (Element eleContent : eleContentList) {
                 StringBuilder sbTerms = new StringBuilder();
                 SolrInputDocument doc = new SolrInputDocument();
@@ -577,7 +576,6 @@ public abstract class Indexer {
                 }
                 if (StringUtils.isNotBlank(sbTerms.toString())) {
                     doc.addField(SolrConstants.UGCTERMS, sbTerms.toString());
-                    sbAllTerms.append(sbTerms.toString()).append(" ");
                 }
                 ret.add(doc);
             }
@@ -628,6 +626,7 @@ public abstract class Indexer {
                         continue;
                     }
 
+                    StringBuilder sbTerms = new StringBuilder();
                     SolrInputDocument doc = new SolrInputDocument();
                     long iddoc = getNextIddoc(hotfolder.getSolrHelper());
                     doc.addField(SolrConstants.IDDOC, iddoc);
@@ -661,6 +660,9 @@ public abstract class Indexer {
                     if (annotation.getBody() instanceof TextualResource) {
                         doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
                         doc.addField("MD_TEXT", ((TextualResource) annotation.getBody()).getText());
+
+                        sbTerms.append(doc.getFieldValue(SolrConstants.UGCTYPE)).append(" ");
+                        sbTerms.append(doc.getFieldValue("MD_TEXT")).append(" ");
                     }
 
                     // Coords
@@ -670,6 +672,10 @@ public abstract class Indexer {
                             String coords = ((FragmentSelector) selector).getValue();
                             doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
                         }
+                    }
+
+                    if (StringUtils.isNotBlank(sbTerms.toString())) {
+                        doc.addField(SolrConstants.UGCTERMS, sbTerms.toString().trim());
                     }
 
                     ret.add(doc);
