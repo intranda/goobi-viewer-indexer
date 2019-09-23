@@ -712,7 +712,7 @@ public abstract class Indexer {
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
             if (pageDoc == null) {
-                logger.error("Page {} not found, cannot check for UGC contents.", i);
+                logger.warn("Page {} not found, cannot check for UGC contents.", i);
                 continue;
             }
             int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
