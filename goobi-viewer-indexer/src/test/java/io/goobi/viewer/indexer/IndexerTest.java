@@ -284,7 +284,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(123, docs.get(0).getFieldValue(SolrConstants.IDDOC_OWNER));
         Assert.assertEquals("Leipzig", docs.get(0).getFieldValue("MD_TEXT"));
         Assert.assertEquals("xywh=1378,3795,486,113", docs.get(0).getFieldValue(SolrConstants.UGCCOORDS));
-        Assert.assertEquals(SolrConstants._UGC_TYPE_COMMENT, docs.get(0).getFieldValue(SolrConstants.UGCTYPE));
-        Assert.assertEquals(SolrConstants._UGC_TYPE_COMMENT + " Leipzig", docs.get(0).getFieldValue(SolrConstants.UGCTERMS));
+        Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, docs.get(0).getFieldValue(SolrConstants.UGCTYPE));
+        Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", docs.get(0).getFieldValue(SolrConstants.UGCTERMS));
     }
 }

@@ -519,7 +519,7 @@ public class MetadataHelper {
                     logger.trace("Added to NORMDATATERMS: {}", textValue);
                 }
 
-                // Add aggregated Aggregate place fields into the same untokenized field for term browsing
+                // Aggregate place fields into the same untokenized field for term browsing
                 if (normData.getKey().equals("NORM_ALTNAME")) {
                     ret.add(new LuceneField("NORM_NAME_SEARCH", textValue));
                     ret.add(new LuceneField("NORM_NAME" + SolrConstants._UNTOKENIZED, textValue));

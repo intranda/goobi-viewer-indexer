@@ -658,11 +658,8 @@ public abstract class Indexer {
 
                     // Value
                     if (annotation.getBody() instanceof TextualResource) {
-                        doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                        doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
                         doc.addField("MD_TEXT", ((TextualResource) annotation.getBody()).getText());
-
-                        sbTerms.append(doc.getFieldValue(SolrConstants.UGCTYPE)).append(" ");
-                        sbTerms.append(doc.getFieldValue("MD_TEXT")).append(" ");
                     }
 
                     // Coords
@@ -671,11 +668,15 @@ public abstract class Indexer {
                         if (selector instanceof FragmentSelector) {
                             String coords = ((FragmentSelector) selector).getValue();
                             doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
+                            doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
                         }
                     }
+                    
+                    sbTerms.append(doc.getFieldValue(SolrConstants.UGCTYPE)).append(" ");
+                    sbTerms.append(doc.getFieldValue("MD_TEXT")).append(" ");
 
                     if (StringUtils.isNotBlank(sbTerms.toString())) {
-                        doc.addField(SolrConstants.UGCTERMS, sbTerms.toString().trim());
+                        doc.setField(SolrConstants.UGCTERMS, sbTerms.toString().trim());
                     }
 
                     ret.add(doc);
