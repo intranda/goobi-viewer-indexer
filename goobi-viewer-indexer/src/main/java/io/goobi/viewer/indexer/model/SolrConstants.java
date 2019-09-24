@@ -95,6 +95,7 @@ public final class SolrConstants {
     public static final String SOURCEDOCFORMAT = "SOURCEDOCFORMAT";
     public static final String SUPERDEFAULT = "SUPERDEFAULT";
     public static final String SUPERFULLTEXT = "SUPERFULLTEXT";
+    public static final String SUPERUGCTERMS = "SUPERUGCTERMS";
     public static final String THUMBNAIL = "THUMBNAIL";
     public static final String THUMBNAILREPRESENT = "THUMBNAILREPRESENT";
     public static final String THUMBPAGENO = "THUMBPAGENO";

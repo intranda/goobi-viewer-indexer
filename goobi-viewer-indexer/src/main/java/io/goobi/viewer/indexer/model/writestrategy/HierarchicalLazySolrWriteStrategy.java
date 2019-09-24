@@ -64,14 +64,15 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
             }
             rootDoc.addChildDocument(doc);
             if (aggregateRecords) {
+                // Add SUPER* fields to root doc
                 if (doc.containsKey(SolrConstants.DEFAULT)) {
                     rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
                 }
-                //                if (doc.containsKey(SolrConstants.NORMDATATERMS)) {
-                //                    rootDoc.addField(SolrConstants.NORMDATATERMS, doc.getFieldValue(SolrConstants.NORMDATATERMS));
-                //                }
                 if (doc.containsKey(SolrConstants.FULLTEXT)) {
                     rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
+                }
+                if (doc.containsKey(SolrConstants.UGCTERMS)) {
+                    rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
                 }
             }
         }

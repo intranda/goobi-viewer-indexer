@@ -223,12 +223,16 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             if (doc != null) {
                 // Add the child doc's DEFAULT values to the SUPERDEFAULT value of the root doc
                 if (aggregateRecords) {
+                    // Add SUPER* fields to root doc
                     if (doc.containsKey(SolrConstants.DEFAULT)) {
                         rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
                     }
-                    //                    if (doc.containsKey(SolrConstants.NORMDATATERMS)) {
-                    //                        rootDoc.addField(SolrConstants.NORMDATATERMS, doc.getFieldValue(SolrConstants.NORMDATATERMS));
-                    //                    }
+                    if (doc.containsKey(SolrConstants.FULLTEXT)) {
+                        rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
+                    }
+                    if (doc.containsKey(SolrConstants.UGCTERMS)) {
+                        rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
+                    }
                 }
                 try {
                     solrHelper.writeToIndex(doc);
@@ -301,8 +305,8 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         if (doc != null) {
             // doc.setField(SolrConstants.ORDER, newOrder); // make sure order starts at 1 in the end
             {
-                Path xmlFile = Paths.get(tempFolder.toAbsolutePath().toString(), new StringBuilder().append(iddoc).append("_").append(
-                        SolrConstants.FULLTEXT).toString());
+                Path xmlFile = Paths.get(tempFolder.toAbsolutePath().toString(),
+                        new StringBuilder().append(iddoc).append("_").append(SolrConstants.FULLTEXT).toString());
                 if (Files.isRegularFile(xmlFile)) {
                     try {
                         String xml = FileUtils.readFileToString(xmlFile.toFile(), "UTF8");
@@ -364,15 +368,15 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         if (Files.isRegularFile(tempFile)) {
             deleteTempFile(tempFile);
             {
-                Path tempXmlFile = Paths.get(tempFolder.toAbsolutePath().toString(), new StringBuilder().append(iddoc).append("_").append(
-                        SolrConstants.ALTO).toString());
+                Path tempXmlFile = Paths.get(tempFolder.toAbsolutePath().toString(),
+                        new StringBuilder().append(iddoc).append("_").append(SolrConstants.ALTO).toString());
                 if (Files.isRegularFile(tempXmlFile)) {
                     deleteTempFile(tempXmlFile);
                 }
             }
             {
-                Path tempXmlFile = Paths.get(tempFolder.toAbsolutePath().toString(), new StringBuilder().append(iddoc).append("_").append(
-                        SolrConstants.FULLTEXT).toString());
+                Path tempXmlFile = Paths.get(tempFolder.toAbsolutePath().toString(),
+                        new StringBuilder().append(iddoc).append("_").append(SolrConstants.FULLTEXT).toString());
                 if (Files.isRegularFile(tempXmlFile)) {
                     deleteTempFile(tempXmlFile);
                 }
