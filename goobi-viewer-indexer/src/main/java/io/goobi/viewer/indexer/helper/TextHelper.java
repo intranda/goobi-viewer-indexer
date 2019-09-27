@@ -216,17 +216,16 @@ public final class TextHelper {
         HyphenationLinker linker = new HyphenationLinker();
         linker.linkWords(altoDoc);
         Document doc = new Document(altoDoc.writeToDom());
-        return readAltoDoc(doc, file.getAbsolutePath());
+        return readAltoDoc(doc);
     }
 
     /**
      * Reads the given ALTO document. If a word has a line break, the complete word is written into each CONTENT attribute.
      * 
      * @param doc
-     * @param filePath
      * @return
      */
-    public static Map<String, Object> readAltoDoc(Document doc, String filePath) {
+    public static Map<String, Object> readAltoDoc(Document doc) {
         if (doc == null) {
             throw new IllegalArgumentException("doc may not be null.");
         }
@@ -281,12 +280,6 @@ public final class TextHelper {
                                     break;
                                 case "ComposedBlock":
                                     handleAltoComposedBlock(eleBlock, sbFulltext, wordWrapper);
-                                    //                                    List<Element> textBlocks = eleBlock.getChildren("TextBlock", null);
-                                    //                                    if (textBlocks != null) {
-                                    //                                        for (Element eleTextBlock : textBlocks) {
-                                    //                                            readAltoTextBlock(eleTextBlock, sbFulltext, wordWrapper);
-                                    //                                        }
-                                    //                                    }
                                     break;
                                 default:
                                     // nothing
@@ -304,7 +297,7 @@ public final class TextHelper {
                 }
             }
         } catch (NullPointerException e) {
-            logger.error("Could not parse ALTO document: {}", filePath);
+            logger.error("Could not parse ALTO document.");
             logger.error(e.getMessage(), e);
         }
 
@@ -384,8 +377,8 @@ public final class TextHelper {
                 if (eleWordList.indexOf(eleWord) > 0) {
                     sbFulltext.append(' ');
                 }
-                /*for hyphenated words, only add the SUBS_CONTENT (content of complete word) 
-                of the first word to the fulltext, and ignore the second word
+                /* for hyphenated words, only add the SUBS_CONTENT (content of complete word) 
+                of the first word to the full-text, and ignore the second word
                 */
                 if (ALTO_SUBS_TYPE_FIRST_WORD.equals(eleWord.getAttributeValue(ALTO_SUBS_TYPE))) {
                     sbFulltext.append(eleWord.getAttributeValue(ALTO_SUBS_CONTENT));
@@ -465,7 +458,7 @@ public final class TextHelper {
             if (alto != null) {
                 Document altoDoc = new Document();
                 altoDoc.setRootElement(alto);
-                ret = readAltoDoc(altoDoc, file.getAbsolutePath());
+                ret = readAltoDoc(altoDoc);
                 logger.info("Converted TEI to ALTO: {}", file.getName());
             } else {
                 logger.warn("Could not convert TEI to ALTO: {}", file.getName());
@@ -503,7 +496,7 @@ public final class TextHelper {
         if (alto != null) {
             Document altoDoc = new Document();
             altoDoc.setRootElement(alto);
-            ret = readAltoDoc(altoDoc, file.getAbsolutePath());
+            ret = readAltoDoc(altoDoc);
             logger.debug("Converted ABBYY XML to ALTO: {}", file.getName());
         }
 
