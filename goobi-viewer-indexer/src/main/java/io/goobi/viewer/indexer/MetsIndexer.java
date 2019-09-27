@@ -1335,7 +1335,7 @@ public class MetsIndexer extends Indexer {
                     String alto = Utils.callUrl(altoURL);
                     if (StringUtils.isNotEmpty(alto)) {
                         Document altoDoc = XmlTools.getDocumentFromString(alto, null);
-                        altoData = TextHelper.readAltoDoc(altoDoc, altoURL);
+                        altoData = TextHelper.readAltoDoc(altoDoc);
                         if (altoData != null) {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                                 if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
