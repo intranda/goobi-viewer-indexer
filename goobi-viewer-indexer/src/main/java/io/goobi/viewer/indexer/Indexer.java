@@ -65,6 +65,7 @@ import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.intranda.api.annotation.GeoLocation;
 import de.intranda.api.annotation.ISelector;
 import de.intranda.api.annotation.wa.FragmentSelector;
 import de.intranda.api.annotation.wa.SpecificResource;
@@ -660,10 +661,22 @@ public abstract class Indexer {
                     if (annotation.getBody() instanceof TextualResource) {
                         doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
                         doc.addField("MD_TEXT", ((TextualResource) annotation.getBody()).getText());
+                    } else if (annotation.getBody() instanceof GeoLocation) {
+                        doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                        // Add searchable coordinates
+                        GeoLocation geoLocation = (GeoLocation) annotation.getBody();
+                        if (geoLocation.getGeometry() != null) {
+                            double[] coords = geoLocation.getGeometry().getCoordinates();
+                            if (coords.length == 2) {
+                                doc.addField("MD_COORDS", coords[0] + " " + coords[1]);
+                            }
+                        }
+                        // Add annotation body as JSON
+                        doc.addField("MD_BODY", annotation.getBody().toString());
                     }
 
-                    // Coords
                     if (annotation.getTarget() instanceof SpecificResource) {
+                        // Coords
                         ISelector selector = ((SpecificResource) annotation.getTarget()).getSelector();
                         if (selector instanceof FragmentSelector) {
                             String coords = ((FragmentSelector) selector).getValue();
@@ -671,7 +684,7 @@ public abstract class Indexer {
                             doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
                         }
                     }
-                    
+
                     sbTerms.append(doc.getFieldValue(SolrConstants.UGCTYPE)).append(" ");
                     sbTerms.append(doc.getFieldValue("MD_TEXT")).append(" ");
 
