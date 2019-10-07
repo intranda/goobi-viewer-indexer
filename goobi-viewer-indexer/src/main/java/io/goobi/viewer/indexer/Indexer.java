@@ -65,6 +65,7 @@ import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.intranda.api.annotation.GeoLocation;
 import de.intranda.api.annotation.ISelector;
 import de.intranda.api.annotation.wa.FragmentSelector;
 import de.intranda.api.annotation.wa.SpecificResource;
@@ -619,72 +620,8 @@ public abstract class Indexer {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolder, "*.{json}")) {
             List<SolrInputDocument> ret = new ArrayList<>();
             for (Path path : stream) {
-                try (FileInputStream fis = new FileInputStream(path.toFile())) {
-                    String json = TextHelper.readFileToString(path.toFile(), TextHelper.DEFAULT_ENCODING);
-                    WebAnnotation annotation = new ObjectMapper().readValue(json, WebAnnotation.class);
-                    if (annotation == null) {
-                        continue;
-                    }
-
-                    StringBuilder sbTerms = new StringBuilder();
-                    SolrInputDocument doc = new SolrInputDocument();
-                    long iddoc = getNextIddoc(hotfolder.getSolrHelper());
-                    doc.addField(SolrConstants.IDDOC, iddoc);
-                    doc.addField(SolrConstants.GROUPFIELD, iddoc);
-                    doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
-                    doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
-                    Integer pageOrder = WebAnnotationTools.parsePageOrder(annotation.getTarget().getId());
-                    if (pageOrder == null) {
-                        // Map all non-page-specific annotations to page 1 for now
-                        pageOrder = 1;
-                    }
-                    doc.setField(SolrConstants.ORDER, pageOrder);
-
-                    // Look up owner page doc
-                    SolrInputDocument pageDoc = pageDocs.get(pageOrder);
-                    if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
-                        doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
-                    }
-
-                    if (StringUtils.isNotEmpty(anchorPi)) {
-                        doc.addField(SolrConstants.PI_ANCHOR, anchorPi);
-                    }
-                    // Add GROUPID_* fields
-                    if (groupIds != null && !groupIds.isEmpty()) {
-                        for (String fieldName : groupIds.keySet()) {
-                            doc.addField(fieldName, groupIds.get(fieldName));
-                        }
-                    }
-
-                    // Value
-                    if (annotation.getBody() instanceof TextualResource) {
-                        doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
-                        doc.addField("MD_TEXT", ((TextualResource) annotation.getBody()).getText());
-                    }
-
-                    // Coords
-                    if (annotation.getTarget() instanceof SpecificResource) {
-                        ISelector selector = ((SpecificResource) annotation.getTarget()).getSelector();
-                        if (selector instanceof FragmentSelector) {
-                            String coords = ((FragmentSelector) selector).getValue();
-                            doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
-                            doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
-                        }
-                    }
-                    
-                    sbTerms.append(doc.getFieldValue(SolrConstants.UGCTYPE)).append(" ");
-                    sbTerms.append(doc.getFieldValue("MD_TEXT")).append(" ");
-
-                    if (StringUtils.isNotBlank(sbTerms.toString())) {
-                        doc.setField(SolrConstants.UGCTERMS, sbTerms.toString().trim());
-                    }
-
-                    ret.add(doc);
-                } catch (FileNotFoundException e) {
-                    logger.error(e.getMessage());
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                }
+                long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                ret.add(readAnnotation(path, iddoc, pi, anchorPi, pageDocs, groupIds));
             }
 
             return ret;
@@ -693,6 +630,100 @@ public abstract class Indexer {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * @param pageDocs
+     * @param pi
+     * @param anchorPi
+     * @param groupIds
+     * @param ret
+     * @param path
+     * @param iddoc
+     * @return 
+     */
+    public SolrInputDocument readAnnotation( Path path, long iddoc, String pi, String anchorPi, 
+            Map<Integer, SolrInputDocument> pageDocs,  Map<String, String> groupIds) {
+        try (FileInputStream fis = new FileInputStream(path.toFile())) {
+            String json = TextHelper.readFileToString(path.toFile(), TextHelper.DEFAULT_ENCODING);
+            WebAnnotation annotation = new ObjectMapper().readValue(json, WebAnnotation.class);
+            if (annotation == null) {
+                return null;
+            }
+
+            StringBuilder sbTerms = new StringBuilder();
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.addField(SolrConstants.IDDOC, iddoc);
+            doc.addField(SolrConstants.GROUPFIELD, iddoc);
+            doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
+            doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+            Integer pageOrder = WebAnnotationTools.parsePageOrder(annotation.getTarget().getId());
+            if (pageOrder == null) {
+                // Map all non-page-specific annotations to page 1 for now
+                pageOrder = 1;
+            }
+            doc.setField(SolrConstants.ORDER, pageOrder);
+
+            // Look up owner page doc
+            SolrInputDocument pageDoc = pageDocs.get(pageOrder);
+            if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
+                doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
+            }
+
+            if (StringUtils.isNotEmpty(anchorPi)) {
+                doc.addField(SolrConstants.PI_ANCHOR, anchorPi);
+            }
+            // Add GROUPID_* fields
+            if (groupIds != null && !groupIds.isEmpty()) {
+                for (String fieldName : groupIds.keySet()) {
+                    doc.addField(fieldName, groupIds.get(fieldName));
+                }
+            }
+
+            // Value
+            if (annotation.getBody() instanceof TextualResource) {
+                doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                doc.addField("MD_TEXT", ((TextualResource) annotation.getBody()).getText());
+            } else if (annotation.getBody() instanceof GeoLocation) {
+                doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                // Add searchable coordinates
+                GeoLocation geoLocation = (GeoLocation) annotation.getBody();
+                if (geoLocation.getGeometry() != null) {
+                    double[] coords = geoLocation.getGeometry().getCoordinates();
+                    if (coords.length == 2) {
+                        doc.addField("MD_COORDS", coords[0] + " " + coords[1]);
+                    }
+                }
+                // Add annotation body as JSON
+                doc.addField("MD_BODY", annotation.getBody().toString());
+            } else {
+                logger.warn("Cannot interpret annotation body of type " + annotation.getBody().getClass());
+            }
+
+            if (annotation.getTarget() instanceof SpecificResource) {
+                // Coords
+                ISelector selector = ((SpecificResource) annotation.getTarget()).getSelector();
+                if (selector instanceof FragmentSelector) {
+                    String coords = ((FragmentSelector) selector).getValue();
+                    doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
+                    doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                }
+            }
+
+            sbTerms.append(doc.getFieldValue(SolrConstants.UGCTYPE)).append(" ");
+            sbTerms.append(doc.getFieldValue("MD_TEXT")).append(" ");
+
+            if (StringUtils.isNotBlank(sbTerms.toString())) {
+                doc.setField(SolrConstants.UGCTERMS, sbTerms.toString().trim());
+            }
+
+            return doc;
+        } catch (FileNotFoundException e) {
+            logger.error(e.getMessage());
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
     }
 
     /**

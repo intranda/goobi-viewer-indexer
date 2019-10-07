@@ -1,0 +1,36 @@
+{
+	"id": "http://localhost:8080/viewer/rest/annotations/3",
+	"type": "Annotation",
+	"body": {
+        "type": "Feature",
+        "format": "application/json",
+        "geometry": {
+            "coordinates": [
+                9.967025,
+                51.521737
+            ],
+            "type": "Point"
+        },
+        "properties": {
+            "name": ""
+        },
+        "view": {
+            "center": [
+                51.52173733867289,
+                9.9670246289617
+            ],
+            "zoom": 18.0
+        }
+    },
+	"target": "https://viewer.goobi.io/rest/iiif/manifests/PPN517154005/manifest/",
+	"creator": {
+		"id": "http://localhost:8080/viewer/rest/users/45",
+		"type": "Person",
+		"name": "Andrey (admin)"
+	},
+	"generator": {
+		"id": "http://localhost:8080/viewer/rest/crowdsourcing/campaigns/1/questions/2",
+		"type": "Software",
+		"name": "Campaign 1"
+	}
+}
