@@ -42,7 +42,7 @@
 		<junit.version>4.12</junit.version>
 		<lucene.version>4.10.4</lucene.version>
 		<metadata-extractor.version>2.8.1</metadata-extractor.version>
-		<solr.version>4.10.4</solr.version>
+		<solr.version>8.2.0</solr.version>
 		<slf4j.version>1.7.26</slf4j.version>
 		<tomcat.version>8.5.40</tomcat.version>
 		<xstream.version>1.4.11.1</xstream.version>
