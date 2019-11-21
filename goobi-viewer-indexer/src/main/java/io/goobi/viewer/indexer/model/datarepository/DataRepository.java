@@ -357,6 +357,9 @@ public class DataRepository {
      * @should move data folder correctly
      */
     public void moveDataFolderToRepository(DataRepository toRepository, String pi, String type) {
+        if (getDir(type) == null) {
+            return;
+        }
         Path oldDataFolder = Paths.get(getDir(type).toAbsolutePath().toString(), pi);
         if (oldDataFolder.toFile().isDirectory()) {
             Path newDataDir = Paths.get(toRepository.getDir(type).toAbsolutePath().toString(), pi);
