@@ -640,10 +640,10 @@ public abstract class Indexer {
      * @param ret
      * @param path
      * @param iddoc
-     * @return 
+     * @return
      */
-    public SolrInputDocument readAnnotation( Path path, long iddoc, String pi, String anchorPi, 
-            Map<Integer, SolrInputDocument> pageDocs,  Map<String, String> groupIds) {
+    public SolrInputDocument readAnnotation(Path path, long iddoc, String pi, String anchorPi, Map<Integer, SolrInputDocument> pageDocs,
+            Map<String, String> groupIds) {
         try (FileInputStream fis = new FileInputStream(path.toFile())) {
             String json = TextHelper.readFileToString(path.toFile(), TextHelper.DEFAULT_ENCODING);
             WebAnnotation annotation = new ObjectMapper().readValue(json, WebAnnotation.class);
@@ -975,15 +975,16 @@ public abstract class Indexer {
 
         if (dataFolders.get(paramName) == null) {
             // Use the old data folder
-            dataFolders.put(paramName, Paths.get(dataRepository.getDir(paramName).toAbsolutePath().toString(), pi));
+            DataRepository useDataRepository = previousDataRepository != null ? previousDataRepository : dataRepository;
+            dataFolders.put(paramName, Paths.get(useDataRepository.getDir(paramName).toAbsolutePath().toString(), pi));
             if (!Files.isDirectory(dataFolders.get(paramName))) {
                 dataFolders.put(paramName, null);
 
                 // Create ALTO dir for converted ABBYY or TEI files
-                if (DataRepository.PARAM_ALTO.equals(paramName) && dataRepository.getDir(DataRepository.PARAM_ALTO) != null
+                if (DataRepository.PARAM_ALTO.equals(paramName) && useDataRepository.getDir(DataRepository.PARAM_ALTO) != null
                         && (dataFolders.get(DataRepository.PARAM_ABBYY) != null || dataFolders.get(DataRepository.PARAM_TEIWC) != null)) {
                     dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
-                            Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
+                            Paths.get(useDataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
                     Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
                 }
             } else {
