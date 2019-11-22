@@ -353,6 +353,7 @@ public class DataRepository {
                 }
             }
         }
+        logger.info("Moving data completed.");
     }
 
     /**
