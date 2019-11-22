@@ -318,33 +318,39 @@ public class DataRepository {
         moveDataFolderToRepository(toRepository, pi, PARAM_ANNOTATIONS);
 
         // METS
-        Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_METS).toAbsolutePath().toString(), pi + ".xml");
-        if (Files.isRegularFile(oldRecordFile)) {
-            try {
-                Files.delete(oldRecordFile);
-                logger.info("Deleted old repository METS file: {}", oldRecordFile.toAbsolutePath());
-            } catch (IOException e) {
-                logger.error("Could not delete old repository METS file: {}", oldRecordFile.toAbsolutePath());
+        if (getDir(PARAM_INDEXED_METS) != null) {
+            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_METS).toAbsolutePath().toString(), pi + ".xml");
+            if (Files.isRegularFile(oldRecordFile)) {
+                try {
+                    Files.delete(oldRecordFile);
+                    logger.info("Deleted old repository METS file: {}", oldRecordFile.toAbsolutePath());
+                } catch (IOException e) {
+                    logger.error("Could not delete old repository METS file: {}", oldRecordFile.toAbsolutePath());
+                }
             }
         }
         // LIDO
-        oldRecordFile = Paths.get(getDir(PARAM_INDEXED_LIDO).toAbsolutePath().toString(), pi + ".xml");
-        if (Files.isRegularFile(oldRecordFile)) {
-            try {
-                Files.delete(oldRecordFile);
-                logger.info("Deleted old repository LIDO file: {}", oldRecordFile.toAbsolutePath());
-            } catch (IOException e) {
-                logger.error("Could not delete old repository LIDO file: {}", oldRecordFile.toAbsolutePath());
+        if (getDir(PARAM_INDEXED_LIDO) != null) {
+            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_LIDO).toAbsolutePath().toString(), pi + ".xml");
+            if (Files.isRegularFile(oldRecordFile)) {
+                try {
+                    Files.delete(oldRecordFile);
+                    logger.info("Deleted old repository LIDO file: {}", oldRecordFile.toAbsolutePath());
+                } catch (IOException e) {
+                    logger.error("Could not delete old repository LIDO file: {}", oldRecordFile.toAbsolutePath());
+                }
             }
         }
         // DENKXWEB
-        oldRecordFile = Paths.get(getDir(PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), pi + ".xml");
-        if (Files.isRegularFile(oldRecordFile)) {
-            try {
-                Files.delete(oldRecordFile);
-                logger.info("Deleted old repository DenkXweb file: {}", oldRecordFile.toAbsolutePath());
-            } catch (IOException e) {
-                logger.error("Could not delete old repository DenkXweb file: {}", oldRecordFile.toAbsolutePath());
+        if (getDir(PARAM_INDEXED_DENKXWEB) != null) {
+            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), pi + ".xml");
+            if (Files.isRegularFile(oldRecordFile)) {
+                try {
+                    Files.delete(oldRecordFile);
+                    logger.info("Deleted old repository DenkXweb file: {}", oldRecordFile.toAbsolutePath());
+                } catch (IOException e) {
+                    logger.error("Could not delete old repository DenkXweb file: {}", oldRecordFile.toAbsolutePath());
+                }
             }
         }
     }
@@ -360,6 +366,7 @@ public class DataRepository {
         if (getDir(type) == null) {
             return;
         }
+        
         Path oldDataFolder = Paths.get(getDir(type).toAbsolutePath().toString(), pi);
         if (oldDataFolder.toFile().isDirectory()) {
             Path newDataDir = Paths.get(toRepository.getDir(type).toAbsolutePath().toString(), pi);
