@@ -96,6 +96,7 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_UGC).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MIX).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_CMS).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ANNOTATIONS).toFile().isDirectory());
     }
 
     /**
@@ -120,6 +121,7 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_UGC).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MIX).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_CMS).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ANNOTATIONS).toFile().isDirectory());
     }
 
     /**
@@ -131,6 +133,54 @@ public class DataRepositoryTest extends AbstractTest {
         DataRepository dataRepository = new DataRepository("", false);
         Assert.assertEquals("", dataRepository.getPath());
         Assert.assertEquals(Paths.get(Configuration.getInstance().getViewerHome()), dataRepository.getRootDir());
+    }
+
+    /**
+     * @see DataRepository#DataRepository(String,boolean)
+     * @verifies add each data directory to the dirMap of dummy repository
+     */
+    @Test
+    public void DataRepository_shouldAddEachDataDirectoryToTheDirMapOfDummyRepository() throws Exception {
+        DataRepository dataRepository = new DataRepository("", false);
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MEDIA));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ALTO));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_FULLTEXT));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ABBYY));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_PAGEPDF));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_SOURCE));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_UGC));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MIX));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_CMS));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ANNOTATIONS));
+    }
+
+    /**
+     * @see DataRepository#DataRepository(String,boolean)
+     * @verifies add each data directory to the dirMap of real repository
+     */
+    @Test
+    public void DataRepository_shouldAddEachDataDirectoryToTheDirMapOfRealRepository() throws Exception {
+        DataRepository dataRepository = new DataRepository("1", false);
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MEDIA));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ALTO));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_FULLTEXT));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ABBYY));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_PAGEPDF));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_SOURCE));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_UGC));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MIX));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_CMS));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ANNOTATIONS));
     }
 
     /**

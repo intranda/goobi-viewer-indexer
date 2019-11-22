@@ -85,6 +85,8 @@ public class DataRepository {
      * @should create dummy repository correctly
      * @should create real repository correctly
      * @should set rootDir to viewerHome path if empty string was given
+     * @should add each data directory to the dirMap of dummy repository
+     * @should add each data directory to the dirMap of real repository
      */
     public DataRepository(final String path, final boolean createFolders) throws FatalIndexerException {
         this.path = path;
@@ -105,26 +107,26 @@ public class DataRepository {
                 return;
             }
         }
-        if (createFolders) {
-            checkAndCreateDataSubdir(PARAM_INDEXED_METS);
-            checkAndCreateDataSubdir(PARAM_INDEXED_LIDO);
-            checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB);
-            checkAndCreateDataSubdir(PARAM_MEDIA);
-            checkAndCreateDataSubdir(PARAM_ALTO);
-            checkAndCreateDataSubdir(PARAM_ALTOCROWD);
-            checkAndCreateDataSubdir(PARAM_FULLTEXT);
-            checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD);
-            checkAndCreateDataSubdir(PARAM_CMDI);
-            checkAndCreateDataSubdir(PARAM_TEIMETADATA);
-            checkAndCreateDataSubdir(PARAM_TEIWC);
-            checkAndCreateDataSubdir(PARAM_ABBYY);
-            checkAndCreateDataSubdir(PARAM_PAGEPDF);
-            checkAndCreateDataSubdir(PARAM_SOURCE);
-            checkAndCreateDataSubdir(PARAM_UGC);
-            checkAndCreateDataSubdir(PARAM_MIX);
-            checkAndCreateDataSubdir(PARAM_CMS);
-            checkAndCreateDataSubdir(PARAM_ANNOTATIONS);
-        }
+        
+        checkAndCreateDataSubdir(PARAM_INDEXED_METS, createFolders);
+        checkAndCreateDataSubdir(PARAM_INDEXED_LIDO, createFolders);
+        checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB, createFolders);
+        checkAndCreateDataSubdir(PARAM_MEDIA, createFolders);
+        checkAndCreateDataSubdir(PARAM_ALTO, createFolders);
+        checkAndCreateDataSubdir(PARAM_ALTOCROWD, createFolders);
+        checkAndCreateDataSubdir(PARAM_FULLTEXT, createFolders);
+        checkAndCreateDataSubdir(PARAM_FULLTEXTCROWD, createFolders);
+        checkAndCreateDataSubdir(PARAM_CMDI, createFolders);
+        checkAndCreateDataSubdir(PARAM_TEIMETADATA, createFolders);
+        checkAndCreateDataSubdir(PARAM_TEIWC, createFolders);
+        checkAndCreateDataSubdir(PARAM_ABBYY, createFolders);
+        checkAndCreateDataSubdir(PARAM_PAGEPDF, createFolders);
+        checkAndCreateDataSubdir(PARAM_SOURCE, createFolders);
+        checkAndCreateDataSubdir(PARAM_UGC, createFolders);
+        checkAndCreateDataSubdir(PARAM_MIX, createFolders);
+        checkAndCreateDataSubdir(PARAM_CMS, createFolders);
+        checkAndCreateDataSubdir(PARAM_ANNOTATIONS, createFolders);
+       
         if (Files.exists(rootDir)) {
             valid = true;
         }
@@ -163,28 +165,28 @@ public class DataRepository {
 
     /**
      * 
-     * @param name
+     * @param dataDirName
+     * @param create
      * @throws FatalIndexerException
      */
-    private void checkAndCreateDataSubdir(String name) throws FatalIndexerException {
-        if (name == null) {
+    private void checkAndCreateDataSubdir(String dataDirName, boolean create) throws FatalIndexerException {
+        if (dataDirName == null) {
             throw new IllegalArgumentException("name may not be null");
         }
-        String config = Configuration.getInstance().getConfiguration(name);
+        String config = Configuration.getInstance().getConfiguration(dataDirName);
         if (StringUtils.isEmpty(config)) {
-            switch (name) {
+            switch (dataDirName) {
                 case PARAM_INDEXED_METS:
                 case PARAM_INDEXED_LIDO:
                 case PARAM_INDEXED_DENKXWEB:
                     return;
                 default:
-                    throw new FatalIndexerException("No configuration found for '" + name + "', exiting...");
+                    throw new FatalIndexerException("No configuration found for '" + dataDirName + "', exiting...");
             }
 
         }
-        //        File dataSubdir = new File(rootDir, config);
         Path dataSubdir = Paths.get(rootDir.toAbsolutePath().toString(), config);
-        if (!Files.isDirectory(dataSubdir)) {
+        if (!Files.isDirectory(dataSubdir) && create) {
             try {
                 Files.createDirectory(dataSubdir);
                 logger.info("Created directory: {}", dataSubdir.toAbsolutePath());
@@ -193,7 +195,7 @@ public class DataRepository {
                 throw new FatalIndexerException("Data directories could not be created, please check directory ownership.");
             }
         }
-        dirMap.put(name, dataSubdir);
+        dirMap.put(dataDirName, dataSubdir);
     }
 
     /**
@@ -365,9 +367,10 @@ public class DataRepository {
      */
     public void moveDataFolderToRepository(DataRepository toRepository, String pi, String type) {
         if (getDir(type) == null) {
+            logger.warn("Data folder not configured in repository '{}': {}", path, type);
             return;
         }
-        
+
         Path oldDataFolder = Paths.get(getDir(type).toAbsolutePath().toString(), pi);
         if (oldDataFolder.toFile().isDirectory()) {
             Path newDataDir = Paths.get(toRepository.getDir(type).toAbsolutePath().toString(), pi);

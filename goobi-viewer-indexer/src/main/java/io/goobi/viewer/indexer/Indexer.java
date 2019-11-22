@@ -973,29 +973,35 @@ public abstract class Indexer {
             throw new IllegalArgumentException("pi may not be null");
         }
 
-        if (dataFolders.get(paramName) == null) {
-            // Use the old data folder (old repository, if present, otherwise new)
-            DataRepository useDataRepository = previousDataRepository != null ? previousDataRepository : dataRepository;
-            // If there is an inconsistency in data folder distribution due to previous errors, look in both repositories
-            if (useDataRepository.getDir(paramName) == null && useDataRepository.equals(previousDataRepository)) {
-                useDataRepository = dataRepository;
-            }
-            if (useDataRepository.getDir(paramName) != null) {
-                dataFolders.put(paramName, Paths.get(useDataRepository.getDir(paramName).toAbsolutePath().toString(), pi));
-                if (!Files.isDirectory(dataFolders.get(paramName))) {
-                    dataFolders.put(paramName, null);
+        // New data folder found in hotfolder
+        if (dataFolders.get(paramName) != null) {
+            return;
+        }
 
-                    // Create ALTO dir for converted ABBYY or TEI files
-                    if (DataRepository.PARAM_ALTO.equals(paramName) && useDataRepository.getDir(DataRepository.PARAM_ALTO) != null
-                            && (dataFolders.get(DataRepository.PARAM_ABBYY) != null || dataFolders.get(DataRepository.PARAM_TEIWC) != null)) {
-                        dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
-                                Paths.get(useDataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
-                        Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
-                    }
-                } else {
-                    logger.info("Using old '{}' content folder '{}'.", paramName, dataFolders.get(paramName).toAbsolutePath());
-                }
+        // Use the old data folder (old repository, if present, otherwise new)
+        DataRepository useDataRepository = previousDataRepository != null ? previousDataRepository : dataRepository;
+        // If there is an inconsistency in data folder distribution due to previous errors, look in both repositories
+        if (useDataRepository.getDir(paramName) == null && useDataRepository.equals(previousDataRepository)) {
+            useDataRepository = dataRepository;
+        }
+        // No old data folder found
+        if (useDataRepository.getDir(paramName) == null) {
+            return;
+        }
+
+        dataFolders.put(paramName, Paths.get(useDataRepository.getDir(paramName).toAbsolutePath().toString(), pi));
+        if (!Files.isDirectory(dataFolders.get(paramName))) {
+            dataFolders.put(paramName, null);
+
+            // Create ALTO dir for converted ABBYY or TEI files
+            if (DataRepository.PARAM_ALTO.equals(paramName) && useDataRepository.getDir(DataRepository.PARAM_ALTO) != null
+                    && (dataFolders.get(DataRepository.PARAM_ABBYY) != null || dataFolders.get(DataRepository.PARAM_TEIWC) != null)) {
+                dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
+                        Paths.get(useDataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
+                Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
             }
+        } else {
+            logger.info("Using old '{}' data folder '{}'.", paramName, dataFolders.get(paramName).toAbsolutePath());
         }
     }
 
