@@ -388,7 +388,7 @@ public class DataRepository {
                 logger.error(e.getMessage(), e);
             }
         } else {
-            logger.warn("{} does not exist.", oldDataFolder.toAbsolutePath().toString());
+            logger.debug("{} does not exist.", oldDataFolder.toAbsolutePath().toString());
         }
     }
 
