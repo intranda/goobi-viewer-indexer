@@ -17,7 +17,7 @@
 		<viewerHome>C:/digiverso/viewer/</viewerHome>
 		<dataRepositories>
 			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
-			<strategy>SingleRepositoryStrategy</strategy>
+			<strategy>MaxRecordNumberStrategy</strategy>
 
 			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 10000) -->
 			<maxRecords>10000</maxRecords>
@@ -66,6 +66,7 @@
 		<namespaces>
 			<list>
 			    <intranda>http://intranda.com/MODS/</intranda>
+			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
 
@@ -194,7 +195,7 @@
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
-							<item>//denkxweb:recid</item>
+							<item>//denkxweb:recId</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -2904,5 +2905,15 @@
 			</list>
 		</MD_HAAB_PROVENIENCE>
 
+        <MD_GML_POS>
+            <list>
+                <item>
+                    <xpath>denkxweb:geoReference/denkxweb:position/gml:Point/gml:pos</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_GML_POS>
+        
 	</fields>
 </root>

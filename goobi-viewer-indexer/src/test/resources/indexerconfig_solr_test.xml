@@ -81,6 +81,7 @@
 		<namespaces>
 			<list>
 			    <intranda>http://www.intranda.com/</intranda>
+			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
 		
@@ -227,7 +228,7 @@
 							</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID
 							</item>
-                            <item>//denkxweb:recid</item>
+                            <item>//denkxweb:recId</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -1999,6 +2000,7 @@
 				</item>
 			</list>
 		</MD_DV_OWNERCONTACT>
+		
 	</fields>
 
 </root>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <monuments xmlns="http://denkxweb.de/">
 	<monument type="Baudenkmal">
-		<recid>30596824</recid>
+		<recId>30596824</recId>
 		<partof>???</partof>
 		<country>DE</country>
 		<state>Niedersachsen</state>
@@ -42,7 +42,7 @@
 		<reccopyright>???</reccopyright>
 	</monument>
 	<monument type="Baudenkmal">
-		<recid>30598324</recid>
+		<recId>30598324</recId>
 		<partof>???</partof>
 		<country>DE</country>
 		<state>Niedersachsen</state>
