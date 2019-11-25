@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<monuments xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns="http://denkxweb.de/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rjm.de/denkxweb/denkxml https://services.interactive-instruments.de/adab-ni-xs/schema/adabweb/denkgml.xsd http://www.opengis.net/wfs/2.0 https://services.interactive-instruments.de/adab-ni-xs/schema/ogc/wfs/2.0/wfs.xsd http://www.opengis.net/gml/3.2 https://services.interactive-instruments.de/adab-ni-xs/schema/ogc/gml/3.2.1/gml.xsd">
+	<monument gml:id="monument.10973880" type="Flächendenkmal">
+		<gml:identifier codeSpace="https://denkmalpflege.niedersachsen.de/">monument.10973880</gml:identifier>
+		<recId>10973880</recId>
+		<country>DE</country>
+		<state>Niedersachsen</state>
+		<district>Helmstedt</district>
+		<municipality>Königslutter am Elm, Stadt</municipality>
+		<area>Kaiserdom</area>
+		<name> </name>
+		<recOrganization>NLD</recOrganization>
+		<recDate>2006-05-11</recDate>
+		<recLastChangeDate>2006-05-11</recLastChangeDate>
+		<recLastChangeDateTime>2006-05-11T07:38:56.468</recLastChangeDateTime>
+		<buildingType>Kirche</buildingType>
+		<authoritativeRepresentation url="https://denkmalpflege.niedersachsen.de/startseite/"/>
+		<geoReference srs="http://www.opengis.net/def/crs/EPSG/0/25832">
+			<position>
+				<gml:Point gml:id="V.vrt_fundstelle_geom.ix.10973880.georeference.Geom_0" srsName="http://www.opengis.net/def/crs/epsg/0/4326" srsDimension="2">
+					<gml:pos>52.244700683806 10.815859467701</gml:pos>
+				</gml:Point>
+			</position>
+		</geoReference>
+	</monument>
+</monuments>
