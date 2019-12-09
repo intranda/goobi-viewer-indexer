@@ -32,6 +32,7 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
@@ -43,6 +44,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
     private static Hotfolder hotfolder;
 
     private static final String PI = "30596824";
+    private static final String PI2 = "10973880";
 
     private File denkxwebFile;
 
@@ -68,7 +70,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document recordDoc : recordDocs) {
-            String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1);
+            String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
             Assert.assertNotEquals(ret[1], "ERROR", ret[0]);
         }
 
@@ -88,7 +90,45 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             }
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
             Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
+        }
+    }
 
+    /**
+     * @see DenkXwebIndexer#generatePageDocuments(ISolrWriteStrategy,Map,int,boolean)
+     * @verifies generate pages correctly
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void generatePageDocuments_shouldGeneratePagesCorrectly() throws Exception {
+        File denkxwebFile = new File("src/test/resources/DenkXweb/" + PI2 + ".xml");
+        Assert.assertTrue(denkxwebFile.isFile());
+        List<Document> recordDocs = JDomXP.splitDenkXwebFile(denkxwebFile);
+        Assert.assertEquals(1, recordDocs.size());
+
+        Map<String, Path> dataFolders = new HashMap<>();
+        for (Document recordDoc : recordDocs) {
+            String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
+            Assert.assertNotEquals(ret[1], "ERROR", ret[0]);
+        }
+
+        Map<String, Boolean> iddocMap = new HashMap<>();
+        String iddoc;
+
+        // Pages
+        {
+            SolrDocumentList pageDocList =
+                    hotfolder.getSolrHelper().search(" +" + SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " +" + SolrConstants.DOCTYPE + ":PAGE", null);
+            Assert.assertEquals(1, pageDocList.size());
+            SolrDocument doc = pageDocList.get(0);
+            {
+                Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
+                Assert.assertNotNull(values);
+                Assert.assertEquals(1, values.size());
+                Assert.assertEquals("OPENACCESS", values.iterator().next());
+            }
+            Assert.assertEquals("https://example.com/10973880_1.jpg", doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED"));
+            Assert.assertEquals("image", doc.getFieldValue(SolrConstants.MIMETYPE));
+            Assert.assertEquals("foo bar", SolrHelper.getSingleFieldStringValue(doc, "MD_DESCRIPTION"));
         }
     }
 }

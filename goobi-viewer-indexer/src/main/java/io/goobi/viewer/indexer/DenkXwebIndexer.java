@@ -18,14 +18,18 @@ package io.goobi.viewer.indexer;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -42,11 +46,13 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
@@ -81,11 +87,13 @@ public class DenkXwebIndexer extends Indexer {
      * @param dataFolders
      * @param writeStrategy
      * @param pageCountStart
+     * @param downloadExternalImages
      * @return
      * @should index record correctly
      * @should update record correctly
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart) {
+    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
+            boolean downloadExternalImages) {
         String[] ret = { "ERROR", null };
         String pi = null;
         try {
@@ -199,6 +207,9 @@ public class DenkXwebIndexer extends Indexer {
                     indexObj.addToLucene(SolrConstants.LABEL, MetadataHelper.applyValueDefaultModifications(field.getValue()));
                 }
             }
+
+            // Generate pages
+            generatePageDocuments(writeStrategy, dataFolders, pageCountStart, downloadExternalImages);
 
             // Set access conditions
             indexObj.writeAccessConditions(null);
@@ -323,6 +334,225 @@ public class DenkXwebIndexer extends Indexer {
             }
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
+    }
+
+    /**
+     * 
+     * @param writeStrategy
+     * @param dataFolders
+     * @param pageCountStart
+     * @param downloadExternalImages
+     * @throws FatalIndexerException
+     * @should generate pages correctly
+     */
+    public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart,
+            boolean downloadExternalImages) throws FatalIndexerException {
+        String xpath = "//denkxweb:images/denkxweb:image[@preferred='true']";
+        List<Element> eleImageList = xp.evaluateToElements(xpath, null);
+        if (eleImageList == null || eleImageList.isEmpty()) {
+            // No pages
+            return;
+        }
+
+        logger.info("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
+
+        // TODO lambda instead of loop (find a way to preserve order first)
+        //        eleImageList.parallelStream().forEach(
+        //                eleImage -> generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), null,
+        //                        writeStrategy, dataFolders, downloadExternalImages));
+        int order = pageCountStart;
+        for (Element eleImage : eleImageList) {
+            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), order, writeStrategy, dataFolders,
+                    downloadExternalImages)) {
+                order++;
+            }
+        }
+
+        logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
+    }
+
+    /**
+     * 
+     * @param eleImage
+     * @param iddoc
+     * @param order
+     * @param writeStrategy
+     * @param dataFolders
+     * @param downloadExternalImages
+     * @return
+     * @throws FatalIndexerException
+     */
+    boolean generatePageDocument(Element eleImage, String iddoc, Integer order, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders,
+            boolean downloadExternalImages) throws FatalIndexerException {
+        if (order == null) {
+            // TODO page order within the metadata
+        }
+
+        // Create Solr document for this page
+        SolrInputDocument doc = new SolrInputDocument();
+        doc.addField(SolrConstants.IDDOC, iddoc);
+        doc.addField(SolrConstants.GROUPFIELD, iddoc);
+        doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
+        doc.addField(SolrConstants.ORDER, order);
+        doc.addField(SolrConstants.PHYSID, String.valueOf(order));
+
+        Element eleStandard = eleImage.getChild("standard", Configuration.getInstance().getNamespaces().get("denkxweb"));
+        if (eleStandard == null) {
+            logger.warn("No element <standard> found for image {}", order);
+            return false;
+        }
+
+        String orderLabel = eleStandard.getAttributeValue("ORDERLABEL");
+        if (StringUtils.isNotEmpty(orderLabel)) {
+            doc.addField(SolrConstants.ORDERLABEL, orderLabel);
+        } else {
+            doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
+        }
+
+        // Description
+        {
+            String desc = eleImage.getChildText("description", Configuration.getInstance().getNamespaces().get("denkxweb"));
+            if (StringUtils.isNotEmpty(desc)) {
+                doc.addField("MD_DESCRIPTION", desc);
+            }
+        }
+        // Copyright
+        {
+            String copyright = eleStandard.getAttributeValue("right");
+            if (StringUtils.isNotEmpty(copyright)) {
+                doc.addField("MD_COPYRIGHT", copyright);
+            }
+        }
+
+        // URL
+        String url = eleStandard.getAttributeValue("url");
+        String fileName;
+        if (StringUtils.isNotEmpty(url) && url.contains("/")) {
+            if (url.endsWith("default.jpg")) {
+                // Extract correct original file name from IIIF
+                fileName = Utils.getFileNameFromIiifUrl(url);
+            } else {
+                fileName = url.substring(url.lastIndexOf("/") + 1);
+            }
+        } else {
+            fileName = url;
+        }
+        if (StringUtils.isNotEmpty(url)) {
+            // External image
+            if (url.startsWith("http")) {
+                // Download image, if so requested (and not a local resource)
+                String baseFileName = FilenameUtils.getBaseName(fileName);
+                String viewerUrl = Configuration.getInstance().getViewerUrl();
+                if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
+                // Download image and use locally
+                        && !url.startsWith(viewerUrl)) {
+                    try {
+                        File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
+                        FileUtils.copyURLToFile(new URL(url), file);
+                        if (file.isFile()) {
+                            logger.info("Downloaded {}", file);
+                            sbImgFileNames.append(';').append(fileName);
+                            doc.addField(SolrConstants.FILENAME, fileName);
+                        } else {
+                            logger.warn("Could not download file: {}", url);
+                        }
+                    } catch (IOException e) {
+                        logger.error(e.getMessage());
+                    }
+                } else {
+                    // Add external image URL
+                    doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", url);
+                }
+            } else {
+                // For non-remote file, add the file name to the list
+                sbImgFileNames.append(';').append(fileName);
+            }
+
+            // Add full path if this is a local file or download has failed or is disabled
+            if (!doc.containsKey(SolrConstants.FILENAME)) {
+                doc.addField(SolrConstants.FILENAME, fileName);
+            }
+
+            String mimetype = eleImage.getAttributeValue("type");
+            String subMimetype = "";
+            if (mimetype != null && mimetype.contains("/")) {
+                subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
+                mimetype = mimetype.substring(0, mimetype.indexOf("/"));
+            } else {
+                mimetype = "image";
+                if (doc.containsKey(SolrConstants.FILENAME)) {
+                    // Determine mime type from file content
+                    String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
+                    try {
+                        mimetype = Files.probeContentType(Paths.get(filename));
+                        if (StringUtils.isBlank(mimetype)) {
+                            mimetype = "image";
+                        } else if (mimetype.contains("/")) {
+                            subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
+                            mimetype = mimetype.substring(0, mimetype.indexOf("/"));
+                        }
+                    } catch (IOException e) {
+                        logger.warn("Cannot guess mime type from " + filename + ". using 'image'");
+                    }
+                }
+            }
+
+            if (StringUtils.isNotBlank(subMimetype)) {
+                switch (mimetype.toLowerCase()) {
+                    case "video":
+                    case "audio":
+                    case "html-sandboxed":
+                        doc.addField(SolrConstants.MIMETYPE, mimetype);
+                        doc.addField(SolrConstants.FILENAME + "_" + subMimetype.toUpperCase(), fileName);
+                        break;
+                    case "object":
+                        doc.addField(SolrConstants.MIMETYPE, subMimetype);
+                        break;
+                    default:
+                        doc.addField(SolrConstants.MIMETYPE, mimetype);
+                }
+            }
+        }
+
+        // Add file size
+        if (dataFolders != null) {
+            try {
+                Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
+                // TODO other mime types/folders
+                if (dataFolder != null) {
+                    Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
+                    if (Files.isRegularFile(path)) {
+                        doc.addField("MDNUM_FILESIZE", Files.size(path));
+                    }
+                }
+            } catch (IllegalArgumentException | IOException e) {
+                logger.warn(e.getMessage());
+            }
+            if (!doc.containsKey("MDNUM_FILESIZE")) {
+                doc.addField("MDNUM_FILESIZE", -1);
+            }
+        }
+
+        String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
+
+        // Add image dimension values from EXIF
+        if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
+            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
+                doc.addField(SolrConstants.WIDTH, dimension.width);
+                doc.addField(SolrConstants.HEIGHT, dimension.height);
+            });
+        }
+
+        // FULLTEXTAVAILABLE indicates whether this page has full-text
+        if (doc.getField(SolrConstants.FULLTEXT) != null) {
+            doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
+            recordHasFulltext = true;
+        } else {
+            doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
+        }
+
+        writeStrategy.addPageDoc(doc);
+        return true;
     }
 
     public static FilenameFilter txt = new FilenameFilter() {

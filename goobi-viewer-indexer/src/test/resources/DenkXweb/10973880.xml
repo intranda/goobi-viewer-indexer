@@ -22,5 +22,11 @@
 				</gml:Point>
 			</position>
 		</geoReference>
+		<images>
+		    <image preferred="true">
+		        <standard url="https://example.com/10973880_1.jpg" type="image/jpeg" />
+		        <description>foo bar</description>
+		    </image>
+		</images>
 	</monument>
 </monuments>

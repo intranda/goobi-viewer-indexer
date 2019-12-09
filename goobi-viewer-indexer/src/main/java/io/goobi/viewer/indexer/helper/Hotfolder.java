@@ -1013,9 +1013,6 @@ public class Hotfolder {
                     previousDataRepository = currentIndexer.getPreviousDataRepository();
                     currentIndexer = null;
                 }
-                //                resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
-                //                        Configuration.getInstance().getList("init.lido.imageXPath"),
-                //                        dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
                 if (!"ERROR".equals(resp[0])) {
                     // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
                     String identifier = resp[0];
@@ -1185,6 +1182,9 @@ public class Hotfolder {
                     case "_media":
                         dataFolders.put(DataRepository.PARAM_MEDIA, path);
                         break;
+                    case "_downloadimages":
+                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
+                        break;
                     default:
                         // nothing;
                 }
@@ -1216,7 +1216,8 @@ public class Hotfolder {
                 DataRepository previousDataRepository;
                 try {
                     currentIndexer = new DenkXwebIndexer(this);
-                    resp = ((DenkXwebIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart());
+                    resp = ((DenkXwebIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
+                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
                 } finally {
                     dataRepository = currentIndexer.getDataRepository();
                     previousDataRepository = currentIndexer.getPreviousDataRepository();
