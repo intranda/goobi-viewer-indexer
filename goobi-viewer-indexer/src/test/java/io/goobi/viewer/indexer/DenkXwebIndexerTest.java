@@ -111,14 +111,25 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotEquals(ret[1], "ERROR", ret[0]);
         }
 
-        Map<String, Boolean> iddocMap = new HashMap<>();
-        String iddoc;
+        // Top document
+        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + PI2, null);
+        Assert.assertEquals(1, docList.size());
+        SolrDocument topDoc = docList.get(0);
+        {
+            Collection<Object> values = (Collection<Object>) topDoc.getFieldValue(SolrConstants.ACCESSCONDITION);
+            Assert.assertNotNull(values);
+            Assert.assertEquals(1, values.size());
+            Assert.assertEquals("OPENACCESS", values.iterator().next());
+        }
+        Assert.assertNotNull(topDoc.getFieldValue(SolrConstants.DATECREATED));
+        Assert.assertNotNull(topDoc.getFieldValues(SolrConstants.DATEUPDATED));
+        Assert.assertEquals("https://example.com/10973880_2.jpg", topDoc.getFieldValue(SolrConstants.THUMBNAIL));
 
         // Pages
         {
             SolrDocumentList pageDocList =
                     hotfolder.getSolrHelper().search(" +" + SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " +" + SolrConstants.DOCTYPE + ":PAGE", null);
-            Assert.assertEquals(1, pageDocList.size());
+            Assert.assertEquals(2, pageDocList.size());
             SolrDocument doc = pageDocList.get(0);
             {
                 Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
@@ -129,6 +140,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("https://example.com/10973880_1.jpg", doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED"));
             Assert.assertEquals("image", doc.getFieldValue(SolrConstants.MIMETYPE));
             Assert.assertEquals("foo bar", SolrHelper.getSingleFieldStringValue(doc, "MD_DESCRIPTION"));
+            Assert.assertEquals(topDoc.getFieldValue(SolrConstants.IDDOC), doc.getFieldValue(SolrConstants.IDDOC_OWNER));
         }
     }
 }

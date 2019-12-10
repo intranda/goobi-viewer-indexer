@@ -23,10 +23,14 @@
 			</position>
 		</geoReference>
 		<images>
-		    <image preferred="true">
+		    <image preferred="false">
 		        <standard url="https://example.com/10973880_1.jpg" type="image/jpeg" />
 		        <description>foo bar</description>
 		    </image>
+            <image preferred="true">
+                <standard url="https://example.com/10973880_2.jpg" type="image/jpeg" />
+                <description>main image</description>
+            </image>
 		</images>
 	</monument>
 </monuments>
