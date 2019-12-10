@@ -428,14 +428,4 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             }
         }
     }
-
-    /**
-     * @see LidoIndexer#generatePageDocuments(ISolrWriteStrategy,Map,int,List,boolean)
-     * @verifies generate pages correctly
-     */
-    @Test
-    public void generatePageDocuments_shouldGeneratePagesCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
-    }
 }
