@@ -1,4 +1,5 @@
 # Goobi viewer - Indexer
+[![](https://github.com/intranda/goobi-viewer-indexer/workflows/.github/workflows/default.yml/badge.svg)
 > Indexing application as part of the highly flexible digital library framework - made by the Goobi developer team
 
 
