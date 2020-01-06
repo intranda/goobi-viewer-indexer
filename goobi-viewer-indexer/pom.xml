@@ -43,28 +43,30 @@
 		<normdataimporter.version>1.2.7-SNAPSHOT</normdataimporter.version>
 
 		<!-- other libraries -->
-		<commons-codec.version>1.9</commons-codec.version>
+		<commons-codec.version>1.14</commons-codec.version>
 		<commons-collections.version>3.2.2</commons-collections.version>
 		<commons-configuration.version>1.10</commons-configuration.version>
 		<commons-io.version>2.6</commons-io.version>
 		<commons-jxpath.version>1.3</commons-jxpath.version>
 		<commons-lang.version>2.6</commons-lang.version>
 		<commons-logging.version>1.2</commons-logging.version>
-		<httpclient.version>4.5.1</httpclient.version>
-		<httpcore.version>4.4.3</httpcore.version>
-		<httpmime.version>4.5.1</httpmime.version>
-		<icu.version>64.2</icu.version>
-		<log4j.version>2.11.2</log4j.version>
+		<httpclient.version>4.5.10</httpclient.version>
+		<httpcore.version>4.4.12</httpcore.version>
+		<httpmime.version>4.5.10</httpmime.version>
+		<icu.version>65.1</icu.version>
+		<imageio-openjpeg.version>0.4.3</imageio-openjpeg.version>
+		<log4j.version>2.13.0</log4j.version>
+		<jai.version>1.4.0</jai.version>
 		<javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6</jdom2.version>
-		<jsoup.version>1.11.3</jsoup.version>
-		<joda-time.version>2.10.1</joda-time.version>
-		<junit.version>4.12</junit.version>
+		<jsoup.version>1.12.1</jsoup.version>
+		<joda-time.version>2.10.5</joda-time.version>
+		<junit.version>4.13</junit.version>
 		<lucene.version>4.10.4</lucene.version>
-		<metadata-extractor.version>2.8.1</metadata-extractor.version>
+		<metadata-extractor.version>2.12.0</metadata-extractor.version>
 		<solr.version>4.10.4</solr.version>
-		<slf4j.version>1.7.26</slf4j.version>
-		<tomcat.version>8.5.40</tomcat.version>
+		<slf4j.version>1.7.30</slf4j.version>
+		<tomcat.version>9.0.30</tomcat.version>
 		<xstream.version>1.4.11.1</xstream.version>
 	</properties>
 
@@ -382,12 +384,12 @@
 		<dependency>
 			<groupId>com.github.jai-imageio</groupId>
 			<artifactId>jai-imageio-core</artifactId>
-			<version>1.3.0</version>
+			<version>${jai.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.digitalcollections.imageio</groupId>
 			<artifactId>imageio-openjpeg</artifactId>
-			<version>0.3.0</version>
+			<version>${imageio-openjpeg.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -409,6 +411,7 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<compilerArgument>-Xlint:deprecation</compilerArgument>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -442,6 +445,21 @@
 					</execution>
 				</executions>
 			</plugin>
+                        <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-javadoc-plugin</artifactId>
+                                <version>3.1.1</version>
+                                <configuration>
+                                        <doclint>none</doclint>
+                                        <fixTags>link,throws,return,param</fixTags>
+                                        <tags>
+                                                <tag>
+                                                        <name>should</name>
+                                                        <placement>X</placement>
+                                                </tag>
+                                        </tags>
+                                </configuration>
+                        </plugin>
 		</plugins>
 	</build>
 </project>
