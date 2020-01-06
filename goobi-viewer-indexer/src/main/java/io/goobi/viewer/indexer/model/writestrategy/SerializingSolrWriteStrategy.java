@@ -49,6 +49,10 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
+/**
+ * <p>SerializingSolrWriteStrategy class.</p>
+ *
+ */
 public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(SerializingSolrWriteStrategy.class);
@@ -66,6 +70,12 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     private AtomicInteger pageDocsCounter = new AtomicInteger();
     private AtomicInteger tempFileCounter = new AtomicInteger();
 
+    /**
+     * <p>Constructor for SerializingSolrWriteStrategy.</p>
+     *
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param tempFolder a {@link java.nio.file.Path} object.
+     */
     public SerializingSolrWriteStrategy(SolrHelper solrHelper, Path tempFolder) {
         this.solrHelper = solrHelper;
         this.tempFolder = tempFolder;
@@ -74,6 +84,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#setRootDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void setRootDoc(SolrInputDocument doc) {
         rootDocIddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
@@ -86,6 +97,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void addDoc(SolrInputDocument doc) {
         addDocs(Collections.singletonList(doc));
@@ -95,6 +107,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDocs(java.util.List)
      */
+    /** {@inheritDoc} */
     @Override
     public void addDocs(List<SolrInputDocument> docs) {
         for (SolrInputDocument doc : docs) {
@@ -110,6 +123,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addPageDoc(java.util.List)
      */
+    /** {@inheritDoc} */
     @Override
     public void addPageDoc(SolrInputDocument doc) {
         String iddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
@@ -141,6 +155,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#updateDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void updateDoc(SolrInputDocument doc) {
         String iddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
@@ -152,16 +167,16 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#getPageDocsSize()
      */
+    /** {@inheritDoc} */
     @Override
     public int getPageDocsSize() {
         return pageDocsCounter.get();
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns the SolrInputDocument for the given order. Fields that are serialized separately (FULLTEXT, ALTO) are not returned!
-     * 
-     * @throws FatalIndexerException
-     * 
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocForOrder(int)
      */
     @Override
@@ -178,10 +193,9 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns all SolrInputDocuments mapped to the given list of PHYSIDs. Fields that are serialized separately (FULLTEXT, ALTO) are not returned!
-     * 
-     * @throws FatalIndexerException
-     * 
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocsForPhysIdList(java.util.List)
      * @should return all docs for the given physIdList
      */
@@ -201,15 +215,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         return ret;
     }
 
-    /**
-     * @param aggregateRecords
-     * @throws IndexerException
-     * @throws FatalIndexerException
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#writeDocs()
-     * @should write all structure docs correctly
-     * @should write all page docs correctly
-     * @should make sure page order starts at 1
-     */
+    /** {@inheritDoc} */
     @Override
     public void writeDocs(final boolean aggregateRecords) throws IndexerException, FatalIndexerException {
         final SolrInputDocument rootDoc = load(rootDocIddoc);
@@ -336,6 +342,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#cleanup()
      */
+    /** {@inheritDoc} */
     @Override
     public void cleanup() {
         List<String> allIddocs = new ArrayList<>(docIddocs.size() + pageDocPhysIdIddocMap.size());

@@ -62,6 +62,10 @@ import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
+/**
+ * <p>MetadataHelper class.</p>
+ *
+ */
 public class MetadataHelper {
 
     /** Logger for this class. */
@@ -72,6 +76,7 @@ public class MetadataHelper {
 
     private static String multiValueSeparator = DEFAULT_MULTIVALUE_SEPARATOR;
 
+    /** Constant <code>FORMAT_TWO_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
 
         @Override
@@ -79,6 +84,7 @@ public class MetadataHelper {
             return new DecimalFormat("00");
         }
     };
+    /** Constant <code>FORMAT_FOUR_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_FOUR_DIGITS = new ThreadLocal<DecimalFormat>() {
 
         @Override
@@ -86,6 +92,7 @@ public class MetadataHelper {
             return new DecimalFormat("0000");
         }
     };
+    /** Constant <code>FORMAT_EIGHT_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_EIGHT_DIGITS = new ThreadLocal<DecimalFormat>() {
 
         @Override
@@ -94,26 +101,37 @@ public class MetadataHelper {
         }
     };
 
+    /** Constant <code>formatterISO8601Full</code> */
     public static DateTimeFormatter formatterISO8601Full = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
+    /** Constant <code>formatterISO8601Date</code> */
     public static DateTimeFormatter formatterISO8601Date = ISODateTimeFormat.date(); // yyyy-MM-dd
+    /** Constant <code>formatterISO8601YearMonth</code> */
     public static DateTimeFormatter formatterISO8601YearMonth = DateTimeFormat.forPattern("yyyy-MM");
+    /** Constant <code>formatterDEDate</code> */
     public static DateTimeFormatter formatterDEDate = DateTimeFormat.forPattern("dd.MM.yyyy");
+    /** Constant <code>formatterUSDate</code> */
     public static DateTimeFormatter formatterUSDate = DateTimeFormat.forPattern("MM/dd/yyyy");
+    /** Constant <code>formatterCNDate</code> */
     public static DateTimeFormatter formatterCNDate = DateTimeFormat.forPattern("yyyy.MM.dd");
+    /** Constant <code>formatterJPDate</code> */
     public static DateTimeFormatter formatterJPDate = DateTimeFormat.forPattern("yyyy/MM/dd");;
+    /** Constant <code>formatterBasicDateTime</code> */
     public static DateTimeFormatter formatterBasicDateTime = DateTimeFormat.forPattern("yyyyMMddHHmmss");
+    /** Constant <code>formatterISO8601DateTimeFullWithTimeZone</code> */
     public static DateTimeFormatter formatterISO8601DateTimeFullWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
+    /** Constant <code>addNormDataFieldsToDefault</code> */
     public static List<String> addNormDataFieldsToDefault;
 
     /**
      * Retrieves configured metadata fields from the given XML node. Written for LIDO events, but should theoretically work for any METS or LIDO node.
-     * 
-     * @param element
-     * @param queryPrefix
+     *
+     * @param element a {@link org.jdom2.Element} object.
+     * @param queryPrefix a {@link java.lang.String} object.
      * @param indexObj The IndexObject is needed to alter its DEFAULT field value.
-     * @return
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
+     * @return a {@link java.util.List} object.
      */
     @SuppressWarnings("rawtypes")
     public static List<LuceneField> retrieveElementMetadata(Element element, String queryPrefix, IndexObject indexObj, JDomXP xp)
@@ -543,11 +561,12 @@ public class MetadataHelper {
 
     /**
      * Finds and writes metadata to the given IndexObject without considering any child elements.
-     * 
+     *
      * @param indexObj The IndexObject into which the metadata shall be written.
      * @param element The JDOM Element relative to which to search.
-     * @param queryPrefix
-     * @throws FatalIndexerException
+     * @param queryPrefix a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      */
     public static void writeMetadataToObject(IndexObject indexObj, Element element, String queryPrefix, JDomXP xp) throws FatalIndexerException {
         List<LuceneField> fields = retrieveElementMetadata(element, queryPrefix, indexObj, xp);
@@ -631,13 +650,14 @@ public class MetadataHelper {
     }
 
     /**
-     * 
-     * @param value
-     * @param replaceRules
-     * @return
+     * <p>applyReplaceRules.</p>
+     *
+     * @param value a {@link java.lang.String} object.
+     * @param replaceRules a {@link java.util.Map} object.
      * @should apply rules correctly
      * @should throw IllegalArgumentException if value is null
      * @should throw IllegalArgumentException if replaceRules is null
+     * @return a {@link java.lang.String} object.
      */
     public static String applyReplaceRules(String value, Map<Object, String> replaceRules) {
         if (value == null) {
@@ -668,9 +688,10 @@ public class MetadataHelper {
     }
 
     /**
-     * 
-     * @param fieldValue
-     * @return
+     * <p>applyValueDefaultModifications.</p>
+     *
+     * @param fieldValue a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
      */
     public static String applyValueDefaultModifications(String fieldValue) {
         String ret = fieldValue;
@@ -683,14 +704,15 @@ public class MetadataHelper {
     }
 
     /**
-     * 
-     * @param pi
-     * @return
-     * @throws FatalIndexerException
+     * <p>applyIdentifierModifications.</p>
+     *
+     * @param pi a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should trim identifier
      * @should apply replace rules
      * @should replace spaces with underscores
      * @should replace commas with underscores
+     * @return a {@link java.lang.String} object.
      */
     public static String applyIdentifierModifications(String pi) throws FatalIndexerException {
         if (StringUtils.isEmpty(pi)) {
@@ -714,15 +736,16 @@ public class MetadataHelper {
 
     /**
      * Adds a SORT_* version of the given field, but only if no field by that name exists yet.
-     * 
-     * @param fieldName
-     * @param fieldValue
-     * @param numerical If true, SORTNUM_ will be used instead of SORT_
-     * @param nonSortConfigurations
-     * @param retList
+     *
+     * @param fieldName a {@link java.lang.String} object.
+     * @param fieldValue a {@link java.lang.String} object.
+     * @param nonSortConfigurations a {@link java.util.List} object.
+     * @param retList a {@link java.util.List} object.
      * @should add regular sort fields correctly
      * @should add numerical sort fields correctly
      * @should not add existing fields
+     * @param sortFieldPrefix a {@link java.lang.String} object.
+     * @param valueNormalizer a {@link io.goobi.viewer.indexer.model.config.ValueNormalizer} object.
      */
     public static void addSortField(String fieldName, String fieldValue, String sortFieldPrefix, List<NonSortConfiguration> nonSortConfigurations,
             ValueNormalizer valueNormalizer, List<LuceneField> retList) {
@@ -782,6 +805,13 @@ public class MetadataHelper {
         return value;
     }
 
+    /**
+     * <p>getAnchorPi.</p>
+     *
+     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
+     * @return a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     */
     public static String getAnchorPi(JDomXP xp) throws FatalIndexerException {
         String query =
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
@@ -795,11 +825,11 @@ public class MetadataHelper {
 
     /**
      * Retrieves the PI value from the given METS document object.
-     * 
-     * @param prefix
-     * @param xp
+     *
+     * @param prefix a {@link java.lang.String} object.
+     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return String or null
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should extract DenkXweb PI correctly
      */
     public static String getPIFromXML(String prefix, JDomXP xp) throws FatalIndexerException {
@@ -1341,6 +1371,11 @@ public class MetadataHelper {
         return null;
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects.
+     */
     public static void main(String[] args) {
         String string = "Vol. 15 xxx";
         Pattern p = Pattern.compile(".*(\\d+).*");
@@ -1366,11 +1401,11 @@ public class MetadataHelper {
 
     /**
      * Extracts the (lowercase) language code from the given field name.
-     * 
-     * @param fieldName
-     * @return
+     *
+     * @param fieldName a {@link java.lang.String} object.
      * @should extract language code correctly
      * @should ignore any suffixes longer than two chars
+     * @return a {@link java.lang.String} object.
      */
     public static String extractLanguageCodeFromMetadataField(String fieldName) {
         if (fieldName == null) {
@@ -1389,12 +1424,12 @@ public class MetadataHelper {
 
     /**
      * Reads TEI files from the given Path and adds metadata and texts to the give index object.
-     * 
-     * @param indexObj
-     * @param teiFolder
-     * @throws FatalIndexerException
-     * @throws IOException
-     * @throws JDOMException
+     *
+     * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
+     * @param teiFolder a {@link java.nio.file.Path} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws java.io.IOException
+     * @throws org.jdom2.JDOMException
      * @should append fulltext from all files
      */
     public static void processTEIMetadataFiles(IndexObject indexObj, Path teiFolder) throws FatalIndexerException, IOException, JDOMException {

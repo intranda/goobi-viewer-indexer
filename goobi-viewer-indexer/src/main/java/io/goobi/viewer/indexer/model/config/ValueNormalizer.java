@@ -59,11 +59,11 @@ public class ValueNormalizer {
 
     /**
      * Constructor.
-     * 
+     *
      * @param length Target string length
      * @param filler Filler character
      * @param position Position at which to fill/truncate the string
-     * @param filterRegex
+     * @param relevantPartRegex a {@link java.lang.String} object.
      */
     public ValueNormalizer(int length, char filler, ValueNormalizerPosition position, String relevantPartRegex) {
         this.length = length;
@@ -75,8 +75,8 @@ public class ValueNormalizer {
     /**
      * Fills up the given string value with instances of <code>filler</code> until the string reaches the size of <code>length</code>, either at the
      * front or the rear <code>position</code>. Too long strings are truncated at <code>position</code>.
-     * 
-     * @param s
+     *
+     * @param s a {@link java.lang.String} object.
      * @return Normalized value
      * @should do nothing if length ok
      * @should normalize too short strings correctly
@@ -153,6 +153,8 @@ public class ValueNormalizer {
     }
 
     /**
+     * <p>Getter for the field <code>length</code>.</p>
+     *
      * @return the length
      */
     public int getLength() {
@@ -160,6 +162,8 @@ public class ValueNormalizer {
     }
 
     /**
+     * <p>Getter for the field <code>filler</code>.</p>
+     *
      * @return the filler
      */
     public char getFiller() {
@@ -167,6 +171,8 @@ public class ValueNormalizer {
     }
 
     /**
+     * <p>Getter for the field <code>position</code>.</p>
+     *
      * @return the position
      */
     public ValueNormalizerPosition getPosition() {

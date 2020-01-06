@@ -66,6 +66,10 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
+/**
+ * <p>LidoIndexer class.</p>
+ *
+ */
 public class LidoIndexer extends Indexer {
 
     /** Logger for this class. */
@@ -80,8 +84,8 @@ public class LidoIndexer extends Indexer {
 
     /**
      * Constructor.
-     * 
-     * @param hotfolder
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object.
      * @should set attributes correctly
      */
     public LidoIndexer(Hotfolder hotfolder) {
@@ -90,16 +94,16 @@ public class LidoIndexer extends Indexer {
 
     /**
      * Indexes a LIDO file.
-     * 
-     * @param doc
-     * @param dataFolders
-     * @param writeStrategy
-     * @param pageCountStart
-     * @param imageXPaths
-     * @param downloadExternalImages
-     * @return
+     *
+     * @param doc a {@link org.jdom2.Document} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param pageCountStart a int.
+     * @param imageXPaths a {@link java.util.List} object.
+     * @param downloadExternalImages a boolean.
      * @should index record correctly
      * @should update record correctly
+     * @return an array of {@link java.lang.String} objects.
      */
     public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart, List<String> imageXPaths,
             boolean downloadExternalImages) {
@@ -470,13 +474,14 @@ public class LidoIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @param writeStrategy
-     * @param dataFolders
-     * @param pageCountStart
-     * @param imageXPaths
-     * @param downloadExternalImages
-     * @throws FatalIndexerException
+     * <p>generatePageDocuments.</p>
+     *
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param pageCountStart a int.
+     * @param imageXPaths a {@link java.util.List} object.
+     * @param downloadExternalImages a boolean.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart, List<String> imageXPaths,
             boolean downloadExternalImages) throws FatalIndexerException {
@@ -868,6 +873,7 @@ public class LidoIndexer extends Indexer {
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
 
+    /** Constant <code>txt</code> */
     public static FilenameFilter txt = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -875,6 +881,7 @@ public class LidoIndexer extends Indexer {
         }
     };
 
+    /** Constant <code>xml</code> */
     public static FilenameFilter xml = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {

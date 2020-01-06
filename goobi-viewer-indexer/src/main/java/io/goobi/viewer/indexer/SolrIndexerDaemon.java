@@ -36,6 +36,7 @@ public final class SolrIndexerDaemon {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
+    /** Constant <code>VERSION="4.0.5.20191125"</code> */
     public static final String VERSION = "4.0.5.20191125";
     private static final int MIN_SCHEMA_VERSION = 20190924;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
@@ -48,6 +49,11 @@ public final class SolrIndexerDaemon {
     private int sleepInterval = 1000;
     private volatile boolean running = false;
 
+    /**
+     * <p>Getter for the field <code>instance</code>.</p>
+     *
+     * @return a {@link io.goobi.viewer.indexer.SolrIndexerDaemon} object.
+     */
     public static SolrIndexerDaemon getInstance() {
         SolrIndexerDaemon indexer = instance;
         if (indexer == null) {
@@ -64,6 +70,11 @@ public final class SolrIndexerDaemon {
         return indexer;
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects.
+     */
     public static void main(String[] args) {
         String configFileName = null;
         boolean noUpdate = false;
@@ -90,11 +101,12 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * 
-     * @param configFilePath
-     * @param noUpdate
-     * @param cleanupAnchors
-     * @throws FatalIndexerException
+     * <p>start.</p>
+     *
+     * @param configFilePath a {@link java.lang.String} object.
+     * @param noUpdate a boolean.
+     * @param cleanupAnchors a boolean.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public void start(String configFilePath, boolean noUpdate, boolean cleanupAnchors) throws FatalIndexerException {
         if (running) {
@@ -160,6 +172,9 @@ public final class SolrIndexerDaemon {
         }
     }
 
+    /**
+     * <p>stop.</p>
+     */
     public void stop() {
         logger.info("Stopping indexer...");
         try {

@@ -53,6 +53,10 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
+/**
+ * <p>DenkXwebIndexer class.</p>
+ *
+ */
 public class DenkXwebIndexer extends Indexer {
 
     /** Logger for this class. */
@@ -66,8 +70,8 @@ public class DenkXwebIndexer extends Indexer {
 
     /**
      * Constructor.
-     * 
-     * @param hotfolder
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object.
      * @should set attributes correctly
      */
     public DenkXwebIndexer(Hotfolder hotfolder) {
@@ -76,14 +80,14 @@ public class DenkXwebIndexer extends Indexer {
 
     /**
      * Indexes a DenkXweb file.
-     * 
-     * @param doc
-     * @param dataFolders
-     * @param writeStrategy
-     * @param pageCountStart
-     * @return
+     *
+     * @param doc a {@link org.jdom2.Document} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param pageCountStart a int.
      * @should index record correctly
      * @should update record correctly
+     * @return an array of {@link java.lang.String} objects.
      */
     public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart) {
         String[] ret = { "ERROR", null };
@@ -325,6 +329,7 @@ public class DenkXwebIndexer extends Indexer {
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
 
+    /** Constant <code>txt</code> */
     public static FilenameFilter txt = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -332,6 +337,7 @@ public class DenkXwebIndexer extends Indexer {
         }
     };
 
+    /** Constant <code>xml</code> */
     public static FilenameFilter xml = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {

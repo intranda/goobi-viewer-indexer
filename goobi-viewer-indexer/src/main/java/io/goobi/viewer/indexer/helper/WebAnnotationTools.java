@@ -21,15 +21,19 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * <p>WebAnnotationTools class.</p>
+ *
+ */
 public class WebAnnotationTools {
 
     private static final String TARGET_REGEX = ".*/iiif/manifests/(.+?)/(?:canvas|manifest)?(?:/(\\d+))?/?$";
 
     /**
      * Extract the page order from a canvas url. If the url points to a manifest, return null
-     * 
-     * @param uri
-     * @return
+     *
+     * @param uri a {@link java.net.URI} object.
+     * @return a {@link java.lang.Integer} object.
      */
     public static Integer parsePageOrder(URI uri) {
         Matcher matcher = Pattern.compile(TARGET_REGEX).matcher(uri.toString());

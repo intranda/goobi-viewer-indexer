@@ -56,15 +56,20 @@ import org.slf4j.LoggerFactory;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
+/**
+ * <p>Utils class.</p>
+ *
+ */
 public class Utils {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
     /**
-     * 
-     * @param path
-     * @return
+     * <p>checkAndCreateDirectory.</p>
+     *
+     * @param path a {@link java.nio.file.Path} object.
+     * @return a boolean.
      */
     public static boolean checkAndCreateDirectory(Path path) {
         if (path == null) {
@@ -84,8 +89,9 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param path {@link File}
+     * <p>deleteDirectory.</p>
+     *
+     * @param path {@link java.io.File}
      * @return boolean
      */
     public static boolean deleteDirectory(Path path) {
@@ -102,18 +108,19 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param recipients
-     * @param subject
-     * @param body
-     * @param smtpServer
-     * @param smtpUser
-     * @param smtpPassword
-     * @param smtpSenderAddress
-     * @param smtpSenderName
-     * @param smtpSecurity
-     * @throws MessagingException
-     * @throws UnsupportedEncodingException
+     * <p>postMail.</p>
+     *
+     * @param recipients a {@link java.util.List} object.
+     * @param subject a {@link java.lang.String} object.
+     * @param body a {@link java.lang.String} object.
+     * @param smtpServer a {@link java.lang.String} object.
+     * @param smtpUser a {@link java.lang.String} object.
+     * @param smtpPassword a {@link java.lang.String} object.
+     * @param smtpSenderAddress a {@link java.lang.String} object.
+     * @param smtpSenderName a {@link java.lang.String} object.
+     * @param smtpSecurity a {@link java.lang.String} object.
+     * @throws javax.mail.MessagingException
+     * @throws java.io.UnsupportedEncodingException
      */
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
             final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity)
@@ -219,10 +226,11 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param pi
-     * @return
-     * @throws FatalIndexerException
+     * <p>removeRecordImagesFromCache.</p>
+     *
+     * @param pi a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @return a {@link java.lang.String} object.
      */
     public static String removeRecordImagesFromCache(String pi) throws FatalIndexerException {
         String viewerUrl = Configuration.getInstance().getViewerUrl();
@@ -244,10 +252,11 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param url
-     * @return
-     * @throws IOException
+     * <p>callUrl.</p>
+     *
+     * @param url a {@link java.lang.String} object.
+     * @throws java.io.IOException
+     * @return a {@link java.lang.String} object.
      */
     public static String callUrl(String url) throws IOException {
         HttpGet httpGet = new HttpGet(url);
@@ -272,18 +281,25 @@ public class Utils {
         return null;
     }
 
+    /**
+     * <p>isUrn.</p>
+     *
+     * @param urn a {@link java.lang.String} object.
+     * @return a boolean.
+     */
     public static boolean isUrn(String urn) {
         return StringUtils.isNotEmpty(urn) && !urn.startsWith("http");
     }
 
     /**
      * Creates the file Path to the updated anchor file
-     * 
-     * @param destFolderPath
-     * @param baseName
-     * @param extension
-     * @return
+     *
+     * @param destFolderPath a {@link java.lang.String} object.
+     * @param baseName a {@link java.lang.String} object.
+     * @param extension a {@link java.lang.String} object.
      * @should construct path correctly and avoid collisions
+     * @param separator a {@link java.lang.String} object.
+     * @return a {@link java.nio.file.Path} object.
      */
     public static Path getCollisionFreeDataFilePath(String destFolderPath, String baseName, String separator, String extension) {
         if (destFolderPath == null) {
@@ -315,10 +331,11 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param file
-     * @return
+     * <p>extractPiFromFileName.</p>
+     *
+     * @param file a {@link java.nio.file.Path} object.
      * @should extract file name correctly
+     * @return a {@link java.lang.String} object.
      */
     public static String extractPiFromFileName(Path file) {
         String fileExtension = FilenameUtils.getExtension(file.getFileName().toString());
@@ -335,10 +352,11 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param url
-     * @return
+     * <p>getFileNameFromIiifUrl.</p>
+     *
+     * @param url a {@link java.lang.String} object.
      * @should extract file name correctly
+     * @return a {@link java.lang.String} object.
      */
     public static String getFileNameFromIiifUrl(String url) {
         if (StringUtils.isEmpty(url)) {

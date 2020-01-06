@@ -31,6 +31,10 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
+/**
+ * <p>LazySolrWriteStrategy class.</p>
+ *
+ */
 public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(LazySolrWriteStrategy.class);
@@ -44,8 +48,8 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     /**
      * Constructor.
-     * 
-     * @param solrHelper
+     *
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
      * @should set attributes correctly
      */
     public LazySolrWriteStrategy(SolrHelper solrHelper) {
@@ -55,6 +59,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#setRootDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void setRootDoc(SolrInputDocument doc) {
         this.rootDoc = doc;
@@ -64,6 +69,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void addDoc(SolrInputDocument doc) {
         addDocs(Collections.singletonList(doc));
@@ -73,6 +79,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDocs(java.util.List)
      */
+    /** {@inheritDoc} */
     @Override
     public void addDocs(List<SolrInputDocument> docs) {
         docsToAdd.addAll(docs);
@@ -82,6 +89,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addPageDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void addPageDoc(SolrInputDocument doc) {
         int order = (Integer) doc.getFieldValue(SolrConstants.ORDER);
@@ -96,6 +104,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#updateDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void updateDoc(SolrInputDocument doc) {
         // This implementation doesn't need to do anything, since all docs are kept in memory
@@ -104,14 +113,16 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#getPageDocsSize()
      */
+    /** {@inheritDoc} */
     @Override
     public int getPageDocsSize() {
         return pageOrderMap.size();
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Ftegy.ISolrWriteStrategy#getPageDocForOrder(int)
-     * 
      * @should return correct doc
      * @should return null if order out of range
      */
@@ -124,10 +135,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         return null;
     }
 
-    /**
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocsForPhysIdList(java.util.List)
-     * @should return all docs for the given physIdList
-     */
+    /** {@inheritDoc} */
     @Override
     public List<SolrInputDocument> getPageDocsForPhysIdList(List<String> physIdList) {
         List<SolrInputDocument> ret = new ArrayList<>();
@@ -142,14 +150,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         return ret;
     }
 
-    /**
-     * @param aggregateHits
-     * @throws IndexerException
-     * @throws FatalIndexerException
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#writeDocs()
-     * @should write all structure docs correctly
-     * @should write all page docs correctly
-     */
+    /** {@inheritDoc} */
     @Override
     public void writeDocs(boolean aggregateRecords) throws IndexerException, FatalIndexerException {
         if (rootDoc == null) {
@@ -201,6 +202,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#cleanup()
      */
+    /** {@inheritDoc} */
     @Override
     public void cleanup() {
         rootDoc = null;
