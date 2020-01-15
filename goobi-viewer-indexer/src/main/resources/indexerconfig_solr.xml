@@ -66,7 +66,7 @@
 		<namespaces>
 			<list>
 			    <intranda>http://intranda.com/MODS/</intranda>
-			    <gml>http://www.opengis.net/gml/3.2</gml>
+			    <gml>http://www.opengis.net/gml</gml>
 			</list>
 		</namespaces>
 
@@ -2914,6 +2914,27 @@
                 </item>
             </list>
         </MD_GML_POS>
+        
+        <MD_DOCUMENT_PLACE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event</item>
+                        </list>
+                    </xpath> 
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">./lido:eventPlace/lido:displayPlace</field>
+                        <field name="MD_LABEL">./lido:eventPlace/lido:displayPlace</field>
+                        <field name="MD_URI">./lido:eventPlace/lido:place/lido:placeID</field>
+                        <field name="MD_RELATION_TYPE_LABEL">./lido:eventType/lido:term</field>
+                        <field name="MD_GEO_POINT">./lido:eventPlace/lido:place/lido:gml/gml:Point/gml:pos</field>
+                        <field name="MD_GEO_POLYGON">./lido:eventPlace/lido:place/lido:gml/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_DOCUMENT_PLACE>
         
 	</fields>
 </root>

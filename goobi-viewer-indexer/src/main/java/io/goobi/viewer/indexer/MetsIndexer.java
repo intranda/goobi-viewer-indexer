@@ -559,197 +559,197 @@ public class MetsIndexer extends Indexer {
 
         List<SolrInputDocument> pageDocs = writeStrategy.getPageDocsForPhysIdList(physIdList);
         if (!pageDocs.isEmpty()) {
-            // If this is a top struct element, look for a representative image
-            String filePathBanner = null;
-            if (isWork) {
-                xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + useFileGroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
-                filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
-                if (StringUtils.isNotEmpty(filePathBanner)) {
-                    // Add thumbnail information from the representative page
-                    filePathBanner = FilenameUtils.getName(filePathBanner);
-                    logger.debug("Found representation thumbnail for {} in METS: {}", indexObj.getLogId(), filePathBanner);
-                } else if (StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
-                    filePathBanner = indexObj.getThumbnailRepresent();
-                    logger.debug("No representation thumbnail for {} found in METS, using previous file: {}", indexObj.getLogId(), filePathBanner);
-                }
-            }
-            boolean thumbnailSet = false;
-            SolrInputDocument firstPageDoc = pageDocs.get(0);
-            if (StringUtils.isEmpty(filePathBanner)) {
-                // Add thumbnail information from the first page
-                //                String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) firstPageDoc
-                //                        .getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
-                String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
-                ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
-                ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-                thumbnailSet = true;
-            }
-            for (SolrInputDocument pageDoc : pageDocs) {
-                //                String pageFileName = pageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) pageDoc.getFieldValue(
-                //                        SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
-                String pageFileName = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
-                String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
+            logger.warn("No pages found for {}", indexObj.getLogId());
+        }
+
+        // If this is a top struct element, look for a representative image
+        String filePathBanner = null;
+        if (isWork) {
+            xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + useFileGroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
+            filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
+            if (StringUtils.isNotEmpty(filePathBanner)) {
                 // Add thumbnail information from the representative page
-                if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && filePathBanner.equals(pageFileName)) {
-                    ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-                    // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
-                    ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
-                    ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(pageDoc.getFieldValue(SolrConstants.ORDER))));
-                    ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) pageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
-                    ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) pageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-                    thumbnailSet = true;
-                }
-
-                int currentDepth = -1;
-                if (pageDoc.getField("MDNUM_OWNERDEPTH") != null) {
-                    currentDepth = (int) pageDoc.getField("MDNUM_OWNERDEPTH").getValue();
-                }
-
-                // Make sure IDDOC_OWNER of a page contains the IDDOC of the lowest possible mapped docstruct
-                if (depth > currentDepth) {
-                    pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                    pageDoc.setField("MDNUM_OWNERDEPTH", depth);
-
-                    // Add the parent document's structure element to the page
-                    pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
-
-                    // Remove SORT_ fields from a previous, higher up docstruct
-                    Set<String> fieldsToRemove = new HashSet<>();
-                    for (String fieldName : pageDoc.getFieldNames()) {
-                        if (fieldName.startsWith(SolrConstants.SORT_)) {
-                            fieldsToRemove.add(fieldName);
-                        }
-                    }
-                    for (String fieldName : fieldsToRemove) {
-                        pageDoc.removeField(fieldName);
-                    }
-                    //  Add this docstruct's SORT_* fields to page
-                    if (indexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
-                        for (LuceneField field : indexObj.getLuceneFields()) {
-                            if (field.getField().startsWith(SolrConstants.SORT_)) {
-                                pageDoc.addField(field.getField(), field.getValue());
-                            }
-                        }
-                    }
-                }
-
-                // Add PI_TOPSTRUCT
-                if (pageDoc.getField(SolrConstants.PI_TOPSTRUCT) == null) {
-                    pageDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
-                }
-                // Add PI_ANCHOR
-                if (StringUtils.isNotEmpty(indexObj.getAnchorPI()) && pageDoc.getField(SolrConstants.PI_ANCHOR) == null) {
-                    pageDoc.addField(SolrConstants.PI_ANCHOR, indexObj.getAnchorPI());
-                }
-                // Add GROUPID_*
-                if (!indexObj.getGroupIds().isEmpty()) {
-                    for (String groupId : indexObj.getGroupIds().keySet()) {
-                        if (!pageDoc.containsKey(groupId)) {
-                            pageDoc.addField(groupId, indexObj.getLuceneFieldWithName(groupId).getValue());
-                        }
-                    }
-                }
-                // Add DATAREPOSITORY
-                if (pageDoc.getField(SolrConstants.DATAREPOSITORY) == null && indexObj.getDataRepository() != null) {
-                    pageDoc.addField(SolrConstants.DATAREPOSITORY, indexObj.getDataRepository());
-                }
-                if (pageDoc.getField(SolrConstants.DATEUPDATED) == null && !indexObj.getDateUpdated().isEmpty()) {
-                    for (Long date : indexObj.getDateUpdated()) {
-                        pageDoc.addField(SolrConstants.DATEUPDATED, date);
-                    }
-                }
-
-                // Add of each docstruct access conditions (no duplicates)
-                Set<String> existingAccessConditions = new HashSet<>();
-                if (pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
-                    for (Object obj : pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION)) {
-                        existingAccessConditions.add((String) obj);
-                    }
-                }
-                for (String s : indexObj.getAccessConditions()) {
-                    if (!existingAccessConditions.contains(s) && !SolrConstants.OPEN_ACCESS_VALUE.equals(s)) {
-                        // Override OPENACCESS if a different access condition comes from a lower docstruct
-                        if (depth > currentDepth && existingAccessConditions.contains(SolrConstants.OPEN_ACCESS_VALUE)) {
-                            // Remove all instances of ACCESSCONDITION, then re-add existing values (minus OPENACCSS)
-                            pageDoc.removeField(SolrConstants.ACCESSCONDITION);
-                            for (String existingS : existingAccessConditions) {
-                                if (!SolrConstants.OPEN_ACCESS_VALUE.equals(existingS)) {
-                                    pageDoc.addField(SolrConstants.ACCESSCONDITION, existingS);
-                                }
-                            }
-                        }
-                        // Add new non-OPENACCESS condition
-                        pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
-                    } else if (SolrConstants.OPEN_ACCESS_VALUE.equals(s) && depth > currentDepth) {
-                        // If OPENACCESS is on a lower docstruct, however, remove all previous access conditions and override with OPENACCESS
-                        pageDoc.removeField(SolrConstants.ACCESSCONDITION);
-                        pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
-                    }
-                }
-                if (indexObj.getAccessConditions().isEmpty()) {
-                    logger.warn("{}: {} has no access conditions.", pageFileBaseName, indexObj.getIddoc());
-                }
-
-                // Add owner docstruct's metadata (tokenized only!) and SORT_* fields to the page
-                Set<String> existingMetadataFieldNames = new HashSet<>();
-                Set<String> existingSortFieldNames = new HashSet<>();
-                for (String fieldName : pageDoc.getFieldNames()) {
-                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
-                        for (Object value : pageDoc.getFieldValues(fieldName)) {
-                            existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
-                        }
-                    } else if (fieldName.startsWith(SolrConstants.SORT_)) {
-                        existingSortFieldNames.add(fieldName);
-                    }
-                }
-                for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
-                            && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
-                        // Avoid duplicates (same field name + value)
-                        pageDoc.addField(field.getField(), field.getValue());
-                        logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), pageDoc.getFieldValue(SolrConstants.ORDER));
-                    } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
-                        // Only one instance of each SORT_ field may exist
-                        pageDoc.addField(field.getField(), field.getValue());
-                    }
-                }
-
-                // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
-                writeStrategy.updateDoc(pageDoc);
+                filePathBanner = FilenameUtils.getName(filePathBanner);
+                logger.debug("Found representation thumbnail for {} in METS: {}", indexObj.getLogId(), filePathBanner);
+            } else if (StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
+                filePathBanner = indexObj.getThumbnailRepresent();
+                logger.debug("No representation thumbnail for {} found in METS, using previous file: {}", indexObj.getLogId(), filePathBanner);
             }
-
-            // If a representative image is set but not mapped to any docstructs, do not use it
-            if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pageDocs.isEmpty()) {
-                logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
-                        filePathBanner);
-                String pageFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
+        }
+        boolean thumbnailSet = false;
+        SolrInputDocument firstPageDoc = pageDocs.get(0);
+        if (StringUtils.isEmpty(filePathBanner)) {
+            // Add thumbnail information from the first page
+            //                String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) firstPageDoc
+            //                        .getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
+            String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
+            ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
+            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
+            thumbnailSet = true;
+        }
+        for (SolrInputDocument pageDoc : pageDocs) {
+            //                String pageFileName = pageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) pageDoc.getFieldValue(
+            //                        SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
+            String pageFileName = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
+            String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
+            // Add thumbnail information from the representative page
+            if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && filePathBanner.equals(pageFileName)) {
                 ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
                 // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
                 ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
-                ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(pageDoc.getFieldValue(SolrConstants.ORDER))));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) pageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
+                ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) pageDoc.getFieldValue(SolrConstants.MIMETYPE)));
                 thumbnailSet = true;
             }
 
-            // Add the number of assigned pages and the labels of the first and last page to this structure element
-            indexObj.setNumPages(pageDocs.size());
-            if (!pageDocs.isEmpty()) {
-                SolrInputDocument lastPagedoc = pageDocs.get(pageDocs.size() - 1);
-                String firstPageLabel = (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL);
-                String lastPageLabel = (String) lastPagedoc.getFieldValue(SolrConstants.ORDERLABEL);
-                if (firstPageLabel != null && !"-".equals(firstPageLabel.trim())) {
-                    indexObj.setFirstPageLabel(firstPageLabel);
-                }
-                if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
-                    indexObj.setLastPageLabel(lastPageLabel);
-                }
-                // logger.info(indexObj.getLogId() + ": " + indexObj.getFirstPageLabel() + " - " + indexObj.getLastPageLabel());
+            int currentDepth = -1;
+            if (pageDoc.getField("MDNUM_OWNERDEPTH") != null) {
+                currentDepth = (int) pageDoc.getField("MDNUM_OWNERDEPTH").getValue();
             }
-        } else {
-            logger.warn("No pages found for {}", indexObj.getLogId());
+
+            // Make sure IDDOC_OWNER of a page contains the IDDOC of the lowest possible mapped docstruct
+            if (depth > currentDepth) {
+                pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
+                pageDoc.setField("MDNUM_OWNERDEPTH", depth);
+
+                // Add the parent document's structure element to the page
+                pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
+
+                // Remove SORT_ fields from a previous, higher up docstruct
+                Set<String> fieldsToRemove = new HashSet<>();
+                for (String fieldName : pageDoc.getFieldNames()) {
+                    if (fieldName.startsWith(SolrConstants.SORT_)) {
+                        fieldsToRemove.add(fieldName);
+                    }
+                }
+                for (String fieldName : fieldsToRemove) {
+                    pageDoc.removeField(fieldName);
+                }
+                //  Add this docstruct's SORT_* fields to page
+                if (indexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                    for (LuceneField field : indexObj.getLuceneFields()) {
+                        if (field.getField().startsWith(SolrConstants.SORT_)) {
+                            pageDoc.addField(field.getField(), field.getValue());
+                        }
+                    }
+                }
+            }
+
+            // Add PI_TOPSTRUCT
+            if (pageDoc.getField(SolrConstants.PI_TOPSTRUCT) == null) {
+                pageDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
+            }
+            // Add PI_ANCHOR
+            if (StringUtils.isNotEmpty(indexObj.getAnchorPI()) && pageDoc.getField(SolrConstants.PI_ANCHOR) == null) {
+                pageDoc.addField(SolrConstants.PI_ANCHOR, indexObj.getAnchorPI());
+            }
+            // Add GROUPID_*
+            if (!indexObj.getGroupIds().isEmpty()) {
+                for (String groupId : indexObj.getGroupIds().keySet()) {
+                    if (!pageDoc.containsKey(groupId)) {
+                        pageDoc.addField(groupId, indexObj.getLuceneFieldWithName(groupId).getValue());
+                    }
+                }
+            }
+            // Add DATAREPOSITORY
+            if (pageDoc.getField(SolrConstants.DATAREPOSITORY) == null && indexObj.getDataRepository() != null) {
+                pageDoc.addField(SolrConstants.DATAREPOSITORY, indexObj.getDataRepository());
+            }
+            if (pageDoc.getField(SolrConstants.DATEUPDATED) == null && !indexObj.getDateUpdated().isEmpty()) {
+                for (Long date : indexObj.getDateUpdated()) {
+                    pageDoc.addField(SolrConstants.DATEUPDATED, date);
+                }
+            }
+
+            // Add of each docstruct access conditions (no duplicates)
+            Set<String> existingAccessConditions = new HashSet<>();
+            if (pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
+                for (Object obj : pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION)) {
+                    existingAccessConditions.add((String) obj);
+                }
+            }
+            for (String s : indexObj.getAccessConditions()) {
+                if (!existingAccessConditions.contains(s) && !SolrConstants.OPEN_ACCESS_VALUE.equals(s)) {
+                    // Override OPENACCESS if a different access condition comes from a lower docstruct
+                    if (depth > currentDepth && existingAccessConditions.contains(SolrConstants.OPEN_ACCESS_VALUE)) {
+                        // Remove all instances of ACCESSCONDITION, then re-add existing values (minus OPENACCSS)
+                        pageDoc.removeField(SolrConstants.ACCESSCONDITION);
+                        for (String existingS : existingAccessConditions) {
+                            if (!SolrConstants.OPEN_ACCESS_VALUE.equals(existingS)) {
+                                pageDoc.addField(SolrConstants.ACCESSCONDITION, existingS);
+                            }
+                        }
+                    }
+                    // Add new non-OPENACCESS condition
+                    pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
+                } else if (SolrConstants.OPEN_ACCESS_VALUE.equals(s) && depth > currentDepth) {
+                    // If OPENACCESS is on a lower docstruct, however, remove all previous access conditions and override with OPENACCESS
+                    pageDoc.removeField(SolrConstants.ACCESSCONDITION);
+                    pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
+                }
+            }
+            if (indexObj.getAccessConditions().isEmpty()) {
+                logger.warn("{}: {} has no access conditions.", pageFileBaseName, indexObj.getIddoc());
+            }
+
+            // Add owner docstruct's metadata (tokenized only!) and SORT_* fields to the page
+            Set<String> existingMetadataFieldNames = new HashSet<>();
+            Set<String> existingSortFieldNames = new HashSet<>();
+            for (String fieldName : pageDoc.getFieldNames()) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
+                    for (Object value : pageDoc.getFieldValues(fieldName)) {
+                        existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
+                    }
+                } else if (fieldName.startsWith(SolrConstants.SORT_)) {
+                    existingSortFieldNames.add(fieldName);
+                }
+            }
+            for (LuceneField field : indexObj.getLuceneFields()) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
+                        && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
+                    // Avoid duplicates (same field name + value)
+                    pageDoc.addField(field.getField(), field.getValue());
+                    logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), pageDoc.getFieldValue(SolrConstants.ORDER));
+                } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
+                    // Only one instance of each SORT_ field may exist
+                    pageDoc.addField(field.getField(), field.getValue());
+                }
+            }
+
+            // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
+            writeStrategy.updateDoc(pageDoc);
+        }
+
+        // If a representative image is set but not mapped to any docstructs, do not use it
+        if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pageDocs.isEmpty()) {
+            logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
+                    filePathBanner);
+            String pageFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
+            ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
+            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
+            ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
+            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
+            thumbnailSet = true;
+        }
+
+        // Add the number of assigned pages and the labels of the first and last page to this structure element
+        indexObj.setNumPages(pageDocs.size());
+        if (!pageDocs.isEmpty()) {
+            SolrInputDocument lastPagedoc = pageDocs.get(pageDocs.size() - 1);
+            String firstPageLabel = (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL);
+            String lastPageLabel = (String) lastPagedoc.getFieldValue(SolrConstants.ORDERLABEL);
+            if (firstPageLabel != null && !"-".equals(firstPageLabel.trim())) {
+                indexObj.setFirstPageLabel(firstPageLabel);
+            }
+            if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
+                indexObj.setLastPageLabel(lastPageLabel);
+            }
+            // logger.info(indexObj.getLogId() + ": " + indexObj.getFirstPageLabel() + " - " + indexObj.getLastPageLabel());
         }
 
         return ret;

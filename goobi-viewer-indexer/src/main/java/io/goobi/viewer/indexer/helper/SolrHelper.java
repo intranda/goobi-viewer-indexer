@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -545,5 +546,57 @@ public final class SolrHelper {
         }
 
         return null;
+    }
+
+    /**
+     *
+     * @param doc
+     * @param field
+     * @return
+     */
+    public static Object getSingleFieldValue(SolrDocument doc, String field) {
+        Collection<Object> valueList = doc.getFieldValues(field);
+        if (valueList != null && !valueList.isEmpty()) {
+            return valueList.iterator().next();
+        }
+
+        return null;
+    }
+
+    /**
+     *
+     * @param doc
+     * @param field
+     * @return
+     * @should return value as string correctly
+     * @should not return null as string if value is null
+     */
+    public static String getSingleFieldStringValue(SolrDocument doc, String field) {
+        Object val = getSingleFieldValue(doc, field);
+        return val != null ? String.valueOf(val) : null;
+    }
+
+    public static Integer getSingleFieldIntegerValue(SolrDocument doc, String field) {
+        Object val = getSingleFieldValue(doc, field);
+        return getAsInt(val);
+    }
+
+    /**
+     * 
+     * @param fieldValue
+     * @return
+     */
+    static Integer getAsInt(Object fieldValue) {
+        if (fieldValue == null) {
+            return null;
+        }
+        if (fieldValue instanceof Integer) {
+            return (Integer) fieldValue;
+        }
+        try {
+            return Integer.parseInt(fieldValue.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
