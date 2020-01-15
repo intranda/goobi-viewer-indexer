@@ -900,7 +900,7 @@ public class Hotfolder {
             try {
                 Files.delete(metsFile);
             } catch (IOException e) {
-                logger.error("'{}' could not be deleted! Please delete it manually!", metsFile.toAbsolutePath());
+                logger.warn("'{}' could not be deleted! Please delete it manually!", metsFile.toAbsolutePath());
             }
 
         } else {
