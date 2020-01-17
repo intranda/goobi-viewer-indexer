@@ -1,4 +1,5 @@
 # Goobi viewer - Indexer
+[![](https://github.com/intranda/goobi-viewer-indexer/workflows/.github/workflows/default.yml/badge.svg)
 > Indexing application as part of the highly flexible digital library framework - made by the Goobi developer team
 
 
@@ -6,60 +7,42 @@
 The Goobi viewer indexer is responsible for indexing metadata files and related content files for the Goobi viewer. It parses provided metadata files (e.g. METS and LIDO) to fill the Solr search index with all relevant information. Additionally all fulltext files are read and indexed to allow a fulltext search in the Goobi viewer.
 
 
+## Community
+You can get in touch with the communiy in the forum. Currently the most is happening in German but please feel free to ask any questions there in English too:
+
+https://community.goobi.io
+
+You can find a list of Goobi viewer installations at the following URL:
+
+https://goobi.io/viewer/installations
+
+
 ## Documentation
-A complete documentation of the Goobi viewer can be found using this URL:  
-<https://docs.intranda.com/>
+The documentation for the Goobi viewer can be found using the following URLs:
+
+* [German](https://docs.intranda.com/goobi-viewer-de/)
+* [English](https://docs.intranda.com/goobi-viewer-en/)
+
+
+## Development
+The development of the Goobi viewer in mostly happening by the software company [intranda GmbH](https://intranda.com). All current developments are centrally listed and explained inside of the monthy digests:
+
+* [German](https://docs.intranda.com/goobi-viewer-digests-de/)
+* [English](https://docs.intranda.com/goobi-viewer-digests-en/)
 
 
 ## Technical background
-The Goobi viewer indexer is part of the Goobi viewer project which consists of multiple packages:
+The Goobi viewer consists of multiple packages which all have to be installed and configured properly:
 
-| Package | Function |
-| ------ | ------ |
-| [Goobi viewer - Core](https://github.com/intranda/goobi-viewer-core) | Core functionality of the viewer application|
-| [Goobi viewer - Indexer](https://github.com/intranda/goobi-viewer-indexer) | Indexing application to fill the Solr search index with metadata information |
-| [Goobi viewer - Connector](https://github.com/intranda/goobi-viewer-connector) | Connectors for different use cases (incl. OAI-PMH, SRU)|
-| [Goobi viewer - Theme Reference](https://github.com/intranda/goobi-viewer-theme-reference) | Reference Theme for the user interface |
-| [Goobi viewer - Theme Boilerplate](https://github.com/intranda/goobi-viewer-theme-boilerplate) | Boilerplate for creating new Themes for the user interface |
-
-
-## Installation
-The installation can be done on any operating system as the software is based on Java. A detailed explanation how to install the viewer will follow later on. In the mean time please get in touch with us via <info@intranda.com>
-
-
-## Release History
-Detailed monthly digests can be found using this URL:
-<https://docs.intranda.com/goobi-viewer-digests-de/>
-
-
-## Developer team
-intranda GmbH  
-Bertha-von-Suttner-Str. 9  
-37085 Göttingen  
-Germany
-
-
-## Contact us
-If you would like to get in touch with the developers please use the following contact details:
-
-| Contact |Address |
-| ------ | ------ |
-| Website | <http://www.intranda.com> |
-| Mail | <info@intranda.com> |
-| Twitter intranda | <http://twitter.com/intranda> |
-| Twitter Goobi | <http://twitter.com/goobi> |
-| Github | <https://github.com/intranda> |
+| Package                                                                                  | Function                                                                     |
+| ------                                                                                   | ------                                                                       |
+| [Goobi viewer Core](https://github.com/intranda/goobi-viewer-core)                       | Core functionality of the viewer application                                 |
+| [Goobi viewer Indexer](https://github.com/intranda/goobi-viewer-indexer)                 | Indexing application to fill the Solr search index with metadata information |
+| [Goobi viewer Connector](https://github.com/intranda/goobi-viewer-connector)             | Connectors for different use cases (incl. OAI-PMH, SRU)                      |
+| [Goobi viewer Theme Reference](https://github.com/intranda/goobi-viewer-theme-reference) | Reference Theme for the styling of the web pages for the user interface      |
 
 
 ## Licence
-The Goobi viewer indexer is released under the license GPL2 or later.  
+The Goobi viewer is released under the license GPL2 or later.
 Please see ``LICENSE`` for more information.
-
-
-## Contributing
-1. Fork it (<https://github.com/intranda/goobi-viewer-indexer/fork>)
-2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Commit your changes (`git commit -am 'Add some fooBar'`)
-4. Push to the branch (`git push origin feature/fooBar`)
-5. Create a new Pull Request
 

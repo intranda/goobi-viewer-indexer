@@ -65,11 +65,19 @@ public final class SolrHelper {
     private static final int TIMEOUT_CONNECTION = 300000;
     private static final int RETRY_ATTEMPTS = 20;
 
+    /** Constant <code>optimize=false</code> */
     public static boolean optimize = false;
     private static Map<Long, Boolean> usedIddocs = new ConcurrentHashMap<>();
 
     private SolrServer server;
 
+    /**
+     * <p>getNewHttpSolrServer.</p>
+     *
+     * @param confFilename a {@link java.lang.String} object.
+     * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     */
     public static HttpSolrServer getNewHttpSolrServer(String confFilename) throws FatalIndexerException {
         HttpSolrServer server = new HttpSolrServer(Configuration.getInstance(confFilename).getConfiguration("solrUrl"));
         server.setSoTimeout(TIMEOUT_SO); // socket read timeout
@@ -85,10 +93,22 @@ public final class SolrHelper {
         return server;
     }
 
+    /**
+     * <p>Constructor for SolrHelper.</p>
+     *
+     * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
+     */
     public SolrHelper(SolrServer server) {
         this.server = server;
     }
 
+    /**
+     * <p>checkIddocAvailability.</p>
+     *
+     * @param iddoc a long.
+     * @return a boolean.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     */
     public synchronized boolean checkIddocAvailability(long iddoc) throws FatalIndexerException {
         if (usedIddocs.get(iddoc) != null) {
             return false;
@@ -126,21 +146,37 @@ public final class SolrHelper {
         return true;
     }
 
+    /**
+     * <p>getNumHits.</p>
+     *
+     * @param query a {@link java.lang.String} object.
+     * @return a long.
+     * @throws org.apache.solr.client.solrj.SolrServerException if any.
+     */
     public long getNumHits(String query) throws SolrServerException {
         return search(query, null, 0).getNumFound();
     }
 
+    /**
+     * <p>search.</p>
+     *
+     * @param query a {@link java.lang.String} object.
+     * @param fields a {@link java.util.List} object.
+     * @return a {@link org.apache.solr.common.SolrDocumentList} object.
+     * @throws org.apache.solr.client.solrj.SolrServerException if any.
+     */
     public SolrDocumentList search(String query, List<String> fields) throws SolrServerException {
         return search(query, fields, MAX_HITS);
     }
 
     /**
-     * 
-     * @param query
-     * @param fields
-     * @param rows
-     * @return
-     * @throws SolrServerException
+     * <p>search.</p>
+     *
+     * @param query a {@link java.lang.String} object.
+     * @param fields a {@link java.util.List} object.
+     * @param rows a int.
+     * @throws org.apache.solr.client.solrj.SolrServerException
+     * @return a {@link org.apache.solr.common.SolrDocumentList} object.
      */
     public SolrDocumentList search(String query, List<String> fields, int rows) throws SolrServerException {
         SolrQuery solrQuery = new SolrQuery(query);
@@ -157,9 +193,9 @@ public final class SolrHelper {
 
     /**
      * Creates a Solr input document from the given list of name:value pairs.
-     * 
-     * @param luceneFields
-     * @return {@link SolrInputDocument}
+     *
+     * @param luceneFields a {@link java.util.List} object.
+     * @return {@link org.apache.solr.common.SolrInputDocument}
      */
     public static SolrInputDocument createDocument(List<LuceneField> luceneFields) {
         SolrInputDocument doc = new SolrInputDocument();
@@ -179,11 +215,12 @@ public final class SolrHelper {
     }
 
     /**
-     * 
-     * @param pi
+     * <p>findCurrentDataRepository.</p>
+     *
+     * @param pi a {@link java.lang.String} object.
      * @return The name of the data repository currently used for the record with the given PI; "?" if the record is indexed, but not in a repository;
      *         null if the record is not in the index
-     * @throws SolrServerException
+     * @throws org.apache.solr.client.solrj.SolrServerException
      * @should find correct data repository for record
      */
     public String findCurrentDataRepository(String pi) throws SolrServerException {
@@ -205,13 +242,13 @@ public final class SolrHelper {
     /**
      * Performs an atomic update of the given solr document. Updates defined in partialUpdates will be applied to the existing document without making
      * any changes to other fields.
-     * 
-     * @param doc
+     *
+     * @param doc a {@link org.apache.solr.common.SolrDocument} object.
      * @param partialUpdates Map of update operations (usage: Map<field, Map<operation, value>>)
-     * @return
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should update doc correctly
      * @should add GROUPFIELD if original doc doesn't have it
+     * @return a boolean.
      */
     public boolean updateDoc(SolrDocument doc, Map<String, Map<String, Object>> partialUpdates) throws FatalIndexerException {
         String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
@@ -235,9 +272,11 @@ public final class SolrHelper {
     }
 
     /**
-     * @param doc
+     * <p>writeToIndex.</p>
+     *
+     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
      * @return Error message, if occurred; null otherwise.
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should write doc correctly
      */
     public boolean writeToIndex(SolrInputDocument doc) throws FatalIndexerException {
@@ -271,9 +310,11 @@ public final class SolrHelper {
     }
 
     /**
-     * @param docs
+     * <p>writeToIndex.</p>
+     *
+     * @param docs a {@link java.util.List} object.
      * @return Error message, if occurred; null otherwise.
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should write all docs correctly
      */
     public boolean writeToIndex(List<SolrInputDocument> docs) throws FatalIndexerException {
@@ -307,8 +348,10 @@ public final class SolrHelper {
     }
 
     /**
-     * @param id
-     * @throws FatalIndexerException
+     * <p>deleteDocument.</p>
+     *
+     * @param id a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public void deleteDocument(String id) throws FatalIndexerException {
         boolean success = false;
@@ -339,10 +382,13 @@ public final class SolrHelper {
     }
 
     /**
-     * @param ids
-     * @throws FatalIndexerException
+     * <p>deleteDocuments.</p>
+     *
+     * @param ids a {@link java.util.List} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return false if id list empty
      * @should delete ids correctly
+     * @return a boolean.
      */
     public boolean deleteDocuments(List<String> ids) throws FatalIndexerException {
         if (ids.isEmpty()) {
@@ -379,11 +425,10 @@ public final class SolrHelper {
     }
 
     /**
-     * 
-     * @param optimize
-     * @throws FatalIndexerException
-     * @throws IOException
-     * @throws SolrServerException
+     * <p>commit.</p>
+     *
+     * @param optimize a boolean.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public void commit(boolean optimize) throws FatalIndexerException {
         boolean success = false;
@@ -429,6 +474,9 @@ public final class SolrHelper {
         }
     }
 
+    /**
+     * <p>rollback.</p>
+     */
     public void rollback() {
         logger.info("Rolling back...");
         try {
@@ -440,6 +488,12 @@ public final class SolrHelper {
         }
     }
 
+    /**
+     * <p>getSolrSchemaDocument.</p>
+     *
+     * @return a {@link org.jdom2.Document} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     */
     public Document getSolrSchemaDocument() throws FatalIndexerException {
         if (server instanceof HttpSolrServer) {
             HttpSolrServer httpServer = (HttpSolrServer) server;
@@ -469,6 +523,12 @@ public final class SolrHelper {
         return null;
     }
 
+    /**
+     * <p>removeGrievingAnchors.</p>
+     *
+     * @return a int.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     */
     public int removeGrievingAnchors() throws FatalIndexerException {
         String[] fields = { SolrConstants.IDDOC, SolrConstants.PI };
         try {
@@ -495,7 +555,8 @@ public final class SolrHelper {
     }
 
     /**
-     * 
+     * <p>checkAndCreateGroupDoc.</p>
+     *
      * @param groupIdField Field name of the group identifier.
      * @param groupId Field value of the group identifier.
      * @param metadata Map with additional metadat fields to add to the group document.

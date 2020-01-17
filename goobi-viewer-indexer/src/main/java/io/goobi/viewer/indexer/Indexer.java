@@ -87,14 +87,21 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
+/**
+ * <p>Abstract Indexer class.</p>
+ *
+ */
 public abstract class Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
 
+    /** Constant <code>XML_EXTENSION=".xml"</code> */
     public static final String XML_EXTENSION = ".xml";
+    /** Constant <code>TXT_EXTENSION=".txt"</code> */
     public static final String TXT_EXTENSION = ".txt";
 
+    /** Constant <code>noTimestampUpdate=false</code> */
     public static boolean noTimestampUpdate = false;
 
     private static long nextIddoc = -1;
@@ -118,17 +125,17 @@ public abstract class Indexer {
 
     /**
      * Removes the document represented by the given METS or LIDO file from the index.
-     * 
-     * @param pi {@link String} Record identifier.
+     *
+     * @param pi {@link java.lang.String} Record identifier.
      * @param trace A Lucene document with DATEDELETED timestamp will be created if true.
-     * @param hotfolder
-     * @return {@link Boolean}
-     * @throws IOException
-     * @throws FatalIndexerException
+     * @return {@link java.lang.Boolean}
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should delete METS record from index completely
      * @should delete LIDO record from index completely
      * @should leave trace document for METS record if requested
      * @should leave trace document for LIDO record if requested
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
      */
     public static boolean delete(String pi, boolean trace, SolrHelper solrHelper) throws IOException, FatalIndexerException {
         if (StringUtils.isEmpty(pi)) {
@@ -171,13 +178,14 @@ public abstract class Indexer {
 
     /**
      * Löscht aus dem Index alle Documente die zu folgendem PI gehören. Das Löschen ist rekursiv. Unterelemente werden auch gelöscht.
-     * 
+     *
      * @param pi String
-     * @param createTraceDoc
-     * @param solrHelper
-     * @throws IOException
-     * @throws SolrServerException
-     * @throws FatalIndexerException
+     * @param createTraceDoc a boolean.
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @throws java.io.IOException
+     * @throws org.apache.solr.client.solrj.SolrServerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @return a boolean.
      */
     protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrHelper solrHelper)
             throws IOException, SolrServerException, FatalIndexerException {
@@ -269,12 +277,12 @@ public abstract class Indexer {
     /**
      * Recursively adds the given IDDOC and all IDDOCs of child documents to 'iddocsToDelete'. Does not perform the actual deletion, so it should only
      * be called by 'deleteWithPI()'! TODO This method is (almost) identical to MetsIndexer.deleteWithIDDOC()
-     * 
-     * @param inIddoc {@link String}
-     * @param solrHelper
+     *
+     * @param inIddoc {@link java.lang.String}
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
      * @return List of all IDDOC values from the document hierarchy.
-     * @throws IOException -
-     * @throws SolrServerException
+     * @throws java.io.IOException -
+     * @throws org.apache.solr.client.solrj.SolrServerException
      */
     @Deprecated
     protected static Set<String> deleteWithIDDOC(String inIddoc, SolrHelper solrHelper) throws IOException, SolrServerException {
@@ -350,10 +358,10 @@ public abstract class Indexer {
 
     /**
      * Returns the next available IDDOC value.
-     * 
-     * @param solrHelper
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @return a long.
      */
     protected static synchronized long getNextIddoc(SolrHelper solrHelper) throws FatalIndexerException {
         if (nextIddoc < 0) {
@@ -374,10 +382,10 @@ public abstract class Indexer {
 
     /**
      * Replaces irrelevant characters in the DEFAULT field value with spaces.
-     * 
-     * @param field
-     * @return
+     *
+     * @param field a {@link java.lang.String} object.
      * @should replace irrelevant chars with spaces correctly
+     * @return a {@link java.lang.String} object.
      */
     public static String cleanUpDefaultField(String field) {
         if (field != null) {
@@ -389,9 +397,9 @@ public abstract class Indexer {
 
     /**
      * Adds named entity fields from the given list to the given SolrInputDocument.
-     * 
-     * @param altoData
-     * @param doc
+     *
+     * @param altoData a {@link java.util.Map} object.
+     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
      */
     @SuppressWarnings("unchecked")
     protected void addNamedEntitiesFields(Map<String, Object> altoData, SolrInputDocument doc) {
@@ -411,8 +419,8 @@ public abstract class Indexer {
 
     /**
      * Removes any non-alphanumeric trailing characters from the given string.
-     * 
-     * @param value
+     *
+     * @param value a {@link java.lang.String} object.
      * @return Cleaned up value.
      * @should clean up value correctly
      * @should throw IllegalArgumentException given null
@@ -633,14 +641,15 @@ public abstract class Indexer {
     }
 
     /**
-     * @param pageDocs
-     * @param pi
-     * @param anchorPi
-     * @param groupIds
-     * @param ret
-     * @param path
-     * @param iddoc
-     * @return
+     * <p>readAnnotation.</p>
+     *
+     * @param pageDocs a {@link java.util.Map} object.
+     * @param pi a {@link java.lang.String} object.
+     * @param anchorPi a {@link java.lang.String} object.
+     * @param groupIds a {@link java.util.Map} object.
+     * @param path a {@link java.nio.file.Path} object.
+     * @param iddoc a long.
+     * @return a {@link org.apache.solr.common.SolrInputDocument} object.
      */
     public SolrInputDocument readAnnotation(Path path, long iddoc, String pi, String anchorPi, Map<Integer, SolrInputDocument> pageDocs,
             Map<String, String> groupIds) {
@@ -728,11 +737,11 @@ public abstract class Indexer {
 
     /**
      * Generates Solr docs for legacy UGC and WebAnnotation files and adds them to the write strategy.
-     * 
-     * @param writeStrategy
-     * @param dataFolders
-     * @param indexObj
-     * @throws FatalIndexerException
+     *
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     protected void writeUserGeneratedContents(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, IndexObject indexObj)
             throws FatalIndexerException {
@@ -766,12 +775,12 @@ public abstract class Indexer {
 
     /**
      * Creates the JDomXP instance for this indexer using the given XML file.
-     * 
-     * @param xmlFile
-     * @throws IOException
-     * @throws JDOMException
-     * @throws IndexerException
-     * @throws FatalIndexerException
+     *
+     * @param xmlFile a {@link java.nio.file.Path} object.
+     * @throws java.io.IOException
+     * @throws org.jdom2.JDOMException
+     * @throws io.goobi.viewer.indexer.model.IndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public void initJDomXP(Path xmlFile) throws IOException, JDOMException, IndexerException, FatalIndexerException {
         xp = new JDomXP(xmlFile.toFile());
@@ -781,9 +790,11 @@ public abstract class Indexer {
     }
 
     /**
-     * @param width
-     * @param parseInt
-     * @return
+     * <p>delta.</p>
+     *
+     * @param n a int.
+     * @param m a int.
+     * @return a int.
      */
     protected static int delta(int n, int m) {
         return Math.abs(n - m);
@@ -856,6 +867,13 @@ public abstract class Indexer {
         return Optional.empty();
     }
 
+    /**
+     * <p>getSizeForJp2.</p>
+     *
+     * @param image a {@link java.nio.file.Path} object.
+     * @return a {@link java.awt.Dimension} object.
+     * @throws java.io.IOException if any.
+     */
     public static Dimension getSizeForJp2(Path image) throws IOException {
 
         if (image.getFileName().toString().matches("(?i).*\\.jp(2|x|2000)")) {
@@ -904,6 +922,11 @@ public abstract class Indexer {
 
     }
 
+    /**
+     * <p>getOpenJpegReader.</p>
+     *
+     * @return a {@link javax.imageio.ImageReader} object.
+     */
     public static ImageReader getOpenJpegReader() {
         ImageReader reader;
         try {
@@ -920,11 +943,12 @@ public abstract class Indexer {
     }
 
     /**
-     * 
-     * @param writeStrategy
-     * @param indexObj
+     * <p>addGroupedMetadataDocs.</p>
+     *
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      * @return number of created docs
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should add docs correctly
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
@@ -956,11 +980,11 @@ public abstract class Indexer {
 
     /**
      * Checks for old data folder of the <code>paramName</code> type and puts it into <code>dataFolders</code>, if none yet present.
-     * 
-     * @param dataFolders
-     * @param paramName
-     * @param pi
-     * @throws IOException
+     *
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param paramName a {@link java.lang.String} object.
+     * @param pi a {@link java.lang.String} object.
+     * @throws java.io.IOException
      */
     protected void checkOldDataFolder(Map<String, Path> dataFolders, String paramName, String pi) throws IOException {
         if (dataFolders == null) {
@@ -1006,6 +1030,8 @@ public abstract class Indexer {
     }
 
     /**
+     * <p>Getter for the field <code>dataRepository</code>.</p>
+     *
      * @return the dataRepository
      */
     public DataRepository getDataRepository() {
@@ -1013,6 +1039,8 @@ public abstract class Indexer {
     }
 
     /**
+     * <p>Setter for the field <code>dataRepository</code>.</p>
+     *
      * @param dataRepository the dataRepository to set
      */
     public void setDataRepository(DataRepository dataRepository) {
@@ -1020,6 +1048,8 @@ public abstract class Indexer {
     }
 
     /**
+     * <p>Getter for the field <code>previousDataRepository</code>.</p>
+     *
      * @return the previousDataRepository
      */
     public DataRepository getPreviousDataRepository() {
@@ -1027,12 +1057,15 @@ public abstract class Indexer {
     }
 
     /**
+     * <p>Setter for the field <code>previousDataRepository</code>.</p>
+     *
      * @param previousDataRepository the previousDataRepository to set
      */
     public void setPreviousDataRepository(DataRepository previousDataRepository) {
         this.previousDataRepository = previousDataRepository;
     }
 
+    /** Constant <code>txt</code> */
     public static FilenameFilter txt = new FilenameFilter() {
 
         @Override
@@ -1041,6 +1074,7 @@ public abstract class Indexer {
         }
     };
 
+    /** Constant <code>xml</code> */
     public static FilenameFilter xml = new FilenameFilter() {
 
         @Override

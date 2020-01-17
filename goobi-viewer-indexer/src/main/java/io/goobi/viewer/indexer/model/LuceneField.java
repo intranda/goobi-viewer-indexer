@@ -27,9 +27,9 @@ public class LuceneField {
 
     /**
      * Constructor.
-     * 
-     * @param field
-     * @param value
+     *
+     * @param field a {@link java.lang.String} object.
+     * @param value a {@link java.lang.String} object.
      * @should set attributes correctly
      */
     public LuceneField(String field, String value) {
@@ -43,6 +43,7 @@ public class LuceneField {
      * 
      * @see java.lang.Object#hashCode()
      */
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -57,6 +58,7 @@ public class LuceneField {
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -86,24 +88,46 @@ public class LuceneField {
         return true;
     }
 
+    /**
+     * <p>Setter for the field <code>field</code>.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     */
     public void setField(String field) {
         this.field = field;
     }
 
+    /**
+     * <p>Getter for the field <code>field</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getField() {
         return field;
     }
 
+    /**
+     * <p>Setter for the field <code>value</code>.</p>
+     *
+     * @param value a {@link java.lang.String} object.
+     */
     public void setValue(String value) {
         this.value = value;
     }
 
+    /**
+     * <p>Getter for the field <code>value</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getValue() {
         return value;
     }
 
     /**
-     * @return {@link SolrInputField}
+     * <p>generateField.</p>
+     *
+     * @return {@link org.apache.solr.common.SolrInputField}
      * @should generate SolrInputField correctly
      */
     public SolrInputField generateField() {
@@ -113,6 +137,7 @@ public class LuceneField {
         return field;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return new StringBuilder(field).append(":").append(value).toString();

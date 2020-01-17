@@ -18,6 +18,10 @@ package io.goobi.viewer.indexer.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * <p>GroupedMetadata class.</p>
+ *
+ */
 public class GroupedMetadata {
 
     private String label;
@@ -25,6 +29,9 @@ public class GroupedMetadata {
     private String normUri;
     private final List<LuceneField> fields;
 
+    /**
+     * <p>Constructor for GroupedMetadata.</p>
+     */
     public GroupedMetadata() {
         fields = new ArrayList<>();
     }
@@ -32,6 +39,7 @@ public class GroupedMetadata {
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -45,6 +53,7 @@ public class GroupedMetadata {
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -73,6 +82,8 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>Getter for the field <code>label</code>.</p>
+     *
      * @return the label
      */
     public String getLabel() {
@@ -80,6 +91,8 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>Setter for the field <code>label</code>.</p>
+     *
      * @param label the label to set
      */
     public void setLabel(String label) {
@@ -87,6 +100,8 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>Getter for the field <code>mainValue</code>.</p>
+     *
      * @return the mainValue
      */
     public String getMainValue() {
@@ -94,6 +109,8 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>Setter for the field <code>mainValue</code>.</p>
+     *
      * @param mainValue the mainValue to set
      */
     public void setMainValue(String mainValue) {
@@ -101,6 +118,8 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>Getter for the field <code>normUri</code>.</p>
+     *
      * @return the normUri
      */
     public String getNormUri() {
@@ -108,6 +127,8 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>Setter for the field <code>normUri</code>.</p>
+     *
      * @param normUri the normUri to set
      */
     public void setNormUri(String normUri) {
@@ -115,6 +136,8 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>Getter for the field <code>fields</code>.</p>
+     *
      * @return the fields
      */
     public List<LuceneField> getFields() {

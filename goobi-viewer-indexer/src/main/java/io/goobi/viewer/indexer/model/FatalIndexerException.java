@@ -15,10 +15,19 @@
  */
 package io.goobi.viewer.indexer.model;
 
+/**
+ * <p>FatalIndexerException class.</p>
+ *
+ */
 public class FatalIndexerException extends Exception {
 
     private static final long serialVersionUID = 7023857932437068458L;
 
+    /**
+     * <p>Constructor for FatalIndexerException.</p>
+     *
+     * @param string a {@link java.lang.String} object.
+     */
     public FatalIndexerException(String string) {
         super(string);
     }

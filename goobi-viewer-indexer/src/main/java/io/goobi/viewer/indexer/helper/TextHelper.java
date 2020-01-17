@@ -63,11 +63,16 @@ import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
+/**
+ * <p>TextHelper class.</p>
+ *
+ */
 public final class TextHelper {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(TextHelper.class);
 
+    /** Constant <code>DEFAULT_ENCODING="UTF-8"</code> */
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     private static final String ALTO_WIDTH = "WIDTH";
@@ -79,9 +84,10 @@ public final class TextHelper {
     private static final String ALTO_SUBS_TYPE_SECOND_WORD = "HypPart2";
 
     /**
-     * 
-     * @param s
-     * @return
+     * <p>normalizeSequence.</p>
+     *
+     * @param s a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
      */
     public static String normalizeSequence(String s) {
         if (s == null) {
@@ -93,10 +99,10 @@ public final class TextHelper {
 
     /**
      * Uses ICU4J to determine the charset of the given InputStream.
-     * 
-     * @param input
+     *
+     * @param input a {@link java.io.InputStream} object.
      * @return Detected charset name; null if not detected.
-     * @throws IOException
+     * @throws java.io.IOException
      * @should detect charset correctly
      */
     public static String getCharset(InputStream input) throws IOException {
@@ -114,7 +120,7 @@ public final class TextHelper {
 
     /**
      * Converts a <code>String</code> from one given encoding to the other.
-     * 
+     *
      * @param string The string to convert.
      * @param from Source encoding.
      * @param to Destination encoding.
@@ -137,13 +143,15 @@ public final class TextHelper {
     }
 
     /**
-     * @param file
-     * @param convertFileToCharset
-     * @return
-     * @throws FileNotFoundException
-     * @throws IOException
+     * <p>readFileToString.</p>
+     *
+     * @param file a {@link java.io.File} object.
+     * @param convertFileToCharset a {@link java.lang.String} object.
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      * @should read file correctly
      * @should throw IOException if file not found
+     * @return a {@link java.lang.String} object.
      */
     public static String readFileToString(File file, String convertFileToCharset) throws FileNotFoundException, IOException {
         StringBuilder sb = new StringBuilder();
@@ -181,14 +189,15 @@ public final class TextHelper {
     }
 
     /**
-     * 
-     * @param file
-     * @return
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws JDOMException
+     * <p>readXmlFileToDoc.</p>
+     *
+     * @param file a {@link java.io.File} object.
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
+     * @throws org.jdom2.JDOMException
      * @should read XML file correctly
      * @should throw IOException if file not found
+     * @return a {@link org.jdom2.Document} object.
      */
     public static Document readXmlFileToDoc(File file) throws FileNotFoundException, IOException, JDOMException {
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -199,17 +208,16 @@ public final class TextHelper {
 
     /**
      * Reads the ALTO document in the file with the given file name.
-     * 
-     * @param fileName Name of the ALTO file.
-     * @param folder Folder in which the file is contained.
+     *
      * @return String[] with the content { raw ALTO, plain full-text, page width, page height, named entities }.
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws JDOMException
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
+     * @throws org.jdom2.JDOMException
      * @should read ALTO document correctly
      * @should extract fulltext correctly
      * @should extract page dimensions correctly
      * @should throw FileNotFoundException if file not found
+     * @param file a {@link java.io.File} object.
      */
     public static Map<String, Object> readAltoFile(File file) throws FileNotFoundException, IOException, JDOMException {
         AltoDocument altoDoc = AltoDocument.getDocumentFromFile(file);
@@ -221,9 +229,9 @@ public final class TextHelper {
 
     /**
      * Reads the given ALTO document. If a word has a line break, the complete word is written into each CONTENT attribute.
-     * 
-     * @param doc
-     * @return
+     *
+     * @param doc a {@link org.jdom2.Document} object.
+     * @return a {@link java.util.Map} object.
      */
     public static Map<String, Object> readAltoDoc(Document doc) {
         if (doc == null) {
@@ -314,9 +322,10 @@ public final class TextHelper {
     /**
      * An ALTO ComposedBlock can theoretically contain n levels of nested ComposedBlocks. Collect all words from contained TextBlocks recursively.
      *
-     * @param eleComposedBlock
-     * @return
+     * @param eleComposedBlock a {@link org.jdom2.Element} object.
      * @should return all words from nested ComposedBlocks
+     * @param sbFulltext a {@link java.lang.StringBuilder} object.
+     * @param wordWrapper a {@link io.goobi.viewer.indexer.helper.TextHelper.WordWrapper} object.
      */
     public static void handleAltoComposedBlock(Element eleComposedBlock, StringBuilder sbFulltext, WordWrapper wordWrapper) {
         List<Element> words = new ArrayList<>();
@@ -432,15 +441,15 @@ public final class TextHelper {
 
     /**
      * Converts the document from the given TEI file to ALTO.
-     * 
-     * @param file
-     * @return
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws JDOMException
-     * @throws FatalIndexerException
+     *
+     * @param file a {@link java.io.File} object.
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
+     * @throws org.jdom2.JDOMException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
+     * @return a {@link java.util.Map} object.
      */
     public static Map<String, Object> readTeiToAlto(File file) throws FileNotFoundException, IOException, JDOMException, FatalIndexerException {
         logger.info("readTei: {}", file.getAbsolutePath());
@@ -472,16 +481,15 @@ public final class TextHelper {
 
     /**
      * Extracts page width and height attributes from the given ABBYY XML file and converts the document to ALTO.
-     * 
-     * @param file
-     * @return
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws JDOMException
-     * @throws XMLStreamException
-     * @throws FatalIndexerException
+     *
+     * @param file a {@link java.io.File} object.
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
+     * @throws javax.xml.stream.XMLStreamException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
+     * @return a {@link java.util.Map} object.
      */
     public static Map<String, Object> readAbbyyToAlto(File file)
             throws FileNotFoundException, IOException, XMLStreamException, FatalIndexerException {
@@ -505,15 +513,15 @@ public final class TextHelper {
 
     /**
      * Extracts image width, height and color space attributes from the given MIX file.
-     * 
-     * @param file
-     * @return
-     * @throws FileNotFoundException
-     * @throws IOException
-     * @throws JDOMException
-     * @throws FatalIndexerException
+     *
+     * @param file a {@link java.io.File} object.
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
+     * @throws org.jdom2.JDOMException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return correct values
      * @should throw FileNotFoundException if file not found
+     * @return a {@link java.util.Map} object.
      */
     public static Map<String, String> readMix(File file) throws FileNotFoundException, IOException, JDOMException, FatalIndexerException {
         Map<String, String> ret = new HashMap<>();
@@ -557,14 +565,15 @@ public final class TextHelper {
     }
 
     /**
-     * 
-     * @param fileName
-     * @param folder
-     * @param warnIfMissing
-     * @return
+     * <p>generateFulltext.</p>
+     *
+     * @param fileName a {@link java.lang.String} object.
+     * @param folder a {@link java.nio.file.Path} object.
+     * @param warnIfMissing a boolean.
      * @should return text if fulltext file exists
      * @should return null if fulltext folder exists but no file
      * @should return null of fulltext folder does not exist
+     * @return a {@link java.lang.String} object.
      */
     public static String generateFulltext(String fileName, Path folder, boolean warnIfMissing) {
         if (!Files.isDirectory(folder)) {
@@ -588,10 +597,10 @@ public final class TextHelper {
 
     /**
      * Strips the given string of HTML tags, etc.
-     * 
-     * @param text
-     * @return
+     *
+     * @param text a {@link java.lang.String} object.
      * @should clean up string correctly
+     * @return a {@link java.lang.String} object.
      */
     public static String cleanUpHtmlTags(String text) {
         // Workaround for strings containing just opening brackets because JSoup cuts off everything that comes after

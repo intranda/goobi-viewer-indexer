@@ -15,6 +15,10 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
+/**
+ * <p>XPathConfig class.</p>
+ *
+ */
 public class XPathConfig {
 
     private final String xPath;
@@ -23,10 +27,10 @@ public class XPathConfig {
 
     /**
      * Constructor.
-     * 
-     * @param xPath
-     * @param prefix
-     * @param suffix
+     *
+     * @param xPath a {@link java.lang.String} object.
+     * @param prefix a {@link java.lang.String} object.
+     * @param suffix a {@link java.lang.String} object.
      * @should set members correctly
      */
     public XPathConfig(String xPath, String prefix, String suffix) {
@@ -36,6 +40,8 @@ public class XPathConfig {
     }
 
     /**
+     * <p>Getter for the field <code>xPath</code>.</p>
+     *
      * @return the xPath
      */
     public String getxPath() {
@@ -43,6 +49,8 @@ public class XPathConfig {
     }
 
     /**
+     * <p>Getter for the field <code>prefix</code>.</p>
+     *
      * @return the prefix
      */
     public String getPrefix() {
@@ -50,6 +58,8 @@ public class XPathConfig {
     }
 
     /**
+     * <p>Getter for the field <code>suffix</code>.</p>
+     *
      * @return the suffix
      */
     public String getSuffix() {

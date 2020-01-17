@@ -47,17 +47,22 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
+/**
+ * <p>DocUpdateIndexer class.</p>
+ *
+ */
 public class DocUpdateIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(DocUpdateIndexer.class);
 
+    /** Constant <code>FILE_EXTENSION=".docupdate"</code> */
     public static String FILE_EXTENSION = ".docupdate";
 
     /**
      * Constructor.
-     * 
-     * @param hotfolder
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object.
      * @should set attributes correctly
      */
     public DocUpdateIndexer(Hotfolder hotfolder) {
@@ -66,13 +71,12 @@ public class DocUpdateIndexer extends Indexer {
 
     /**
      * Updates the Solr document with the IDDOC contained in the data file name.
-     * 
-     * @param dataFile
-     * @param dataFolders
-     * @param mixFolder
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @param dataFile a {@link java.nio.file.Path} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should update document correctly
+     * @return an array of {@link java.lang.String} objects.
      */
 
     @SuppressWarnings("unchecked")

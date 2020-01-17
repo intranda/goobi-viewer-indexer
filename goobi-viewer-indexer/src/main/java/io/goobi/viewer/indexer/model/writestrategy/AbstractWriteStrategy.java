@@ -19,6 +19,10 @@ import org.apache.solr.common.SolrInputDocument;
 
 import io.goobi.viewer.indexer.model.SolrConstants;
 
+/**
+ * <p>Abstract AbstractWriteStrategy class.</p>
+ *
+ */
 public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
 
     /**

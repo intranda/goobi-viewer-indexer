@@ -23,24 +23,29 @@ import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
+/**
+ * <p>IDataRepositoryStrategy interface.</p>
+ *
+ */
 public interface IDataRepositoryStrategy {
 
     /**
-     * 
-     * @return
+     * <p>getAllDataRepositories.</p>
+     *
+     * @return a {@link java.util.List} object.
      */
     public List<DataRepository> getAllDataRepositories();
 
     /**
      * Selects available data repository for the given record. If no repository could be selected, the indexer MUST be halted.
-     * 
-     * @param pi
-     * @param dataFile
-     * @param dataFolders
-     * @param solrHelper
+     *
+     * @param pi a {@link java.lang.String} object.
+     * @param dataFile a {@link java.nio.file.Path} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
      * @return DataReopository array with index 0 containing the selected repository and 1 containing the previous repository, if not equal to
      *         selected repository
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders, final SolrHelper solrHelper)
             throws FatalIndexerException;

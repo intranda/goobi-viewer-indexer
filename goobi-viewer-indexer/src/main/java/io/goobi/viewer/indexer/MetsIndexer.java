@@ -90,12 +90,19 @@ public class MetsIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(MetsIndexer.class);
 
+    /** Constant <code>DEFAULT_FILEGROUP_1="PRESENTATION"</code> */
     public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
+    /** Constant <code>DEFAULT_FILEGROUP_2="DEFAULT"</code> */
     public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
+    /** Constant <code>OBJECT_FILEGROUP="OBJECT"</code> */
     public static final String OBJECT_FILEGROUP = "OBJECT";
+    /** Constant <code>ALTO_FILEGROUP="ALTO"</code> */
     public static final String ALTO_FILEGROUP = "ALTO";
+    /** Constant <code>FULLTEXT_FILEGROUP="FULLTEXT"</code> */
     public static final String FULLTEXT_FILEGROUP = "FULLTEXT";
+    /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
+    /** Constant <code>DEFAULT_FULLTEXT_CHARSET="UTF-8"</code> */
     public static final String DEFAULT_FULLTEXT_CHARSET = "UTF-8";
 
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
@@ -104,9 +111,8 @@ public class MetsIndexer extends Indexer {
 
     /**
      * Constructor.
-     * 
-     * @param hotfolder
-     * @param writeStrategy
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object.
      * @should set attributes correctly
      */
     public MetsIndexer(Hotfolder hotfolder) {
@@ -115,20 +121,19 @@ public class MetsIndexer extends Indexer {
 
     /**
      * Indexes the given METS file.
-     * 
-     * @param metsFile {@link Path}
-     * @param fromReindexQueue
-     * @param dataFolders
-     * @param writeStragegy Implementation of {@link ISolrWriteStrategy} (optional). If null, a new one will be created based on METS file and data
-     *            folder sizes.
+     *
+     * @param metsFile {@link java.nio.file.Path}
+     * @param fromReindexQueue a boolean.
+     * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart Order number for the first page.
-     * @return
      * @should index record correctly
      * @should index metadata groups correctly
      * @should index multi volume records correctly
      * @should update record correctly
      * @should set access conditions correctly
      * @should write cms page texts into index
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @return an array of {@link java.lang.String} objects.
      */
     public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
@@ -758,14 +763,13 @@ public class MetsIndexer extends Indexer {
     /**
      * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
      * docstruct (such as docstruct iddoc, type, collection, etc.).
-     * 
-     * @param writeStrategy
-     * @param dataFolders
-     * @param dataRepository
-     * @param pi
-     * @param pageCountStart
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
+     * @param pi a {@link java.lang.String} object.
+     * @param pageCountStart a int.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
      * @should skip unmapped pages
@@ -1730,11 +1734,11 @@ public class MetsIndexer extends Indexer {
     /**
      * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
      * is added, child docs are removed.
-     * 
-     * @param indexObj {@link IndexObject}
-     * @throws IOException
-     * @throws SolrServerException
-     * @throws FatalIndexerException
+     *
+     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
+     * @throws java.io.IOException
+     * @throws org.apache.solr.client.solrj.SolrServerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should keep creation timestamp
      * @should set update timestamp correctly
      * @should keep representation thumbnail
@@ -2113,11 +2117,12 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @return
-     * @throws FatalIndexerException
+     * <p>getMetsCreateDate.</p>
+     *
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS
+     * @return a {@link java.util.Date} object.
      */
     protected Date getMetsCreateDate() throws FatalIndexerException {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
@@ -2140,11 +2145,11 @@ public class MetsIndexer extends Indexer {
     /**
      * Moves an updated anchor METS file to the indexed METS folder and the previous version to the updated_mets folder without doing any index
      * operations.
-     * 
-     * @param metsFile {@link Path} z.B.: PPN1234567890.UPDATED
+     *
+     * @param metsFile {@link java.nio.file.Path} z.B.: PPN1234567890.UPDATED
      * @param updatedMetsFolder Updated METS folder for old METS files.
      * @param dataRepository Data repository to which to copy the new file.
-     * @throws IOException in case of errors.
+     * @throws java.io.IOException in case of errors.
      * @should copy new METS file correctly
      * @should copy old METS file to updated mets folder if file already exists
      */

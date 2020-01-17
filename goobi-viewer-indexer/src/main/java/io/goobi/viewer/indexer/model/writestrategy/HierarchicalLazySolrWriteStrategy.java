@@ -24,28 +24,25 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
+/**
+ * <p>HierarchicalLazySolrWriteStrategy class.</p>
+ *
+ */
 public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(HierarchicalLazySolrWriteStrategy.class);
 
     /**
      * Constructor.
-     * 
-     * @param solrHelper
+     *
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
      * @should set attributes correctly
      */
     public HierarchicalLazySolrWriteStrategy(SolrHelper solrHelper) {
         super(solrHelper);
     }
 
-    /**
-     * @param aggregateRecords
-     * @throws IndexerException
-     * @throws FatalIndexerException
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#writeDocs()
-     * @should write all structure docs correctly
-     * @should write all page docs correctly
-     */
+    /** {@inheritDoc} */
     @Override
     public void writeDocs(boolean aggregateRecords) throws IndexerException, FatalIndexerException {
         if (rootDoc == null) {

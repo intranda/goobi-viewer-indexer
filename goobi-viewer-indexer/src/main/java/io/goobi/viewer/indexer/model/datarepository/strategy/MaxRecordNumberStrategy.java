@@ -47,9 +47,9 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
 
     /**
      * Constructor.
-     * 
-     * @param config
-     * @throws FatalIndexerException
+     *
+     * @param config a {@link io.goobi.viewer.indexer.helper.Configuration} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public MaxRecordNumberStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
@@ -64,6 +64,7 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#getAllDataRepositories()
      */
+    /** {@inheritDoc} */
     @Override
     public List<DataRepository> getAllDataRepositories() {
         return dataRepositories;
@@ -72,6 +73,7 @@ public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, io.goobi.viewer.indexer.helper.SolrHelper)
      */
+    /** {@inheritDoc} */
     @Override
     public DataRepository[] selectDataRepository(String pi, Path dataFile, Map<String, Path> dataFolders, SolrHelper solrHelper)
             throws FatalIndexerException {

@@ -72,16 +72,19 @@ public class IndexObject {
     private final Set<String> languages = new HashSet<>();
 
     /**
-     * @param iddoc
+     * <p>Constructor for IndexObject.</p>
+     *
+     * @param iddoc a long.
      */
     public IndexObject(long iddoc) {
         this.iddoc = iddoc;
     }
 
     /**
-     * 
-     * @param iddoc
-     * @param pi
+     * <p>Constructor for IndexObject.</p>
+     *
+     * @param iddoc a long.
+     * @param pi a {@link java.lang.String} object.
      * @should set attributes correctly
      */
     public IndexObject(long iddoc, String pi) {
@@ -91,7 +94,7 @@ public class IndexObject {
 
     /**
      * Generates Solr fields for essential metadata.
-     * 
+     *
      * @should write all required fields
      */
     public void pushSimpleDataToLuceneArray() {
@@ -140,10 +143,11 @@ public class IndexObject {
     /**
      * Writes ACCESSCONDITION fields for every string in the <code>accessConditions</code> list. Should be done in the end so that only docs with no
      * access condition get the open access value.
-     * 
+     *
      * @should inherit access conditions from parent except OPENACCESS
      * @should not inherit access conditions from parent if own access conditions exist
      * @should add OPENACCESS if list empty
+     * @param parentIndexObject a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      */
     public void writeAccessConditions(IndexObject parentIndexObject) {
         // If the docstruct has no own access conditions, add those from the parent (except for openaccess)
@@ -168,7 +172,7 @@ public class IndexObject {
 
     /**
      * Writes created/updated timestamps.
-     * 
+     *
      * @param updateDateUpdated DATEUPDATED will be set to the current timestamp if true; old value will be used if false.
      * @should set DATECREATED if not set
      * @should not set DATECREATED if already set
@@ -200,6 +204,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>writeLanguages.</p>
+     *
      * @should add languages from metadata fields
      */
     public void writeLanguages() {
@@ -225,10 +231,10 @@ public class IndexObject {
     }
 
     /**
-     * Returns the first {@link LuceneField} with the given name.
-     * 
+     * Returns the first {@link io.goobi.viewer.indexer.model.LuceneField} with the given name.
+     *
      * @param name String
-     * @return {@link LuceneField} or null
+     * @return {@link io.goobi.viewer.indexer.model.LuceneField} or null
      * @should return first field with given name
      * @should return null if name not found
      */
@@ -242,12 +248,12 @@ public class IndexObject {
     }
 
     /**
-     * Returns all {@link LuceneField}s with the given name.
-     * 
-     * @param name
-     * @return
+     * Returns all {@link io.goobi.viewer.indexer.model.LuceneField}s with the given name.
+     *
+     * @param name a {@link java.lang.String} object.
      * @should return all fields with given name
      * @should return empty list if name not found
+     * @return a {@link java.util.List} object.
      */
     public List<LuceneField> getLuceneFieldsWithName(String name) {
         List<LuceneField> ret = new ArrayList<>();
@@ -263,10 +269,10 @@ public class IndexObject {
 
     /**
      * Adds a new field with the given name and value to the field list.
-     * 
-     * @param field {@link String}
-     * @param value {@link String}
-     * @return {@link Boolean} true if sucessful
+     *
+     * @param field {@link java.lang.String}
+     * @param value {@link java.lang.String}
+     * @return {@link java.lang.Boolean} true if sucessful
      * @should add field to list correctly
      */
     public boolean addToLucene(String field, String value) {
@@ -278,9 +284,9 @@ public class IndexObject {
 
     /**
      * Adds the given LuceneField to the field list.
-     * 
-     * @param luceneField
-     * @return
+     *
+     * @param luceneField a {@link io.goobi.viewer.indexer.model.LuceneField} object.
+     * @return a boolean.
      */
     public boolean addToLucene(LuceneField luceneField) {
         if (luceneField == null) {
@@ -314,9 +320,9 @@ public class IndexObject {
 
     /**
      * Adds the given field and value to the groupIds map, if field name starts with <code>GROUPID_</code>.
-     * 
-     * @param field {@link String}
-     * @param value {@link String}
+     *
+     * @param field {@link java.lang.String}
+     * @param value {@link java.lang.String}
      * @should collect group id fields correctly
      */
     protected void addToGroupIds(String field, String value) {
@@ -331,6 +337,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>removeDuplicateGroupedMetadata.</p>
+     *
      * @should remove duplicates correctly
      */
     public void removeDuplicateGroupedMetadata() {
@@ -352,102 +360,216 @@ public class IndexObject {
         }
     }
 
+    /**
+     * <p>Setter for the field <code>iddoc</code>.</p>
+     *
+     * @param iddoc a long.
+     */
     public void setIddoc(long iddoc) {
         this.iddoc = iddoc;
     }
 
+    /**
+     * <p>Getter for the field <code>iddoc</code>.</p>
+     *
+     * @return a long.
+     */
     public long getIddoc() {
         return iddoc;
     }
 
+    /**
+     * <p>Setter for the field <code>volume</code>.</p>
+     *
+     * @param volume a boolean.
+     */
     public void setVolume(boolean volume) {
         this.volume = volume;
     }
 
+    /**
+     * <p>isVolume.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isVolume() {
         return volume;
     }
 
+    /**
+     * <p>Setter for the field <code>pi</code>.</p>
+     *
+     * @param pi a {@link java.lang.String} object.
+     */
     public void setPi(String pi) {
         this.pi = pi;
     }
 
+    /**
+     * <p>Getter for the field <code>pi</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getPi() {
         return pi;
     }
 
+    /**
+     * <p>Setter for the field <code>parent</code>.</p>
+     *
+     * @param parent a {@link io.goobi.viewer.indexer.model.IndexObject} object.
+     */
     public void setParent(IndexObject parent) {
         this.parent = parent;
     }
 
+    /**
+     * <p>Getter for the field <code>parent</code>.</p>
+     *
+     * @return a {@link io.goobi.viewer.indexer.model.IndexObject} object.
+     */
     public IndexObject getParent() {
         return parent;
     }
 
+    /**
+     * <p>setDmdid.</p>
+     *
+     * @param dmdid a {@link java.lang.String} object.
+     */
     public void setDmdid(String dmdid) {
         this.dmdId = dmdid;
     }
 
+    /**
+     * <p>getDmdid.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getDmdid() {
         return dmdId;
     }
 
+    /**
+     * <p>Setter for the field <code>logId</code>.</p>
+     *
+     * @param logId a {@link java.lang.String} object.
+     */
     public void setLogId(String logId) {
         this.logId = logId;
     }
 
+    /**
+     * <p>Getter for the field <code>logId</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getLogId() {
         return logId;
     }
 
+    /**
+     * <p>Setter for the field <code>type</code>.</p>
+     *
+     * @param type a {@link java.lang.String} object.
+     */
     public void setType(String type) {
         this.type = type;
     }
 
+    /**
+     * <p>Getter for the field <code>type</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * <p>Setter for the field <code>label</code>.</p>
+     *
+     * @param label a {@link java.lang.String} object.
+     */
     public void setLabel(String label) {
         this.label = label;
     }
 
+    /**
+     * <p>Getter for the field <code>label</code>.</p>
+     *
+     * @return a {@link java.lang.String} object.
+     */
     public String getLabel() {
         return label;
     }
 
     /**
+     * <p>Getter for the field <code>parentLabels</code>.</p>
+     *
      * @return the parentLabels
      */
     public List<String> getParentLabels() {
         return parentLabels;
     }
 
+    /**
+     * <p>Setter for the field <code>rootStructNode</code>.</p>
+     *
+     * @param rootStructNode a {@link org.jdom2.Element} object.
+     */
     public void setRootStructNode(Element rootStructNode) {
         this.rootStructNode = rootStructNode;
     }
 
+    /**
+     * <p>Getter for the field <code>rootStructNode</code>.</p>
+     *
+     * @return a {@link org.jdom2.Element} object.
+     */
     public Element getRootStructNode() {
         return rootStructNode;
     }
 
+    /**
+     * <p>Setter for the field <code>anchor</code>.</p>
+     *
+     * @param anchor a boolean.
+     */
     public void setAnchor(boolean anchor) {
         this.anchor = anchor;
     }
 
+    /**
+     * <p>isAnchor.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isAnchor() {
         return anchor;
     }
 
+    /**
+     * <p>Setter for the field <code>update</code>.</p>
+     *
+     * @param update a boolean.
+     */
     public void setUpdate(boolean update) {
         this.update = update;
     }
 
+    /**
+     * <p>isUpdate.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isUpdate() {
         return update;
     }
 
     /**
+     * <p>Setter for the field <code>defaultValue</code>.</p>
+     *
      * @param defaultValue the defaultValue to set
      */
     public void setDefaultValue(String defaultValue) {
@@ -455,6 +577,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>defaultValue</code>.</p>
+     *
      * @return the defaultValue
      */
     public String getDefaultValue() {
@@ -462,6 +586,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>dateCreated</code>.</p>
+     *
      * @return the dateCreated
      */
     public long getDateCreated() {
@@ -469,6 +595,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>dateCreated</code>.</p>
+     *
      * @param dateCreated the dateCreated to set
      */
     public void setDateCreated(long dateCreated) {
@@ -476,6 +604,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>dateUpdated</code>.</p>
+     *
      * @return the dateUpdated
      */
     public List<Long> getDateUpdated() {
@@ -483,6 +613,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>urn</code>.</p>
+     *
      * @return the urn
      */
     public String getUrn() {
@@ -490,6 +622,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>urn</code>.</p>
+     *
      * @param urn the urn to set
      */
     public void setUrn(String urn) {
@@ -497,6 +631,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>imageUrns</code>.</p>
+     *
      * @return the imageUrns
      */
     public List<String> getImageUrns() {
@@ -504,6 +640,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>imageUrns</code>.</p>
+     *
      * @param imageUrns the imageUrns to set
      */
     public void setImageUrns(List<String> imageUrns) {
@@ -511,6 +649,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>parentPI</code>.</p>
+     *
      * @param parentPI the parentPI to set
      */
     public void setParentPI(String parentPI) {
@@ -518,6 +658,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>parentPI</code>.</p>
+     *
      * @return the parentPI
      */
     public String getParentPI() {
@@ -525,6 +667,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>topstructPI</code>.</p>
+     *
      * @return the topstructPI
      */
     public String getTopstructPI() {
@@ -532,6 +676,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>topstructPI</code>.</p>
+     *
      * @param topstructPI the topstructPI to set
      */
     public void setTopstructPI(String topstructPI) {
@@ -539,6 +685,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>anchorPI</code>.</p>
+     *
      * @return the anchorPI
      */
     public String getAnchorPI() {
@@ -546,6 +694,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>anchorPI</code>.</p>
+     *
      * @param anchorPI the anchorPI to set
      */
     public void setAnchorPI(String anchorPI) {
@@ -553,17 +703,26 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>groupIds</code>.</p>
+     *
      * @return the groupIds
      */
     public Map<String, String> getGroupIds() {
         return groupIds;
     }
 
+    /**
+     * <p>Getter for the field <code>accessConditions</code>.</p>
+     *
+     * @return a {@link java.util.Set} object.
+     */
     public Set<String> getAccessConditions() {
         return accessConditions;
     }
 
     /**
+     * <p>Getter for the field <code>thumbnailRepresent</code>.</p>
+     *
      * @return the thumbnailRepresent
      */
     public String getThumbnailRepresent() {
@@ -571,6 +730,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>thumbnailRepresent</code>.</p>
+     *
      * @param thumbnailRepresent the thumbnailRepresent to set
      */
     public void setThumbnailRepresent(String thumbnailRepresent) {
@@ -578,6 +739,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>dataRepository</code>.</p>
+     *
      * @return the dataRepository
      */
     public String getDataRepository() {
@@ -585,17 +748,26 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>dataRepository</code>.</p>
+     *
      * @param dataRepository the dataRepository to set
      */
     public void setDataRepository(String dataRepository) {
         this.dataRepository = dataRepository;
     }
 
+    /**
+     * <p>Getter for the field <code>luceneFields</code>.</p>
+     *
+     * @return a {@link java.util.List} object.
+     */
     public List<LuceneField> getLuceneFields() {
         return luceneFields;
     }
 
     /**
+     * <p>Getter for the field <code>groupedMetadataFields</code>.</p>
+     *
      * @return the groupedMetadataFields
      */
     public List<GroupedMetadata> getGroupedMetadataFields() {
@@ -603,6 +775,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>groupedMetadataFields</code>.</p>
+     *
      * @param groupedMetadataFields the groupedMetadataFields to set
      */
     public void setGroupedMetadataFields(List<GroupedMetadata> groupedMetadataFields) {
@@ -610,6 +784,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>numPages</code>.</p>
+     *
      * @return the numPages
      */
     public int getNumPages() {
@@ -617,6 +793,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>numPages</code>.</p>
+     *
      * @param numPages the numPages to set
      */
     public void setNumPages(int numPages) {
@@ -624,6 +802,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>firstPageLabel</code>.</p>
+     *
      * @return the firstPageLabel
      */
     public String getFirstPageLabel() {
@@ -631,6 +811,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>firstPageLabel</code>.</p>
+     *
      * @param firstPageLabel the firstPageLabel to set
      */
     public void setFirstPageLabel(String firstPageLabel) {
@@ -638,6 +820,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>lastPageLabel</code>.</p>
+     *
      * @return the lastPageLabel
      */
     public String getLastPageLabel() {
@@ -645,6 +829,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Setter for the field <code>lastPageLabel</code>.</p>
+     *
      * @param lastPageLabel the lastPageLabel to set
      */
     public void setLastPageLabel(String lastPageLabel) {
@@ -652,6 +838,8 @@ public class IndexObject {
     }
 
     /**
+     * <p>Getter for the field <code>languages</code>.</p>
+     *
      * @return the languages
      */
     public Set<String> getLanguages() {
