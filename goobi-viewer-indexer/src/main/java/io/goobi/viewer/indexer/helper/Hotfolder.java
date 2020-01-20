@@ -654,6 +654,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile)) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             FileFormat format = FileFormat.UNKNOWN;
             if (!Files.exists(actualXmlFile)) {
                 logger.warn("XML file '{}' not found.", actualXmlFile.getFileName().toString());
