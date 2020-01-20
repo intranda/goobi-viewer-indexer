@@ -1014,10 +1014,12 @@ public class MetsIndexer extends Indexer {
             if (fileGroup.equals(useFileGroup)) {
                 // The file name from the main file group (PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
-                    // Should  write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
+                    // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
+                    if (doc.containsKey(SolrConstants.FILENAME)) {
+                        logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath,
+                                fileGroup);
+                    }
                     doc.addField(SolrConstants.FILENAME, filePath);
-                    logger.info("Page {}, adding FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath, fileGroup);
-
                     // RosDok IIIF
                     if (DEFAULT_FILEGROUP_2.equals(useFileGroup) && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
                         doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
@@ -1174,7 +1176,7 @@ public class MetsIndexer extends Indexer {
             }
             // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
             if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
-                    && dataFolders.get(DataRepository.PARAM_ALTO) != null) {
+                    && dataFolders.get(DataRepository.PARAM_ALTO) != null && !"info".equals(baseFileName)) {
                 try {
                     altoData = TextHelper.readAltoFile(
                             new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
@@ -1209,7 +1211,8 @@ public class MetsIndexer extends Indexer {
             }
 
             // If FULLTEXT is still empty, look for a plain full-text
-            if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null) {
+            if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null
+                    && !"info".equals(baseFileName)) {
                 String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
                 if (fulltext != null) {
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
@@ -1220,7 +1223,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // ABBYY XML (converted to ALTO)
-            if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null) {
+            if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null && !"info".equals(baseFileName)) {
                 try {
                     try {
                         altoData = TextHelper.readAbbyyToAlto(
@@ -1270,7 +1273,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Read word coords from TEI only if none has been read from ALTO for this page yet
-            if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
+            if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null && !"info".equals(baseFileName)) {
                 try {
                     altoData = TextHelper.readTeiToAlto(
                             new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
@@ -1314,7 +1317,7 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
+            if (dataFolders.get(DataRepository.PARAM_MIX) != null && !"info".equals(baseFileName)) {
                 try {
                     Map<String, String> mixData = TextHelper
                             .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
@@ -1342,12 +1345,12 @@ public class MetsIndexer extends Indexer {
                         altoData = TextHelper.readAltoDoc(altoDoc);
                         if (altoData != null) {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-//                                // Create PARAM_ALTO_CONVERTED dir in hotfolder for download, if it doesn't yet exist
-//                                if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) == null) {
-//                                    dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
-//                                            Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
-//                                    Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
-//                                }
+                                // Create PARAM_ALTO_CONVERTED dir in hotfolder for download, if it doesn't yet exist
+                                if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) == null) {
+                                    dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
+                                            Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
+                                    Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
+                                }
                                 if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
                                     String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + XML_EXTENSION;
                                     doc.addField(SolrConstants.FILENAME_ALTO,
