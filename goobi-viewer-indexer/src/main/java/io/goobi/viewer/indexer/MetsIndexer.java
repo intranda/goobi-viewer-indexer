@@ -890,6 +890,19 @@ public class MetsIndexer extends Indexer {
                 useFileGroup = OBJECT_FILEGROUP;
                 useFileID = fileID;
             }
+
+            // Shapes
+            if (eleFptr.getChild("seq", Configuration.getInstance().getNamespaces().get("mets")) != null) {
+                List<Element> eleListArea = eleFptr.getChild("seq", Configuration.getInstance().getNamespaces().get("mets"))
+                        .getChildren("area", Configuration.getInstance().getNamespaces().get("mets"));
+                if (eleListArea != null && !eleListArea.isEmpty()) {
+                    for (Element eleArea : eleListArea) {
+                        String coords = eleArea.getAttributeValue("COORDS");
+                        String physId = eleArea.getAttributeValue("ID");
+                        String shape = eleArea.getAttributeValue("SHAPE");
+                    }
+                }
+            }
         }
         if (useFileGroup != null && StringUtils.isEmpty(useFileID)) {
             logger.warn("FILEID not found for file group {}", useFileGroup);
@@ -1055,6 +1068,7 @@ public class MetsIndexer extends Indexer {
                         doc.addField("MDNUM_FILESIZE", -1);
                     }
                 }
+
             } else if (fileGroup.equals(ALTO_FILEGROUP) || fileGroup.equals(FULLTEXT_FILEGROUP)) {
                 altoURL = filePath;
             } else {
