@@ -33,6 +33,7 @@ import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
@@ -90,6 +91,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             }
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
             Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
+            Assert.assertEquals(FileFormat.DENKXWEB.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
         }
     }
 

@@ -208,10 +208,6 @@ public final class SolrConstants {
     public static final String _NOESCAPE = "_NOESCAPE";
     /** Constant <code>_UNTOKENIZED="_UNTOKENIZED"</code> */
     public static final String _UNTOKENIZED = "_UNTOKENIZED";
-    /** Constant <code>_METS="METS"</code> */
-    public static final String _METS = "METS";
-    /** Constant <code>_LIDO="LIDO"</code> */
-    public static final String _LIDO = "LIDO";
     /** Constant <code>_UGC_TYPE_PERSON="PERSON"</code> */
     public static final String _UGC_TYPE_PERSON = "PERSON";
     /** Constant <code>_UGC_TYPE_CORPORATION="CORPORATION"</code> */
@@ -220,8 +216,6 @@ public final class SolrConstants {
     public static final String _UGC_TYPE_ADDRESS = "ADDRESS";
     /** Constant <code>_UGC_TYPE_COMMENT="COMMENT"</code> */
     public static final String _UGC_TYPE_COMMENT = "COMMENT";
-    /** Constant <code>_WORLDVIEWS="WORLDVIEWS"</code> */
-    public static final String _WORLDVIEWS = "WORLDVIEWS";
     /** Constant <code>NAMEDENTITIES="NAMEDENTITIES"</code> */
     public static final String NAMEDENTITIES = "NAMEDENTITIES";
 }

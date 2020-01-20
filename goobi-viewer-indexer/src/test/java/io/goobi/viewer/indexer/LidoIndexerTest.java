@@ -33,6 +33,7 @@ import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -150,7 +151,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(1, doc.getFieldValue(SolrConstants.NUMPAGES));
             Assert.assertEquals(PI, doc.getFieldValue(SolrConstants.PI));
             Assert.assertEquals(PI, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assert.assertEquals(SolrConstants._LIDO, doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
+            Assert.assertEquals(FileFormat.LIDO.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
             Assert.assertEquals("PH_1.jpg", doc.getFieldValue(SolrConstants.THUMBNAIL));
             Assert.assertEquals(1, doc.getFieldValue(SolrConstants.THUMBPAGENO));
             Assert.assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));

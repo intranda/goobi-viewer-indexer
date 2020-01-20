@@ -68,6 +68,7 @@ import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -262,8 +263,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, SolrConstants._METS);
-
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.METS.name());
             prepareUpdate(indexObj);
 
             int workDepth = 0; // depth of the docstrct that has ISWORK (volume or monograph)
@@ -1342,6 +1342,12 @@ public class MetsIndexer extends Indexer {
                         altoData = TextHelper.readAltoDoc(altoDoc);
                         if (altoData != null) {
                             if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
+//                                // Create PARAM_ALTO_CONVERTED dir in hotfolder for download, if it doesn't yet exist
+//                                if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) == null) {
+//                                    dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
+//                                            Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
+//                                    Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
+//                                }
                                 if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
                                     String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + XML_EXTENSION;
                                     doc.addField(SolrConstants.FILENAME_ALTO,
@@ -2117,7 +2123,9 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * <p>getMetsCreateDate.</p>
+     * <p>
+     * getMetsCreateDate.
+     * </p>
      *
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return CREATEDATE value

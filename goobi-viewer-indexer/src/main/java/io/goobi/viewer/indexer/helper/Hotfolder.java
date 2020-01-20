@@ -80,7 +80,9 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.RemainingSpaceStrat
 import io.goobi.viewer.indexer.model.datarepository.strategy.SingleRepositoryStrategy;
 
 /**
- * <p>Hotfolder class.</p>
+ * <p>
+ * Hotfolder class.
+ * </p>
  *
  */
 public class Hotfolder {
@@ -142,7 +144,9 @@ public class Hotfolder {
 
     @SuppressWarnings("unchecked")
     /**
-     * <p>Constructor for Hotfolder.</p>
+     * <p>
+     * Constructor for Hotfolder.
+     * </p>
      *
      * @param confFilename a {@link java.lang.String} object.
      * @param solrServer a {@link org.apache.solr.client.solrj.SolrServer} object.
@@ -667,6 +671,8 @@ public class Hotfolder {
                         format = FileFormat.METS;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO))) {
                         format = FileFormat.LIDO;
+                    } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB))) {
+                        format = FileFormat.DENKXWEB;
                     } else if (doc.containsKey(SolrConstants.DATEDELETED)) {
                         format = FileFormat.METS;
                         trace = false;
@@ -1670,7 +1676,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>copyDirectory.</p>
+     * <p>
+     * copyDirectory.
+     * </p>
      *
      * @param sourceLocation {@link java.io.File}
      * @param targetLocation {@link java.io.File}
@@ -1726,7 +1734,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>reindexQueue</code>.</p>
+     * <p>
+     * Getter for the field <code>reindexQueue</code>.
+     * </p>
      *
      * @return a {@link java.util.Queue} object.
      */
@@ -1735,7 +1745,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>getHotfolder.</p>
+     * <p>
+     * getHotfolder.
+     * </p>
      *
      * @return a {@link java.nio.file.Path} object.
      */
@@ -1744,7 +1756,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>getTempFolder.</p>
+     * <p>
+     * getTempFolder.
+     * </p>
      *
      * @return a {@link java.nio.file.Path} object.
      */
@@ -1753,7 +1767,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>isAddVolumeCollectionsToAnchor.</p>
+     * <p>
+     * isAddVolumeCollectionsToAnchor.
+     * </p>
      *
      * @return the addVolumeCollectionsToAnchor
      */
@@ -1762,7 +1778,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>dataRepositoryStrategy</code>.</p>
+     * <p>
+     * Getter for the field <code>dataRepositoryStrategy</code>.
+     * </p>
      *
      * @return the dataRepositoryStrategy
      */
@@ -1771,7 +1789,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>updatedMets</code>.</p>
+     * <p>
+     * Getter for the field <code>updatedMets</code>.
+     * </p>
      *
      * @return a {@link java.nio.file.Path} object.
      */
@@ -1780,7 +1800,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>deletedMets</code>.</p>
+     * <p>
+     * Getter for the field <code>deletedMets</code>.
+     * </p>
      *
      * @return a {@link java.nio.file.Path} object.
      */
@@ -1789,7 +1811,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>errorMets</code>.</p>
+     * <p>
+     * Getter for the field <code>errorMets</code>.
+     * </p>
      *
      * @return a {@link java.nio.file.Path} object.
      */
@@ -1798,7 +1822,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>origLido</code>.</p>
+     * <p>
+     * Getter for the field <code>origLido</code>.
+     * </p>
      *
      * @return the origLido
      */
@@ -1807,7 +1833,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>success</code>.</p>
+     * <p>
+     * Getter for the field <code>success</code>.
+     * </p>
      *
      * @return a {@link java.nio.file.Path} object.
      */
@@ -1816,7 +1844,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>solrHelper</code>.</p>
+     * <p>
+     * Getter for the field <code>solrHelper</code>.
+     * </p>
      *
      * @return the solrHelper
      */
@@ -1825,7 +1855,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>getDataFolderFilter.</p>
+     * <p>
+     * getDataFolderFilter.
+     * </p>
      *
      * @param prefix a {@link java.lang.String} object.
      * @return a {@link java.io.FilenameFilter} object.

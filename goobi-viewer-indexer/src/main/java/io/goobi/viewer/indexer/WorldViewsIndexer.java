@@ -54,6 +54,7 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.helper.TextHelper;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -224,7 +225,7 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, SolrConstants._WORLDVIEWS);
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.WORLDVIEWS.name());
 
             prepareUpdate(indexObj);
 

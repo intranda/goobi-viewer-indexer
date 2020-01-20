@@ -50,6 +50,7 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexerException;
@@ -180,7 +181,7 @@ public class DenkXwebIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, SolrConstants._LIDO);
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DENKXWEB.name());
 
             prepareUpdate(indexObj);
 

@@ -39,6 +39,7 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -152,7 +153,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(16, doc.getFieldValue(SolrConstants.NUMPAGES));
             Assert.assertEquals(PI, doc.getFieldValue(SolrConstants.PI));
             Assert.assertEquals(PI, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assert.assertEquals(SolrConstants._METS, doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
+            Assert.assertEquals(FileFormat.METS.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
             Assert.assertEquals("00000002.tif", doc.getFieldValue(SolrConstants.THUMBNAIL)); // representative image is set
             Assert.assertEquals("00000002.tif", doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT)); // not really used
             Assert.assertEquals(2, doc.getFieldValue(SolrConstants.THUMBPAGENO)); // representative image should not affect the number
@@ -358,7 +359,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNull(doc.getFieldValue(SolrConstants.NUMPAGES));
             Assert.assertEquals(PI2, doc.getFieldValue(SolrConstants.PI));
             Assert.assertEquals(PI2, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assert.assertEquals(SolrConstants._METS, doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
+            Assert.assertEquals(FileFormat.METS.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
         }
 
         // Grouped metadata

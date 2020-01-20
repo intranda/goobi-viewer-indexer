@@ -3,11 +3,14 @@ package io.goobi.viewer.indexer;
 import java.nio.file.Path;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
@@ -76,7 +79,7 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
         //            Assert.assertEquals(8, doc.getFieldValue(SolrConstants.NUMPAGES));
         //            Assert.assertEquals(pi, doc.getFieldValue(SolrConstants.PI));
         //            Assert.assertEquals(pi, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
-        //            Assert.assertEquals(SolrConstants._WORLDVIEWS, doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
+        //             Assert.assertEquals(FileFormat.WORLDVIEWS.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
         //            Assert.assertEquals("Q8 Content 2.jpg", doc.getFieldValue(SolrConstants.THUMBNAIL)); // representative image is set
         //            Assert.assertEquals("Q8 Content 2.jpg", doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT)); // not really used
         //            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.THUMBPAGENO)); // representative image should not affect the number
