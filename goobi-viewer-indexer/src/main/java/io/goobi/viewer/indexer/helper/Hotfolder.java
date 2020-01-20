@@ -1084,9 +1084,12 @@ public class Hotfolder {
                     }
                     if (!mediaFilesCopied) {
                         logger.warn("No media folder found for '{}'.", lidoFile);
+                        
+                        if(reindexSettings == null)
+                            logger.error("reindexSettings is null");
 
                         // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
-                        if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null || reindexSettings.get(DataRepository.PARAM_MEDIA)) {
+                        if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA)) {
                             for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
                                 if (!repo.equals(dataRepository) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
                                     Path misplacedDataDir =
@@ -1296,7 +1299,7 @@ public class Hotfolder {
                         logger.debug("No media folder found for '{}'.", denkxwebFile);
 
                         // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
-                        if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null || reindexSettings.get(DataRepository.PARAM_MEDIA)) {
+                        if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA)) {
                             for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
                                 if (!repo.equals(dataRepository) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
                                     Path misplacedDataDir =
