@@ -88,7 +88,9 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
- * <p>Abstract Indexer class.</p>
+ * <p>
+ * Abstract Indexer class.
+ * </p>
  *
  */
 public abstract class Indexer {
@@ -641,7 +643,9 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>readAnnotation.</p>
+     * <p>
+     * readAnnotation.
+     * </p>
      *
      * @param pageDocs a {@link java.util.Map} object.
      * @param pi a {@link java.lang.String} object.
@@ -749,7 +753,7 @@ public abstract class Indexer {
         Map<Integer, SolrInputDocument> pageDocs = new HashMap<>(writeStrategy.getPageDocsSize());
 
         // Add used-generated content docs from legacy crowdsourcing
-        for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
+        for (int i : writeStrategy.getPageOrderNumbers()) {
             SolrInputDocument pageDoc = writeStrategy.getPageDocForOrder(i);
             if (pageDoc == null) {
                 logger.warn("Page {} not found, cannot check for UGC contents.", i);
@@ -790,7 +794,9 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>delta.</p>
+     * <p>
+     * delta.
+     * </p>
      *
      * @param n a int.
      * @param m a int.
@@ -868,7 +874,9 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>getSizeForJp2.</p>
+     * <p>
+     * getSizeForJp2.
+     * </p>
      *
      * @param image a {@link java.nio.file.Path} object.
      * @return a {@link java.awt.Dimension} object.
@@ -923,7 +931,9 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>getOpenJpegReader.</p>
+     * <p>
+     * getOpenJpegReader.
+     * </p>
      *
      * @return a {@link javax.imageio.ImageReader} object.
      */
@@ -943,17 +953,21 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>addGroupedMetadataDocs.</p>
+     * <p>
+     * addGroupedMetadataDocs.
+     * </p>
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      * @return number of created docs
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should add docs correctly
+     * @should set PI_TOPSTRUCT to child docstruct metadata
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
         // Add grouped metadata as separate documents
         int count = 0;
+        List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
             SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
             long iddoc = getNextIddoc(hotfolder.getSolrHelper());
@@ -965,10 +979,18 @@ public abstract class Indexer {
             }
             doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
             doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-            doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getPi());
+            doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
+
             // Add access conditions
             for (String s : indexObj.getAccessConditions()) {
                 doc.addField(SolrConstants.ACCESSCONDITION, s);
+            }
+
+            // Add DC values to metadata doc
+            if (dcFields != null) {
+                for (LuceneField field : dcFields) {
+                    doc.addField(field.getField(), field.getValue());
+                }
             }
 
             writeStrategy.addDoc(doc);
@@ -1030,7 +1052,9 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>Getter for the field <code>dataRepository</code>.</p>
+     * <p>
+     * Getter for the field <code>dataRepository</code>.
+     * </p>
      *
      * @return the dataRepository
      */
@@ -1039,7 +1063,9 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>Setter for the field <code>dataRepository</code>.</p>
+     * <p>
+     * Setter for the field <code>dataRepository</code>.
+     * </p>
      *
      * @param dataRepository the dataRepository to set
      */
@@ -1048,7 +1074,9 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>Getter for the field <code>previousDataRepository</code>.</p>
+     * <p>
+     * Getter for the field <code>previousDataRepository</code>.
+     * </p>
      *
      * @return the previousDataRepository
      */
@@ -1057,7 +1085,9 @@ public abstract class Indexer {
     }
 
     /**
-     * <p>Setter for the field <code>previousDataRepository</code>.</p>
+     * <p>
+     * Setter for the field <code>previousDataRepository</code>.
+     * </p>
      *
      * @param previousDataRepository the previousDataRepository to set
      */

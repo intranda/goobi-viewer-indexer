@@ -1084,9 +1084,6 @@ public class Hotfolder {
                     }
                     if (!mediaFilesCopied) {
                         logger.warn("No media folder found for '{}'.", lidoFile);
-                        
-                        if(reindexSettings == null)
-                            logger.error("reindexSettings is null");
 
                         // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
                         if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA)) {

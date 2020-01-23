@@ -76,6 +76,7 @@ import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
+import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -547,23 +548,21 @@ public class MetsIndexer extends Indexer {
      */
     private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
             Map<String, Path> dataFolders, int depth) throws IndexerException, IOException, FatalIndexerException {
-        List<LuceneField> ret = new ArrayList<>();
-        String logId = indexObj.getLogId();
-        if (StringUtils.isEmpty(logId)) {
+        if (StringUtils.isEmpty(indexObj.getLogId())) {
             throw new IndexerException("Object has no LOG_ID.");
         }
 
         // Determine all PHYSID mapped to the current LOGID
-        String xpath = "/mets:mets/mets:structLink/mets:smLink[@xlink:from=\"" + logId + "\"]/@xlink:to";
+        String xpath = "/mets:mets/mets:structLink/mets:smLink[@xlink:from=\"" + indexObj.getLogId() + "\"]/@xlink:to";
         List<String> physIdList = xp.evaluateToStringList(xpath, null);
         if (physIdList == null || physIdList.isEmpty()) {
             //            throw new IndexerException("No image associated with '" + logId + "'");
-            logger.warn("No pages mapped to '{}'.", logId);
+            logger.warn("No pages mapped to '{}'.", indexObj.getLogId());
             return null;
         }
 
         List<SolrInputDocument> pageDocs = writeStrategy.getPageDocsForPhysIdList(physIdList);
-        if (!pageDocs.isEmpty()) {
+        if (pageDocs.isEmpty()) {
             logger.warn("No pages found for {}", indexObj.getLogId());
         }
 
@@ -582,14 +581,19 @@ public class MetsIndexer extends Indexer {
             }
         }
         boolean thumbnailSet = false;
-        SolrInputDocument firstPageDoc = pageDocs.get(0);
-        if (StringUtils.isEmpty(filePathBanner)) {
+        List<LuceneField> ret = new ArrayList<>();
+        SolrInputDocument firstPageDoc = !pageDocs.isEmpty() ? pageDocs.get(0) : null;
+        if (StringUtils.isEmpty(filePathBanner) && firstPageDoc != null) {
             // Add thumbnail information from the first page
             //                String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) firstPageDoc
             //                        .getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
+            if ("SHAPE".equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue("ORDER_PARENT"))));
+            } else {
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
+            }
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
             thumbnailSet = true;
@@ -724,12 +728,23 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
+            // For shape page docs, create grouped metadata docs for their mapped docstruct
+            if ("SHAPE".equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+                GroupedMetadata shapeGmd = new GroupedMetadata();
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.METADATATYPE, MetadataGroupType.SHAPE.name()));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) pageDoc.getFieldValue("MD_COORDS")));
+                shapeGmd.getFields().add(new LuceneField("MD_COORDS", (String) pageDoc.getFieldValue("MD_COORDS")));
+                shapeGmd.getFields().add(new LuceneField("MD_SHAPE", (String) pageDoc.getFieldValue("MD_SHAPE")));
+                indexObj.getGroupedMetadataFields().add(shapeGmd);
+                logger.debug("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
+            }
+
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
             writeStrategy.updateDoc(pageDoc);
         }
 
         // If a representative image is set but not mapped to any docstructs, do not use it
-        if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pageDocs.isEmpty()) {
+        if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && firstPageDoc != null) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
             String pageFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
@@ -744,7 +759,7 @@ public class MetsIndexer extends Indexer {
 
         // Add the number of assigned pages and the labels of the first and last page to this structure element
         indexObj.setNumPages(pageDocs.size());
-        if (!pageDocs.isEmpty()) {
+        if (firstPageDoc != null) {
             SolrInputDocument lastPagedoc = pageDocs.get(pageDocs.size() - 1);
             String firstPageLabel = (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL);
             String lastPageLabel = (String) lastPagedoc.getFieldValue(SolrConstants.ORDERLABEL);
@@ -840,6 +855,7 @@ public class MetsIndexer extends Indexer {
      * @should add width and height from ABBYY correctly
      * @should add width and height from MIX correctly
      * @should add page metadata correctly
+     * @should add shape metadata as page documents
      */
     boolean generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, Integer order, final ISolrWriteStrategy writeStrategy,
             final Map<String, Path> dataFolders, final DataRepository dataRepository) throws FatalIndexerException {
@@ -879,27 +895,38 @@ public class MetsIndexer extends Indexer {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
             if (fileID.contains(DEFAULT_FILEGROUP_1)) {
-                // Always prefer PRESENTATION: override and break if found DEFAULT
+                // Always prefer PRESENTATION: override if already set to something else
                 useFileGroup = DEFAULT_FILEGROUP_1;
                 useFileID = fileID;
-                break;
-            } else if (fileID.contains(DEFAULT_FILEGROUP_2)) {
+            } else if (fileID.contains(DEFAULT_FILEGROUP_2) && !DEFAULT_FILEGROUP_1.equals(useFileGroup)) {
                 useFileGroup = DEFAULT_FILEGROUP_2;
                 useFileID = fileID;
-            } else if (fileID.contains(OBJECT_FILEGROUP)) {
+            } else if (fileID.contains(OBJECT_FILEGROUP) && !DEFAULT_FILEGROUP_1.equals(useFileGroup)) {
                 useFileGroup = OBJECT_FILEGROUP;
                 useFileID = fileID;
             }
 
-            // Shapes
+            // Piggyback shape metadata on fake page documents to ensure their mapping to corresponding shape docstructs
             if (eleFptr.getChild("seq", Configuration.getInstance().getNamespaces().get("mets")) != null) {
                 List<Element> eleListArea = eleFptr.getChild("seq", Configuration.getInstance().getNamespaces().get("mets"))
                         .getChildren("area", Configuration.getInstance().getNamespaces().get("mets"));
                 if (eleListArea != null && !eleListArea.isEmpty()) {
+                    int count = 1;
                     for (Element eleArea : eleListArea) {
                         String coords = eleArea.getAttributeValue("COORDS");
                         String physId = eleArea.getAttributeValue("ID");
                         String shape = eleArea.getAttributeValue("SHAPE");
+                        SolrInputDocument shapePageDoc = new SolrInputDocument();
+                        shapePageDoc.addField(SolrConstants.IDDOC, getNextIddoc(hotfolder.getSolrHelper()));
+                        shapePageDoc.setField(SolrConstants.DOCTYPE, "SHAPE");
+                        shapePageDoc.addField(SolrConstants.ORDER, Utils.generateLongOrderNumber(order, count));
+                        shapePageDoc.addField(SolrConstants.PHYSID, physId);
+                        shapePageDoc.addField("MD_COORDS", coords);
+                        shapePageDoc.addField("MD_SHAPE", shape);
+                        shapePageDoc.addField("ORDER_PARENT", order);
+                        writeStrategy.addPageDoc(shapePageDoc);
+                        count++;
+                        logger.debug("Added SHAPE page document: {}", shapePageDoc.getFieldValue(SolrConstants.ORDER));
                     }
                 }
             }
@@ -1050,7 +1077,6 @@ public class MetsIndexer extends Indexer {
                 if (dataFolders != null) {
                     try {
                         Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                        // TODO other mime types/folders
                         if (dataFolder != null) {
                             Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
                             doc.addField("MDNUM_FILESIZE", Files.size(path));
@@ -1349,7 +1375,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
-            if (!altoWritten && !foundCrowdsourcingData && altoURL != null
+            if (!altoWritten && !foundCrowdsourcingData && altoURL != null && altoURL.startsWith("http")
                     && !altoURL.startsWith(Configuration.getInstance().getString("init.viewerUrl", "missing?"))) {
                 try {
                     logger.debug("Downloading ALTO from {}", altoURL);
@@ -1895,32 +1921,6 @@ public class MetsIndexer extends Indexer {
 
             indexObj.writeAccessConditions(parentIndexObject);
 
-            // Add aggregated metadata groups as separate documents
-            List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
-            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
-                SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
-                long iddoc = getNextIddoc(hotfolder.getSolrHelper());
-                doc.addField(SolrConstants.IDDOC, iddoc);
-                if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                    logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
-                            doc.getFieldValue(SolrConstants.LABEL));
-                    doc.addField(SolrConstants.GROUPFIELD, iddoc);
-                }
-                // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped. Since child docstructs are added recursively, this should be the case without further conditions.
-                doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
-                doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-                doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
-
-                // Add DC values to metadata doc
-                if (dcFields != null) {
-                    for (LuceneField field : dcFields) {
-                        doc.addField(field.getField(), field.getValue());
-                    }
-                }
-
-                writeStrategy.addDoc(doc);
-            }
-
             // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
             if (StringUtils.isNotEmpty(indexObj.getLogId())) {
                 try {
@@ -1947,6 +1947,9 @@ public class MetsIndexer extends Indexer {
                     logger.warn(e.getMessage());
                 }
             }
+
+            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct)
+            addGroupedMetadataDocs(writeStrategy, indexObj);
 
             // Add own and all ancestor LABEL values to the DEFAULT field
             StringBuilder sbDefaultValue = new StringBuilder();

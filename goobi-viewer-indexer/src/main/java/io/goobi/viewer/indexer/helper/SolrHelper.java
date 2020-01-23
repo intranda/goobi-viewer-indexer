@@ -72,7 +72,9 @@ public final class SolrHelper {
     private SolrServer server;
 
     /**
-     * <p>getNewHttpSolrServer.</p>
+     * <p>
+     * getNewHttpSolrServer.
+     * </p>
      *
      * @param confFilename a {@link java.lang.String} object.
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
@@ -94,7 +96,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>Constructor for SolrHelper.</p>
+     * <p>
+     * Constructor for SolrHelper.
+     * </p>
      *
      * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
      */
@@ -103,7 +107,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>checkIddocAvailability.</p>
+     * <p>
+     * checkIddocAvailability.
+     * </p>
      *
      * @param iddoc a long.
      * @return a boolean.
@@ -147,7 +153,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>getNumHits.</p>
+     * <p>
+     * getNumHits.
+     * </p>
      *
      * @param query a {@link java.lang.String} object.
      * @return a long.
@@ -158,7 +166,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>search.</p>
+     * <p>
+     * search.
+     * </p>
      *
      * @param query a {@link java.lang.String} object.
      * @param fields a {@link java.util.List} object.
@@ -170,7 +180,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>search.</p>
+     * <p>
+     * search.
+     * </p>
      *
      * @param query a {@link java.lang.String} object.
      * @param fields a {@link java.util.List} object.
@@ -198,24 +210,27 @@ public final class SolrHelper {
      * @return {@link org.apache.solr.common.SolrInputDocument}
      */
     public static SolrInputDocument createDocument(List<LuceneField> luceneFields) {
-        SolrInputDocument doc = new SolrInputDocument();
-        if (luceneFields != null) {
-            for (LuceneField luceneField : luceneFields) {
-                if (luceneField.getValue() != null) {
-                    // doc.addField(luceneField.getField(), luceneField.getValue(), 0);
-
-                    // Do not pass a boost value because starting with Solr 3.6, adding an index-time boost to primitive field types will cause the commit to fail
-                    doc.addField(luceneField.getField(), luceneField.getValue());
-                }
-            }
-            return doc;
+        if (luceneFields == null) {
+            return null;
         }
+        
+        SolrInputDocument doc = new SolrInputDocument();
+        for (LuceneField luceneField : luceneFields) {
+            if (luceneField.getValue() != null) {
+                // doc.addField(luceneField.getField(), luceneField.getValue(), 0);
 
-        return null;
+                // Do not pass a boost value because starting with Solr 3.6, adding an index-time boost to primitive field types will cause the commit to fail
+                doc.addField(luceneField.getField(), luceneField.getValue());
+            }
+        }
+        
+        return doc;
     }
 
     /**
-     * <p>findCurrentDataRepository.</p>
+     * <p>
+     * findCurrentDataRepository.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object.
      * @return The name of the data repository currently used for the record with the given PI; "?" if the record is indexed, but not in a repository;
@@ -272,7 +287,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>writeToIndex.</p>
+     * <p>
+     * writeToIndex.
+     * </p>
      *
      * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
      * @return Error message, if occurred; null otherwise.
@@ -310,7 +327,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>writeToIndex.</p>
+     * <p>
+     * writeToIndex.
+     * </p>
      *
      * @param docs a {@link java.util.List} object.
      * @return Error message, if occurred; null otherwise.
@@ -348,7 +367,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>deleteDocument.</p>
+     * <p>
+     * deleteDocument.
+     * </p>
      *
      * @param id a {@link java.lang.String} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -382,7 +403,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>deleteDocuments.</p>
+     * <p>
+     * deleteDocuments.
+     * </p>
      *
      * @param ids a {@link java.util.List} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -425,7 +448,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>commit.</p>
+     * <p>
+     * commit.
+     * </p>
      *
      * @param optimize a boolean.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -475,7 +500,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>rollback.</p>
+     * <p>
+     * rollback.
+     * </p>
      */
     public void rollback() {
         logger.info("Rolling back...");
@@ -489,7 +516,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>getSolrSchemaDocument.</p>
+     * <p>
+     * getSolrSchemaDocument.
+     * </p>
      *
      * @return a {@link org.jdom2.Document} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
@@ -524,7 +553,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>removeGrievingAnchors.</p>
+     * <p>
+     * removeGrievingAnchors.
+     * </p>
      *
      * @return a int.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
@@ -555,7 +586,9 @@ public final class SolrHelper {
     }
 
     /**
-     * <p>checkAndCreateGroupDoc.</p>
+     * <p>
+     * checkAndCreateGroupDoc.
+     * </p>
      *
      * @param groupIdField Field name of the group identifier.
      * @param groupId Field value of the group identifier.

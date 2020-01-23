@@ -32,7 +32,9 @@ import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**
- * <p>LazySolrWriteStrategy class.</p>
+ * <p>
+ * LazySolrWriteStrategy class.
+ * </p>
  *
  */
 public class LazySolrWriteStrategy extends AbstractWriteStrategy {
@@ -118,11 +120,23 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     public int getPageDocsSize() {
         return pageOrderMap.size();
     }
+    
+
+    /* (non-Javadoc)
+     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageOrderNumbers()
+     */
+    @Override
+    public List<Integer> getPageOrderNumbers() {
+        List<Integer> ret = new ArrayList<>(pageOrderMap.keySet());
+        Collections.sort(ret);
+        return ret;
+    }
 
     /**
      * {@inheritDoc}
      *
      * Ftegy.ISolrWriteStrategy#getPageDocForOrder(int)
+     * 
      * @should return correct doc
      * @should return null if order out of range
      */
@@ -160,6 +174,10 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         String pi = (String) rootDoc.getFieldValue(SolrConstants.PI);
         for (int order : pageOrderMap.keySet()) {
             SolrInputDocument pageDoc = pageOrderMap.get(order);
+            // Do not add shape docs
+            if ("SHAPE".equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+                continue;
+            }
             checkAndAddAccessCondition(pageDoc);
             docsToAdd.add(pageDoc);
             if (!pageDoc.containsKey(SolrConstants.PI_TOPSTRUCT) && pi != null) {

@@ -15,8 +15,6 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -47,9 +45,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.jdom2.Document;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +52,9 @@ import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
- * <p>Utils class.</p>
+ * <p>
+ * Utils class.
+ * </p>
  *
  */
 public class Utils {
@@ -66,7 +63,9 @@ public class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
     /**
-     * <p>checkAndCreateDirectory.</p>
+     * <p>
+     * checkAndCreateDirectory.
+     * </p>
      *
      * @param path a {@link java.nio.file.Path} object.
      * @return a boolean.
@@ -89,7 +88,9 @@ public class Utils {
     }
 
     /**
-     * <p>deleteDirectory.</p>
+     * <p>
+     * deleteDirectory.
+     * </p>
      *
      * @param path {@link java.io.File}
      * @return boolean
@@ -108,7 +109,9 @@ public class Utils {
     }
 
     /**
-     * <p>postMail.</p>
+     * <p>
+     * postMail.
+     * </p>
      *
      * @param recipients a {@link java.util.List} object.
      * @param subject a {@link java.lang.String} object.
@@ -226,7 +229,9 @@ public class Utils {
     }
 
     /**
-     * <p>removeRecordImagesFromCache.</p>
+     * <p>
+     * removeRecordImagesFromCache.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -252,7 +257,9 @@ public class Utils {
     }
 
     /**
-     * <p>callUrl.</p>
+     * <p>
+     * callUrl.
+     * </p>
      *
      * @param url a {@link java.lang.String} object.
      * @throws java.io.IOException
@@ -282,7 +289,9 @@ public class Utils {
     }
 
     /**
-     * <p>isUrn.</p>
+     * <p>
+     * isUrn.
+     * </p>
      *
      * @param urn a {@link java.lang.String} object.
      * @return a boolean.
@@ -331,7 +340,9 @@ public class Utils {
     }
 
     /**
-     * <p>extractPiFromFileName.</p>
+     * <p>
+     * extractPiFromFileName.
+     * </p>
      *
      * @param file a {@link java.nio.file.Path} object.
      * @should extract file name correctly
@@ -352,7 +363,9 @@ public class Utils {
     }
 
     /**
-     * <p>getFileNameFromIiifUrl.</p>
+     * <p>
+     * getFileNameFromIiifUrl.
+     * </p>
      *
      * @param url a {@link java.lang.String} object.
      * @should extract file name correctly
@@ -372,5 +385,36 @@ public class Utils {
         String extension = FilenameUtils.getExtension(filePathSplit[filePathSplit.length - 1]);
 
         return baseFileName + "." + extension;
+    }
+
+    /**
+     * 
+     * @param prefix
+     * @param order
+     * @return
+     * @should construct number correctly
+     */
+    public static int generateLongOrderNumber(int prefix, int count) {
+        if (prefix < 1) {
+            throw new IllegalArgumentException("prefix must be greater than 0");
+        }
+        if (count < 1) {
+            throw new IllegalArgumentException("count must be greater than 0");
+        }
+
+        int prefixLength = (int) (Math.log10(prefix) + 1);
+        int countLength = (int) (Math.log10(count) + 1);
+        int zeroes = 9 - (prefixLength + countLength);
+        if (zeroes < 0) {
+            zeroes = 0;
+        }
+        StringBuilder sbOrder = new StringBuilder();
+        sbOrder.append(prefix);
+        for (int i = 0; i < zeroes; ++i) {
+            sbOrder.append('0');
+        }
+        sbOrder.append(count);
+
+        return Integer.valueOf(sbOrder.toString());
     }
 }
