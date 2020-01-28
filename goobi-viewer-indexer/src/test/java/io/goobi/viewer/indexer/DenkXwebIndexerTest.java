@@ -92,6 +92,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
             Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
             Assert.assertEquals(FileFormat.DENKXWEB.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
+            Assert.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT));
         }
     }
 
