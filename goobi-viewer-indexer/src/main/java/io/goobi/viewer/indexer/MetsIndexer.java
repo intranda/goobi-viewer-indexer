@@ -732,6 +732,7 @@ public class MetsIndexer extends Indexer {
             if ("SHAPE".equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 GroupedMetadata shapeGmd = new GroupedMetadata();
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.METADATATYPE, MetadataGroupType.SHAPE.name()));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, String.valueOf(pageDoc.getFieldValue(SolrConstants.IDDOC))));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) pageDoc.getFieldValue("MD_COORDS")));
                 shapeGmd.getFields().add(new LuceneField("MD_COORDS", (String) pageDoc.getFieldValue("MD_COORDS")));
                 shapeGmd.getFields().add(new LuceneField("MD_SHAPE", (String) pageDoc.getFieldValue("MD_SHAPE")));
