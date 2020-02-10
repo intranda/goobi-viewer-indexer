@@ -64,7 +64,9 @@ import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
 /**
- * <p>DenkXwebIndexer class.</p>
+ * <p>
+ * DenkXwebIndexer class.
+ * </p>
  *
  */
 public class DenkXwebIndexer extends Indexer {
@@ -516,6 +518,8 @@ public class DenkXwebIndexer extends Indexer {
             String value = structNode.getAttributeValue("type");
             if (StringUtils.isNotEmpty(value)) {
                 indexObj.setType(MetadataConfigurationManager.mapDocStrct(value).trim());
+            } else {
+                indexObj.setType("monument");
             }
             logger.trace("TYPE: {}", indexObj.getType());
         }
@@ -768,7 +772,7 @@ public class DenkXwebIndexer extends Indexer {
         return true;
     }
 
-    /** Constant <code>txt</code> */    
+    /** Constant <code>txt</code> */
     public static FilenameFilter txt = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {

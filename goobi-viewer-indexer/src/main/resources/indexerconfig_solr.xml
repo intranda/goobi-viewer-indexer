@@ -65,7 +65,7 @@
 
 		<namespaces>
 			<list>
-			    <intranda>http://intranda.com/MODS/</intranda>
+			    <intranda>http://intranda.com/</intranda>
 			    <gml>http://www.opengis.net/gml</gml>
 			</list>
 		</namespaces>
@@ -2884,7 +2884,17 @@
 				</item>
 		       </list>
 		</BOOL_CONTAINSIMAGE>
-
+		
+        <BOOL_DIRECTION_RTL>
+               <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:directionRTL</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>true</addSortField>
+                </item>
+               </list>
+        </BOOL_DIRECTION_RTL>
+		
 		<MD_HAAB_PROVENIENCE>
 			<list>
 				<item>
