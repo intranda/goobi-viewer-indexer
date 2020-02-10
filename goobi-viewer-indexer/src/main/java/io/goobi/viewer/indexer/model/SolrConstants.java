@@ -36,6 +36,7 @@ public final class SolrConstants {
         LOCATION,
         SUBJECT,
         ORIGININFO,
+        SHAPE,
         OTHER;
     }
 

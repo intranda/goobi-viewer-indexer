@@ -23,34 +23,44 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexerException;
 
 /**
- * <p>ISolrWriteStrategy interface.</p>
+ * <p>
+ * ISolrWriteStrategy interface.
+ * </p>
  *
  */
 public interface ISolrWriteStrategy {
 
     /**
-     * <p>setRootDoc.</p>
+     * <p>
+     * setRootDoc.
+     * </p>
      *
      * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
      */
     public void setRootDoc(SolrInputDocument doc);
 
     /**
-     * <p>addDoc.</p>
+     * <p>
+     * addDoc.
+     * </p>
      *
      * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
      */
     public void addDoc(SolrInputDocument doc);
 
     /**
-     * <p>addDocs.</p>
+     * <p>
+     * addDocs.
+     * </p>
      *
      * @param docs a {@link java.util.List} object.
      */
     public void addDocs(List<SolrInputDocument> docs);
 
     /**
-     * <p>addPageDoc.</p>
+     * <p>
+     * addPageDoc.
+     * </p>
      *
      * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
      */
@@ -65,14 +75,27 @@ public interface ISolrWriteStrategy {
     public void updateDoc(SolrInputDocument doc);
 
     /**
-     * <p>getPageDocsSize.</p>
+     * <p>
+     * getPageDocsSize.
+     * </p>
      *
      * @return a int.
      */
     public int getPageDocsSize();
 
     /**
-     * <p>getPageDocForOrder.</p>
+     * <p>
+     * getPageOrderNumbers.
+     * </p>
+     * 
+     * @return Ordered list of ORDER values for all pages
+     */
+    public List<Integer> getPageOrderNumbers();
+
+    /**
+     * <p>
+     * getPageDocForOrder.
+     * </p>
      *
      * @param order a int.
      * @return a {@link org.apache.solr.common.SolrInputDocument} object.
@@ -81,7 +104,9 @@ public interface ISolrWriteStrategy {
     public SolrInputDocument getPageDocForOrder(int order) throws FatalIndexerException;
 
     /**
-     * <p>getPageDocsForPhysIdList.</p>
+     * <p>
+     * getPageDocsForPhysIdList.
+     * </p>
      *
      * @param physIdList a {@link java.util.List} object.
      * @return a {@link java.util.List} object.
@@ -90,7 +115,9 @@ public interface ISolrWriteStrategy {
     public List<SolrInputDocument> getPageDocsForPhysIdList(List<String> physIdList) throws FatalIndexerException;
 
     /**
-     * <p>writeDocs.</p>
+     * <p>
+     * writeDocs.
+     * </p>
      *
      * @param aggregateRecords a boolean.
      * @throws io.goobi.viewer.indexer.model.IndexerException if any.
@@ -99,7 +126,9 @@ public interface ISolrWriteStrategy {
     public void writeDocs(boolean aggregateRecords) throws IndexerException, FatalIndexerException;
 
     /**
-     * <p>cleanup.</p>
+     * <p>
+     * cleanup.
+     * </p>
      */
     public void cleanup();
 }

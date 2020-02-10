@@ -92,4 +92,18 @@ public class UtilsTest extends AbstractTest {
         Assert.assertEquals("AFE_1284_1999-17-557-1_a.jpg", Utils
                 .getFileNameFromIiifUrl("http://pecunia2.zaw.uni-heidelberg.de:49200/iiif/2/AFE_1284_1999-17-557-1_a.jpg/full/full/0/default.jpg"));
     }
+
+    /**
+     * @see Utils#generateLongOrderNumber(int,int)
+     * @verifies construct number correctly
+     */
+    @Test
+    public void generateLongOrderNumber_shouldConstructNumberCorrectly() throws Exception {
+        Assert.assertEquals(100000001, Utils.generateLongOrderNumber(1, 1));
+        Assert.assertEquals(110000010, Utils.generateLongOrderNumber(11, 10));
+        Assert.assertEquals(111000100, Utils.generateLongOrderNumber(111, 100));
+        Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
+        Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
+        Assert.assertEquals(111111000, Utils.generateLongOrderNumber(11111, 1000));
+    }
 }
