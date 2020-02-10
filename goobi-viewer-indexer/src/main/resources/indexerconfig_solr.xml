@@ -65,7 +65,7 @@
 
 		<namespaces>
 			<list>
-			    <intranda>http://intranda.com/</intranda>
+			    <intranda>http://intranda.com/MODS/</intranda>
 			    <gml>http://www.opengis.net/gml</gml>
 			</list>
 		</namespaces>
