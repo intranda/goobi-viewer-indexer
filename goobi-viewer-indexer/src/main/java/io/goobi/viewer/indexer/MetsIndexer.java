@@ -889,6 +889,8 @@ public class MetsIndexer extends Indexer {
         doc.addField(SolrConstants.PHYSID, id);
         doc.addField(SolrConstants.ORDER, order);
 
+        List<SolrInputDocument> shapePageDocs = Collections.emptyList();
+
         // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
         String fileIdRoot = null;
         String useFileID = null;
@@ -913,6 +915,7 @@ public class MetsIndexer extends Indexer {
                         .getChildren("area", Configuration.getInstance().getNamespaces().get("mets"));
                 if (eleListArea != null && !eleListArea.isEmpty()) {
                     int count = 1;
+                    shapePageDocs = new ArrayList<>();
                     for (Element eleArea : eleListArea) {
                         String coords = eleArea.getAttributeValue("COORDS");
                         String physId = eleArea.getAttributeValue("ID");
@@ -922,10 +925,11 @@ public class MetsIndexer extends Indexer {
                         shapePageDoc.setField(SolrConstants.DOCTYPE, "SHAPE");
                         shapePageDoc.addField(SolrConstants.ORDER, Utils.generateLongOrderNumber(order, count));
                         shapePageDoc.addField(SolrConstants.PHYSID, physId);
+                        ;
                         shapePageDoc.addField("MD_COORDS", coords);
                         shapePageDoc.addField("MD_SHAPE", shape);
                         shapePageDoc.addField("ORDER_PARENT", order);
-                        writeStrategy.addPageDoc(shapePageDoc);
+                        shapePageDocs.add(shapePageDoc);
                         count++;
                         logger.debug("Added SHAPE page document: {}", shapePageDoc.getFieldValue(SolrConstants.ORDER));
                     }
@@ -1061,6 +1065,11 @@ public class MetsIndexer extends Indexer {
                                 fileGroup);
                     }
                     doc.addField(SolrConstants.FILENAME, filePath);
+                    if (!shapePageDocs.isEmpty()) {
+                        for (SolrInputDocument shapePageDoc : shapePageDocs) {
+                            shapePageDoc.addField(SolrConstants.FILENAME, filePath);
+                        }
+                    }
                     // RosDok IIIF
                     if (DEFAULT_FILEGROUP_2.equals(useFileGroup) && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
                         doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
@@ -1071,9 +1080,20 @@ public class MetsIndexer extends Indexer {
                                 fileGroup);
                     }
                     doc.addField(SolrConstants.FILENAME, fileName);
+                    if (!shapePageDocs.isEmpty()) {
+                        for (SolrInputDocument shapePageDoc : shapePageDocs) {
+                            shapePageDoc.addField(SolrConstants.FILENAME, fileName);
+                        }
+                    }
                 }
 
+                // Add mime type
                 doc.addField(SolrConstants.MIMETYPE, mimetypeSplit[0]);
+                if (!shapePageDocs.isEmpty()) {
+                    for (SolrInputDocument shapePageDoc : shapePageDocs) {
+                        shapePageDoc.addField(SolrConstants.MIMETYPE, mimetypeSplit[0]);
+                    }
+                }
                 // Add file size
                 if (dataFolders != null) {
                     try {
@@ -1451,6 +1471,12 @@ public class MetsIndexer extends Indexer {
         }
 
         writeStrategy.addPageDoc(doc);
+        // Add prepared shape page docs
+        if (!shapePageDocs.isEmpty()) {
+            for (SolrInputDocument shapePageDoc : shapePageDocs) {
+                writeStrategy.addPageDoc(shapePageDoc);
+            }
+        }
         // Set global useFileGroup value (used for mapping later), if not yet set
         if (this.useFileGroup == null) {
             this.useFileGroup = useFileGroup;
