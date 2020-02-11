@@ -66,7 +66,7 @@
 		<namespaces>
 			<list>
 			    <intranda>http://intranda.com/MODS/</intranda>
-			    <gml>http://www.opengis.net/gml</gml>
+			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
 
@@ -109,7 +109,9 @@
 			<smtpSenderName>Goobi viewer - Indexer</smtpSenderName>
 			<smtpSecurity>SSL</smtpSecurity>
 		</email>
-
+		
+		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
+        <viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>
 
 
@@ -2538,7 +2540,7 @@
         <MD_GML_COORDINATES>
             <list>
                 <item>
-                    <xpath>//denkxweb:georeference
+                    <xpath>//denkxweb:georeference/denkxweb:surface/gml:MultiSurface/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList
                     </xpath>
                     <addToDefault>false</addToDefault>
                     <onefield>false</onefield>

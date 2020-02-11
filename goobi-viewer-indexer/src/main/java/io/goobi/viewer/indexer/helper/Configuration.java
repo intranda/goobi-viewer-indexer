@@ -102,9 +102,8 @@ public final class Configuration {
         return instance;
     }
 
-    @SuppressWarnings("deprecation")
     private Configuration() throws ConfigurationException {
-        AbstractConfiguration.setDelimiter('&');
+        AbstractConfiguration.setDefaultListDelimiter('&');
         config = new XMLConfiguration(configPath);
         config.setReloadingStrategy(new FileChangedReloadingStrategy());
         reloadConfig(config);
@@ -354,6 +353,15 @@ public final class Configuration {
      */
     public String getEmptyOrderLabelReplacement() {
         return getString("init.emptyOrderLabelReplacement", " - ");
+    }
+    
+    /**
+     * 
+     * @return Viewer authorization token string, if configured
+     * @should return correct value
+     */
+    public String getViewerAuthorizationToken() {
+        return config.getString("init.viewerAuthorizationToken");
     }
 
     /**

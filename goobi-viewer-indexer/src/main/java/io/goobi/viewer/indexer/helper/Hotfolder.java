@@ -930,6 +930,10 @@ public class Hotfolder {
                 logger.warn("'{}' could not be deleted! Please delete it manually!", metsFile.toAbsolutePath());
             }
 
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+            }
         } else {
             // Error
             if (deleteContentFilesOnFailure) {
@@ -1132,6 +1136,11 @@ public class Hotfolder {
                         errors = true;
                         handleError(lidoFile, resp[1]);
                     }
+
+                    // Update data repository cache map in the Goobi viewer
+                    if (previousDataRepository != null) {
+                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                    }
                 }
             }
         } finally {
@@ -1313,6 +1322,11 @@ public class Hotfolder {
                     } else {
                         logger.info("{} media file(s) copied.", imageCounter);
                     }
+
+                    // Update data repository cache map in the Goobi viewer
+                    if (previousDataRepository != null) {
+                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                    }
                 }
             }
         } finally {
@@ -1465,7 +1479,7 @@ public class Hotfolder {
                 }
             }
 
-            // success for goobi
+            // Create success file for Goobi workflow
             Path successFile = Paths.get(success.toAbsolutePath().toString(), mainFile.getFileName().toString());
             try {
                 Files.createFile(successFile);
@@ -1482,6 +1496,10 @@ public class Hotfolder {
                 logger.error("'{}' could not be deleted! Please delete it manually!", mainFile.toAbsolutePath());
             }
 
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+            }
         } else {
             // Error
             if (deleteContentFilesOnFailure) {

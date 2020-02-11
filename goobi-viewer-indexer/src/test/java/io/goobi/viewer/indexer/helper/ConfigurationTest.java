@@ -236,4 +236,13 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertEquals(104857600L, resp.get(1).getBuffer());
         Assert.assertEquals(1000L, resp.get(2).getBuffer());
     }
+
+    /**
+     * @see Configuration#getViewerAuthorizationToken()
+     * @verifies return correct value
+     */
+    @Test
+    public void getViewerAuthorizationToken_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals("test", Configuration.getInstance().getViewerAuthorizationToken());
+    }
 }

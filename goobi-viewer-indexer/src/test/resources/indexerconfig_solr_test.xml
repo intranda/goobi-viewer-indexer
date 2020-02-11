@@ -104,10 +104,9 @@
             <imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
             <imageXPath>lido:resourceID</imageXPath>
         </lido>
-
-		<!-- Lucene (only set these if a timestamp import from Lucene is desired) -->
-		<stopwordFile>resources/test/stopwords_de_en.txt</stopwordFile>
-		<!-- <lucene>D:/digiverso/viewer/lucene/</lucene> -->
+		
+        <!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
+        <viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>
 	
 	<performance>
