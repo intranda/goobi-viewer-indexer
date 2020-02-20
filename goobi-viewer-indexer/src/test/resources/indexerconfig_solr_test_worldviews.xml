@@ -13,15 +13,15 @@
 
 
 		<!-- Ordnerkonfiguration -->
-		<hotFolder>build/viewer/hotfolder/</hotFolder>
-		<tempFolder>build/indexer/temp/</tempFolder>
-		<viewerHome>build/viewer/</viewerHome>
+		<hotFolder>target/viewer/hotfolder/</hotFolder>
+		<tempFolder>target/indexer/temp/</tempFolder>
+		<viewerHome>target/viewer/</viewerHome>
 		<dataRepositories>
 			<!-- If true, records will be distributed over configured data repositories. 
 				Otherwise the default folder structure will be used. (default is false) -->
 			<enabled>false</enabled>
 			<!-- root folder for data repository folders -->
-			<dataRepositoriesHome>build/viewer/data/</dataRepositoriesHome>
+			<dataRepositoriesHome>target/viewer/data/</dataRepositoriesHome>
 			<!-- max number of records (METS+LIDO) per data repository (default is 
 				10000) -->
 			<maxRecords>10000</maxRecords>
@@ -55,11 +55,11 @@
 		<indexedLido>indexed_lido</indexedLido>
 
 		<!-- Misc folders -->
-		<successFolder>build/viewer/success/</successFolder>
-		<updatedMets>build/viewer/updated_mets/</updatedMets>
-		<deletedMets>build/viewer/deleted_mets/</deletedMets>
-		<errorMets>build/viewer/error_mets/</errorMets>
-		<origLido>build/viewer/orig_lido/</origLido>
+		<successFolder>target/viewer/success/</successFolder>
+		<updatedMets>target/viewer/updated_mets/</updatedMets>
+		<deletedMets>target/viewer/deleted_mets/</deletedMets>
+		<errorMets>target/viewer/error_mets/</errorMets>
+		<origLido>target/viewer/orig_lido/</origLido>
 
 		<!-- Encoding that full-text files will be expected to have (default is 
 			'Cp1250'). -->

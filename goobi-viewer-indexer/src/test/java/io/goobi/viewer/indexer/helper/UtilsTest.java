@@ -39,7 +39,7 @@ public class UtilsTest extends AbstractTest {
         try {
             {
                 // filename.xml
-                Path path = Utils.getCollisionFreeDataFilePath("build", "filename", "#", ".xml");
+                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
                 Assert.assertEquals("filename.xml", path.getFileName().toString());
                 Files.createFile(path);
@@ -48,7 +48,7 @@ public class UtilsTest extends AbstractTest {
             }
             {
                 // filename#1.xml
-                Path path = Utils.getCollisionFreeDataFilePath("build", "filename", "#", ".xml");
+                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
                 Assert.assertEquals("filename#0.xml", path.getFileName().toString());
                 Files.createFile(path);
@@ -57,7 +57,7 @@ public class UtilsTest extends AbstractTest {
             }
             {
                 // filename#2.xml
-                Path path = Utils.getCollisionFreeDataFilePath("build", "filename", "#", ".xml");
+                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
                 Assert.assertEquals("filename#1.xml", path.getFileName().toString());
             }
