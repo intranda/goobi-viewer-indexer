@@ -37,29 +37,53 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
+/**
+ * <p>DataRepository class.</p>
+ *
+ */
 public class DataRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(DataRepository.class);
 
+    /** Constant <code>PARAM_INDEXED_METS="indexedMets"</code> */
     public static final String PARAM_INDEXED_METS = "indexedMets";
+    /** Constant <code>PARAM_INDEXED_LIDO="indexedLido"</code> */
     public static final String PARAM_INDEXED_LIDO = "indexedLido";
+    /** Constant <code>PARAM_INDEXED_DENKXWEB="indexedDenkXweb"</code> */
     public static final String PARAM_INDEXED_DENKXWEB = "indexedDenkXweb";
+    /** Constant <code>PARAM_MEDIA="mediaFolder"</code> */
     public static final String PARAM_MEDIA = "mediaFolder";
+    /** Constant <code>PARAM_ALTO="altoFolder"</code> */
     public static final String PARAM_ALTO = "altoFolder";
+    /** Constant <code>PARAM_ALTO_CONVERTED="altoFolder"</code> */
     public static final String PARAM_ALTO_CONVERTED = "altoFolder";
+    /** Constant <code>PARAM_ALTOCROWD="altoCrowdsourcingFolder"</code> */
     public static final String PARAM_ALTOCROWD = "altoCrowdsourcingFolder";
+    /** Constant <code>PARAM_ABBYY="abbyyFolder"</code> */
     public static final String PARAM_ABBYY = "abbyyFolder";
+    /** Constant <code>PARAM_CMS="cmsFolder"</code> */
     public static final String PARAM_CMS = "cmsFolder";
+    /** Constant <code>PARAM_DOWNLOAD_IMAGES_TRIGGER="downloadImages"</code> */
     public static final String PARAM_DOWNLOAD_IMAGES_TRIGGER = "downloadImages";
+    /** Constant <code>PARAM_FULLTEXT="fulltextFolder"</code> */
     public static final String PARAM_FULLTEXT = "fulltextFolder";
+    /** Constant <code>PARAM_FULLTEXTCROWD="fulltextCrowdsourcingFolder"</code> */
     public static final String PARAM_FULLTEXTCROWD = "fulltextCrowdsourcingFolder";
+    /** Constant <code>PARAM_CMDI="cmdiFolder"</code> */
     public static final String PARAM_CMDI = "cmdiFolder";
+    /** Constant <code>PARAM_TEIMETADATA="teiFolder"</code> */
     public static final String PARAM_TEIMETADATA = "teiFolder";
+    /** Constant <code>PARAM_TEIWC="wcFolder"</code> */
     public static final String PARAM_TEIWC = "wcFolder";
+    /** Constant <code>PARAM_PAGEPDF="pagePdfFolder"</code> */
     public static final String PARAM_PAGEPDF = "pagePdfFolder";
+    /** Constant <code>PARAM_SOURCE="sourceContentFolder"</code> */
     public static final String PARAM_SOURCE = "sourceContentFolder";
+    /** Constant <code>PARAM_UGC="userGeneratedContentFolder"</code> */
     public static final String PARAM_UGC = "userGeneratedContentFolder";
+    /** Constant <code>PARAM_MIX="mixFolder"</code> */
     public static final String PARAM_MIX = "mixFolder";
+    /** Constant <code>PARAM_ANNOTATIONS="annotationFolder"</code> */
     public static final String PARAM_ANNOTATIONS = "annotationFolder";
 
     //    public static int dataRepositoriesMaxRecords = 10000;
@@ -72,16 +96,19 @@ public class DataRepository {
 
     /**
      * Constructor for unit tests.
+     *
+     * @param path a {@link java.lang.String} object.
      */
     public DataRepository(final String path) {
         this.path = path;
     }
 
     /**
-     * 
+     * <p>Constructor for DataRepository.</p>
+     *
      * @param path Absolute path to the repository; empty string means the default folder structure in init.viewerHome will be used
      * @param createFolders If true, the data subfolders will be automatically created
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should create dummy repository correctly
      * @should create real repository correctly
      * @should set rootDir to viewerHome path if empty string was given
@@ -135,6 +162,7 @@ public class DataRepository {
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
+    /** {@inheritDoc} */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -146,6 +174,7 @@ public class DataRepository {
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
+    /** {@inheritDoc} */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -200,8 +229,8 @@ public class DataRepository {
 
     /**
      * Deletes all
-     * 
-     * @param baseFileName
+     *
+     * @param baseFileName a {@link java.lang.String} object.
      * @should delete ALTO folder correctly
      * @should delete ALTO crowdsourcing folder correctly
      * @should delete fulltext folder correctly
@@ -238,8 +267,8 @@ public class DataRepository {
 
     /**
      * Deletes the given folder.
-     * 
-     * @param folder
+     *
+     * @param folder a {@link java.nio.file.Path} object.
      * @should delete folder correctly
      */
     protected static void deleteFolder(Path folder) {
@@ -256,10 +285,10 @@ public class DataRepository {
 
     /**
      * Counts the total number of records in this data repository by adding METS and LIDO records.
-     * 
-     * @return
-     * @throws IOException
+     *
+     * @throws java.io.IOException
      * @should calculate number correctly
+     * @return a int.
      */
     public int getNumRecords() throws IOException {
         int metsRecords = countFiles(getDir(PARAM_INDEXED_METS));
@@ -273,7 +302,8 @@ public class DataRepository {
     }
 
     /**
-     * 
+     * <p>getUsableSpace.</p>
+     *
      * @return Remaining space in bytes
      */
     public long getUsableSpace() {
@@ -288,9 +318,9 @@ public class DataRepository {
 
     /**
      * Migrates data folders from this repository to the given repository.
-     * 
-     * @param toRepository
-     * @param pi
+     *
+     * @param toRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
+     * @param pi a {@link java.lang.String} object.
      */
     public void moveDataFoldersToRepository(DataRepository toRepository, String pi) {
         if (toRepository == null) {
@@ -359,10 +389,11 @@ public class DataRepository {
     }
 
     /**
-     * 
-     * @param toRepository
-     * @param pi
-     * @param type
+     * <p>moveDataFolderToRepository.</p>
+     *
+     * @param toRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
+     * @param pi a {@link java.lang.String} object.
+     * @param type a {@link java.lang.String} object.
      * @should move data folder correctly
      */
     public void moveDataFolderToRepository(DataRepository toRepository, String pi, String type) {
@@ -393,9 +424,10 @@ public class DataRepository {
     }
 
     /**
-     * 
-     * @param dataFolders
-     * @param reindexSettings
+     * <p>deleteDataFolders.</p>
+     *
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param reindexSettings a {@link java.util.Map} object.
      */
     public static void deleteDataFolders(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ALTO);
@@ -436,13 +468,13 @@ public class DataRepository {
 
     /**
      * Copies data folders (all except for _media) from the hotfolder to their respective destination and deletes the folders from the hotfolder.
-     * 
+     *
      * @param pi Record identifier
      * @param dataFolders Map with source data folders
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
-     * @param dataRepositories
-     * @throws IOException
-     * @throws FatalIndexerException
+     * @param dataRepositories a {@link java.util.List} object.
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings,
             List<DataRepository> dataRepositories) throws IOException, FatalIndexerException {
@@ -486,15 +518,15 @@ public class DataRepository {
     /**
      * Checks whether the folder with the given param name exists and is in the hotfolder, then proceeds to copy it to the destination folder and
      * delete the source.
-     * 
+     *
      * @param pi Record identifier
      * @param dataFolders Map with source data folders
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
      * @param param Folder parameter name
-     * @param dataRepositories
-     * @return
-     * @throws IOException
-     * @throws FatalIndexerException
+     * @param dataRepositories a {@link java.util.List} object.
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @return a int.
      */
     public int checkCopyAndDeleteDataFolder(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param,
             List<DataRepository> dataRepositories) throws IOException, FatalIndexerException {
@@ -523,12 +555,13 @@ public class DataRepository {
     }
 
     /**
-     * 
-     * @param srcFolder
-     * @param paramName
-     * @param identifier
+     * <p>copyAndDeleteDataFolder.</p>
+     *
+     * @param srcFolder a {@link java.nio.file.Path} object.
+     * @param paramName a {@link java.lang.String} object.
+     * @param identifier a {@link java.lang.String} object.
      * @return Number of files copied.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public int copyAndDeleteDataFolder(Path srcFolder, String paramName, String identifier) throws IOException {
         if (srcFolder == null) {
@@ -552,10 +585,11 @@ public class DataRepository {
     }
 
     /**
-     * 
-     * @param dir
-     * @return
-     * @throws IOException
+     * <p>countFiles.</p>
+     *
+     * @param dir a {@link java.nio.file.Path} object.
+     * @throws java.io.IOException
+     * @return a int.
      */
     public static int countFiles(Path dir) throws IOException {
         if (dir == null || !Files.isDirectory(dir)) {
@@ -576,10 +610,10 @@ public class DataRepository {
 
     /**
      * Returns (probable) absolute path to the data repository with the given name. Used to properly detect old-style data repositories.
-     * 
-     * @param dataRepository
+     *
+     * @param dataRepository a {@link java.lang.String} object.
      * @return Absolute path to the given data repository name
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return correct path
      */
     public static String getAbsolutePath(String dataRepository) throws FatalIndexerException {
@@ -594,10 +628,12 @@ public class DataRepository {
     }
 
     /**
-     * @param config
-     * @param createFolders
+     * <p>loadDataRepositories.</p>
+     *
+     * @param config a {@link io.goobi.viewer.indexer.helper.Configuration} object.
+     * @param createFolders a boolean.
      * @return List of properly configured data repositories
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public static List<DataRepository> loadDataRepositories(Configuration config, boolean createFolders) throws FatalIndexerException {
         if (config == null) {
@@ -623,6 +659,8 @@ public class DataRepository {
     }
 
     /**
+     * <p>isValid.</p>
+     *
      * @return the valid
      */
     public boolean isValid() {
@@ -630,6 +668,8 @@ public class DataRepository {
     }
 
     /**
+     * <p>Getter for the field <code>path</code>.</p>
+     *
      * @return the name
      */
     public String getPath() {
@@ -637,6 +677,8 @@ public class DataRepository {
     }
 
     /**
+     * <p>Getter for the field <code>rootDir</code>.</p>
+     *
      * @return the rootDir
      */
     public Path getRootDir() {
@@ -644,6 +686,8 @@ public class DataRepository {
     }
 
     /**
+     * <p>Getter for the field <code>buffer</code>.</p>
+     *
      * @return the buffer
      */
     public long getBuffer() {
@@ -651,12 +695,20 @@ public class DataRepository {
     }
 
     /**
+     * <p>Setter for the field <code>buffer</code>.</p>
+     *
      * @param buffer the buffer to set
      */
     public void setBuffer(long buffer) {
         this.buffer = buffer;
     }
 
+    /**
+     * <p>getDir.</p>
+     *
+     * @param name a {@link java.lang.String} object.
+     * @return a {@link java.nio.file.Path} object.
+     */
     public Path getDir(String name) {
         return dirMap.get(name);
     }

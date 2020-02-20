@@ -209,7 +209,7 @@ public class ConfigurationTest extends AbstractTest {
      */
     @Test
     public void getViewerHome_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("build/viewer/", Configuration.getInstance().getViewerHome());
+        Assert.assertEquals("target/viewer/", Configuration.getInstance().getViewerHome());
     }
 
     /**
@@ -229,11 +229,20 @@ public class ConfigurationTest extends AbstractTest {
     public void getDataRepositoryConfigurations_shouldReturnAllItems() throws Exception {
         List<DataRepository> resp = Configuration.getInstance().getDataRepositoryConfigurations();
         Assert.assertEquals(3, resp.size());
-        Assert.assertEquals("build/viewer/data/1", resp.get(0).getPath());
-        Assert.assertEquals("build/viewer/data/2", resp.get(1).getPath());
-        Assert.assertEquals("build/viewer/data/3", resp.get(2).getPath());
+        Assert.assertEquals("target/viewer/data/1", resp.get(0).getPath());
+        Assert.assertEquals("target/viewer/data/2", resp.get(1).getPath());
+        Assert.assertEquals("target/viewer/data/3", resp.get(2).getPath());
         Assert.assertEquals(10737418240L, resp.get(0).getBuffer());
         Assert.assertEquals(104857600L, resp.get(1).getBuffer());
         Assert.assertEquals(1000L, resp.get(2).getBuffer());
+    }
+
+    /**
+     * @see Configuration#getViewerAuthorizationToken()
+     * @verifies return correct value
+     */
+    @Test
+    public void getViewerAuthorizationToken_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals("test", Configuration.getInstance().getViewerAuthorizationToken());
     }
 }

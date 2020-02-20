@@ -11,9 +11,9 @@
         <viewerUrl>http://localhost:8080/viewer</viewerUrl>
 
 		<!-- Folder configuration -->
-		<hotFolder>build/viewer/hotfolder/</hotFolder>
-		<tempFolder>build/indexer/temp/</tempFolder>
-		<viewerHome>build/viewer/</viewerHome>
+		<hotFolder>target/viewer/hotfolder/</hotFolder>
+		<tempFolder>target/indexer/temp/</tempFolder>
+		<viewerHome>target/viewer/</viewerHome>
 		<dataRepositories>
 		    <!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
             <strategy>SingleRepositoryStrategy</strategy>
@@ -23,9 +23,9 @@
 			<maxRecords>10000</maxRecords>
 			<!-- Data repository folders to be used (a new folder structure will be 
 				created for each dataRepository element unter dataRepositoriesHome -->
-			<dataRepository buffer="10G">build/viewer/data/1</dataRepository>
-			<dataRepository buffer="100M">build/viewer/data/2</dataRepository>
-			<dataRepository buffer="1000B">build/viewer/data/3</dataRepository>
+			<dataRepository buffer="10G">target/viewer/data/1</dataRepository>
+			<dataRepository buffer="100M">target/viewer/data/2</dataRepository>
+			<dataRepository buffer="1000B">target/viewer/data/3</dataRepository>
 		</dataRepositories>
 
 		<!-- Data subfolder names (path is relative to either a data repository 
@@ -52,12 +52,12 @@
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 
 		<!-- Misc folders -->
-		<successFolder>build/viewer/success/</successFolder>
-		<updatedMets>build/viewer/updated_mets/</updatedMets>
-		<deletedMets>build/viewer/deleted_mets/</deletedMets>
-		<errorMets>build/viewer/error_mets/</errorMets>
-		<origLido>build/viewer/orig_lido/</origLido>
-		<origDenkXweb>build/viewer/orig_denkxweb/</origDenkXweb>
+		<successFolder>target/viewer/success/</successFolder>
+		<updatedMets>target/viewer/updated_mets/</updatedMets>
+		<deletedMets>target/viewer/deleted_mets/</deletedMets>
+		<errorMets>target/viewer/error_mets/</errorMets>
+		<origLido>target/viewer/orig_lido/</origLido>
+		<origDenkXweb>target/viewer/orig_denkxweb/</origDenkXweb>
 
 		<!-- Encoding that full-text files will be expected to have (default is 
 			'Cp1250'). -->
@@ -104,10 +104,9 @@
             <imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
             <imageXPath>lido:resourceID</imageXPath>
         </lido>
-
-		<!-- Lucene (only set these if a timestamp import from Lucene is desired) -->
-		<stopwordFile>resources/test/stopwords_de_en.txt</stopwordFile>
-		<!-- <lucene>D:/digiverso/viewer/lucene/</lucene> -->
+		
+        <!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
+        <viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>
 	
 	<performance>

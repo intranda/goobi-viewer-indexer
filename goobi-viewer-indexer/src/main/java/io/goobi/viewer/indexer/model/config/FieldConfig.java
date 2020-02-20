@@ -53,8 +53,8 @@ public class FieldConfig {
 
     /**
      * Constructor.
-     * 
-     * @param fieldname {@link String}
+     *
+     * @param fieldname {@link java.lang.String}
      * @should set attributes correctly
      */
     public FieldConfig(String fieldname) {
@@ -63,6 +63,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>fieldname</code>.</p>
+     *
      * @return the fieldname
      */
     public String getFieldname() {
@@ -70,6 +72,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>fieldname</code>.</p>
+     *
      * @param fieldname the fieldname to set
      */
     public void setFieldname(String fieldname) {
@@ -77,6 +81,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>xPathConfigurations</code>.</p>
+     *
      * @return the xPathConfigurations
      */
     public List<XPathConfig> getxPathConfigurations() {
@@ -84,6 +90,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>xPathConfigurations</code>.</p>
+     *
      * @param xPathConfigurations the xPathConfigurations to set
      */
     public void setxPathConfigurations(List<XPathConfig> xPathConfigurations) {
@@ -91,6 +99,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>node</code>.</p>
+     *
      * @return the node
      */
     public String getNode() {
@@ -101,6 +111,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>node</code>.</p>
+     *
      * @param node the node to set
      */
     public void setNode(String node) {
@@ -108,8 +120,9 @@ public class FieldConfig {
     }
 
     /**
-     * 
-     * @return {@link String} false,all
+     * <p>Getter for the field <code>child</code>.</p>
+     *
+     * @return {@link java.lang.String} false,all
      */
     public String getChild() {
         if (child == null) {
@@ -119,6 +132,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>child</code>.</p>
+     *
      * @param child the child to set
      */
     public void setChild(String child) {
@@ -126,6 +141,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>parents</code>.</p>
+     *
      * @return the parents
      */
     public String getParents() {
@@ -136,6 +153,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>parents</code>.</p>
+     *
      * @param parents the parents to set
      */
     public void setParents(String parents) {
@@ -143,6 +162,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isAddToDefault.</p>
+     *
      * @return the addToDefault
      */
     public boolean isAddToDefault() {
@@ -150,6 +171,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>addToDefault</code>.</p>
+     *
      * @param addToDefault the addToDefault to set
      */
     public void setAddToDefault(boolean addToDefault) {
@@ -157,6 +180,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>constantValue</code>.</p>
+     *
      * @return the constantValue
      */
     public String getConstantValue() {
@@ -164,6 +189,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>constantValue</code>.</p>
+     *
      * @param constantValue the constantValue to set
      */
     public void setConstantValue(String constantValue) {
@@ -171,16 +198,18 @@ public class FieldConfig {
     }
 
     /**
-     * 
-     * @param valuepostfix {@link String}
+     * <p>Setter for the field <code>valuepostfix</code>.</p>
+     *
+     * @param valuepostfix {@link java.lang.String}
      */
     public void setValuepostfix(String valuepostfix) {
         this.valuepostfix = valuepostfix;
     }
 
     /**
-     * 
-     * @return {@link String}
+     * <p>Getter for the field <code>valuepostfix</code>.</p>
+     *
+     * @return {@link java.lang.String}
      */
     public String getValuepostfix() {
         if (valuepostfix == null) {
@@ -190,6 +219,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>oneToken</code>.</p>
+     *
      * @param oneToken the oneToken to set
      */
     public void setOneToken(boolean oneToken) {
@@ -197,21 +228,35 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isOneToken.</p>
+     *
      * @return the oneToken
      */
     public boolean isOneToken() {
         return oneToken;
     }
 
+    /**
+     * <p>isOneField.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isOneField() {
         return oneField;
     }
 
+    /**
+     * <p>Setter for the field <code>oneField</code>.</p>
+     *
+     * @param oneField a boolean.
+     */
     public void setOneField(boolean oneField) {
         this.oneField = oneField;
     }
 
     /**
+     * <p>isAddUntokenizedVersion.</p>
+     *
      * @return the addUntokenizedVersion
      */
     public boolean isAddUntokenizedVersion() {
@@ -219,6 +264,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>addUntokenizedVersion</code>.</p>
+     *
      * @param addUntokenizedVersion the addUntokenizedVersion to set
      */
     public void setAddUntokenizedVersion(boolean addUntokenizedVersion) {
@@ -226,6 +273,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isLowercase.</p>
+     *
      * @return the lowercase
      */
     public boolean isLowercase() {
@@ -233,6 +282,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>lowercase</code>.</p>
+     *
      * @param lowercase the lowercase to set
      */
     public void setLowercase(boolean lowercase) {
@@ -240,6 +291,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>splittingCharacter</code>.</p>
+     *
      * @return the splittingCharacter
      */
     public String getSplittingCharacter() {
@@ -247,6 +300,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>splittingCharacter</code>.</p>
+     *
      * @param splittingCharacter the splittingCharacter to set
      */
     public void setSplittingCharacter(String splittingCharacter) {
@@ -254,6 +309,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isAddSortField.</p>
+     *
      * @return the addSortField
      */
     public boolean isAddSortField() {
@@ -261,6 +318,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>addSortField</code>.</p>
+     *
      * @param addSortField the addSortField to set
      */
     public void setAddSortField(boolean addSortField) {
@@ -268,6 +327,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isAddSortFieldToTopstruct.</p>
+     *
      * @return the addSortFieldToTopstruct
      */
     public boolean isAddSortFieldToTopstruct() {
@@ -275,6 +336,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>addSortFieldToTopstruct</code>.</p>
+     *
      * @param addSortFieldToTopstruct the addSortFieldToTopstruct to set
      */
     public void setAddSortFieldToTopstruct(boolean addSortFieldToTopstruct) {
@@ -282,6 +345,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isNormalizeYear.</p>
+     *
      * @return the normalizeYear
      */
     public boolean isNormalizeYear() {
@@ -289,6 +354,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>normalizeYear</code>.</p>
+     *
      * @param normalizeYear the normalizeYear to set
      */
     public void setNormalizeYear(boolean normalizeYear) {
@@ -296,6 +363,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>normalizeYearMinDigits</code>.</p>
+     *
      * @return the normalizeYearMinDigits
      */
     public int getNormalizeYearMinDigits() {
@@ -303,6 +372,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isInterpolateYears.</p>
+     *
      * @return the interpolateYears
      */
     public boolean isInterpolateYears() {
@@ -310,6 +381,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>interpolateYears</code>.</p>
+     *
      * @param interpolateYears the interpolateYears to set
      */
     public void setInterpolateYears(boolean interpolateYears) {
@@ -317,17 +390,26 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>normalizeYearMinDigits</code>.</p>
+     *
      * @param normalizeYearMinDigits the normalizeYearMinDigits to set
      */
     public void setNormalizeYearMinDigits(int normalizeYearMinDigits) {
         this.normalizeYearMinDigits = normalizeYearMinDigits;
     }
 
+    /**
+     * <p>isGroupEntity.</p>
+     *
+     * @return a boolean.
+     */
     public boolean isGroupEntity() {
         return groupEntityFields != null && !groupEntityFields.isEmpty();
     }
 
     /**
+     * <p>Getter for the field <code>groupEntityFields</code>.</p>
+     *
      * @return the groupEntityFields
      */
     public Map<String, Object> getGroupEntityFields() {
@@ -335,6 +417,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>groupEntityFields</code>.</p>
+     *
      * @param groupEntityFields the groupEntityFields to set
      */
     public void setGroupEntityFields(Map<String, Object> groupEntityFields) {
@@ -342,6 +426,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>replaceRules</code>.</p>
+     *
      * @return the replaceRules
      */
     public Map<Object, String> getReplaceRules() {
@@ -349,6 +435,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>replaceRules</code>.</p>
+     *
      * @param replaceRules the replaceRules to set
      */
     public void setReplaceRules(Map<Object, String> replaceRules) {
@@ -356,6 +444,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>nonSortConfigurations</code>.</p>
+     *
      * @return the nonSortConfigurations
      */
     public List<NonSortConfiguration> getNonSortConfigurations() {
@@ -363,6 +453,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>nonSortConfigurations</code>.</p>
+     *
      * @param nonSortConfigurations the nonSortConfigurations to set
      */
     public void setNonSortConfigurations(List<NonSortConfiguration> nonSortConfigurations) {
@@ -370,6 +462,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isAddToChildren.</p>
+     *
      * @return the addToChildren
      */
     public boolean isAddToChildren() {
@@ -377,6 +471,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>addToChildren</code>.</p>
+     *
      * @param addToChildren the addToChildren to set
      */
     public void setAddToChildren(boolean addToChildren) {
@@ -384,6 +480,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>isAddToPages.</p>
+     *
      * @return the addToPages
      */
     public boolean isAddToPages() {
@@ -391,6 +489,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>addToPages</code>.</p>
+     *
      * @param addToPages the addToPages to set
      */
     public void setAddToPages(boolean addToPages) {
@@ -398,6 +498,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>valueNormalizer</code>.</p>
+     *
      * @return the valueNormalizer
      */
     public ValueNormalizer getValueNormalizer() {
@@ -405,6 +507,8 @@ public class FieldConfig {
     }
 
     /**
+     * <p>Setter for the field <code>valueNormalizer</code>.</p>
+     *
      * @param valueNormalizer the valueNormalizer to set
      */
     public void setValueNormalizer(ValueNormalizer valueNormalizer) {

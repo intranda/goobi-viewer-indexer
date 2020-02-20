@@ -45,7 +45,7 @@ import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
 public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
 
-    private static Path tempFolder = Paths.get("build/temp");
+    private static Path tempFolder = Paths.get("target/temp");
     private static Hotfolder hotfolder;
 
     private Path metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");

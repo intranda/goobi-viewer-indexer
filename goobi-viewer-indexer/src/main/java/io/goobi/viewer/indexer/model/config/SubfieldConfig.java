@@ -29,9 +29,9 @@ public class SubfieldConfig {
 
     /**
      * Constructor.
-     * 
-     * @param fieldname {@link String}
-     * @param multivalued
+     *
+     * @param fieldname {@link java.lang.String}
+     * @param multivalued a boolean.
      * @should set attributes correctly
      */
     public SubfieldConfig(String fieldname, boolean multivalued) {
@@ -40,6 +40,8 @@ public class SubfieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>fieldname</code>.</p>
+     *
      * @return the fieldname
      */
     public String getFieldname() {
@@ -47,6 +49,8 @@ public class SubfieldConfig {
     }
 
     /**
+     * <p>Getter for the field <code>xpaths</code>.</p>
+     *
      * @return the xpaths
      */
     public List<String> getXpaths() {
@@ -54,6 +58,8 @@ public class SubfieldConfig {
     }
 
     /**
+     * <p>isMultivalued.</p>
+     *
      * @return the multivalued
      */
     public boolean isMultivalued() {

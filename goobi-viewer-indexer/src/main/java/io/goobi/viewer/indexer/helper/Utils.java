@@ -15,16 +15,18 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -36,35 +38,54 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.xml.ws.http.HTTPException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.jdom2.Document;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
+/**
+ * <p>
+ * Utils class.
+ * </p>
+ *
+ */
 public class Utils {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
+    private static final int HTTP_TIMEOUT = 30000;
+
     /**
-     * 
-     * @param path
-     * @return
+     * <p>
+     * checkAndCreateDirectory.
+     * </p>
+     *
+     * @param path a {@link java.nio.file.Path} object.
+     * @return a boolean.
      */
     public static boolean checkAndCreateDirectory(Path path) {
         if (path == null) {
@@ -84,8 +105,11 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param path {@link File}
+     * <p>
+     * deleteDirectory.
+     * </p>
+     *
+     * @param path {@link java.io.File}
      * @return boolean
      */
     public static boolean deleteDirectory(Path path) {
@@ -103,17 +127,116 @@ public class Utils {
 
     /**
      * 
-     * @param recipients
-     * @param subject
-     * @param body
-     * @param smtpServer
-     * @param smtpUser
-     * @param smtpPassword
-     * @param smtpSenderAddress
-     * @param smtpSenderName
-     * @param smtpSecurity
-     * @throws MessagingException
-     * @throws UnsupportedEncodingException
+     * @param pi
+     * @param dataRepositoryName
+     * @throws FatalIndexerException
+     * @throws IOException
+     * @throws ClientProtocolException
+     * @throws HTTPException
+     */
+    public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
+            throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
+        if (pi == null) {
+            throw new IllegalArgumentException("pi may not be null");
+        }
+        if (dataRepositoryName == null) {
+            throw new IllegalArgumentException("dataRepositoryName may not be null");
+        }
+
+        logger.info("Updating data repository cache...");
+        Map<String, String> params = new HashMap<>(2);
+        params.put("pi", pi);
+        params.put("dataRepositoryName", dataRepositoryName);
+
+        String url = Configuration.getInstance().getViewerUrl() + "/rest/tools/updatedatarepository?token="
+                + Configuration.getInstance().getViewerAuthorizationToken();
+        getWebContentPOST(url, params, null);
+    }
+
+    /**
+     * <p>
+     * getWebContentPOST.
+     * </p>
+     *
+     * @param url a {@link java.lang.String} object.
+     * @param params a {@link java.util.Map} object.
+     * @param cookies a {@link java.util.Map} object.
+     * @return a {@link java.lang.String} object.
+     * @throws org.apache.http.client.ClientProtocolException if any.
+     * @throws java.io.IOException if any.
+     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     */
+    public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies)
+            throws ClientProtocolException, IOException {
+        if (url == null) {
+            throw new IllegalArgumentException("url may not be null");
+        }
+
+        logger.trace("url: {}", url);
+        List<NameValuePair> nameValuePairs = null;
+        if (params == null) {
+            nameValuePairs = new ArrayList<>(0);
+        } else {
+            nameValuePairs = new ArrayList<>(params.size());
+            for (String key : params.keySet()) {
+                // logger.trace("param: {}:{}", key, params.get(key)); // TODO do not log passwords!
+                nameValuePairs.add(new BasicNameValuePair(key, params.get(key)));
+            }
+        }
+        HttpClientContext context = null;
+        CookieStore cookieStore = new BasicCookieStore();
+        if (cookies != null && !cookies.isEmpty()) {
+            context = HttpClientContext.create();
+            for (String key : cookies.keySet()) {
+                // logger.trace("cookie: {}:{}", key, cookies.get(key)); // TODO do not log passwords!
+                BasicClientCookie cookie = new BasicClientCookie(key, cookies.get(key));
+                cookie.setPath("/");
+                cookie.setDomain("0.0.0.0");
+                cookieStore.addCookie(cookie);
+            }
+            context.setCookieStore(cookieStore);
+        }
+
+        RequestConfig defaultRequestConfig = RequestConfig.custom()
+                .setSocketTimeout(HTTP_TIMEOUT)
+                .setConnectTimeout(HTTP_TIMEOUT)
+                .setConnectionRequestTimeout(HTTP_TIMEOUT)
+                .build();
+        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
+            HttpPost post = new HttpPost(url);
+            Charset.forName(TextHelper.DEFAULT_ENCODING);
+            post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            try (CloseableHttpResponse response = (context == null ? httpClient.execute(post) : httpClient.execute(post, context));
+                    StringWriter writer = new StringWriter()) {
+                int code = response.getStatusLine().getStatusCode();
+                if (code == HttpStatus.SC_OK) {
+                    logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
+                    IOUtils.copy(response.getEntity().getContent(), writer, TextHelper.DEFAULT_ENCODING);
+                    return writer.toString();
+                }
+                logger.error("{}: {}\n{}", code, response.getStatusLine().getReasonPhrase(),
+                        IOUtils.toString(response.getEntity().getContent(), TextHelper.DEFAULT_ENCODING));
+                return response.getStatusLine().getReasonPhrase();
+            }
+        }
+    }
+
+    /**
+     * <p>
+     * postMail.
+     * </p>
+     *
+     * @param recipients a {@link java.util.List} object.
+     * @param subject a {@link java.lang.String} object.
+     * @param body a {@link java.lang.String} object.
+     * @param smtpServer a {@link java.lang.String} object.
+     * @param smtpUser a {@link java.lang.String} object.
+     * @param smtpPassword a {@link java.lang.String} object.
+     * @param smtpSenderAddress a {@link java.lang.String} object.
+     * @param smtpSenderName a {@link java.lang.String} object.
+     * @param smtpSecurity a {@link java.lang.String} object.
+     * @throws javax.mail.MessagingException
+     * @throws java.io.UnsupportedEncodingException
      */
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
             final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity)
@@ -219,10 +342,13 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param pi
-     * @return
-     * @throws FatalIndexerException
+     * <p>
+     * removeRecordImagesFromCache.
+     * </p>
+     *
+     * @param pi a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @return a {@link java.lang.String} object.
      */
     public static String removeRecordImagesFromCache(String pi) throws FatalIndexerException {
         String viewerUrl = Configuration.getInstance().getViewerUrl();
@@ -244,10 +370,13 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param url
-     * @return
-     * @throws IOException
+     * <p>
+     * callUrl.
+     * </p>
+     *
+     * @param url a {@link java.lang.String} object.
+     * @throws java.io.IOException
+     * @return a {@link java.lang.String} object.
      */
     public static String callUrl(String url) throws IOException {
         HttpGet httpGet = new HttpGet(url);
@@ -272,18 +401,27 @@ public class Utils {
         return null;
     }
 
+    /**
+     * <p>
+     * isUrn.
+     * </p>
+     *
+     * @param urn a {@link java.lang.String} object.
+     * @return a boolean.
+     */
     public static boolean isUrn(String urn) {
         return StringUtils.isNotEmpty(urn) && !urn.startsWith("http");
     }
 
     /**
      * Creates the file Path to the updated anchor file
-     * 
-     * @param destFolderPath
-     * @param baseName
-     * @param extension
-     * @return
+     *
+     * @param destFolderPath a {@link java.lang.String} object.
+     * @param baseName a {@link java.lang.String} object.
+     * @param extension a {@link java.lang.String} object.
      * @should construct path correctly and avoid collisions
+     * @param separator a {@link java.lang.String} object.
+     * @return a {@link java.nio.file.Path} object.
      */
     public static Path getCollisionFreeDataFilePath(String destFolderPath, String baseName, String separator, String extension) {
         if (destFolderPath == null) {
@@ -315,10 +453,13 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param file
-     * @return
+     * <p>
+     * extractPiFromFileName.
+     * </p>
+     *
+     * @param file a {@link java.nio.file.Path} object.
      * @should extract file name correctly
+     * @return a {@link java.lang.String} object.
      */
     public static String extractPiFromFileName(Path file) {
         String fileExtension = FilenameUtils.getExtension(file.getFileName().toString());
@@ -335,10 +476,13 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param url
-     * @return
+     * <p>
+     * getFileNameFromIiifUrl.
+     * </p>
+     *
+     * @param url a {@link java.lang.String} object.
      * @should extract file name correctly
+     * @return a {@link java.lang.String} object.
      */
     public static String getFileNameFromIiifUrl(String url) {
         if (StringUtils.isEmpty(url)) {
@@ -354,5 +498,36 @@ public class Utils {
         String extension = FilenameUtils.getExtension(filePathSplit[filePathSplit.length - 1]);
 
         return baseFileName + "." + extension;
+    }
+
+    /**
+     * 
+     * @param prefix
+     * @param order
+     * @return
+     * @should construct number correctly
+     */
+    public static int generateLongOrderNumber(int prefix, int count) {
+        if (prefix < 1) {
+            throw new IllegalArgumentException("prefix must be greater than 0");
+        }
+        if (count < 1) {
+            throw new IllegalArgumentException("count must be greater than 0");
+        }
+
+        int prefixLength = (int) (Math.log10(prefix) + 1);
+        int countLength = (int) (Math.log10(count) + 1);
+        int zeroes = 9 - (prefixLength + countLength);
+        if (zeroes < 0) {
+            zeroes = 0;
+        }
+        StringBuilder sbOrder = new StringBuilder();
+        sbOrder.append(prefix);
+        for (int i = 0; i < zeroes; ++i) {
+            sbOrder.append('0');
+        }
+        sbOrder.append(count);
+
+        return Integer.valueOf(sbOrder.toString());
     }
 }

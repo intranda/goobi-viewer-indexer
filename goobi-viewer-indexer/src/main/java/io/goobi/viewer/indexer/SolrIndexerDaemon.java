@@ -36,7 +36,8 @@ public final class SolrIndexerDaemon {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
-    public static final String VERSION = "4.3.3.20200120";
+    /** Constant <code>VERSION</code> */
+    public static final String VERSION = "4.4.0.20200211";
     private static final int MIN_SCHEMA_VERSION = 20190924;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
@@ -48,6 +49,11 @@ public final class SolrIndexerDaemon {
     private int sleepInterval = 1000;
     private volatile boolean running = false;
 
+    /**
+     * <p>Getter for the field <code>instance</code>.</p>
+     *
+     * @return a {@link io.goobi.viewer.indexer.SolrIndexerDaemon} object.
+     */
     public static SolrIndexerDaemon getInstance() {
         SolrIndexerDaemon indexer = instance;
         if (indexer == null) {
@@ -64,6 +70,11 @@ public final class SolrIndexerDaemon {
         return indexer;
     }
 
+    /**
+     * <p>main.</p>
+     *
+     * @param args an array of {@link java.lang.String} objects.
+     */
     public static void main(String[] args) {
         String configFileName = null;
         boolean noUpdate = false;
@@ -90,11 +101,12 @@ public final class SolrIndexerDaemon {
     }
 
     /**
+     * <p>start.</p>
      * 
-     * @param configFilePath
-     * @param noUpdate
-     * @param cleanupAnchors
-     * @throws FatalIndexerException
+     * @param configFilePath a {@link java.lang.String} object.
+     * @param noUpdate a boolean.
+     * @param cleanupAnchors a boolean.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public void start(String configFilePath, boolean noUpdate, boolean cleanupAnchors) throws FatalIndexerException {
         if (running) {
@@ -160,6 +172,9 @@ public final class SolrIndexerDaemon {
         }
     }
 
+    /**
+     * <p>stop.</p>
+     */
     public void stop() {
         logger.info("Stopping indexer...");
         try {

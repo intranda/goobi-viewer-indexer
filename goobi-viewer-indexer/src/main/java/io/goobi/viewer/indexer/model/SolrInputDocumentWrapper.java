@@ -25,11 +25,18 @@ public class SolrInputDocumentWrapper {
 
     private SolrInputDocument doc;
 
+    /**
+     * <p>Constructor for SolrInputDocumentWrapper.</p>
+     *
+     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
+     */
     public SolrInputDocumentWrapper(SolrInputDocument doc) {
         this.doc = doc;
     }
 
     /**
+     * <p>Getter for the field <code>doc</code>.</p>
+     *
      * @return the doc
      */
     public SolrInputDocument getDoc() {
@@ -37,6 +44,8 @@ public class SolrInputDocumentWrapper {
     }
 
     /**
+     * <p>Setter for the field <code>doc</code>.</p>
+     *
      * @param doc the doc to set
      */
     public void setDoc(SolrInputDocument doc) {

@@ -66,7 +66,7 @@
 		<namespaces>
 			<list>
 			    <intranda>http://intranda.com/MODS/</intranda>
-			    <gml>http://www.opengis.net/gml</gml>
+			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
 
@@ -110,6 +110,8 @@
 			<smtpSecurity>SSL</smtpSecurity>
 		</email>
 
+		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
+		<viewerAuthorizationToken>CHANGEME</viewerAuthorizationToken>
 	</init>
 
 
@@ -178,7 +180,7 @@
 					<getnode>first</getnode>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
-				</item> 
+				</item>
 			</list>
 		</URN>
 
@@ -2208,8 +2210,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:abstract[@type='watermark']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:abstract[@type='watermark']</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -2223,8 +2224,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:abstract[@type='illustrationtype']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:abstract[@type='illustrationtype']</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -2238,12 +2238,10 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:abstract[@type='purpose']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:abstract[@type='purpose']</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
-					ape>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -2253,24 +2251,23 @@
 			<list>
 				<item>
 					<xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent
-                            </item>
-                        </list>
+						<list>
+							<item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent</item>
+						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
 		</MD_PHYSICALDESCRIPTIONEXTENT>
+
 		<!-- Copy of MD_PHYSICALDESCRIPTIONEXTENT (so that the field name is that same as in Goobi) -->
 		<MD_SIZESOURCEPRINT>
 			<list>
 				<item>
 					<xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent
-                            </item>
-                        </list>
+						<list>
+							<item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent</item>
+						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
@@ -2280,14 +2277,12 @@
 		<MD_FORMATSOURCEPRINT>
 			<list>
 				<item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:note[@type="source dimensions"]
-                            </item>
-                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:displayObjectMeasurements
-                            </item>
-                        </list>
-                    </xpath>
+					<xpath>
+						<list>
+							<item>mets:xmlData/mods:mods/mods:note[@type="source dimensions"]</item>
+							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:displayObjectMeasurements</item>
+						</list>
+					</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -2534,18 +2529,6 @@
 				</item>
 			</list>
 		</MD_SCALE>
-		
-        <MD_GML_COORDINATES>
-            <list>
-                <item>
-                    <xpath>//denkxweb:georeference
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <onefield>false</onefield>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </MD_GML_COORDINATES>
 
 		<MD_COORDINATES>
 			<list>
@@ -2676,23 +2659,23 @@
 				</item>
 			</list>
 		</MD_PREPARATIONTYPE>
-        <MD_OBJECTMEASUREMENTSET>
-            <list>
-                <item>
-                    <xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:objectMeasurements
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_DIAMETER">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementValue</field>
-                        <field name="MD_DIAMETERUNIT">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementUnit</field>
-                        <field name="MD_WEIGHT">lido:measurementsSet[lido:measurementType="weight"]/lido:measurementValue</field>
-                        <field name="MD_WEIGHTUNIT">lido:measurementsSet[lido:measurementType="weight"]/lido:measurementUnit</field>
-                        <field name="MD_ORIENTATION">lido:measurementsSet[lido:measurementType="orientation"]/lido:measurementValue</field>
-                        <field name="MD_ORIENTATIONUNIT">lido:measurementsSet[lido:measurementType="orientation"]/lido:measurementUnit</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_OBJECTMEASUREMENTSET>
+
+		<MD_OBJECTMEASUREMENTSET>
+			<list>
+				<item>
+					<xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:objectMeasurements</xpath>
+					<addToDefault>false</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_DIAMETER">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementValue</field>
+						<field name="MD_DIAMETERUNIT">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementUnit</field>
+						<field name="MD_WEIGHT">lido:measurementsSet[lido:measurementType="weight"]/lido:measurementValue</field>
+						<field name="MD_WEIGHTUNIT">lido:measurementsSet[lido:measurementType="weight"]/lido:measurementUnit</field>
+						<field name="MD_ORIENTATION">lido:measurementsSet[lido:measurementType="orientation"]/lido:measurementValue</field>
+						<field name="MD_ORIENTATIONUNIT">lido:measurementsSet[lido:measurementType="orientation"]/lido:measurementUnit</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_OBJECTMEASUREMENTSET>
 
 
 		<!-- Information from DFG-Viewer namespace-->
@@ -2885,6 +2868,16 @@
 		       </list>
 		</BOOL_CONTAINSIMAGE>
 
+		<BOOL_DIRECTION_RTL>
+			<list>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:directionRTL</xpath>
+					<addToDefault>false</addToDefault>
+					<addSortField>true</addSortField>
+				</item>
+			</list>
+		</BOOL_DIRECTION_RTL>
+
 		<MD_HAAB_PROVENIENCE>
 			<list>
 				<item>
@@ -2905,36 +2898,47 @@
 			</list>
 		</MD_HAAB_PROVENIENCE>
 
-        <MD_GML_POS>
-            <list>
-                <item>
-                    <xpath>denkxweb:geoReference/denkxweb:position/gml:Point/gml:pos</xpath>
-                    <addToDefault>false</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </MD_GML_POS>
-        
-        <MD_DOCUMENT_PLACE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event</item>
-                        </list>
-                    </xpath> 
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">./lido:eventPlace/lido:displayPlace</field>
-                        <field name="MD_LABEL">./lido:eventPlace/lido:displayPlace</field>
-                        <field name="MD_URI">./lido:eventPlace/lido:place/lido:placeID</field>
-                        <field name="MD_RELATION_TYPE_LABEL">./lido:eventType/lido:term</field>
-                        <field name="MD_GEO_POINT">./lido:eventPlace/lido:place/lido:gml/gml:Point/gml:pos</field>
-                        <field name="MD_GEO_POLYGON">./lido:eventPlace/lido:place/lido:gml/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_DOCUMENT_PLACE>
-        
+		<MD_GML_POS>
+			<list>
+				<item>
+					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point/gml:pos</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</MD_GML_POS>
+
+		<MD_GML_COORDINATES>
+			<list>
+				<item>
+					<xpath>//denkxweb:georeference/denkxweb:surface/gml:MultiSurface/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+					<addToDefault>false</addToDefault>
+					<onefield>false</onefield>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</MD_GML_COORDINATES>
+
+		<MD_DOCUMENT_PLACE>
+			<list>
+				<item>
+					<xpath>
+						<list>
+							<item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event</item>
+						</list>
+					</xpath>
+					<addToDefault>true</addToDefault>
+					<groupEntity type="OTHER">
+						<field name="MD_VALUE">./lido:eventPlace/lido:displayPlace</field>
+						<field name="MD_LABEL">./lido:eventPlace/lido:displayPlace</field>
+						<field name="MD_URI">./lido:eventPlace/lido:place/lido:placeID</field>
+						<field name="MD_RELATION_TYPE_LABEL">./lido:eventType/lido:term</field>
+						<field name="MD_GEO_POINT">./lido:eventPlace/lido:place/lido:gml/gml:Point/gml:pos</field>
+						<field name="MD_GEO_POLYGON">./lido:eventPlace/lido:place/lido:gml/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD_DOCUMENT_PLACE>
+
 	</fields>
 </root>

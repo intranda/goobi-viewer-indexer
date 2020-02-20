@@ -49,6 +49,12 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
+/**
+ * <p>
+ * SerializingSolrWriteStrategy class.
+ * </p>
+ *
+ */
 public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(SerializingSolrWriteStrategy.class);
@@ -66,6 +72,14 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     private AtomicInteger pageDocsCounter = new AtomicInteger();
     private AtomicInteger tempFileCounter = new AtomicInteger();
 
+    /**
+     * <p>
+     * Constructor for SerializingSolrWriteStrategy.
+     * </p>
+     *
+     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param tempFolder a {@link java.nio.file.Path} object.
+     */
     public SerializingSolrWriteStrategy(SolrHelper solrHelper, Path tempFolder) {
         this.solrHelper = solrHelper;
         this.tempFolder = tempFolder;
@@ -74,6 +88,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#setRootDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void setRootDoc(SolrInputDocument doc) {
         rootDocIddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
@@ -86,6 +101,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void addDoc(SolrInputDocument doc) {
         addDocs(Collections.singletonList(doc));
@@ -95,6 +111,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDocs(java.util.List)
      */
+    /** {@inheritDoc} */
     @Override
     public void addDocs(List<SolrInputDocument> docs) {
         for (SolrInputDocument doc : docs) {
@@ -110,6 +127,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addPageDoc(java.util.List)
      */
+    /** {@inheritDoc} */
     @Override
     public void addPageDoc(SolrInputDocument doc) {
         String iddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
@@ -141,6 +159,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#updateDoc(org.apache.solr.common.SolrInputDocument)
      */
+    /** {@inheritDoc} */
     @Override
     public void updateDoc(SolrInputDocument doc) {
         String iddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
@@ -152,15 +171,26 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#getPageDocsSize()
      */
+    /** {@inheritDoc} */
     @Override
     public int getPageDocsSize() {
         return pageDocsCounter.get();
     }
 
+    /* (non-Javadoc)
+     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageOrderNumbers()
+     */
+    @Override
+    public List<Integer> getPageOrderNumbers() {
+        List<Integer> ret = new ArrayList<>(pageDocOrderIddocMap.keySet());
+        Collections.sort(ret);
+        return ret;
+    }
+
     /**
+     * {@inheritDoc}
+     *
      * Returns the SolrInputDocument for the given order. Fields that are serialized separately (FULLTEXT, ALTO) are not returned!
-     * 
-     * @throws FatalIndexerException
      * 
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocForOrder(int)
      */
@@ -178,9 +208,9 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Returns all SolrInputDocuments mapped to the given list of PHYSIDs. Fields that are serialized separately (FULLTEXT, ALTO) are not returned!
-     * 
-     * @throws FatalIndexerException
      * 
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocsForPhysIdList(java.util.List)
      * @should return all docs for the given physIdList
@@ -201,15 +231,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         return ret;
     }
 
-    /**
-     * @param aggregateRecords
-     * @throws IndexerException
-     * @throws FatalIndexerException
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#writeDocs()
-     * @should write all structure docs correctly
-     * @should write all page docs correctly
-     * @should make sure page order starts at 1
-     */
+    /** {@inheritDoc} */
     @Override
     public void writeDocs(final boolean aggregateRecords) throws IndexerException, FatalIndexerException {
         final SolrInputDocument rootDoc = load(rootDocIddoc);
@@ -302,40 +324,42 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     private void writePageDoc(int order, SolrInputDocument rootDoc, boolean aggregateRecords) throws FatalIndexerException {
         String iddoc = pageDocOrderIddocMap.get(order);
         SolrInputDocument doc = load(iddoc);
-        if (doc != null) {
-            // doc.setField(SolrConstants.ORDER, newOrder); // make sure order starts at 1 in the end
-            {
-                Path xmlFile = Paths.get(tempFolder.toAbsolutePath().toString(),
-                        new StringBuilder().append(iddoc).append("_").append(SolrConstants.FULLTEXT).toString());
-                if (Files.isRegularFile(xmlFile)) {
-                    try {
-                        String xml = FileUtils.readFileToString(xmlFile.toFile(), "UTF8");
-                        doc.addField(SolrConstants.FULLTEXT, xml);
-
-                        // Add the child doc's FULLTEXT values to the SUPERFULLTEXT value of the root doc
-                        if (aggregateRecords) {
-                            // sbSuperDefault.append('\n').append(doc.getFieldValue(SolrConstants.FULLTEXT));
-                            rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
-                        }
-                        logger.debug("Found FULLTEXT for: {}", iddoc);
-                    } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
-            }
-            checkAndAddAccessCondition(doc);
-            if (!solrHelper.writeToIndex(doc)) {
-                logger.error(doc.toString());
-            }
-            // newOrder++;
-        } else {
+        if (doc == null) {
             logger.error("Could not find serialized document for IDDOC: {}", iddoc);
+            return;
+        }
+        // Do not add shape docs
+        if ("SHAPE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))) {
+            return;
+        }
+
+        Path xmlFile = Paths.get(tempFolder.toAbsolutePath().toString(),
+                new StringBuilder().append(iddoc).append("_").append(SolrConstants.FULLTEXT).toString());
+        if (Files.isRegularFile(xmlFile)) {
+            try {
+                String xml = FileUtils.readFileToString(xmlFile.toFile(), "UTF8");
+                doc.addField(SolrConstants.FULLTEXT, xml);
+
+                // Add the child doc's FULLTEXT values to the SUPERFULLTEXT value of the root doc
+                if (aggregateRecords) {
+                    rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
+                }
+                logger.debug("Found FULLTEXT for: {}", iddoc);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+
+        checkAndAddAccessCondition(doc);
+        if (!solrHelper.writeToIndex(doc)) {
+            logger.error(doc.toString());
         }
     }
 
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#cleanup()
      */
+    /** {@inheritDoc} */
     @Override
     public void cleanup() {
         List<String> allIddocs = new ArrayList<>(docIddocs.size() + pageDocPhysIdIddocMap.size());

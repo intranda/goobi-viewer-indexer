@@ -15,6 +15,10 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
+/**
+ * <p>NonSortConfiguration class.</p>
+ *
+ */
 public class NonSortConfiguration {
 
     private final String prefix;
@@ -22,9 +26,9 @@ public class NonSortConfiguration {
 
     /**
      * Constructor.
-     * 
-     * @param prefix
-     * @param suffix
+     *
+     * @param prefix a {@link java.lang.String} object.
+     * @param suffix a {@link java.lang.String} object.
      * @should set attributes correctly
      */
     public NonSortConfiguration(String prefix, String suffix) {
@@ -33,9 +37,10 @@ public class NonSortConfiguration {
     }
 
     /**
-     * 
-     * @param s
-     * @return
+     * <p>apply.</p>
+     *
+     * @param s a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
      */
     public String apply(String s) {
         // remove non-sort characters and anything between them
@@ -55,6 +60,8 @@ public class NonSortConfiguration {
     }
 
     /**
+     * <p>Getter for the field <code>prefix</code>.</p>
+     *
      * @return the prefix
      */
     public String getPrefix() {
@@ -62,6 +69,8 @@ public class NonSortConfiguration {
     }
 
     /**
+     * <p>Getter for the field <code>suffix</code>.</p>
+     *
      * @return the suffix
      */
     public String getSuffix() {

@@ -38,6 +38,10 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
+/**
+ * <p>Configuration class.</p>
+ *
+ */
 public final class Configuration {
 
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
@@ -58,10 +62,10 @@ public final class Configuration {
 
     /**
      * Re-inits the instance with the given config file name.
-     * 
-     * @param confFilename
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @param confFilename a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @return a {@link io.goobi.viewer.indexer.helper.Configuration} object.
      */
     public static synchronized Configuration getInstance(String confFilename) throws FatalIndexerException {
         if (confFilename != null) {
@@ -73,8 +77,9 @@ public final class Configuration {
 
     /**
      * Do not call this method before the correct config file path has been passed!
-     * 
-     * @return
+     *
+     * @return a {@link io.goobi.viewer.indexer.helper.Configuration} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      */
     public static synchronized Configuration getInstance() throws FatalIndexerException {
         Configuration conf = instance;
@@ -97,9 +102,8 @@ public final class Configuration {
         return instance;
     }
 
-    @SuppressWarnings("deprecation")
     private Configuration() throws ConfigurationException {
-        AbstractConfiguration.setDelimiter('&');
+        AbstractConfiguration.setDefaultListDelimiter('&');
         config = new XMLConfiguration(configPath);
         config.setReloadingStrategy(new FileChangedReloadingStrategy());
         reloadConfig(config);
@@ -128,7 +132,7 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>killReloadTimer.</p>
      */
     public void killReloadTimer() {
         if (reloadTimer != null) {
@@ -139,7 +143,7 @@ public final class Configuration {
 
     /**
      * Adds relevant XML namespaces to the list of available namespace objects.
-     * 
+     *
      * @should add custom namespaces correctly
      */
     public void initNamespaces() {
@@ -167,7 +171,7 @@ public final class Configuration {
 
     /**
      * Returns param of < init >< elementName > param < /elementName >< /init > if exists otherwise returns question
-     * 
+     *
      * @param elementName the element name
      * @return param if exists, element name otherwise
      */
@@ -191,38 +195,42 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @param inPath
-     * @param defaultValue
-     * @return
+     * <p>getInt.</p>
+     *
+     * @param inPath a {@link java.lang.String} object.
+     * @param defaultValue a int.
+     * @return a {@link java.lang.Integer} object.
      */
     public Integer getInt(String inPath, int defaultValue) {
         return config.getInt(inPath, defaultValue);
     }
 
     /**
-     * 
-     * @param inPath
-     * @param defaultValue
-     * @return
+     * <p>getString.</p>
+     *
+     * @param inPath a {@link java.lang.String} object.
+     * @param defaultValue a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
      */
     public String getString(String inPath, String defaultValue) {
         return config.getString(inPath, defaultValue);
     }
 
     /**
-     * 
-     * @param inPath
-     * @return
+     * <p>getString.</p>
+     *
+     * @param inPath a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
      */
     public String getString(String inPath) {
         return config.getString(inPath);
     }
 
     /**
-     * 
-     * @param inPath
-     * @return
+     * <p>getList.</p>
+     *
+     * @param inPath a {@link java.lang.String} object.
+     * @return a {@link java.util.List} object.
      */
     @SuppressWarnings({ "rawtypes" })
     public List getList(String inPath) {
@@ -230,9 +238,10 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @param inPath
-     * @return
+     * <p>getLocalConfigurationsAt.</p>
+     *
+     * @param inPath a {@link java.lang.String} object.
+     * @return a {@link java.util.List} object.
      */
     protected List<HierarchicalConfiguration> getLocalConfigurationsAt(String inPath) {
         List<HierarchicalConfiguration> ret = config.configurationsAt(inPath);
@@ -244,99 +253,120 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @return
+     * <p>getViewerUrl.</p>
+     *
      * @should return correct value
+     * @return a {@link java.lang.String} object.
      */
     public String getViewerUrl() {
         return getString("init.viewerUrl");
     }
 
     /**
-     * 
-     * @return
+     * <p>getViewerHome.</p>
+     *
      * @should return correct value
+     * @return a {@link java.lang.String} object.
      */
     public String getViewerHome() {
         return getString("init.viewerHome");
     }
 
     /**
-     * 
-     * @return
+     * <p>getDataRepositoryStrategy.</p>
+     *
+     * @return a {@link java.lang.String} object.
      */
     public String getDataRepositoryStrategy() {
         return getString("init.dataRepositories.strategy", "SingleRepositoryStrategy");
     }
 
     /**
-     * 
-     * @return
+     * <p>isAddVolumeCollectionsToAnchor.</p>
+     *
+     * @return a boolean.
      */
     public boolean isAddVolumeCollectionsToAnchor() {
         return getBoolean("init.addVolumeCollectionsToAnchor", false);
     }
 
     /**
-     * 
-     * @return
+     * <p>isAddLabelToChildren.</p>
+     *
+     * @return a boolean.
      */
     public boolean isAddLabelToChildren() {
         return getBoolean("init.addLabelToChildren", false);
     }
 
     /**
-     * 
-     * @return
+     * <p>isLabelCleanup.</p>
+     *
+     * @return a boolean.
      */
     public boolean isLabelCleanup() {
         return getBoolean("init.labelCleanup", false);
     }
 
     /**
-     * 
-     * @return
+     * <p>isAggregateRecords.</p>
+     *
+     * @return a boolean.
      */
     public boolean isAggregateRecords() {
         return getBoolean("init.aggregateRecords", false);
     }
 
     /**
-     * 
-     * @return
+     * <p>isAutoOptimize.</p>
+     *
+     * @return a boolean.
      */
     public boolean isAutoOptimize() {
         return getBoolean("performance.autoOptimize", false);
     }
 
     /**
-     * 
-     * @return
+     * <p>getThreads.</p>
+     *
+     * @return a int.
      */
     public int getThreads() {
         return getInt("performance.threads", 1);
     }
 
     /**
-     * 
-     * @return
+     * <p>getPageCountStart.</p>
+     *
      * @should return correct value
+     * @return a int.
      */
     public int getPageCountStart() {
         return config.getInt("init.pageCountStart", 1);
     }
 
     /**
-     * 
-     * @return
+     * <p>getEmptyOrderLabelReplacement.</p>
+     *
      * @should return correct value
+     * @return a {@link java.lang.String} object.
      */
     public String getEmptyOrderLabelReplacement() {
         return getString("init.emptyOrderLabelReplacement", " - ");
     }
-
+    
     /**
      * 
+     * @return Viewer authorization token string, if configured
+     * @should return correct value
+     */
+    public String getViewerAuthorizationToken() {
+        return config.getString("init.viewerAuthorizationToken");
+    }
+
+    /**
+     * <p>getListConfiguration.</p>
+     *
      * @param elementName element name to search for
      * @return HashMap with key and value for each element of 'elementName'
      */
@@ -351,9 +381,10 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @return
+     * <p>getDataRepositoryConfigurations.</p>
+     *
      * @should return all items
+     * @return a {@link java.util.List} object.
      */
     public List<DataRepository> getDataRepositoryConfigurations() {
         List<HierarchicalConfiguration> elements = getLocalConfigurationsAt("init.dataRepositories.dataRepository");
@@ -390,6 +421,8 @@ public final class Configuration {
     }
 
     /**
+     * <p>Getter for the field <code>metadataConfigurationManager</code>.</p>
+     *
      * @return the metadataConfigurationManager
      */
     public MetadataConfigurationManager getMetadataConfigurationManager() {
@@ -397,6 +430,8 @@ public final class Configuration {
     }
 
     /**
+     * <p>Getter for the field <code>namespaces</code>.</p>
+     *
      * @return the namespaces
      */
     public Map<String, Namespace> getNamespaces() {

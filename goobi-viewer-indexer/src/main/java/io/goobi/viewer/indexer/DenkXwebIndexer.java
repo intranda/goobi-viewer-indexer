@@ -50,6 +50,7 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexerException;
@@ -62,6 +63,12 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
+/**
+ * <p>
+ * DenkXwebIndexer class.
+ * </p>
+ *
+ */
 public class DenkXwebIndexer extends Indexer {
 
     /** Logger for this class. */
@@ -76,7 +83,7 @@ public class DenkXwebIndexer extends Indexer {
     /**
      * Constructor.
      * 
-     * @param hotfolder
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object.
      * @should set attributes correctly
      */
     public DenkXwebIndexer(Hotfolder hotfolder) {
@@ -86,12 +93,12 @@ public class DenkXwebIndexer extends Indexer {
     /**
      * Indexes a DenkXweb file.
      * 
-     * @param doc
-     * @param dataFolders
-     * @param writeStrategy
-     * @param pageCountStart
+     * @param doc a {@link org.jdom2.Document} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param pageCountStart a int.
      * @param downloadExternalImages
-     * @return
+     * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should update record correctly
      */
@@ -176,7 +183,7 @@ public class DenkXwebIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, SolrConstants._LIDO);
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DENKXWEB.name());
 
             prepareUpdate(indexObj);
 
@@ -511,6 +518,8 @@ public class DenkXwebIndexer extends Indexer {
             String value = structNode.getAttributeValue("type");
             if (StringUtils.isNotEmpty(value)) {
                 indexObj.setType(MetadataConfigurationManager.mapDocStrct(value).trim());
+            } else {
+                indexObj.setType("monument");
             }
             logger.trace("TYPE: {}", indexObj.getType());
         }
@@ -763,6 +772,7 @@ public class DenkXwebIndexer extends Indexer {
         return true;
     }
 
+    /** Constant <code>txt</code> */
     public static FilenameFilter txt = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -770,6 +780,7 @@ public class DenkXwebIndexer extends Indexer {
         }
     };
 
+    /** Constant <code>xml</code> */
     public static FilenameFilter xml = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {

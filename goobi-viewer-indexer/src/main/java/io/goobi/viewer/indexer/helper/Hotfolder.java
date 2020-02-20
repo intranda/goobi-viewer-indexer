@@ -79,6 +79,12 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.MaxRecordNumberStra
 import io.goobi.viewer.indexer.model.datarepository.strategy.RemainingSpaceStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.SingleRepositoryStrategy;
 
+/**
+ * <p>
+ * Hotfolder class.
+ * </p>
+ *
+ */
 public class Hotfolder {
 
     private static final Logger logger = LoggerFactory.getLogger(Hotfolder.class);
@@ -86,9 +92,13 @@ public class Hotfolder {
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
     private static final int WAIT_IF_FILE_EMPTY = 5000;
 
+    /** Constant <code>metsEnabled=true</code> */
     public static boolean metsEnabled = true;
+    /** Constant <code>lidoEnabled=true</code> */
     public static boolean lidoEnabled = true;
+    /** Constant <code>denkxwebEnabled=true</code> */
     public static boolean denkxwebEnabled = true;
+    /** Constant <code>worldviewsEnabled=true</code> */
     public static boolean worldviewsEnabled = true;
 
     private StringWriter swSecondaryLog;
@@ -115,6 +125,7 @@ public class Hotfolder {
     private boolean addVolumeCollectionsToAnchor = false;
     private boolean deleteContentFilesOnFailure = true;
 
+    /** Constant <code>filterDataFile</code> */
     public static FilenameFilter filterDataFile = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -123,6 +134,7 @@ public class Hotfolder {
         }
     };
 
+    /** Constant <code>filterMediaFolder</code> */
     public static FilenameFilter filterMediaFolder = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -131,6 +143,15 @@ public class Hotfolder {
     };
 
     @SuppressWarnings("unchecked")
+    /**
+     * <p>
+     * Constructor for Hotfolder.
+     * </p>
+     *
+     * @param confFilename a {@link java.lang.String} object.
+     * @param solrServer a {@link org.apache.solr.client.solrj.SolrServer} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     */
     public Hotfolder(String confFilename, SolrServer solrServer) throws FatalIndexerException {
         this.solrHelper = new SolrHelper(solrServer);
         logger.debug("Config file: {}", confFilename);
@@ -400,9 +421,9 @@ public class Hotfolder {
 
     /**
      * Scans the hotfolder for new files and executes appropriate actions.
-     * 
+     *
      * @return boolean true if successful; false othewise.
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public boolean scan() throws FatalIndexerException {
         boolean noerror = true;
@@ -633,6 +654,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile)) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             FileFormat format = FileFormat.UNKNOWN;
             if (!Files.exists(actualXmlFile)) {
                 logger.warn("XML file '{}' not found.", actualXmlFile.getFileName().toString());
@@ -650,6 +675,8 @@ public class Hotfolder {
                         format = FileFormat.METS;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO))) {
                         format = FileFormat.LIDO;
+                    } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB))) {
+                        format = FileFormat.DENKXWEB;
                     } else if (doc.containsKey(SolrConstants.DATEDELETED)) {
                         format = FileFormat.METS;
                         trace = false;
@@ -903,6 +930,10 @@ public class Hotfolder {
                 logger.warn("'{}' could not be deleted! Please delete it manually!", metsFile.toAbsolutePath());
             }
 
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+            }
         } else {
             // Error
             if (deleteContentFilesOnFailure) {
@@ -1108,6 +1139,11 @@ public class Hotfolder {
                         errors = true;
                         handleError(lidoFile, resp[1]);
                     }
+
+                    // Update data repository cache map in the Goobi viewer
+                    if (previousDataRepository != null) {
+                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                    }
                 }
             }
         } finally {
@@ -1289,6 +1325,11 @@ public class Hotfolder {
                     } else {
                         logger.info("{} media file(s) copied.", imageCounter);
                     }
+
+                    // Update data repository cache map in the Goobi viewer
+                    if (previousDataRepository != null) {
+                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                    }
                 }
             }
         } finally {
@@ -1441,7 +1482,7 @@ public class Hotfolder {
                 }
             }
 
-            // success for goobi
+            // Create success file for Goobi workflow
             Path successFile = Paths.get(success.toAbsolutePath().toString(), mainFile.getFileName().toString());
             try {
                 Files.createFile(successFile);
@@ -1458,6 +1499,10 @@ public class Hotfolder {
                 logger.error("'{}' could not be deleted! Please delete it manually!", mainFile.toAbsolutePath());
             }
 
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+            }
         } else {
             // Error
             if (deleteContentFilesOnFailure) {
@@ -1631,9 +1676,9 @@ public class Hotfolder {
 
     /**
      * Checks whether the data folders for the given record file have finished being copied.
-     * 
-     * @param recordFile
-     * @return
+     *
+     * @param recordFile a {@link java.nio.file.Path} object.
+     * @return a boolean.
      */
     protected boolean isDataFolderExportDone(Path recordFile) {
         //        if (logger.isDebugEnabled()) {
@@ -1656,12 +1701,14 @@ public class Hotfolder {
     }
 
     /**
-     * 
-     * 
-     * @param sourceLocation {@link File}
-     * @param targetLocation {@link File}
+     * <p>
+     * copyDirectory.
+     * </p>
+     *
+     * @param sourceLocation {@link java.io.File}
+     * @param targetLocation {@link java.io.File}
      * @return number of copied files.
-     * @throws IOException in case of errors.
+     * @throws java.io.IOException in case of errors.
      */
     public static int copyDirectory(File sourceLocation, File targetLocation) throws IOException {
         if (sourceLocation == null) {
@@ -1711,19 +1758,44 @@ public class Hotfolder {
         }
     }
 
+    /**
+     * <p>
+     * Getter for the field <code>reindexQueue</code>.
+     * </p>
+     *
+     * @return a {@link java.util.Queue} object.
+     */
     public Queue<Path> getReindexQueue() {
         return reindexQueue;
     }
 
+    /**
+     * <p>
+     * getHotfolder.
+     * </p>
+     *
+     * @return a {@link java.nio.file.Path} object.
+     */
     public Path getHotfolder() {
         return hotfolderPath;
     }
 
+    /**
+     * <p>
+     * getTempFolder.
+     * </p>
+     *
+     * @return a {@link java.nio.file.Path} object.
+     */
     public Path getTempFolder() {
         return tempFolderPath;
     }
 
     /**
+     * <p>
+     * isAddVolumeCollectionsToAnchor.
+     * </p>
+     *
      * @return the addVolumeCollectionsToAnchor
      */
     public boolean isAddVolumeCollectionsToAnchor() {
@@ -1731,42 +1803,90 @@ public class Hotfolder {
     }
 
     /**
+     * <p>
+     * Getter for the field <code>dataRepositoryStrategy</code>.
+     * </p>
+     *
      * @return the dataRepositoryStrategy
      */
     public IDataRepositoryStrategy getDataRepositoryStrategy() {
         return dataRepositoryStrategy;
     }
 
+    /**
+     * <p>
+     * Getter for the field <code>updatedMets</code>.
+     * </p>
+     *
+     * @return a {@link java.nio.file.Path} object.
+     */
     public Path getUpdatedMets() {
         return updatedMets;
     }
 
+    /**
+     * <p>
+     * Getter for the field <code>deletedMets</code>.
+     * </p>
+     *
+     * @return a {@link java.nio.file.Path} object.
+     */
     public Path getDeletedMets() {
         return deletedMets;
     }
 
+    /**
+     * <p>
+     * Getter for the field <code>errorMets</code>.
+     * </p>
+     *
+     * @return a {@link java.nio.file.Path} object.
+     */
     public Path getErrorMets() {
         return errorMets;
     }
 
     /**
+     * <p>
+     * Getter for the field <code>origLido</code>.
+     * </p>
+     *
      * @return the origLido
      */
     public Path getOrigLido() {
         return origLido;
     }
 
+    /**
+     * <p>
+     * Getter for the field <code>success</code>.
+     * </p>
+     *
+     * @return a {@link java.nio.file.Path} object.
+     */
     public Path getSuccess() {
         return success;
     }
 
     /**
+     * <p>
+     * Getter for the field <code>solrHelper</code>.
+     * </p>
+     *
      * @return the solrHelper
      */
     public SolrHelper getSolrHelper() {
         return solrHelper;
     }
 
+    /**
+     * <p>
+     * getDataFolderFilter.
+     * </p>
+     *
+     * @param prefix a {@link java.lang.String} object.
+     * @return a {@link java.io.FilenameFilter} object.
+     */
     public static FilenameFilter getDataFolderFilter(final String prefix) {
         FilenameFilter filter = new FilenameFilter() {
             @Override

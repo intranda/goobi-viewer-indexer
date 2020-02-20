@@ -6,7 +6,7 @@
 			<PatternLayout
 				pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\:%M\:%L)%n        %msg%n" />
 		</Console>
-		<RollingFile name="rolling" fileName="build/indexer.log" filePattern="build/indexer.log%d{yyyy-MM-dd}..gz">
+		<RollingFile name="rolling" fileName="target/indexer.log" filePattern="target/indexer.log%d{yyyy-MM-dd}..gz">
 			<PatternLayout
 				pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\:%M\:%L)%n        %msg%n" />
 			<SizeBasedTriggeringPolicy size="20 MB" />

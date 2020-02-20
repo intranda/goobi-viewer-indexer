@@ -44,6 +44,10 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
+/**
+ * <p>JDomXP class.</p>
+ *
+ */
 public class JDomXP {
 
     public enum FileFormat {
@@ -88,12 +92,12 @@ public class JDomXP {
 
     /**
      * Constructor that reads a Document from the given file.
-     * 
-     * @param file
-     * @throws JDOMException in case of errors.
-     * @throws FileNotFoundException in case of errors.
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
+     *
+     * @param file a {@link java.io.File} object.
+     * @throws org.jdom2.JDOMException in case of errors.
+     * @throws java.io.FileNotFoundException in case of errors.
+     * @throws java.io.IOException in case of errors.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public JDomXP(File file) throws JDOMException, FileNotFoundException, IOException, FatalIndexerException {
         SAXBuilder builder = new SAXBuilder();
@@ -104,21 +108,22 @@ public class JDomXP {
 
     /**
      * Constructor that takes an existing Document.
-     * 
-     * @param doc
-     * @throws FatalIndexerException
+     *
+     * @param doc a {@link org.jdom2.Document} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public JDomXP(Document doc) throws FatalIndexerException {
         this.doc = doc;
     }
 
-    /***
+    /**
+     *
      * Generic return type XPath evaluation.
-     * 
+     *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
-     * @return {@link List}
-     * @throws FatalIndexerException
+     * @return {@link java.util.List}
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public List<Object> evaluate(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
@@ -151,11 +156,11 @@ public class JDomXP {
 
     /**
      * Evaluates the given XPath expression to a list of elements.
-     * 
+     *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
-     * @return {@link ArrayList} or null
-     * @throws FatalIndexerException
+     * @return {@link java.util.ArrayList} or null
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return all values
      */
     public List<Element> evaluateToElements(String expr, Object parent) throws FatalIndexerException {
@@ -178,11 +183,11 @@ public class JDomXP {
 
     /**
      * Evaluates the given XPath expression to a list of attributes.
-     * 
+     *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
-     * @return {@link ArrayList} or null
-     * @throws FatalIndexerException
+     * @return {@link java.util.ArrayList} or null
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return all values
      */
     public List<Attribute> evaluateToAttributes(String expr, Object parent) throws FatalIndexerException {
@@ -205,12 +210,12 @@ public class JDomXP {
 
     /**
      * Evaluates the given XPath expression to a string value of an XML attribute particularly.
-     * 
+     *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
-     * @return
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return value correctly
+     * @return a {@link java.lang.String} object.
      */
     public String evaluateToAttributeStringValue(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
@@ -232,8 +237,8 @@ public class JDomXP {
      *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
-     * @return {@link String} or null
-     * @throws FatalIndexerException
+     * @return {@link java.lang.String} or null
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return value correctly
      * @should convert string to NFC
      */
@@ -257,11 +262,11 @@ public class JDomXP {
 
     /**
      * Evaluates the given XPath expression to a list of strings.
-     * 
+     *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
-     * @return {@link ArrayList} or null
-     * @throws FatalIndexerException
+     * @return {@link java.util.ArrayList} or null
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return all values
      * @should convert strings to NFC
      */
@@ -275,11 +280,11 @@ public class JDomXP {
     
     /**
      * Evaluates the given XPath expression to a list of strings.
-     * 
+     *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
-     * @return {@link ArrayList} or null
-     * @throws FatalIndexerException
+     * @return {@link java.util.ArrayList} or null
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public static List<String> evaluateToStringListStatic(String expr, Object parent) throws FatalIndexerException {
         List<Object> list = evaluate(expr, parent, Filters.fpassthrough());
@@ -296,12 +301,12 @@ public class JDomXP {
 
     /**
      * Evaluates given XPath expression to the first found CDATA element.
-     * 
-     * @param expr
-     * @param parent
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @param expr a {@link java.lang.String} object.
+     * @param parent a {@link java.lang.Object} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return value correctly
+     * @return a {@link java.lang.String} object.
      */
     public String evaluateToCdata(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
@@ -323,8 +328,8 @@ public class JDomXP {
 
     /**
      * Returns the string value of the given XML node object, depending on its type.
-     * 
-     * @param object
+     *
+     * @param object a {@link java.lang.Object} object.
      * @return String
      * @should convert string to NFC
      */
@@ -356,14 +361,19 @@ public class JDomXP {
 
     /**
      * Outputs the XML document contained in this object to a file.
-     * 
-     * @param filename
-     * @throws IOException
+     *
+     * @param filename a {@link java.lang.String} object.
+     * @throws java.io.IOException
      */
     public void writeDocumentToFile(String filename) throws IOException {
         writeXmlFile(doc, filename);
     }
 
+    /**
+     * <p>getRootElement.</p>
+     *
+     * @return a {@link org.jdom2.Element} object.
+     */
     public Element getRootElement() {
         if (doc != null) {
             return doc.getRootElement();
@@ -374,11 +384,11 @@ public class JDomXP {
 
     /**
      * Returns the mets:dmdSec element with the given DMDID
-     * 
-     * @param dmdId
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @param dmdId a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return mdWrap correctly
+     * @return a {@link org.jdom2.Element} object.
      */
     public Element getMdWrap(String dmdId) throws FatalIndexerException {
         List<Element> ret = evaluateToElements("mets:mets/mets:dmdSec[@ID='" + dmdId + "']/mets:mdWrap[@MDTYPE='MODS']", null);
@@ -391,15 +401,15 @@ public class JDomXP {
 
     /**
      * Splits a multi-record LIDO document into a list of individual record documents.
-     * 
-     * @param lidoFile
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should split multi record documents correctly
      * @should leave single record documents as is
      * @should return empty list for non lido documents
      * @should return empty list for non-existing files
      * @should return empty list given null
+     * @param file a {@link java.io.File} object.
+     * @return a {@link java.util.List} object.
      */
     public static List<Document> splitLidoFile(File file) throws FatalIndexerException {
         if (file == null) {
@@ -442,15 +452,15 @@ public class JDomXP {
 
     /**
      * Splits a multi-record DenkXweb document into a list of individual record documents.
-     * 
-     * @param lidoFile
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should split multi record documents correctly
      * @should leave single record documents as is
      * @should return empty list for non lido documents
      * @should return empty list for non-existing files
      * @should return empty list given null
+     * @param file a {@link java.io.File} object.
+     * @return a {@link java.util.List} object.
      */
     public static List<Document> splitDenkXwebFile(File file) throws FatalIndexerException {
         if (file == null) {
@@ -490,14 +500,15 @@ public class JDomXP {
     }
 
     /**
-     * 
-     * @param filePath
-     * @return
-     * @throws FileNotFoundException if file not found
-     * @throws IOException in case of errors
-     * @throws JDOMException
+     * <p>readXmlFile.</p>
+     *
+     * @param filePath a {@link java.lang.String} object.
+     * @throws java.io.FileNotFoundException if file not found
+     * @throws java.io.IOException in case of errors
+     * @throws org.jdom2.JDOMException
      * @should build document correctly
      * @should throw FileNotFoundException if file not found
+     * @return a {@link org.jdom2.Document} object.
      */
     public static Document readXmlFile(String filePath) throws FileNotFoundException, IOException, JDOMException {
         try (FileInputStream fis = new FileInputStream(new File(filePath))) {
@@ -507,7 +518,7 @@ public class JDomXP {
 
     /**
      * Writes the given Document to an XML file with the given path.
-     * 
+     *
      * @param doc The document to write.
      * @param filePath The file path to which to write the document.
      * @return true if successful; false otherwise.
@@ -530,17 +541,17 @@ public class JDomXP {
 
     /**
      * Determines the format of the given XML file by checking for namespaces.
-     * 
-     * @param file
-     * @return
-     * @throws IOException
-     * @throws FatalIndexerException
+     *
+     * @param file a {@link java.io.File} object.
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should detect mets files correctly
      * @should detect lido files correctly
      * @should detect denkxweb files correctly
      * @should detect worldviews files correctly
      * @should detect abbyy files correctly
      * @should detect tei files correctly
+     * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object.
      */
     public static FileFormat determineFileFormat(File file) throws IOException, FatalIndexerException {
         try {

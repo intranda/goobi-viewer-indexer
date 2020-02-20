@@ -217,7 +217,7 @@ public class JDomXPTest extends AbstractTest {
             SAXBuilder builder = new SAXBuilder();
             Document doc = builder.build(fis);
             Assert.assertNotNull(doc);
-            String path = "build/newmets.xml";
+            String path = "target/newmets.xml";
             JDomXP.writeXmlFile(doc, path);
             newFile = new File(path);
             Assert.assertTrue(newFile.isFile());

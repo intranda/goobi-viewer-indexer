@@ -54,6 +54,7 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.helper.TextHelper;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -74,21 +75,26 @@ public class WorldViewsIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(WorldViewsIndexer.class);
 
+    /** Constant <code>DEFAULT_FILEGROUP_1="PRESENTATION"</code> */
     public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
+    /** Constant <code>DEFAULT_FILEGROUP_2="DEFAULT"</code> */
     public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
+    /** Constant <code>ALTO_FILEGROUP="FULLTEXT"</code> */
     public static final String ALTO_FILEGROUP = "FULLTEXT";
+    /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
+    /** Constant <code>DEFAULT_FULLTEXT_CHARSET="Cp1250"</code> */
     public static final String DEFAULT_FULLTEXT_CHARSET = "Cp1250";
 
+    /** Constant <code>fulltextCharset="DEFAULT_FULLTEXT_CHARSET"</code> */
     public static String fulltextCharset = DEFAULT_FULLTEXT_CHARSET;
 
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
     /**
      * Constructor.
-     * 
-     * @param hotfolder
-     * @param writeStrategy
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object.
      * @should set attributes correctly
      */
     public WorldViewsIndexer(Hotfolder hotfolder) {
@@ -97,15 +103,14 @@ public class WorldViewsIndexer extends Indexer {
 
     /**
      * Indexes the given WorldViews file.
-     * 
-     * @param mainFile {@link Path}
-     * @param fromReindexQueue
-     * @param dataFolders
-     * @param writeStragegy Implementation of {@link ISolrWriteStrategy} (optional). If null, a new one will be created based on METS file and data
-     *            folder sizes.
+     *
+     * @param mainFile {@link java.nio.file.Path}
+     * @param fromReindexQueue a boolean.
+     * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart Order number for the first page.
-     * @return
      * @should index record correctly
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @return an array of {@link java.lang.String} objects.
      */
     public String[] index(Path mainFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
@@ -220,7 +225,7 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, SolrConstants._WORLDVIEWS);
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.WORLDVIEWS.name());
 
             prepareUpdate(indexObj);
 
@@ -682,12 +687,11 @@ public class WorldViewsIndexer extends Indexer {
     /**
      * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
      * docstruct (such as docstruct iddoc, type, collection, etc.).
-     * 
-     * @param writeStrategy
-     * @param dataFolders
-     * @param pageCountStart
-     * @return
-     * @throws FatalIndexerException
+     *
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param pageCountStart a int.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
      * @should skip unmapped pages
@@ -1071,11 +1075,11 @@ public class WorldViewsIndexer extends Indexer {
     /**
      * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
      * is added, child docs are removed.
-     * 
-     * @param indexObj {@link IndexObject}
-     * @throws IOException
-     * @throws SolrServerException
-     * @throws FatalIndexerException
+     *
+     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
+     * @throws java.io.IOException
+     * @throws org.apache.solr.client.solrj.SolrServerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should keep creation timestamp
      * @should set update timestamp correctly
      * @should keep representation thumbnail

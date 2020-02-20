@@ -39,7 +39,7 @@ public class UtilsTest extends AbstractTest {
         try {
             {
                 // filename.xml
-                Path path = Utils.getCollisionFreeDataFilePath("build", "filename", "#", ".xml");
+                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
                 Assert.assertEquals("filename.xml", path.getFileName().toString());
                 Files.createFile(path);
@@ -48,7 +48,7 @@ public class UtilsTest extends AbstractTest {
             }
             {
                 // filename#1.xml
-                Path path = Utils.getCollisionFreeDataFilePath("build", "filename", "#", ".xml");
+                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
                 Assert.assertEquals("filename#0.xml", path.getFileName().toString());
                 Files.createFile(path);
@@ -57,7 +57,7 @@ public class UtilsTest extends AbstractTest {
             }
             {
                 // filename#2.xml
-                Path path = Utils.getCollisionFreeDataFilePath("build", "filename", "#", ".xml");
+                Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
                 Assert.assertEquals("filename#1.xml", path.getFileName().toString());
             }
@@ -91,5 +91,19 @@ public class UtilsTest extends AbstractTest {
                 Utils.getFileNameFromIiifUrl("http://localhost:8080/viewer/rest/image/AC05725455/00000001.tif/full/!400,400/0/default.jpg"));
         Assert.assertEquals("AFE_1284_1999-17-557-1_a.jpg", Utils
                 .getFileNameFromIiifUrl("http://pecunia2.zaw.uni-heidelberg.de:49200/iiif/2/AFE_1284_1999-17-557-1_a.jpg/full/full/0/default.jpg"));
+    }
+
+    /**
+     * @see Utils#generateLongOrderNumber(int,int)
+     * @verifies construct number correctly
+     */
+    @Test
+    public void generateLongOrderNumber_shouldConstructNumberCorrectly() throws Exception {
+        Assert.assertEquals(100000001, Utils.generateLongOrderNumber(1, 1));
+        Assert.assertEquals(110000010, Utils.generateLongOrderNumber(11, 10));
+        Assert.assertEquals(111000100, Utils.generateLongOrderNumber(111, 100));
+        Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
+        Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
+        Assert.assertEquals(111111000, Utils.generateLongOrderNumber(11111, 1000));
     }
 }

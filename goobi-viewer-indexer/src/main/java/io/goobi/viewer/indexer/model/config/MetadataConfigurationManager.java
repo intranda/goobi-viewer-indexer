@@ -49,6 +49,11 @@ public final class MetadataConfigurationManager {
     private Set<String> fieldsToAddToChildren = new HashSet<>();
     private Set<String> fieldsToAddToPages = new HashSet<>();
 
+    /**
+     * <p>Constructor for MetadataConfigurationManager.</p>
+     *
+     * @param config a {@link org.apache.commons.configuration.XMLConfiguration} object.
+     */
     public MetadataConfigurationManager(XMLConfiguration config) {
         // Regular fields
         Map<String, List<Map<String, Object>>> fieldMap = loadFieldConfiguration(config);
@@ -420,9 +425,9 @@ public final class MetadataConfigurationManager {
 
     /**
      * Returns config object for the given field name.
-     * 
-     * @param fieldname {@link String}
-     * @return
+     *
+     * @param fieldname {@link java.lang.String}
+     * @return a {@link java.util.List} object.
      */
     public List<FieldConfig> getConfigurationListForField(String fieldname) {
         if (configurationList.containsKey(fieldname)) {
@@ -433,8 +438,8 @@ public final class MetadataConfigurationManager {
 
     /**
      * Returns a list with all field names in the config files.
-     * 
-     * @return
+     *
+     * @return a {@link java.util.List} object.
      */
     public List<String> getListWithAllFieldNames() {
         List<String> retArray = new ArrayList<>();
@@ -447,12 +452,13 @@ public final class MetadataConfigurationManager {
     }
 
     /**
-     * 
-     * @param code
-     * @return
-     * @throws FatalIndexerException
+     * <p>getLanguageMapping.</p>
+     *
+     * @param code a {@link java.lang.String} object.
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return correct mapping
      * @should return null if code not configured
+     * @return a {@link java.lang.String} object.
      */
     public static String getLanguageMapping(String code) throws FatalIndexerException {
         return Configuration.getInstance().getString("languageMapping." + code);
@@ -460,11 +466,11 @@ public final class MetadataConfigurationManager {
 
     /**
      * Checks for custom docstruct name mappings to be used in the index instead of the given name.
-     * 
-     * @param string
+     *
+     * @param string a {@link java.lang.String} object.
      * @return The mapped replacement name, if available; default docstruct name, if configured to be used; the original name (without spaces)
      *         otherwise.
-     * @throws FatalIndexerException
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
     public static String mapDocStrct(String string) throws FatalIndexerException {
         String ret = string.replace(" ", "_");
@@ -479,6 +485,8 @@ public final class MetadataConfigurationManager {
     }
 
     /**
+     * <p>Getter for the field <code>fieldsToAddToChildren</code>.</p>
+     *
      * @return the fieldsToAddToChildren
      */
     public Set<String> getFieldsToAddToChildren() {
@@ -486,6 +494,8 @@ public final class MetadataConfigurationManager {
     }
 
     /**
+     * <p>Getter for the field <code>fieldsToAddToPages</code>.</p>
+     *
      * @return the fieldsToAddToPages
      */
     public Set<String> getFieldsToAddToPages() {

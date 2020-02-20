@@ -13,6 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 
+/**
+ * <p>LanguageHelper class.</p>
+ *
+ */
 public class LanguageHelper {
 
     /** Logger for this class. */
@@ -24,6 +28,11 @@ public class LanguageHelper {
 
     private Locale locale;
 
+    /**
+     * <p>getInstance.</p>
+     *
+     * @return a {@link io.goobi.viewer.indexer.helper.language.LanguageHelper} object.
+     */
     public static LanguageHelper getInstance() {
         if (helper == null) {
             helper = new LanguageHelper();
@@ -40,6 +49,12 @@ public class LanguageHelper {
         return helper;
     }
 
+    /**
+     * <p>getLanguage.</p>
+     *
+     * @param isoCode a {@link java.lang.String} object.
+     * @return a {@link io.goobi.viewer.indexer.helper.language.Language} object.
+     */
     public Language getLanguage(String isoCode) {
         SubnodeConfiguration languageConfig = null;
         try {
