@@ -97,7 +97,7 @@ public class XmlToolsTest extends AbstractTest {
     public void writeXmlFile_shouldThrowFileNotFoundExceptionIfFileIsDirectory() throws Exception {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
-        XmlTools.writeXmlFile(doc, "build");
+        XmlTools.writeXmlFile(doc, "target");
     }
 
     /**
