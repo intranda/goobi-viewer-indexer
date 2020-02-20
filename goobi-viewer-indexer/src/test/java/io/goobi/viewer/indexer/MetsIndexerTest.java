@@ -808,7 +808,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     //        Assert.assertFalse(eleStructMapPhysicalList.isEmpty());
     //
     //        Map<String, Path> dataFolders = new HashMap<>();
-    //        Path altoPath = Paths.get("build/viewer/alto/750542047");
+    //        Path altoPath = Paths.get("target/viewer/alto/750542047");
     //        Utils.checkAndCreateDirectory(altoPath);
     //        Assert.assertTrue(Files.isDirectory(altoPath));
     //        dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, altoPath);
@@ -830,7 +830,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void generatePageDocument_shouldCreateALTOFileFromTEICorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        Path altoPath = Paths.get("build/viewer/alto/PPN517154005");
+        Path altoPath = Paths.get("target/viewer/alto/PPN517154005");
         Utils.checkAndCreateDirectory(altoPath);
         Assert.assertTrue(Files.isDirectory(altoPath));
         dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED, altoPath);
@@ -915,7 +915,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void superupdate_shouldCopyNewMETSFileCorrectly() throws Exception {
-        Path viewerRootFolder = Paths.get("build/viewer");
+        Path viewerRootFolder = Paths.get("target/viewer");
         Assert.assertTrue(Files.isDirectory(viewerRootFolder));
         Path updatedMetsFolder = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "updated_mets");
         Assert.assertTrue(Files.isDirectory(updatedMetsFolder));
@@ -937,7 +937,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void superupdate_shouldCopyOldMETSFileToUpdatedMetsFolderIfFileAlreadyExists() throws Exception {
-        Path viewerRootFolder = Paths.get("build/viewer");
+        Path viewerRootFolder = Paths.get("target/viewer");
         Assert.assertTrue(Files.isDirectory(viewerRootFolder));
         Path updatedMetsFolder = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "updated_mets");
         Assert.assertTrue(Files.isDirectory(updatedMetsFolder));

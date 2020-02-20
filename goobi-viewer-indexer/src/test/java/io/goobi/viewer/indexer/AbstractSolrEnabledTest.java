@@ -77,7 +77,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
     @After
     public void tearDown() throws Exception {
         {
-            Path indexerFolder = Paths.get("build/indexer");
+            Path indexerFolder = Paths.get("target/indexer");
             if (Files.isDirectory(indexerFolder)) {
                 logger.info("Deleting {}...", indexerFolder);
                 FileUtils.deleteDirectory(indexerFolder.toFile());
@@ -85,7 +85,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
             Assert.assertFalse(Files.isDirectory(indexerFolder));
         }
         {
-            Path viewerRootFolder = Paths.get("build/viewer");
+            Path viewerRootFolder = Paths.get("target/viewer");
             if (Files.isDirectory(viewerRootFolder)) {
                 logger.info("Deleting {}...", viewerRootFolder);
                 FileUtils.deleteDirectory(viewerRootFolder.toFile());
