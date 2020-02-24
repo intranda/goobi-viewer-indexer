@@ -1105,7 +1105,7 @@ public class MetsIndexer extends Indexer {
                             doc.addField("MDNUM_FILESIZE", -1);
                         }
                     } catch (FileNotFoundException | NoSuchFileException e) {
-                        logger.error("File not found: " + e.getMessage());
+                        logger.warn("File not found: {}", e.getMessage());
                         doc.addField("MDNUM_FILESIZE", -1);
                     } catch (IOException e) {
                         logger.error(e.getMessage(), e);
