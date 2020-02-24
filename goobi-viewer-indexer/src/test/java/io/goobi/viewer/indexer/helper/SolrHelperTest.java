@@ -15,7 +15,7 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
-import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
@@ -43,7 +42,7 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
     @Test
     public void deleteDocuments_shouldReturnFalseIfIdListEmpty() throws Exception {
         SolrHelper sh = new SolrHelper(server);
-        Assert.assertFalse(sh.deleteDocuments(new ArrayList<String>()));
+        Assert.assertFalse(sh.deleteDocuments(Collections.emptyList()));
     }
 
     /**

@@ -415,7 +415,7 @@ public final class SolrHelper {
      */
     public boolean deleteDocuments(List<String> ids) throws FatalIndexerException {
         if (ids.isEmpty()) {
-            logger.error("Nothing to delete.");
+            logger.warn("Nothing to delete.");
             return false;
         }
         boolean success = false;
