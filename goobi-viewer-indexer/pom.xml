@@ -36,6 +36,7 @@
 		<icu.version>65.1</icu.version>
 		<imageio-openjpeg.version>0.4.3</imageio-openjpeg.version>
 		<log4j.version>2.13.0</log4j.version>
+		<jackson.version>2.10.2</jackson.version>
 		<jai.version>1.4.0</jai.version>
 		<javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6</jdom2.version>
@@ -392,6 +393,11 @@
 			<artifactId>imageio-openjpeg</artifactId>
 			<version>${imageio-openjpeg.version}</version>
 		</dependency>
+                <dependency>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                        <version>${jackson.version}</version>
+                </dependency>
 	</dependencies>
 
 
