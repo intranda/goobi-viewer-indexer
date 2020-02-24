@@ -439,7 +439,7 @@ public class JDomXP {
                 // Single LIDO document file
                 return Collections.singletonList(xp.doc);
             } else {
-                logger.error("Unknown root element: {}", xp.doc.getRootElement().getName());
+                logger.warn("Unknown root element: {}", xp.doc.getRootElement().getName());
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -488,7 +488,7 @@ public class JDomXP {
                 // Single DenkXweb document file
                 return Collections.singletonList((xp.doc));
             } else {
-                logger.error("Unknown root element: {}", xp.doc.getRootElement().getName());
+                logger.warn("Unknown root element: {}", xp.doc.getRootElement().getName());
             }
         } catch (IOException e) {
             logger.error(e.getMessage());

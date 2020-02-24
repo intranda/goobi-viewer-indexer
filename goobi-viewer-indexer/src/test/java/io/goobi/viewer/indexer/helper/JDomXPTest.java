@@ -141,7 +141,7 @@ public class JDomXPTest extends AbstractTest {
      */
     @Test
     public void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
-        File file = new File("no.xml");
+        File file = new File("nosuchfile.xml");
         Assert.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
         Assert.assertEquals(0, docs.size());
@@ -187,7 +187,7 @@ public class JDomXPTest extends AbstractTest {
      */
     @Test
     public void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
-        File file = new File("no.xml");
+        File file = new File("nosuchfile.xml");
         Assert.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
         Assert.assertEquals(0, docs.size());
