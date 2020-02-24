@@ -63,7 +63,9 @@ import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
 /**
- * <p>MetadataHelper class.</p>
+ * <p>
+ * MetadataHelper class.
+ * </p>
  *
  */
 public class MetadataHelper {
@@ -650,7 +652,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>applyReplaceRules.</p>
+     * <p>
+     * applyReplaceRules.
+     * </p>
      *
      * @param value a {@link java.lang.String} object.
      * @param replaceRules a {@link java.util.Map} object.
@@ -688,7 +692,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>applyValueDefaultModifications.</p>
+     * <p>
+     * applyValueDefaultModifications.
+     * </p>
      *
      * @param fieldValue a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
@@ -704,7 +710,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>applyIdentifierModifications.</p>
+     * <p>
+     * applyIdentifierModifications.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -806,7 +814,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>getAnchorPi.</p>
+     * <p>
+     * getAnchorPi.
+     * </p>
      *
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.lang.String} object.
@@ -1101,6 +1111,9 @@ public class MetadataHelper {
         if (groupEntityFields.get("type") != null) {
             type = (String) groupEntityFields.get("type");
             ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.trim()));
+        } else {
+            type = "OTHER";
+            logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
         }
         boolean normUriFound = false;
         Map<String, List<String>> collectedValues = new HashMap<>();
@@ -1372,7 +1385,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>main.</p>
+     * <p>
+     * main.
+     * </p>
      *
      * @param args an array of {@link java.lang.String} objects.
      */
