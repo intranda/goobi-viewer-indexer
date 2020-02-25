@@ -151,6 +151,13 @@ public class TextHelperTest extends AbstractTest {
             // SUBS_CONTENT
             Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("jeweilig"));
         }
+        {
+            Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "0230L.xml"));
+            Assert.assertNotNull(result);
+            Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
+            // SUBS_CONTENT
+            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Wappen"));
+        }
     }
 
     /**
