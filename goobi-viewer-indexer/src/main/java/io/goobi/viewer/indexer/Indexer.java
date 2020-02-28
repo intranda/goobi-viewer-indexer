@@ -277,50 +277,6 @@ public abstract class Indexer {
     }
 
     /**
-     * Recursively adds the given IDDOC and all IDDOCs of child documents to 'iddocsToDelete'. Does not perform the actual deletion, so it should only
-     * be called by 'deleteWithPI()'! TODO This method is (almost) identical to MetsIndexer.deleteWithIDDOC()
-     *
-     * @param inIddoc {@link java.lang.String}
-     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
-     * @return List of all IDDOC values from the document hierarchy.
-     * @throws java.io.IOException -
-     * @throws org.apache.solr.client.solrj.SolrServerException
-     */
-    @Deprecated
-    protected static Set<String> deleteWithIDDOC(String inIddoc, SolrHelper solrHelper) throws IOException, SolrServerException {
-        Set<String> ret = new HashSet<>();
-
-        String iddoc = inIddoc.trim();
-        // Add this IDDOC to the deletion list
-        ret.add(iddoc);
-
-        Set<String> childIddocs = new HashSet<>();
-
-        // Child docstructs
-        SolrDocumentList hits = solrHelper.search(SolrConstants.IDDOC_PARENT + ":" + iddoc, Collections.singletonList(SolrConstants.IDDOC));
-        for (SolrDocument doc : hits) {
-            childIddocs.add((String) doc.getFieldValue(SolrConstants.IDDOC));
-        }
-
-        // Pages and events
-        hits = solrHelper.search(SolrConstants.IDDOC_OWNER + ":" + iddoc, Collections.singletonList(SolrConstants.IDDOC));
-        for (SolrDocument doc : hits) {
-            String iddoc2 = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            // Page and event docs don't have children - add directly
-            if (StringUtils.isNotEmpty(iddoc2)) {
-                ret.add(iddoc2);
-            }
-        }
-
-        // Delete child documents recursively
-        for (String cIddoc : childIddocs) {
-            ret.addAll(deleteWithIDDOC(cIddoc, solrHelper));
-        }
-
-        return ret;
-    }
-
-    /**
      * Build replacement document that is marked as deleted.
      * 
      * @param pi
@@ -489,6 +445,10 @@ public abstract class Indexer {
                 doc.addField(SolrConstants.IDDOC, iddoc);
                 if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
                     doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                }
+                // Add topstruct type
+                if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
+                    doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
                 }
                 doc.addField(SolrConstants.GROUPFIELD, iddoc);
                 doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
@@ -681,6 +641,11 @@ public abstract class Indexer {
             SolrInputDocument pageDoc = pageDocs.get(pageOrder);
             if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
                 doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
+            }
+
+            // Add topstruct type
+            if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
+                doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }
 
             if (StringUtils.isNotEmpty(anchorPi)) {
@@ -954,7 +919,7 @@ public abstract class Indexer {
 
     /**
      * <p>
-     * addGroupedMetadataDocs.
+     * Adds grouped metadata to the given write strategy as separate Solr documents.
      * </p>
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
@@ -963,9 +928,9 @@ public abstract class Indexer {
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should add docs correctly
      * @should set PI_TOPSTRUCT to child docstruct metadata
+     * @should set DOCSTRCT_TOP
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
-        // Add grouped metadata as separate documents
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
@@ -980,6 +945,11 @@ public abstract class Indexer {
             doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
             doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
             doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
+
+            // Add topstruct type
+            if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
+                doc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
+            }
 
             // Add access conditions
             for (String s : indexObj.getAccessConditions()) {

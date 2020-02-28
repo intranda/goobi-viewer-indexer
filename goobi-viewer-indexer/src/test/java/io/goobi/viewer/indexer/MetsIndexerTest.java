@@ -292,6 +292,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 String fileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
                 Assert.assertNotNull(fileName);
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
+                Assert.assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.IMAGEURN));
                 Assert.assertNotNull(doc.getFieldValue(SolrConstants.FILEIDROOT));
                 {

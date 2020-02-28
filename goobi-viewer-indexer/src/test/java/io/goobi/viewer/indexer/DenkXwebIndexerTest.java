@@ -93,6 +93,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
             Assert.assertEquals(FileFormat.DENKXWEB.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
             Assert.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            Assert.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
         }
     }
 
@@ -144,6 +145,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("image", doc.getFieldValue(SolrConstants.MIMETYPE));
             Assert.assertEquals("foo bar", SolrHelper.getSingleFieldStringValue(doc, "MD_DESCRIPTION"));
             Assert.assertEquals(topDoc.getFieldValue(SolrConstants.IDDOC), doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            Assert.assertEquals("Flächendenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
         }
     }
 }

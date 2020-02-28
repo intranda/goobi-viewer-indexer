@@ -134,7 +134,7 @@ public class IndexObject {
             }
             addToLucene(SolrConstants.DOCSTRCT_TOP, p.getType());
         } else {
-            // Add topstruct type value as DOCSTRsCT_TOP as well
+            // Add topstruct type value as DOCSTRSCT_TOP as well
             addToLucene(SolrConstants.DOCSTRCT_TOP, getType());
         }
         addToLucene(SolrConstants.DATAREPOSITORY, getDataRepository());

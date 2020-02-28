@@ -20,7 +20,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -274,12 +273,14 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             SolrInputDocument pageDoc = new SolrInputDocument();
             pageDoc.setField(SolrConstants.IDDOC, 123);
             pageDoc.setField(SolrConstants.ORDER, 1);
+            pageDoc.setField(SolrConstants.DOCSTRCT_TOP, "topstruct");
             pageDocs.put(1, pageDoc);
         }
         {
             SolrInputDocument pageDoc = new SolrInputDocument();
             pageDoc.setField(SolrConstants.IDDOC, 124);
             pageDoc.setField(SolrConstants.ORDER, 2);
+            pageDoc.setField(SolrConstants.DOCSTRCT_TOP, "topstruct");
             pageDocs.put(2, pageDoc);
         }
 
@@ -290,6 +291,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(2, docs.size());
         {
             Assert.assertEquals("PPN517154005", docs.get(0).getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            Assert.assertEquals("topstruct", docs.get(0).getFieldValue(SolrConstants.DOCSTRCT_TOP));
             Assert.assertEquals(1, docs.get(0).getFieldValue(SolrConstants.ORDER));
             Assert.assertEquals(123, docs.get(0).getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertEquals("9.967025 51.521737", docs.get(0).getFieldValue("MD_COORDS"));
@@ -299,6 +301,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         }
         {
             Assert.assertEquals("PPN517154005", docs.get(1).getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            Assert.assertEquals("topstruct", docs.get(1).getFieldValue(SolrConstants.DOCSTRCT_TOP));
             Assert.assertEquals(1, docs.get(1).getFieldValue(SolrConstants.ORDER));
             Assert.assertEquals(123, docs.get(1).getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertEquals("Leipzig", docs.get(1).getFieldValue("MD_TEXT"));
