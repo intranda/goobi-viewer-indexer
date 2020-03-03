@@ -648,6 +648,13 @@ public class MetadataHelper {
             fieldValue = configurationItem.getValueNormalizer().normalize(fieldValue);
         }
 
+        // Convert to geoJSON
+        if (configurationItem.getGeoJSONSource() != null) {
+            if (configurationItem.getGeoJSONSource().toLowerCase().startsWith("gml:")) {
+                fieldValue = GeoJSONTools.convertGMLToGeoJSON(fieldValue, configurationItem.getGeoJSONSource());
+            }
+        }
+
         return fieldValue;
     }
 

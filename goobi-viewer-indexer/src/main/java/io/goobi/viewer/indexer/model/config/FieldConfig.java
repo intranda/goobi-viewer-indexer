@@ -50,6 +50,7 @@ public class FieldConfig {
     private boolean addToChildren = false;
     private boolean addToPages = false;
     private ValueNormalizer valueNormalizer;
+    private String geoJSONSource;
 
     /**
      * Constructor.
@@ -63,7 +64,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>fieldname</code>.</p>
+     * <p>
+     * Getter for the field <code>fieldname</code>.
+     * </p>
      *
      * @return the fieldname
      */
@@ -72,7 +75,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>fieldname</code>.</p>
+     * <p>
+     * Setter for the field <code>fieldname</code>.
+     * </p>
      *
      * @param fieldname the fieldname to set
      */
@@ -81,7 +86,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>xPathConfigurations</code>.</p>
+     * <p>
+     * Getter for the field <code>xPathConfigurations</code>.
+     * </p>
      *
      * @return the xPathConfigurations
      */
@@ -90,7 +97,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>xPathConfigurations</code>.</p>
+     * <p>
+     * Setter for the field <code>xPathConfigurations</code>.
+     * </p>
      *
      * @param xPathConfigurations the xPathConfigurations to set
      */
@@ -99,7 +108,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>node</code>.</p>
+     * <p>
+     * Getter for the field <code>node</code>.
+     * </p>
      *
      * @return the node
      */
@@ -111,7 +122,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>node</code>.</p>
+     * <p>
+     * Setter for the field <code>node</code>.
+     * </p>
      *
      * @param node the node to set
      */
@@ -120,7 +133,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>child</code>.</p>
+     * <p>
+     * Getter for the field <code>child</code>.
+     * </p>
      *
      * @return {@link java.lang.String} false,all
      */
@@ -132,7 +147,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>child</code>.</p>
+     * <p>
+     * Setter for the field <code>child</code>.
+     * </p>
      *
      * @param child the child to set
      */
@@ -141,7 +158,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>parents</code>.</p>
+     * <p>
+     * Getter for the field <code>parents</code>.
+     * </p>
      *
      * @return the parents
      */
@@ -153,7 +172,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>parents</code>.</p>
+     * <p>
+     * Setter for the field <code>parents</code>.
+     * </p>
      *
      * @param parents the parents to set
      */
@@ -162,7 +183,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isAddToDefault.</p>
+     * <p>
+     * isAddToDefault.
+     * </p>
      *
      * @return the addToDefault
      */
@@ -171,7 +194,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>addToDefault</code>.</p>
+     * <p>
+     * Setter for the field <code>addToDefault</code>.
+     * </p>
      *
      * @param addToDefault the addToDefault to set
      */
@@ -180,7 +205,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>constantValue</code>.</p>
+     * <p>
+     * Getter for the field <code>constantValue</code>.
+     * </p>
      *
      * @return the constantValue
      */
@@ -189,7 +216,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>constantValue</code>.</p>
+     * <p>
+     * Setter for the field <code>constantValue</code>.
+     * </p>
      *
      * @param constantValue the constantValue to set
      */
@@ -198,7 +227,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>valuepostfix</code>.</p>
+     * <p>
+     * Setter for the field <code>valuepostfix</code>.
+     * </p>
      *
      * @param valuepostfix {@link java.lang.String}
      */
@@ -207,7 +238,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>valuepostfix</code>.</p>
+     * <p>
+     * Getter for the field <code>valuepostfix</code>.
+     * </p>
      *
      * @return {@link java.lang.String}
      */
@@ -219,7 +252,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>oneToken</code>.</p>
+     * <p>
+     * Setter for the field <code>oneToken</code>.
+     * </p>
      *
      * @param oneToken the oneToken to set
      */
@@ -228,7 +263,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isOneToken.</p>
+     * <p>
+     * isOneToken.
+     * </p>
      *
      * @return the oneToken
      */
@@ -237,7 +274,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isOneField.</p>
+     * <p>
+     * isOneField.
+     * </p>
      *
      * @return a boolean.
      */
@@ -246,7 +285,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>oneField</code>.</p>
+     * <p>
+     * Setter for the field <code>oneField</code>.
+     * </p>
      *
      * @param oneField a boolean.
      */
@@ -255,7 +296,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isAddUntokenizedVersion.</p>
+     * <p>
+     * isAddUntokenizedVersion.
+     * </p>
      *
      * @return the addUntokenizedVersion
      */
@@ -264,7 +307,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>addUntokenizedVersion</code>.</p>
+     * <p>
+     * Setter for the field <code>addUntokenizedVersion</code>.
+     * </p>
      *
      * @param addUntokenizedVersion the addUntokenizedVersion to set
      */
@@ -273,7 +318,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isLowercase.</p>
+     * <p>
+     * isLowercase.
+     * </p>
      *
      * @return the lowercase
      */
@@ -282,7 +329,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>lowercase</code>.</p>
+     * <p>
+     * Setter for the field <code>lowercase</code>.
+     * </p>
      *
      * @param lowercase the lowercase to set
      */
@@ -291,7 +340,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>splittingCharacter</code>.</p>
+     * <p>
+     * Getter for the field <code>splittingCharacter</code>.
+     * </p>
      *
      * @return the splittingCharacter
      */
@@ -300,7 +351,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>splittingCharacter</code>.</p>
+     * <p>
+     * Setter for the field <code>splittingCharacter</code>.
+     * </p>
      *
      * @param splittingCharacter the splittingCharacter to set
      */
@@ -309,7 +362,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isAddSortField.</p>
+     * <p>
+     * isAddSortField.
+     * </p>
      *
      * @return the addSortField
      */
@@ -318,7 +373,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>addSortField</code>.</p>
+     * <p>
+     * Setter for the field <code>addSortField</code>.
+     * </p>
      *
      * @param addSortField the addSortField to set
      */
@@ -327,7 +384,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isAddSortFieldToTopstruct.</p>
+     * <p>
+     * isAddSortFieldToTopstruct.
+     * </p>
      *
      * @return the addSortFieldToTopstruct
      */
@@ -336,7 +395,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>addSortFieldToTopstruct</code>.</p>
+     * <p>
+     * Setter for the field <code>addSortFieldToTopstruct</code>.
+     * </p>
      *
      * @param addSortFieldToTopstruct the addSortFieldToTopstruct to set
      */
@@ -345,7 +406,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isNormalizeYear.</p>
+     * <p>
+     * isNormalizeYear.
+     * </p>
      *
      * @return the normalizeYear
      */
@@ -354,7 +417,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>normalizeYear</code>.</p>
+     * <p>
+     * Setter for the field <code>normalizeYear</code>.
+     * </p>
      *
      * @param normalizeYear the normalizeYear to set
      */
@@ -363,7 +428,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>normalizeYearMinDigits</code>.</p>
+     * <p>
+     * Getter for the field <code>normalizeYearMinDigits</code>.
+     * </p>
      *
      * @return the normalizeYearMinDigits
      */
@@ -372,7 +439,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isInterpolateYears.</p>
+     * <p>
+     * isInterpolateYears.
+     * </p>
      *
      * @return the interpolateYears
      */
@@ -381,7 +450,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>interpolateYears</code>.</p>
+     * <p>
+     * Setter for the field <code>interpolateYears</code>.
+     * </p>
      *
      * @param interpolateYears the interpolateYears to set
      */
@@ -390,7 +461,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>normalizeYearMinDigits</code>.</p>
+     * <p>
+     * Setter for the field <code>normalizeYearMinDigits</code>.
+     * </p>
      *
      * @param normalizeYearMinDigits the normalizeYearMinDigits to set
      */
@@ -399,7 +472,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isGroupEntity.</p>
+     * <p>
+     * isGroupEntity.
+     * </p>
      *
      * @return a boolean.
      */
@@ -408,7 +483,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>groupEntityFields</code>.</p>
+     * <p>
+     * Getter for the field <code>groupEntityFields</code>.
+     * </p>
      *
      * @return the groupEntityFields
      */
@@ -417,7 +494,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>groupEntityFields</code>.</p>
+     * <p>
+     * Setter for the field <code>groupEntityFields</code>.
+     * </p>
      *
      * @param groupEntityFields the groupEntityFields to set
      */
@@ -426,7 +505,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>replaceRules</code>.</p>
+     * <p>
+     * Getter for the field <code>replaceRules</code>.
+     * </p>
      *
      * @return the replaceRules
      */
@@ -435,7 +516,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>replaceRules</code>.</p>
+     * <p>
+     * Setter for the field <code>replaceRules</code>.
+     * </p>
      *
      * @param replaceRules the replaceRules to set
      */
@@ -444,7 +527,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>nonSortConfigurations</code>.</p>
+     * <p>
+     * Getter for the field <code>nonSortConfigurations</code>.
+     * </p>
      *
      * @return the nonSortConfigurations
      */
@@ -453,7 +538,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>nonSortConfigurations</code>.</p>
+     * <p>
+     * Setter for the field <code>nonSortConfigurations</code>.
+     * </p>
      *
      * @param nonSortConfigurations the nonSortConfigurations to set
      */
@@ -462,7 +549,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isAddToChildren.</p>
+     * <p>
+     * isAddToChildren.
+     * </p>
      *
      * @return the addToChildren
      */
@@ -471,7 +560,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>addToChildren</code>.</p>
+     * <p>
+     * Setter for the field <code>addToChildren</code>.
+     * </p>
      *
      * @param addToChildren the addToChildren to set
      */
@@ -480,7 +571,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>isAddToPages.</p>
+     * <p>
+     * isAddToPages.
+     * </p>
      *
      * @return the addToPages
      */
@@ -489,7 +582,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>addToPages</code>.</p>
+     * <p>
+     * Setter for the field <code>addToPages</code>.
+     * </p>
      *
      * @param addToPages the addToPages to set
      */
@@ -498,7 +593,9 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>valueNormalizer</code>.</p>
+     * <p>
+     * Getter for the field <code>valueNormalizer</code>.
+     * </p>
      *
      * @return the valueNormalizer
      */
@@ -507,11 +604,27 @@ public class FieldConfig {
     }
 
     /**
-     * <p>Setter for the field <code>valueNormalizer</code>.</p>
+     * <p>
+     * Setter for the field <code>valueNormalizer</code>.
+     * </p>
      *
      * @param valueNormalizer the valueNormalizer to set
      */
     public void setValueNormalizer(ValueNormalizer valueNormalizer) {
         this.valueNormalizer = valueNormalizer;
+    }
+
+    /**
+     * @return the geoJSONSource
+     */
+    public String getGeoJSONSource() {
+        return geoJSONSource;
+    }
+
+    /**
+     * @param geoJSONSource the geoJSONSource to set
+     */
+    public void setGeoJSONSource(String geoJSONSource) {
+        this.geoJSONSource = geoJSONSource;
     }
 }

@@ -388,7 +388,7 @@ public class Utils {
                     case 200:
                         HttpEntity httpEntity = response.getEntity();
                         httpEntity.getContentLength();
-                        IOUtils.copy(httpEntity.getContent(), writer);
+                        IOUtils.copy(httpEntity.getContent(), writer, TextHelper.DEFAULT_ENCODING);
                         return writer.toString();
                     default:
                         logger.error("Could not open URL '{}': {}", url, response.getStatusLine().getReasonPhrase());

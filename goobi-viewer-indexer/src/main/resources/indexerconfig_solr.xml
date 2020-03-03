@@ -2898,7 +2898,7 @@
 			</list>
 		</MD_HAAB_PROVENIENCE>
 
-		<MD_GML_POS>
+		<MD_GML_POINT>
 			<list>
 				<item>
 					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point/gml:pos</xpath>
@@ -2906,18 +2906,39 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-		</MD_GML_POS>
+		</MD_GML_POINT>
+		
+        <MD_GEOJSON_POINT>
+            <list>
+                <item>
+                    <xpath>denkxweb:geoReference/denkxweb:position/gml:Point/gml:pos</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                    <geoJSONSource>gml:Point</geoJSONSource>
+                </item>
+            </list>
+        </MD_GEOJSON_POINT>
 
-		<MD_GML_COORDINATES>
+		<MD_GML_POLYGON>
 			<list>
 				<item>
-					<xpath>//denkxweb:georeference/denkxweb:surface/gml:MultiSurface/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
 					<addToDefault>false</addToDefault>
-					<onefield>false</onefield>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-		</MD_GML_COORDINATES>
+		</MD_GML_POLYGON>
+		
+        <MD_GEOJSON_POLYGON>
+            <list>
+                <item>
+                    <xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                    <geoJSONSource>gml:Polygon</geoJSONSource>
+                </item>
+            </list>
+        </MD_GEOJSON_POLYGON>
 
 		<MD_DOCUMENT_PLACE>
 			<list>

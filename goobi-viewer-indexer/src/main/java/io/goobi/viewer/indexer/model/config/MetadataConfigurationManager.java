@@ -136,6 +136,7 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("addSortFieldToTopstruct", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortFieldToTopstruct"));
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
+                fieldValues.put("geoJSONSource", config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource"));
 
                 {
                     // Normalize and interpolate years
@@ -418,6 +419,10 @@ public final class MetadataConfigurationManager {
         }
         if (configurationMap.containsKey("valueNormalizer")) {
             configurationItem.setValueNormalizer((ValueNormalizer) configurationMap.get("valueNormalizer"));
+        }
+        
+        if (configurationMap.containsKey("geoJSONSource")) {
+            configurationItem.setGeoJSONSource((String) configurationMap.get("geoJSONSource"));
         }
 
         return configurationItem;
