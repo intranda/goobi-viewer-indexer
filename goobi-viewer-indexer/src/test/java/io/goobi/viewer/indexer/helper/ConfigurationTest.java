@@ -30,13 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
-import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public class ConfigurationTest extends AbstractTest {
@@ -172,6 +169,8 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertEquals(5, configItem.getValueNormalizer().getLength());
         Assert.assertEquals('a', configItem.getValueNormalizer().getFiller());
         Assert.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizer().getPosition());
+        Assert.assertEquals("mods:coordinates/point", configItem.getGeoJSONSource());
+        Assert.assertEquals(" / ", configItem.getGeoJSONSourceSeparator());
     }
 
     /**

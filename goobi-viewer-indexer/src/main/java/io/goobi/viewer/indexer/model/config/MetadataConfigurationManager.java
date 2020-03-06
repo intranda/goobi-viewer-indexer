@@ -50,7 +50,9 @@ public final class MetadataConfigurationManager {
     private Set<String> fieldsToAddToPages = new HashSet<>();
 
     /**
-     * <p>Constructor for MetadataConfigurationManager.</p>
+     * <p>
+     * Constructor for MetadataConfigurationManager.
+     * </p>
      *
      * @param config a {@link org.apache.commons.configuration.XMLConfiguration} object.
      */
@@ -137,6 +139,8 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
                 fieldValues.put("geoJSONSource", config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource"));
+                fieldValues.put("geoJSONSourceSeparator",
+                        config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@separator]"));
 
                 {
                     // Normalize and interpolate years
@@ -420,9 +424,14 @@ public final class MetadataConfigurationManager {
         if (configurationMap.containsKey("valueNormalizer")) {
             configurationItem.setValueNormalizer((ValueNormalizer) configurationMap.get("valueNormalizer"));
         }
-        
+
         if (configurationMap.containsKey("geoJSONSource")) {
             configurationItem.setGeoJSONSource((String) configurationMap.get("geoJSONSource"));
+        }
+
+        if (configurationMap.containsKey("geoJSONSourceSeparator")) {
+            configurationItem.setGeoJSONSourceSeparator(
+                    ((String) configurationMap.get("geoJSONSourceSeparator")).replace(Configuration.SPACE_SPLACEHOLDER, " "));
         }
 
         return configurationItem;
@@ -457,7 +466,9 @@ public final class MetadataConfigurationManager {
     }
 
     /**
-     * <p>getLanguageMapping.</p>
+     * <p>
+     * getLanguageMapping.
+     * </p>
      *
      * @param code a {@link java.lang.String} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -490,7 +501,9 @@ public final class MetadataConfigurationManager {
     }
 
     /**
-     * <p>Getter for the field <code>fieldsToAddToChildren</code>.</p>
+     * <p>
+     * Getter for the field <code>fieldsToAddToChildren</code>.
+     * </p>
      *
      * @return the fieldsToAddToChildren
      */
@@ -499,7 +512,9 @@ public final class MetadataConfigurationManager {
     }
 
     /**
-     * <p>Getter for the field <code>fieldsToAddToPages</code>.</p>
+     * <p>
+     * Getter for the field <code>fieldsToAddToPages</code>.
+     * </p>
      *
      * @return the fieldsToAddToPages
      */

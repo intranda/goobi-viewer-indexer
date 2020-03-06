@@ -191,6 +191,7 @@
 					<replace regex="[ ]*stringToReplace2[ ]*">replace2</replace>
 					<nonSortCharacters prefix="nonSortPrefix" suffix="nonSortSuffix" />
 					<normalizeValue length="5" filler="a" position="front" />
+                    <geoJSONSource separator="#SPACE#/#SPACE#">mods:coordinates/point</geoJSONSource>
 				</item>
 			</list>
 		</MD_TESTFIELD>

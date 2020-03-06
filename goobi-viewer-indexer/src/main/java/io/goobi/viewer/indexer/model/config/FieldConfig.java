@@ -51,6 +51,7 @@ public class FieldConfig {
     private boolean addToPages = false;
     private ValueNormalizer valueNormalizer;
     private String geoJSONSource;
+    private String geoJSONSourceSeparator;
 
     /**
      * Constructor.
@@ -626,5 +627,19 @@ public class FieldConfig {
      */
     public void setGeoJSONSource(String geoJSONSource) {
         this.geoJSONSource = geoJSONSource;
+    }
+
+    /**
+     * @return the geoJSONSourceSeparator
+     */
+    public String getGeoJSONSourceSeparator() {
+        return geoJSONSourceSeparator;
+    }
+
+    /**
+     * @param geoJSONSourceSeparator the geoJSONSourceSeparator to set
+     */
+    public void setGeoJSONSourceSeparator(String geoJSONSourceSeparator) {
+        this.geoJSONSourceSeparator = geoJSONSourceSeparator;
     }
 }

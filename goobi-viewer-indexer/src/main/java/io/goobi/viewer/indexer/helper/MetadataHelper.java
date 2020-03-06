@@ -650,9 +650,8 @@ public class MetadataHelper {
 
         // Convert to geoJSON
         if (configurationItem.getGeoJSONSource() != null) {
-            if (configurationItem.getGeoJSONSource().toLowerCase().startsWith("gml:")) {
-                fieldValue = GeoJSONTools.convertGMLToGeoJSON(fieldValue, configurationItem.getGeoJSONSource());
-            }
+            fieldValue = GeoJSONTools.convertCoordinatesToGeoJSON(fieldValue, configurationItem.getGeoJSONSource(),
+                    configurationItem.getGeoJSONSourceSeparator());
         }
 
         return fieldValue;

@@ -47,6 +47,8 @@ public final class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
     private static final Object lock = new Object();
+    
+    public static final String SPACE_SPLACEHOLDER = "#SPACE#";
 
     private final XMLConfiguration config;
     //    private Map<String, List<Map<String, Object>>> fieldConfiguration;

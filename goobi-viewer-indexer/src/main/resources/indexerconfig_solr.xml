@@ -2540,6 +2540,29 @@
 				</item>
 			</list>
 		</MD_COORDINATES>
+		
+        <MD_COORDINATES>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                </item>
+            </list>
+        </MD_COORDINATES>
+        
+        <MD_GEOJSON_COORDINATES>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <geoJSONSource separator=" / ">mods:coordinates/point</geoJSONSource>
+                </item>
+            </list>
+        </MD_GEOJSON_COORDINATES>
 
 		<MD_EVENTNAME>
 			<list>

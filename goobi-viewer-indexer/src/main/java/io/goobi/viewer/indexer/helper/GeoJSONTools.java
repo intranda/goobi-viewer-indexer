@@ -39,13 +39,14 @@ public class GeoJSONTools {
 
     /**
      * 
-     * @param gml
-     * @return
-     * @should convert point correctly
-     * @should convert polygon correctly
+     * @param coords
+     * @return geoJSON string
+     * @should convert GML point correctly
+     * @should convert GML polygon correctly
+     * @should convert MODS point correctly
      */
-    public static String convertGMLToGeoJSON(String gml, String type) {
-        if (gml == null) {
+    public static String convertCoordinatesToGeoJSON(String coords, String type, String separator) {
+        if (coords == null) {
             return null;
         }
         if (type == null) {
@@ -56,7 +57,7 @@ public class GeoJSONTools {
         Feature feature = new Feature();
         featureCollection.add(feature);
 
-        List<LngLatAlt> polygon = convertPoints(gml);
+        List<LngLatAlt> polygon = convertPoints(coords, separator);
         if (!polygon.isEmpty()) {
             GeoJsonObject geometry = null;
             switch (type.toLowerCase()) {
@@ -65,6 +66,9 @@ public class GeoJSONTools {
                     break;
                 case "gml:polygon":
                     geometry = new Polygon(polygon);
+                    break;
+                case "mods:coordinates/point":
+                    geometry = new Point(polygon.get(0));
                     break;
                 default:
                     logger.error("Unknown type: {}", type);
@@ -84,14 +88,18 @@ public class GeoJSONTools {
     /**
      * 
      * @param gml GML coordinates
+     * @param separator
      * @return List of LngLatAlt points
      */
-    static List<LngLatAlt> convertPoints(String gml) {
+    static List<LngLatAlt> convertPoints(String gml, String separator) {
         if (StringUtils.isEmpty(gml)) {
             return Collections.emptyList();
         }
+        if (separator == null) {
+            separator = " ";
+        }
 
-        String[] gmlSplit = gml.split(" ");
+        String[] gmlSplit = gml.split(separator);
         List<LngLatAlt> ret = new ArrayList<>(gmlSplit.length / 2);
         boolean newPoint = true;
         double[] point = { -1, -1 };
