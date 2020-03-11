@@ -47,9 +47,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
-import de.intranda.digiverso.normdataimporter.model.MarcRecord;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
+import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
@@ -487,7 +487,7 @@ public class MetadataHelper {
      */
     private static List<LuceneField> retrieveAuthorityData(StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms, String url,
             List<String> addToDefaultFields, Map<Object, String> replaceRules) {
-        logger.trace("retrieveNormData: {}", url);
+        logger.info("retrieveAuthorityData: {}", url);
         if (sbDefaultMetadataValues == null) {
             throw new IllegalArgumentException("sbDefaultMetadataValues may not be null");
         }
@@ -499,16 +499,20 @@ public class MetadataHelper {
         }
         // If it's just an identifier, assume it's GND
         if (!url.startsWith("http")) {
-            url = "http://d-nb.info/gnd/" + url;
+            url = "https://d-nb.info/gnd/" + url;
         }
 
-        MarcRecord marcRecord = NormDataImporter.getSingleMarcRecord(url.trim());
-        if (marcRecord == null) {
+        Record record = NormDataImporter.getSingleRecord(url.trim());
+        if (record == null) {
+            return Collections.emptyList();
+        }
+        if (record.getNormDataList().isEmpty()) {
+            logger.warn("No authority data fields found.");
             return Collections.emptyList();
         }
 
-        List<LuceneField> ret = new ArrayList<>(marcRecord.getNormDataList().size());
-        for (NormData normData : marcRecord.getNormDataList()) {
+        List<LuceneField> ret = new ArrayList<>(record.getNormDataList().size());
+        for (NormData normData : record.getNormDataList()) {
             if (!normData.getKey().startsWith("NORM_")) {
                 continue;
             }
@@ -1286,6 +1290,7 @@ public class MetadataHelper {
          * Date constructor.
          * 
          * @param date
+         * @should set date correctly
          */
         public PrimitiveDate(Date date) {
             Calendar cal = Calendar.getInstance();

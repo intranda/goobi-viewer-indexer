@@ -530,6 +530,10 @@
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]</xpath>
 					<addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="NORM_URI">@valueURI</field>
+                    </groupEntity>
 				</item>
 			</list>
 		</MD_PLACEPUBLISH>
@@ -721,6 +725,7 @@
 			</list>
 		</MD_PUBLICATIONRUN>
 
+<!--
 		<MDNUM_PUBLICRELEASEYEAR>
 			<list>
 				<item>
@@ -732,6 +737,7 @@
 				</item>
 			</list>
 		</MDNUM_PUBLICRELEASEYEAR>
+-->
 
 		<MD_PHYSICALCOPY>
 			<list>
@@ -2540,18 +2546,7 @@
 				</item>
 			</list>
 		</MD_COORDINATES>
-		
-        <MD_COORDINATES>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <onefield>false</onefield>
-                </item>
-            </list>
-        </MD_COORDINATES>
-        
+
         <MD_GEOJSON_COORDINATES>
             <list>
                 <item>
