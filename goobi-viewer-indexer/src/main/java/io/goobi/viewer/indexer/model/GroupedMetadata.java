@@ -19,18 +19,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>GroupedMetadata class.</p>
+ * <p>
+ * GroupedMetadata class.
+ * </p>
  *
  */
 public class GroupedMetadata {
 
     private String label;
     private String mainValue;
-    private String normUri;
+    private String authorityURI;
     private final List<LuceneField> fields;
 
     /**
-     * <p>Constructor for GroupedMetadata.</p>
+     * <p>
+     * Constructor for GroupedMetadata.
+     * </p>
      */
     public GroupedMetadata() {
         fields = new ArrayList<>();
@@ -82,7 +86,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Getter for the field <code>label</code>.</p>
+     * <p>
+     * Getter for the field <code>label</code>.
+     * </p>
      *
      * @return the label
      */
@@ -91,7 +97,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Setter for the field <code>label</code>.</p>
+     * <p>
+     * Setter for the field <code>label</code>.
+     * </p>
      *
      * @param label the label to set
      */
@@ -100,7 +108,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Getter for the field <code>mainValue</code>.</p>
+     * <p>
+     * Getter for the field <code>mainValue</code>.
+     * </p>
      *
      * @return the mainValue
      */
@@ -109,7 +119,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Setter for the field <code>mainValue</code>.</p>
+     * <p>
+     * Setter for the field <code>mainValue</code>.
+     * </p>
      *
      * @param mainValue the mainValue to set
      */
@@ -118,25 +130,23 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Getter for the field <code>normUri</code>.</p>
-     *
-     * @return the normUri
+     * @return the authorityURI
      */
-    public String getNormUri() {
-        return normUri;
+    public String getAuthorityURI() {
+        return authorityURI;
     }
 
     /**
-     * <p>Setter for the field <code>normUri</code>.</p>
-     *
-     * @param normUri the normUri to set
+     * @param authorityURI the authorityURI to set
      */
-    public void setNormUri(String normUri) {
-        this.normUri = normUri;
+    public void setAuthorityURI(String authorityURI) {
+        this.authorityURI = authorityURI;
     }
 
     /**
-     * <p>Getter for the field <code>fields</code>.</p>
+     * <p>
+     * Getter for the field <code>fields</code>.
+     * </p>
      *
      * @return the fields
      */

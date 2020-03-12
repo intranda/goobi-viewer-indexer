@@ -11,10 +11,10 @@ public class GeoJSONToolsTest {
      */
     @Test
     public void convertCoordinatesToGeoJSON_shouldConvertGMLPointCorrectly() throws Exception {
-        // TODO proper content comparison
-        Assert.assertTrue(GeoJSONTools.convertCoordinatesToGeoJSON(
+        String geoJson = GeoJSONTools.convertCoordinatesToGeoJSON(
                 "51.8164115931853 9.86927764300289 ",
-                "gml:Point", " ").contains("Point"));
+                "gml:Point", " ");
+        Assert.assertTrue(geoJson, geoJson.contains("{\"type\":\"Point\",\"coordinates\":[51.8164115931853,9.86927764300289]}}]}"));
     }
 
     /**
@@ -35,8 +35,16 @@ public class GeoJSONToolsTest {
      */
     @Test
     public void convertCoordinatesToGeoJSON_shouldConvertMODSPointCorrectly() throws Exception {
-        // TODO proper content comparison
-        Assert.assertTrue(GeoJSONTools.convertCoordinatesToGeoJSON(
-                "51.8164115931853 / 9.86927764300289", "mods:coordinates/point", " / ").contains("Point"));
+        {
+            // 2D
+            String geoJson = GeoJSONTools.convertCoordinatesToGeoJSON("51.8164115931853 / 9.86927764300289", "mods:coordinates/point", " / ");
+            Assert.assertTrue(geoJson, geoJson.contains("{\"type\":\"Point\",\"coordinates\":[51.8164115931853,9.86927764300289]}}]}"));
+        }
+        {
+            // 3D
+            String geoJson = GeoJSONTools.convertCoordinatesToGeoJSON(
+                    "51.8164115931853 / 9.86927764300289 / 123", "mods:coordinates/point", " / ");
+            Assert.assertTrue(geoJson, geoJson.contains("{\"type\":\"Point\",\"coordinates\":[51.8164115931853,9.86927764300289,123.0]}}]}"));
+        }
     }
 }

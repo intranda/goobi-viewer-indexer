@@ -57,23 +57,35 @@ public class GeoJSONTools {
         Feature feature = new Feature();
         featureCollection.add(feature);
 
-        List<LngLatAlt> polygon = convertPoints(coords, separator);
-        if (!polygon.isEmpty()) {
-            GeoJsonObject geometry = null;
-            switch (type.toLowerCase()) {
-                case "gml:point":
+        GeoJsonObject geometry = null;
+        switch (type.toLowerCase()) {
+            case "gml:point": {
+                List<LngLatAlt> polygon = convertPoints(coords, separator, 2);
+                if (!polygon.isEmpty()) {
                     geometry = new Point(polygon.get(0));
-                    break;
-                case "gml:polygon":
-                    geometry = new Polygon(polygon);
-                    break;
-                case "mods:coordinates/point":
-                    geometry = new Point(polygon.get(0));
-                    break;
-                default:
-                    logger.error("Unknown type: {}", type);
-                    return null;
+                }
             }
+                break;
+            case "gml:polygon": {
+                List<LngLatAlt> polygon = convertPoints(coords, separator, 2);
+                if (!polygon.isEmpty()) {
+                    geometry = new Polygon(polygon);
+                }
+            }
+                break;
+            case "mods:coordinates/point": {
+                List<LngLatAlt> polygon = convertPoints(coords, separator, coords.split(separator).length);
+                if (!polygon.isEmpty()) {
+                    geometry = new Point(polygon.get(0));
+                }
+            }
+                break;
+            default:
+                logger.error("Unknown type: {}", type);
+                return null;
+        }
+
+        if (geometry != null) {
             feature.setGeometry(geometry);
         }
 
@@ -91,7 +103,7 @@ public class GeoJSONTools {
      * @param separator
      * @return List of LngLatAlt points
      */
-    static List<LngLatAlt> convertPoints(String gml, String separator) {
+    static List<LngLatAlt> convertPoints(String gml, String separator, int dimensions) {
         if (StringUtils.isEmpty(gml)) {
             return Collections.emptyList();
         }
@@ -101,20 +113,19 @@ public class GeoJSONTools {
 
         String[] gmlSplit = gml.split(separator);
         List<LngLatAlt> ret = new ArrayList<>(gmlSplit.length / 2);
-        boolean newPoint = true;
-        double[] point = { -1, -1 };
+        double[] point = { -1, -1, -1 };
+        int count = 0;
         for (String coord : gmlSplit) {
-            if (newPoint) {
-                point[0] = Double.valueOf(coord);
-            } else {
-                point[1] = Double.valueOf(coord);
-                if (point[0] != -1 && point[1] != -1) {
+            point[count] = Double.valueOf(coord);
+            count++;
+            if (count == dimensions) {
+                if (point[2] != -1) {
+                    ret.add(new LngLatAlt(point[0], point[1], point[2]));
+                } else {
                     ret.add(new LngLatAlt(point[0], point[1]));
-                    point[0] = -1;
-                    point[1] = -1;
                 }
+                count = 0;
             }
-            newPoint = !newPoint;
         }
 
         return ret;
