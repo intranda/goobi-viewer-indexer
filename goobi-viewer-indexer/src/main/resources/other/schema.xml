@@ -30,7 +30,7 @@
 	request -->
 
 
-<schema name="goobi_viewer-20200210" version="1.5">
+<schema name="goobi_viewer-20200313" version="1.5">
 	<!-- attribute "name" is the name of this schema and is only used for display 
 		purposes. version="x.y" is Solr's version number for the schema syntax and 
 		semantics. It should not normally be changed by applications. 1.0: multiValued 
@@ -201,6 +201,7 @@
 			multiValued="true" />
 
 		<!-- Goobi viewer metadata fields -->
+		
 		<dynamicField name="FILENAME_*" type="string" indexed="true"
 			stored="true" />
 		<dynamicField name="IMAGEURL_*" type="string" indexed="true"
@@ -235,6 +236,8 @@
         <dynamicField name="DOCSTRCT_*" type="string" indexed="true"
             stored="true" />
         <dynamicField name="CMS_TEXT_*" type="text_general_rev"
+            indexed="true" stored="false" multiValued="true" />
+        <dynamicField name="COORDS_*" type="location_rpt"
             indexed="true" stored="false" multiValued="true" />
             
 		<dynamicField name="random_*" type="random" />
@@ -730,10 +733,18 @@
 			must not be multivalued. -->
 		<fieldType name="location" class="solr.LatLonType"
 			subFieldSuffix="_coordinate" />
+		
+		<!-- Coordinates for geospacial search -->
+        <fieldType name="location_rpt"   class="solr.SpatialRecursivePrefixTreeFieldType"
+            spatialContextFactory="com.spatial4j.core.context.jts.JtsSpatialContextFactory"
+            distErrPct="0.025"
+            maxDistErr="0.000009"
+            units="degrees" />
 
 		<!-- A Geohash is a compact representation of a latitude longitude pair 
 			in a single field. See http://wiki.apache.org/solr/SpatialSearch -->
 		<fieldtype name="geohash" class="solr.GeoHashField" />
+		
 		<!-- Money/currency field type. See http://wiki.apache.org/solr/MoneyFieldType 
 			Parameters: defaultCurrency: Specifies the default currency if none specified. 
 			Defaults to "USD" precisionStep: Specifies the precisionStep for the TrieLong 

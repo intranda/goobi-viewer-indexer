@@ -560,8 +560,15 @@ public class MetadataHelper {
                         }
                     }
                 } else if (normData.getKey().equals(GeoNamesRecord.AUTOCOORDS_FIELD)) {
+                    // Add searchable lon-lat coordinates
+                    String[] textValueSplit = textValue.split(" ");
+                    if (textValueSplit.length > 1) {
+                        String coords = textValueSplit[0] + " " + textValueSplit[1];
+                        ret.add(new LuceneField("COORDS_LOCATION", coords));
+                    }
+
                     // Add geoJSON
-                    String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSON(textValue, "mods:coordinates/point", " / ");
+                    String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSON(textValue, "mods:coordinates/point", " ");
                     if (StringUtils.isNotEmpty(geoJSON)) {
                         ret.add(new LuceneField("NORM_COORDS_GEOJSON", geoJSON));
                     }
