@@ -128,7 +128,7 @@ public class IndexObject {
         }
 
         addToLucene(SolrConstants.DOCSTRCT, getType());
-        addToLucene(SolrConstants.DOCSTRCT_ALT, getType());
+        addToLucene(SolrConstants.DOCSTRCT_ALT, getType() + "_ALT");
         if (this.parent != null && pi == null) {
             // Add own type value as DOCSTRCT_SUB to true subelements (no volumes)
             addToLucene(SolrConstants.DOCSTRCT_SUB, getType());
