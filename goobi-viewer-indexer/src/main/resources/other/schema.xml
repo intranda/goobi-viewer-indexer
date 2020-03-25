@@ -30,7 +30,7 @@
 	request -->
 
 
-<schema name="goobi_viewer-20200313" version="1.5">
+<schema name="goobi_viewer-20200323" version="1.5">
 	<!-- attribute "name" is the name of this schema and is only used for display 
 		purposes. version="x.y" is Solr's version number for the schema syntax and 
 		semantics. It should not normally be changed by applications. 1.0: multiValued 
@@ -238,7 +238,7 @@
         <dynamicField name="CMS_TEXT_*" type="text_general_rev"
             indexed="true" stored="false" multiValued="true" />
         <dynamicField name="COORDS_*" type="location_rpt"
-            indexed="true" stored="false" multiValued="true" />
+            indexed="true" stored="true" multiValued="true" />
             
 		<dynamicField name="random_*" type="random" />
 
