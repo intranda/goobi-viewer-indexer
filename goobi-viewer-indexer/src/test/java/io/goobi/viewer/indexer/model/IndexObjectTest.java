@@ -160,6 +160,12 @@ public class IndexObjectTest extends AbstractTest {
         Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT));
         Assert.assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT).getValue());
 
+        Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT));
+        Assert.assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT).getValue());
+
+        Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP));
+        Assert.assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
+
         Assert.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY));
         Assert.assertEquals("DATA", io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY).getValue());
 

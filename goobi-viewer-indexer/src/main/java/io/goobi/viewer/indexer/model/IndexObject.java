@@ -72,7 +72,9 @@ public class IndexObject {
     private final Set<String> languages = new HashSet<>();
 
     /**
-     * <p>Constructor for IndexObject.</p>
+     * <p>
+     * Constructor for IndexObject.
+     * </p>
      *
      * @param iddoc a long.
      */
@@ -81,7 +83,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Constructor for IndexObject.</p>
+     * <p>
+     * Constructor for IndexObject.
+     * </p>
      *
      * @param iddoc a long.
      * @param pi a {@link java.lang.String} object.
@@ -124,6 +128,7 @@ public class IndexObject {
         }
 
         addToLucene(SolrConstants.DOCSTRCT, getType());
+        addToLucene(SolrConstants.DOCSTRCT_ALT, getType());
         if (this.parent != null && pi == null) {
             // Add own type value as DOCSTRCT_SUB to true subelements (no volumes)
             addToLucene(SolrConstants.DOCSTRCT_SUB, getType());
@@ -204,7 +209,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>writeLanguages.</p>
+     * <p>
+     * writeLanguages.
+     * </p>
      *
      * @should add languages from metadata fields
      */
@@ -337,7 +344,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>removeDuplicateGroupedMetadata.</p>
+     * <p>
+     * removeDuplicateGroupedMetadata.
+     * </p>
      *
      * @should remove duplicates correctly
      */
@@ -361,7 +370,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>iddoc</code>.</p>
+     * <p>
+     * Setter for the field <code>iddoc</code>.
+     * </p>
      *
      * @param iddoc a long.
      */
@@ -370,7 +381,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>iddoc</code>.</p>
+     * <p>
+     * Getter for the field <code>iddoc</code>.
+     * </p>
      *
      * @return a long.
      */
@@ -379,7 +392,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>volume</code>.</p>
+     * <p>
+     * Setter for the field <code>volume</code>.
+     * </p>
      *
      * @param volume a boolean.
      */
@@ -388,7 +403,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>isVolume.</p>
+     * <p>
+     * isVolume.
+     * </p>
      *
      * @return a boolean.
      */
@@ -397,7 +414,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>pi</code>.</p>
+     * <p>
+     * Setter for the field <code>pi</code>.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object.
      */
@@ -406,7 +425,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>pi</code>.</p>
+     * <p>
+     * Getter for the field <code>pi</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -415,7 +436,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>parent</code>.</p>
+     * <p>
+     * Setter for the field <code>parent</code>.
+     * </p>
      *
      * @param parent a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      */
@@ -424,7 +447,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>parent</code>.</p>
+     * <p>
+     * Getter for the field <code>parent</code>.
+     * </p>
      *
      * @return a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      */
@@ -433,7 +458,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>setDmdid.</p>
+     * <p>
+     * setDmdid.
+     * </p>
      *
      * @param dmdid a {@link java.lang.String} object.
      */
@@ -442,7 +469,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>getDmdid.</p>
+     * <p>
+     * getDmdid.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -451,7 +480,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>logId</code>.</p>
+     * <p>
+     * Setter for the field <code>logId</code>.
+     * </p>
      *
      * @param logId a {@link java.lang.String} object.
      */
@@ -460,7 +491,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>logId</code>.</p>
+     * <p>
+     * Getter for the field <code>logId</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -469,7 +502,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>type</code>.</p>
+     * <p>
+     * Setter for the field <code>type</code>.
+     * </p>
      *
      * @param type a {@link java.lang.String} object.
      */
@@ -478,7 +513,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>type</code>.</p>
+     * <p>
+     * Getter for the field <code>type</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -487,7 +524,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>label</code>.</p>
+     * <p>
+     * Setter for the field <code>label</code>.
+     * </p>
      *
      * @param label a {@link java.lang.String} object.
      */
@@ -496,7 +535,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>label</code>.</p>
+     * <p>
+     * Getter for the field <code>label</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -505,7 +546,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>parentLabels</code>.</p>
+     * <p>
+     * Getter for the field <code>parentLabels</code>.
+     * </p>
      *
      * @return the parentLabels
      */
@@ -514,7 +557,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>rootStructNode</code>.</p>
+     * <p>
+     * Setter for the field <code>rootStructNode</code>.
+     * </p>
      *
      * @param rootStructNode a {@link org.jdom2.Element} object.
      */
@@ -523,7 +568,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>rootStructNode</code>.</p>
+     * <p>
+     * Getter for the field <code>rootStructNode</code>.
+     * </p>
      *
      * @return a {@link org.jdom2.Element} object.
      */
@@ -532,7 +579,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>anchor</code>.</p>
+     * <p>
+     * Setter for the field <code>anchor</code>.
+     * </p>
      *
      * @param anchor a boolean.
      */
@@ -541,7 +590,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>isAnchor.</p>
+     * <p>
+     * isAnchor.
+     * </p>
      *
      * @return a boolean.
      */
@@ -550,7 +601,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>update</code>.</p>
+     * <p>
+     * Setter for the field <code>update</code>.
+     * </p>
      *
      * @param update a boolean.
      */
@@ -559,7 +612,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>isUpdate.</p>
+     * <p>
+     * isUpdate.
+     * </p>
      *
      * @return a boolean.
      */
@@ -568,7 +623,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>defaultValue</code>.</p>
+     * <p>
+     * Setter for the field <code>defaultValue</code>.
+     * </p>
      *
      * @param defaultValue the defaultValue to set
      */
@@ -577,7 +634,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>defaultValue</code>.</p>
+     * <p>
+     * Getter for the field <code>defaultValue</code>.
+     * </p>
      *
      * @return the defaultValue
      */
@@ -586,7 +645,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>dateCreated</code>.</p>
+     * <p>
+     * Getter for the field <code>dateCreated</code>.
+     * </p>
      *
      * @return the dateCreated
      */
@@ -595,7 +656,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>dateCreated</code>.</p>
+     * <p>
+     * Setter for the field <code>dateCreated</code>.
+     * </p>
      *
      * @param dateCreated the dateCreated to set
      */
@@ -604,7 +667,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>dateUpdated</code>.</p>
+     * <p>
+     * Getter for the field <code>dateUpdated</code>.
+     * </p>
      *
      * @return the dateUpdated
      */
@@ -613,7 +678,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>urn</code>.</p>
+     * <p>
+     * Getter for the field <code>urn</code>.
+     * </p>
      *
      * @return the urn
      */
@@ -622,7 +689,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>urn</code>.</p>
+     * <p>
+     * Setter for the field <code>urn</code>.
+     * </p>
      *
      * @param urn the urn to set
      */
@@ -631,7 +700,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>imageUrns</code>.</p>
+     * <p>
+     * Getter for the field <code>imageUrns</code>.
+     * </p>
      *
      * @return the imageUrns
      */
@@ -640,7 +711,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>imageUrns</code>.</p>
+     * <p>
+     * Setter for the field <code>imageUrns</code>.
+     * </p>
      *
      * @param imageUrns the imageUrns to set
      */
@@ -649,7 +722,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>parentPI</code>.</p>
+     * <p>
+     * Setter for the field <code>parentPI</code>.
+     * </p>
      *
      * @param parentPI the parentPI to set
      */
@@ -658,7 +733,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>parentPI</code>.</p>
+     * <p>
+     * Getter for the field <code>parentPI</code>.
+     * </p>
      *
      * @return the parentPI
      */
@@ -667,7 +744,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>topstructPI</code>.</p>
+     * <p>
+     * Getter for the field <code>topstructPI</code>.
+     * </p>
      *
      * @return the topstructPI
      */
@@ -676,7 +755,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>topstructPI</code>.</p>
+     * <p>
+     * Setter for the field <code>topstructPI</code>.
+     * </p>
      *
      * @param topstructPI the topstructPI to set
      */
@@ -685,7 +766,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>anchorPI</code>.</p>
+     * <p>
+     * Getter for the field <code>anchorPI</code>.
+     * </p>
      *
      * @return the anchorPI
      */
@@ -694,7 +777,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>anchorPI</code>.</p>
+     * <p>
+     * Setter for the field <code>anchorPI</code>.
+     * </p>
      *
      * @param anchorPI the anchorPI to set
      */
@@ -703,7 +788,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>groupIds</code>.</p>
+     * <p>
+     * Getter for the field <code>groupIds</code>.
+     * </p>
      *
      * @return the groupIds
      */
@@ -712,7 +799,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>accessConditions</code>.</p>
+     * <p>
+     * Getter for the field <code>accessConditions</code>.
+     * </p>
      *
      * @return a {@link java.util.Set} object.
      */
@@ -721,7 +810,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>thumbnailRepresent</code>.</p>
+     * <p>
+     * Getter for the field <code>thumbnailRepresent</code>.
+     * </p>
      *
      * @return the thumbnailRepresent
      */
@@ -730,7 +821,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>thumbnailRepresent</code>.</p>
+     * <p>
+     * Setter for the field <code>thumbnailRepresent</code>.
+     * </p>
      *
      * @param thumbnailRepresent the thumbnailRepresent to set
      */
@@ -739,7 +832,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>dataRepository</code>.</p>
+     * <p>
+     * Getter for the field <code>dataRepository</code>.
+     * </p>
      *
      * @return the dataRepository
      */
@@ -748,7 +843,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>dataRepository</code>.</p>
+     * <p>
+     * Setter for the field <code>dataRepository</code>.
+     * </p>
      *
      * @param dataRepository the dataRepository to set
      */
@@ -757,7 +854,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>luceneFields</code>.</p>
+     * <p>
+     * Getter for the field <code>luceneFields</code>.
+     * </p>
      *
      * @return a {@link java.util.List} object.
      */
@@ -766,7 +865,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>groupedMetadataFields</code>.</p>
+     * <p>
+     * Getter for the field <code>groupedMetadataFields</code>.
+     * </p>
      *
      * @return the groupedMetadataFields
      */
@@ -775,7 +876,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>groupedMetadataFields</code>.</p>
+     * <p>
+     * Setter for the field <code>groupedMetadataFields</code>.
+     * </p>
      *
      * @param groupedMetadataFields the groupedMetadataFields to set
      */
@@ -784,7 +887,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>numPages</code>.</p>
+     * <p>
+     * Getter for the field <code>numPages</code>.
+     * </p>
      *
      * @return the numPages
      */
@@ -793,7 +898,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>numPages</code>.</p>
+     * <p>
+     * Setter for the field <code>numPages</code>.
+     * </p>
      *
      * @param numPages the numPages to set
      */
@@ -802,7 +909,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>firstPageLabel</code>.</p>
+     * <p>
+     * Getter for the field <code>firstPageLabel</code>.
+     * </p>
      *
      * @return the firstPageLabel
      */
@@ -811,7 +920,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>firstPageLabel</code>.</p>
+     * <p>
+     * Setter for the field <code>firstPageLabel</code>.
+     * </p>
      *
      * @param firstPageLabel the firstPageLabel to set
      */
@@ -820,7 +931,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>lastPageLabel</code>.</p>
+     * <p>
+     * Getter for the field <code>lastPageLabel</code>.
+     * </p>
      *
      * @return the lastPageLabel
      */
@@ -829,7 +942,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>lastPageLabel</code>.</p>
+     * <p>
+     * Setter for the field <code>lastPageLabel</code>.
+     * </p>
      *
      * @param lastPageLabel the lastPageLabel to set
      */
@@ -838,7 +953,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>languages</code>.</p>
+     * <p>
+     * Getter for the field <code>languages</code>.
+     * </p>
      *
      * @return the languages
      */
