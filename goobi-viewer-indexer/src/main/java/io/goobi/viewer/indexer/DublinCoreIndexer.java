@@ -766,7 +766,8 @@ public class DublinCoreIndexer extends Indexer {
 
         // LABEL
         {
-            String value = TextHelper.normalizeSequence(indexObj.getRootStructNode().getChildText("dc:title"));
+            String value = TextHelper
+                    .normalizeSequence(indexObj.getRootStructNode().getChildText("title", Configuration.getInstance().getNamespaces().get("dc")));
             if (value != null) {
                 // Remove non-sort characters from LABEL, if configured to do so
                 if (Configuration.getInstance().isLabelCleanup()) {
