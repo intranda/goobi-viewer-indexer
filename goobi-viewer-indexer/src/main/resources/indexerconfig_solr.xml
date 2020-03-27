@@ -48,6 +48,7 @@
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
+		<indexedDC>indexed_denkxweb</indexedDC>
 
 		<!-- Misc folders -->
 		<successFolder>C:/digiverso/viewer/success/</successFolder>
@@ -198,6 +199,7 @@
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
+							<item>dc:identifier</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>

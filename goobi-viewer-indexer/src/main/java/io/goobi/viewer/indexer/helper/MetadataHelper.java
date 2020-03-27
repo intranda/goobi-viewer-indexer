@@ -851,6 +851,8 @@ public class MetadataHelper {
         List<XPathConfig> xPathConfigurations = piConfig.get(0).getxPathConfigurations();
         for (XPathConfig xPathConfig : xPathConfigurations) {
             String query = prefix + xPathConfig.getxPath();
+            query = query.replace("///", "/");
+            logger.info(query);
             String pi = xp.evaluateToString(query, null);
             if (StringUtils.isNotEmpty(pi)) {
                 return pi;
