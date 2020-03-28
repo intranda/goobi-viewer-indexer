@@ -289,7 +289,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']</item>
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</item>
-							<item>dc:rights[not(contains(text(),'http'))</item>
+							<item>dc:rights[not(contains(text(),'http'))]</item>
 						</list>
 					</xpath>
 
@@ -2956,7 +2956,7 @@
 		<MD_ACCESSLICENSE>
 			<list>
 				<item>
-					<xpath>dc:rights[contains(text(),'http')</xpath>
+					<xpath>dc:rights[contains(text(),'http')]</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
