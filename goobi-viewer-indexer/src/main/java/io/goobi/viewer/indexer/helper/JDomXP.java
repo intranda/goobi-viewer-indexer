@@ -57,7 +57,7 @@ public class JDomXP {
         METS,
         LIDO,
         DENKXWEB,
-        DC,
+        DUBLINCORE,
         WORLDVIEWS,
         ALTO,
         ABBYYXML,
@@ -75,8 +75,8 @@ public class JDomXP {
                     return LIDO;
                 case "DENKXWEB":
                     return DENKXWEB;
-                case "DC":
-                    return DC;
+                case "DUBLINCORE":
+                    return DUBLINCORE;
                 case "WORLDVIEWS":
                     return WORLDVIEWS;
                 case "ABBYY":
@@ -581,7 +581,7 @@ public class JDomXP {
                 return FileFormat.DENKXWEB;
             }
             if (xp.doc.getRootElement().getNamespace("dc") != null) {
-                return FileFormat.DC;
+                return FileFormat.DUBLINCORE;
             }
             if (xp.doc.getRootElement().getName().equals("worldviews")) {
                 return FileFormat.WORLDVIEWS;

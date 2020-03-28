@@ -581,7 +581,7 @@ public class Hotfolder {
                             Files.delete(dataFile);
                         }
                         break;
-                    case DC:
+                    case DUBLINCORE:
                         if (dcEnabled) {
                             addDublinCoreToIndex(dataFile, reindexSettings);
                         } else {

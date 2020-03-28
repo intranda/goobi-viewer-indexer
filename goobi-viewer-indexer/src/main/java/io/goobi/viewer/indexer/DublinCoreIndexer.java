@@ -228,7 +228,7 @@ public class DublinCoreIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DC.name());
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DUBLINCORE.name());
             prepareUpdate(indexObj);
 
             // Process TEI files
