@@ -298,7 +298,7 @@ public class Hotfolder {
         // Dublin Core folder
         if (config.getConfiguration(DataRepository.PARAM_INDEXED_DC) == null) {
             dcEnabled = false;
-            logger.warn("<{}> not defined - DenkXweb indexing is disabled.", DataRepository.PARAM_INDEXED_DC);
+            logger.warn("<{}> not defined - Dublin Core indexing is disabled.", DataRepository.PARAM_INDEXED_DC);
         }
 
         try {
