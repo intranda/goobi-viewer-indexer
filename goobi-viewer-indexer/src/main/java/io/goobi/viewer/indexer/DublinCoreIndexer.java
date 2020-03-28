@@ -761,7 +761,7 @@ public class DublinCoreIndexer extends Indexer {
         logger.trace("LOGID: {}", indexObj.getLogId());
 
         // TYPE
-        indexObj.setType("object");
+        indexObj.setType("record");
         logger.trace("TYPE: {}", indexObj.getType());
 
         // LABEL
