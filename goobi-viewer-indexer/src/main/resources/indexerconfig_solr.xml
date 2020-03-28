@@ -265,6 +265,7 @@
 							<item>mets:xmlData/mods:mods/mods:classification[@authority="ivdcc" or @authority="GDZ"]</item>
 							<item>mets:xmlData/mods:mods/mods:relatedItem[@type='host']/@ID</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordSource/lido:legalBodyName/lido:appellationValue</item>
+							<item>dc:subject</item>
 						</list>
 					</xpath>
 					<getparents>all</getparents>
@@ -288,6 +289,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']</item>
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</item>
+							<item>dc:rights[not(contains(text(),'http'))</item>
 						</list>
 					</xpath>
 
@@ -407,6 +409,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
+							<item>dc:title</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -585,10 +588,9 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='iso639-2b']
-							</item>
-							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='rfc3066']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='iso639-2b']</item>
+							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='rfc3066']</item>
+							<item>dc:language</item>
 						</list>
 					</xpath>
 					<onefield>false</onefield>
@@ -605,6 +607,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority='marcrelator'][@type='code'])]</item>
 							<item>lido:eventActor/lido:actorInRole/lido:actor</item>
+							<item>dc:creator</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2021,6 +2024,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[@encoding='w3cdtf']</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[not(@encoding)][not(@point)]</item>
+							<item>dc:date</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2941,6 +2945,21 @@
 				</item>
 			</list>
 		</MD_DOCUMENT_PLACE>
-
+		<MD_DESCRIPTION>
+			<list>
+				<item>
+					<xpath>dc:description</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_DESCRIPTION>
+		<MD_ACCESSLICENSE>
+			<list>
+				<item>
+					<xpath>dc:rights[contains(text(),'http')</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_ACCESSLICENSE>
 	</fields>
 </root>
