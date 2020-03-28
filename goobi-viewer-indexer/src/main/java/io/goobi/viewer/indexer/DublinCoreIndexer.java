@@ -64,7 +64,7 @@ import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
 /**
- * Indexer implementation for Goobi viewer-generated DC documents.
+ * Indexer implementation for Goobi viewer-generated Dublin Core documents.
  */
 public class DublinCoreIndexer extends Indexer {
 
@@ -97,7 +97,7 @@ public class DublinCoreIndexer extends Indexer {
     }
 
     /**
-     * Indexes the given METS file.
+     * Indexes the given Dublin Core file.
      *
      * @param dcFile {@link java.nio.file.Path}
      * @param dataFolders a {@link java.util.Map} object.
@@ -116,7 +116,7 @@ public class DublinCoreIndexer extends Indexer {
         String[] ret = { null, null };
 
         if (dcFile == null || !Files.exists(dcFile)) {
-            throw new IllegalArgumentException("dcfile must point to an existing METS file.");
+            throw new IllegalArgumentException("dcfile must point to an existing Dublin Core file.");
         }
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null.");
@@ -186,7 +186,7 @@ public class DublinCoreIndexer extends Indexer {
                 long size = Files.size(dcFile);
                 if (size >= hotfolder.metsFileSizeThreshold) {
                     useSerializingStrategy = true;
-                    logger.info("METS file is {} bytes, using a slower Solr write strategy to avoid memory overflows.", size);
+                    logger.info("Dublin Core file is {} bytes, using a slower Solr write strategy to avoid memory overflows.", size);
                 } else {
                     for (String key : dataFolders.keySet()) {
                         switch (key) {
