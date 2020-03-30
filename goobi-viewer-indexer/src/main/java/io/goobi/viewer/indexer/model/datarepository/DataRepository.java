@@ -54,7 +54,7 @@ public class DataRepository {
     /** Constant <code>PARAM_INDEXED_DENKXWEB="indexedDenkXweb"</code> */
     public static final String PARAM_INDEXED_DENKXWEB = "indexedDenkXweb";
     /** Constant <code>PARAM_INDEXED_DC="indexedDC"</code> */
-    public static final String PARAM_INDEXED_DC = "indexedDC";
+    public static final String PARAM_INDEXED_DUBLINCORE = "indexedDublinCore";
     /** Constant <code>PARAM_MEDIA="mediaFolder"</code> */
     public static final String PARAM_MEDIA = "mediaFolder";
     /** Constant <code>PARAM_ALTO="altoFolder"</code> */
@@ -144,7 +144,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_INDEXED_METS, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_LIDO, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB, createFolders);
-        checkAndCreateDataSubdir(PARAM_INDEXED_DC, createFolders);
+        checkAndCreateDataSubdir(PARAM_INDEXED_DUBLINCORE, createFolders);
         checkAndCreateDataSubdir(PARAM_MEDIA, createFolders);
         checkAndCreateDataSubdir(PARAM_ALTO, createFolders);
         checkAndCreateDataSubdir(PARAM_ALTOCROWD, createFolders);
@@ -215,7 +215,7 @@ public class DataRepository {
                 case PARAM_INDEXED_METS:
                 case PARAM_INDEXED_LIDO:
                 case PARAM_INDEXED_DENKXWEB:
-                case PARAM_INDEXED_DC:
+                case PARAM_INDEXED_DUBLINCORE:
                     return;
                 default:
                     throw new FatalIndexerException("No configuration found for '" + dataDirName + "', exiting...");
@@ -305,7 +305,7 @@ public class DataRepository {
         logger.info("Data repository '{}' contains {} LIDO records.", path, lidoRecords);
         int denkxwebRecords = countFiles(getDir(PARAM_INDEXED_DENKXWEB));
         logger.info("Data repository '{}' contains {} DenkXweb records.", path, denkxwebRecords);
-        int dcRecords = countFiles(getDir(PARAM_INDEXED_DC));
+        int dcRecords = countFiles(getDir(PARAM_INDEXED_DUBLINCORE));
         logger.info("Data repository '{}' contains {} Dublin Core records.", path, dcRecords);
 
         return metsRecords + lidoRecords + denkxwebRecords + dcRecords;
@@ -398,8 +398,8 @@ public class DataRepository {
             }
         }
         // DUBLIN CORE
-        if (getDir(PARAM_INDEXED_DC) != null) {
-            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_DC).toAbsolutePath().toString(), pi + ".xml");
+        if (getDir(PARAM_INDEXED_DUBLINCORE) != null) {
+            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), pi + ".xml");
             if (Files.isRegularFile(oldRecordFile)) {
                 try {
                     Files.delete(oldRecordFile);
