@@ -1405,7 +1405,7 @@ public class MetsIndexer extends Indexer {
                     && !altoURL.startsWith(Configuration.getInstance().getString("init.viewerUrl", "missing?"))) {
                 try {
                     logger.debug("Downloading ALTO from {}", altoURL);
-                    String alto = Utils.callUrl(altoURL);
+                    String alto = Utils.getWebContentGET(altoURL);
                     if (StringUtils.isNotEmpty(alto)) {
                         Document altoDoc = XmlTools.getDocumentFromString(alto, null);
                         altoData = TextHelper.readAltoDoc(altoDoc);
