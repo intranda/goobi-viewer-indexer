@@ -2945,14 +2945,14 @@
 				</item>
 			</list>
 		</MD_DOCUMENT_PLACE>
-		<MD_DESCRIPTION>
+		<MD_RECORDDESCRIPTION>
 			<list>
 				<item>
 					<xpath>dc:description</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
-		</MD_DESCRIPTION>
+		</MD_RECORDDESCRIPTION>
 		<MD_ACCESSLICENSE>
 			<list>
 				<item>
