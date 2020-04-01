@@ -594,7 +594,7 @@ public class MetadataHelper {
                 // Add access conditions to a separate list
                 indexObj.getAccessConditions().add(field.getValue());
             } else {
-                indexObj.addToLucene(field);
+                indexObj.addToLucene(field, false);
             }
             // Extract language code from the field name and add it to the topstruct indexObj
             //            if (field.getField().startsWith("MD_TEXT_")) {

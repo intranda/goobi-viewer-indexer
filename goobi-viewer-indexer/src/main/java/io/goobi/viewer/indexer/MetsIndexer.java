@@ -470,7 +470,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj);
+            addGroupedMetadataDocs(writeStrategy, indexObj, null);
 
             boolean indexedChildrenFileList = false;
             if (!indexObj.isAnchor()) {
@@ -1883,12 +1883,16 @@ public class MetsIndexer extends Indexer {
      * @param depth OBSOLETE
      * @param writeStrategy
      * @param dataFolders
+     * @return List of <code>LuceneField</code>s to inherit up the hierarchy.
      * @throws IOException
      * @throws FatalIndexerException
      */
-    private void indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders)
+    private List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders)
             throws IOException, FatalIndexerException {
         logger.trace("indexAllChildren");
+        List<IndexObject> ret = new ArrayList<>();
+
         List<Element> childrenNodeList = xp.evaluateToElements("mets:div", parentIndexObject.getRootStructNode());
         for (int i = 0; i < childrenNodeList.size(); i++) {
             Element node = childrenNodeList.get(i);
@@ -1920,34 +1924,25 @@ public class MetsIndexer extends Indexer {
 
             // Inherit PI_ANCHOR value
             if (parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null) {
-                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR));
+                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR), false);
             }
             // Inherit GROUPID_* fields
             if (!parentIndexObject.getGroupIds().isEmpty()) {
                 for (String groupId : parentIndexObject.getGroupIds().keySet()) {
-                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId));
+                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
                 }
             }
 
             // Add parent's metadata and SORT_* fields to this docstruct
-            Set<String> existingMetadataFields = new HashSet<>();
-            Set<String> existingSortFieldNames = new HashSet<>();
-            for (LuceneField field : indexObj.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())) {
-                    existingMetadataFields.add(new StringBuilder(field.getField()).append(field.getValue()).toString());
-                } else if (field.getField().startsWith(SolrConstants.SORT_)) {
-                    existingSortFieldNames.add(field.getField());
-                }
-            }
             for (LuceneField field : parentIndexObject.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())
-                        && !existingMetadataFields.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())) {
                     // Avoid duplicates (same field name + value)
-                    indexObj.addToLucene(field.getField(), field.getValue());
+                    indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
+
                     logger.debug("Added {}:{} to child element {}", field.getField(), field.getValue(), indexObj.getLogId());
-                } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
+                } else if (field.getField().startsWith(SolrConstants.SORT_)) {
                     // Only one instance of each SORT_ field may exist
-                    indexObj.addToLucene(field.getField(), field.getValue());
+                    indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
                 }
             }
 
@@ -1981,7 +1976,14 @@ public class MetsIndexer extends Indexer {
             }
 
             // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct)
-            addGroupedMetadataDocs(writeStrategy, indexObj);
+            addGroupedMetadataDocs(writeStrategy, indexObj, null);
+
+            // Add fields configured to be inherited up to the return list
+            for (LuceneField field : indexObj.getLuceneFields()) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getField())) {
+                    indexObj.getFieldsToInheritToParents().add(field.getField());
+                }
+            }
 
             // Add own and all ancestor LABEL values to the DEFAULT field
             StringBuilder sbDefaultValue = new StringBuilder();
@@ -2009,11 +2011,45 @@ public class MetsIndexer extends Indexer {
                 // Add default value to parent doc
                 indexObj.setDefaultValue("");
             }
-            // write to lucene
+
+            // Add recursively collected child metadata fields that are configured to be inherited up
+            List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
+            for (IndexObject childObj : childObjectList) {
+                logger.info("Inheriting metadata from child {} to parent {}...", childObj.getLogId(), indexObj.getLogId());
+                if (!childObj.getFieldsToInheritToParents().isEmpty()) {
+                    // Add child element's regular metadata fields
+                    for (LuceneField field : childObj.getLuceneFields()) {
+                        if (childObj.getFieldsToInheritToParents().contains(field.getField())) {
+                            indexObj.addToLucene(field, true);
+                            logger.info("Added field: {}", field.toString());
+                        }
+                    }
+                    // Add child element's grouped metadata fields
+                    List<GroupedMetadata> groupedMetadataFieldsFromChild = new ArrayList<>(childObj.getGroupedMetadataFields().size());
+                    for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
+                        if (childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
+                            groupedMetadataFieldsFromChild.add(field);
+                        }
+                    }
+                    if (!groupedMetadataFieldsFromChild.isEmpty()) {
+                       int count = addGroupedMetadataDocs(writeStrategy, indexObj, groupedMetadataFieldsFromChild);
+                       logger.info("Added grouped {} fields", count);
+                    }
+
+                }
+            }
+
+            // If there are fields to inherit up the hierarchy, add this index object to the return list
+            if (!indexObj.getFieldsToInheritToParents().isEmpty()) {
+                ret.add(indexObj);
+            }
+
+            // Write to Solr
             logger.debug("Writing child document '{}'...", indexObj.getIddoc());
             writeStrategy.addDoc(SolrHelper.createDocument(indexObj.getLuceneFields()));
-            indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
         }
+
+        return ret;
     }
 
     /**

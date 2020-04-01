@@ -268,7 +268,7 @@ public class LidoIndexer extends Indexer {
             writeStrategy.addDocs(events);
 
             // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj);
+            addGroupedMetadataDocs(writeStrategy, indexObj, null);
 
             // Add root doc
             SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());
@@ -811,7 +811,7 @@ public class LidoIndexer extends Indexer {
                         MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.SORT_, fieldConfig.getNonSortConfigurations(),
                                 fieldConfig.getValueNormalizer(), retList);
                         if (!retList.isEmpty()) {
-                            indexObj.addToLucene(retList.get(0));
+                            indexObj.addToLucene(retList.get(0), false);
                         }
                     }
                 }

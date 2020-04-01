@@ -46,11 +46,14 @@ public final class MetadataConfigurationManager {
     private static final String FALSE = "false";
 
     private Map<String, List<FieldConfig>> configurationList = new HashMap<>();
+    private Set<String> fieldsToAddToParents = new HashSet<>();
     private Set<String> fieldsToAddToChildren = new HashSet<>();
     private Set<String> fieldsToAddToPages = new HashSet<>();
 
     /**
-     * <p>Constructor for MetadataConfigurationManager.</p>
+     * <p>
+     * Constructor for MetadataConfigurationManager.
+     * </p>
      *
      * @param config a {@link org.apache.commons.configuration.XMLConfiguration} object.
      */
@@ -134,6 +137,7 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("lowercase", config.getString("fields." + fieldname + ".list.item(" + i + ").lowercase"));
                 fieldValues.put("addSortField", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortField"));
                 fieldValues.put("addSortFieldToTopstruct", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortFieldToTopstruct"));
+                fieldValues.put("addToParents", config.getString("fields." + fieldname + ".list.item(" + i + ").addToParents"));
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
 
@@ -400,6 +404,14 @@ public final class MetadataConfigurationManager {
             configurationItem.setNonSortConfigurations((List<NonSortConfiguration>) configurationMap.get("nonSortConfigurations"));
         }
 
+        if (configurationMap.containsKey("addToParents")) {
+            if (((String) configurationMap.get("addToParents")).equals("true")) {
+                configurationItem.setAddToChildren(true);
+                fieldsToAddToParents.add(configurationItem.getFieldname());
+            } else {
+                configurationItem.setAddToChildren(false);
+            }
+        }
         if (configurationMap.containsKey("addToChildren")) {
             if (((String) configurationMap.get("addToChildren")).equals("true")) {
                 configurationItem.setAddToChildren(true);
@@ -452,7 +464,9 @@ public final class MetadataConfigurationManager {
     }
 
     /**
-     * <p>getLanguageMapping.</p>
+     * <p>
+     * getLanguageMapping.
+     * </p>
      *
      * @param code a {@link java.lang.String} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -485,7 +499,20 @@ public final class MetadataConfigurationManager {
     }
 
     /**
-     * <p>Getter for the field <code>fieldsToAddToChildren</code>.</p>
+     * <p>
+     * Getter for the field <code>fieldsToAddToParents</code>.
+     * </p>
+     *
+     * @return the fieldsToAddToParents
+     */
+    public Set<String> getFieldsToAddToParents() {
+        return fieldsToAddToParents;
+    }
+
+    /**
+     * <p>
+     * Getter for the field <code>fieldsToAddToChildren</code>.
+     * </p>
      *
      * @return the fieldsToAddToChildren
      */
@@ -494,7 +521,9 @@ public final class MetadataConfigurationManager {
     }
 
     /**
-     * <p>Getter for the field <code>fieldsToAddToPages</code>.</p>
+     * <p>
+     * Getter for the field <code>fieldsToAddToPages</code>.
+     * </p>
      *
      * @return the fieldsToAddToPages
      */

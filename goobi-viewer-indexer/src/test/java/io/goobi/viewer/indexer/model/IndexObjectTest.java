@@ -15,16 +15,13 @@
  */
 package io.goobi.viewer.indexer.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.model.GroupedMetadata;
-import io.goobi.viewer.indexer.model.IndexObject;
-import io.goobi.viewer.indexer.model.LuceneField;
-import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
 public class IndexObjectTest extends AbstractTest {
@@ -342,6 +339,95 @@ public class IndexObjectTest extends AbstractTest {
     }
 
     /**
+     * @see IndexObject#addAllToLucene(List,boolean)
+     * @verifies add fields correctly
+     */
+    @Test
+    public void addAllToLucene_shouldAddFieldsCorrectly() throws Exception {
+        IndexObject io = new IndexObject(1);
+
+        List<LuceneField> toAdd = new ArrayList<>(2);
+        toAdd.add(new LuceneField("foo", "bar"));
+        toAdd.add(new LuceneField("foo2", "bar2"));
+        Assert.assertEquals(2, io.addAllToLucene(toAdd, true));
+
+        Assert.assertEquals(2, io.getLuceneFields().size());
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar", field.getValue());
+        }
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo2");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar2", field.getValue());
+        }
+    }
+
+    /**
+     * @see IndexObject#addAllToLucene(List,boolean)
+     * @verifies skip duplicates correctly
+     */
+    @Test
+    public void addAllToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
+        IndexObject io = new IndexObject(1);
+        io.addToLucene("foo", "bar");
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar", field.getValue());
+        }
+
+        List<LuceneField> toAdd = new ArrayList<>(2);
+        toAdd.add(new LuceneField("foo", "bar"));
+        toAdd.add(new LuceneField("foo2", "bar2"));
+        Assert.assertEquals(1, io.addAllToLucene(toAdd, true));
+
+        Assert.assertEquals(2, io.getLuceneFields().size());
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar", field.getValue());
+        }
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo2");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar2", field.getValue());
+        }
+    }
+
+    /**
+     * @see IndexObject#addAllToLucene(List,boolean)
+     * @verifies add duplicates correctly
+     */
+    @Test
+    public void addAllToLucene_shouldAddDuplicatesCorrectly() throws Exception {
+        IndexObject io = new IndexObject(1);
+        io.addToLucene("foo", "bar");
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar", field.getValue());
+        }
+
+        List<LuceneField> toAdd = new ArrayList<>(2);
+        toAdd.add(new LuceneField("foo", "bar"));
+        toAdd.add(new LuceneField("foo2", "bar2"));
+        Assert.assertEquals(2, io.addAllToLucene(toAdd, false));
+
+        Assert.assertEquals(3, io.getLuceneFields().size());
+        {
+            List<LuceneField> fields = io.getLuceneFieldsWithName("foo");
+            Assert.assertEquals(2, fields.size());
+        }
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo2");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar2", field.getValue());
+        }
+    }
+
+    /**
      * @see IndexObject#addToGroupIds(String,String)
      * @verifies collect group id fields correctly
      */
@@ -389,6 +475,21 @@ public class IndexObjectTest extends AbstractTest {
 
         indexObj.removeExistingFields("BOOL_TEST");
         Assert.assertEquals(0, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
+    }
+    
+
+    /**
+     * @see IndexObject#removeExistingFields(String)
+     * @verifies remove existing sorting fields
+     */
+    @Test
+    public void removeExistingFields_shouldRemoveExistingSortingFields() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        indexObj.addToLucene("SORT_TEST", "false");
+        Assert.assertEquals(1, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
+
+        indexObj.removeExistingFields("SORT_TEST");
+        Assert.assertEquals(0, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
     }
 
     /**
