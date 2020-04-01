@@ -706,6 +706,7 @@ public class Hotfolder {
                 case METS:
                 case LIDO:
                 case DENKXWEB:
+                case DUBLINCORE:
                 case WORLDVIEWS:
                     if (trace) {
                         logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());
