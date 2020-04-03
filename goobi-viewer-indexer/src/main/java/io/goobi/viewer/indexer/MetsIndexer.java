@@ -475,7 +475,9 @@ public class MetsIndexer extends Indexer {
             boolean indexedChildrenFileList = false;
             if (!indexObj.isAnchor()) {
                 // Index all child elements recursively
-                indexAllChildren(indexObj, workDepth + 1, writeStrategy, dataFolders);
+                List<IndexObject> childObjectList = indexAllChildren(indexObj, workDepth + 1, writeStrategy, dataFolders);
+                indexObj.addChildMetadata(childObjectList, this, writeStrategy);
+                
                 logger.debug("reindexedChildrenFileList.size(): {}", MetsIndexer.reindexedChildrenFileList.size());
                 if (MetsIndexer.reindexedChildrenFileList.contains(metsFile)) {
                     logger.debug("{} in reindexedChildrenFileList, removing...", metsFile.toAbsolutePath());
@@ -1984,6 +1986,12 @@ public class MetsIndexer extends Indexer {
                     indexObj.getFieldsToInheritToParents().add(field.getField());
                 }
             }
+            // Add grouped configured to be inherited up to the return list
+            for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getLabel())) {
+                    indexObj.getFieldsToInheritToParents().add(field.getLabel());
+                }
+            }
 
             // Add own and all ancestor LABEL values to the DEFAULT field
             StringBuilder sbDefaultValue = new StringBuilder();
@@ -2014,30 +2022,7 @@ public class MetsIndexer extends Indexer {
 
             // Add recursively collected child metadata fields that are configured to be inherited up
             List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
-            for (IndexObject childObj : childObjectList) {
-                logger.info("Inheriting metadata from child {} to parent {}...", childObj.getLogId(), indexObj.getLogId());
-                if (!childObj.getFieldsToInheritToParents().isEmpty()) {
-                    // Add child element's regular metadata fields
-                    for (LuceneField field : childObj.getLuceneFields()) {
-                        if (childObj.getFieldsToInheritToParents().contains(field.getField())) {
-                            indexObj.addToLucene(field, true);
-                            logger.info("Added field: {}", field.toString());
-                        }
-                    }
-                    // Add child element's grouped metadata fields
-                    List<GroupedMetadata> groupedMetadataFieldsFromChild = new ArrayList<>(childObj.getGroupedMetadataFields().size());
-                    for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
-                        if (childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
-                            groupedMetadataFieldsFromChild.add(field);
-                        }
-                    }
-                    if (!groupedMetadataFieldsFromChild.isEmpty()) {
-                       int count = addGroupedMetadataDocs(writeStrategy, indexObj, groupedMetadataFieldsFromChild);
-                       logger.info("Added grouped {} fields", count);
-                    }
-
-                }
-            }
+            indexObj.addChildMetadata(childObjectList, this, writeStrategy);
 
             // If there are fields to inherit up the hierarchy, add this index object to the return list
             if (!indexObj.getFieldsToInheritToParents().isEmpty()) {
