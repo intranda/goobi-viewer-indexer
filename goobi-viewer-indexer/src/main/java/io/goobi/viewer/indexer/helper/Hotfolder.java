@@ -667,6 +667,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile)) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             FileFormat format = FileFormat.UNKNOWN;
             if (!Files.exists(actualXmlFile)) {
                 logger.warn("XML file '{}' not found.", actualXmlFile.getFileName().toString());
@@ -686,6 +690,8 @@ public class Hotfolder {
                         format = FileFormat.LIDO;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB))) {
                         format = FileFormat.DENKXWEB;
+                    } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE))) {
+                        format = FileFormat.DUBLINCORE;
                     } else if (doc.containsKey(SolrConstants.DATEDELETED)) {
                         format = FileFormat.METS;
                         trace = false;
