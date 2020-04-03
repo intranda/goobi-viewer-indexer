@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
+import io.goobi.viewer.indexer.DublinCoreIndexer;
 import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
@@ -98,6 +99,8 @@ public class Hotfolder {
     public static boolean lidoEnabled = true;
     /** Constant <code>denkxwebEnabled=true</code> */
     public static boolean denkxwebEnabled = true;
+    /** If no indexedDC folder is configured, Dublin Core indexing will be automatically disabled via this flag. */
+    public static boolean dcEnabled = true;
     /** Constant <code>worldviewsEnabled=true</code> */
     public static boolean worldviewsEnabled = true;
 
@@ -233,9 +236,9 @@ public class Hotfolder {
         }
 
         // METS folders
-        if (config.getConfiguration("indexedMets") == null) {
+        if (config.getConfiguration(DataRepository.PARAM_INDEXED_METS) == null) {
             metsEnabled = false;
-            logger.warn("<indexedMets> not defined - METS indexing is disabled.");
+            logger.warn("<{}> not defined - METS indexing is disabled.", DataRepository.PARAM_INDEXED_METS);
         }
         try {
             updatedMets = Paths.get(config.getConfiguration("updatedMets"));
@@ -263,9 +266,9 @@ public class Hotfolder {
         }
 
         // LIDO folders
-        if (config.getConfiguration("indexedLido") == null) {
+        if (config.getConfiguration(DataRepository.PARAM_INDEXED_LIDO) == null) {
             lidoEnabled = false;
-            logger.warn("<indexedLido> not defined - LIDO indexing is disabled.");
+            logger.warn("<{}> not defined - LIDO indexing is disabled.", DataRepository.PARAM_INDEXED_LIDO);
         }
         if (config.getConfiguration("origLido") != null) {
             origLido = Paths.get(config.getConfiguration("origLido"));
@@ -278,9 +281,9 @@ public class Hotfolder {
         }
 
         // DenkXweb folders
-        if (config.getConfiguration("indexedDenkXweb") == null) {
+        if (config.getConfiguration(DataRepository.PARAM_INDEXED_DENKXWEB) == null) {
             denkxwebEnabled = false;
-            logger.warn("<indexedDenkXweb> not defined - DenkXweb indexing is disabled.");
+            logger.warn("<{}> not defined - DenkXweb indexing is disabled.", DataRepository.PARAM_INDEXED_DENKXWEB);
         }
         if (config.getConfiguration("origDenkXweb") != null) {
             origDenkxWeb = Paths.get(config.getConfiguration("origDenkXweb"));
@@ -290,6 +293,12 @@ public class Hotfolder {
         } else {
             denkxwebEnabled = false;
             logger.warn("<origDenkXweb> not defined - DenkXweb indexing is disabled.");
+        }
+
+        // Dublin Core folder
+        if (config.getConfiguration(DataRepository.PARAM_INDEXED_DUBLINCORE) == null) {
+            dcEnabled = false;
+            logger.warn("<{}> not defined - Dublin Core indexing is disabled.", DataRepository.PARAM_INDEXED_DUBLINCORE);
         }
 
         try {
@@ -385,15 +394,7 @@ public class Hotfolder {
             return;
         }
         String smtpUser = Configuration.getInstance().getString("init.email.smtpUser");
-        //        if (StringUtils.isEmpty(smtpUser)) {
-        //            logger.warn("init.email.smtpUser not configured, cannot send e-mail report.");
-        //            return;
-        //        }
         String smtpPassword = Configuration.getInstance().getString("init.email.smtpPassword");
-        //        if (StringUtils.isEmpty(smtpPassword)) {
-        //            logger.warn("init.email.smtpPassword not configured, cannot send e-mail report.");
-        //            return;
-        //        }
         String smtpSenderAddress = Configuration.getInstance().getString("init.email.smtpSenderAddress");
         if (StringUtils.isEmpty(smtpSenderAddress)) {
             logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
@@ -580,6 +581,14 @@ public class Hotfolder {
                             Files.delete(dataFile);
                         }
                         break;
+                    case DUBLINCORE:
+                        if (dcEnabled) {
+                            addDublinCoreToIndex(dataFile, reindexSettings);
+                        } else {
+                            logger.error("Dublin Core indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(dataFile);
+                        }
+                        break;
                     case WORLDVIEWS:
                         if (worldviewsEnabled) {
                             addWorldViewsToIndex(dataFile, fromReindexQueue, reindexSettings);
@@ -658,6 +667,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile)) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             FileFormat format = FileFormat.UNKNOWN;
             if (!Files.exists(actualXmlFile)) {
                 logger.warn("XML file '{}' not found.", actualXmlFile.getFileName().toString());
@@ -677,6 +690,8 @@ public class Hotfolder {
                         format = FileFormat.LIDO;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB))) {
                         format = FileFormat.DENKXWEB;
+                    } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE))) {
+                        format = FileFormat.DUBLINCORE;
                     } else if (doc.containsKey(SolrConstants.DATEDELETED)) {
                         format = FileFormat.METS;
                         trace = false;
@@ -697,6 +712,7 @@ public class Hotfolder {
                 case METS:
                 case LIDO:
                 case DENKXWEB:
+                case DUBLINCORE:
                 case WORLDVIEWS:
                     if (trace) {
                         logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());
@@ -735,7 +751,7 @@ public class Hotfolder {
     }
 
     /**
-     * Indexes the fiven METS file.
+     * Indexes the given METS file.
      * 
      * @param metsFile {@link File}
      * @param fromReindexQueue
@@ -1362,6 +1378,214 @@ public class Hotfolder {
             if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
                     && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+            }
+        }
+    }
+
+    /**
+     * Indexes the given DublinCore file.
+     * 
+     * @param dcFile {@link File}
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * 
+     */
+    private void addDublinCoreToIndex(Path dcFile, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
+        // index file
+        String[] resp = { null, null };
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
+            for (Path path : stream) {
+                logger.info("Found data folder: {}", path.getFileName());
+                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
+                switch (fileNameSansRoot) {
+                    case "_tif":
+                    case "_media": // GBVMETSAdapter uses _media folders
+                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
+                        break;
+                    case "_txt":
+                        dataFolders.put(DataRepository.PARAM_FULLTEXT, path);
+                        break;
+                    case "_txtcrowd":
+                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
+                        break;
+                    case "_wc":
+                        dataFolders.put(DataRepository.PARAM_TEIWC, path);
+                        break;
+                    case "_neralto":
+                        dataFolders.put(DataRepository.PARAM_ALTO, path);
+                        logger.info("NER ALTO folder found: {}", path.getFileName());
+                        break;
+                    case "_alto":
+                        // Only add regular ALTO path if no NER ALTO folder is found
+                        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
+                            dataFolders.put(DataRepository.PARAM_ALTO, path);
+                        }
+                        break;
+                    case "_altocrowd":
+                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
+                        break;
+                    case "_xml":
+                        dataFolders.put(DataRepository.PARAM_ABBYY, path);
+                        break;
+                    case "_pdf":
+                        dataFolders.put(DataRepository.PARAM_PAGEPDF, path);
+                        break;
+                    case "_mix":
+                        dataFolders.put(DataRepository.PARAM_MIX, path);
+                        break;
+                    case "_src":
+                        dataFolders.put(DataRepository.PARAM_SOURCE, path);
+                        break;
+                    case "_ugc":
+                        dataFolders.put(DataRepository.PARAM_UGC, path);
+                        break;
+                    case "_cms":
+                        dataFolders.put(DataRepository.PARAM_CMS, path);
+                        break;
+                    case "_tei":
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
+                        break;
+                    case "_annotations":
+                        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
+                        break;
+                    default:
+                        // nothing
+                }
+            }
+        }
+
+        // Use existing folders for those missing in the hotfolder
+        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
+            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
+            reindexSettings.put(DataRepository.PARAM_ALTO, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
+            reindexSettings.put(DataRepository.PARAM_ALTOCROWD, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
+            reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
+            reindexSettings.put(DataRepository.PARAM_FULLTEXTCROWD, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIWC, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
+            reindexSettings.put(DataRepository.PARAM_ABBYY, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
+            reindexSettings.put(DataRepository.PARAM_MIX, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
+            reindexSettings.put(DataRepository.PARAM_UGC, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
+            reindexSettings.put(DataRepository.PARAM_CMS, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
+            reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
+        }
+
+        DataRepository dataRepository;
+        DataRepository previousDataRepository;
+        try {
+            currentIndexer = new DublinCoreIndexer(this);
+            resp = ((DublinCoreIndexer) currentIndexer).index(dcFile, dataFolders, null,
+                    Configuration.getInstance().getPageCountStart());
+        } finally {
+            dataRepository = currentIndexer.getDataRepository();
+            previousDataRepository = currentIndexer.getPreviousDataRepository();
+            currentIndexer = null;
+        }
+
+        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
+            String newDcFileName = resp[0];
+            String pi = FilenameUtils.getBaseName(newDcFileName);
+            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), newDcFileName);
+            if (dcFile.equals(indexed)) {
+                logger.debug("'{}' is an existing indexed file - not moving it.", dcFile.getFileName());
+                return;
+            }
+            Files.copy(dcFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+
+            if (previousDataRepository != null) {
+                // Move non-repository data folders to the selected repository
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newDcFileName));
+            }
+
+            // Copy and delete media folder
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+                    dataRepositoryStrategy.getAllDataRepositories()) > 0) {
+                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                if (msg != null) {
+                    logger.info(msg);
+                }
+            }
+
+            // Copy data folders
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings, dataRepositoryStrategy.getAllDataRepositories());
+
+            // Delete unsupported data folders
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
+                for (Path path : stream) {
+                    if (path.getFileName().toString().startsWith(fileNameRoot) && Files.isDirectory(path)) {
+                        if (Utils.deleteDirectory(path)) {
+                            logger.info("Deleted unsupported folder '{}'.", path.getFileName());
+                        } else {
+                            logger.warn("'{}' could not be deleted.", path.toAbsolutePath());
+                        }
+                    }
+                }
+            }
+
+            try {
+                Files.delete(dcFile);
+            } catch (IOException e) {
+                logger.warn("'{}' could not be deleted! Please delete it manually!", dcFile.toAbsolutePath());
+            }
+
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+            }
+        } else {
+            // Error
+            if (deleteContentFilesOnFailure) {
+                // Delete all data folders in hotfolder
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {
+
+                    @Override
+                    public boolean accept(Path entry) throws IOException {
+                        return Files.isDirectory(entry)
+                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith("_media"));
+                    }
+                });) {
+                    for (Path path : stream) {
+                        logger.info("Found data folder: {}", path.getFileName());
+                        Utils.deleteDirectory(path);
+                    }
+                }
+
+                // Delete all data folders from the hotfolder
+                DataRepository.deleteDataFolders(dataFolders, reindexSettings);
+            }
+            try {
+                Files.delete(dcFile);
+            } catch (IOException e) {
+                logger.error("'{}' could not be deleted! Please delete it manually!", dcFile.toAbsolutePath());
             }
         }
     }

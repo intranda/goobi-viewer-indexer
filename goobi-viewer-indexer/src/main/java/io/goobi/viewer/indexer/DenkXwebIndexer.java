@@ -225,7 +225,7 @@ public class DenkXwebIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, dataFolders, 0);
+            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy, dataFolders);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
@@ -294,15 +294,13 @@ public class DenkXwebIndexer extends Indexer {
     /**
      * 
      * @param indexObj
-     * @param isWork
      * @param writeStrategy
      * @param dataFolders
-     * @param depth
      * @return
      * @throws FatalIndexerException
      */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders, int depth) throws FatalIndexerException {
+    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders) throws FatalIndexerException {
         List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             physIds.add(String.valueOf(i));
@@ -340,9 +338,9 @@ public class DenkXwebIndexer extends Indexer {
             }
 
             // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-            if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || depth > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
+            if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || 0 > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                pageDoc.setField("MDNUM_OWNERDEPTH", depth);
+                pageDoc.setField("MDNUM_OWNERDEPTH", 0);
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());

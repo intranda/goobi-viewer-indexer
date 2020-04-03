@@ -30,13 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
-import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public class ConfigurationTest extends AbstractTest {
@@ -199,7 +196,7 @@ public class ConfigurationTest extends AbstractTest {
     @Test
     public void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
         Configuration.getInstance().initNamespaces();
-        Assert.assertEquals(13, Configuration.getInstance().getNamespaces().size());
+        Assert.assertEquals(14, Configuration.getInstance().getNamespaces().size());
         Assert.assertNotNull(Configuration.getInstance().getNamespaces().get("intranda"));
     }
 

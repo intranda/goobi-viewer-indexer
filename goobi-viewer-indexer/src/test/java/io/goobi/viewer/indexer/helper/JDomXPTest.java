@@ -68,6 +68,17 @@ public class JDomXPTest extends AbstractTest {
 
     /**
      * @see JDomXP#determineFileFormat(File)
+     * @verifies detect dublin core files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectDublinCoreFilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/DC/record.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.DUBLINCORE, JDomXP.determineFileFormat(file));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
      * @verifies detect worldviews files correctly
      */
     @Test

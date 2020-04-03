@@ -39,7 +39,9 @@ import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
- * <p>Configuration class.</p>
+ * <p>
+ * Configuration class.
+ * </p>
  *
  */
 public final class Configuration {
@@ -132,7 +134,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>killReloadTimer.</p>
+     * <p>
+     * killReloadTimer.
+     * </p>
      */
     public void killReloadTimer() {
         if (reloadTimer != null) {
@@ -159,6 +163,7 @@ public final class Configuration {
         namespaces.put("mm", Namespace.getNamespace("mm", "http://www.mycore.de/metsmaker/v1"));
         namespaces.put("tei", Namespace.getNamespace("tei", "http://www.tei-c.org/ns/1.0"));
         namespaces.put("denkxweb", Namespace.getNamespace("denkxweb", "http://denkxweb.de/"));
+        namespaces.put("dc", Namespace.getNamespace("dc", "http://purl.org/dc/elements/1.1/"));
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         if (additionalNamespaces != null) {
@@ -195,7 +200,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getInt.</p>
+     * <p>
+     * getInt.
+     * </p>
      *
      * @param inPath a {@link java.lang.String} object.
      * @param defaultValue a int.
@@ -206,7 +213,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getString.</p>
+     * <p>
+     * getString.
+     * </p>
      *
      * @param inPath a {@link java.lang.String} object.
      * @param defaultValue a {@link java.lang.String} object.
@@ -217,7 +226,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getString.</p>
+     * <p>
+     * getString.
+     * </p>
      *
      * @param inPath a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
@@ -227,7 +238,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getList.</p>
+     * <p>
+     * getList.
+     * </p>
      *
      * @param inPath a {@link java.lang.String} object.
      * @return a {@link java.util.List} object.
@@ -238,7 +251,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getLocalConfigurationsAt.</p>
+     * <p>
+     * getLocalConfigurationsAt.
+     * </p>
      *
      * @param inPath a {@link java.lang.String} object.
      * @return a {@link java.util.List} object.
@@ -253,7 +268,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getViewerUrl.</p>
+     * <p>
+     * getViewerUrl.
+     * </p>
      *
      * @should return correct value
      * @return a {@link java.lang.String} object.
@@ -263,7 +280,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getViewerHome.</p>
+     * <p>
+     * getViewerHome.
+     * </p>
      *
      * @should return correct value
      * @return a {@link java.lang.String} object.
@@ -273,7 +292,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getDataRepositoryStrategy.</p>
+     * <p>
+     * getDataRepositoryStrategy.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -282,7 +303,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isAddVolumeCollectionsToAnchor.</p>
+     * <p>
+     * isAddVolumeCollectionsToAnchor.
+     * </p>
      *
      * @return a boolean.
      */
@@ -291,7 +314,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isAddLabelToChildren.</p>
+     * <p>
+     * isAddLabelToChildren.
+     * </p>
      *
      * @return a boolean.
      */
@@ -300,7 +325,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isLabelCleanup.</p>
+     * <p>
+     * isLabelCleanup.
+     * </p>
      *
      * @return a boolean.
      */
@@ -309,7 +336,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isAggregateRecords.</p>
+     * <p>
+     * isAggregateRecords.
+     * </p>
      *
      * @return a boolean.
      */
@@ -318,7 +347,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isAutoOptimize.</p>
+     * <p>
+     * isAutoOptimize.
+     * </p>
      *
      * @return a boolean.
      */
@@ -327,7 +358,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getThreads.</p>
+     * <p>
+     * getThreads.
+     * </p>
      *
      * @return a int.
      */
@@ -336,7 +369,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getPageCountStart.</p>
+     * <p>
+     * getPageCountStart.
+     * </p>
      *
      * @should return correct value
      * @return a int.
@@ -346,7 +381,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getEmptyOrderLabelReplacement.</p>
+     * <p>
+     * getEmptyOrderLabelReplacement.
+     * </p>
      *
      * @should return correct value
      * @return a {@link java.lang.String} object.
@@ -354,7 +391,7 @@ public final class Configuration {
     public String getEmptyOrderLabelReplacement() {
         return getString("init.emptyOrderLabelReplacement", " - ");
     }
-    
+
     /**
      * 
      * @return Viewer authorization token string, if configured
@@ -365,7 +402,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getListConfiguration.</p>
+     * <p>
+     * getListConfiguration.
+     * </p>
      *
      * @param elementName element name to search for
      * @return HashMap with key and value for each element of 'elementName'
@@ -381,7 +420,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getDataRepositoryConfigurations.</p>
+     * <p>
+     * getDataRepositoryConfigurations.
+     * </p>
      *
      * @should return all items
      * @return a {@link java.util.List} object.
@@ -421,7 +462,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>Getter for the field <code>metadataConfigurationManager</code>.</p>
+     * <p>
+     * Getter for the field <code>metadataConfigurationManager</code>.
+     * </p>
      *
      * @return the metadataConfigurationManager
      */
@@ -430,7 +473,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>Getter for the field <code>namespaces</code>.</p>
+     * <p>
+     * Getter for the field <code>namespaces</code>.
+     * </p>
      *
      * @return the namespaces
      */
