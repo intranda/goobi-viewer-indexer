@@ -1514,7 +1514,7 @@ public class Hotfolder {
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newDcFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newDcFileName);
-            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newDcFileName);
+            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), newDcFileName);
             if (dcFile.equals(indexed)) {
                 logger.debug("'{}' is an existing indexed file - not moving it.", dcFile.getFileName());
                 return;
