@@ -383,7 +383,7 @@ public class WorldViewsIndexer extends Indexer {
 
             // Add grouped metadata as separate Solr docs (remove duplicates first)
             indexObj.removeDuplicateGroupedMetadata();
-            addGroupedMetadataDocs(writeStrategy, indexObj);
+            addGroupedMetadataDocs(writeStrategy, indexObj, null);
 
             boolean indexedChildrenFileList = false;
 
@@ -524,7 +524,7 @@ public class WorldViewsIndexer extends Indexer {
                 currentIndexObj.writeAccessConditions(rootIndexObj);
 
                 // Add grouped metadata as separate documents
-                addGroupedMetadataDocs(writeStrategy, currentIndexObj);
+                addGroupedMetadataDocs(writeStrategy, currentIndexObj, null);
 
                 // Add own and all ancestor LABEL values to the DEFAULT field
                 StringBuilder sbDefaultValue = new StringBuilder();

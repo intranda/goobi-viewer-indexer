@@ -343,7 +343,7 @@ public class DublinCoreIndexer extends Indexer {
             }
 
             // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj);
+            addGroupedMetadataDocs(writeStrategy, indexObj, null);
 
             if (indexObj.getNumPages() > 0) {
                 // Write number of pages
