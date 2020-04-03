@@ -900,7 +900,8 @@ public abstract class Indexer {
 
     /**
      * <p>
-     * Adds grouped metadata to the given write strategy as separate Solr documents.
+     * Adds grouped metadata to the given write strategy as separate Solr documents. This method should be called AFTER
+     * <code>IndexObject.groupedMetadataFields</code> has been populated completely.
      * </p>
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.

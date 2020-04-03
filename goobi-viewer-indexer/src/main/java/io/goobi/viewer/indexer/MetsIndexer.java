@@ -469,15 +469,12 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj, null);
-
             boolean indexedChildrenFileList = false;
             if (!indexObj.isAnchor()) {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, workDepth + 1, writeStrategy, dataFolders);
-                indexObj.addChildMetadata(childObjectList, this, writeStrategy);
-                
+                indexObj.addChildMetadata(childObjectList);
+
                 logger.debug("reindexedChildrenFileList.size(): {}", MetsIndexer.reindexedChildrenFileList.size());
                 if (MetsIndexer.reindexedChildrenFileList.contains(metsFile)) {
                     logger.debug("{} in reindexedChildrenFileList, removing...", metsFile.toAbsolutePath());
@@ -510,7 +507,11 @@ public class MetsIndexer extends Indexer {
                 updateAllAnchorChildren(indexObj);
             }
 
+            // Add grouped metadata as separate documents
+            addGroupedMetadataDocs(writeStrategy, indexObj, null);
+
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+
             logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
@@ -1977,9 +1978,6 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct)
-            addGroupedMetadataDocs(writeStrategy, indexObj, null);
-
             // Add fields configured to be inherited up to the return list
             for (LuceneField field : indexObj.getLuceneFields()) {
                 if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getField())) {
@@ -2022,12 +2020,15 @@ public class MetsIndexer extends Indexer {
 
             // Add recursively collected child metadata fields that are configured to be inherited up
             List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
-            indexObj.addChildMetadata(childObjectList, this, writeStrategy);
+            indexObj.addChildMetadata(childObjectList);
 
             // If there are fields to inherit up the hierarchy, add this index object to the return list
             if (!indexObj.getFieldsToInheritToParents().isEmpty()) {
                 ret.add(indexObj);
             }
+
+            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
+            addGroupedMetadataDocs(writeStrategy, indexObj, null);
 
             // Write to Solr
             logger.debug("Writing child document '{}'...", indexObj.getIddoc());

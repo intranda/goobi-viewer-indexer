@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -476,7 +477,6 @@ public class IndexObjectTest extends AbstractTest {
         indexObj.removeExistingFields("BOOL_TEST");
         Assert.assertEquals(0, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
     }
-    
 
     /**
      * @see IndexObject#removeExistingFields(String)
@@ -505,5 +505,83 @@ public class IndexObjectTest extends AbstractTest {
         Assert.assertEquals(2, indexObj.getLanguages().size());
         Assert.assertTrue(indexObj.getLanguages().contains("en"));
         Assert.assertTrue(indexObj.getLanguages().contains("de"));
+    }
+
+    /**
+     * @see IndexObject#addChildMetadata(List)
+     * @verifies add regular metadata correctly
+     */
+    @Test
+    public void addChildMetadata_shouldAddRegularMetadataCorrectly() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        IndexObject childObj = new IndexObject(2);
+        childObj.addToLucene("foo", "bar");
+        childObj.getFieldsToInheritToParents().add("foo");
+
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
+        Assert.assertNotNull(indexObj.getLuceneFieldWithName("foo"));
+        Assert.assertEquals("bar", indexObj.getLuceneFieldWithName("foo").getValue());
+    }
+
+    /**
+     * @see IndexObject#addChildMetadata(List)
+     * @verifies add grouped metadata correctly
+     */
+    @Test
+    public void addChildMetadata_shouldAddGroupedMetadataCorrectly() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+
+        IndexObject childObj = new IndexObject(2);
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("foo");
+        gmd.setMainValue("bar");
+        childObj.getGroupedMetadataFields().add(gmd);
+        childObj.getFieldsToInheritToParents().add("foo");
+
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
+        Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
+    }
+
+    /**
+     * @see IndexObject#addChildMetadata(List)
+     * @verifies avoid regular metadata duplicates
+     */
+    @Test
+    public void addChildMetadata_shouldAvoidRegularMetadataDuplicates() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        indexObj.addToLucene("foo", "bar");
+        IndexObject childObj = new IndexObject(2);
+        childObj.addToLucene("foo", "bar");
+        childObj.getFieldsToInheritToParents().add("foo");
+
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
+        Assert.assertEquals(1, indexObj.getLuceneFieldsWithName("foo").size());
+    }
+
+    /**
+     * @see IndexObject#addChildMetadata(List)
+     * @verifies avoid grouped metadata duplicates
+     */
+    @Test
+    public void addChildMetadata_shouldAvoidGroupedMetadataDuplicates() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        {
+            GroupedMetadata gmd = new GroupedMetadata();
+            gmd.setLabel("foo");
+            gmd.setMainValue("bar");
+            indexObj.getGroupedMetadataFields().add(gmd);
+        }
+
+        IndexObject childObj = new IndexObject(2);
+        {
+            GroupedMetadata gmd = new GroupedMetadata();
+            gmd.setLabel("foo");
+            gmd.setMainValue("bar");
+            childObj.getGroupedMetadataFields().add(gmd);
+        }
+        childObj.getFieldsToInheritToParents().add("foo");
+
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
+        Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
     }
 }

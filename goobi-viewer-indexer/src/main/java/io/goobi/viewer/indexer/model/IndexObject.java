@@ -27,10 +27,8 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
-import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
  * Object representing a docstruct.
@@ -410,17 +408,13 @@ public class IndexObject {
      * Adds regular and grouped metadata fields from the given list of <code>IndexObject</code>s to this object.
      * 
      * @param childObjectList
-     * @param indexer
-     * @param writeStrategy
      * @throws FatalIndexerException
+     * @should add regular metadata correctly
+     * @should add grouped metadata correctly
+     * @should avoid regular metadata duplicates
+     * @should avoid grouped metadata duplicates
      */
-    public void addChildMetadata(List<IndexObject> childObjectList, Indexer indexer, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
-        if (indexer == null) {
-            throw new IllegalArgumentException("indexer may not be null");
-        }
-        if (writeStrategy == null) {
-            throw new IllegalArgumentException("writeStrategy may not be null");
-        }
+    public void addChildMetadata(List<IndexObject> childObjectList) throws FatalIndexerException {
         if (childObjectList == null || childObjectList.isEmpty()) {
             return;
         }
@@ -428,30 +422,31 @@ public class IndexObject {
         // Add recursively collected child metadata fields that are configured to be inherited up
         for (IndexObject childObj : childObjectList) {
             logger.info("Inheriting metadata from child {} to parent {}...", childObj.getLogId(), getLogId());
-            if (!childObj.getFieldsToInheritToParents().isEmpty()) {
-                // Add child element's regular metadata fields
-                for (LuceneField field : childObj.getLuceneFields()) {
-                    if (childObj.getFieldsToInheritToParents().contains(field.getField())) {
-                        addToLucene(field, true);
-                        // Pass the info about inheritance up the hierarchy
-                        fieldsToInheritToParents.add(field.getField());
-                        logger.debug("Added field: {}", field.toString());
-                    }
-                }
-                // Add child element's grouped metadata fields
-                List<GroupedMetadata> groupedMetadataFieldsFromChild = new ArrayList<>(childObj.getGroupedMetadataFields().size());
-                for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
-                    if (childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
-                        groupedMetadataFieldsFromChild.add(field);
-                        // Pass the info about inheritance up the hierarchy
-                        fieldsToInheritToParents.add(field.getLabel());
-                    }
-                }
-                if (!groupedMetadataFieldsFromChild.isEmpty()) {
-                    int count = indexer.addGroupedMetadataDocs(writeStrategy, this, groupedMetadataFieldsFromChild);
-                    logger.info("Added {} grouped field(s)", count);
-                }
+            if (childObj.getFieldsToInheritToParents().isEmpty()) {
+                continue;
+            }
 
+            // Add child element's regular metadata fields
+            for (LuceneField field : childObj.getLuceneFields()) {
+                if (childObj.getFieldsToInheritToParents().contains(field.getField())) {
+                    addToLucene(field, true);
+                    // Pass the info about inheritance up the hierarchy
+                    fieldsToInheritToParents.add(field.getField());
+                    logger.debug("Added field: {}", field.toString());
+                }
+            }
+            // Add child element's grouped metadata fields
+            int count = 0;
+            for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
+                if (childObj.getFieldsToInheritToParents().contains(field.getLabel()) && !groupedMetadataFields.contains(field)) {
+                    groupedMetadataFields.add(field);
+                    // Pass the info about inheritance up the hierarchy
+                    fieldsToInheritToParents.add(field.getLabel());
+                    count++;
+                }
+            }
+            if (count > 0) {
+                logger.info("Added {} grouped field(s)", count);
             }
         }
     }
