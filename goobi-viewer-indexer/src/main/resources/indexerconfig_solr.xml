@@ -414,7 +414,6 @@
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
-					<addToParents>true</addToParents>
 					<replace string="&lt;ns&gt;"></replace>
 					<replace string="&lt;/ns&gt;"></replace>
 					<replace string="&lt;&lt;"></replace>
