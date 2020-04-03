@@ -374,17 +374,17 @@
 	        <GROUPID_SERIES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:recordInfo/mods:recordIdentifier</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:recordInfo/mods:recordIdentifier</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-		</GROUPID_SERIES>
+            </GROUPID_SERIES>
 
 	        <GROUPORDER_SERIES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:part/@order</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:part/@order</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
@@ -394,7 +394,7 @@
 	        <MD_TITLE_SERIES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:titleInfo/mods:title</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:titleInfo/mods:title</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
