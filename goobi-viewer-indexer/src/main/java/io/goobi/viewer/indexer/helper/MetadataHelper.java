@@ -1138,8 +1138,12 @@ public class MetadataHelper {
                 for (Object val : values) {
                     String fieldValue = JDomXP.objectToString(val);
                     logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
-                    if (fieldValue != null) {
-                        fieldValue = fieldValue.trim();
+                    if (fieldValue == null) {
+                        continue;
+                    }
+                    fieldValue = fieldValue.trim();
+                    if (fieldValue.isEmpty()) {
+                        continue;
                     }
 
                     if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
