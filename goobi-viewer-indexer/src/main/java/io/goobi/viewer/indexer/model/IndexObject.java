@@ -341,23 +341,6 @@ public class IndexObject {
     }
 
     /**
-     * Removes existing instances of boolean or sorting fields with the given name from collected lucene fields.
-     * 
-     * @param field
-     * @should remove existing fields correctly
-     */
-    void removeExistingFields(String field) {
-        if (field == null) {
-            throw new IllegalArgumentException("field may not be null");
-        }
-
-        List<LuceneField> existing = getLuceneFieldsWithName(field);
-        if (!existing.isEmpty()) {
-            luceneFields.removeAll(existing);
-        }
-    }
-
-    /**
      * Removes existing instances of boolean or sorting fields with the given name from collected Solr fields.
      * 
      * @param field
@@ -425,67 +408,53 @@ public class IndexObject {
      * Adds regular and grouped metadata fields from the given list of <code>IndexObject</code>s to this object.
      * 
      * @param childObjectList
-     * @param removeMetadataFromChildren
      * @throws FatalIndexerException
      * @should add regular metadata correctly
      * @should add grouped metadata correctly
      * @should avoid regular metadata duplicates
      * @should avoid grouped metadata duplicates
-     * @should remove metadata from children correctly
      */
-    public void addChildMetadata(List<IndexObject> childObjectList, boolean removeMetadataFromChildren) throws FatalIndexerException {
+    public void addChildMetadata(List<IndexObject> childObjectList) throws FatalIndexerException {
         if (childObjectList == null || childObjectList.isEmpty()) {
             return;
         }
 
         // Add recursively collected child metadata fields that are configured to be inherited up
         for (IndexObject childObj : childObjectList) {
-            logger.info("Inheriting metadata from child {} to parent {}...", childObj.getLogId(), getLogId());
+            logger.debug("Inheriting metadata from child {} to parent {}...", childObj.getLogId(), getLogId());
             if (childObj.getFieldsToInheritToParents().isEmpty()) {
                 continue;
             }
 
             // Add child element's regular metadata fields
             {
-                List<LuceneField> toRemove = new ArrayList<>(removeMetadataFromChildren ? childObj.getFieldsToInheritToParents().size() : 0);
                 for (LuceneField field : childObj.getLuceneFields()) {
-                    if (childObj.getFieldsToInheritToParents().contains(field.getField())) {
-                        addToLucene(field, true);
-                        // Pass the info about inheritance up the hierarchy
-                        fieldsToInheritToParents.add(field.getField());
-                        if (removeMetadataFromChildren) {
-                            toRemove.add(field);
-                        }
-                        logger.debug("Added field: {}", field.toString());
+                    if (!childObj.getFieldsToInheritToParents().contains(field.getField())) {
+                        continue;
                     }
-                }
-                if (!toRemove.isEmpty()) {
-                    childObj.getLuceneFields().removeAll(toRemove);
+                    addToLucene(field.clone(), true);
+                    // Pass the info about inheritance up the hierarchy
+                    fieldsToInheritToParents.add(field.getField());
+                    logger.debug("Added field: {}", field.toString());
                 }
             }
             // Add child element's grouped metadata fields
             {
                 int count = 0;
-                List<GroupedMetadata> toRemove = new ArrayList<>(removeMetadataFromChildren ? childObj.getFieldsToInheritToParents().size() : 0);
                 for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
-                    if (childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
-                        // Only add new instance if not a duplicate
-                        if (!groupedMetadataFields.contains(field)) {
-                            groupedMetadataFields.add(field);
-                            count++;
-                        }
-                        // Pass the info about inheritance up the hierarchy
-                        fieldsToInheritToParents.add(field.getLabel());
-                        if (removeMetadataFromChildren) {
-                            toRemove.add(field);
-                        }
+                    if (!childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
+                        continue;
                     }
-                }
-                if (!toRemove.isEmpty()) {
-                    childObj.getGroupedMetadataFields().removeAll(toRemove);
+                    // Only add new instance if not a duplicate
+                    if (!groupedMetadataFields.contains(field)) {
+                        groupedMetadataFields.add(field.clone());
+                        count++;
+                    }
+                    // Pass the info about inheritance up the hierarchy
+                    fieldsToInheritToParents.add(field.getLabel());
                 }
                 if (count > 0) {
-                    logger.info("Added {} grouped field(s)", count);
+                    logger.debug("Added {} grouped field(s)", count);
                 }
             }
         }

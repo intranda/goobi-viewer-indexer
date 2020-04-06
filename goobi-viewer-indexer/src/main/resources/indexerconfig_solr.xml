@@ -2969,7 +2969,6 @@
 				</item>
 			</list>
 		</MD_ACCESSLICENSE>
-        <!-- This field is important, see chapter 3.13 of the manual, it should possibly include the Author -->
         <MD2_ALLPERSONS>
             <list>
                 <item>

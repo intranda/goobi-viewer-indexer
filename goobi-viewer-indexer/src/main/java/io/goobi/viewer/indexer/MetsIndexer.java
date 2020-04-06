@@ -473,7 +473,7 @@ public class MetsIndexer extends Indexer {
             if (!indexObj.isAnchor()) {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, workDepth + 1, writeStrategy, dataFolders);
-                indexObj.addChildMetadata(childObjectList, true);
+                indexObj.addChildMetadata(childObjectList);
 
                 logger.debug("reindexedChildrenFileList.size(): {}", MetsIndexer.reindexedChildrenFileList.size());
                 if (MetsIndexer.reindexedChildrenFileList.contains(metsFile)) {
@@ -508,7 +508,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj, null);
+            addGroupedMetadataDocs(writeStrategy, indexObj);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
 
@@ -1978,19 +1978,6 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            // Add fields configured to be inherited up to the return list
-            for (LuceneField field : indexObj.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getField())) {
-                    indexObj.getFieldsToInheritToParents().add(field.getField());
-                }
-            }
-            // Add grouped configured to be inherited up to the return list
-            for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getLabel())) {
-                    indexObj.getFieldsToInheritToParents().add(field.getLabel());
-                }
-            }
-
             // Add own and all ancestor LABEL values to the DEFAULT field
             StringBuilder sbDefaultValue = new StringBuilder();
             sbDefaultValue.append(indexObj.getDefaultValue());
@@ -2018,17 +2005,38 @@ public class MetsIndexer extends Indexer {
                 indexObj.setDefaultValue("");
             }
 
-            // Add recursively collected child metadata fields that are configured to be inherited up
+            // Recursively index child elements 
             List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
-            indexObj.addChildMetadata(childObjectList, true);
+
+            // METADATA UPWARD INHERITANCE
+
+            // Add recursively collected child metadata fields that are configured to be inherited up
+            indexObj.addChildMetadata(childObjectList);
+
+            // Add fields configured to be inherited up to the return list (after adding child metadata first!)
+            for (LuceneField field : indexObj.getLuceneFields()) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getField())) {
+                    indexObj.getFieldsToInheritToParents().add(field.getField());
+                    field.setSkip(true);
+                }
+            }
+            // Add grouped configured to be inherited up to the return list (after adding child metadata first!)
+            for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getLabel())) {
+                    indexObj.getFieldsToInheritToParents().add(field.getLabel());
+                    field.setSkip(true);
+                }
+            }
 
             // If there are fields to inherit up the hierarchy, add this index object to the return list
             if (!indexObj.getFieldsToInheritToParents().isEmpty()) {
                 ret.add(indexObj);
             }
 
+            // The following steps must be performed after adding child metadata and marking own metadata for skipping
+
             // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
-            addGroupedMetadataDocs(writeStrategy, indexObj, null);
+            addGroupedMetadataDocs(writeStrategy, indexObj);
 
             // Write to Solr
             logger.debug("Writing child document '{}'...", indexObj.getIddoc());

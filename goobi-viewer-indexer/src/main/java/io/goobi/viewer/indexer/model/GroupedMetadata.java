@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>GroupedMetadata class.</p>
+ * <p>
+ * GroupedMetadata class.
+ * </p>
  *
  */
 public class GroupedMetadata {
@@ -28,9 +30,13 @@ public class GroupedMetadata {
     private String mainValue;
     private String normUri;
     private final List<LuceneField> fields;
+    /** If true, this field won't be added to he index. */
+    private boolean skip = false;
 
     /**
-     * <p>Constructor for GroupedMetadata.</p>
+     * <p>
+     * Constructor for GroupedMetadata.
+     * </p>
      */
     public GroupedMetadata() {
         fields = new ArrayList<>();
@@ -81,8 +87,21 @@ public class GroupedMetadata {
         return true;
     }
 
+    @Override
+    public GroupedMetadata clone() {
+        GroupedMetadata ret = new GroupedMetadata();
+        ret.setLabel(label);
+        ret.setMainValue(mainValue);
+        ret.setNormUri(normUri);
+        ret.getFields().addAll(fields);
+
+        return ret;
+    }
+
     /**
-     * <p>Getter for the field <code>label</code>.</p>
+     * <p>
+     * Getter for the field <code>label</code>.
+     * </p>
      *
      * @return the label
      */
@@ -91,7 +110,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Setter for the field <code>label</code>.</p>
+     * <p>
+     * Setter for the field <code>label</code>.
+     * </p>
      *
      * @param label the label to set
      */
@@ -100,7 +121,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Getter for the field <code>mainValue</code>.</p>
+     * <p>
+     * Getter for the field <code>mainValue</code>.
+     * </p>
      *
      * @return the mainValue
      */
@@ -109,7 +132,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Setter for the field <code>mainValue</code>.</p>
+     * <p>
+     * Setter for the field <code>mainValue</code>.
+     * </p>
      *
      * @param mainValue the mainValue to set
      */
@@ -118,7 +143,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Getter for the field <code>normUri</code>.</p>
+     * <p>
+     * Getter for the field <code>normUri</code>.
+     * </p>
      *
      * @return the normUri
      */
@@ -127,7 +154,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Setter for the field <code>normUri</code>.</p>
+     * <p>
+     * Setter for the field <code>normUri</code>.
+     * </p>
      *
      * @param normUri the normUri to set
      */
@@ -136,7 +165,9 @@ public class GroupedMetadata {
     }
 
     /**
-     * <p>Getter for the field <code>fields</code>.</p>
+     * <p>
+     * Getter for the field <code>fields</code>.
+     * </p>
      *
      * @return the fields
      */
@@ -144,4 +175,17 @@ public class GroupedMetadata {
         return fields;
     }
 
+    /**
+     * @return the skip
+     */
+    public boolean isSkip() {
+        return skip;
+    }
+
+    /**
+     * @param skip the skip to set
+     */
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
 }

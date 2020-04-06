@@ -256,7 +256,7 @@ public class DenkXwebIndexer extends Indexer {
             }
 
             // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj, null);
+            addGroupedMetadataDocs(writeStrategy, indexObj);
 
             // Add root doc
             SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());

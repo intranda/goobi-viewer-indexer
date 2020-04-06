@@ -465,20 +465,6 @@ public class IndexObjectTest extends AbstractTest {
     }
 
     /**
-     * @see IndexObject#removeExistingFields(String)
-     * @verifies remove existing fields correctly
-     */
-    @Test
-    public void removeExistingFields_shouldRemoveExistingFieldsCorrectly() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
-        indexObj.addToLucene("MD_TEST", "foobar");
-        Assert.assertEquals(1, indexObj.getLuceneFieldsWithName("MD_TEST").size());
-
-        indexObj.removeExistingFields("MD_TEST");
-        Assert.assertEquals(0, indexObj.getLuceneFieldsWithName("MD_TEST").size());
-    }
-
-    /**
      * @see IndexObject#removeNonMultivaluedFields(String)
      * @verifies remove existing boolean fields
      */
@@ -532,7 +518,7 @@ public class IndexObjectTest extends AbstractTest {
         childObj.addToLucene("foo", "bar");
         childObj.getFieldsToInheritToParents().add("foo");
 
-        indexObj.addChildMetadata(Collections.singletonList(childObj), false);
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
         Assert.assertNotNull(indexObj.getLuceneFieldWithName("foo"));
         Assert.assertEquals("bar", indexObj.getLuceneFieldWithName("foo").getValue());
         Assert.assertEquals("bar", childObj.getLuceneFieldWithName("foo").getValue());
@@ -553,7 +539,7 @@ public class IndexObjectTest extends AbstractTest {
         childObj.getGroupedMetadataFields().add(gmd);
         childObj.getFieldsToInheritToParents().add("foo");
 
-        indexObj.addChildMetadata(Collections.singletonList(childObj), false);
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
         Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
         Assert.assertEquals(1, childObj.getGroupedMetadataFields().size());
     }
@@ -570,7 +556,7 @@ public class IndexObjectTest extends AbstractTest {
         childObj.addToLucene("foo", "bar");
         childObj.getFieldsToInheritToParents().add("foo");
 
-        indexObj.addChildMetadata(Collections.singletonList(childObj), false);
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
         Assert.assertEquals(1, indexObj.getLuceneFieldsWithName("foo").size());
     }
 
@@ -597,40 +583,7 @@ public class IndexObjectTest extends AbstractTest {
         }
         childObj.getFieldsToInheritToParents().add("foo");
 
-        indexObj.addChildMetadata(Collections.singletonList(childObj), false);
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
         Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
-
-    }
-
-    /**
-     * @see IndexObject#addChildMetadata(List,boolean)
-     * @verifies remove metadata from children correctly
-     */
-    @Test
-    public void addChildMetadata_shouldRemoveMetadataFromChildrenCorrectly() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
-        {
-            GroupedMetadata gmd = new GroupedMetadata();
-            gmd.setLabel("foo");
-            gmd.setMainValue("bar");
-            indexObj.getGroupedMetadataFields().add(gmd);
-        }
-
-        IndexObject childObj = new IndexObject(2);
-        childObj.addToLucene("foo", "bar");
-        {
-            GroupedMetadata gmd = new GroupedMetadata();
-            gmd.setLabel("foo");
-            gmd.setMainValue("bar");
-            childObj.getGroupedMetadataFields().add(gmd);
-        }
-        childObj.getFieldsToInheritToParents().add("foo");
-
-        indexObj.addChildMetadata(Collections.singletonList(childObj), true);
-        Assert.assertNotNull(indexObj.getLuceneFieldWithName("foo"));
-        Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
-        
-        Assert.assertNull(childObj.getLuceneFieldWithName("foo"));
-        Assert.assertEquals(0, childObj.getGroupedMetadataFields().size());
     }
 }

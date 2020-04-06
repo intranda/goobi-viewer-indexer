@@ -906,24 +906,22 @@ public abstract class Indexer {
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
-     * @param metadataList Optional list of metadata fields to be used instead of <code>indexObj.groupedMetadataFields</code>
      * @return number of created docs
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should add docs correctly
      * @should set PI_TOPSTRUCT to child docstruct metadata
      * @should set DOCSTRCT_TOP
+     * @should skip fields correctly
      */
-    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj, List<GroupedMetadata> metadataList)
+    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj)
             throws FatalIndexerException {
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
-        List<GroupedMetadata> useFields;
-        if (metadataList != null) {
-            useFields = metadataList;
-        } else {
-            useFields = indexObj.getGroupedMetadataFields();
-        }
-        for (GroupedMetadata gmd : useFields) {
+        for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+            if (gmd.isSkip()) {
+                continue;
+            }
+            
             SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
             long iddoc = getNextIddoc(hotfolder.getSolrHelper());
             doc.addField(SolrConstants.IDDOC, iddoc);
