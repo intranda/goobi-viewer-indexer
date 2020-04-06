@@ -636,7 +636,6 @@
 						
 						<!-- DUBLIN CORE -->
 						<field name="MD_VALUE">text()</field>
-						<field name="MD_SUBJECT">text()</field>
 					</groupEntity>
 
 				</item>
