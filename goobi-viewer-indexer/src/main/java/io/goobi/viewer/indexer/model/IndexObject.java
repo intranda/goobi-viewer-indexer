@@ -65,6 +65,7 @@ public class IndexObject {
     private String dataRepository;
     private final List<LuceneField> luceneFields = new ArrayList<>();
     private List<GroupedMetadata> groupedMetadataFields = new ArrayList<>();
+    private final Set<String> fieldsToInheritToParents = new HashSet<>();
     private int numPages = 0;
     private String firstPageLabel;
     private String lastPageLabel;
@@ -284,7 +285,7 @@ public class IndexObject {
      */
     public boolean addToLucene(String field, String value) {
         addToGroupIds(field, value);
-        removeExistingFields(field);
+        removeNonMultivaluedFields(field);
 
         return luceneFields.add(new LuceneField(field, value));
     }
@@ -293,31 +294,65 @@ public class IndexObject {
      * Adds the given LuceneField to the field list.
      *
      * @param luceneField a {@link io.goobi.viewer.indexer.model.LuceneField} object.
-     * @return a boolean.
+     * @param skipDuplicates if true; fields with the same name and value as existing fields will not be added
+     * @return atrue if field was added; false otherwise
      */
-    public boolean addToLucene(LuceneField luceneField) {
+    public boolean addToLucene(LuceneField luceneField, boolean skipDuplicates) {
         if (luceneField == null) {
             throw new IllegalArgumentException("luceneField may not be null");
         }
 
+        if (skipDuplicates && this.luceneFields.contains(luceneField)) {
+            return false;
+        }
+
         addToGroupIds(luceneField.getField(), luceneField.getValue());
-        removeExistingFields(luceneField.getField());
+        removeNonMultivaluedFields(luceneField.getField());
 
         return luceneFields.add(luceneField);
     }
 
     /**
-     * Removes existing instances of boolean fields with the given name from collected lucene fields.
+     * Adds all of the given fields to this object's <code>luceneFields</code> (minus duplicates, if so requested).
+     * 
+     * @param luceneFields
+     * @param skipDuplicates
+     * @return
+     * @should add fields correctly
+     * @should skip duplicates correctly
+     * @should add duplicates correctly
+     */
+    public int addAllToLucene(List<LuceneField> luceneFields, boolean skipDuplicates) {
+        if (luceneFields == null) {
+            throw new IllegalArgumentException("luceneField may not be null");
+        }
+        if (luceneFields.isEmpty()) {
+            return 0;
+        }
+
+        int ret = 0;
+        for (LuceneField luceneField : luceneFields) {
+            if (addToLucene(luceneField, skipDuplicates)) {
+                ret++;
+            }
+        }
+
+        return ret;
+    }
+
+    /**
+     * Removes existing instances of boolean or sorting fields with the given name from collected Solr fields.
      * 
      * @param field
      * @should remove existing boolean fields
+     * @should remove existing sorting fields
      */
-    void removeExistingFields(String field) {
+    void removeNonMultivaluedFields(String field) {
         if (field == null) {
             throw new IllegalArgumentException("field may not be null");
         }
 
-        if (field.startsWith("BOOL_")) {
+        if (field.startsWith("BOOL_") || field.startsWith("SORT_")) {
             List<LuceneField> existing = getLuceneFieldsWithName(field);
             if (!existing.isEmpty()) {
                 luceneFields.removeAll(existing);
@@ -366,6 +401,62 @@ public class IndexObject {
                 getGroupedMetadataFields().remove(gmd);
             }
             logger.info("Removed {} duplicate grouped metadata documents.", metadataToRemove.size());
+        }
+    }
+
+    /**
+     * Adds regular and grouped metadata fields from the given list of <code>IndexObject</code>s to this object.
+     * 
+     * @param childObjectList
+     * @throws FatalIndexerException
+     * @should add regular metadata correctly
+     * @should add grouped metadata correctly
+     * @should avoid regular metadata duplicates
+     * @should avoid grouped metadata duplicates
+     */
+    public void addChildMetadata(List<IndexObject> childObjectList) throws FatalIndexerException {
+        if (childObjectList == null || childObjectList.isEmpty()) {
+            return;
+        }
+
+        // Add recursively collected child metadata fields that are configured to be inherited up
+        for (IndexObject childObj : childObjectList) {
+            logger.debug("Inheriting metadata from child {} to parent {}...", childObj.getLogId(), getLogId());
+            if (childObj.getFieldsToInheritToParents().isEmpty()) {
+                continue;
+            }
+
+            // Add child element's regular metadata fields
+            {
+                for (LuceneField field : childObj.getLuceneFields()) {
+                    if (!childObj.getFieldsToInheritToParents().contains(field.getField())) {
+                        continue;
+                    }
+                    addToLucene(field.clone(), true);
+                    // Pass the info about inheritance up the hierarchy
+                    fieldsToInheritToParents.add(field.getField());
+                    logger.debug("Added field: {}", field.toString());
+                }
+            }
+            // Add child element's grouped metadata fields
+            {
+                int count = 0;
+                for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
+                    if (!childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
+                        continue;
+                    }
+                    // Only add new instance if not a duplicate
+                    if (!groupedMetadataFields.contains(field)) {
+                        groupedMetadataFields.add(field.clone());
+                        count++;
+                    }
+                    // Pass the info about inheritance up the hierarchy
+                    fieldsToInheritToParents.add(field.getLabel());
+                }
+                if (count > 0) {
+                    logger.debug("Added {} grouped field(s)", count);
+                }
+            }
         }
     }
 
@@ -873,6 +964,13 @@ public class IndexObject {
      */
     public List<GroupedMetadata> getGroupedMetadataFields() {
         return groupedMetadataFields;
+    }
+
+    /**
+     * @return the fieldsToInheritToParents
+     */
+    public Set<String> getFieldsToInheritToParents() {
+        return fieldsToInheritToParents;
     }
 
     /**

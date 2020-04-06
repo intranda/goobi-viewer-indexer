@@ -15,16 +15,14 @@
  */
 package io.goobi.viewer.indexer.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.model.GroupedMetadata;
-import io.goobi.viewer.indexer.model.IndexObject;
-import io.goobi.viewer.indexer.model.LuceneField;
-import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
 public class IndexObjectTest extends AbstractTest {
@@ -342,6 +340,95 @@ public class IndexObjectTest extends AbstractTest {
     }
 
     /**
+     * @see IndexObject#addAllToLucene(List,boolean)
+     * @verifies add fields correctly
+     */
+    @Test
+    public void addAllToLucene_shouldAddFieldsCorrectly() throws Exception {
+        IndexObject io = new IndexObject(1);
+
+        List<LuceneField> toAdd = new ArrayList<>(2);
+        toAdd.add(new LuceneField("foo", "bar"));
+        toAdd.add(new LuceneField("foo2", "bar2"));
+        Assert.assertEquals(2, io.addAllToLucene(toAdd, true));
+
+        Assert.assertEquals(2, io.getLuceneFields().size());
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar", field.getValue());
+        }
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo2");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar2", field.getValue());
+        }
+    }
+
+    /**
+     * @see IndexObject#addAllToLucene(List,boolean)
+     * @verifies skip duplicates correctly
+     */
+    @Test
+    public void addAllToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
+        IndexObject io = new IndexObject(1);
+        io.addToLucene("foo", "bar");
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar", field.getValue());
+        }
+
+        List<LuceneField> toAdd = new ArrayList<>(2);
+        toAdd.add(new LuceneField("foo", "bar"));
+        toAdd.add(new LuceneField("foo2", "bar2"));
+        Assert.assertEquals(1, io.addAllToLucene(toAdd, true));
+
+        Assert.assertEquals(2, io.getLuceneFields().size());
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar", field.getValue());
+        }
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo2");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar2", field.getValue());
+        }
+    }
+
+    /**
+     * @see IndexObject#addAllToLucene(List,boolean)
+     * @verifies add duplicates correctly
+     */
+    @Test
+    public void addAllToLucene_shouldAddDuplicatesCorrectly() throws Exception {
+        IndexObject io = new IndexObject(1);
+        io.addToLucene("foo", "bar");
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar", field.getValue());
+        }
+
+        List<LuceneField> toAdd = new ArrayList<>(2);
+        toAdd.add(new LuceneField("foo", "bar"));
+        toAdd.add(new LuceneField("foo2", "bar2"));
+        Assert.assertEquals(2, io.addAllToLucene(toAdd, false));
+
+        Assert.assertEquals(3, io.getLuceneFields().size());
+        {
+            List<LuceneField> fields = io.getLuceneFieldsWithName("foo");
+            Assert.assertEquals(2, fields.size());
+        }
+        {
+            LuceneField field = io.getLuceneFieldWithName("foo2");
+            Assert.assertNotNull(field);
+            Assert.assertEquals("bar2", field.getValue());
+        }
+    }
+
+    /**
      * @see IndexObject#addToGroupIds(String,String)
      * @verifies collect group id fields correctly
      */
@@ -378,17 +465,31 @@ public class IndexObjectTest extends AbstractTest {
     }
 
     /**
-     * @see IndexObject#removeExistingFields(String)
+     * @see IndexObject#removeNonMultivaluedFields(String)
      * @verifies remove existing boolean fields
      */
     @Test
-    public void removeExistingFields_shouldRemoveExistingBooleanFields() throws Exception {
+    public void removeNonMultivaluedFields_shouldRemoveExistingBooleanFields() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         indexObj.addToLucene("BOOL_TEST", "false");
         Assert.assertEquals(1, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
 
-        indexObj.removeExistingFields("BOOL_TEST");
+        indexObj.removeNonMultivaluedFields("BOOL_TEST");
         Assert.assertEquals(0, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
+    }
+
+    /**
+     * @see IndexObject#removeNonMultivaluedFields(String)
+     * @verifies remove existing sorting fields
+     */
+    @Test
+    public void removeNonMultivaluedFields_shouldRemoveExistingSortingFields() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        indexObj.addToLucene("SORT_TEST", "false");
+        Assert.assertEquals(1, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
+
+        indexObj.removeNonMultivaluedFields("SORT_TEST");
+        Assert.assertEquals(0, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
     }
 
     /**
@@ -404,5 +505,85 @@ public class IndexObjectTest extends AbstractTest {
         Assert.assertEquals(2, indexObj.getLanguages().size());
         Assert.assertTrue(indexObj.getLanguages().contains("en"));
         Assert.assertTrue(indexObj.getLanguages().contains("de"));
+    }
+
+    /**
+     * @see IndexObject#addChildMetadata(List)
+     * @verifies add regular metadata correctly
+     */
+    @Test
+    public void addChildMetadata_shouldAddRegularMetadataCorrectly() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        IndexObject childObj = new IndexObject(2);
+        childObj.addToLucene("foo", "bar");
+        childObj.getFieldsToInheritToParents().add("foo");
+
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
+        Assert.assertNotNull(indexObj.getLuceneFieldWithName("foo"));
+        Assert.assertEquals("bar", indexObj.getLuceneFieldWithName("foo").getValue());
+        Assert.assertEquals("bar", childObj.getLuceneFieldWithName("foo").getValue());
+    }
+
+    /**
+     * @see IndexObject#addChildMetadata(List)
+     * @verifies add grouped metadata correctly
+     */
+    @Test
+    public void addChildMetadata_shouldAddGroupedMetadataCorrectly() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+
+        IndexObject childObj = new IndexObject(2);
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("foo");
+        gmd.setMainValue("bar");
+        childObj.getGroupedMetadataFields().add(gmd);
+        childObj.getFieldsToInheritToParents().add("foo");
+
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
+        Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
+        Assert.assertEquals(1, childObj.getGroupedMetadataFields().size());
+    }
+
+    /**
+     * @see IndexObject#addChildMetadata(List)
+     * @verifies avoid regular metadata duplicates
+     */
+    @Test
+    public void addChildMetadata_shouldAvoidRegularMetadataDuplicates() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        indexObj.addToLucene("foo", "bar");
+        IndexObject childObj = new IndexObject(2);
+        childObj.addToLucene("foo", "bar");
+        childObj.getFieldsToInheritToParents().add("foo");
+
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
+        Assert.assertEquals(1, indexObj.getLuceneFieldsWithName("foo").size());
+    }
+
+    /**
+     * @see IndexObject#addChildMetadata(List)
+     * @verifies avoid grouped metadata duplicates
+     */
+    @Test
+    public void addChildMetadata_shouldAvoidGroupedMetadataDuplicates() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        {
+            GroupedMetadata gmd = new GroupedMetadata();
+            gmd.setLabel("foo");
+            gmd.setMainValue("bar");
+            indexObj.getGroupedMetadataFields().add(gmd);
+        }
+
+        IndexObject childObj = new IndexObject(2);
+        {
+            GroupedMetadata gmd = new GroupedMetadata();
+            gmd.setLabel("foo");
+            gmd.setMainValue("bar");
+            childObj.getGroupedMetadataFields().add(gmd);
+        }
+        childObj.getFieldsToInheritToParents().add("foo");
+
+        indexObj.addChildMetadata(Collections.singletonList(childObj));
+        Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
     }
 }
