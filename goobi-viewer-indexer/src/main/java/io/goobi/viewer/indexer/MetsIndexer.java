@@ -473,7 +473,7 @@ public class MetsIndexer extends Indexer {
             if (!indexObj.isAnchor()) {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, workDepth + 1, writeStrategy, dataFolders);
-                indexObj.addChildMetadata(childObjectList);
+                indexObj.addChildMetadata(childObjectList, true);
 
                 logger.debug("reindexedChildrenFileList.size(): {}", MetsIndexer.reindexedChildrenFileList.size());
                 if (MetsIndexer.reindexedChildrenFileList.contains(metsFile)) {
@@ -2020,7 +2020,7 @@ public class MetsIndexer extends Indexer {
 
             // Add recursively collected child metadata fields that are configured to be inherited up
             List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
-            indexObj.addChildMetadata(childObjectList);
+            indexObj.addChildMetadata(childObjectList, true);
 
             // If there are fields to inherit up the hierarchy, add this index object to the return list
             if (!indexObj.getFieldsToInheritToParents().isEmpty()) {
