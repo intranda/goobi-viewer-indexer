@@ -390,7 +390,10 @@ public class MetsIndexer extends Indexer {
                 // Generate docs for all pages and add to the write strategy
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
 
-                // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
+                // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
+                indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
+
+                // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
                 indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
                 // write all page URNs sequentially into one field
@@ -469,13 +472,12 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj);
-
             boolean indexedChildrenFileList = false;
             if (!indexObj.isAnchor()) {
                 // Index all child elements recursively
-                indexAllChildren(indexObj, workDepth + 1, writeStrategy, dataFolders);
+                List<IndexObject> childObjectList = indexAllChildren(indexObj, workDepth + 1, writeStrategy, dataFolders);
+                indexObj.addChildMetadata(childObjectList);
+
                 logger.debug("reindexedChildrenFileList.size(): {}", MetsIndexer.reindexedChildrenFileList.size());
                 if (MetsIndexer.reindexedChildrenFileList.contains(metsFile)) {
                     logger.debug("{} in reindexedChildrenFileList, removing...", metsFile.toAbsolutePath());
@@ -508,7 +510,11 @@ public class MetsIndexer extends Indexer {
                 updateAllAnchorChildren(indexObj);
             }
 
+            // Add grouped metadata as separate documents
+            addGroupedMetadataDocs(writeStrategy, indexObj);
+
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+
             logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
@@ -626,6 +632,11 @@ public class MetsIndexer extends Indexer {
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
+
+                // Add topstruct type to the page
+                if (!pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
+                    pageDoc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
+                }
 
                 // Remove SORT_ fields from a previous, higher up docstruct
                 Set<String> fieldsToRemove = new HashSet<>();
@@ -1105,7 +1116,7 @@ public class MetsIndexer extends Indexer {
                             doc.addField("MDNUM_FILESIZE", -1);
                         }
                     } catch (FileNotFoundException | NoSuchFileException e) {
-                        logger.error("File not found: " + e.getMessage());
+                        logger.warn("File not found: {}", e.getMessage());
                         doc.addField("MDNUM_FILESIZE", -1);
                     } catch (IOException e) {
                         logger.error(e.getMessage(), e);
@@ -1179,6 +1190,15 @@ public class MetsIndexer extends Indexer {
                     }
                 }
             }
+        }
+
+        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
+        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
+                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            doc.addField(FIELD_IMAGEAVAILABLE, true);
+            recordHasImages = true;
+        } else {
+            doc.addField(FIELD_IMAGEAVAILABLE, false);
         }
 
         if (dataFolders != null) {
@@ -1400,7 +1420,7 @@ public class MetsIndexer extends Indexer {
                     && !altoURL.startsWith(Configuration.getInstance().getString("init.viewerUrl", "missing?"))) {
                 try {
                     logger.debug("Downloading ALTO from {}", altoURL);
-                    String alto = Utils.callUrl(altoURL);
+                    String alto = Utils.getWebContentGET(altoURL);
                     if (StringUtils.isNotEmpty(alto)) {
                         Document altoDoc = XmlTools.getDocumentFromString(alto, null);
                         altoData = TextHelper.readAltoDoc(altoDoc);
@@ -1467,7 +1487,6 @@ public class MetsIndexer extends Indexer {
             } else {
                 doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
             }
-
         }
 
         writeStrategy.addPageDoc(doc);
@@ -1878,12 +1897,16 @@ public class MetsIndexer extends Indexer {
      * @param depth OBSOLETE
      * @param writeStrategy
      * @param dataFolders
+     * @return List of <code>LuceneField</code>s to inherit up the hierarchy.
      * @throws IOException
      * @throws FatalIndexerException
      */
-    private void indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders)
+    private List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders)
             throws IOException, FatalIndexerException {
         logger.trace("indexAllChildren");
+        List<IndexObject> ret = new ArrayList<>();
+
         List<Element> childrenNodeList = xp.evaluateToElements("mets:div", parentIndexObject.getRootStructNode());
         for (int i = 0; i < childrenNodeList.size(); i++) {
             Element node = childrenNodeList.get(i);
@@ -1915,34 +1938,25 @@ public class MetsIndexer extends Indexer {
 
             // Inherit PI_ANCHOR value
             if (parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null) {
-                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR));
+                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR), false);
             }
             // Inherit GROUPID_* fields
             if (!parentIndexObject.getGroupIds().isEmpty()) {
                 for (String groupId : parentIndexObject.getGroupIds().keySet()) {
-                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId));
+                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
                 }
             }
 
             // Add parent's metadata and SORT_* fields to this docstruct
-            Set<String> existingMetadataFields = new HashSet<>();
-            Set<String> existingSortFieldNames = new HashSet<>();
-            for (LuceneField field : indexObj.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())) {
-                    existingMetadataFields.add(new StringBuilder(field.getField()).append(field.getValue()).toString());
-                } else if (field.getField().startsWith(SolrConstants.SORT_)) {
-                    existingSortFieldNames.add(field.getField());
-                }
-            }
             for (LuceneField field : parentIndexObject.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())
-                        && !existingMetadataFields.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())) {
                     // Avoid duplicates (same field name + value)
-                    indexObj.addToLucene(field.getField(), field.getValue());
+                    indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
+
                     logger.debug("Added {}:{} to child element {}", field.getField(), field.getValue(), indexObj.getLogId());
-                } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
+                } else if (field.getField().startsWith(SolrConstants.SORT_)) {
                     // Only one instance of each SORT_ field may exist
-                    indexObj.addToLucene(field.getField(), field.getValue());
+                    indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
                 }
             }
 
@@ -1975,9 +1989,6 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct)
-            addGroupedMetadataDocs(writeStrategy, indexObj);
-
             // Add own and all ancestor LABEL values to the DEFAULT field
             StringBuilder sbDefaultValue = new StringBuilder();
             sbDefaultValue.append(indexObj.getDefaultValue());
@@ -2004,11 +2015,46 @@ public class MetsIndexer extends Indexer {
                 // Add default value to parent doc
                 indexObj.setDefaultValue("");
             }
-            // write to lucene
+
+            // Recursively index child elements 
+            List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
+
+            // METADATA UPWARD INHERITANCE
+
+            // Add recursively collected child metadata fields that are configured to be inherited up
+            indexObj.addChildMetadata(childObjectList);
+
+            // Add fields configured to be inherited up to the return list (after adding child metadata first!)
+            for (LuceneField field : indexObj.getLuceneFields()) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getField())) {
+                    indexObj.getFieldsToInheritToParents().add(field.getField());
+                    field.setSkip(true);
+                }
+            }
+            // Add grouped configured to be inherited up to the return list (after adding child metadata first!)
+            for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
+                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getLabel())) {
+                    indexObj.getFieldsToInheritToParents().add(field.getLabel());
+                    field.setSkip(true);
+                }
+            }
+
+            // If there are fields to inherit up the hierarchy, add this index object to the return list
+            if (!indexObj.getFieldsToInheritToParents().isEmpty()) {
+                ret.add(indexObj);
+            }
+
+            // The following steps must be performed after adding child metadata and marking own metadata for skipping
+
+            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
+            addGroupedMetadataDocs(writeStrategy, indexObj);
+
+            // Write to Solr
             logger.debug("Writing child document '{}'...", indexObj.getIddoc());
             writeStrategy.addDoc(SolrHelper.createDocument(indexObj.getLuceneFields()));
-            indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
         }
+
+        return ret;
     }
 
     /**

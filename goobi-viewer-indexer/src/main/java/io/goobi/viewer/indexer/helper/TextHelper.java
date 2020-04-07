@@ -64,7 +64,9 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**
- * <p>TextHelper class.</p>
+ * <p>
+ * TextHelper class.
+ * </p>
  *
  */
 public final class TextHelper {
@@ -84,7 +86,9 @@ public final class TextHelper {
     private static final String ALTO_SUBS_TYPE_SECOND_WORD = "HypPart2";
 
     /**
-     * <p>normalizeSequence.</p>
+     * <p>
+     * normalizeSequence.
+     * </p>
      *
      * @param s a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
@@ -143,7 +147,9 @@ public final class TextHelper {
     }
 
     /**
-     * <p>readFileToString.</p>
+     * <p>
+     * readFileToString.
+     * </p>
      *
      * @param file a {@link java.io.File} object.
      * @param convertFileToCharset a {@link java.lang.String} object.
@@ -189,7 +195,9 @@ public final class TextHelper {
     }
 
     /**
-     * <p>readXmlFileToDoc.</p>
+     * <p>
+     * readXmlFileToDoc.
+     * </p>
      *
      * @param file a {@link java.io.File} object.
      * @throws java.io.FileNotFoundException
@@ -207,7 +215,7 @@ public final class TextHelper {
     }
 
     /**
-     * Reads the ALTO document in the file with the given file name.
+     * Reads the ALTO document in the file with the given file name, links hyphenated words and extracts plain text.
      *
      * @return String[] with the content { raw ALTO, plain full-text, page width, page height, named entities }.
      * @throws java.io.FileNotFoundException
@@ -279,19 +287,20 @@ public final class TextHelper {
                 // Only attempt to read coordinates and text if a 'PrintSpace' block is available
                 for (Element elePrintSpace : elePrintSpaceList) {
                     List<Element> blocks = elePrintSpace.getChildren();
-                    if (blocks != null) {
-                        WordWrapper wordWrapper = new WordWrapper();
-                        for (Element eleBlock : blocks) {
-                            switch (eleBlock.getName()) {
-                                case "TextBlock":
-                                    readAltoTextBlock(eleBlock, sbFulltext, wordWrapper);
-                                    break;
-                                case "ComposedBlock":
-                                    handleAltoComposedBlock(eleBlock, sbFulltext, wordWrapper);
-                                    break;
-                                default:
-                                    // nothing
-                            }
+                    if (blocks == null) {
+                        continue;
+                    }
+                    //                    WordWrapper wordWrapper = new WordWrapper();
+                    for (Element eleBlock : blocks) {
+                        switch (eleBlock.getName()) {
+                            case "TextBlock":
+                                readAltoTextBlock(eleBlock, sbFulltext);
+                                break;
+                            case "ComposedBlock":
+                                handleAltoComposedBlock(eleBlock, sbFulltext);
+                                break;
+                            default:
+                                // nothing
                         }
                     }
                 }
@@ -325,14 +334,13 @@ public final class TextHelper {
      * @param eleComposedBlock a {@link org.jdom2.Element} object.
      * @should return all words from nested ComposedBlocks
      * @param sbFulltext a {@link java.lang.StringBuilder} object.
-     * @param wordWrapper a {@link io.goobi.viewer.indexer.helper.TextHelper.WordWrapper} object.
      */
-    public static void handleAltoComposedBlock(Element eleComposedBlock, StringBuilder sbFulltext, WordWrapper wordWrapper) {
+    public static void handleAltoComposedBlock(Element eleComposedBlock, StringBuilder sbFulltext) {
         List<Element> words = new ArrayList<>();
 
         // Words from TextBlocks
         for (Element eleTextBlock : eleComposedBlock.getChildren("TextBlock", null)) {
-            readAltoTextBlock(eleTextBlock, sbFulltext, wordWrapper);
+            readAltoTextBlock(eleTextBlock, sbFulltext);
 
         }
 
@@ -340,7 +348,7 @@ public final class TextHelper {
         List<Element> eleListNextedComposedBlocks = eleComposedBlock.getChildren("ComposedBlock", null);
         if (eleListNextedComposedBlocks != null) {
             for (Element eleNestedComposedBlock : eleComposedBlock.getChildren("ComposedBlock", null)) {
-                handleAltoComposedBlock(eleNestedComposedBlock, sbFulltext, wordWrapper);
+                handleAltoComposedBlock(eleNestedComposedBlock, sbFulltext);
             }
         }
     }
@@ -362,14 +370,13 @@ public final class TextHelper {
     }
 
     /**
+     * Reads words from a TextBlock element. No hyphenation linking happens here (those words have already been linked on the ALTO document
+     * beforehand).
      * 
      * @param eleTextBlock
      * @param sbFulltext
-     * @param eleWord1
-     * @param word1
-     * @param fileName
      */
-    private static void readAltoTextBlock(Element eleTextBlock, StringBuilder sbFulltext, WordWrapper wordWrapper) {
+    private static void readAltoTextBlock(Element eleTextBlock, StringBuilder sbFulltext) {
         List<Element> lines = eleTextBlock.getChildren("TextLine", null);
         for (Element eleLine : lines) {
             List<Element> eleWordList = eleLine.getChildren("String", null);
@@ -395,48 +402,11 @@ public final class TextHelper {
                     sbFulltext.append(eleWord.getAttributeValue(ALTO_CONTENT));
                 }
             }
-            if (wordWrapper.word1 != null) {
-                Element eleWord2 = eleWordList.get(0);
-                String word2 = eleWord2.getAttributeValue(ALTO_CONTENT);
-                // If the current text block has one one line, assume it's the page number and do not combine
-                if (word2 != null && eleWordList.size() > 1) {
-                    word2 = word2.trim();
-                    String newWord = wordWrapper.word1 + word2;
-                    wordWrapper.eleWord1.setAttribute(ALTO_CONTENT, newWord);
-                    eleWord2.setAttribute(ALTO_CONTENT, newWord);
-                    //                        logger.debug("Combined ALTO words in file '" + fileName + "': " + word1 + " + " + word2 + " ==> " + newWord);
-                }
-                wordWrapper.eleWord1 = null;
-                wordWrapper.word1 = null;
-            }
-
-            // Analyze the last word of every line
-            Element eleLastWord = eleWordList.get(eleWordList.size() - 1);
-            String word = eleLastWord.getAttributeValue(ALTO_CONTENT);
-            if (word != null) {
-                word = word.trim();
-                // logger.info("Last word: " + word);
-                // Check whether the last word on the current line ends with a hyphen etc.
-                // if (word.length() > 1 && (word.endsWith("¬") || word.endsWith("-") || word.endsWith("­"))) {
-                //                    if (word.length() > 1 && (word.endsWith("\u00AC") || word.endsWith("\u002D") || word.endsWith("\u00AD"))) {
-                //                        wordWrapper.eleWord1 = eleLastWord;
-                //                        wordWrapper.word1 = word.substring(0, word.length() - 1);
-                //                        // logger.info("Found hyphenated last word: " + word1);
-                //                    }
-            }
         }
         if (sbFulltext.length() > 0) {
             // Add an extra line break in the full-text if a new block starts
             sbFulltext.append('\n');
         }
-    }
-
-    /**
-     * Wrapper class for passing around Element and String objects between methods.
-     */
-    static class WordWrapper {
-        Element eleWord1;
-        String word1;
     }
 
     /**
@@ -565,7 +535,9 @@ public final class TextHelper {
     }
 
     /**
-     * <p>generateFulltext.</p>
+     * <p>
+     * generateFulltext.
+     * </p>
      *
      * @param fileName a {@link java.lang.String} object.
      * @param folder a {@link java.nio.file.Path} object.

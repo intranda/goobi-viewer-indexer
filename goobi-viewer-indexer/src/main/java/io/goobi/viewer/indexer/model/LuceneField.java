@@ -24,6 +24,8 @@ public class LuceneField {
 
     private String field;
     private String value;
+    /** If true, this field won't be added to he index. */
+    private boolean skip = false;
 
     /**
      * Constructor.
@@ -87,9 +89,16 @@ public class LuceneField {
         }
         return true;
     }
+    
+    @Override
+    public LuceneField clone() {
+        return new LuceneField(field, value);
+    }
 
     /**
-     * <p>Setter for the field <code>field</code>.</p>
+     * <p>
+     * Setter for the field <code>field</code>.
+     * </p>
      *
      * @param field a {@link java.lang.String} object.
      */
@@ -98,7 +107,9 @@ public class LuceneField {
     }
 
     /**
-     * <p>Getter for the field <code>field</code>.</p>
+     * <p>
+     * Getter for the field <code>field</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -107,7 +118,9 @@ public class LuceneField {
     }
 
     /**
-     * <p>Setter for the field <code>value</code>.</p>
+     * <p>
+     * Setter for the field <code>value</code>.
+     * </p>
      *
      * @param value a {@link java.lang.String} object.
      */
@@ -116,7 +129,9 @@ public class LuceneField {
     }
 
     /**
-     * <p>Getter for the field <code>value</code>.</p>
+     * <p>
+     * Getter for the field <code>value</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -125,7 +140,23 @@ public class LuceneField {
     }
 
     /**
-     * <p>generateField.</p>
+     * @return the skip
+     */
+    public boolean isSkip() {
+        return skip;
+    }
+
+    /**
+     * @param skip the skip to set
+     */
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * <p>
+     * generateField.
+     * </p>
      *
      * @return {@link org.apache.solr.common.SolrInputField}
      * @should generate SolrInputField correctly

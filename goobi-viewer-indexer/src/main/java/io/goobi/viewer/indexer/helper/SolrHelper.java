@@ -208,22 +208,23 @@ public final class SolrHelper {
      *
      * @param luceneFields a {@link java.util.List} object.
      * @return {@link org.apache.solr.common.SolrInputDocument}
+     * @should skip fields correctly
      */
     public static SolrInputDocument createDocument(List<LuceneField> luceneFields) {
         if (luceneFields == null) {
             return null;
         }
-        
+
         SolrInputDocument doc = new SolrInputDocument();
         for (LuceneField luceneField : luceneFields) {
-            if (luceneField.getValue() != null) {
-                // doc.addField(luceneField.getField(), luceneField.getValue(), 0);
-
-                // Do not pass a boost value because starting with Solr 3.6, adding an index-time boost to primitive field types will cause the commit to fail
-                doc.addField(luceneField.getField(), luceneField.getValue());
+            if (luceneField.isSkip() || luceneField.getValue() == null) {
+                continue;
             }
+
+            // Do not pass a boost value because starting with Solr 3.6, adding an index-time boost to primitive field types will cause the commit to fail
+            doc.addField(luceneField.getField(), luceneField.getValue());
         }
-        
+
         return doc;
     }
 
@@ -415,7 +416,7 @@ public final class SolrHelper {
      */
     public boolean deleteDocuments(List<String> ids) throws FatalIndexerException {
         if (ids.isEmpty()) {
-            logger.error("Nothing to delete.");
+            logger.warn("Nothing to delete.");
             return false;
         }
         boolean success = false;

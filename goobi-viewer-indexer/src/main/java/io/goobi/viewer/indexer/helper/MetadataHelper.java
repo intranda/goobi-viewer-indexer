@@ -63,7 +63,9 @@ import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
 /**
- * <p>MetadataHelper class.</p>
+ * <p>
+ * MetadataHelper class.
+ * </p>
  *
  */
 public class MetadataHelper {
@@ -592,7 +594,7 @@ public class MetadataHelper {
                 // Add access conditions to a separate list
                 indexObj.getAccessConditions().add(field.getValue());
             } else {
-                indexObj.addToLucene(field);
+                indexObj.addToLucene(field, false);
             }
             // Extract language code from the field name and add it to the topstruct indexObj
             //            if (field.getField().startsWith("MD_TEXT_")) {
@@ -650,7 +652,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>applyReplaceRules.</p>
+     * <p>
+     * applyReplaceRules.
+     * </p>
      *
      * @param value a {@link java.lang.String} object.
      * @param replaceRules a {@link java.util.Map} object.
@@ -688,7 +692,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>applyValueDefaultModifications.</p>
+     * <p>
+     * applyValueDefaultModifications.
+     * </p>
      *
      * @param fieldValue a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
@@ -704,7 +710,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>applyIdentifierModifications.</p>
+     * <p>
+     * applyIdentifierModifications.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -806,7 +814,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>getAnchorPi.</p>
+     * <p>
+     * getAnchorPi.
+     * </p>
      *
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.lang.String} object.
@@ -841,6 +851,8 @@ public class MetadataHelper {
         List<XPathConfig> xPathConfigurations = piConfig.get(0).getxPathConfigurations();
         for (XPathConfig xPathConfig : xPathConfigurations) {
             String query = prefix + xPathConfig.getxPath();
+            query = query.replace("///", "/");
+            logger.trace(query);
             String pi = xp.evaluateToString(query, null);
             if (StringUtils.isNotEmpty(pi)) {
                 return pi;
@@ -1101,6 +1113,9 @@ public class MetadataHelper {
         if (groupEntityFields.get("type") != null) {
             type = (String) groupEntityFields.get("type");
             ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.trim()));
+        } else {
+            type = "OTHER";
+            logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
         }
         boolean normUriFound = false;
         Map<String, List<String>> collectedValues = new HashMap<>();
@@ -1123,8 +1138,12 @@ public class MetadataHelper {
                 for (Object val : values) {
                     String fieldValue = JDomXP.objectToString(val);
                     logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
-                    if (fieldValue != null) {
-                        fieldValue = fieldValue.trim();
+                    if (fieldValue == null) {
+                        continue;
+                    }
+                    fieldValue = fieldValue.trim();
+                    if (fieldValue.isEmpty()) {
+                        continue;
                     }
 
                     if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
@@ -1372,7 +1391,9 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>main.</p>
+     * <p>
+     * main.
+     * </p>
      *
      * @param args an array of {@link java.lang.String} objects.
      */

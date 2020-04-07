@@ -215,6 +215,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                 }
                 Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
                 Assert.assertEquals("image", doc.getFieldValue(SolrConstants.MIMETYPE));
+                Assert.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }
         }
 
@@ -292,6 +293,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     Assert.assertEquals(3, mdList.size());
                     Assert.assertNotNull(doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEAR));
                 }
+                Assert.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }
         }
     }

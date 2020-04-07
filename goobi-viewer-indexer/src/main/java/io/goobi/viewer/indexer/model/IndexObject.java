@@ -65,6 +65,7 @@ public class IndexObject {
     private String dataRepository;
     private final List<LuceneField> luceneFields = new ArrayList<>();
     private List<GroupedMetadata> groupedMetadataFields = new ArrayList<>();
+    private final Set<String> fieldsToInheritToParents = new HashSet<>();
     private int numPages = 0;
     private String firstPageLabel;
     private String lastPageLabel;
@@ -72,7 +73,9 @@ public class IndexObject {
     private final Set<String> languages = new HashSet<>();
 
     /**
-     * <p>Constructor for IndexObject.</p>
+     * <p>
+     * Constructor for IndexObject.
+     * </p>
      *
      * @param iddoc a long.
      */
@@ -81,7 +84,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Constructor for IndexObject.</p>
+     * <p>
+     * Constructor for IndexObject.
+     * </p>
      *
      * @param iddoc a long.
      * @param pi a {@link java.lang.String} object.
@@ -124,6 +129,7 @@ public class IndexObject {
         }
 
         addToLucene(SolrConstants.DOCSTRCT, getType());
+        addToLucene(SolrConstants.DOCSTRCT_ALT, getType() + "_ALT");
         if (this.parent != null && pi == null) {
             // Add own type value as DOCSTRCT_SUB to true subelements (no volumes)
             addToLucene(SolrConstants.DOCSTRCT_SUB, getType());
@@ -134,7 +140,7 @@ public class IndexObject {
             }
             addToLucene(SolrConstants.DOCSTRCT_TOP, p.getType());
         } else {
-            // Add topstruct type value as DOCSTRsCT_TOP as well
+            // Add topstruct type value as DOCSTRSCT_TOP as well
             addToLucene(SolrConstants.DOCSTRCT_TOP, getType());
         }
         addToLucene(SolrConstants.DATAREPOSITORY, getDataRepository());
@@ -204,7 +210,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>writeLanguages.</p>
+     * <p>
+     * writeLanguages.
+     * </p>
      *
      * @should add languages from metadata fields
      */
@@ -277,7 +285,7 @@ public class IndexObject {
      */
     public boolean addToLucene(String field, String value) {
         addToGroupIds(field, value);
-        removeExistingFields(field);
+        removeNonMultivaluedFields(field);
 
         return luceneFields.add(new LuceneField(field, value));
     }
@@ -286,31 +294,65 @@ public class IndexObject {
      * Adds the given LuceneField to the field list.
      *
      * @param luceneField a {@link io.goobi.viewer.indexer.model.LuceneField} object.
-     * @return a boolean.
+     * @param skipDuplicates if true; fields with the same name and value as existing fields will not be added
+     * @return atrue if field was added; false otherwise
      */
-    public boolean addToLucene(LuceneField luceneField) {
+    public boolean addToLucene(LuceneField luceneField, boolean skipDuplicates) {
         if (luceneField == null) {
             throw new IllegalArgumentException("luceneField may not be null");
         }
 
+        if (skipDuplicates && this.luceneFields.contains(luceneField)) {
+            return false;
+        }
+
         addToGroupIds(luceneField.getField(), luceneField.getValue());
-        removeExistingFields(luceneField.getField());
+        removeNonMultivaluedFields(luceneField.getField());
 
         return luceneFields.add(luceneField);
     }
 
     /**
-     * Removes existing instances of boolean fields with the given name from collected lucene fields.
+     * Adds all of the given fields to this object's <code>luceneFields</code> (minus duplicates, if so requested).
+     * 
+     * @param luceneFields
+     * @param skipDuplicates
+     * @return
+     * @should add fields correctly
+     * @should skip duplicates correctly
+     * @should add duplicates correctly
+     */
+    public int addAllToLucene(List<LuceneField> luceneFields, boolean skipDuplicates) {
+        if (luceneFields == null) {
+            throw new IllegalArgumentException("luceneField may not be null");
+        }
+        if (luceneFields.isEmpty()) {
+            return 0;
+        }
+
+        int ret = 0;
+        for (LuceneField luceneField : luceneFields) {
+            if (addToLucene(luceneField, skipDuplicates)) {
+                ret++;
+            }
+        }
+
+        return ret;
+    }
+
+    /**
+     * Removes existing instances of boolean or sorting fields with the given name from collected Solr fields.
      * 
      * @param field
      * @should remove existing boolean fields
+     * @should remove existing sorting fields
      */
-    void removeExistingFields(String field) {
+    void removeNonMultivaluedFields(String field) {
         if (field == null) {
             throw new IllegalArgumentException("field may not be null");
         }
 
-        if (field.startsWith("BOOL_")) {
+        if (field.startsWith("BOOL_") || field.startsWith("SORT_")) {
             List<LuceneField> existing = getLuceneFieldsWithName(field);
             if (!existing.isEmpty()) {
                 luceneFields.removeAll(existing);
@@ -337,7 +379,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>removeDuplicateGroupedMetadata.</p>
+     * <p>
+     * removeDuplicateGroupedMetadata.
+     * </p>
      *
      * @should remove duplicates correctly
      */
@@ -361,7 +405,65 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>iddoc</code>.</p>
+     * Adds regular and grouped metadata fields from the given list of <code>IndexObject</code>s to this object.
+     * 
+     * @param childObjectList
+     * @throws FatalIndexerException
+     * @should add regular metadata correctly
+     * @should add grouped metadata correctly
+     * @should avoid regular metadata duplicates
+     * @should avoid grouped metadata duplicates
+     */
+    public void addChildMetadata(List<IndexObject> childObjectList) throws FatalIndexerException {
+        if (childObjectList == null || childObjectList.isEmpty()) {
+            return;
+        }
+
+        // Add recursively collected child metadata fields that are configured to be inherited up
+        for (IndexObject childObj : childObjectList) {
+            logger.debug("Inheriting metadata from child {} to parent {}...", childObj.getLogId(), getLogId());
+            if (childObj.getFieldsToInheritToParents().isEmpty()) {
+                continue;
+            }
+
+            // Add child element's regular metadata fields
+            {
+                for (LuceneField field : childObj.getLuceneFields()) {
+                    if (!childObj.getFieldsToInheritToParents().contains(field.getField())) {
+                        continue;
+                    }
+                    addToLucene(field.clone(), true);
+                    // Pass the info about inheritance up the hierarchy
+                    fieldsToInheritToParents.add(field.getField());
+                    logger.debug("Added field: {}", field.toString());
+                }
+            }
+            // Add child element's grouped metadata fields
+            {
+                int count = 0;
+                for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
+                    if (!childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
+                        continue;
+                    }
+                    // Only add new instance if not a duplicate
+                    if (!groupedMetadataFields.contains(field)) {
+                        groupedMetadataFields.add(field.clone());
+                        count++;
+                    }
+                    // Pass the info about inheritance up the hierarchy
+                    fieldsToInheritToParents.add(field.getLabel());
+                }
+                if (count > 0) {
+                    logger.debug("Added {} grouped field(s)", count);
+                }
+            }
+        }
+    }
+
+    /**
+     * <p>
+     * Setter for the field <code>iddoc</code>.
+     * </p>
      *
      * @param iddoc a long.
      */
@@ -370,7 +472,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>iddoc</code>.</p>
+     * <p>
+     * Getter for the field <code>iddoc</code>.
+     * </p>
      *
      * @return a long.
      */
@@ -379,7 +483,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>volume</code>.</p>
+     * <p>
+     * Setter for the field <code>volume</code>.
+     * </p>
      *
      * @param volume a boolean.
      */
@@ -388,7 +494,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>isVolume.</p>
+     * <p>
+     * isVolume.
+     * </p>
      *
      * @return a boolean.
      */
@@ -397,7 +505,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>pi</code>.</p>
+     * <p>
+     * Setter for the field <code>pi</code>.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object.
      */
@@ -406,7 +516,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>pi</code>.</p>
+     * <p>
+     * Getter for the field <code>pi</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -415,7 +527,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>parent</code>.</p>
+     * <p>
+     * Setter for the field <code>parent</code>.
+     * </p>
      *
      * @param parent a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      */
@@ -424,7 +538,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>parent</code>.</p>
+     * <p>
+     * Getter for the field <code>parent</code>.
+     * </p>
      *
      * @return a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      */
@@ -433,7 +549,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>setDmdid.</p>
+     * <p>
+     * setDmdid.
+     * </p>
      *
      * @param dmdid a {@link java.lang.String} object.
      */
@@ -442,7 +560,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>getDmdid.</p>
+     * <p>
+     * getDmdid.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -451,7 +571,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>logId</code>.</p>
+     * <p>
+     * Setter for the field <code>logId</code>.
+     * </p>
      *
      * @param logId a {@link java.lang.String} object.
      */
@@ -460,7 +582,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>logId</code>.</p>
+     * <p>
+     * Getter for the field <code>logId</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -469,7 +593,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>type</code>.</p>
+     * <p>
+     * Setter for the field <code>type</code>.
+     * </p>
      *
      * @param type a {@link java.lang.String} object.
      */
@@ -478,7 +604,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>type</code>.</p>
+     * <p>
+     * Getter for the field <code>type</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -487,7 +615,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>label</code>.</p>
+     * <p>
+     * Setter for the field <code>label</code>.
+     * </p>
      *
      * @param label a {@link java.lang.String} object.
      */
@@ -496,7 +626,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>label</code>.</p>
+     * <p>
+     * Getter for the field <code>label</code>.
+     * </p>
      *
      * @return a {@link java.lang.String} object.
      */
@@ -505,7 +637,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>parentLabels</code>.</p>
+     * <p>
+     * Getter for the field <code>parentLabels</code>.
+     * </p>
      *
      * @return the parentLabels
      */
@@ -514,7 +648,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>rootStructNode</code>.</p>
+     * <p>
+     * Setter for the field <code>rootStructNode</code>.
+     * </p>
      *
      * @param rootStructNode a {@link org.jdom2.Element} object.
      */
@@ -523,7 +659,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>rootStructNode</code>.</p>
+     * <p>
+     * Getter for the field <code>rootStructNode</code>.
+     * </p>
      *
      * @return a {@link org.jdom2.Element} object.
      */
@@ -532,7 +670,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>anchor</code>.</p>
+     * <p>
+     * Setter for the field <code>anchor</code>.
+     * </p>
      *
      * @param anchor a boolean.
      */
@@ -541,7 +681,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>isAnchor.</p>
+     * <p>
+     * isAnchor.
+     * </p>
      *
      * @return a boolean.
      */
@@ -550,7 +692,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>update</code>.</p>
+     * <p>
+     * Setter for the field <code>update</code>.
+     * </p>
      *
      * @param update a boolean.
      */
@@ -559,7 +703,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>isUpdate.</p>
+     * <p>
+     * isUpdate.
+     * </p>
      *
      * @return a boolean.
      */
@@ -568,7 +714,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>defaultValue</code>.</p>
+     * <p>
+     * Setter for the field <code>defaultValue</code>.
+     * </p>
      *
      * @param defaultValue the defaultValue to set
      */
@@ -577,7 +725,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>defaultValue</code>.</p>
+     * <p>
+     * Getter for the field <code>defaultValue</code>.
+     * </p>
      *
      * @return the defaultValue
      */
@@ -586,7 +736,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>dateCreated</code>.</p>
+     * <p>
+     * Getter for the field <code>dateCreated</code>.
+     * </p>
      *
      * @return the dateCreated
      */
@@ -595,7 +747,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>dateCreated</code>.</p>
+     * <p>
+     * Setter for the field <code>dateCreated</code>.
+     * </p>
      *
      * @param dateCreated the dateCreated to set
      */
@@ -604,7 +758,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>dateUpdated</code>.</p>
+     * <p>
+     * Getter for the field <code>dateUpdated</code>.
+     * </p>
      *
      * @return the dateUpdated
      */
@@ -613,7 +769,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>urn</code>.</p>
+     * <p>
+     * Getter for the field <code>urn</code>.
+     * </p>
      *
      * @return the urn
      */
@@ -622,7 +780,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>urn</code>.</p>
+     * <p>
+     * Setter for the field <code>urn</code>.
+     * </p>
      *
      * @param urn the urn to set
      */
@@ -631,7 +791,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>imageUrns</code>.</p>
+     * <p>
+     * Getter for the field <code>imageUrns</code>.
+     * </p>
      *
      * @return the imageUrns
      */
@@ -640,7 +802,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>imageUrns</code>.</p>
+     * <p>
+     * Setter for the field <code>imageUrns</code>.
+     * </p>
      *
      * @param imageUrns the imageUrns to set
      */
@@ -649,7 +813,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>parentPI</code>.</p>
+     * <p>
+     * Setter for the field <code>parentPI</code>.
+     * </p>
      *
      * @param parentPI the parentPI to set
      */
@@ -658,7 +824,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>parentPI</code>.</p>
+     * <p>
+     * Getter for the field <code>parentPI</code>.
+     * </p>
      *
      * @return the parentPI
      */
@@ -667,7 +835,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>topstructPI</code>.</p>
+     * <p>
+     * Getter for the field <code>topstructPI</code>.
+     * </p>
      *
      * @return the topstructPI
      */
@@ -676,7 +846,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>topstructPI</code>.</p>
+     * <p>
+     * Setter for the field <code>topstructPI</code>.
+     * </p>
      *
      * @param topstructPI the topstructPI to set
      */
@@ -685,7 +857,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>anchorPI</code>.</p>
+     * <p>
+     * Getter for the field <code>anchorPI</code>.
+     * </p>
      *
      * @return the anchorPI
      */
@@ -694,7 +868,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>anchorPI</code>.</p>
+     * <p>
+     * Setter for the field <code>anchorPI</code>.
+     * </p>
      *
      * @param anchorPI the anchorPI to set
      */
@@ -703,7 +879,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>groupIds</code>.</p>
+     * <p>
+     * Getter for the field <code>groupIds</code>.
+     * </p>
      *
      * @return the groupIds
      */
@@ -712,7 +890,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>accessConditions</code>.</p>
+     * <p>
+     * Getter for the field <code>accessConditions</code>.
+     * </p>
      *
      * @return a {@link java.util.Set} object.
      */
@@ -721,7 +901,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>thumbnailRepresent</code>.</p>
+     * <p>
+     * Getter for the field <code>thumbnailRepresent</code>.
+     * </p>
      *
      * @return the thumbnailRepresent
      */
@@ -730,7 +912,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>thumbnailRepresent</code>.</p>
+     * <p>
+     * Setter for the field <code>thumbnailRepresent</code>.
+     * </p>
      *
      * @param thumbnailRepresent the thumbnailRepresent to set
      */
@@ -739,7 +923,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>dataRepository</code>.</p>
+     * <p>
+     * Getter for the field <code>dataRepository</code>.
+     * </p>
      *
      * @return the dataRepository
      */
@@ -748,7 +934,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>dataRepository</code>.</p>
+     * <p>
+     * Setter for the field <code>dataRepository</code>.
+     * </p>
      *
      * @param dataRepository the dataRepository to set
      */
@@ -757,7 +945,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>luceneFields</code>.</p>
+     * <p>
+     * Getter for the field <code>luceneFields</code>.
+     * </p>
      *
      * @return a {@link java.util.List} object.
      */
@@ -766,7 +956,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>groupedMetadataFields</code>.</p>
+     * <p>
+     * Getter for the field <code>groupedMetadataFields</code>.
+     * </p>
      *
      * @return the groupedMetadataFields
      */
@@ -775,7 +967,16 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>groupedMetadataFields</code>.</p>
+     * @return the fieldsToInheritToParents
+     */
+    public Set<String> getFieldsToInheritToParents() {
+        return fieldsToInheritToParents;
+    }
+
+    /**
+     * <p>
+     * Setter for the field <code>groupedMetadataFields</code>.
+     * </p>
      *
      * @param groupedMetadataFields the groupedMetadataFields to set
      */
@@ -784,7 +985,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>numPages</code>.</p>
+     * <p>
+     * Getter for the field <code>numPages</code>.
+     * </p>
      *
      * @return the numPages
      */
@@ -793,7 +996,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>numPages</code>.</p>
+     * <p>
+     * Setter for the field <code>numPages</code>.
+     * </p>
      *
      * @param numPages the numPages to set
      */
@@ -802,7 +1007,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>firstPageLabel</code>.</p>
+     * <p>
+     * Getter for the field <code>firstPageLabel</code>.
+     * </p>
      *
      * @return the firstPageLabel
      */
@@ -811,7 +1018,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>firstPageLabel</code>.</p>
+     * <p>
+     * Setter for the field <code>firstPageLabel</code>.
+     * </p>
      *
      * @param firstPageLabel the firstPageLabel to set
      */
@@ -820,7 +1029,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>lastPageLabel</code>.</p>
+     * <p>
+     * Getter for the field <code>lastPageLabel</code>.
+     * </p>
      *
      * @return the lastPageLabel
      */
@@ -829,7 +1040,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Setter for the field <code>lastPageLabel</code>.</p>
+     * <p>
+     * Setter for the field <code>lastPageLabel</code>.
+     * </p>
      *
      * @param lastPageLabel the lastPageLabel to set
      */
@@ -838,7 +1051,9 @@ public class IndexObject {
     }
 
     /**
-     * <p>Getter for the field <code>languages</code>.</p>
+     * <p>
+     * Getter for the field <code>languages</code>.
+     * </p>
      *
      * @return the languages
      */

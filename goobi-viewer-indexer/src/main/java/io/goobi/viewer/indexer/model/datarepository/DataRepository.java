@@ -38,7 +38,9 @@ import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
- * <p>DataRepository class.</p>
+ * <p>
+ * DataRepository class.
+ * </p>
  *
  */
 public class DataRepository {
@@ -51,6 +53,8 @@ public class DataRepository {
     public static final String PARAM_INDEXED_LIDO = "indexedLido";
     /** Constant <code>PARAM_INDEXED_DENKXWEB="indexedDenkXweb"</code> */
     public static final String PARAM_INDEXED_DENKXWEB = "indexedDenkXweb";
+    /** Constant <code>PARAM_INDEXED_DC="indexedDC"</code> */
+    public static final String PARAM_INDEXED_DUBLINCORE = "indexedDublinCore";
     /** Constant <code>PARAM_MEDIA="mediaFolder"</code> */
     public static final String PARAM_MEDIA = "mediaFolder";
     /** Constant <code>PARAM_ALTO="altoFolder"</code> */
@@ -104,7 +108,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>Constructor for DataRepository.</p>
+     * <p>
+     * Constructor for DataRepository.
+     * </p>
      *
      * @param path Absolute path to the repository; empty string means the default folder structure in init.viewerHome will be used
      * @param createFolders If true, the data subfolders will be automatically created
@@ -134,10 +140,11 @@ public class DataRepository {
                 return;
             }
         }
-        
+
         checkAndCreateDataSubdir(PARAM_INDEXED_METS, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_LIDO, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB, createFolders);
+        checkAndCreateDataSubdir(PARAM_INDEXED_DUBLINCORE, createFolders);
         checkAndCreateDataSubdir(PARAM_MEDIA, createFolders);
         checkAndCreateDataSubdir(PARAM_ALTO, createFolders);
         checkAndCreateDataSubdir(PARAM_ALTOCROWD, createFolders);
@@ -153,7 +160,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_MIX, createFolders);
         checkAndCreateDataSubdir(PARAM_CMS, createFolders);
         checkAndCreateDataSubdir(PARAM_ANNOTATIONS, createFolders);
-       
+
         if (Files.exists(rootDir)) {
             valid = true;
         }
@@ -208,6 +215,7 @@ public class DataRepository {
                 case PARAM_INDEXED_METS:
                 case PARAM_INDEXED_LIDO:
                 case PARAM_INDEXED_DENKXWEB:
+                case PARAM_INDEXED_DUBLINCORE:
                     return;
                 default:
                     throw new FatalIndexerException("No configuration found for '" + dataDirName + "', exiting...");
@@ -284,7 +292,7 @@ public class DataRepository {
     }
 
     /**
-     * Counts the total number of records in this data repository by adding METS and LIDO records.
+     * Counts the total number of records in this data repository by adding METS, LIDO, DenkXWeb and DC records.
      *
      * @throws java.io.IOException
      * @should calculate number correctly
@@ -297,12 +305,16 @@ public class DataRepository {
         logger.info("Data repository '{}' contains {} LIDO records.", path, lidoRecords);
         int denkxwebRecords = countFiles(getDir(PARAM_INDEXED_DENKXWEB));
         logger.info("Data repository '{}' contains {} DenkXweb records.", path, denkxwebRecords);
+        int dcRecords = countFiles(getDir(PARAM_INDEXED_DUBLINCORE));
+        logger.info("Data repository '{}' contains {} Dublin Core records.", path, dcRecords);
 
-        return metsRecords + lidoRecords + denkxwebRecords;
+        return metsRecords + lidoRecords + denkxwebRecords + dcRecords;
     }
 
     /**
-     * <p>getUsableSpace.</p>
+     * <p>
+     * getUsableSpace.
+     * </p>
      *
      * @return Remaining space in bytes
      */
@@ -385,11 +397,25 @@ public class DataRepository {
                 }
             }
         }
+        // DUBLIN CORE
+        if (getDir(PARAM_INDEXED_DUBLINCORE) != null) {
+            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), pi + ".xml");
+            if (Files.isRegularFile(oldRecordFile)) {
+                try {
+                    Files.delete(oldRecordFile);
+                    logger.info("Deleted old repository Dublin Core file: {}", oldRecordFile.toAbsolutePath());
+                } catch (IOException e) {
+                    logger.error("Could not delete old repository Dublin Core file: {}", oldRecordFile.toAbsolutePath());
+                }
+            }
+        }
         logger.info("Moving data completed.");
     }
 
     /**
-     * <p>moveDataFolderToRepository.</p>
+     * <p>
+     * moveDataFolderToRepository.
+     * </p>
      *
      * @param toRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
@@ -424,7 +450,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>deleteDataFolders.</p>
+     * <p>
+     * deleteDataFolders.
+     * </p>
      *
      * @param dataFolders a {@link java.util.Map} object.
      * @param reindexSettings a {@link java.util.Map} object.
@@ -555,7 +583,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>copyAndDeleteDataFolder.</p>
+     * <p>
+     * copyAndDeleteDataFolder.
+     * </p>
      *
      * @param srcFolder a {@link java.nio.file.Path} object.
      * @param paramName a {@link java.lang.String} object.
@@ -585,7 +615,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>countFiles.</p>
+     * <p>
+     * countFiles.
+     * </p>
      *
      * @param dir a {@link java.nio.file.Path} object.
      * @throws java.io.IOException
@@ -628,7 +660,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>loadDataRepositories.</p>
+     * <p>
+     * loadDataRepositories.
+     * </p>
      *
      * @param config a {@link io.goobi.viewer.indexer.helper.Configuration} object.
      * @param createFolders a boolean.
@@ -659,7 +693,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>isValid.</p>
+     * <p>
+     * isValid.
+     * </p>
      *
      * @return the valid
      */
@@ -668,7 +704,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>Getter for the field <code>path</code>.</p>
+     * <p>
+     * Getter for the field <code>path</code>.
+     * </p>
      *
      * @return the name
      */
@@ -677,7 +715,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>Getter for the field <code>rootDir</code>.</p>
+     * <p>
+     * Getter for the field <code>rootDir</code>.
+     * </p>
      *
      * @return the rootDir
      */
@@ -686,7 +726,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>Getter for the field <code>buffer</code>.</p>
+     * <p>
+     * Getter for the field <code>buffer</code>.
+     * </p>
      *
      * @return the buffer
      */
@@ -695,7 +737,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>Setter for the field <code>buffer</code>.</p>
+     * <p>
+     * Setter for the field <code>buffer</code>.
+     * </p>
      *
      * @param buffer the buffer to set
      */
@@ -704,7 +748,9 @@ public class DataRepository {
     }
 
     /**
-     * <p>getDir.</p>
+     * <p>
+     * getDir.
+     * </p>
      *
      * @param name a {@link java.lang.String} object.
      * @return a {@link java.nio.file.Path} object.

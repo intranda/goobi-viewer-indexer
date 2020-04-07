@@ -68,7 +68,9 @@ import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
 /**
- * <p>LidoIndexer class.</p>
+ * <p>
+ * LidoIndexer class.
+ * </p>
  *
  */
 public class LidoIndexer extends Indexer {
@@ -248,7 +250,10 @@ public class LidoIndexer extends Indexer {
             // Write created/updated timestamps
             indexObj.writeDateModified(!noTimestampUpdate);
 
-            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
+            // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
+            indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
+
+            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Generate event documents (must happen before writing the DEFAULT field!)
@@ -352,6 +357,11 @@ public class LidoIndexer extends Indexer {
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
+
+                // Add topstruct type to the page
+                if (!pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
+                    pageDoc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
+                }
 
                 // Remove SORT_ fields from a previous, higher up docstruct
                 Set<String> fieldsToRemove = new HashSet<>();
@@ -478,7 +488,9 @@ public class LidoIndexer extends Indexer {
     }
 
     /**
-     * <p>generatePageDocuments.</p>
+     * <p>
+     * generatePageDocuments.
+     * </p>
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
@@ -693,6 +705,15 @@ public class LidoIndexer extends Indexer {
             });
         }
 
+        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
+        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
+                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            doc.addField(FIELD_IMAGEAVAILABLE, true);
+            recordHasImages = true;
+        } else {
+            doc.addField(FIELD_IMAGEAVAILABLE, false);
+        }
+
         // FULLTEXTAVAILABLE indicates whether this page has full-text
         if (doc.getField(SolrConstants.FULLTEXT) != null) {
             doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
@@ -735,6 +756,11 @@ public class LidoIndexer extends Indexer {
             }
             eventDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
             eventDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getPi());
+
+            // Add topstruct type
+            if (!eventDoc.containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
+                eventDoc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
+            }
 
             // Find event type
             query = "lido:eventType/lido:term/text()";
@@ -797,7 +823,7 @@ public class LidoIndexer extends Indexer {
                         MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.SORT_, fieldConfig.getNonSortConfigurations(),
                                 fieldConfig.getValueNormalizer(), retList);
                         if (!retList.isEmpty()) {
-                            indexObj.addToLucene(retList.get(0));
+                            indexObj.addToLucene(retList.get(0), false);
                         }
                     }
                 }

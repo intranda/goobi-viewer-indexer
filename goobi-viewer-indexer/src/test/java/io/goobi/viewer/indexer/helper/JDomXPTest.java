@@ -68,6 +68,17 @@ public class JDomXPTest extends AbstractTest {
 
     /**
      * @see JDomXP#determineFileFormat(File)
+     * @verifies detect dublin core files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectDublinCoreFilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/DC/record.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.DUBLINCORE, JDomXP.determineFileFormat(file));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
      * @verifies detect worldviews files correctly
      */
     @Test
@@ -141,7 +152,7 @@ public class JDomXPTest extends AbstractTest {
      */
     @Test
     public void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
-        File file = new File("no.xml");
+        File file = new File("nosuchfile.xml");
         Assert.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
         Assert.assertEquals(0, docs.size());
@@ -187,7 +198,7 @@ public class JDomXPTest extends AbstractTest {
      */
     @Test
     public void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
-        File file = new File("no.xml");
+        File file = new File("nosuchfile.xml");
         Assert.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
         Assert.assertEquals(0, docs.size());

@@ -68,9 +68,11 @@ public final class SolrConstants {
     public static final String DMDID = "DMDID";
     /** Constant <code>DOCSTRCT="DOCSTRCT"</code> */
     public static final String DOCSTRCT = "DOCSTRCT";
+    /** Second instance of DOCSTRCT for alternative translations. */
+    public static final String DOCSTRCT_ALT = "DOCSTRCT_ALT";
     /** Constant <code>DOCSTRCT_SUB="DOCSTRCT_SUB"</code> */
     public static final String DOCSTRCT_SUB = "DOCSTRCT_SUB";
-    /** Constant <code>DOCSTRCT_TOP="DOCSTRCT_TOP"</code> */
+    /** DOCSTRCT of the top document. */
     public static final String DOCSTRCT_TOP = "DOCSTRCT_TOP";
     /** Constant <code>DOCTYPE="DOCTYPE"</code> */
     public static final String DOCTYPE = "DOCTYPE";

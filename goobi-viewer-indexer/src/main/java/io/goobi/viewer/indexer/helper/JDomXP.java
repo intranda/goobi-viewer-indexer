@@ -45,7 +45,9 @@ import org.slf4j.LoggerFactory;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
- * <p>JDomXP class.</p>
+ * <p>
+ * JDomXP class.
+ * </p>
  *
  */
 public class JDomXP {
@@ -55,6 +57,7 @@ public class JDomXP {
         METS,
         LIDO,
         DENKXWEB,
+        DUBLINCORE,
         WORLDVIEWS,
         ALTO,
         ABBYYXML,
@@ -72,6 +75,8 @@ public class JDomXP {
                     return LIDO;
                 case "DENKXWEB":
                     return DENKXWEB;
+                case "DUBLINCORE":
+                    return DUBLINCORE;
                 case "WORLDVIEWS":
                     return WORLDVIEWS;
                 case "ABBYY":
@@ -274,10 +279,10 @@ public class JDomXP {
         if (parent == null) {
             parent = doc;
         }
-        
+
         return evaluateToStringListStatic(expr, parent);
     }
-    
+
     /**
      * Evaluates the given XPath expression to a list of strings.
      *
@@ -370,7 +375,9 @@ public class JDomXP {
     }
 
     /**
-     * <p>getRootElement.</p>
+     * <p>
+     * getRootElement.
+     * </p>
      *
      * @return a {@link org.jdom2.Element} object.
      */
@@ -439,7 +446,7 @@ public class JDomXP {
                 // Single LIDO document file
                 return Collections.singletonList(xp.doc);
             } else {
-                logger.error("Unknown root element: {}", xp.doc.getRootElement().getName());
+                logger.warn("Unknown root element: {}", xp.doc.getRootElement().getName());
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -488,7 +495,7 @@ public class JDomXP {
                 // Single DenkXweb document file
                 return Collections.singletonList((xp.doc));
             } else {
-                logger.error("Unknown root element: {}", xp.doc.getRootElement().getName());
+                logger.warn("Unknown root element: {}", xp.doc.getRootElement().getName());
             }
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -500,7 +507,9 @@ public class JDomXP {
     }
 
     /**
-     * <p>readXmlFile.</p>
+     * <p>
+     * readXmlFile.
+     * </p>
      *
      * @param filePath a {@link java.lang.String} object.
      * @throws java.io.FileNotFoundException if file not found
@@ -548,6 +557,7 @@ public class JDomXP {
      * @should detect mets files correctly
      * @should detect lido files correctly
      * @should detect denkxweb files correctly
+     * @should detect dublin core files correctly
      * @should detect worldviews files correctly
      * @should detect abbyy files correctly
      * @should detect tei files correctly
@@ -569,6 +579,9 @@ public class JDomXP {
             if (xp.doc.getRootElement().getNamespace() != null
                     && xp.doc.getRootElement().getNamespace().getURI().toString().equals("http://denkxweb.de/")) {
                 return FileFormat.DENKXWEB;
+            }
+            if (xp.doc.getRootElement().getNamespace("dc") != null) {
+                return FileFormat.DUBLINCORE;
             }
             if (xp.doc.getRootElement().getName().equals("worldviews")) {
                 return FileFormat.WORLDVIEWS;
