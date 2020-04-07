@@ -2871,16 +2871,6 @@
 			</list>
 		</BOOL_HIDE>
 
-		<BOOL_CONTAINSIMAGE>
-		       <list>
-				<item>
-					<xpath>string(boolean(mets:fileSec/mets:fileGrp[@USE="PRESENTATION"]))</xpath>
-					<addToDefault>false</addToDefault>
-					<addSortField>true</addSortField>
-				</item>
-		       </list>
-		</BOOL_CONTAINSIMAGE>
-
 		<BOOL_DIRECTION_RTL>
 			<list>
 				<item>
