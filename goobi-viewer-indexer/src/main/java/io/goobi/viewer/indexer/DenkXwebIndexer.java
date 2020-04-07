@@ -245,7 +245,10 @@ public class DenkXwebIndexer extends Indexer {
             // Write created/updated timestamps
             indexObj.writeDateModified(!noTimestampUpdate);
 
-            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
+            // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
+            indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
+
+            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Add DEFAULT field
@@ -761,6 +764,15 @@ public class DenkXwebIndexer extends Indexer {
                 doc.addField(SolrConstants.WIDTH, dimension.width);
                 doc.addField(SolrConstants.HEIGHT, dimension.height);
             });
+        }
+
+        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
+        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
+                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            doc.addField(FIELD_IMAGEAVAILABLE, true);
+            recordHasImages = true;
+        } else {
+            doc.addField(FIELD_IMAGEAVAILABLE, false);
         }
 
         // FULLTEXTAVAILABLE indicates whether this page has full-text

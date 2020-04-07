@@ -103,6 +103,8 @@ public abstract class Indexer {
     /** Constant <code>TXT_EXTENSION=".txt"</code> */
     public static final String TXT_EXTENSION = ".txt";
 
+    public static final String FIELD_IMAGEAVAILABLE = "BOOL_IMAGEAVAILABLE";
+
     /** Constant <code>noTimestampUpdate=false</code> */
     public static boolean noTimestampUpdate = false;
 
@@ -121,7 +123,8 @@ public abstract class Indexer {
     protected StringBuilder sbLog = new StringBuilder();
 
     protected final Set<Integer> ugcAddedChecklist = new HashSet<>();
-
+    /** Indicates whether any of this record's pages has images. */
+    protected boolean recordHasImages = false;
     /** Indicates whether any of this record's pages has full-text. */
     protected boolean recordHasFulltext = false;
 
@@ -921,7 +924,7 @@ public abstract class Indexer {
             if (gmd.isSkip()) {
                 continue;
             }
-            
+
             SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
             long iddoc = getNextIddoc(hotfolder.getSolrHelper());
             doc.addField(SolrConstants.IDDOC, iddoc);

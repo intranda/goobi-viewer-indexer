@@ -276,7 +276,10 @@ public class DublinCoreIndexer extends Indexer {
             // Generate docs for all pages and add to the write strategy
             generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
 
-            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
+            // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
+            indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
+
+            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // write all page URNs sequentially into one field
@@ -668,6 +671,15 @@ public class DublinCoreIndexer extends Indexer {
                 doc.addField(SolrConstants.WIDTH, dimension.width);
                 doc.addField(SolrConstants.HEIGHT, dimension.height);
             });
+        }
+
+        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
+        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
+                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            doc.addField(FIELD_IMAGEAVAILABLE, true);
+            recordHasImages = true;
+        } else {
+            doc.addField(FIELD_IMAGEAVAILABLE, false);
         }
 
         // FULLTEXTAVAILABLE indicates whether this page has full-text
