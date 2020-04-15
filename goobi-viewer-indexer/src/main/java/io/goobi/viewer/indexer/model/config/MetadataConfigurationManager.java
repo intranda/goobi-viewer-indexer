@@ -44,6 +44,7 @@ public final class MetadataConfigurationManager {
     private static final Logger logger = LoggerFactory.getLogger(MetadataConfigurationManager.class);
 
     private static final String FALSE = "false";
+    private static final String SPACE_PLACEHOLDER = "#SPACE#";
 
     private Map<String, List<FieldConfig>> configurationList = new HashMap<>();
     private Set<String> fieldsToAddToParents = new HashSet<>();
@@ -237,6 +238,7 @@ public final class MetadataConfigurationManager {
                             if (replaceWith == null) {
                                 replaceWith = "";
                             }
+                            replaceWith = replaceWith.replace(SPACE_PLACEHOLDER, " ");
                             if (character != null) {
                                 replaceRules.put(character, replaceWith);
                             } else if (string != null) {
