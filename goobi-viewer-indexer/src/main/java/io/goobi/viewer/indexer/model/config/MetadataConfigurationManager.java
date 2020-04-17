@@ -44,8 +44,10 @@ public final class MetadataConfigurationManager {
     private static final Logger logger = LoggerFactory.getLogger(MetadataConfigurationManager.class);
 
     private static final String FALSE = "false";
+    private static final String SPACE_PLACEHOLDER = "#SPACE#";
 
     private Map<String, List<FieldConfig>> configurationList = new HashMap<>();
+    private Set<String> fieldsToAddToParents = new HashSet<>();
     private Set<String> fieldsToAddToChildren = new HashSet<>();
     private Set<String> fieldsToAddToPages = new HashSet<>();
 
@@ -136,6 +138,7 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("lowercase", config.getString("fields." + fieldname + ".list.item(" + i + ").lowercase"));
                 fieldValues.put("addSortField", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortField"));
                 fieldValues.put("addSortFieldToTopstruct", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortFieldToTopstruct"));
+                fieldValues.put("addToParents", config.getString("fields." + fieldname + ".list.item(" + i + ").addToParents"));
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
                 fieldValues.put("geoJSONSource", config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource"));
@@ -238,6 +241,7 @@ public final class MetadataConfigurationManager {
                             if (replaceWith == null) {
                                 replaceWith = "";
                             }
+                            replaceWith = replaceWith.replace(SPACE_PLACEHOLDER, " ");
                             if (character != null) {
                                 replaceRules.put(character, replaceWith);
                             } else if (string != null) {
@@ -405,6 +409,14 @@ public final class MetadataConfigurationManager {
             configurationItem.setNonSortConfigurations((List<NonSortConfiguration>) configurationMap.get("nonSortConfigurations"));
         }
 
+        if (configurationMap.containsKey("addToParents")) {
+            if (((String) configurationMap.get("addToParents")).equals("true")) {
+                configurationItem.setAddToChildren(true);
+                fieldsToAddToParents.add(configurationItem.getFieldname());
+            } else {
+                configurationItem.setAddToChildren(false);
+            }
+        }
         if (configurationMap.containsKey("addToChildren")) {
             if (((String) configurationMap.get("addToChildren")).equals("true")) {
                 configurationItem.setAddToChildren(true);
@@ -498,6 +510,17 @@ public final class MetadataConfigurationManager {
         } else {
             return ret;
         }
+    }
+
+    /**
+     * <p>
+     * Getter for the field <code>fieldsToAddToParents</code>.
+     * </p>
+     *
+     * @return the fieldsToAddToParents
+     */
+    public Set<String> getFieldsToAddToParents() {
+        return fieldsToAddToParents;
     }
 
     /**

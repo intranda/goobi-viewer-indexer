@@ -15,6 +15,7 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
+import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
@@ -169,5 +171,22 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(2, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
             Assert.assertEquals("PPN123", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
         }
+    }
+
+    /**
+     * @see SolrHelper#createDocument(List)
+     * @verifies skip fields correctly
+     */
+    @Test
+    public void createDocument_shouldSkipFieldsCorrectly() throws Exception {
+        List<LuceneField> luceneFields = new ArrayList<>(2);
+        luceneFields.add(new LuceneField("foo", "bar"));
+        luceneFields.add(new LuceneField("skip", "me"));
+        luceneFields.get(1).setSkip(true);
+        
+        SolrInputDocument doc = SolrHelper.createDocument(luceneFields);
+        Assert.assertNotNull(doc);
+        Assert.assertEquals("bar", doc.getFieldValue("foo"));
+        Assert.assertFalse(doc.containsKey("skip"));
     }
 }

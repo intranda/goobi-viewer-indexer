@@ -613,7 +613,7 @@ public class MetadataHelper {
                 // Add access conditions to a separate list
                 indexObj.getAccessConditions().add(field.getValue());
             } else {
-                indexObj.addToLucene(field);
+                indexObj.addToLucene(field, false);
             }
             // Extract language code from the field name and add it to the topstruct indexObj
             //            if (field.getField().startsWith("MD_TEXT_")) {
@@ -876,6 +876,8 @@ public class MetadataHelper {
         List<XPathConfig> xPathConfigurations = piConfig.get(0).getxPathConfigurations();
         for (XPathConfig xPathConfig : xPathConfigurations) {
             String query = prefix + xPathConfig.getxPath();
+            query = query.replace("///", "/");
+            logger.trace(query);
             String pi = xp.evaluateToString(query, null);
             if (StringUtils.isNotEmpty(pi)) {
                 return pi;
@@ -1161,8 +1163,12 @@ public class MetadataHelper {
                 for (Object val : values) {
                     String fieldValue = JDomXP.objectToString(val);
                     logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
-                    if (fieldValue != null) {
-                        fieldValue = fieldValue.trim();
+                    if (fieldValue == null) {
+                        continue;
+                    }
+                    fieldValue = fieldValue.trim();
+                    if (fieldValue.isEmpty()) {
+                        continue;
                     }
 
                     if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {

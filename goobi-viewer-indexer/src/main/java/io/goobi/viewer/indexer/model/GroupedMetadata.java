@@ -30,6 +30,8 @@ public class GroupedMetadata {
     private String mainValue;
     private String authorityURI;
     private final List<LuceneField> fields;
+    /** If true, this field won't be added to he index. */
+    private boolean skip = false;
 
     /**
      * <p>
@@ -85,6 +87,17 @@ public class GroupedMetadata {
         return true;
     }
 
+    @Override
+    public GroupedMetadata clone() {
+        GroupedMetadata ret = new GroupedMetadata();
+        ret.setLabel(label);
+        ret.setMainValue(mainValue);
+        ret.setAuthorityURI(authorityURI);
+        ret.getFields().addAll(fields);
+
+        return ret;
+    }
+
     /**
      * <p>
      * Getter for the field <code>label</code>.
@@ -130,6 +143,10 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>
+     * Getter for the field <code>authorityURI</code>.
+     * </p>
+     *
      * @return the authorityURI
      */
     public String getAuthorityURI() {
@@ -137,6 +154,10 @@ public class GroupedMetadata {
     }
 
     /**
+     * <p>
+     * Setter for the field <code>authorityURI</code>.
+     * </p>
+     *
      * @param authorityURI the authorityURI to set
      */
     public void setAuthorityURI(String authorityURI) {
@@ -154,4 +175,17 @@ public class GroupedMetadata {
         return fields;
     }
 
+    /**
+     * @return the skip
+     */
+    public boolean isSkip() {
+        return skip;
+    }
+
+    /**
+     * @param skip the skip to set
+     */
+    public void setSkip(boolean skip) {
+        this.skip = skip;
+    }
 }

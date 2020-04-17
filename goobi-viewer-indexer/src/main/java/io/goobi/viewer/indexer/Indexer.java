@@ -103,6 +103,8 @@ public abstract class Indexer {
     /** Constant <code>TXT_EXTENSION=".txt"</code> */
     public static final String TXT_EXTENSION = ".txt";
 
+    public static final String FIELD_IMAGEAVAILABLE = "BOOL_IMAGEAVAILABLE";
+
     /** Constant <code>noTimestampUpdate=false</code> */
     public static boolean noTimestampUpdate = false;
 
@@ -121,7 +123,8 @@ public abstract class Indexer {
     protected StringBuilder sbLog = new StringBuilder();
 
     protected final Set<Integer> ugcAddedChecklist = new HashSet<>();
-
+    /** Indicates whether any of this record's pages has images. */
+    protected boolean recordHasImages = false;
     /** Indicates whether any of this record's pages has full-text. */
     protected boolean recordHasFulltext = false;
 
@@ -179,7 +182,8 @@ public abstract class Indexer {
     }
 
     /**
-     * Löscht aus dem Index alle Documente die zu folgendem PI gehören. Das Löschen ist rekursiv. Unterelemente werden auch gelöscht.
+     * Deletes the entire document hierarchy that belong to the given PI, as well as any orphaned docs that don't belong to the current indexed
+     * instance but might still exist.
      *
      * @param pi String
      * @param createTraceDoc a boolean.
@@ -249,26 +253,6 @@ public abstract class Indexer {
                 iddocsToDelete.add(iddoc);
             }
         }
-
-        //        // This cleans up any docs that for some reason weren't deleted via the IDDOC route. Also, docs for user generated contents.
-        //        {
-        //            hits = solrHelper.search(SolrConstants.PI_TOPSTRUCT + ":" + pi, Collections.singletonList(SolrConstants.IDDOC));
-        //            if (!hits.isEmpty()) {
-        //                int numRegularDocsToDelete = iddocsToDelete.size();
-        //                logger.debug("Removing " + hits.getNumFound() + " (possibly) lost subelements of this volume from the index...");
-        //                for (SolrDocument doc : hits) {
-        //                    String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-        //                    if (iddoc != null && !iddocsToDelete.contains(iddoc)) {
-        //                        iddocsToDelete.addAll(deleteWithIDDOC(iddoc, solrHelper));
-        //                    }
-        //                }
-        //                int numLostDocs = iddocsToDelete.size() - numRegularDocsToDelete;
-        //                if (numLostDocs > 0) {
-        //                    logger.warn("Found " + numLostDocs
-        //                            + " lost documents belonging to this record, but having no connection to the currently indexed document structure.");
-        //                }
-        //            }
-        //        }
 
         boolean success = solrHelper.deleteDocuments(new ArrayList<>(iddocsToDelete));
         logger.info("{} docs deleted.", iddocsToDelete.size());
@@ -919,7 +903,8 @@ public abstract class Indexer {
 
     /**
      * <p>
-     * Adds grouped metadata to the given write strategy as separate Solr documents.
+     * Adds grouped metadata to the given write strategy as separate Solr documents. This method should be called AFTER
+     * <code>IndexObject.groupedMetadataFields</code> has been populated completely.
      * </p>
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
@@ -929,11 +914,17 @@ public abstract class Indexer {
      * @should add docs correctly
      * @should set PI_TOPSTRUCT to child docstruct metadata
      * @should set DOCSTRCT_TOP
+     * @should skip fields correctly
      */
-    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
+    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj)
+            throws FatalIndexerException {
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+            if (gmd.isSkip()) {
+                continue;
+            }
+
             SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
             long iddoc = getNextIddoc(hotfolder.getSolrHelper());
             doc.addField(SolrConstants.IDDOC, iddoc);

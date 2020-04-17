@@ -51,12 +51,11 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.helper.TextHelper;
-import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
-import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -322,7 +321,10 @@ public class WorldViewsIndexer extends Indexer {
                 }
             }
 
-            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
+            // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
+            indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
+
+            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
@@ -384,22 +386,7 @@ public class WorldViewsIndexer extends Indexer {
 
             // Add grouped metadata as separate Solr docs (remove duplicates first)
             indexObj.removeDuplicateGroupedMetadata();
-            logger.debug("Group fields: {}", indexObj.getGroupedMetadataFields().size());
-            for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
-                logger.debug("adding group field: {}", gmd.getMainValue());
-                SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
-                long iddoc = getNextIddoc(hotfolder.getSolrHelper());
-                doc.addField(SolrConstants.IDDOC, iddoc);
-                if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                    logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
-                            doc.getFieldValue(SolrConstants.LABEL));
-                    doc.addField(SolrConstants.GROUPFIELD, iddoc);
-                }
-                doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
-                doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-                doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getPi());
-                writeStrategy.addDoc(doc);
-            }
+            addGroupedMetadataDocs(writeStrategy, indexObj);
 
             boolean indexedChildrenFileList = false;
 
@@ -510,15 +497,16 @@ public class WorldViewsIndexer extends Indexer {
                 }
 
                 // Set thumbnail info
-                currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(pageDoc.getFieldValue(SolrConstants.ORDER))));
-                currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENOLABEL, orderLabel));
-                currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAIL, (String) pageDoc.getFieldValue(SolrConstants.FILENAME)));
+                currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(pageDoc.getFieldValue(SolrConstants.ORDER))),
+                        false);
+                currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENOLABEL, orderLabel), false);
+                currentIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAIL, (String) pageDoc.getFieldValue(SolrConstants.FILENAME)), false);
 
                 // Add parent's metadata and SORT_* fields to this docstruct
                 Set<String> existingMetadataFields = new HashSet<>();
                 Set<String> existingSortFieldNames = new HashSet<>();
                 for (LuceneField field : currentIndexObj.getLuceneFields()) {
-                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())) {
+                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())) {
                         existingMetadataFields.add(new StringBuilder(field.getField()).append(field.getValue()).toString());
                     } else if (field.getField().startsWith(SolrConstants.SORT_)) {
                         existingSortFieldNames.add(field.getField());
@@ -645,10 +633,10 @@ public class WorldViewsIndexer extends Indexer {
 
         // Set root doc thumbnail
         rootIndexObj.setThumbnailRepresent(thumbnailFile);
-        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(thumbnailOrder)));
-        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENOLABEL, " - "));
-        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFile));
-        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAILREPRESENT, thumbnailFile));
+        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(thumbnailOrder)), false);
+        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBPAGENOLABEL, " - "), false);
+        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFile), false);
+        rootIndexObj.addToLucene(new LuceneField(SolrConstants.THUMBNAILREPRESENT, thumbnailFile), false);
 
     }
 
@@ -810,6 +798,15 @@ public class WorldViewsIndexer extends Indexer {
             String placeholder = eleImage.getChildText("placeholder");
         }
         doc.addField(SolrConstants.MIMETYPE, "image");
+
+        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
+        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
+                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            doc.addField(FIELD_IMAGEAVAILABLE, true);
+            recordHasImages = true;
+        } else {
+            doc.addField(FIELD_IMAGEAVAILABLE, false);
+        }
 
         // Copyright
         String copyright = eleImage.getChildText("copyright");

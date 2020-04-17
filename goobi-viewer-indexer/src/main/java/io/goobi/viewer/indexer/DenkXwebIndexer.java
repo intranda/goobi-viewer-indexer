@@ -225,7 +225,7 @@ public class DenkXwebIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, dataFolders, 0);
+            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy, dataFolders);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
@@ -245,7 +245,10 @@ public class DenkXwebIndexer extends Indexer {
             // Write created/updated timestamps
             indexObj.writeDateModified(!noTimestampUpdate);
 
-            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the records does have full-text
+            // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
+            indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
+
+            // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Add DEFAULT field
@@ -294,15 +297,13 @@ public class DenkXwebIndexer extends Indexer {
     /**
      * 
      * @param indexObj
-     * @param isWork
      * @param writeStrategy
      * @param dataFolders
-     * @param depth
      * @return
      * @throws FatalIndexerException
      */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders, int depth) throws FatalIndexerException {
+    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders) throws FatalIndexerException {
         List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             physIds.add(String.valueOf(i));
@@ -340,9 +341,9 @@ public class DenkXwebIndexer extends Indexer {
             }
 
             // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-            if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || depth > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
+            if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || 0 > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                pageDoc.setField("MDNUM_OWNERDEPTH", depth);
+                pageDoc.setField("MDNUM_OWNERDEPTH", 0);
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
@@ -763,6 +764,15 @@ public class DenkXwebIndexer extends Indexer {
                 doc.addField(SolrConstants.WIDTH, dimension.width);
                 doc.addField(SolrConstants.HEIGHT, dimension.height);
             });
+        }
+
+        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
+        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
+                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            doc.addField(FIELD_IMAGEAVAILABLE, true);
+            recordHasImages = true;
+        } else {
+            doc.addField(FIELD_IMAGEAVAILABLE, false);
         }
 
         // FULLTEXTAVAILABLE indicates whether this page has full-text

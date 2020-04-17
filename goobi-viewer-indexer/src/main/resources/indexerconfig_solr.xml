@@ -48,6 +48,7 @@
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
+		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
 
 		<!-- Misc folders -->
 		<successFolder>C:/digiverso/viewer/success/</successFolder>
@@ -198,6 +199,7 @@
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
+							<item>dc:identifier</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -263,6 +265,7 @@
 							<item>mets:xmlData/mods:mods/mods:classification[@authority="ivdcc" or @authority="GDZ"]</item>
 							<item>mets:xmlData/mods:mods/mods:relatedItem[@type='host']/@ID</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordSource/lido:legalBodyName/lido:appellationValue</item>
+							<item>dc:subject</item>
 						</list>
 					</xpath>
 					<getparents>all</getparents>
@@ -286,6 +289,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']</item>
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</item>
+							<item>dc:rights[not(contains(text(),'http'))]</item>
 						</list>
 					</xpath>
 
@@ -370,17 +374,17 @@
 	        <GROUPID_SERIES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:recordInfo/mods:recordIdentifier</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:recordInfo/mods:recordIdentifier</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-		</GROUPID_SERIES>
+            </GROUPID_SERIES>
 
 	        <GROUPORDER_SERIES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:part/@order</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:part/@order</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
@@ -390,7 +394,7 @@
 	        <MD_TITLE_SERIES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series']/mods:titleInfo/mods:title</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:titleInfo/mods:title</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
@@ -405,6 +409,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
+							<item>dc:title</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -587,10 +592,9 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='iso639-2b']
-							</item>
-							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='rfc3066']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='iso639-2b']</item>
+							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='rfc3066']</item>
+							<item>dc:language</item>
 						</list>
 					</xpath>
 					<onefield>false</onefield>
@@ -607,6 +611,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority='marcrelator'][@type='code'])]</item>
 							<item>lido:eventActor/lido:actorInRole/lido:actor</item>
+							<item>dc:creator</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -616,6 +621,7 @@
 					<replace char="152"></replace>
 					<replace char="156"></replace>
 					<groupEntity type="PERSON">
+						<!-- MODS -->
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
@@ -624,12 +630,18 @@
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+						
+						<!-- LIDO -->
 						<field name="MD_VALUE">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
 						<field name="MD_DISPLAYFORM">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
 						<field name="MD_DOB">lido:vitalDatesActor/lido:earliestDate[@lido:type="Geburtsdatum"]</field>
 						<field name="MD_DOD">lido:vitalDatesActor/lido:latestDate[@lido:type="Sterbedatum"]</field>
 						<field name="NORM_URI">lido:actorID[@lido:source="http://d-nb.info/gnd"]</field>
+						
+						<!-- DUBLIN CORE -->
+						<field name="MD_VALUE">text()</field>
 					</groupEntity>
+
 				</item>
 			</list>
 		</MD_CREATOR>
@@ -2025,6 +2037,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[@encoding='w3cdtf']</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[not(@encoding)][not(@point)]</item>
+							<item>dc:date</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2876,16 +2889,6 @@
 			</list>
 		</BOOL_HIDE>
 
-		<BOOL_CONTAINSIMAGE>
-		       <list>
-				<item>
-					<xpath>string(boolean(mets:fileSec/mets:fileGrp[@USE="PRESENTATION"]))</xpath>
-					<addToDefault>false</addToDefault>
-					<addSortField>true</addSortField>
-				</item>
-		       </list>
-		</BOOL_CONTAINSIMAGE>
-
 		<BOOL_DIRECTION_RTL>
 			<list>
 				<item>
@@ -2978,6 +2981,56 @@
 				</item>
 			</list>
 		</MD_DOCUMENT_PLACE>
+		<MD_RECORDDESCRIPTION>
+			<list>
+				<item>
+					<xpath>dc:description</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_RECORDDESCRIPTION>
+		<MD_ACCESSLICENSE>
+			<list>
+				<item>
+					<xpath>dc:rights[contains(text(),'http')]</xpath>
+					<addToDefault>true</addToDefault>
+				</item>
+			</list>
+		</MD_ACCESSLICENSE>
+        <MD2_ALLPERSONS>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority='marcrelator'][@type='code'])]</item>
+                            <item>lido:eventActor/lido:actorInRole/lido:actor</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                    <addToParents>true</addToParents>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace char="152"></replace>
+                    <replace char="156"></replace>
+                    <groupEntity type="PERSON">
+                        <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                        <field name="MD_VALUE">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
+                        <field name="MD_DISPLAYFORM">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
+                        <field name="MD_DOB">lido:vitalDatesActor/lido:earliestDate[@lido:type="Geburtsdatum"]</field>
+                        <field name="MD_DOD">lido:vitalDatesActor/lido:latestDate[@lido:type="Sterbedatum"]</field>
+                        <field name="NORM_URI">lido:actorID[@lido:source="http://d-nb.info/gnd"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD2_ALLPERSONS>
 
 	</fields>
 </root>

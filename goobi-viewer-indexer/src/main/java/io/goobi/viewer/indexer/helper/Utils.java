@@ -42,9 +42,7 @@ import javax.xml.ws.http.HTTPException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -55,11 +53,15 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,12 +147,44 @@ public class Utils {
 
         logger.info("Updating data repository cache...");
         Map<String, String> params = new HashMap<>(2);
-        params.put("pi", pi);
-        params.put("dataRepositoryName", dataRepositoryName);
+        JSONObject json = new JSONObject();
+        json.put("pi", pi);
+        json.put("dataRepositoryName", dataRepositoryName);
 
         String url = Configuration.getInstance().getViewerUrl() + "/rest/tools/updatedatarepository?token="
                 + Configuration.getInstance().getViewerAuthorizationToken();
-        getWebContentPOST(url, params, null);
+        getWebContentPOST(url, params, null, json.toString(), ContentType.APPLICATION_JSON.getMimeType());
+    }
+
+    /**
+     * <p>
+     * getWebContentGET.
+     * </p>
+     *
+     * @param urlString a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     * @throws org.apache.http.client.ClientProtocolException if any.
+     * @throws java.io.IOException if any.
+     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     */
+    public static String getWebContentGET(String urlString) throws ClientProtocolException, IOException, HTTPException {
+        RequestConfig defaultRequestConfig = RequestConfig.custom()
+                .setSocketTimeout(HTTP_TIMEOUT)
+                .setConnectTimeout(HTTP_TIMEOUT)
+                .setConnectionRequestTimeout(HTTP_TIMEOUT)
+                .build();
+        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
+            HttpGet get = new HttpGet(urlString);
+            try (CloseableHttpResponse response = httpClient.execute(get); StringWriter writer = new StringWriter()) {
+                int code = response.getStatusLine().getStatusCode();
+                if (code == HttpStatus.SC_OK) {
+                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING);
+                }
+                logger.error("{}: {}\n{}", code, response.getStatusLine().getReasonPhrase(),
+                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING));
+                return response.getStatusLine().getReasonPhrase();
+            }
+        }
     }
 
     /**
@@ -161,25 +195,26 @@ public class Utils {
      * @param url a {@link java.lang.String} object.
      * @param params a {@link java.util.Map} object.
      * @param cookies a {@link java.util.Map} object.
+     * @param body Optional entity content.
+     * @param contentType Optional mime type.
      * @return a {@link java.lang.String} object.
      * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
-    public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies)
+    public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies, String body, String contentType)
             throws ClientProtocolException, IOException {
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
         }
 
-        logger.trace("url: {}", url);
+        logger.debug("url: {}", url);
         List<NameValuePair> nameValuePairs = null;
         if (params == null) {
             nameValuePairs = new ArrayList<>(0);
         } else {
             nameValuePairs = new ArrayList<>(params.size());
             for (String key : params.keySet()) {
-                // logger.trace("param: {}:{}", key, params.get(key)); // TODO do not log passwords!
                 nameValuePairs.add(new BasicNameValuePair(key, params.get(key)));
             }
         }
@@ -188,7 +223,6 @@ public class Utils {
         if (cookies != null && !cookies.isEmpty()) {
             context = HttpClientContext.create();
             for (String key : cookies.keySet()) {
-                // logger.trace("cookie: {}:{}", key, cookies.get(key)); // TODO do not log passwords!
                 BasicClientCookie cookie = new BasicClientCookie(key, cookies.get(key));
                 cookie.setPath("/");
                 cookie.setDomain("0.0.0.0");
@@ -204,18 +238,25 @@ public class Utils {
                 .build();
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
             HttpPost post = new HttpPost(url);
+            if (StringUtils.isNotEmpty(contentType)) {
+                post.setHeader("Content-Type", contentType);
+            }
             Charset.forName(TextHelper.DEFAULT_ENCODING);
-            post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            // TODO allow combinations of params + body
+            if (StringUtils.isNotEmpty(body)) {
+                post.setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_ENCODING)));
+            } else {
+                post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            }
             try (CloseableHttpResponse response = (context == null ? httpClient.execute(post) : httpClient.execute(post, context));
                     StringWriter writer = new StringWriter()) {
                 int code = response.getStatusLine().getStatusCode();
                 if (code == HttpStatus.SC_OK) {
                     logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
-                    IOUtils.copy(response.getEntity().getContent(), writer, TextHelper.DEFAULT_ENCODING);
-                    return writer.toString();
+                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING);
                 }
                 logger.error("{}: {}\n{}", code, response.getStatusLine().getReasonPhrase(),
-                        IOUtils.toString(response.getEntity().getContent(), TextHelper.DEFAULT_ENCODING));
+                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING));
                 return response.getStatusLine().getReasonPhrase();
             }
         }
@@ -363,42 +404,10 @@ public class Utils {
         sbUrl.append("tools?action=emptyCache&identifier=").append(pi).append("&fromContent=true&fromThumbs=true");
 
         try {
-            return callUrl(sbUrl.toString());
+            return Utils.getWebContentGET(sbUrl.toString());
         } catch (IOException e) {
             return "Could not clear viewer cache: " + e.getMessage();
         }
-    }
-
-    /**
-     * <p>
-     * callUrl.
-     * </p>
-     *
-     * @param url a {@link java.lang.String} object.
-     * @throws java.io.IOException
-     * @return a {@link java.lang.String} object.
-     */
-    public static String callUrl(String url) throws IOException {
-        HttpGet httpGet = new HttpGet(url);
-        RequestConfig defaultRequestConfig =
-                RequestConfig.custom().setSocketTimeout(10000).setConnectTimeout(10000).setConnectionRequestTimeout(10000).build();
-        try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            try (CloseableHttpResponse response = httpClient.execute(httpGet); StringWriter writer = new StringWriter()) {
-                switch (response.getStatusLine().getStatusCode()) {
-                    case 200:
-                        HttpEntity httpEntity = response.getEntity();
-                        httpEntity.getContentLength();
-                        IOUtils.copy(httpEntity.getContent(), writer, TextHelper.DEFAULT_ENCODING);
-                        return writer.toString();
-                    default:
-                        logger.error("Could not open URL '{}': {}", url, response.getStatusLine().getReasonPhrase());
-                }
-            }
-        } finally {
-            httpGet.releaseConnection();
-        }
-
-        return null;
     }
 
     /**
