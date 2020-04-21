@@ -734,7 +734,7 @@
 		<fieldType name="location" class="solr.LatLonType"
 			subFieldSuffix="_coordinate" />
 		
-		<!-- Coordinates for geospacial search -->
+		<!-- Coordinates for geospatial search -->
         <fieldType name="location_rpt"   class="solr.SpatialRecursivePrefixTreeFieldType"
             spatialContextFactory="com.spatial4j.core.context.jts.JtsSpatialContextFactory"
             distErrPct="0.025"

@@ -60,21 +60,35 @@ public class GeoJSONTools {
         GeoJsonObject geometry = null;
         switch (type.toLowerCase()) {
             case "gml:point": {
-                List<LngLatAlt> polygon = convertPoints(coords, separator, 2);
+                List<LngLatAlt> polygon = convertPoints(coords, separator, 2, false);
+                if (!polygon.isEmpty()) {
+                    geometry = new Point(polygon.get(0));
+                }
+            }
+                break;
+            case "gml:point:4326": {
+                List<LngLatAlt> polygon = convertPoints(coords, separator, 2, true);
                 if (!polygon.isEmpty()) {
                     geometry = new Point(polygon.get(0));
                 }
             }
                 break;
             case "gml:polygon": {
-                List<LngLatAlt> polygon = convertPoints(coords, separator, 2);
+                List<LngLatAlt> polygon = convertPoints(coords, separator, 2, false);
+                if (!polygon.isEmpty()) {
+                    geometry = new Polygon(polygon);
+                }
+            }
+                break;
+            case "gml:polygon:4326": {
+                List<LngLatAlt> polygon = convertPoints(coords, separator, 2, true);
                 if (!polygon.isEmpty()) {
                     geometry = new Polygon(polygon);
                 }
             }
                 break;
             case "mods:coordinates/point": {
-                List<LngLatAlt> polygon = convertPoints(coords, separator, coords.split(separator).length);
+                List<LngLatAlt> polygon = convertPoints(coords, separator, coords.split(separator).length, false);
                 if (!polygon.isEmpty()) {
                     geometry = new Point(polygon.get(0));
                 }
@@ -101,9 +115,11 @@ public class GeoJSONTools {
      * 
      * @param gml GML coordinates
      * @param separator
+     * @param dimensions
+     * @param revert If true, it will be assumed the format is lat-long instead of long-lat
      * @return List of LngLatAlt points
      */
-    static List<LngLatAlt> convertPoints(String gml, String separator, int dimensions) {
+    static List<LngLatAlt> convertPoints(String gml, String separator, int dimensions, boolean revert) {
         if (StringUtils.isEmpty(gml)) {
             return Collections.emptyList();
         }
@@ -120,14 +136,55 @@ public class GeoJSONTools {
             count++;
             if (count == dimensions) {
                 if (point[2] != -1) {
-                    ret.add(new LngLatAlt(point[0], point[1], point[2]));
+                    if (revert) {
+                        // Not sure this can ever be the case
+                        ret.add(new LngLatAlt(point[1], point[0], point[2]));
+                    } else {
+                        ret.add(new LngLatAlt(point[0], point[1], point[2]));
+                    }
                 } else {
-                    ret.add(new LngLatAlt(point[0], point[1]));
+                    if (revert) {
+                        ret.add(new LngLatAlt(point[1], point[0]));
+                    } else {
+                        ret.add(new LngLatAlt(point[0], point[1]));
+                    }
                 }
                 count = 0;
             }
         }
 
         return ret;
+    }
+
+    /**
+     * 
+     * @param points One or more points
+     * @return WKT representation of the given shape
+     * @should convert points correctly
+     * @should convert polygons correctly
+     */
+    static String convertoToWKT(List<LngLatAlt> points) {
+        if (points == null || points.isEmpty()) {
+            return null;
+        }
+
+        if (points.size() == 1) {
+            // Point
+            return (int) points.get(0).getLongitude() + " " + (int) points.get(0).getLatitude();
+        }
+
+        // Polygon
+        StringBuilder sb = new StringBuilder("POLYGON((");
+        int count = 0;
+        for (LngLatAlt point : points) {
+            if (count > 0) {
+                sb.append(", ");
+            }
+            sb.append((int) point.getLongitude()).append(' ').append((int) point.getLatitude());
+            count++;
+        }
+        sb.append("))");
+
+        return sb.toString();
     }
 }

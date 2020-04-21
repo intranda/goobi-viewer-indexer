@@ -52,6 +52,7 @@ public class FieldConfig {
     private ValueNormalizer valueNormalizer;
     private String geoJSONSource;
     private String geoJSONSourceSeparator;
+    private boolean geoJSONAddSearchCoords;
 
     /**
      * Constructor.
@@ -641,5 +642,19 @@ public class FieldConfig {
      */
     public void setGeoJSONSourceSeparator(String geoJSONSourceSeparator) {
         this.geoJSONSourceSeparator = geoJSONSourceSeparator;
+    }
+
+    /**
+     * @return the geoJSONAddSearchCoords
+     */
+    public boolean isGeoJSONAddSearchCoords() {
+        return geoJSONAddSearchCoords;
+    }
+
+    /**
+     * @param geoJSONAddSearchCoords the geoJSONAddSearchCoords to set
+     */
+    public void setGeoJSONAddSearchCoords(boolean geoJSONAddSearchCoords) {
+        this.geoJSONAddSearchCoords = geoJSONAddSearchCoords;
     }
 }

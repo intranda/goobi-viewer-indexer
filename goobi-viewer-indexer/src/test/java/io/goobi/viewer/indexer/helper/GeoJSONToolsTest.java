@@ -1,5 +1,10 @@
 package io.goobi.viewer.indexer.helper;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.geojson.LngLatAlt;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,5 +51,31 @@ public class GeoJSONToolsTest {
                     "51.8164115931853 / 9.86927764300289 / 123", "mods:coordinates/point", " / ");
             Assert.assertTrue(geoJson, geoJson.contains("{\"type\":\"Point\",\"coordinates\":[51.8164115931853,9.86927764300289,123.0]}}]}"));
         }
+    }
+
+    /**
+     * @see GeoJSONTools#convertoToWKT(List)
+     * @verifies convert points correctly
+     */
+    @Test
+    public void convertoToWKT_shouldConvertPointsCorrectly() throws Exception {
+       LngLatAlt point = new LngLatAlt(1, 2);
+       Assert.assertEquals("1 2", GeoJSONTools.convertoToWKT(Collections.singletonList(point)));
+    }
+
+    /**
+     * @see GeoJSONTools#convertoToWKT(List)
+     * @verifies convert polygons correctly
+     */
+    @Test
+    public void convertoToWKT_shouldConvertPolygonsCorrectly() throws Exception {
+        List<LngLatAlt> points = new ArrayList<>(4);
+       points.add(new LngLatAlt(0, 2));
+       points.add(new LngLatAlt(2, 2));
+       points.add(new LngLatAlt(2, 0));
+       points.add(new LngLatAlt(0, 0));
+       points.add(new LngLatAlt(0, 2));
+       
+        Assert.assertEquals("POLYGON((0 2, 2 2, 2 0, 0 0, 0 2))", GeoJSONTools.convertoToWKT(points));
     }
 }

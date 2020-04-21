@@ -560,7 +560,7 @@ public class MetadataHelper {
                         }
                     }
                 } else if (normData.getKey().equals(GeoNamesRecord.AUTOCOORDS_FIELD)) {
-                    // Add searchable lon-lat coordinates
+                    // Add searchable WKT lon-lat coordinates
                     String[] textValueSplit = textValue.split(" ");
                     if (textValueSplit.length > 1) {
                         String coords = textValueSplit[0] + " " + textValueSplit[1];

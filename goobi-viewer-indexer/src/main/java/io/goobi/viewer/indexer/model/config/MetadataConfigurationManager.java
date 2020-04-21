@@ -446,6 +446,14 @@ public final class MetadataConfigurationManager {
                     ((String) configurationMap.get("geoJSONSourceSeparator")).replace(Configuration.SPACE_SPLACEHOLDER, " "));
         }
 
+        if (configurationMap.containsKey("geoJSONAddSearchCoords")) {
+            if (((String) configurationMap.get("geoJSONAddSearchCoords")).equals("true")) {
+                configurationItem.setGeoJSONAddSearchCoords(true);
+            } else {
+                configurationItem.setGeoJSONAddSearchCoords(false);
+            }
+        }
+
         return configurationItem;
     }
 
