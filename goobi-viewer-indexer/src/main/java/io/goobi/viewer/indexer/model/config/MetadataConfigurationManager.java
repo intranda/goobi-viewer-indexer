@@ -144,6 +144,8 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("geoJSONSource", config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource"));
                 fieldValues.put("geoJSONSourceSeparator",
                         config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@separator]"));
+                fieldValues.put("geoJSONAddSearchField",
+                        config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@addSearchField]"));
 
                 {
                     // Normalize and interpolate years
@@ -446,11 +448,11 @@ public final class MetadataConfigurationManager {
                     ((String) configurationMap.get("geoJSONSourceSeparator")).replace(Configuration.SPACE_SPLACEHOLDER, " "));
         }
 
-        if (configurationMap.containsKey("geoJSONAddSearchCoords")) {
-            if (((String) configurationMap.get("geoJSONAddSearchCoords")).equals("true")) {
-                configurationItem.setGeoJSONAddSearchCoords(true);
+        if (configurationMap.containsKey("geoJSONAddSearchField")) {
+            if (((String) configurationMap.get("geoJSONAddSearchField")).equals("true")) {
+                configurationItem.setGeoJSONAddSearchField(true);
             } else {
-                configurationItem.setGeoJSONAddSearchCoords(false);
+                configurationItem.setGeoJSONAddSearchField(false);
             }
         }
 

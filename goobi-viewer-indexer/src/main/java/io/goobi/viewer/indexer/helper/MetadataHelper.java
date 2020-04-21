@@ -76,6 +76,7 @@ public class MetadataHelper {
 
     private static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
     private static final String XPATH_ROOT_PLACEHOLDER = "{{{ROOT}}}";
+    public static final String FIELD_WKT_COORDS = "COORDS_WKT";
 
     private static String multiValueSeparator = DEFAULT_MULTIVALUE_SEPARATOR;
 
@@ -321,6 +322,18 @@ public class MetadataHelper {
                                 for (LuceneField field : gmd.getFields()) {
                                     // Apply modifications configured for the main field to all the group field values
                                     String moddedValue = applyAllModifications(configurationItem, field.getValue());
+                                    if (configurationItem.getGeoJSONSource() != null) {
+                                        // Add WKT search field (before converting to geoJSON)
+                                        if (configurationItem.isGeoJSONAddSearchField()) {
+                                            ret.add(new LuceneField(FIELD_WKT_COORDS,
+                                                    GeoJSONTools.convertoToWKT(moddedValue, configurationItem.getGeoJSONSource(),
+                                                            configurationItem.getGeoJSONSourceSeparator())));
+                                        }
+                                        // Convert to geoJSON
+                                        moddedValue =
+                                                GeoJSONTools.convertCoordinatesToGeoJSONString(moddedValue, configurationItem.getGeoJSONSource(),
+                                                        configurationItem.getGeoJSONSourceSeparator());
+                                    }
                                     field.setValue(moddedValue);
 
                                     if (configurationItem.isAddToDefault()) {
@@ -426,6 +439,20 @@ public class MetadataHelper {
                     }
                     // Apply string modifications configured for this field
                     fieldValue = applyAllModifications(configurationItem, fieldValue);
+
+                    if (configurationItem.getGeoJSONSource() != null) {
+                        // Add WKT search field (before converting to geoJSON)
+                        if (configurationItem.isGeoJSONAddSearchField()) {
+                            logger.info("Adding search coordinates");
+                            ret.add(new LuceneField(FIELD_WKT_COORDS,
+                                    GeoJSONTools.convertoToWKT(fieldValue, configurationItem.getGeoJSONSource(),
+                                            configurationItem.getGeoJSONSourceSeparator())));
+                        }
+                        // Convert to geoJSON
+                        fieldValue = GeoJSONTools.convertCoordinatesToGeoJSONString(fieldValue, configurationItem.getGeoJSONSource(),
+                                configurationItem.getGeoJSONSourceSeparator());
+                    }
+
                     // Add value to DEFAULT
                     if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
                         addValueToDefault(fieldValue, sbDefaultMetadataValues);
@@ -451,7 +478,7 @@ public class MetadataHelper {
                                 configurationItem.getValueNormalizer(), ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
-                        ret.add(new LuceneField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(), fieldValue));
+                        ret.add(new LuceneField(fieldName + SolrConstants._UNTOKENIZED, fieldValue));
                     }
 
                     // Abort after first value, if so configured
@@ -564,11 +591,11 @@ public class MetadataHelper {
                     String[] textValueSplit = textValue.split(" ");
                     if (textValueSplit.length > 1) {
                         String coords = textValueSplit[0] + " " + textValueSplit[1];
-                        ret.add(new LuceneField("COORDS_LOCATION", coords));
+                        ret.add(new LuceneField(FIELD_WKT_COORDS, coords));
                     }
 
                     // Add geoJSON
-                    String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSON(textValue, "mods:coordinates/point", " ");
+                    String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSONString(textValue, "mods:coordinates/point", " ");
                     if (StringUtils.isNotEmpty(geoJSON)) {
                         ret.add(new LuceneField("NORM_COORDS_GEOJSON", geoJSON));
                     }
@@ -609,25 +636,13 @@ public class MetadataHelper {
                     continue;
                 }
             }
+
             if (field.getField().equals(SolrConstants.ACCESSCONDITION)) {
                 // Add access conditions to a separate list
                 indexObj.getAccessConditions().add(field.getValue());
             } else {
                 indexObj.addToLucene(field, false);
             }
-            // Extract language code from the field name and add it to the topstruct indexObj
-            //            if (field.getField().startsWith("MD_TEXT_")) {
-            //                String language = extractLanguageCodeFromMetadataField(field.getField());
-            //                if (StringUtils.isNotEmpty(language)) {
-            //                    IndexObject obj = indexObj;
-            //                    while (obj.getParent() != null && !obj.getParent().isAnchor()) {
-            //                        obj = obj.getParent();
-            //                    }
-            //                    obj.getLanguages().add(language);
-            //                }
-            //            }
-
-            // logger.debug("METADATA " + fieldName + " : " + field.getValue());
 
             indexObj.setDefaultValue(indexObj.getDefaultValue().trim());
         }
@@ -665,12 +680,6 @@ public class MetadataHelper {
         }
         if (configurationItem.getValueNormalizer() != null) {
             fieldValue = configurationItem.getValueNormalizer().normalize(fieldValue);
-        }
-
-        // Convert to geoJSON
-        if (configurationItem.getGeoJSONSource() != null) {
-            fieldValue = GeoJSONTools.convertCoordinatesToGeoJSON(fieldValue, configurationItem.getGeoJSONSource(),
-                    configurationItem.getGeoJSONSourceSeparator());
         }
 
         return fieldValue;

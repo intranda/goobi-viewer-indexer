@@ -38,6 +38,53 @@ public class GeoJSONTools {
     private static final Logger logger = LoggerFactory.getLogger(GeoJSONTools.class);
 
     /**
+     * Converts the given coordinates to their WKT representation (via converting them to geoJSON first).
+     * 
+     * @param points One or more points
+     * @return WKT representation of the given coordinates
+     * @should convert points correctly
+     * @should convert polygons correctly
+     */
+    static String convertoToWKT(String coords, String type, String separator) {
+        FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
+        if (featureCollection.getFeatures().isEmpty()) {
+            return null;
+        }
+
+        GeoJsonObject geometry = featureCollection.getFeatures().get(0).getGeometry();
+
+        if (geometry instanceof Point) {
+            // Point
+            Point point = (Point) geometry;
+            return point.getCoordinates().getLongitude() + " " + point.getCoordinates().getLatitude();
+        }
+
+        if (geometry instanceof Polygon) {
+            // Polygon
+            Polygon polygon = (Polygon) geometry;
+            StringBuilder sb = new StringBuilder("POLYGON((");
+            int count = 0;
+            if (polygon.getCoordinates().isEmpty()) {
+                return null;
+            }
+
+            for (LngLatAlt point : polygon.getCoordinates().get(0)) {
+                if (count > 0) {
+                    sb.append(", ");
+                }
+                sb.append(point.getLongitude()).append(' ').append(point.getLatitude());
+                count++;
+            }
+            sb.append("))");
+
+            return sb.toString();
+        }
+
+        return null;
+
+    }
+
+    /**
      * 
      * @param coords
      * @return geoJSON string
@@ -45,7 +92,25 @@ public class GeoJSONTools {
      * @should convert GML polygon correctly
      * @should convert MODS point correctly
      */
-    public static String convertCoordinatesToGeoJSON(String coords, String type, String separator) {
+    public static String convertCoordinatesToGeoJSONString(String coords, String type, String separator) {
+        FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
+        try {
+            return new ObjectMapper().writeValueAsString(featureCollection);
+        } catch (JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    /**
+     * 
+     * @param coords
+     * @param type
+     * @param separator
+     * @return
+     */
+    public static FeatureCollection convertCoordinatesToGeoJSONFeatureCollection(String coords, String type, String separator) {
         if (coords == null) {
             return null;
         }
@@ -103,35 +168,30 @@ public class GeoJSONTools {
             feature.setGeometry(geometry);
         }
 
-        try {
-            return new ObjectMapper().writeValueAsString(featureCollection);
-        } catch (JsonProcessingException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return null;
+        return featureCollection;
     }
 
     /**
      * 
-     * @param gml GML coordinates
-     * @param separator
-     * @param dimensions
+     * @param coords Coordinates
+     * @param separator Optional separator between axes
+     * @param dimensions Number of dimensions (usually 2 or 3)
      * @param revert If true, it will be assumed the format is lat-long instead of long-lat
      * @return List of LngLatAlt points
      */
-    static List<LngLatAlt> convertPoints(String gml, String separator, int dimensions, boolean revert) {
-        if (StringUtils.isEmpty(gml)) {
+    static List<LngLatAlt> convertPoints(String coords, String separator, int dimensions, boolean revert) {
+        if (StringUtils.isEmpty(coords)) {
             return Collections.emptyList();
         }
         if (separator == null) {
             separator = " ";
         }
 
-        String[] gmlSplit = gml.split(separator);
-        List<LngLatAlt> ret = new ArrayList<>(gmlSplit.length / 2);
+        String[] coordsSplit = coords.split(separator);
+        List<LngLatAlt> ret = new ArrayList<>(coordsSplit.length / 2);
         double[] point = { -1, -1, -1 };
         int count = 0;
-        for (String coord : gmlSplit) {
+        for (String coord : coordsSplit) {
             point[count] = Double.valueOf(coord);
             count++;
             if (count == dimensions) {
@@ -154,37 +214,5 @@ public class GeoJSONTools {
         }
 
         return ret;
-    }
-
-    /**
-     * 
-     * @param points One or more points
-     * @return WKT representation of the given shape
-     * @should convert points correctly
-     * @should convert polygons correctly
-     */
-    static String convertoToWKT(List<LngLatAlt> points) {
-        if (points == null || points.isEmpty()) {
-            return null;
-        }
-
-        if (points.size() == 1) {
-            // Point
-            return (int) points.get(0).getLongitude() + " " + (int) points.get(0).getLatitude();
-        }
-
-        // Polygon
-        StringBuilder sb = new StringBuilder("POLYGON((");
-        int count = 0;
-        for (LngLatAlt point : points) {
-            if (count > 0) {
-                sb.append(", ");
-            }
-            sb.append((int) point.getLongitude()).append(' ').append((int) point.getLatitude());
-            count++;
-        }
-        sb.append("))");
-
-        return sb.toString();
     }
 }
