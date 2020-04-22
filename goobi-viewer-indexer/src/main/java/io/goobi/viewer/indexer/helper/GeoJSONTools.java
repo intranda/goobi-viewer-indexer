@@ -32,33 +32,47 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.goobi.viewer.indexer.model.GeoCoords;
+
 public class GeoJSONTools {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(GeoJSONTools.class);
 
-    /**
-     * Converts the given coordinates to their WKT representation (via converting them to geoJSON first).
-     * 
-     * @param points One or more points
-     * @return WKT representation of the given coordinates
-     * @should convert points correctly
-     * @should convert polygons correctly
-     */
-    static String convertoToWKT(String coords, String type, String separator) {
+    public static GeoCoords convert(String coords, String type, String separator) {
         FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
-        if (featureCollection.getFeatures().isEmpty()) {
+
+        String geoJSON = null;
+        try {
+            geoJSON = new ObjectMapper().writeValueAsString(featureCollection);
+        } catch (JsonProcessingException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        String wkt = convertToWKT(featureCollection);
+
+        return new GeoCoords(geoJSON, wkt);
+    }
+
+    /**
+     * Extracts points from the given <code>FeatureCollection</code> and converts them to their WKT representation (via converting them to geoJSON
+     * first).
+     * 
+     * @param featureCollection
+     * @return WKT representation of the given coordinates
+     */
+    static String convertToWKT(FeatureCollection featureCollection) {
+        if (featureCollection == null || featureCollection.getFeatures().isEmpty() || featureCollection.getFeatures().get(0).getGeometry() == null) {
+            logger.error("geoJSON object invalid or null.");
             return null;
         }
 
         GeoJsonObject geometry = featureCollection.getFeatures().get(0).getGeometry();
-
         if (geometry instanceof Point) {
             // Point
             Point point = (Point) geometry;
-            return point.getCoordinates().getLongitude() + " " + point.getCoordinates().getLatitude();
+            return convertToWKT(Collections.singletonList(point.getCoordinates()));
         }
-
         if (geometry instanceof Polygon) {
             // Polygon
             Polygon polygon = (Polygon) geometry;
@@ -68,20 +82,44 @@ public class GeoJSONTools {
                 return null;
             }
 
-            for (LngLatAlt point : polygon.getCoordinates().get(0)) {
-                if (count > 0) {
-                    sb.append(", ");
-                }
-                sb.append(point.getLongitude()).append(' ').append(point.getLatitude());
-                count++;
-            }
-            sb.append("))");
-
-            return sb.toString();
+            return convertToWKT(polygon.getCoordinates().get(0));
         }
 
         return null;
 
+    }
+
+    /**
+     * Converts the given coordinates to their WKT representation (via converting them to geoJSON first).
+     * 
+     * @param points List of <code>LngLatAlt</code>
+     * @return WKT representation of the given coordinates
+     * @should convert points correctly
+     * @should convert polygons correctly
+     */
+    static String convertToWKT(List<LngLatAlt> points) {
+        if (points == null || points.isEmpty()) {
+            return null;
+        }
+
+        if (points.size() == 1) {
+            // Point
+            return points.get(0).getLongitude() + " " + points.get(0).getLatitude();
+        }
+
+        // Polygon
+        StringBuilder sb = new StringBuilder("POLYGON((");
+        int count = 0;
+        for (LngLatAlt point : points) {
+            if (count > 0) {
+                sb.append(", ");
+            }
+            sb.append(point.getLongitude()).append(' ').append(point.getLatitude());
+            count++;
+        }
+        sb.append("))");
+
+        return sb.toString();
     }
 
     /**

@@ -53,6 +53,7 @@ import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
+import io.goobi.viewer.indexer.model.GeoCoords;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -322,18 +323,20 @@ public class MetadataHelper {
                                 for (LuceneField field : gmd.getFields()) {
                                     // Apply modifications configured for the main field to all the group field values
                                     String moddedValue = applyAllModifications(configurationItem, field.getValue());
+
+                                    // Convert to geoJSON
                                     if (configurationItem.getGeoJSONSource() != null) {
-                                        // Add WKT search field (before converting to geoJSON)
-                                        if (configurationItem.isGeoJSONAddSearchField()) {
-                                            ret.add(new LuceneField(FIELD_WKT_COORDS,
-                                                    GeoJSONTools.convertoToWKT(moddedValue, configurationItem.getGeoJSONSource(),
-                                                            configurationItem.getGeoJSONSourceSeparator())));
+                                        GeoCoords coords = GeoJSONTools.convert(moddedValue, configurationItem.getGeoJSONSource(),
+                                                configurationItem.getGeoJSONSourceSeparator());
+                                        if (coords.getGeoJSON() != null) {
+                                            moddedValue = coords.getGeoJSON();
                                         }
-                                        // Convert to geoJSON
-                                        moddedValue =
-                                                GeoJSONTools.convertCoordinatesToGeoJSONString(moddedValue, configurationItem.getGeoJSONSource(),
-                                                        configurationItem.getGeoJSONSourceSeparator());
+                                        // Add WKT search field
+                                        if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
+                                            ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                                        }
                                     }
+
                                     field.setValue(moddedValue);
 
                                     if (configurationItem.isAddToDefault()) {
@@ -440,17 +443,17 @@ public class MetadataHelper {
                     // Apply string modifications configured for this field
                     fieldValue = applyAllModifications(configurationItem, fieldValue);
 
+                    // Convert to geoJSON
                     if (configurationItem.getGeoJSONSource() != null) {
-                        // Add WKT search field (before converting to geoJSON)
-                        if (configurationItem.isGeoJSONAddSearchField()) {
-                            logger.info("Adding search coordinates");
-                            ret.add(new LuceneField(FIELD_WKT_COORDS,
-                                    GeoJSONTools.convertoToWKT(fieldValue, configurationItem.getGeoJSONSource(),
-                                            configurationItem.getGeoJSONSourceSeparator())));
-                        }
-                        // Convert to geoJSON
-                        fieldValue = GeoJSONTools.convertCoordinatesToGeoJSONString(fieldValue, configurationItem.getGeoJSONSource(),
+                        GeoCoords coords = GeoJSONTools.convert(fieldValue, configurationItem.getGeoJSONSource(),
                                 configurationItem.getGeoJSONSourceSeparator());
+                        if (coords.getGeoJSON() != null) {
+                            fieldValue = coords.getGeoJSON();
+                        }
+                        // Add WKT search field
+                        if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
+                            ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                        }
                     }
 
                     // Add value to DEFAULT
