@@ -369,13 +369,6 @@
 			<artifactId>jaxen</artifactId>
 			<version>${jaxen.version}</version>
 		</dependency>
-        <!-- tools.jar depencency so that the Solr dependencies don't cause errors -->
-        <dependency>
-            <groupId>jdk.tools</groupId>
-            <artifactId>jdk.tools</artifactId>
-            <version>1.8.0</version>
-            <scope>test</scope>
-        </dependency>
 	</dependencies>
 
 
