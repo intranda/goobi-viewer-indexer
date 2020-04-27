@@ -35,7 +35,7 @@
 		<httpmime.version>4.5.12</httpmime.version>
 		<icu.version>67.1</icu.version>
 		<imageio-openjpeg.version>0.4.4</imageio-openjpeg.version>
-		<log4j.version>2.13.1</log4j.version>
+		<log4j.version>2.13.2</log4j.version>
 		<jackson.version>2.11.0</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
