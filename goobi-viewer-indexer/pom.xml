@@ -42,7 +42,7 @@
 		<javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6</jdom2.version>
 		<jsoup.version>1.13.1</jsoup.version>
-		<joda-time.version>2.10.5</joda-time.version>
+		<joda-time.version>2.10.6</joda-time.version>
 		<junit.version>4.13</junit.version>
 		<lucene.version>4.10.4</lucene.version>
 		<metadata-extractor.version>2.13.0</metadata-extractor.version>
