@@ -141,6 +141,11 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("addToParents", config.getString("fields." + fieldname + ".list.item(" + i + ").addToParents"));
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
+                fieldValues.put("geoJSONSource", config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource"));
+                fieldValues.put("geoJSONSourceSeparator",
+                        config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@separator]"));
+                fieldValues.put("geoJSONAddSearchField",
+                        config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@addSearchField]"));
 
                 {
                     // Normalize and interpolate years
@@ -432,6 +437,23 @@ public final class MetadataConfigurationManager {
         }
         if (configurationMap.containsKey("valueNormalizer")) {
             configurationItem.setValueNormalizer((ValueNormalizer) configurationMap.get("valueNormalizer"));
+        }
+
+        if (configurationMap.containsKey("geoJSONSource")) {
+            configurationItem.setGeoJSONSource((String) configurationMap.get("geoJSONSource"));
+        }
+
+        if (configurationMap.containsKey("geoJSONSourceSeparator")) {
+            configurationItem.setGeoJSONSourceSeparator(
+                    ((String) configurationMap.get("geoJSONSourceSeparator")).replace(Configuration.SPACE_SPLACEHOLDER, " "));
+        }
+
+        if (configurationMap.containsKey("geoJSONAddSearchField")) {
+            if (((String) configurationMap.get("geoJSONAddSearchField")).equals("true")) {
+                configurationItem.setGeoJSONAddSearchField(true);
+            } else {
+                configurationItem.setGeoJSONAddSearchField(false);
+            }
         }
 
         return configurationItem;
