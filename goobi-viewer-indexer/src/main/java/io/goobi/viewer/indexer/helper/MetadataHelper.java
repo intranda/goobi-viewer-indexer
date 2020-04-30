@@ -77,7 +77,7 @@ public class MetadataHelper {
 
     private static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
     private static final String XPATH_ROOT_PLACEHOLDER = "{{{ROOT}}}";
-    public static final String FIELD_WKT_COORDS = "COORDS_WKT";
+    public static final String FIELD_WKT_COORDS = "WKT_COORDS";
 
     private static String multiValueSeparator = DEFAULT_MULTIVALUE_SEPARATOR;
 
