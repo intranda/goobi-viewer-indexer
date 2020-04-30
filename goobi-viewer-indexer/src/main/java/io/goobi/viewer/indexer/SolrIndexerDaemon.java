@@ -38,7 +38,7 @@ public final class SolrIndexerDaemon {
 
     /** Constant <code>VERSION</code> */
     public static final String VERSION = "4.6.0.20200430";
-    private static final int MIN_SCHEMA_VERSION = 20190924;
+    private static final int MIN_SCHEMA_VERSION = 20200430;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
