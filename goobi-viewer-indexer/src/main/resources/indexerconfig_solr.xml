@@ -2549,29 +2549,6 @@
 			</list>
 		</MD_SCALE>
 
-		<MD_COORDINATES>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates
-					</xpath>
-					<addToDefault>true</addToDefault>
-					<onefield>false</onefield>
-				</item>
-			</list>
-		</MD_COORDINATES>
-
-        <MD_GEOJSON_COORDINATES>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <onefield>false</onefield>
-                    <geoJSONSource separator=" / " addSearchField="true">mods:coordinates/point</geoJSONSource>
-                </item>
-            </list>
-        </MD_GEOJSON_COORDINATES>
-
 		<MD_EVENTNAME>
 			<list>
 				<item>
@@ -2898,26 +2875,17 @@
 				</item>
 			</list>
 		</BOOL_DIRECTION_RTL>
-
-		<MD_HAAB_PROVENIENCE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:provenience</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<groupEntity type="OTHER">
-						<field name="MD_VALUE">intranda:previousOwner</field>
-						<field name="MD_CODE">intranda:code</field>
-						<field name="MD_PREVIOUS_OWNER" multivalued="false">intranda:previousOwner</field>
-						<field name="MD_CHARACTERISTIC">intranda:characteristic</field>
-						<field name="MD_DATE">intranda:date</field>
-						<field name="MD_EXPLANATION">intranda:explanation</field>
-						<field name="NORM_URI_RECORD">intranda:gnd</field>
-						<field name="NORM_URI">intranda:previousOwner/@valueURI</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_HAAB_PROVENIENCE>
+		
+        <MD_COORDINATES>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                </item>
+            </list>
+        </MD_COORDINATES>
 
 		<MD_GML_POINT>
 			<list>
@@ -2936,6 +2904,13 @@
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                     <geoJSONSource addSearchField="true">gml:Point:4326</geoJSONSource>
+                </item>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <geoJSONSource separator=" / " addSearchField="true">mods:coordinates/point</geoJSONSource>
                 </item>
             </list>
         </MD_GEOJSON_POINT>
@@ -2956,7 +2931,7 @@
                     <xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
-                    <geoJSONSource addSearchField="false">gml:Polygon:4326</geoJSONSource>
+                    <geoJSONSource addSearchField="true">gml:Polygon:4326</geoJSONSource>
                 </item>
             </list>
         </MD_GEOJSON_POLYGON>
