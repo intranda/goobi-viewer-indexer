@@ -379,7 +379,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-            </GROUPID_SERIES>
+		</GROUPID_SERIES>
 
 	        <GROUPORDER_SERIES>
 			<list>
@@ -535,6 +535,10 @@
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]</xpath>
 					<addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="NORM_URI">@valueURI</field>
+                    </groupEntity>
 				</item>
 			</list>
 		</MD_PLACEPUBLISH>
@@ -733,6 +737,7 @@
 			</list>
 		</MD_PUBLICATIONRUN>
 
+<!--
 		<MDNUM_PUBLICRELEASEYEAR>
 			<list>
 				<item>
@@ -744,6 +749,7 @@
 				</item>
 			</list>
 		</MDNUM_PUBLICRELEASEYEAR>
+-->
 
 		<MD_PHYSICALCOPY>
 			<list>
@@ -1825,9 +1831,7 @@
 		<MD_ZDB>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="zdb-id" or
-						@type="ZDB-ID"]
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="zdb-id" or @type="ZDB-ID"]</xpath>
 					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 				</item>
@@ -1837,8 +1841,7 @@
 		<MD_SPONSOR>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/sponsorship
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:extension/sponsorship</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -1847,8 +1850,7 @@
 		<MD_TOPIC>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:topic
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:topic</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 				</item>
@@ -1858,8 +1860,7 @@
 		<MD_RESOURCE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='isReferencedBy']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='isReferencedBy']</xpath>
 					<onefield>true</onefield>
 					<addToDefault>false</addToDefault>
 				</item>
@@ -1900,8 +1901,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='former']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='former']</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -1933,8 +1933,7 @@
 		<MD_REGION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:hierarchicalGeographic/mods:region
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:hierarchicalGeographic/mods:region</xpath>
 					<onefield>false</onefield>
 					<addToDefault>true</addToDefault>
 				</item>
@@ -1944,8 +1943,7 @@
 		<MD_FORMATDDC>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:form[@authority='ddc'][@type='size']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:form[@authority='ddc'][@type='size']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -1991,8 +1989,7 @@
 		<MD_ORIGINALLOCATION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type="original location"]
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:note[@type="original location"]</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2004,8 +2001,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:abstract[@type='content']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:abstract[@type='content']</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -2056,8 +2052,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[@point='end']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[@point='end']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2071,8 +2066,7 @@
 		<MD_DDC>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='ddc']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='ddc']</xpath>
 					<onefield>false</onefield>
 					<addToDefault>true</addToDefault>
 				</item>
@@ -2082,8 +2076,7 @@
 		<MD_INVENTORY_NUMBER>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem/mods:identifier[@type='InventoryNumber']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem/mods:identifier[@type='InventoryNumber']</xpath>
 					<onefield>false</onefield>
 					<addToDefault>true</addToDefault>
 				</item>
@@ -2093,8 +2086,7 @@
 		<MD_MATERIAL_DESCRIPTION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='MaterialDescription']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='MaterialDescription']</xpath>
 					<onefield>false</onefield>
 					<addToDefault>true</addToDefault>
 				</item>
@@ -2104,8 +2096,7 @@
 		<MD_MOTIF_DESCRIPTION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='MotivDescription']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='MotivDescription']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2115,8 +2106,7 @@
 		<MD_REFERENCE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='original']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='original']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
@@ -2129,12 +2119,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:abstract[not(@type) or
-								@type='Information']
-							</item>
-							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='Orginaletikett'
-								or @lido:type='description']/lido:descriptiveNoteValue
-							</item>
+							<item>mets:xmlData/mods:mods/mods:abstract[not(@type) or @type='Information']</item>
+							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='Orginaletikett' or @lido:type='description']/lido:descriptiveNoteValue</item>
                             <item>//denkxweb:description
                             </item>
 						</list>
@@ -2151,8 +2137,7 @@
 		<MD_TAXONOMY>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='Taxonomy']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='Taxonomy']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2164,10 +2149,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:abstract[@type='Technic']
-							</item>
-							<item>lido:eventMaterialsTech/lido:materialsTech/lido:termMaterialsTech[@lido:type='Technique']/lido:term
-							</item>
+							<item>mets:xmlData/mods:mods/mods:abstract[@type='Technic']</item>
+							<item>lido:eventMaterialsTech/lido:materialsTech/lido:termMaterialsTech[@lido:type='Technique']/lido:term</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2179,8 +2162,7 @@
 		<MD_CONDITION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='Condition']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='Condition']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2193,8 +2175,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:relatedItem[@type='isReferencedBy']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:relatedItem[@type='isReferencedBy']</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -2208,8 +2189,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:classification[@authority='category']
-							</item>
+							<item>mets:xmlData/mods:mods/mods:classification[@authority='category']</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -2304,8 +2284,7 @@
 		<MD_IDENTIFIERLOCAL>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:identifier[@type='local']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:identifier[@type='local']</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -2343,8 +2322,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='dz']/@xlink
-							</item>
+							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='dz']/@xlink</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2357,14 +2335,10 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='copyright']
-							</item>
-							<item>mets:amdSec/mets:rightsMD/mets:mdWrap/mets:xmlData/dv:rights/dv:owner
-							</item>
-							<item>lido:administrativeMetadata/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsHolder/lido:legalBodyName/lido:appellationValue
-							</item>
-							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordRights/lido:rightsHolder/lido:legalBodyName/lido:appellationValue
-							</item>
+							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='copyright']</item>
+							<item>mets:amdSec/mets:rightsMD/mets:mdWrap/mets:xmlData/dv:rights/dv:owner</item>
+							<item>lido:administrativeMetadata/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsHolder/lido:legalBodyName/lido:appellationValue</item>
+							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordRights/lido:rightsHolder/lido:legalBodyName/lido:appellationValue</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2377,10 +2351,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:amdSec/mets:rightsMD/mets:mdWrap/mets:xmlData/dv:rights/dv:ownerSiteURL
-							</item>
-							<item>lido:administrativeMetadata/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsHolder/lido:legalBodyWeblink
-							</item>
+							<item>mets:amdSec/mets:rightsMD/mets:mdWrap/mets:xmlData/dv:rights/dv:ownerSiteURL</item>
+							<item>lido:administrativeMetadata/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsHolder/lido:legalBodyWeblink</item>
 						</list>
 					</xpath>
 					<addToDefault>false</addToDefault>
@@ -2394,8 +2366,7 @@
 				<item>
 					<xpath>
 						<list>
-							<item>lido:eventPlace
-							</item>
+							<item>lido:eventPlace</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2412,11 +2383,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='creation']
-							</item>
-							<item>lido:eventPlace[../lido:eventType/lido:term='Type
-								Creation']/lido:place/lido:namePlaceSet/lido:appellationValue
-							</item>
+							<item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='creation']</item>
+							<item>lido:eventPlace[../lido:eventType/lido:term='Type	Creation']/lido:place/lido:namePlaceSet/lido:appellationValue</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2429,10 +2397,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='discovery']
-							</item>
-							<item>lido:eventPlace[../lido:eventType/lido:term='Fund']/lido:place/lido:namePlaceSet/lido:appellationValue
-							</item>
+							<item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='discovery']</item>
+							<item>lido:eventPlace[../lido:eventType/lido:term='Fund']/lido:place/lido:namePlaceSet/lido:appellationValue</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2443,8 +2409,7 @@
 		<MD_PLACEOFORIGIN>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='origin']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='origin']</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -2453,8 +2418,7 @@
 		<MD_DESTINATION>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='destination']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='destination']</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -2465,10 +2429,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:classification[@authority='pnd']
-							</item>
-							<item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="personal"]/mods:displayForm
-							</item>
+							<item>mets:xmlData/mods:mods/mods:classification[@authority='pnd']</item>
+							<item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="personal"]/mods:displayForm</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2480,8 +2442,7 @@
 		<MD_GEOKEYWORD>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='geographic']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='geographic']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2491,8 +2452,7 @@
 		<MD_WORKKEYWORD>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='work']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='work']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2502,8 +2462,7 @@
 		<MD_RISMSEAL>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='rism']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:classification[@authority='rism']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2513,8 +2472,7 @@
 		<MD_LETTERNUMBER>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='letterNumber']
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:abstract[@type='letterNumber']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2524,8 +2482,7 @@
 		<MD_GEOGRAPHICSCOPE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:geographic
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:geographic</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2535,30 +2492,17 @@
 		<MD_SCALE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:scale
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:scale</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
 			</list>
 		</MD_SCALE>
 
-		<MD_COORDINATES>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates
-					</xpath>
-					<addToDefault>true</addToDefault>
-					<onefield>false</onefield>
-				</item>
-			</list>
-		</MD_COORDINATES>
-
 		<MD_EVENTNAME>
 			<list>
 				<item>
-					<xpath>lido:eventName/lido:appellationValue
-					</xpath>
+					<xpath>lido:eventName/lido:appellationValue</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2568,8 +2512,7 @@
 		<MD_OBJECTTYPE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:typeOfResource
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:typeOfResource</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2579,8 +2522,7 @@
 		<MD_TOC>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:tableOfContents
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:tableOfContents</xpath>
 					<addToDefault>false</addToDefault>
 				</item>
 			</list>
@@ -2588,8 +2530,7 @@
 		<MD_ATTACHMENT>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type="attachment"]/@xlink:href
-					</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:note[@type="attachment"]/@xlink:href</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
@@ -2599,8 +2540,7 @@
 		<MD_CLASSIFICATIONCLASS>
 			<list>
 				<item>
-					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Klasse']/lido:term
-					</xpath>
+					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Klasse']/lido:term</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
@@ -2610,8 +2550,7 @@
 		<MD_CLASSIFICATIONORDER>
 			<list>
 				<item>
-					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Ordnung']/lido:term
-					</xpath>
+					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Ordnung']/lido:term</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
@@ -2621,8 +2560,7 @@
 		<MD_CLASSIFICATIONFAMILY>
 			<list>
 				<item>
-					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Familie']/lido:term
-					</xpath>
+					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Familie']/lido:term</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
@@ -2632,8 +2570,7 @@
 		<MD_CLASSIFICATIONGENUS>
 			<list>
 				<item>
-					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Gattung']/lido:term
-					</xpath>
+					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Gattung']/lido:term</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
@@ -2643,8 +2580,7 @@
 		<MD_CLASSIFICATIONSPECIES>
 			<list>
 				<item>
-					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Art']/lido:term
-					</xpath>
+					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Art']/lido:term</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
@@ -2654,8 +2590,7 @@
 		<MD_STAGE>
 			<list>
 				<item>
-					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Stadium']/lido:term
-					</xpath>
+					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Stadium']/lido:term</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
@@ -2665,8 +2600,7 @@
 		<MD_PREPARATIONTYPE>
 			<list>
 				<item>
-					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Präparationsart']/lido:term
-					</xpath>
+					<xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type='Präparationsart']/lido:term</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
 				</item>
@@ -2880,47 +2814,64 @@
 				</item>
 			</list>
 		</BOOL_DIRECTION_RTL>
-
-		<MD_HAAB_PROVENIENCE>
+		
+		<MD_COORDINATES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:provenience</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</xpath>
 					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<groupEntity type="OTHER">
-						<field name="MD_VALUE">intranda:previousOwner</field>
-						<field name="MD_CODE">intranda:code</field>
-						<field name="MD_PREVIOUS_OWNER" multivalued="false">intranda:previousOwner</field>
-						<field name="MD_CHARACTERISTIC">intranda:characteristic</field>
-						<field name="MD_DATE">intranda:date</field>
-						<field name="MD_EXPLANATION">intranda:explanation</field>
-						<field name="NORM_URI_RECORD">intranda:gnd</field>
-						<field name="NORM_URI">intranda:previousOwner/@valueURI</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_HAAB_PROVENIENCE>
-
-		<MD_GML_POS>
-			<list>
-				<item>
-					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point/gml:pos</xpath>
-					<addToDefault>false</addToDefault>
-					<addUntokenizedVersion>false</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_GML_POS>
-
-		<MD_GML_COORDINATES>
-			<list>
-				<item>
-					<xpath>//denkxweb:georeference/denkxweb:surface/gml:MultiSurface/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
-					<addToDefault>false</addToDefault>
 					<onefield>false</onefield>
+				</item>
+			</list>
+		</MD_COORDINATES>
+
+		<MD_GML_POINT>
+			<list>
+				<item>
+					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</xpath>
+					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-		</MD_GML_COORDINATES>
+		</MD_GML_POINT>
+		
+		<MD_GEOJSON_POINT>
+			<list>
+				<item>
+					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+					<geoJSONSource addSearchField="true">gml:Point:4326</geoJSONSource>
+				</item>
+				<item>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</xpath>
+					<addToDefault>true</addToDefault>
+					<onefield>false</onefield>
+					<geoJSONSource separator=" / " addSearchField="true">mods:coordinates/point</geoJSONSource>
+				</item>
+			</list>
+		</MD_GEOJSON_POINT>
+
+		<MD_GML_POLYGON>
+			<list>
+				<item>
+					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+				</item>
+			</list>
+		</MD_GML_POLYGON>
+		
+		<MD_GEOJSON_POLYGON>
+			<list>
+				<item>
+					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+					<addToDefault>false</addToDefault>
+					<addUntokenizedVersion>false</addUntokenizedVersion>
+					<geoJSONSource addSearchField="true">gml:Polygon:4326</geoJSONSource>
+				</item>
+			</list>
+		</MD_GEOJSON_POLYGON>
 
 		<MD_DOCUMENT_PLACE>
 			<list>
@@ -2958,40 +2909,40 @@
 				</item>
 			</list>
 		</MD_ACCESSLICENSE>
-        <MD2_ALLPERSONS>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority='marcrelator'][@type='code'])]</item>
-                            <item>lido:eventActor/lido:actorInRole/lido:actor</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addSortField>false</addSortField>
-                    <addToParents>true</addToParents>
-                    <replace string="&lt;&lt;"></replace>
-                    <replace string="&gt;&gt;"></replace>
-                    <replace char="152"></replace>
-                    <replace char="156"></replace>
-                    <groupEntity type="PERSON">
-                        <field name="MD_VALUE">mods:displayForm</field>
-                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
-                        <field name="MD_LINK">@xlink:href</field>
-                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-                        <field name="MD_VALUE">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
-                        <field name="MD_DISPLAYFORM">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
-                        <field name="MD_DOB">lido:vitalDatesActor/lido:earliestDate[@lido:type="Geburtsdatum"]</field>
-                        <field name="MD_DOD">lido:vitalDatesActor/lido:latestDate[@lido:type="Sterbedatum"]</field>
-                        <field name="NORM_URI">lido:actorID[@lido:source="http://d-nb.info/gnd"]</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD2_ALLPERSONS>
 
+		<MD2_ALLPERSONS>
+			<list>
+				<item>
+					<xpath>
+						<list>
+							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority='marcrelator'][@type='code'])]</item>
+							<item>lido:eventActor/lido:actorInRole/lido:actor</item>
+						</list>
+					</xpath>
+					<addToDefault>false</addToDefault>
+					<addSortField>false</addSortField>
+					<addToParents>true</addToParents>
+					<replace string="&lt;&lt;"></replace>
+					<replace string="&gt;&gt;"></replace>
+					<replace char="152"></replace>
+					<replace char="156"></replace>
+					<groupEntity type="PERSON">
+						<field name="MD_VALUE">mods:displayForm</field>
+						<field name="MD_DISPLAYFORM">mods:displayForm</field>
+						<field name="MD_LINK">@xlink:href</field>
+						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+						<field name="MD_VALUE">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
+						<field name="MD_DISPLAYFORM">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
+						<field name="MD_DOB">lido:vitalDatesActor/lido:earliestDate[@lido:type="Geburtsdatum"]</field>
+						<field name="MD_DOD">lido:vitalDatesActor/lido:latestDate[@lido:type="Sterbedatum"]</field>
+						<field name="NORM_URI">lido:actorID[@lido:source="http://d-nb.info/gnd"]</field>
+					</groupEntity>
+				</item>
+			</list>
+		</MD2_ALLPERSONS>
 	</fields>
 </root>

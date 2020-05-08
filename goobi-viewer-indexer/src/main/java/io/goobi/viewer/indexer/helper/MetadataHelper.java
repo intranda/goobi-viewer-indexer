@@ -47,11 +47,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
-import de.intranda.digiverso.normdataimporter.model.MarcRecord;
+import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
+import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
+import io.goobi.viewer.indexer.model.GeoCoords;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -75,6 +77,7 @@ public class MetadataHelper {
 
     private static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
     private static final String XPATH_ROOT_PLACEHOLDER = "{{{ROOT}}}";
+    public static final String FIELD_WKT_COORDS = "WKT_COORDS";
 
     private static String multiValueSeparator = DEFAULT_MULTIVALUE_SEPARATOR;
 
@@ -280,9 +283,9 @@ public class MetadataHelper {
                                     fieldValues.add(fieldValue);
                                 }
 
-                                // Retrieve normdata
-                                if (gmd.getNormUri() != null) {
-                                    normData.addAll(retrieveAuthorityData(sbDefaultMetadataValues, sbNormDataTerms, gmd.getNormUri(),
+                                // Retrieve authority data
+                                if (gmd.getAuthorityURI() != null) {
+                                    normData.addAll(retrieveAuthorityData(sbDefaultMetadataValues, sbNormDataTerms, gmd.getAuthorityURI(),
                                             addNormDataFieldsToDefault, configurationItem.getReplaceRules()));
                                     // Add default norm data name to the docstruct doc so that it can be searched
                                     for (LuceneField normField : normData) {
@@ -320,6 +323,20 @@ public class MetadataHelper {
                                 for (LuceneField field : gmd.getFields()) {
                                     // Apply modifications configured for the main field to all the group field values
                                     String moddedValue = applyAllModifications(configurationItem, field.getValue());
+
+                                    // Convert to geoJSON
+                                    if (configurationItem.getGeoJSONSource() != null) {
+                                        GeoCoords coords = GeoJSONTools.convert(moddedValue, configurationItem.getGeoJSONSource(),
+                                                configurationItem.getGeoJSONSourceSeparator());
+                                        if (coords.getGeoJSON() != null) {
+                                            moddedValue = coords.getGeoJSON();
+                                        }
+                                        // Add WKT search field
+                                        if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
+                                            ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                                        }
+                                    }
+
                                     field.setValue(moddedValue);
 
                                     if (configurationItem.isAddToDefault()) {
@@ -425,6 +442,20 @@ public class MetadataHelper {
                     }
                     // Apply string modifications configured for this field
                     fieldValue = applyAllModifications(configurationItem, fieldValue);
+
+                    // Convert to geoJSON
+                    if (configurationItem.getGeoJSONSource() != null) {
+                        GeoCoords coords = GeoJSONTools.convert(fieldValue, configurationItem.getGeoJSONSource(),
+                                configurationItem.getGeoJSONSourceSeparator());
+                        if (coords.getGeoJSON() != null) {
+                            fieldValue = coords.getGeoJSON();
+                        }
+                        // Add WKT search field
+                        if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
+                            ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                        }
+                    }
+
                     // Add value to DEFAULT
                     if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
                         addValueToDefault(fieldValue, sbDefaultMetadataValues);
@@ -450,7 +481,7 @@ public class MetadataHelper {
                                 configurationItem.getValueNormalizer(), ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
-                        ret.add(new LuceneField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(), fieldValue));
+                        ret.add(new LuceneField(fieldName + SolrConstants._UNTOKENIZED, fieldValue));
                     }
 
                     // Abort after first value, if so configured
@@ -487,7 +518,7 @@ public class MetadataHelper {
      */
     private static List<LuceneField> retrieveAuthorityData(StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms, String url,
             List<String> addToDefaultFields, Map<Object, String> replaceRules) {
-        logger.trace("retrieveNormData: {}", url);
+        logger.info("retrieveAuthorityData: {}", url);
         if (sbDefaultMetadataValues == null) {
             throw new IllegalArgumentException("sbDefaultMetadataValues may not be null");
         }
@@ -499,16 +530,20 @@ public class MetadataHelper {
         }
         // If it's just an identifier, assume it's GND
         if (!url.startsWith("http")) {
-            url = "http://d-nb.info/gnd/" + url;
+            url = "https://d-nb.info/gnd/" + url;
         }
 
-        MarcRecord marcRecord = NormDataImporter.getSingleMarcRecord(url.trim());
-        if (marcRecord == null) {
+        Record record = NormDataImporter.getSingleRecord(url.trim());
+        if (record == null) {
+            return Collections.emptyList();
+        }
+        if (record.getNormDataList().isEmpty()) {
+            logger.warn("No authority data fields found.");
             return Collections.emptyList();
         }
 
-        List<LuceneField> ret = new ArrayList<>(marcRecord.getNormDataList().size());
-        for (NormData normData : marcRecord.getNormDataList()) {
+        List<LuceneField> ret = new ArrayList<>(record.getNormDataList().size());
+        for (NormData normData : record.getNormDataList()) {
             if (!normData.getKey().startsWith("NORM_")) {
                 continue;
             }
@@ -554,7 +589,21 @@ public class MetadataHelper {
                             ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
                         }
                     }
+                } else if (normData.getKey().equals(GeoNamesRecord.AUTOCOORDS_FIELD)) {
+                    // Add searchable WKT lon-lat coordinates
+                    String[] textValueSplit = textValue.split(" ");
+                    if (textValueSplit.length > 1) {
+                        String coords = textValueSplit[0] + " " + textValueSplit[1];
+                        ret.add(new LuceneField(FIELD_WKT_COORDS, coords));
+                    }
+
+                    // Add geoJSON
+                    String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSONString(textValue, "mods:coordinates/point", " ");
+                    if (StringUtils.isNotEmpty(geoJSON)) {
+                        ret.add(new LuceneField("NORM_COORDS_GEOJSON", geoJSON));
+                    }
                 }
+
             }
         }
 
@@ -590,25 +639,13 @@ public class MetadataHelper {
                     continue;
                 }
             }
+
             if (field.getField().equals(SolrConstants.ACCESSCONDITION)) {
                 // Add access conditions to a separate list
                 indexObj.getAccessConditions().add(field.getValue());
             } else {
                 indexObj.addToLucene(field, false);
             }
-            // Extract language code from the field name and add it to the topstruct indexObj
-            //            if (field.getField().startsWith("MD_TEXT_")) {
-            //                String language = extractLanguageCodeFromMetadataField(field.getField());
-            //                if (StringUtils.isNotEmpty(language)) {
-            //                    IndexObject obj = indexObj;
-            //                    while (obj.getParent() != null && !obj.getParent().isAnchor()) {
-            //                        obj = obj.getParent();
-            //                    }
-            //                    obj.getLanguages().add(language);
-            //                }
-            //            }
-
-            // logger.debug("METADATA " + fieldName + " : " + field.getValue());
 
             indexObj.setDefaultValue(indexObj.getDefaultValue().trim());
         }
@@ -1149,7 +1186,7 @@ public class MetadataHelper {
                     if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
                         if (NormDataImporter.FIELD_URI.equals(subfield.getFieldname())) {
                             normUriFound = true;
-                            ret.setNormUri(fieldValue);
+                            ret.setAuthorityURI(fieldValue);
                         }
                         // Add GND URL part, if the value is not a URL
                         if (!fieldValue.startsWith("http")) {
@@ -1214,7 +1251,7 @@ public class MetadataHelper {
                 String valueURI = ele.getAttributeValue("valueURI");
                 if (valueURI != null) {
                     ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
-                    ret.setNormUri(valueURI);
+                    ret.setAuthorityURI(valueURI);
                 }
             } else {
                 String authorityURI = ele.getAttributeValue("authorityURI");
@@ -1222,7 +1259,7 @@ public class MetadataHelper {
                 switch (authority) {
                     case "gnd":
                         // Skip missing GND identifiers
-                        if ("http://d-nb.info/gnd/".equals(valueURI)) {
+                        if ("https://d-nb.info/gnd/".equals(valueURI) || "http://d-nb.info/gnd/".equals(valueURI)) {
                             break;
                         }
                     default:
@@ -1233,7 +1270,7 @@ public class MetadataHelper {
                             } else {
                                 ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
                             }
-                            ret.setNormUri(valueURI);
+                            ret.setAuthorityURI(valueURI);
                         }
                         break;
                 }
@@ -1286,6 +1323,7 @@ public class MetadataHelper {
          * Date constructor.
          * 
          * @param date
+         * @should set date correctly
          */
         public PrimitiveDate(Date date) {
             Calendar cal = Calendar.getInstance();

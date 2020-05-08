@@ -169,6 +169,8 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertEquals(5, configItem.getValueNormalizer().getLength());
         Assert.assertEquals('a', configItem.getValueNormalizer().getFiller());
         Assert.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizer().getPosition());
+        Assert.assertEquals("mods:coordinates/point", configItem.getGeoJSONSource());
+        Assert.assertEquals(" / ", configItem.getGeoJSONSourceSeparator());
     }
 
     /**

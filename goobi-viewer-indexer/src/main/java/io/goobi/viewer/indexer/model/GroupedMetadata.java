@@ -28,7 +28,7 @@ public class GroupedMetadata {
 
     private String label;
     private String mainValue;
-    private String normUri;
+    private String authorityURI;
     private final List<LuceneField> fields;
     /** If true, this field won't be added to he index. */
     private boolean skip = false;
@@ -92,7 +92,7 @@ public class GroupedMetadata {
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(label);
         ret.setMainValue(mainValue);
-        ret.setNormUri(normUri);
+        ret.setAuthorityURI(authorityURI);
         ret.getFields().addAll(fields);
 
         return ret;
@@ -144,24 +144,24 @@ public class GroupedMetadata {
 
     /**
      * <p>
-     * Getter for the field <code>normUri</code>.
+     * Getter for the field <code>authorityURI</code>.
      * </p>
      *
-     * @return the normUri
+     * @return the authorityURI
      */
-    public String getNormUri() {
-        return normUri;
+    public String getAuthorityURI() {
+        return authorityURI;
     }
 
     /**
      * <p>
-     * Setter for the field <code>normUri</code>.
+     * Setter for the field <code>authorityURI</code>.
      * </p>
      *
-     * @param normUri the normUri to set
+     * @param authorityURI the authorityURI to set
      */
-    public void setNormUri(String normUri) {
-        this.normUri = normUri;
+    public void setAuthorityURI(String authorityURI) {
+        this.authorityURI = authorityURI;
     }
 
     /**
