@@ -49,7 +49,7 @@
 		<metadata-extractor.version>2.13.0</metadata-extractor.version>
 		<solr.version>4.10.4</solr.version>
 		<slf4j.version>1.7.30</slf4j.version>
-		<tomcat.version>9.0.34</tomcat.version>
+		<tomcat.version>9.0.35</tomcat.version>
 		<xstream.version>1.4.11.1</xstream.version>
 	</properties>
 
