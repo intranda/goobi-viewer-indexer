@@ -431,8 +431,8 @@
 					</execution>
 				</executions>
 				<configuration>
-					<finalName>solrIndexer</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
+					<finalName>solr</finalName>
+					<appendAssemblyId>true</appendAssemblyId>
 					<descriptors>
 						<descriptor>assembly.xml</descriptor>
 					</descriptors>
