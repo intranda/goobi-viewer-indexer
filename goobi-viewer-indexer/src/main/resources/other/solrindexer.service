@@ -19,6 +19,7 @@ ExecStart=/usr/bin/java -jar /opt/digiverso/indexer/solrIndexer.jar /opt/digiver
 ExecStop=/usr/bin/touch "$STOPFILE"
 ExecStop=/bin/bash -c 'echo "Waiting for the Indexer to stop."; STILLRUNNING=true; for wait in {1..90}; do ps --pid $MAINPID >/dev/null || STILLRUNNING=false; if [ $STILLRUNNING = "true" ]; then sleep 1; else echo "Indexer shutdown successful."; break; fi; done; [ $STILLRUNNING = "true" ] && echo "Failed to stop Indexer, going to kill..."'
 User=tomcat8
+StandardError=file:/opt/digiverso/logs/indexer.log
 
 [Install]
 WantedBy=default.target
