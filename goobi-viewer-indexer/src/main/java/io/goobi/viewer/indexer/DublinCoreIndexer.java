@@ -629,7 +629,7 @@ public class DublinCoreIndexer extends Indexer {
                 }
             }
 
-            if (StringUtils.isNotBlank(subMimetype)) {
+            if (StringUtils.isNotBlank(mimetype)) {
                 switch (mimetype.toLowerCase()) {
                     case "video":
                     case "audio":

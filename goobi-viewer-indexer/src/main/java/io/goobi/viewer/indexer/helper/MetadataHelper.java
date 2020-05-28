@@ -1119,9 +1119,9 @@ public class MetadataHelper {
                         logger.info("Added implicit {}: {}", fieldName, i);
                         count++;
                     }
-                    if (count == 10) {
-                        break;
-                    }
+                    //                    if (count == 10) {
+                    //                        break;
+                    //                    }
                 }
             }
         }
