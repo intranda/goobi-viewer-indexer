@@ -2279,7 +2279,7 @@ public class MetsIndexer extends Indexer {
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
                 String oldMetsFilename = new StringBuilder(FilenameUtils.getBaseName(sbNewFilename.toString())).append("_")
-                        .append(LocalDate.now().format(MetadataHelper.formatterBasicDateTime))
+                        .append(LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime))
                         .append(".xml")
                         .toString();
                 Files.move(indexed, Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename));
