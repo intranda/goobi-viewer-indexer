@@ -15,8 +15,7 @@
  */
 package io.goobi.viewer.indexer.model;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
 
 public class PrimitiveDate {
 
@@ -37,13 +36,12 @@ public class PrimitiveDate {
      * @param date
      * @should set date correctly
      */
-    public PrimitiveDate(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        this.year = cal.get(Calendar.YEAR);
-        this.month = cal.get(Calendar.MONTH) + 1;
-        this.day = cal.get(Calendar.DAY_OF_MONTH);
+    public PrimitiveDate(LocalDate date) {
+        this.year = date.getYear();
+        this.month = date.getMonthValue();
+        this.day = date.getDayOfMonth();
     }
+
 
     /**
      * @return the year
@@ -64,5 +62,10 @@ public class PrimitiveDate {
      */
     public Integer getDay() {
         return day;
+    }
+    
+    @Override
+    public String toString() {
+        return year + "-" + month + "-" + day;
     }
 }

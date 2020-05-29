@@ -43,7 +43,6 @@
 		<javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6</jdom2.version>
 		<jsoup.version>1.13.1</jsoup.version>
-		<joda-time.version>2.10.6</joda-time.version>
 		<junit.version>4.13</junit.version>
 		<lucene.version>4.10.4</lucene.version>
 		<metadata-extractor.version>2.14.0</metadata-extractor.version>
@@ -201,11 +200,6 @@
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom2</artifactId>
 			<version>${jdom2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>${joda-time.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
