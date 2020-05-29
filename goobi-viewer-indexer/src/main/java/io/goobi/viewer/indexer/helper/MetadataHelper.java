@@ -924,7 +924,7 @@ public class MetadataHelper {
             if (date.getYear() == null) {
                 continue;
             }
-            logger.info("using PrimitiveDate: {}", date.toString());
+            logger.trace("using PrimitiveDate: {}", date.toString());
             ret.add(new LuceneField(SolrConstants.YEAR, String.valueOf(date.getYear())));
             int century = getCentury(date.getYear());
             if (!centuries.contains(century)) {
@@ -937,7 +937,7 @@ public class MetadataHelper {
                 if (date.getDay() != null) {
                     ret.add(new LuceneField(SolrConstants.YEARMONTHDAY,
                             year + FORMAT_TWO_DIGITS.get().format(date.getMonth()) + FORMAT_TWO_DIGITS.get().format(date.getDay())));
-                    logger.info("added YEARMONTHDAY: {}", new LuceneField(SolrConstants.YEARMONTHDAY,
+                    logger.trace("added YEARMONTHDAY: {}", new LuceneField(SolrConstants.YEARMONTHDAY,
                             year + FORMAT_TWO_DIGITS.get().format(date.getMonth()) + FORMAT_TWO_DIGITS.get().format(date.getDay())).getValue());
                 }
             }
@@ -966,7 +966,7 @@ public class MetadataHelper {
         if (normalizeYearMinDigits < 1) {
             throw new IllegalArgumentException("normalizeYearMinDigits must be at least 1");
         }
-        logger.info("normalizeDate: {} (min digits: {})", dateString, normalizeYearMinDigits);
+        logger.trace("normalizeDate: {} (min digits: {})", dateString, normalizeYearMinDigits);
 
         List<PrimitiveDate> ret = new ArrayList<>();
 
@@ -980,7 +980,7 @@ public class MetadataHelper {
         try {
             LocalDate date = LocalDate.parse(dateString, formatterISO8601Date);
             ret.add(new PrimitiveDate(date));
-            logger.info("parsed date: {} (using format yyyy-MM-dd)", date.toString());
+            logger.trace("parsed date: {} (using format yyyy-MM-dd)", date.toString());
             return ret;
         } catch (DateTimeParseException e) {
         }
