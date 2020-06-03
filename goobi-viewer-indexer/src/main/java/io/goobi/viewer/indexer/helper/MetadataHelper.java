@@ -109,10 +109,13 @@ public class MetadataHelper {
     };
 
     /** Constant <code>formatterISO8601Full</code> */
-    public static DateTimeFormatter formatterISO8601Full = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    public static DateTimeFormatter formatterISO8601Full = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
+    /** Constant <code>formatterISO8601DateTimeInstant</code> */
+    public static DateTimeFormatter formatterISO8601DateTimeInstant = DateTimeFormatter.ISO_INSTANT; // yyyy-MM-dd'T'HH:mm:ssZ
+    /** Constant <code>formatterISO8601DateTimeWithOffset</code> */
+    public static DateTimeFormatter formatterISO8601DateTimeWithOffset = DateTimeFormatter.ISO_OFFSET_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss+01:00
     /** Constant <code>formatterISO8601Date</code> */
-    //    public static DateTimeFormatter formatterISO8601Date = ISODateTimeFormat.date().withZoneUTC(); // yyyy-MM-dd
-    public static java.time.format.DateTimeFormatter formatterISO8601Date = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static java.time.format.DateTimeFormatter formatterISO8601Date = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
     /** Constant <code>formatterISO8601YearMonth</code> */
     public static DateTimeFormatter formatterISO8601YearMonth = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM")
@@ -128,9 +131,6 @@ public class MetadataHelper {
     public static DateTimeFormatter formatterJPDate = DateTimeFormatter.ofPattern("yyyy/MM/dd");;
     /** Constant <code>formatterBasicDateTime</code> */
     public static DateTimeFormatter formatterBasicDateTime = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-    /** Constant <code>formatterISO8601DateTimeFullWithTimeZone</code> */
-    public static DateTimeFormatter formatterISO8601DateTimeFullWithTimeZone = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-
     /** Constant <code>addNormDataFieldsToDefault</code> */
     public static List<String> addNormDataFieldsToDefault;
 
@@ -972,6 +972,12 @@ public class MetadataHelper {
 
         // Try known date formats first
         try {
+            LocalDate date = LocalDate.parse(dateString, formatterISO8601Full);
+            ret.add(new PrimitiveDate(date));
+            return ret;
+        } catch (DateTimeParseException e) {
+        }
+        try {
             LocalDate date = LocalDate.parse(dateString, formatterDEDate);
             ret.add(new PrimitiveDate(date));
             return ret;
@@ -1380,7 +1386,7 @@ public class MetadataHelper {
                 ZonedDateTime ld =
                         LocalDateTime.of(date.getYear(), date.getMonth() != null ? date.getMonth() : 1, date.getDay() != null ? date.getDay() : 1, 0,
                                 0, 0, 0).atZone(useUTC ? ZoneOffset.UTC : ZoneOffset.systemDefault());
-                return ld.format(formatterISO8601DateTimeFullWithTimeZone);
+                return ld.format(formatterISO8601DateTimeInstant);
             }
         }
 

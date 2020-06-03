@@ -2231,12 +2231,16 @@ public class MetsIndexer extends Indexer {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
         if (dateString != null) {
             try {
-                return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601DateTimeFullWithTimeZone);
+                return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601DateTimeInstant);
             } catch (DateTimeParseException e) {
                 try {
                     return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601Full);
                 } catch (DateTimeParseException e1) {
-                    logger.error(e1.getMessage());
+                    try {
+                        return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601DateTimeWithOffset);
+                    } catch (DateTimeParseException e2) {
+                        logger.error(e2.getMessage());
+                    }
                 }
             }
 
