@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -34,6 +36,9 @@ import org.apache.commons.lang3.StringUtils;
  *
  */
 public class Version {
+    
+    private static final Logger logger = LoggerFactory.getLogger(Version.class);
+    
     /** Constant <code>VERSION</code> */
     public final static String VERSION;
     /** Constant <code>BUILDVERSION</code> */
@@ -59,7 +64,8 @@ public class Version {
         String className = clazz.getSimpleName() + ".class";
         String classPath = clazz.getResource(className).toString();
         String value = null;
-        String manifestPath= "/META-INF/MANIFEST.MF";
+        String manifestPath = classPath.substring(0, classPath.lastIndexOf("/classes/")) + "/META-INF/MANIFEST.MF";
+        logger.info(manifestPath);
 
         try (InputStream inputStream = new URL(manifestPath).openStream()) {
             StringWriter writer = new StringWriter();
