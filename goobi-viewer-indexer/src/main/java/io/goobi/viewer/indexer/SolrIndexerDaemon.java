@@ -119,7 +119,7 @@ public final class SolrIndexerDaemon {
             logger.warn("Indexer is already running");
             return;
         }
-        logger.info("Goobi Solr Indexer, v{}", Utils.getVersion());
+        logger.info(Utils.getVersion());
         if (StringUtils.isNotEmpty(configFilePath)) {
             confFilename = configFilePath;
         }
