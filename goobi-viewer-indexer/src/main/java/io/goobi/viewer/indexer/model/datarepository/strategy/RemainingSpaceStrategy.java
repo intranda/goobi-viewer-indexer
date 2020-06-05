@@ -41,7 +41,9 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
- * <p>RemainingSpaceStrategy class.</p>
+ * <p>
+ * RemainingSpaceStrategy class.
+ * </p>
  */
 public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
 
@@ -257,6 +259,9 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
             Path hotfolderPath = dataFile.getParent();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
                 for (Path dataFolder : stream) {
+                    if (!Files.isDirectory(dataFolder)) {
+                        continue;
+                    }
                     logger.debug("Found data folder: {}", dataFolder.getFileName());
                     long dataFolderSize = FileUtils.sizeOfDirectory(dataFolder.toFile());
                     if (dataFolderSize > 0) {

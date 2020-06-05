@@ -33,10 +33,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.MetadataHelper.PrimitiveDate;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
+import io.goobi.viewer.indexer.model.PrimitiveDate;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
@@ -78,7 +78,7 @@ public class MetadataHelperTest extends AbstractTest {
         Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
         Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
 
-        ret = MetadataHelper.normalizeDate("2-05", 3);
+        ret = MetadataHelper.normalizeDate("0002-05", 3);
         Assert.assertEquals(1, ret.size());
         Assert.assertEquals(Integer.valueOf(2), ret.get(0).getYear());
         Assert.assertEquals(Integer.valueOf(5), ret.get(0).getMonth());
@@ -438,9 +438,9 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void convertDateStringForSolrField_shouldConvertDateCorrectly() throws Exception {
-        Assert.assertEquals("2016-11-02T00:00:00+0000", MetadataHelper.convertDateStringForSolrField("2016-11-02", true));
-        Assert.assertEquals("2016-11-01T00:00:00+0000", MetadataHelper.convertDateStringForSolrField("2016-11", true));
-        Assert.assertEquals("2016-01-01T00:00:00+0000", MetadataHelper.convertDateStringForSolrField("2016", true));
+        Assert.assertEquals("2016-11-02T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016-11-02", true));
+        Assert.assertEquals("2016-11-01T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016-11", true));
+        Assert.assertEquals("2016-01-01T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016", true));
     }
 
     /**
@@ -566,7 +566,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void parseDatesAndCenturies_shouldNormalizeYearDigits() throws Exception {
-        String date = "190-03-18";
+        String date = "0190-03-18";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4);
         Assert.assertEquals(4, result.size());

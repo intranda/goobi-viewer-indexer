@@ -26,11 +26,13 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,12 +65,12 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrHelper;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
-import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -377,9 +379,9 @@ public class MetsIndexer extends Indexer {
 
             // Read DATECREATED from METS
             if (indexObj.getDateCreated() == -1) {
-                Date dateCreated = getMetsCreateDate();
+                LocalDateTime dateCreated = getMetsCreateDate();
                 if (dateCreated != null) {
-                    indexObj.setDateCreated(dateCreated.getTime());
+                    indexObj.setDateCreated(dateCreated.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                     logger.info("Using creation timestamp from METS: {}", indexObj.getDateCreated());
                 }
             }
@@ -2225,16 +2227,20 @@ public class MetsIndexer extends Indexer {
      * @should return null if date does not exist in METS
      * @return a {@link java.util.Date} object.
      */
-    protected Date getMetsCreateDate() throws FatalIndexerException {
+    protected LocalDateTime getMetsCreateDate() throws FatalIndexerException {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
         if (dateString != null) {
             try {
-                return MetadataHelper.formatterISO8601DateTimeFullWithTimeZone.parseDateTime(dateString).toDate();
-            } catch (IllegalArgumentException e) {
+                return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601DateTimeInstant);
+            } catch (DateTimeParseException e) {
                 try {
-                    return MetadataHelper.formatterISO8601Full.parseDateTime(dateString).toDate();
-                } catch (IllegalArgumentException e1) {
-                    logger.error(e1.getMessage());
+                    return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601Full);
+                } catch (DateTimeParseException e1) {
+                    try {
+                        return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601DateTimeWithOffset);
+                    } catch (DateTimeParseException e2) {
+                        logger.error(e2.getMessage());
+                    }
                 }
             }
 
@@ -2276,7 +2282,7 @@ public class MetsIndexer extends Indexer {
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
                 String oldMetsFilename = new StringBuilder(FilenameUtils.getBaseName(sbNewFilename.toString())).append("_")
-                        .append(MetadataHelper.formatterBasicDateTime.print(System.currentTimeMillis()))
+                        .append(LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime))
                         .append(".xml")
                         .toString();
                 Files.move(indexed, Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename));

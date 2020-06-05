@@ -484,13 +484,21 @@ public class DataRepository {
         //                }
     }
 
+    /**
+     * Deletes the data folder with the given parameter name, but only if it's not being re-indexed.
+     * 
+     * @param dataFolders
+     * @param reindexSettings
+     * @param param Data folder parameter name
+     */
     private static void deleteDataFolder(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param) {
         if (param == null) {
             throw new IllegalArgumentException("param may notbe null");
         }
 
         if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
-            Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_CMS));
+            logger.info("Deleting data folder: {}", dataFolders.get(param).toAbsolutePath().toString());
+            Utils.deleteDirectory(dataFolders.get(param));
         }
     }
 

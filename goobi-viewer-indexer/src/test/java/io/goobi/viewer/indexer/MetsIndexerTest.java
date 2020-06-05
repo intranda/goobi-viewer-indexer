@@ -19,8 +19,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +37,9 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.Utils;
-import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -748,9 +748,9 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile2);
-        Date dateCreated = indexer.getMetsCreateDate();
+        LocalDateTime dateCreated = indexer.getMetsCreateDate();
         Assert.assertNotNull(dateCreated);
-        Assert.assertEquals("2013-07-02T15:03:37", MetadataHelper.formatterISO8601Full.print(dateCreated.getTime()));
+        Assert.assertEquals("2013-07-02T15:03:37", dateCreated.format(MetadataHelper.formatterISO8601Full));
 
     }
 
@@ -763,7 +763,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        Date dateCreated = indexer.getMetsCreateDate();
+        LocalDateTime dateCreated = indexer.getMetsCreateDate();
         Assert.assertNull(dateCreated);
     }
 

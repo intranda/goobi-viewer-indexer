@@ -20,10 +20,16 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,11 +44,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.joda.time.DateTimeZone;
-import org.joda.time.MutableDateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +58,7 @@ import io.goobi.viewer.indexer.model.GeoCoords;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
+import io.goobi.viewer.indexer.model.PrimitiveDate;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
@@ -107,24 +109,28 @@ public class MetadataHelper {
     };
 
     /** Constant <code>formatterISO8601Full</code> */
-    public static DateTimeFormatter formatterISO8601Full = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
+    public static DateTimeFormatter formatterISO8601Full = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
+    /** Constant <code>formatterISO8601DateTimeInstant</code> */
+    public static DateTimeFormatter formatterISO8601DateTimeInstant = DateTimeFormatter.ISO_INSTANT; // yyyy-MM-dd'T'HH:mm:ssZ
+    /** Constant <code>formatterISO8601DateTimeWithOffset</code> */
+    public static DateTimeFormatter formatterISO8601DateTimeWithOffset = DateTimeFormatter.ISO_OFFSET_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss+01:00
     /** Constant <code>formatterISO8601Date</code> */
-    public static DateTimeFormatter formatterISO8601Date = ISODateTimeFormat.date(); // yyyy-MM-dd
+    public static java.time.format.DateTimeFormatter formatterISO8601Date = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
     /** Constant <code>formatterISO8601YearMonth</code> */
-    public static DateTimeFormatter formatterISO8601YearMonth = DateTimeFormat.forPattern("yyyy-MM");
+    public static DateTimeFormatter formatterISO8601YearMonth = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM")
+            .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+            .toFormatter();
     /** Constant <code>formatterDEDate</code> */
-    public static DateTimeFormatter formatterDEDate = DateTimeFormat.forPattern("dd.MM.yyyy");
+    public static DateTimeFormatter formatterDEDate = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     /** Constant <code>formatterUSDate</code> */
-    public static DateTimeFormatter formatterUSDate = DateTimeFormat.forPattern("MM/dd/yyyy");
+    public static DateTimeFormatter formatterUSDate = DateTimeFormatter.ofPattern("MM/dd/yyyy");
     /** Constant <code>formatterCNDate</code> */
-    public static DateTimeFormatter formatterCNDate = DateTimeFormat.forPattern("yyyy.MM.dd");
+    public static DateTimeFormatter formatterCNDate = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     /** Constant <code>formatterJPDate</code> */
-    public static DateTimeFormatter formatterJPDate = DateTimeFormat.forPattern("yyyy/MM/dd");;
+    public static DateTimeFormatter formatterJPDate = DateTimeFormatter.ofPattern("yyyy/MM/dd");;
     /** Constant <code>formatterBasicDateTime</code> */
-    public static DateTimeFormatter formatterBasicDateTime = DateTimeFormat.forPattern("yyyyMMddHHmmss");
-    /** Constant <code>formatterISO8601DateTimeFullWithTimeZone</code> */
-    public static DateTimeFormatter formatterISO8601DateTimeFullWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-
+    public static DateTimeFormatter formatterBasicDateTime = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     /** Constant <code>addNormDataFieldsToDefault</code> */
     public static List<String> addNormDataFieldsToDefault;
 
@@ -918,6 +924,7 @@ public class MetadataHelper {
             if (date.getYear() == null) {
                 continue;
             }
+            logger.trace("using PrimitiveDate: {}", date.toString());
             ret.add(new LuceneField(SolrConstants.YEAR, String.valueOf(date.getYear())));
             int century = getCentury(date.getYear());
             if (!centuries.contains(century)) {
@@ -930,6 +937,8 @@ public class MetadataHelper {
                 if (date.getDay() != null) {
                     ret.add(new LuceneField(SolrConstants.YEARMONTHDAY,
                             year + FORMAT_TWO_DIGITS.get().format(date.getMonth()) + FORMAT_TWO_DIGITS.get().format(date.getDay())));
+                    logger.trace("added YEARMONTHDAY: {}", new LuceneField(SolrConstants.YEARMONTHDAY,
+                            year + FORMAT_TWO_DIGITS.get().format(date.getMonth()) + FORMAT_TWO_DIGITS.get().format(date.getDay())).getValue());
                 }
             }
 
@@ -957,45 +966,53 @@ public class MetadataHelper {
         if (normalizeYearMinDigits < 1) {
             throw new IllegalArgumentException("normalizeYearMinDigits must be at least 1");
         }
+        logger.trace("normalizeDate: {} (min digits: {})", dateString, normalizeYearMinDigits);
 
         List<PrimitiveDate> ret = new ArrayList<>();
 
         // Try known date formats first
         try {
-            Date date = formatterDEDate.parseDateTime(dateString).toDate();
+            LocalDate date = LocalDate.parse(dateString, formatterISO8601Full);
             ret.add(new PrimitiveDate(date));
             return ret;
-        } catch (IllegalArgumentException e) {
+        } catch (DateTimeParseException e) {
         }
         try {
-            Date date = formatterISO8601Date.parseDateTime(dateString).toDate();
+            LocalDate date = LocalDate.parse(dateString, formatterDEDate);
             ret.add(new PrimitiveDate(date));
             return ret;
-        } catch (IllegalArgumentException e) {
+        } catch (DateTimeParseException e) {
         }
         try {
-            Date date = formatterISO8601YearMonth.parseDateTime(dateString).toDate();
+            LocalDate date = LocalDate.parse(dateString, formatterISO8601Date);
             ret.add(new PrimitiveDate(date));
+            logger.trace("parsed date: {} (using format yyyy-MM-dd)", date.toString());
             return ret;
-        } catch (IllegalArgumentException e) {
+        } catch (DateTimeParseException e) {
         }
         try {
-            Date date = formatterUSDate.parseDateTime(dateString).toDate();
+            LocalDate date = LocalDate.parse(dateString, formatterISO8601YearMonth);
             ret.add(new PrimitiveDate(date));
             return ret;
-        } catch (IllegalArgumentException e) {
+        } catch (DateTimeParseException e) {
         }
         try {
-            Date date = formatterCNDate.parseDateTime(dateString).toDate();
+            LocalDate date = LocalDate.parse(dateString, formatterUSDate);
             ret.add(new PrimitiveDate(date));
             return ret;
-        } catch (IllegalArgumentException e) {
+        } catch (DateTimeParseException e) {
         }
         try {
-            Date date = formatterJPDate.parseDateTime(dateString).toDate();
+            LocalDate date = LocalDate.parse(dateString, formatterCNDate);
             ret.add(new PrimitiveDate(date));
             return ret;
-        } catch (IllegalArgumentException e) {
+        } catch (DateTimeParseException e) {
+        }
+        try {
+            LocalDate date = LocalDate.parse(dateString, formatterJPDate);
+            ret.add(new PrimitiveDate(date));
+            return ret;
+        } catch (DateTimeParseException e) {
         }
 
         // Try parsing year ranges
@@ -1119,9 +1136,9 @@ public class MetadataHelper {
                         logger.info("Added implicit {}: {}", fieldName, i);
                         count++;
                     }
-                    if (count == 10) {
-                        break;
-                    }
+                    //                    if (count == 10) {
+                    //                        break;
+                    //                    }
                 }
             }
         }
@@ -1304,58 +1321,6 @@ public class MetadataHelper {
     }
 
     /**
-     * Date class that can (but is not required to) contain year, month and day values.
-     */
-    protected static class PrimitiveDate {
-
-        private Integer year;
-        private Integer month;
-        private Integer day;
-
-        /** Individual values constructor. */
-        public PrimitiveDate(Integer year, Integer month, Integer day) {
-            this.year = year;
-            this.month = month;
-            this.day = day;
-        }
-
-        /**
-         * Date constructor.
-         * 
-         * @param date
-         * @should set date correctly
-         */
-        public PrimitiveDate(Date date) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-            this.year = cal.get(Calendar.YEAR);
-            this.month = cal.get(Calendar.MONTH) + 1;
-            this.day = cal.get(Calendar.DAY_OF_MONTH);
-        }
-
-        /**
-         * @return the year
-         */
-        public Integer getYear() {
-            return year;
-        }
-
-        /**
-         * @return the month
-         */
-        public Integer getMonth() {
-            return month;
-        }
-
-        /**
-         * @return the day
-         */
-        public Integer getDay() {
-            return day;
-        }
-    }
-
-    /**
      * Adds the given value to the given StringBuilder if the value does not yet exist in the buffer, separated by spaces. Also adds a concatenated
      * version of the value if it contains a hyphen.
      * 
@@ -1418,9 +1383,10 @@ public class MetadataHelper {
         if (!dates.isEmpty()) {
             PrimitiveDate date = dates.get(0);
             if (date.getYear() != null) {
-                MutableDateTime mdt = new MutableDateTime(date.getYear(), date.getMonth() != null ? date.getMonth() : 1,
-                        date.getDay() != null ? date.getDay() : 1, 0, 0, 0, 0, useUTC ? DateTimeZone.UTC : DateTimeZone.getDefault());
-                return formatterISO8601DateTimeFullWithTimeZone.print(mdt);
+                ZonedDateTime ld =
+                        LocalDateTime.of(date.getYear(), date.getMonth() != null ? date.getMonth() : 1, date.getDay() != null ? date.getDay() : 1, 0,
+                                0, 0, 0).atZone(useUTC ? ZoneOffset.UTC : ZoneOffset.systemDefault());
+                return ld.format(formatterISO8601DateTimeInstant);
             }
         }
 

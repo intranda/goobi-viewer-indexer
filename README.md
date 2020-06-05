@@ -1,5 +1,5 @@
 # Goobi viewer - Indexer
-[![](https://github.com/intranda/goobi-viewer-indexer/workflows/.github/workflows/default.yml/badge.svg)
+![Standard CI](https://github.com/intranda/goobi-viewer-indexer/workflows/Standard%20CI/badge.svg)
 > Indexing application as part of the highly flexible digital library framework - made by the Goobi developer team
 
 

@@ -953,22 +953,7 @@ public class Hotfolder {
         } else {
             // Error
             if (deleteContentFilesOnFailure) {
-                // Delete all data folders in hotfolder
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {
-
-                    @Override
-                    public boolean accept(Path entry) throws IOException {
-                        return Files.isDirectory(entry)
-                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith("_media"));
-                    }
-                });) {
-                    for (Path path : stream) {
-                        logger.info("Found data folder: {}", path.getFileName());
-                        Utils.deleteDirectory(path);
-                    }
-                }
-
-                // Delete all data folders from the hotfolder
+                // Delete all data folders for this record from the hotfolder
                 DataRepository.deleteDataFolders(dataFolders, reindexSettings);
             }
             handleError(metsFile, resp[1]);
@@ -1192,19 +1177,23 @@ public class Hotfolder {
                     dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath());
         }
 
+        //        if (deleteContentFilesOnFailure) {
+        //            // Delete all folders
+        //            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
+        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
+        //            }
+        //            if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
+        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
+        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
+        //            }
+        //            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
+        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
+        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+        //            }
+        //        }
         if (deleteContentFilesOnFailure) {
-            // Delete all folders
-            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
-            }
-            if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
-                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
-            }
-            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-            }
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFolders(dataFolders, reindexSettings);
         }
     }
 
@@ -1373,15 +1362,19 @@ public class Hotfolder {
                     dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath());
         }
 
+        //        if (deleteContentFilesOnFailure) {
+        //            // Delete all folders
+        //            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
+        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
+        //            }
+        //            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
+        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
+        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+        //            }
+        //        }
         if (deleteContentFilesOnFailure) {
-            // Delete all folders
-            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
-            }
-            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-            }
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFolders(dataFolders, reindexSettings);
         }
     }
 
@@ -1567,22 +1560,7 @@ public class Hotfolder {
         } else {
             // Error
             if (deleteContentFilesOnFailure) {
-                // Delete all data folders in hotfolder
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {
-
-                    @Override
-                    public boolean accept(Path entry) throws IOException {
-                        return Files.isDirectory(entry)
-                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith("_media"));
-                    }
-                });) {
-                    for (Path path : stream) {
-                        logger.info("Found data folder: {}", path.getFileName());
-                        Utils.deleteDirectory(path);
-                    }
-                }
-
-                // Delete all data folders from the hotfolder
+                // Delete all data folders for this record from the hotfolder
                 DataRepository.deleteDataFolders(dataFolders, reindexSettings);
             }
             try {
@@ -1730,22 +1708,7 @@ public class Hotfolder {
         } else {
             // Error
             if (deleteContentFilesOnFailure) {
-                // Delete all data folders in hotfolder
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {
-
-                    @Override
-                    public boolean accept(Path entry) throws IOException {
-                        return Files.isDirectory(entry)
-                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith("_media"));
-                    }
-                });) {
-                    for (Path path : stream) {
-                        logger.info("Found data folder: {}", path.getFileName());
-                        Utils.deleteDirectory(path);
-                    }
-                }
-
-                // Delete all data folders from the hotfolder
+                // Delete all data folders for this record from the hotfolder
                 DataRepository.deleteDataFolders(dataFolders, reindexSettings);
             }
             handleError(mainFile, resp[1]);
