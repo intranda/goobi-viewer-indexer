@@ -63,8 +63,9 @@ public class Version {
         Class clazz = Version.class;
         String className = clazz.getSimpleName() + ".class";
         String classPath = clazz.getResource(className).toString();
+        logger.info("classpath: {}", classPath);
         String value = null;
-        String manifestPath = classPath.substring(0, classPath.lastIndexOf("/classes/")) + "/META-INF/MANIFEST.MF";
+        String manifestPath =  "/META-INF/MANIFEST.MF";
         logger.info(manifestPath);
 
         try (InputStream inputStream = new URL(manifestPath).openStream()) {
