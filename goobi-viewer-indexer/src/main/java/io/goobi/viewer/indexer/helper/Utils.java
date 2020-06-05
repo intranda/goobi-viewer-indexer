@@ -66,6 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.MetsIndexer;
+import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
@@ -538,5 +539,14 @@ public class Utils {
         sbOrder.append(count);
 
         return Integer.valueOf(sbOrder.toString());
+    }
+    
+    /**
+     * Returns the application version number.
+     *
+     * @return a {@link java.lang.String} object.
+     */
+    public static String getVersion() {
+        return Version.VERSION + "-" + Version.BUILDDATE + "-" + Version.BUILDVERSION;
     }
 }

@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
@@ -37,7 +38,6 @@ public final class SolrIndexerDaemon {
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
     /** Constant <code>VERSION</code> */
-    public static final String VERSION = "4.7.0.20200605";
     private static final int MIN_SCHEMA_VERSION = 20200430;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
@@ -50,7 +50,9 @@ public final class SolrIndexerDaemon {
     private volatile boolean running = false;
 
     /**
-     * <p>Getter for the field <code>instance</code>.</p>
+     * <p>
+     * Getter for the field <code>instance</code>.
+     * </p>
      *
      * @return a {@link io.goobi.viewer.indexer.SolrIndexerDaemon} object.
      */
@@ -71,7 +73,9 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * <p>main.</p>
+     * <p>
+     * main.
+     * </p>
      *
      * @param args an array of {@link java.lang.String} objects.
      */
@@ -101,7 +105,9 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * <p>start.</p>
+     * <p>
+     * start.
+     * </p>
      * 
      * @param configFilePath a {@link java.lang.String} object.
      * @param noUpdate a boolean.
@@ -113,7 +119,7 @@ public final class SolrIndexerDaemon {
             logger.warn("Indexer is already running");
             return;
         }
-        logger.info("Goobi Solr Indexer, v{}", VERSION);
+        logger.info("Goobi Solr Indexer, v{}", Utils.getVersion());
         if (StringUtils.isNotEmpty(configFilePath)) {
             confFilename = configFilePath;
         }
@@ -173,7 +179,9 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * <p>stop.</p>
+     * <p>
+     * stop.
+     * </p>
      */
     public void stop() {
         logger.info("Stopping indexer...");

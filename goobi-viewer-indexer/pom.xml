@@ -11,11 +11,19 @@
 
 	<name>Goobi viewer - Indexer</name>
 	<url>https://github.com/intranda/goobi-viewer-indexer</url>
-
+	
+    <scm>
+        <url>scm:git:https://github.com/intranda/goobi-viewer-indexer/</url>
+        <connection>scm:git:https://github.com/intranda/goobi-viewer-indexer/</connection>
+    </scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<skipTests>true</skipTests>
+		
+        <!-- Manifest information -->
+        <maven.build.timestamp.format>yyyy-MM-dd_HH-mm</maven.build.timestamp.format>
+        <buildDate>${maven.build.timestamp}</buildDate>
 
 		<!-- intranda libraries -->
 		<alto.version>1.4.0</alto.version>
@@ -414,6 +422,42 @@
 					<skipTests>${skipTests}</skipTests>
 				</configuration>
 			</plugin>
+            <!-- get git version number -->
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.0.0</version>
+                <configuration>
+                    <commitIdGenerationMode>flat</commitIdGenerationMode>
+                    <gitDescribe>
+                        <skip>true</skip>
+                    </gitDescribe>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <configuration>
+                    <shortRevisionLength>7</shortRevisionLength>
+                    <doCheck>false</doCheck>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
@@ -434,6 +478,12 @@
 						<manifest>
 							<mainClass>io.goobi.viewer.indexer.SolrIndexerDaemon</mainClass>
 						</manifest>
+                        <manifestEntries>
+                            <ApplicationName>Goobi-viewer-indexer</ApplicationName>
+                            <version>${project.version}</version>
+                            <Implementation-Version>${buildNumber}</Implementation-Version>
+                            <Implementation-Build-Date>${buildDate}</Implementation-Build-Date>
+                        </manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>

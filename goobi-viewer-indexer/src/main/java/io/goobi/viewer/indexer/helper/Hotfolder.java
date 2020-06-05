@@ -447,7 +447,7 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_UGC, true);
             noerror = handleDataFile(fileToReindex, true, reindexSettings);
             if (swSecondaryLog != null) {
-                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")",
+                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + Utils.getVersion() + ")",
                         swSecondaryLog.toString());
             }
         } else {
@@ -491,7 +491,7 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleDataFile(recordFile, false, reindexSettings);
                         // logger.error("for the lulz");
-                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")",
+                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + Utils.getVersion() + ")",
                                 swSecondaryLog.toString());
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
@@ -519,7 +519,7 @@ public class Hotfolder {
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (swSecondaryLog != null) {
-                checkAndSendErrorReport("Record indexing failed due to insufficient space (v" + SolrIndexerDaemon.VERSION + ")",
+                checkAndSendErrorReport("Record indexing failed due to insufficient space (v" + Utils.getVersion() + ")",
                         swSecondaryLog.toString());
             }
             throw new FatalIndexerException("Insufficient free space");
