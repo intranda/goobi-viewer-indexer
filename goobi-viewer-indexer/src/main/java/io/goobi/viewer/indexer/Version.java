@@ -1,4 +1,18 @@
-
+/**
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
+ *
+ * Visit these websites for more information.
+ *          - http://www.intranda.com
+ *          - http://digiverso.com
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package io.goobi.viewer.indexer;
 
 import java.io.IOException;
@@ -14,7 +28,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * <p>Version class.</p>
+ * <p>
+ * Version class.
+ * </p>
  *
  */
 public class Version {
@@ -43,14 +59,7 @@ public class Version {
         String className = clazz.getSimpleName() + ".class";
         String classPath = clazz.getResource(className).toString();
         String value = null;
-        String manifestPath;
-        if (classPath.contains("WEB-INF")) {
-            // Server
-            manifestPath = classPath.substring(0, classPath.lastIndexOf("/WEB-INF/")) + "/META-INF/MANIFEST.MF";
-        } else {
-            // Eclipse WTP
-             manifestPath = classPath.substring(0, classPath.lastIndexOf("/classes/")) + "/m2e-wtp/web-resources/META-INF/MANIFEST.MF";
-        }
+        String manifestPath = classPath.substring(0, classPath.lastIndexOf("/classes/")) + "META-INF/MANIFEST.MF";
         try (InputStream inputStream = new URL(manifestPath).openStream()) {
             StringWriter writer = new StringWriter();
             IOUtils.copy(inputStream, writer, "utf-8");
