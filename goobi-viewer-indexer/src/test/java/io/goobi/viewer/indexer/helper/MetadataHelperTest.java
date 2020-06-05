@@ -438,9 +438,9 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void convertDateStringForSolrField_shouldConvertDateCorrectly() throws Exception {
-        Assert.assertEquals("2016-11-02T00:00:00+0000", MetadataHelper.convertDateStringForSolrField("2016-11-02", true));
-        Assert.assertEquals("2016-11-01T00:00:00+0000", MetadataHelper.convertDateStringForSolrField("2016-11", true));
-        Assert.assertEquals("2016-01-01T00:00:00+0000", MetadataHelper.convertDateStringForSolrField("2016", true));
+        Assert.assertEquals("2016-11-02T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016-11-02", true));
+        Assert.assertEquals("2016-11-01T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016-11", true));
+        Assert.assertEquals("2016-01-01T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016", true));
     }
 
     /**
