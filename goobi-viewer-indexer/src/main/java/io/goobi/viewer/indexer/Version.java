@@ -65,7 +65,7 @@ public class Version {
         String classPath = clazz.getResource(className).toString();
         logger.info("classpath: {}", classPath);
         String value = null;
-        String manifestPath = classPath.substring(0, classPath.lastIndexOf(".jar")) + "/META-INF/MANIFEST.MF";
+        String manifestPath = classPath.substring(0, classPath.lastIndexOf("/io/goobi")) + "/META-INF/MANIFEST.MF";
         logger.info(manifestPath);
 
         try (InputStream inputStream = new URL(manifestPath).openStream()) {
