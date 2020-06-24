@@ -30,7 +30,7 @@
 	in server mode, and use a higher logging level that avoids logging every 
 	request -->
 
-<schema name="goobi_viewer-20190206" version="1.6">
+<schema name="goobi_viewer-20200430" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -207,6 +207,8 @@
         stored="false" multiValued="true" />
     <field name="SUPERFULLTEXT" type="text_general_rev" indexed="true"
         stored="false" multiValued="true" />
+        <field name="SUPERUGCTERMS" type="text_general_rev" indexed="true"
+            stored="false" multiValued="true" />
 	<field name="THUMBNAIL" type="string" indexed="true" stored="true" />
 	<field name="THUMBNAILREPRESENT" type="string" indexed="true"
 		stored="true" />
@@ -271,6 +273,8 @@
             stored="true" />
     <dynamicField name="CMS_TEXT_*" type="text_general_rev"
             indexed="true" stored="false" multiValued="true" />
+        <dynamicField name="WKT_*" type="location_rpt"
+            indexed="true" stored="true" multiValued="true" />
             
 	<dynamicField name="random_*" type="random" />
 	
