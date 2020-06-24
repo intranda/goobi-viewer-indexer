@@ -15,6 +15,7 @@
  */
 package io.goobi.viewer.indexer.model.datarepository.strategy;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -34,7 +35,9 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
- * <p>SingleRepositoryStrategy class.</p>
+ * <p>
+ * SingleRepositoryStrategy class.
+ * </p>
  */
 public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
 
@@ -90,6 +93,8 @@ public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
             // Look up previous repository in the index
             previousRepository = solrHelper.findCurrentDataRepository(pi);
         } catch (SolrServerException e) {
+            logger.error(e.getMessage(), e);
+        } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
         if (previousRepository != null) {

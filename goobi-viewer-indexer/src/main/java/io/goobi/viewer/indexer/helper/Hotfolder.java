@@ -53,7 +53,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.WriterAppender;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -155,8 +155,8 @@ public class Hotfolder {
      * @param solrServer a {@link org.apache.solr.client.solrj.SolrServer} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      */
-    public Hotfolder(String confFilename, SolrServer solrServer) throws FatalIndexerException {
-        this.solrHelper = new SolrHelper(solrServer);
+    public Hotfolder(String confFilename, SolrClient solrClient) throws FatalIndexerException {
+        this.solrHelper = new SolrHelper(solrClient);
         logger.debug("Config file: {}", confFilename);
         Configuration config = Configuration.getInstance(confFilename);
         try {

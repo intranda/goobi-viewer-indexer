@@ -131,6 +131,8 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
             previousRepository = solrHelper.findCurrentDataRepository(pi);
         } catch (SolrServerException e) {
             logger.error(e.getMessage(), e);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
         }
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {

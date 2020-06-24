@@ -132,12 +132,13 @@ public final class SolrIndexerDaemon {
         }
 
         // create hotfolder
-        Hotfolder hotfolder = new Hotfolder(confFilename, SolrHelper.getNewHttpSolrServer(confFilename));
+        Hotfolder hotfolder =
+                new Hotfolder(confFilename, SolrHelper.getNewHttpSolrServer(confFilename, SolrHelper.TIMEOUT_SO, SolrHelper.TIMEOUT_CONNECTION));
 
         if (hotfolder.getSuccess() == null || !Files.isDirectory(hotfolder.getSuccess())) {
             throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
         }
-        if (!checkSolrSchemaName(hotfolder.getSolrHelper().getSolrSchemaDocument())) {
+        if (!checkSolrSchemaName(hotfolder.getSolrHelper().getSolrSchemaDocument(confFilename))) {
             throw new FatalIndexerException("Incompatible Solr schema, exiting..");
         }
 

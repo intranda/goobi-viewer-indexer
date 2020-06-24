@@ -429,9 +429,9 @@ public class Utils {
      * @param destFolderPath a {@link java.lang.String} object.
      * @param baseName a {@link java.lang.String} object.
      * @param extension a {@link java.lang.String} object.
-     * @should construct path correctly and avoid collisions
      * @param separator a {@link java.lang.String} object.
      * @return a {@link java.nio.file.Path} object.
+     * @should construct path correctly and avoid collisions
      */
     public static Path getCollisionFreeDataFilePath(String destFolderPath, String baseName, String separator, String extension) {
         if (destFolderPath == null) {
