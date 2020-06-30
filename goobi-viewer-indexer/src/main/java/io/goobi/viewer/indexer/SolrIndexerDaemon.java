@@ -15,9 +15,13 @@
  */
 package io.goobi.viewer.indexer;
 
+import java.io.IOException;
 import java.nio.file.Files;
 
+import javax.xml.ws.http.HTTPException;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.client.ClientProtocolException;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -26,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
@@ -165,6 +170,16 @@ public final class SolrIndexerDaemon {
         }
 
         logger.info("Using {} CPU thread(s).", Configuration.getInstance().getThreads());
+
+        try {
+            Utils.submitVersion();
+        } catch (HTTPException e) {
+            logger.error(e.getMessage(), e);
+        } catch (ClientProtocolException e) {
+            logger.error(e.getMessage(), e);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
 
         // main loop
         logger.info("Program started, monitoring hotfolder...");

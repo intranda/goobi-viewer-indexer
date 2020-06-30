@@ -603,6 +603,7 @@ public class Hotfolder {
                         Files.delete(dataFile);
                         return false;
                 }
+                Utils.submitVersion();
 
             } else if (filename.endsWith(".delete")) {
                 // DELETE
