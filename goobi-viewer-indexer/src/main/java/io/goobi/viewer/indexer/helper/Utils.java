@@ -540,13 +540,4 @@ public class Utils {
 
         return Integer.valueOf(sbOrder.toString());
     }
-    
-    /**
-     * Returns the application version number.
-     *
-     * @return a {@link java.lang.String} object.
-     */
-    public static String getVersion() {
-        return Version.VERSION + " " + Version.BUILDDATE + " " + Version.BUILDVERSION;
-    }
 }

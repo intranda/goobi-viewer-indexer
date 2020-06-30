@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +37,11 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class Version {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(Version.class);
-    
+
+    /** Constant <code>APPLICATION_NAME</code> */
+    public static final String APPLICATION_NAME;
     /** Constant <code>VERSION</code> */
     public final static String VERSION;
     /** Constant <code>BUILDVERSION</code> */
@@ -49,10 +52,12 @@ public class Version {
     static {
         String manifest = getManifestStringFromJar();
         if (StringUtils.isNotBlank(manifest)) {
-            VERSION = getInfo("ApplicationName", manifest) + " " + getInfo("version", manifest);
+            APPLICATION_NAME = getInfo("ApplicationName", manifest);
+            VERSION = getInfo("version", manifest);
             BUILDDATE = getInfo("Implementation-Build-Date", manifest);
             BUILDVERSION = getInfo("Implementation-Version", manifest);
         } else {
+            APPLICATION_NAME = "goobi-viewer-indexer";
             VERSION = "unknown";
             BUILDDATE = new Date().toString();
             BUILDVERSION = "unknown";
@@ -90,4 +95,23 @@ public class Version {
         return "?";
     }
 
+    /**
+     * 
+     * @return Version info as a single string
+     */
+    public static String asString() {
+        return APPLICATION_NAME + " " + VERSION + " " + BUILDDATE + " " + BUILDVERSION;
+    }
+
+    /**
+     * 
+     * @return JSON object containing version info
+     */
+    public static String asJSON() {
+        return new JSONObject().put("application", APPLICATION_NAME)
+                .put("version", VERSION)
+                .put("build-date", BUILDDATE)
+                .put("git-revision", BUILDVERSION)
+                .toString();
+    }
 }

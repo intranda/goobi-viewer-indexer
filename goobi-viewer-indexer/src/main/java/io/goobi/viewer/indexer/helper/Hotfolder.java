@@ -69,6 +69,7 @@ import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
@@ -447,7 +448,7 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_UGC, true);
             noerror = handleDataFile(fileToReindex, true, reindexSettings);
             if (swSecondaryLog != null) {
-                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + Utils.getVersion() + ")",
+                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                         swSecondaryLog.toString());
             }
         } else {
@@ -491,7 +492,7 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleDataFile(recordFile, false, reindexSettings);
                         // logger.error("for the lulz");
-                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + Utils.getVersion() + ")",
+                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                                 swSecondaryLog.toString());
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
@@ -519,7 +520,7 @@ public class Hotfolder {
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (swSecondaryLog != null) {
-                checkAndSendErrorReport("Record indexing failed due to insufficient space (v" + Utils.getVersion() + ")",
+                checkAndSendErrorReport("Record indexing failed due to insufficient space (" + Version.asString() + ")",
                         swSecondaryLog.toString());
             }
             throw new FatalIndexerException("Insufficient free space");

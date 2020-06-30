@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrHelper;
-import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
@@ -119,7 +118,7 @@ public final class SolrIndexerDaemon {
             logger.warn("Indexer is already running");
             return;
         }
-        logger.info(Utils.getVersion());
+        logger.info(Version.asString());
         if (StringUtils.isNotEmpty(configFilePath)) {
             confFilename = configFilePath;
         }
