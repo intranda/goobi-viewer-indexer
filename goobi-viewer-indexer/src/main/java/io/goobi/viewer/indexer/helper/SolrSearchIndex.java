@@ -88,7 +88,7 @@ public final class SolrSearchIndex {
         if (StringUtils.isEmpty(solrUrl)) {
             return null;
         }
-        
+
         HttpSolrClient server = new HttpSolrClient.Builder()
                 .withBaseSolrUrl(solrUrl)
                 .withSocketTimeout(timeoutSocket)
@@ -464,6 +464,45 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * Deletes all documents that match the given query. Handle with care!
+     * 
+     * @return true if successful; false otherwise
+     */
+    public boolean deleteByQuery(String query) {
+        if (StringUtils.isEmpty(query)) {
+            return false;
+        }
+
+        boolean success = false;
+        int tries = RETRY_ATTEMPTS;
+
+        while (!success && tries > 0) {
+            tries--;
+            try {
+                UpdateResponse ur = server.deleteByQuery(query);
+                switch (ur.getStatus()) {
+                    case 0:
+                        success = true;
+                        break;
+                    default:
+                        logger.error("Update status: {}", ur.getStatus());
+                }
+            } catch (SolrServerException e) {
+                logger.error(e.getMessage());
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        if (!success) {
+            logger.error("Could not delete docs matching query '{}' after {} attempts. Check the Solr server connection. Exiting...", query,
+                    RETRY_ATTEMPTS);
+            rollback();
+        }
+
+        return success;
+    }
+
+    /**
      * <p>
      * commit.
      * </p>
@@ -540,9 +579,9 @@ public final class SolrSearchIndex {
      * @return a {@link org.jdom2.Document} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      */
-    public Document getSolrSchemaDocument(String confFilename) throws FatalIndexerException {
+    public Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
-        try (HttpSolrClient httpClient = getNewHttpSolrServer(confFilename, 30000, 30000)) {
+        try (HttpSolrClient httpClient = getNewHttpSolrServer(solrUrl, 30000, 30000)) {
             HttpClient client = ((HttpSolrClient) server).getHttpClient();
             HttpGet httpGet = new HttpGet(
                     Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml");

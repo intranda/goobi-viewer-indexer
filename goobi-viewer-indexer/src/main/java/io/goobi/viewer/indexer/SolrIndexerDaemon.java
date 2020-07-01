@@ -142,7 +142,8 @@ public final class SolrIndexerDaemon {
         if (hotfolder.getSuccess() == null || !Files.isDirectory(hotfolder.getSuccess())) {
             throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
         }
-        if (!checkSolrSchemaName(hotfolder.getSearchIndex().getSolrSchemaDocument(confFilename))) {
+        if (!checkSolrSchemaName(
+                hotfolder.getSearchIndex().getSolrSchemaDocument(Configuration.getInstance(confFilename).getConfiguration("solrUrl")))) {
             throw new FatalIndexerException("Incompatible Solr schema, exiting..");
         }
 
