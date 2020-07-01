@@ -30,7 +30,7 @@
 	in server mode, and use a higher logging level that avoids logging every 
 	request -->
 
-<schema name="goobi_viewer-20200430" version="1.6">
+<schema name="goobi_viewer-20200624" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -101,6 +101,8 @@
       or Solr won't start. _version_ and update log are required for SolrCloud
    --> 
    <field name="_version_" type="long" indexed="true" stored="true"/>
+
+
    
    <!-- points to the root document of a block of nested documents. Required for nested
       document support, may be removed otherwise
@@ -298,6 +300,22 @@
 		<!-- The preanalyzed Type is used for Named Entities. -->
 		<fieldType name="preanalyzed" class="solr.PreAnalyzedField"
 			parserImpl="org.apache.solr.schema.JsonPreAnalyzedParser" />
+
+<!-- Add fieldTypes needed by Solr 8 -->
+    <fieldType name="pint" class="solr.IntPointField" docValues="true"/>
+    <fieldType name="pfloat" class="solr.FloatPointField" docValues="true"/>
+    <fieldType name="plong" class="solr.LongPointField" docValues="true"/>
+    <fieldType name="pdouble" class="solr.DoublePointField" docValues="true"/>
+
+    <fieldType name="pints" class="solr.IntPointField" docValues="true" multiValued="true"/>
+    <fieldType name="pfloats" class="solr.FloatPointField" docValues="true" multiValued="true"/>
+    <fieldType name="plongs" class="solr.LongPointField" docValues="true" multiValued="true"/>
+    <fieldType name="pdoubles" class="solr.DoublePointField" docValues="true" multiValued="true"/>
+
+    <fieldType name="pdate" class="solr.DatePointField" docValues="true"/>
+    <fieldType name="pdates" class="solr.DatePointField" docValues="true" multiValued="true"/>
+
+
 
     <!-- The StrField type is not analyzed, but indexed/stored verbatim. -->
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
@@ -628,7 +646,6 @@
                              ratesFileLocation: URL or path to rates JSON file (default latest.json on the web)
                              refreshInterval: Number of minutes between each rates fetch (default: 1440, min: 60)
    -->
-    <fieldType name="currency" class="solr.CurrencyField" precisionStep="8" defaultCurrency="USD" currencyConfig="currency.xml" />
              
 
 
@@ -682,18 +699,6 @@
         <!-- for any non-CJK -->
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.CJKBigramFilterFactory"/>
-      </analyzer>
-    </fieldType>
-
-    <!-- Kurdish -->
-    <fieldType name="text_ckb" class="solr.TextField" positionIncrementGap="100">
-      <analyzer>
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.SoraniNormalizationFilterFactory"/>
-        <!-- for any latin text -->
-        <filter class="solr.LowerCaseFilterFactory"/>
-        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_ckb.txt"/>
-        <filter class="solr.SoraniStemFilterFactory"/>
       </analyzer>
     </fieldType>
 
