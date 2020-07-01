@@ -854,26 +854,35 @@ public class LidoIndexer extends Indexer {
     private void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
         SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-        if (hits != null && hits.getNumFound() > 0) {
-            logger.debug("This file has already been indexed, initiating an UPDATE instead...");
-            indexObj.setUpdate(true);
-            SolrDocument doc = hits.get(0);
-            // Set creation timestamp, if exists (should never be updated)
-            Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
-            if (dateCreated != null) {
-                // Set creation timestamp, if exists (should never be updated)
-                indexObj.setDateCreated((Long) dateCreated);
+        // Retrieve record from old index, if available
+        if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
+            hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            if (hits.getNumFound() > 0) {
+                logger.info("Retrieving data from old index for record '{}'.", pi);
             }
-            // Set update timestamp
-            Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
-            if (dateUpdatedValues != null) {
-                for (Object date : dateUpdatedValues) {
-                    indexObj.getDateUpdated().add((Long) date);
-                }
-            }
-            // Recursively delete all children
-            deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
+        if (hits.getNumFound() == 0) {
+            return;
+        }
+
+        logger.debug("This file has already been indexed, initiating an UPDATE instead...");
+        indexObj.setUpdate(true);
+        SolrDocument doc = hits.get(0);
+        // Set creation timestamp, if exists (should never be updated)
+        Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
+        if (dateCreated != null) {
+            // Set creation timestamp, if exists (should never be updated)
+            indexObj.setDateCreated((Long) dateCreated);
+        }
+        // Set update timestamp
+        Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
+        if (dateUpdatedValues != null) {
+            for (Object date : dateUpdatedValues) {
+                indexObj.getDateUpdated().add((Long) date);
+            }
+        }
+        // Recursively delete all children
+        deleteWithPI(pi, false, hotfolder.getSearchIndex());
     }
 
     /**

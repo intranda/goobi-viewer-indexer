@@ -147,16 +147,30 @@ public class Hotfolder {
         }
     };
 
-    @SuppressWarnings("unchecked")
     /**
      * <p>
      * Constructor for Hotfolder.
      * </p>
      *
      * @param confFilename a {@link java.lang.String} object.
-     * @param solrServer a {@link org.apache.solr.client.solrj.SolrServer} object.
+     * @param solrClient SolrClient object
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      */
+    public Hotfolder(String confFilename, SolrClient solrClient) throws FatalIndexerException {
+        this(confFilename, solrClient, null);
+    }
+
+    /**
+     * <p>
+     * Constructor for Hotfolder.
+     * </p>
+     *
+     * @param confFilename a {@link java.lang.String} object.
+     * @param solrClient SolrClient object
+     * @param oldSolrClient Optional old SolrClient for data migration
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     */
+    @SuppressWarnings("unchecked")
     public Hotfolder(String confFilename, SolrClient solrClient, SolrClient oldSolrClient) throws FatalIndexerException {
         logger.debug("Config file: {}", confFilename);
         Configuration config = Configuration.getInstance(confFilename);

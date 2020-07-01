@@ -1845,7 +1845,14 @@ public class MetsIndexer extends Indexer {
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
         SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-        if (hits == null || hits.getNumFound() == 0) {
+        // Retrieve record from old index, if available
+        if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
+            hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            if (hits.getNumFound() > 0) {
+                logger.info("Retrieving data from old index for record '{}'.", pi);
+            }
+        }
+        if (hits.getNumFound() == 0) {
             return;
         }
 
