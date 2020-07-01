@@ -8,7 +8,9 @@
 		<!-- Minimum required free space to index (MB) -->
 		<minStorageSpace>2048</minStorageSpace>
 
+        <!-- Main Solr index URL -->
 		<solrUrl>http://localhost:8081/solr/collection2</solrUrl>
+		<!-- Old Solr index URL (for migration purposes) -->
 		<oldSolrUrl>http://localhost:8081/solr/collection1</oldSolrUrl>
 		<viewerUrl>http://localhost:8080/viewer</viewerUrl>
 
