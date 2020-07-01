@@ -56,9 +56,9 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 /**
  * Solr connection and query methods.
  */
-public final class SolrHelper {
+public final class SolrSearchIndex {
 
-    private static final Logger logger = LoggerFactory.getLogger(SolrHelper.class);
+    private static final Logger logger = LoggerFactory.getLogger(SolrSearchIndex.class);
 
     private static final int MAX_HITS = Integer.MAX_VALUE;
     public static final int TIMEOUT_SO = 300000;
@@ -100,12 +100,12 @@ public final class SolrHelper {
 
     /**
      * <p>
-     * Constructor for SolrHelper.
+     * Constructor for SolrSearchIndex.
      * </p>
      *
      * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
      */
-    public SolrHelper(SolrClient server) {
+    public SolrSearchIndex(SolrClient server) {
         this.server = server;
     }
 

@@ -53,7 +53,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -124,7 +124,7 @@ public class WorldViewsIndexer extends Indexer {
 
         try {
             initJDomXP(mainFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSolrHelper()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             // Set PI
@@ -147,7 +147,7 @@ public class WorldViewsIndexer extends Indexer {
 
                     // Determine the data repository to use
                     DataRepository[] repositories =
-                            hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, mainFile, dataFolders, hotfolder.getSolrHelper());
+                            hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, mainFile, dataFolders, hotfolder.getSearchIndex());
                     dataRepository = repositories[0];
                     previousDataRepository = repositories[1];
 
@@ -210,14 +210,14 @@ public class WorldViewsIndexer extends Indexer {
                     }
                 }
                 if (useSerializingStrategy) {
-                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSolrHelper(), hotfolder.getTempFolder());
+                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSearchIndex(), hotfolder.getTempFolder());
 
                 }
                 //                else if (IndexerConfig.getInstance().getBoolean("init.aggregateRecords")) {
                 //                    writeStrategy = new HierarchicalLazySolrWriteStrategy(hotfolder.getSolrHelper());
                 //                }
                 else {
-                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSolrHelper());
+                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSearchIndex());
                 }
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
@@ -373,9 +373,9 @@ public class WorldViewsIndexer extends Indexer {
                         moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                     }
                 }
-                SolrInputDocument doc = hotfolder.getSolrHelper()
+                SolrInputDocument doc = hotfolder.getSearchIndex()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(hotfolder.getSolrHelper()));
+                                getNextIddoc(hotfolder.getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -399,7 +399,7 @@ public class WorldViewsIndexer extends Indexer {
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
-            SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());
+            SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
             if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
@@ -411,7 +411,7 @@ public class WorldViewsIndexer extends Indexer {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
-            hotfolder.getSolrHelper().rollback();
+            hotfolder.getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
@@ -472,7 +472,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
 
                 // Create new docstruct object
-                currentIndexObj = new IndexObject(getNextIddoc(hotfolder.getSolrHelper()));
+                currentIndexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
                 currentIndexObj.setParent(rootIndexObj);
                 currentIndexObj.setTopstructPI(rootIndexObj.getTopstructPI());
                 currentIndexObj.setType(pageDocstructLabel);
@@ -669,7 +669,7 @@ public class WorldViewsIndexer extends Indexer {
 
         // Write docstruct doc to Solr
         logger.debug("Writing child document '{}'...", indexObj.getIddoc());
-        writeStrategy.addDoc(SolrHelper.createDocument(indexObj.getLuceneFields()));
+        writeStrategy.addDoc(SolrSearchIndex.createDocument(indexObj.getLuceneFields()));
     }
 
     /**
@@ -702,7 +702,7 @@ public class WorldViewsIndexer extends Indexer {
                     @Override
                     public void run() {
                         try {
-                            generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), null, writeStrategy, dataFolders);
+                            generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), null, writeStrategy, dataFolders);
                         } catch (FatalIndexerException e) {
                             logger.error("Should be exiting here now...");
                         } finally {
@@ -722,7 +722,7 @@ public class WorldViewsIndexer extends Indexer {
         } else {
             int order = pageCountStart;
             for (final Element eleImage : eleListImages) {
-                if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), order, writeStrategy, dataFolders)) {
+                if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), order, writeStrategy, dataFolders)) {
                     order++;
                 }
             }
@@ -1085,7 +1085,7 @@ public class WorldViewsIndexer extends Indexer {
      */
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
         if (hits != null && hits.getNumFound() > 0) {
             logger.debug("This file has already been indexed, initiating an UPDATE instead...");
             indexObj.setUpdate(true);
@@ -1110,7 +1110,7 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             // Recursively delete all children, if not an anchor
-            deleteWithPI(pi, false, hotfolder.getSolrHelper());
+            deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
     }
 }

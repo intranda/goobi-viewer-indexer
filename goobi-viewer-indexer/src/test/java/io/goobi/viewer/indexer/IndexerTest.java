@@ -91,12 +91,12 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(pi + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertEquals(22, docList.size());
         }
-        Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSolrHelper()));
+        Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSearchIndex()));
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertTrue(docList.isEmpty());
         }
     }
@@ -116,20 +116,20 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals("ERROR: " + ret[1], pi, ret[0]);
         String iddoc;
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             iddoc = (String) docList.get(0).getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(iddoc);
         }
         {
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
+                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertEquals(3, docList.size());
         }
-        Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSolrHelper()));
+        Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSearchIndex()));
         {
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
+                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertTrue(docList.isEmpty());
         }
     }
@@ -149,12 +149,12 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(pi + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertEquals(22, docList.size());
         }
-        Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSolrHelper()));
+        Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSearchIndex()));
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));
@@ -179,19 +179,19 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(pi, ret[0]);
         String iddoc;
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             iddoc = (String) docList.get(0).getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(iddoc);
         }
         {
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
+                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertEquals(3, docList.size());
         }
-        Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSolrHelper()));
+        Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSearchIndex()));
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));

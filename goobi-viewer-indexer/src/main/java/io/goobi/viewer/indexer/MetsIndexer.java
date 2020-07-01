@@ -67,7 +67,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
@@ -153,7 +153,7 @@ public class MetsIndexer extends Indexer {
         logger.debug("Indexing METS file '{}'...", metsFile.getFileName());
         try {
             initJDomXP(metsFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSolrHelper()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setVolume(isVolume());
             logger.debug("Document is volume: {}", indexObj.isVolume());
@@ -191,7 +191,7 @@ public class MetsIndexer extends Indexer {
 
                     // Determine the data repository to use
                     DataRepository[] repositories =
-                            hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, metsFile, dataFolders, hotfolder.getSolrHelper());
+                            hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, metsFile, dataFolders, hotfolder.getSearchIndex());
                     dataRepository = repositories[0];
                     previousDataRepository = repositories[1];
                     if (StringUtils.isNotEmpty(dataRepository.getPath())) {
@@ -252,14 +252,14 @@ public class MetsIndexer extends Indexer {
                     }
                 }
                 if (useSerializingStrategy) {
-                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSolrHelper(), hotfolder.getTempFolder());
+                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSearchIndex(), hotfolder.getTempFolder());
 
                 }
                 //                else if (IndexerConfig.getInstance().getBoolean("init.aggregateRecords")) {
                 //                    writeStrategy = new HierarchicalLazySolrWriteStrategy(hotfolder.getSolrHelper());
                 //                }
                 else {
-                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSolrHelper());
+                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSearchIndex());
                 }
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
@@ -285,7 +285,7 @@ public class MetsIndexer extends Indexer {
                     String[] fields = { SolrConstants.IDDOC, SolrConstants.DOCSTRCT };
                     String parentIddoc = null;
                     String parentDocstrct = null;
-                    SolrDocumentList hits = hotfolder.getSolrHelper()
+                    SolrDocumentList hits = hotfolder.getSearchIndex()
                             .search(new StringBuilder().append(SolrConstants.PI).append(":").append(parentPi).toString(), Arrays.asList(fields));
                     if (hits != null && hits.getNumFound() > 0) {
                         parentIddoc = (String) hits.get(0).getFieldValue(SolrConstants.IDDOC);
@@ -357,7 +357,7 @@ public class MetsIndexer extends Indexer {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
                     indexObj.setAnchorPI(anchorPi);
-                    SolrDocumentList hits = hotfolder.getSolrHelper()
+                    SolrDocumentList hits = hotfolder.getSearchIndex()
                             .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && !hits.isEmpty()) {
                         Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
@@ -413,7 +413,7 @@ public class MetsIndexer extends Indexer {
             } else {
                 // Anchors
                 indexObj.addToLucene(SolrConstants.ISANCHOR, "true");
-                long numVolumes = hotfolder.getSolrHelper()
+                long numVolumes = hotfolder.getSearchIndex()
                         .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":")
                                 .append(indexObj.getPi())
                                 .append(" AND ")
@@ -463,9 +463,9 @@ public class MetsIndexer extends Indexer {
                         moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                     }
                 }
-                SolrInputDocument doc = hotfolder.getSolrHelper()
+                SolrInputDocument doc = hotfolder.getSearchIndex()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(hotfolder.getSolrHelper()));
+                                getNextIddoc(hotfolder.getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -518,7 +518,7 @@ public class MetsIndexer extends Indexer {
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
 
             logger.debug("Writing document to index...");
-            SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());
+            SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
             if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
@@ -530,7 +530,7 @@ public class MetsIndexer extends Indexer {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
-            hotfolder.getSolrHelper().rollback();
+            hotfolder.getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
@@ -819,7 +819,7 @@ public class MetsIndexer extends Indexer {
             try {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
-                        long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                        long iddoc = getNextIddoc(hotfolder.getSearchIndex());
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
@@ -837,7 +837,7 @@ public class MetsIndexer extends Indexer {
             // Generate pages sequentially
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
-                if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), pi, order, writeStrategy,
+                if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, order, writeStrategy,
                         dataFolders, dataRepository)) {
                     order++;
                 }
@@ -934,7 +934,7 @@ public class MetsIndexer extends Indexer {
                         String physId = eleArea.getAttributeValue("ID");
                         String shape = eleArea.getAttributeValue("SHAPE");
                         SolrInputDocument shapePageDoc = new SolrInputDocument();
-                        shapePageDoc.addField(SolrConstants.IDDOC, getNextIddoc(hotfolder.getSolrHelper()));
+                        shapePageDoc.addField(SolrConstants.IDDOC, getNextIddoc(hotfolder.getSearchIndex()));
                         shapePageDoc.setField(SolrConstants.DOCTYPE, "SHAPE");
                         shapePageDoc.addField(SolrConstants.ORDER, Utils.generateLongOrderNumber(order, count));
                         shapePageDoc.addField(SolrConstants.PHYSID, physId);
@@ -1517,7 +1517,7 @@ public class MetsIndexer extends Indexer {
     private void anchorMerge(IndexObject indexObj) throws IndexerException, IOException, SolrServerException, FatalIndexerException {
         logger.debug("anchorMerge: {}", indexObj.getPi());
         SolrDocumentList hits =
-                hotfolder.getSolrHelper().search(SolrConstants.PI_PARENT + ":" + indexObj.getPi() + " AND " + SolrConstants.ISWORK + ":true", null);
+                hotfolder.getSearchIndex().search(SolrConstants.PI_PARENT + ":" + indexObj.getPi() + " AND " + SolrConstants.ISWORK + ":true", null);
         if (hits.isEmpty()) {
             logger.warn("Anchor '{}' has no volumes, no merge needed.", indexObj.getPi());
             return;
@@ -1798,7 +1798,7 @@ public class MetsIndexer extends Indexer {
      */
     private void updateAllAnchorChildren(IndexObject indexObj) throws IOException, SolrServerException {
         logger.debug("Scheduling all METS files that belong to this anchor for re-indexing...");
-        SolrDocumentList hits = hotfolder.getSolrHelper()
+        SolrDocumentList hits = hotfolder.getSearchIndex()
                 .search(new StringBuilder(SolrConstants.PI_PARENT).append(":")
                         .append(indexObj.getPi())
                         .append(" AND ")
@@ -1844,7 +1844,7 @@ public class MetsIndexer extends Indexer {
      */
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
         if (hits == null || hits.getNumFound() == 0) {
             return;
         }
@@ -1874,21 +1874,21 @@ public class MetsIndexer extends Indexer {
             // Keep old IDDOC
             indexObj.setIddoc(Long.valueOf(doc.getFieldValue(SolrConstants.IDDOC).toString()));
             // Delete old doc
-            hotfolder.getSolrHelper().deleteDocument(String.valueOf(indexObj.getIddoc()));
+            hotfolder.getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
             // Delete secondary docs (aggregated metadata, events)
             List<String> iddocsToDelete = new ArrayList<>();
-            hits = hotfolder.getSolrHelper()
+            hits = hotfolder.getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(SolrConstants.IDDOC));
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
             if (!iddocsToDelete.isEmpty()) {
                 logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
-                hotfolder.getSolrHelper().deleteDocuments(new ArrayList<>(iddocsToDelete));
+                hotfolder.getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
             }
         } else {
             // Recursively delete all children, if not an anchor
-            deleteWithPI(pi, false, hotfolder.getSolrHelper());
+            deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
     }
 
@@ -1912,7 +1912,7 @@ public class MetsIndexer extends Indexer {
         List<Element> childrenNodeList = xp.evaluateToElements("mets:div", parentIndexObject.getRootStructNode());
         for (int i = 0; i < childrenNodeList.size(); i++) {
             Element node = childrenNodeList.get(i);
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSolrHelper()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
             indexObj.setRootStructNode(node);
             indexObj.setParent(parentIndexObject);
             indexObj.setTopstructPI(parentIndexObject.getTopstructPI());
@@ -2053,7 +2053,7 @@ public class MetsIndexer extends Indexer {
 
             // Write to Solr
             logger.debug("Writing child document '{}'...", indexObj.getIddoc());
-            writeStrategy.addDoc(SolrHelper.createDocument(indexObj.getLuceneFields()));
+            writeStrategy.addDoc(SolrSearchIndex.createDocument(indexObj.getLuceneFields()));
         }
 
         return ret;

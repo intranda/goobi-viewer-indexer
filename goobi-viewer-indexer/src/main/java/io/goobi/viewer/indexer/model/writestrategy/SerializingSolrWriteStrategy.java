@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -61,7 +61,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final String ENCODING_UTF8 = "UTF8";
 
-    private SolrHelper solrHelper;
+    private SolrSearchIndex searchIndex;
     private Path tempFolder;
     private String rootDocIddoc;
     private List<String> docIddocs = new CopyOnWriteArrayList<>();
@@ -77,11 +77,11 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
      * Constructor for SerializingSolrWriteStrategy.
      * </p>
      *
-     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @param tempFolder a {@link java.nio.file.Path} object.
      */
-    public SerializingSolrWriteStrategy(SolrHelper solrHelper, Path tempFolder) {
-        this.solrHelper = solrHelper;
+    public SerializingSolrWriteStrategy(SolrSearchIndex searchIndex, Path tempFolder) {
+        this.searchIndex = searchIndex;
         this.tempFolder = tempFolder;
     }
 
@@ -257,7 +257,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                     }
                 }
                 try {
-                    solrHelper.writeToIndex(doc);
+                    searchIndex.writeToIndex(doc);
                 } catch (RemoteSolrException e) {
                     copyFailedFile(Paths.get(tempFolder.toAbsolutePath().toString(), iddoc));
                     logger.error(e.getMessage(), e);
@@ -304,14 +304,14 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         // Write the root doc
         logger.info("Writing root document to the index...");
         try {
-            solrHelper.writeToIndex(rootDoc);
+            searchIndex.writeToIndex(rootDoc);
         } catch (RemoteSolrException e) {
             copyFailedFile(Paths.get(tempFolder.toAbsolutePath().toString(), rootDocIddoc));
             logger.error(e.getMessage(), e);
             throw new IndexerException(e.getMessage());
         }
 
-        solrHelper.commit(SolrHelper.optimize);
+        searchIndex.commit(SolrSearchIndex.optimize);
     }
 
     /**
@@ -351,7 +351,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
 
         checkAndAddAccessCondition(doc);
-        if (!solrHelper.writeToIndex(doc)) {
+        if (!searchIndex.writeToIndex(doc)) {
             logger.error(doc.toString());
         }
     }

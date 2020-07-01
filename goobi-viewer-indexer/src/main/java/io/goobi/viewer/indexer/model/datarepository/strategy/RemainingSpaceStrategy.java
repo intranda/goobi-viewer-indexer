@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -88,11 +88,12 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
     }
 
     /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, io.goobi.viewer.indexer.helper.SolrHelper)
+     * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, io.goobi.viewer.indexer.helper.searchIndex)
      */
     /** {@inheritDoc} */
     @Override
-    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders, final SolrHelper solrHelper)
+    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders,
+            final SolrSearchIndex searchIndex)
             throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
@@ -128,7 +129,7 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
         String previousRepository = null;
         try {
             // Look up previous repository in the index
-            previousRepository = solrHelper.findCurrentDataRepository(pi);
+            previousRepository = searchIndex.findCurrentDataRepository(pi);
         } catch (SolrServerException e) {
             logger.error(e.getMessage(), e);
         } catch (IOException e) {

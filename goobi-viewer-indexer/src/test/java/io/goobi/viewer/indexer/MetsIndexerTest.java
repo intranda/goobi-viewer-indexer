@@ -118,7 +118,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + PI, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             {
@@ -211,7 +211,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Child docstructs
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper()
+            SolrDocumentList docList = hotfolder.getSearchIndex()
                     .search(new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
                             .append(PI)
                             .append(" AND ")
@@ -271,7 +271,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Pages
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper()
+            SolrDocumentList docList = hotfolder.getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE, null);
             Assert.assertEquals(16, docList.size());
 
@@ -336,7 +336,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + PI2, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             {
@@ -365,7 +365,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Grouped metadata
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper()
+            SolrDocumentList docList = hotfolder.getSearchIndex()
                     .search(new StringBuilder(SolrConstants.DOCTYPE).append(":")
                             .append(DocType.METADATA.name())
                             .append(" AND ")
@@ -402,7 +402,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Pages
         {
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " AND " + SolrConstants.FILENAME + ":*", null);
+                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " AND " + SolrConstants.FILENAME + ":*", null);
             Assert.assertEquals(0, docList.size());
         }
     }
@@ -423,14 +423,14 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new MetsIndexer(hotfolder).index(metsFileVol1, false, dataFolders, null, 1);
             Assert.assertEquals(piVol1 + ".xml", ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol1, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + piVol1, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertEquals(piAnchor, doc.getFieldValue(SolrConstants.PI_PARENT));
             Assert.assertEquals(piAnchor, doc.getFieldValue(SolrConstants.PI_ANCHOR));
 
             // All child docstructs should have the PI_ANCHOR field
-            SolrDocumentList vol1Children = hotfolder.getSolrHelper()
+            SolrDocumentList vol1Children = hotfolder.getSearchIndex()
                     .search(new StringBuilder().append('+')
                             .append(SolrConstants.PI_TOPSTRUCT)
                             .append(":")
@@ -447,7 +447,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(95, vol1Children.size());
 
             // All pages should have the PI_ANCHOR field
-            SolrDocumentList vol1Pages = hotfolder.getSolrHelper()
+            SolrDocumentList vol1Pages = hotfolder.getSearchIndex()
                     .search(new StringBuilder().append('+')
                             .append(SolrConstants.PI_TOPSTRUCT)
                             .append(":")
@@ -470,7 +470,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new MetsIndexer(hotfolder).index(metsFileAnchor1, false, dataFolders, null, 1);
             Assert.assertEquals(piAnchor + ".xml", ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piAnchor, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + piAnchor, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             anchorIddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
@@ -482,7 +482,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         {
             String[] ret = new MetsIndexer(hotfolder).index(metsFileVol1, false, dataFolders, null, 1);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol1, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + piVol1, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertEquals(anchorIddoc, doc.getFieldValue(SolrConstants.IDDOC_PARENT));
@@ -492,7 +492,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         {
             String[] ret = new MetsIndexer(hotfolder).index(metsFileVol2, false, dataFolders, null, 1);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + piVol2, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + piVol2, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertEquals(anchorIddoc, doc.getFieldValue(SolrConstants.IDDOC_PARENT));
@@ -525,7 +525,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + PI, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
@@ -541,7 +541,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Child docstructs
         {
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.IDDOC_PARENT + ":*", null);
+                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.IDDOC_PARENT + ":*", null);
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
@@ -556,7 +556,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Pages
         {
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.FILENAME + ":*", null);
+                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.FILENAME + ":*", null);
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
@@ -575,7 +575,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + PI, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
@@ -592,7 +592,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Child docstructs
         {
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.IDDOC_PARENT + ":*", null);
+                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.IDDOC_PARENT + ":*", null);
             Assert.assertEquals(3, docList.size());
             for (SolrDocument doc : docList) {
                 {
@@ -607,7 +607,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Pages
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper()
+            SolrDocumentList docList = hotfolder.getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
             Assert.assertEquals(16, docList.size());
             for (SolrDocument doc : docList) {
@@ -636,7 +636,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Collection<Object> values = doc.getFieldValues(SolrConstants.ACCESSCONDITION);
@@ -647,7 +647,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Child docstructs
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper()
+            SolrDocumentList docList = hotfolder.getSearchIndex()
                     .search(new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
                             .append(pi)
                             .append(" AND ")
@@ -666,7 +666,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Pages
         {
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.PHYSID + ":PHYS_0032", null);
+                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.PHYSID + ":PHYS_0032", null);
             Assert.assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {
                 Collection<Object> values = doc.getFieldValues(SolrConstants.ACCESSCONDITION);
@@ -690,18 +690,18 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         {
             // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search("+" + SolrConstants.CMS_TEXT_ + "DESCRIPTION" + ":\"test description\"", null);
+                    hotfolder.getSearchIndex().search("+" + SolrConstants.CMS_TEXT_ + "DESCRIPTION" + ":\"test description\"", null);
             Assert.assertEquals(1, docList.size());
         }
         {
             // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
             SolrDocumentList docList =
-                    hotfolder.getSolrHelper().search("+" + SolrConstants.CMS_TEXT_ + "PUBLICATIONTEXT" + ":\"test publication text\"", null);
+                    hotfolder.getSearchIndex().search("+" + SolrConstants.CMS_TEXT_ + "PUBLICATIONTEXT" + ":\"test publication text\"", null);
             Assert.assertEquals(1, docList.size());
         }
         {
             // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
-            SolrDocumentList docList = hotfolder.getSolrHelper()
+            SolrDocumentList docList = hotfolder.getSearchIndex()
                     .search("+" + SolrConstants.CMS_TEXT_ALL + ":\"test description\" +" + SolrConstants.CMS_TEXT_ALL + ":\"test publication text\"",
                             null);
             Assert.assertEquals(1, docList.size());
@@ -716,9 +716,9 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void generatePageDocuments_shouldCreateDocumentsForAllMappedPages() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
+        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, solrHelper)[0], PI, 1);
+        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, searchIndex)[0], PI, 1);
         Assert.assertEquals(16, writeStrategy.getPageDocsSize());
     }
 
@@ -730,9 +730,9 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void generatePageDocuments_shouldSetCorrectORDERValues() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
+        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, solrHelper)[0], PI, 1);
+        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, searchIndex)[0], PI, 1);
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             SolrInputDocument doc = writeStrategy.getPageDocForOrder(i);
             Assert.assertEquals(i, doc.getFieldValue(SolrConstants.ORDER));
@@ -775,7 +775,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void generatePageDocument_shouldAddFILENAME_HTMLSANDBOXEDFieldForUrlPaths() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(Paths.get("src/test/resources/METS/ppn750544996.dv.mets.xml"));
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
+        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
         Assert.assertNotNull(eleStructMapPhysicalList);
@@ -784,8 +784,8 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         int page = 1;
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSolrHelper())), "ppn750544996", page, writeStrategy, null,
-                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, null, solrHelper)[0]));
+                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSearchIndex())), "ppn750544996", page, writeStrategy, null,
+                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, null, searchIndex)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertEquals("http://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn750544996%252Fphys_0001/full/full/0/native.jpg",
@@ -802,7 +802,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     //    public void generatePageDocument_shouldCreateALTOFileFromFileIdIfNoneProvidedInDataFolders() throws Exception {
     //        MetsIndexer indexer = new MetsIndexer(hotfolder);
     //        indexer.initJDomXP(Paths.get("src/test/resources/METS/ppn750542047_intrandatest.dv.mets.xml"));
-    //        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
+    //        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
     //        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
     //        List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
     //        Assert.assertNotNull(eleStructMapPhysicalList);
@@ -817,8 +817,8 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     //        int page = 5;
     //        IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
     //        Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-    //                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSolrHelper())), "ppn750542047", page, writeStrategy, dataFolders,
-    //                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, dataFolders, solrHelper)[0]));
+    //                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getsearchIndex())), "ppn750542047", page, writeStrategy, dataFolders,
+    //                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, dataFolders, searchIndex)[0]));
     //        SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
     //        Assert.assertNotNull(doc);
     //        Assert.assertTrue(Files.isRegularFile(Paths.get(altoPath.toAbsolutePath().toString(), "00000005.xml")));
@@ -841,13 +841,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
+        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
 
         int page = 1;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSolrHelper())), PI, page, writeStrategy, dataFolders,
-                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, solrHelper)[0]));
+                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSearchIndex())), PI, page, writeStrategy, dataFolders,
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, searchIndex)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
 
@@ -867,13 +867,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
+        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
 
         int page = 1;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSolrHelper())), PI, page, writeStrategy, dataFolders,
-                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, solrHelper)[0]));
+                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSearchIndex())), PI, page, writeStrategy, dataFolders,
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, searchIndex)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertEquals("fulltext/" + PI + "/00000001.txt", doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT));
@@ -890,13 +890,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(solrHelper);
+        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
 
         int page = 3;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSolrHelper())), PI, page, writeStrategy, null,
-                dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, solrHelper)[0]));
+                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSearchIndex())), PI, page, writeStrategy, null,
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, searchIndex)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC));

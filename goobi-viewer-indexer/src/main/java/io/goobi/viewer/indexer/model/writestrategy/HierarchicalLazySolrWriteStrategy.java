@@ -19,7 +19,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -35,11 +35,11 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
     /**
      * Constructor.
      *
-     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @should set attributes correctly
      */
-    public HierarchicalLazySolrWriteStrategy(SolrHelper solrHelper) {
-        super(solrHelper);
+    public HierarchicalLazySolrWriteStrategy(SolrSearchIndex searchIndex) {
+        super(searchIndex);
     }
 
     /** {@inheritDoc} */
@@ -74,8 +74,8 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
             }
         }
 
-        solrHelper.writeToIndex(rootDoc);
-        solrHelper.commit(SolrHelper.optimize);
+        searchIndex.writeToIndex(rootDoc);
+        searchIndex.commit(SolrSearchIndex.optimize);
         logger.debug("{} new doc(s) added.", docsToAdd.size());
     }
 }

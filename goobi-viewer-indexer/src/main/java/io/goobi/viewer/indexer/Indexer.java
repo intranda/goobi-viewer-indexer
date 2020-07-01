@@ -74,7 +74,7 @@ import de.intranda.api.annotation.wa.WebAnnotation;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
@@ -133,6 +133,7 @@ public abstract class Indexer {
      *
      * @param pi {@link java.lang.String} Record identifier.
      * @param trace A Lucene document with DATEDELETED timestamp will be created if true.
+     * @param searchIndex
      * @return {@link java.lang.Boolean}
      * @throws java.io.IOException
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
@@ -140,22 +141,22 @@ public abstract class Indexer {
      * @should delete LIDO record from index completely
      * @should leave trace document for METS record if requested
      * @should leave trace document for LIDO record if requested
-     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      */
-    public static boolean delete(String pi, boolean trace, SolrHelper solrHelper) throws IOException, FatalIndexerException {
+    public static boolean delete(String pi, boolean trace, SolrSearchIndex searchIndex) throws IOException, FatalIndexerException {
         if (StringUtils.isEmpty(pi)) {
             throw new IllegalArgumentException("pi may not be empty or null.");
         }
-        if (solrHelper == null) {
-            throw new IllegalArgumentException("solrHelper may not be null.");
+        if (searchIndex == null) {
+            throw new IllegalArgumentException("searchIndex may not be null.");
         }
         // Check whether this is an anchor record
         try {
-            SolrDocumentList hits = solrHelper.search(new StringBuilder(SolrConstants.PI).append(":").append(pi).toString(),
+            SolrDocumentList hits = searchIndex.search(new StringBuilder(SolrConstants.PI).append(":").append(pi).toString(),
                     Collections.singletonList(SolrConstants.ISANCHOR));
             if (!hits.isEmpty() && hits.get(0).getFieldValue(SolrConstants.ISANCHOR) != null
                     && (Boolean) hits.get(0).getFieldValue(SolrConstants.ISANCHOR)) {
-                hits = solrHelper.search(SolrConstants.PI_PARENT + ":" + pi, Collections.singletonList(SolrConstants.PI));
+                hits = searchIndex.search(SolrConstants.PI_PARENT + ":" + pi, Collections.singletonList(SolrConstants.PI));
                 if (hits.getNumFound() > 0) {
                     // Only empty anchors may be deleted
                     logger.error("This is a multi-volume work that has indexed children. It may not be deleted at this moment!");
@@ -169,13 +170,13 @@ public abstract class Indexer {
 
         // Delete
         try {
-            if (deleteWithPI(pi, trace, solrHelper)) {
-                solrHelper.commit(SolrHelper.optimize);
+            if (deleteWithPI(pi, trace, searchIndex)) {
+                searchIndex.commit(SolrSearchIndex.optimize);
                 return true;
             }
         } catch (SolrServerException e) {
             logger.error(e.getMessage(), e);
-            solrHelper.rollback();
+            searchIndex.rollback();
         }
 
         return false;
@@ -187,18 +188,18 @@ public abstract class Indexer {
      *
      * @param pi String
      * @param createTraceDoc a boolean.
-     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @throws java.io.IOException
      * @throws org.apache.solr.client.solrj.SolrServerException
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @return a boolean.
      */
-    protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrHelper solrHelper)
+    protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrSearchIndex searchIndex)
             throws IOException, SolrServerException, FatalIndexerException {
         Set<String> iddocsToDelete = new HashSet<>();
 
         String query = SolrConstants.PI + ":" + pi;
-        SolrDocumentList hits = solrHelper.search(query, null);
+        SolrDocumentList hits = searchIndex.search(query, null);
         if (!hits.isEmpty()) {
             if (hits.getNumFound() == 1) {
                 logger.info("Removing previous instance of this volume from the index...");
@@ -225,7 +226,7 @@ public abstract class Indexer {
                             urn = (String) doc.getFieldValue(SolrConstants.URN);
                         }
                         // Collect page URNs
-                        hits = solrHelper.search(queryPageUrns, Collections.singletonList(SolrConstants.IMAGEURN));
+                        hits = searchIndex.search(queryPageUrns, Collections.singletonList(SolrConstants.IMAGEURN));
                         List<String> pageUrns = new ArrayList<>(hits.size());
                         if (!hits.isEmpty()) {
                             for (SolrDocument hit : hits) {
@@ -236,7 +237,7 @@ public abstract class Indexer {
                             }
                         }
                         String now = String.valueOf(System.currentTimeMillis());
-                        createDeletedDoc(pi, urn, pageUrns, now, now, solrHelper);
+                        createDeletedDoc(pi, urn, pageUrns, now, now, searchIndex);
                     }
                 }
             }
@@ -245,7 +246,7 @@ public abstract class Indexer {
         }
 
         // Retrieve all docs for this record via PI_TOPSTRUCT
-        hits = solrHelper.search(new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":").append(pi).toString(),
+        hits = searchIndex.search(new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":").append(pi).toString(),
                 Collections.singletonList(SolrConstants.IDDOC));
         for (SolrDocument doc : hits) {
             String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
@@ -254,7 +255,7 @@ public abstract class Indexer {
             }
         }
 
-        boolean success = solrHelper.deleteDocuments(new ArrayList<>(iddocsToDelete));
+        boolean success = searchIndex.deleteDocuments(new ArrayList<>(iddocsToDelete));
         logger.info("{} docs deleted.", iddocsToDelete.size());
 
         return success;
@@ -272,12 +273,13 @@ public abstract class Indexer {
      * @throws NumberFormatException
      * @throws FatalIndexerException
      */
-    private static void createDeletedDoc(String pi, String urn, List<String> pageUrns, String dateDeleted, String dateUpdated, SolrHelper solrHelper)
+    private static void createDeletedDoc(String pi, String urn, List<String> pageUrns, String dateDeleted, String dateUpdated,
+            SolrSearchIndex searchIndex)
             throws NumberFormatException, IOException, FatalIndexerException {
         // Build replacement document that is marked as deleted
         logger.info("Creating 'DELETED' document for {}...", pi);
         List<LuceneField> fields = new ArrayList<>();
-        String iddoc = String.valueOf(getNextIddoc(solrHelper));
+        String iddoc = String.valueOf(getNextIddoc(searchIndex));
         fields.add(new LuceneField(SolrConstants.IDDOC, iddoc));
         fields.add(new LuceneField(SolrConstants.GROUPFIELD, iddoc));
 
@@ -295,23 +297,23 @@ public abstract class Indexer {
         }
         fields.add(new LuceneField(SolrConstants.DATEDELETED, dateDeleted));
         fields.add(new LuceneField(SolrConstants.DATEUPDATED, dateUpdated));
-        solrHelper.writeToIndex(SolrHelper.createDocument(fields));
+        searchIndex.writeToIndex(SolrSearchIndex.createDocument(fields));
     }
 
     /**
      * Returns the next available IDDOC value.
      *
-     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @return a long.
      */
-    protected static synchronized long getNextIddoc(SolrHelper solrHelper) throws FatalIndexerException {
+    protected static synchronized long getNextIddoc(SolrSearchIndex searchIndex) throws FatalIndexerException {
         if (nextIddoc < 0) {
             // Only determine the next IDDOC from Solr once per indexer lifetime, otherwise it might return numbers that already exist
             nextIddoc = System.currentTimeMillis();
         }
 
-        while (!solrHelper.checkIddocAvailability(nextIddoc)) {
+        while (!searchIndex.checkIddocAvailability(nextIddoc)) {
             logger.debug("IDDOC '{}' is already taken.", nextIddoc);
             nextIddoc = System.currentTimeMillis();
         }
@@ -425,7 +427,7 @@ public abstract class Indexer {
             for (Element eleContent : eleContentList) {
                 StringBuilder sbTerms = new StringBuilder();
                 SolrInputDocument doc = new SolrInputDocument();
-                long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                long iddoc = getNextIddoc(hotfolder.getSearchIndex());
                 doc.addField(SolrConstants.IDDOC, iddoc);
                 if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
                     doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER));
@@ -574,7 +576,7 @@ public abstract class Indexer {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolder, "*.{json}")) {
             List<SolrInputDocument> ret = new ArrayList<>();
             for (Path path : stream) {
-                long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                long iddoc = getNextIddoc(hotfolder.getSearchIndex());
                 ret.add(readAnnotation(path, iddoc, pi, anchorPi, pageDocs, groupIds));
             }
 
@@ -925,8 +927,8 @@ public abstract class Indexer {
                 continue;
             }
 
-            SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
-            long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+            SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
+            long iddoc = getNextIddoc(hotfolder.getSearchIndex());
             doc.addField(SolrConstants.IDDOC, iddoc);
             if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
                 logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,

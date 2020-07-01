@@ -49,7 +49,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -118,7 +118,7 @@ public class LidoIndexer extends Indexer {
                 throw new IndexerException("Could not create XML parser.");
             }
 
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSolrHelper()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = doc.getRootElement();
             indexObj.setRootStructNode(structNode);
@@ -156,7 +156,7 @@ public class LidoIndexer extends Indexer {
 
                 // Determine the data repository to use
                 DataRepository[] repositories =
-                        hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder.getSolrHelper());
+                        hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder.getSearchIndex());
                 dataRepository = repositories[0];
                 previousDataRepository = repositories[1];
                 if (StringUtils.isNotEmpty(dataRepository.getPath())) {
@@ -176,13 +176,13 @@ public class LidoIndexer extends Indexer {
             if (writeStrategy == null) {
                 boolean useSerializingStrategy = false;
                 if (useSerializingStrategy) {
-                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSolrHelper(), hotfolder.getTempFolder());
+                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSearchIndex(), hotfolder.getTempFolder());
                 }
                 //                else if (IndexerConfig.getInstance().getBoolean("init.aggregateRecords")) {
                 //                    writeStrategy = new HierarchicalLazySolrWriteStrategy(hotfolder.getSolrHelper());
                 //                }
                 else {
-                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSolrHelper());
+                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSearchIndex());
                 }
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
@@ -205,7 +205,7 @@ public class LidoIndexer extends Indexer {
             if (indexObj.isVolume()) {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
-                    SolrDocumentList hits = hotfolder.getSolrHelper()
+                    SolrDocumentList hits = hotfolder.getSearchIndex()
                             .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && hits.getNumFound() > 0) {
                         Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
@@ -274,7 +274,7 @@ public class LidoIndexer extends Indexer {
             addGroupedMetadataDocs(writeStrategy, indexObj);
 
             // Add root doc
-            SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());
+            SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
@@ -296,7 +296,7 @@ public class LidoIndexer extends Indexer {
             }
             ret[0] = "ERROR";
             ret[1] = e.getMessage();
-            hotfolder.getSolrHelper().rollback();
+            hotfolder.getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
@@ -525,7 +525,7 @@ public class LidoIndexer extends Indexer {
             if (orderAttribute != null) {
                 order = Integer.valueOf(orderAttribute);
             }
-            if (generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), order, writeStrategy, dataFolders,
+            if (generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), order, writeStrategy, dataFolders,
                     imageXPaths, downloadExternalImages)) {
                 order++;
             }
@@ -744,7 +744,7 @@ public class LidoIndexer extends Indexer {
         List<SolrInputDocument> ret = new ArrayList<>(eventList.size());
         for (Element eleEvent : eventList) {
             SolrInputDocument eventDoc = new SolrInputDocument();
-            long iddocEvent = getNextIddoc(hotfolder.getSolrHelper());
+            long iddocEvent = getNextIddoc(hotfolder.getSearchIndex());
             eventDoc.addField(SolrConstants.IDDOC, iddocEvent);
             eventDoc.addField(SolrConstants.GROUPFIELD, iddocEvent);
             eventDoc.addField(SolrConstants.DOCTYPE, DocType.EVENT.name());
@@ -782,8 +782,8 @@ public class LidoIndexer extends Indexer {
                 List<GroupedMetadata> eventGroupedFields =
                         indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj.getGroupedMetadataFields().size());
                 for (GroupedMetadata gmd : eventGroupedFields) {
-                    SolrInputDocument doc = SolrHelper.createDocument(gmd.getFields());
-                    long iddoc = getNextIddoc(hotfolder.getSolrHelper());
+                    SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
+                    long iddoc = getNextIddoc(hotfolder.getSearchIndex());
                     doc.addField(SolrConstants.IDDOC, iddoc);
                     if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
                         logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
@@ -853,7 +853,7 @@ public class LidoIndexer extends Indexer {
      */
     private void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
         if (hits != null && hits.getNumFound() > 0) {
             logger.debug("This file has already been indexed, initiating an UPDATE instead...");
             indexObj.setUpdate(true);
@@ -872,7 +872,7 @@ public class LidoIndexer extends Indexer {
                 }
             }
             // Recursively delete all children
-            deleteWithPI(pi, false, hotfolder.getSolrHelper());
+            deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
     }
 

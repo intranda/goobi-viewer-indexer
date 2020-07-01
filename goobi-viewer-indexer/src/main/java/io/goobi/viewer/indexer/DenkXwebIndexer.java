@@ -48,7 +48,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
@@ -112,7 +112,7 @@ public class DenkXwebIndexer extends Indexer {
                 throw new IndexerException("Could not create XML parser.");
             }
 
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSolrHelper()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = doc.getRootElement();
             indexObj.setRootStructNode(structNode);
@@ -149,7 +149,7 @@ public class DenkXwebIndexer extends Indexer {
 
                 // Determine the data repository to use
                 DataRepository[] repositories =
-                        hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder.getSolrHelper());
+                        hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder.getSearchIndex());
                 dataRepository = repositories[0];
                 previousDataRepository = repositories[1];
                 if (StringUtils.isNotEmpty(dataRepository.getPath())) {
@@ -169,14 +169,14 @@ public class DenkXwebIndexer extends Indexer {
             if (writeStrategy == null) {
                 boolean useSerializingStrategy = false;
                 if (useSerializingStrategy) {
-                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSolrHelper(), hotfolder.getTempFolder());
+                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSearchIndex(), hotfolder.getTempFolder());
 
                 }
                 //                else if (IndexerConfig.getInstance().getBoolean("init.aggregateRecords")) {
                 //                    writeStrategy = new HierarchicalLazySolrWriteStrategy(hotfolder.getSolrHelper());
                 //                }
                 else {
-                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSolrHelper());
+                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSearchIndex());
                 }
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
@@ -199,7 +199,7 @@ public class DenkXwebIndexer extends Indexer {
             if (indexObj.isVolume()) {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
-                    SolrDocumentList hits = hotfolder.getSolrHelper()
+                    SolrDocumentList hits = hotfolder.getSearchIndex()
                             .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && hits.getNumFound() > 0) {
                         Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
@@ -262,7 +262,7 @@ public class DenkXwebIndexer extends Indexer {
             addGroupedMetadataDocs(writeStrategy, indexObj);
 
             // Add root doc
-            SolrInputDocument rootDoc = SolrHelper.createDocument(indexObj.getLuceneFields());
+            SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
@@ -284,7 +284,7 @@ public class DenkXwebIndexer extends Indexer {
             }
             ret[0] = "ERROR";
             ret[1] = e.getMessage();
-            hotfolder.getSolrHelper().rollback();
+            hotfolder.getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
@@ -487,7 +487,7 @@ public class DenkXwebIndexer extends Indexer {
      */
     private void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + pi, null);
+        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
         if (hits != null && hits.getNumFound() > 0) {
             logger.debug("This file has already been indexed, initiating an UPDATE instead...");
             indexObj.setUpdate(true);
@@ -506,7 +506,7 @@ public class DenkXwebIndexer extends Indexer {
                 }
             }
             // Recursively delete all children
-            deleteWithPI(pi, false, hotfolder.getSolrHelper());
+            deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
     }
 
@@ -566,7 +566,7 @@ public class DenkXwebIndexer extends Indexer {
         //                        writeStrategy, dataFolders, downloadExternalImages));
         int order = pageCountStart;
         for (Element eleImage : eleImageList) {
-            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), order, writeStrategy, dataFolders,
+            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), order, writeStrategy, dataFolders,
                     downloadExternalImages)) {
                 order++;
             }

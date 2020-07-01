@@ -167,12 +167,13 @@ public class Utils {
      * @throws IOException
      */
     public static void submitVersion()
-            throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
-
-        Map<String, String> params = new HashMap<>(0);
-
+            throws FatalIndexerException {
         String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version/";
-        getWebContentPUT(url, params, null, Version.asJSON(), ContentType.APPLICATION_JSON.getMimeType());
+        try {
+            getWebContentPUT(url, new HashMap<>(0), null, Version.asJSON(), ContentType.APPLICATION_JSON.getMimeType());
+        } catch (IOException e) {
+            logger.error("Version could not be submitted to Goobi viewer: {}", e.getMessage());
+        }
     }
 
     /**

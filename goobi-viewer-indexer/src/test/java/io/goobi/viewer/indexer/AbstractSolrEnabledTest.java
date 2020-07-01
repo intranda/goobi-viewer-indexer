@@ -31,7 +31,7 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 
 /**
  * JUnit test classes that extend this class can use the embedded Solr server setup with an empty index.
@@ -47,14 +47,14 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     private CoreContainer coreContainer;
     protected EmbeddedSolrServer server;
-    protected SolrHelper solrHelper;
+    protected SolrSearchIndex searchIndex;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
         logger = LoggerFactory.getLogger(AbstractSolrEnabledTest.class);
-        
+
         String os = System.getProperty("os.name").toLowerCase();
         if (os.indexOf("win") >= 0) {
             solrPath = "C:/digiverso/viewer/apache-solr-test/";
@@ -71,7 +71,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
         Assert.assertTrue(coreContainer.isLoaded(CORE_NAME));
         server = new EmbeddedSolrServer(coreContainer, CORE_NAME);
         Assert.assertNotNull(server);
-        solrHelper = new SolrHelper(server);
+        searchIndex = new SolrSearchIndex(server);
     }
 
     @After

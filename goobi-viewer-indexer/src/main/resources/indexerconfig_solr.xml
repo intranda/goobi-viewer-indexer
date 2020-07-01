@@ -381,7 +381,7 @@
 			</list>
 		</GROUPID_SERIES>
 
-	        <GROUPORDER_SERIES>
+	    <GROUPORDER_SERIES>
 			<list>
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:part/@order</xpath>
@@ -389,17 +389,18 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-	        </GROUPORDER_SERIES>
+	    </GROUPORDER_SERIES>
 
-	        <MD_TITLE_SERIES>
+	    <MD_TITLE_SERIES>
 			<list>
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:titleInfo/mods:title</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
+					<sortFieldIgnoreLeadingChars>.[]</sortFieldIgnoreLeadingChars>
 				</item>
 			</list>
-	        </MD_TITLE_SERIES>
+	    </MD_TITLE_SERIES>
 
 		<!-- This field is important, see chapter 3.13 of the manual -->
 		<MD_TITLE>
@@ -737,7 +738,6 @@
 			</list>
 		</MD_PUBLICATIONRUN>
 
-<!--
 		<MDNUM_PUBLICRELEASEYEAR>
 			<list>
 				<item>
@@ -749,7 +749,23 @@
 				</item>
 			</list>
 		</MDNUM_PUBLICRELEASEYEAR>
--->
+
+        <DATE_PUBLICRELEASEDATE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                    <addToChildren>true</addToChildren>
+                    <addToPages>true</addToPages>
+                </item>
+            </list>
+        </DATE_PUBLICRELEASEDATE>
 
 		<MD_PHYSICALCOPY>
 			<list>

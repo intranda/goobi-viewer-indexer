@@ -26,7 +26,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -41,7 +41,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(LazySolrWriteStrategy.class);
 
-    SolrHelper solrHelper;
+    SolrSearchIndex searchIndex;
     SolrInputDocument rootDoc;
     List<SolrInputDocument> docsToAdd = new CopyOnWriteArrayList<>();
     Map<Integer, SolrInputDocument> pageOrderMap = new ConcurrentHashMap<>();
@@ -51,11 +51,11 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /**
      * Constructor.
      *
-     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @should set attributes correctly
      */
-    public LazySolrWriteStrategy(SolrHelper solrHelper) {
-        this.solrHelper = solrHelper;
+    public LazySolrWriteStrategy(SolrSearchIndex searchIndex) {
+        this.searchIndex = searchIndex;
     }
 
     /* (non-Javadoc)
@@ -120,7 +120,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     public int getPageDocsSize() {
         return pageOrderMap.size();
     }
-    
 
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageOrderNumbers()
@@ -209,8 +208,8 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         }
 
         if (!docsToAdd.isEmpty()) {
-            solrHelper.writeToIndex(docsToAdd);
-            solrHelper.commit(SolrHelper.optimize);
+            searchIndex.writeToIndex(docsToAdd);
+            searchIndex.commit(SolrSearchIndex.optimize);
             logger.debug("{} new doc(s) added.", docsToAdd.size());
         } else {
             throw new IndexerException("No docs to write");
