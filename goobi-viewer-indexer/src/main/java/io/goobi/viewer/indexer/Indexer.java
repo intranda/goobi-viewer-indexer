@@ -200,49 +200,50 @@ public abstract class Indexer {
 
         String query = SolrConstants.PI + ":" + pi;
         SolrDocumentList hits = searchIndex.search(query, null);
-        if (!hits.isEmpty()) {
-            if (hits.getNumFound() == 1) {
-                logger.info("Removing previous instance of this volume from the index...");
-            } else {
-                logger.warn(
-                        "{} previous instances of this volume have been found in the index. This shouldn't ever be the case. Check whether there is more than one indexer instance running! All instances will be removed...",
-                        hits.getNumFound());
-            }
-            String queryPageUrns = new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
-                    .append(pi)
-                    .append(" AND ")
-                    .append(SolrConstants.DOCTYPE)
-                    .append(":PAGE")
-                    .toString();
-            for (SolrDocument doc : hits) {
-                String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                if (iddoc != null) {
-                    logger.debug("Removing instance: {}", iddoc);
-                    iddocsToDelete.add(iddoc);
-                    if (createTraceDoc && doc.getFieldValue(SolrConstants.DATEDELETED) == null) {
-                        // Build replacement document that is marked as deleted
-                        String urn = null;
-                        if (doc.getFieldValue(SolrConstants.URN) != null) {
-                            urn = (String) doc.getFieldValue(SolrConstants.URN);
-                        }
-                        // Collect page URNs
-                        hits = searchIndex.search(queryPageUrns, Collections.singletonList(SolrConstants.IMAGEURN));
-                        List<String> pageUrns = new ArrayList<>(hits.size());
-                        if (!hits.isEmpty()) {
-                            for (SolrDocument hit : hits) {
-                                String pageUrn = (String) hit.getFieldValue(SolrConstants.IMAGEURN);
-                                if (pageUrn != null) {
-                                    pageUrns.add(pageUrn);
-                                }
+        if (hits.isEmpty()) {
+            logger.error("Not found: {}", pi);
+            return false;
+        }
+        
+        if (hits.getNumFound() == 1) {
+            logger.info("Removing previous instance of this volume from the index...");
+        } else {
+            logger.warn(
+                    "{} previous instances of this volume have been found in the index. This shouldn't ever be the case. Check whether there is more than one indexer instance running! All instances will be removed...",
+                    hits.getNumFound());
+        }
+        String queryPageUrns = new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
+                .append(pi)
+                .append(" AND ")
+                .append(SolrConstants.DOCTYPE)
+                .append(":PAGE")
+                .toString();
+        for (SolrDocument doc : hits) {
+            String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
+            if (iddoc != null) {
+                logger.debug("Removing instance: {}", iddoc);
+                iddocsToDelete.add(iddoc);
+                if (createTraceDoc && doc.getFieldValue(SolrConstants.DATEDELETED) == null) {
+                    // Build replacement document that is marked as deleted
+                    String urn = null;
+                    if (doc.getFieldValue(SolrConstants.URN) != null) {
+                        urn = (String) doc.getFieldValue(SolrConstants.URN);
+                    }
+                    // Collect page URNs
+                    hits = searchIndex.search(queryPageUrns, Collections.singletonList(SolrConstants.IMAGEURN));
+                    List<String> pageUrns = new ArrayList<>(hits.size());
+                    if (!hits.isEmpty()) {
+                        for (SolrDocument hit : hits) {
+                            String pageUrn = (String) hit.getFieldValue(SolrConstants.IMAGEURN);
+                            if (pageUrn != null) {
+                                pageUrns.add(pageUrn);
                             }
                         }
-                        String now = String.valueOf(System.currentTimeMillis());
-                        createDeletedDoc(pi, urn, pageUrns, now, now, searchIndex);
                     }
+                    String now = String.valueOf(System.currentTimeMillis());
+                    createDeletedDoc(pi, urn, pageUrns, now, now, searchIndex);
                 }
             }
-        } else {
-            logger.error("Not found: {}", pi);
         }
 
         // Retrieve all docs for this record via PI_TOPSTRUCT

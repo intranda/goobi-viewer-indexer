@@ -855,9 +855,11 @@ public class LidoIndexer extends Indexer {
         String pi = indexObj.getPi().trim();
         SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
         // Retrieve record from old index, if available
+        boolean fromOldIndex = false;
         if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
             hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             if (hits.getNumFound() > 0) {
+                fromOldIndex = true;
                 logger.info("Retrieving data from old index for record '{}'.", pi);
             }
         }
@@ -882,7 +884,9 @@ public class LidoIndexer extends Indexer {
             }
         }
         // Recursively delete all children
-        deleteWithPI(pi, false, hotfolder.getSearchIndex());
+        if (!fromOldIndex) {
+            deleteWithPI(pi, false, hotfolder.getSearchIndex());
+        }
     }
 
     /**

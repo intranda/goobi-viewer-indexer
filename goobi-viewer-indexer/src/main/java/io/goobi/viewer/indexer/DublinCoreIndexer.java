@@ -713,9 +713,11 @@ public class DublinCoreIndexer extends Indexer {
         String pi = indexObj.getPi().trim();
         SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
         // Retrieve record from old index, if available
+        boolean fromOldIndex = false;
         if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
             hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             if (hits.getNumFound() > 0) {
+                fromOldIndex = true;
                 logger.info("Retrieving data from old index for record '{}'.", pi);
             }
         }
@@ -760,7 +762,7 @@ public class DublinCoreIndexer extends Indexer {
                 logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
                 hotfolder.getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
             }
-        } else {
+        } else if (!fromOldIndex) {
             // Recursively delete all children, if not an anchor
             deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
