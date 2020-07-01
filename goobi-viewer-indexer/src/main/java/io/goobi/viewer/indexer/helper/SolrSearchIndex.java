@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
@@ -76,15 +77,20 @@ public final class SolrSearchIndex {
      * getNewHttpSolrServer.
      * </p>
      *
-     * @param confFilename a {@link java.lang.String} object.
+     * @param solrUrl URL to the Solr server
      * @param timeoutSocket
      * @param timeoutConnection
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @should return null if solrUrl is empty
      */
-    public static HttpSolrClient getNewHttpSolrServer(String confFilename, int timeoutSocket, int timeoutConnection) throws FatalIndexerException {
+    public static HttpSolrClient getNewHttpSolrServer(String solrUrl, int timeoutSocket, int timeoutConnection) throws FatalIndexerException {
+        if (StringUtils.isEmpty(solrUrl)) {
+            return null;
+        }
+        
         HttpSolrClient server = new HttpSolrClient.Builder()
-                .withBaseSolrUrl(Configuration.getInstance(confFilename).getConfiguration("solrUrl"))
+                .withBaseSolrUrl(solrUrl)
                 .withSocketTimeout(timeoutSocket)
                 .withConnectionTimeout(timeoutConnection)
                 .allowCompression(true)

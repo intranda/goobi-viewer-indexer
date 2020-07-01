@@ -109,6 +109,7 @@ public class Hotfolder {
     private WriterAppender secondaryAppender;
 
     private final SolrSearchIndex searchIndex;
+    private final SolrSearchIndex oldSearchIndex;
     private final IDataRepositoryStrategy dataRepositoryStrategy;
     private final Queue<Path> reindexQueue = new LinkedList<>();
 
@@ -156,10 +157,19 @@ public class Hotfolder {
      * @param solrServer a {@link org.apache.solr.client.solrj.SolrServer} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      */
-    public Hotfolder(String confFilename, SolrClient solrClient) throws FatalIndexerException {
-        this.searchIndex = new SolrSearchIndex(solrClient);
+    public Hotfolder(String confFilename, SolrClient solrClient, SolrClient oldSolrClient) throws FatalIndexerException {
         logger.debug("Config file: {}", confFilename);
         Configuration config = Configuration.getInstance(confFilename);
+
+        this.searchIndex = new SolrSearchIndex(solrClient);
+        logger.info("Using Solr server at {}", config.getConfiguration("solrUrl"));
+        if (oldSolrClient != null) {
+            this.oldSearchIndex = new SolrSearchIndex(oldSolrClient);
+            logger.info("Also using old Solr server at {}", config.getConfiguration("oldSolrUrl"));
+        } else {
+            this.oldSearchIndex = null;
+        }
+
         try {
             minStorageSpace = Integer.valueOf(config.getConfiguration("minStorageSpace"));
         } catch (NumberFormatException e) {
@@ -2063,6 +2073,13 @@ public class Hotfolder {
      */
     public SolrSearchIndex getSearchIndex() {
         return searchIndex;
+    }
+
+    /**
+     * @return the oldSearchIndex
+     */
+    public SolrSearchIndex getOldSearchIndex() {
+        return oldSearchIndex;
     }
 
     /**

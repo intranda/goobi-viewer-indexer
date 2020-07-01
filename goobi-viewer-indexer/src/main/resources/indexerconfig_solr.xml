@@ -9,6 +9,7 @@
 		<minStorageSpace>2048</minStorageSpace>
 
 		<solrUrl>http://localhost:8081/solr/collection2</solrUrl>
+		<oldSolrUrl>http://localhost:8081/solr/collection1</oldSolrUrl>
 		<viewerUrl>http://localhost:8080/viewer</viewerUrl>
 
 		<!-- Folder configuration -->

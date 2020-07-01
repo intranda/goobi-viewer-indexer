@@ -134,7 +134,10 @@ public final class SolrIndexerDaemon {
         // create hotfolder
         Hotfolder hotfolder =
                 new Hotfolder(confFilename,
-                        SolrSearchIndex.getNewHttpSolrServer(confFilename, SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION));
+                        SolrSearchIndex.getNewHttpSolrServer(Configuration.getInstance(confFilename).getConfiguration("solrUrl"),
+                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION),
+                        SolrSearchIndex.getNewHttpSolrServer(Configuration.getInstance(confFilename).getConfiguration("oldSolrUrl"),
+                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION));
 
         if (hotfolder.getSuccess() == null || !Files.isDirectory(hotfolder.getSuccess())) {
             throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
