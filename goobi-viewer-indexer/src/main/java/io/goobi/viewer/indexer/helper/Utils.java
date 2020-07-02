@@ -172,7 +172,7 @@ public class Utils {
         try {
             getWebContentPUT(url, new HashMap<>(0), null, Version.asJSON(), ContentType.APPLICATION_JSON.getMimeType());
         } catch (IOException e) {
-            logger.error("Version could not be submitted to Goobi viewer: {}", e.getMessage());
+            logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }
     }
 
