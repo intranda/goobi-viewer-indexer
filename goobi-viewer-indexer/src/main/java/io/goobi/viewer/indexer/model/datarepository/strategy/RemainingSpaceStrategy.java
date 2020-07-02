@@ -93,7 +93,8 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
     /** {@inheritDoc} */
     @Override
     public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders,
-            final SolrSearchIndex searchIndex)
+            final SolrSearchIndex searchIndex,
+            final SolrSearchIndex oldSearchIndex)
             throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
@@ -130,6 +131,12 @@ public class RemainingSpaceStrategy implements IDataRepositoryStrategy {
         try {
             // Look up previous repository in the index
             previousRepository = searchIndex.findCurrentDataRepository(pi);
+            if (previousRepository == null && oldSearchIndex != null) {
+                previousRepository = oldSearchIndex.findCurrentDataRepository(pi);
+                if (previousRepository != null) {
+                    logger.info("Data repository found in old index: {}", previousRepository);
+                }
+            }
         } catch (SolrServerException e) {
             logger.error(e.getMessage(), e);
         } catch (IOException e) {

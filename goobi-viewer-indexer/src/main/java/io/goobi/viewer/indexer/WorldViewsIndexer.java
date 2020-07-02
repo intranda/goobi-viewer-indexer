@@ -147,7 +147,8 @@ public class WorldViewsIndexer extends Indexer {
 
                     // Determine the data repository to use
                     DataRepository[] repositories =
-                            hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, mainFile, dataFolders, hotfolder.getSearchIndex());
+                            hotfolder.getDataRepositoryStrategy()
+                                    .selectDataRepository(pi, mainFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
                     dataRepository = repositories[0];
                     previousDataRepository = repositories[1];
 

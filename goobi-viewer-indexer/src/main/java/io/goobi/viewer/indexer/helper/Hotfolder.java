@@ -631,15 +631,15 @@ public class Hotfolder {
 
             } else if (filename.endsWith(".delete")) {
                 // DELETE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
                 removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], true);
             } else if (filename.endsWith(".purge")) {
                 // PURGE (delete with no "deleted" doc)
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
                 removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], false);
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
                 MetsIndexer.superupdate(dataFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update

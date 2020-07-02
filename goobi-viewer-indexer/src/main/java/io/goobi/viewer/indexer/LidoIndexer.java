@@ -156,7 +156,8 @@ public class LidoIndexer extends Indexer {
 
                 // Determine the data repository to use
                 DataRepository[] repositories =
-                        hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, dataFolders, hotfolder.getSearchIndex());
+                        hotfolder.getDataRepositoryStrategy()
+                                .selectDataRepository(pi, null, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
                 dataRepository = repositories[0];
                 previousDataRepository = repositories[1];
                 if (StringUtils.isNotEmpty(dataRepository.getPath())) {

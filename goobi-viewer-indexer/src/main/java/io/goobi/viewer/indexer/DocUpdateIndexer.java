@@ -48,7 +48,9 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
- * <p>DocUpdateIndexer class.</p>
+ * <p>
+ * DocUpdateIndexer class.
+ * </p>
  *
  */
 public class DocUpdateIndexer extends Indexer {
@@ -123,7 +125,8 @@ public class DocUpdateIndexer extends Indexer {
                     .append(iddoc)
                     .toString();
         }
-        dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, null, hotfolder.getSearchIndex())[0];
+        dataRepository = hotfolder.getDataRepositoryStrategy()
+                .selectDataRepository(pi, null, null, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex())[0];
 
         try {
             SolrDocumentList docList = hotfolder.getSearchIndex().search(query, null);
