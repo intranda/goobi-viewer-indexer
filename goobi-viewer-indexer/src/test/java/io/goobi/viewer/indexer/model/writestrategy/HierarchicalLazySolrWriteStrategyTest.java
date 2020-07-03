@@ -36,7 +36,7 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", server);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
     }
 
     /**
@@ -45,7 +45,7 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
      */
     @Test
     public void HierarchicalLazySolrWriteStrategy_shouldSetAttributesCorrectly() throws Exception {
-        SolrSearchIndex sh = new SolrSearchIndex(server);
+        SolrSearchIndex sh = new SolrSearchIndex(client);
         HierarchicalLazySolrWriteStrategy strat = new HierarchicalLazySolrWriteStrategy(sh);
         Assert.assertEquals(sh, strat.searchIndex);
     }

@@ -84,7 +84,7 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      * @should return null if solrUrl is empty
      */
-    public static HttpSolrClient getNewHttpSolrServer(String solrUrl, int timeoutSocket, int timeoutConnection) throws FatalIndexerException {
+    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, int timeoutSocket, int timeoutConnection) throws FatalIndexerException {
         if (StringUtils.isEmpty(solrUrl)) {
             return null;
         }
@@ -581,7 +581,7 @@ public final class SolrSearchIndex {
      */
     public Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
-        try (HttpSolrClient httpClient = getNewHttpSolrServer(solrUrl, 30000, 30000)) {
+        try (HttpSolrClient httpClient = getNewHttpSolrClient(solrUrl, 30000, 30000)) {
             HttpClient client = ((HttpSolrClient) server).getHttpClient();
             HttpGet httpGet = new HttpGet(
                     Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml");

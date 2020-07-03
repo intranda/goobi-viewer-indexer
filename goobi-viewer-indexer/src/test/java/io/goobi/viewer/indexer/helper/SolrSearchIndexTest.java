@@ -43,7 +43,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void deleteDocuments_shouldReturnFalseIfIdListEmpty() throws Exception {
-        SolrSearchIndex sh = new SolrSearchIndex(server);
+        SolrSearchIndex sh = new SolrSearchIndex(client);
         Assert.assertFalse(sh.deleteDocuments(Collections.emptyList()));
     }
 
