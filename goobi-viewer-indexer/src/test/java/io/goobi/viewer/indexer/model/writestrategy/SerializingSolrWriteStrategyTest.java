@@ -55,7 +55,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", server);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
 
         Files.createDirectory(tempFolder);
         Assert.assertTrue(Files.isDirectory(tempFolder));
@@ -75,7 +75,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
-        SolrSearchIndex sh = new SolrSearchIndex(server);
+        SolrSearchIndex sh = new SolrSearchIndex(client);
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
@@ -100,7 +100,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
-        SolrSearchIndex sh = new SolrSearchIndex(server);
+        SolrSearchIndex sh = new SolrSearchIndex(client);
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
@@ -121,7 +121,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
-        SolrSearchIndex sh = new SolrSearchIndex(server);
+        SolrSearchIndex sh = new SolrSearchIndex(client);
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 

@@ -40,7 +40,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
     /** Logger for this class. */
     private static Logger logger;
 
-    protected SolrClient server;
+    protected SolrClient client;
     protected SolrSearchIndex searchIndex;
 
     @BeforeClass
@@ -52,9 +52,14 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     @Before
     public void setUp() throws Exception {
-        server = SolrSearchIndex.getNewHttpSolrServer(Configuration.getInstance("indexerconfig_solr_test.xml").getConfiguration("solrUrl"), 30000,
-                30000);
-        searchIndex = new SolrSearchIndex(server);
+        String solrUrl = Configuration.getInstance("indexerconfig_solr_test.xml").getConfiguration("solrUrl");
+
+        // Only allow localhost and default indexer test URL to avoid erasing production indexes
+        Assert.assertTrue("Only default or localhost Solr URLs are allowed for testing.",
+                solrUrl.startsWith("http://localhost:") || solrUrl.equals("https://viewer-testing-index.goobi.io/solr/indexer-testing"));
+
+        client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, 30000, 30000);
+        searchIndex = new SolrSearchIndex(client);
     }
 
     @After
@@ -78,22 +83,13 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
         }
 
         // Delete all data after every test
-        if (searchIndex.deleteByQuery("*:*")) {
+        if (searchIndex != null && searchIndex.deleteByQuery("*:*")) {
             searchIndex.commit(false);
             logger.debug("Index cleared");
         }
 
-        server.close();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        //        if (coreContainer != null) {
-        //            coreContainer.shutdown();
-        //        }
-        //
-        //        logger.info("Deleting index...");
-        //        File dataDir = new File(solrPath + CORE_NAME + File.separator + "data");
-        //        FileUtils.deleteDirectory(dataDir);
+        if (client != null) {
+            client.close();
+        }
     }
 }
