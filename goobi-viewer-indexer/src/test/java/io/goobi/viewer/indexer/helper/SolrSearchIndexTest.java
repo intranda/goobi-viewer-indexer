@@ -32,23 +32,23 @@ import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
-public class SolrHelperTest extends AbstractSolrEnabledTest {
+public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    //    private static final Logger logger = LoggerFactory.getLogger(SolrHelperTest.class);
+    //    private static final Logger logger = LoggerFactory.getLogger(searchIndexTest.class);
 
     /**
-     * @see SolrHelper#deleteDocuments(List)
+     * @see SolrSearchIndex#deleteDocuments(List)
      * @verifies return false if id list empty
      */
     @Test
     public void deleteDocuments_shouldReturnFalseIfIdListEmpty() throws Exception {
-        SolrHelper sh = new SolrHelper(server);
+        SolrSearchIndex sh = new SolrSearchIndex(server);
         Assert.assertFalse(sh.deleteDocuments(Collections.emptyList()));
     }
 
     /**
-     * @see SolrHelper#checkAndCreateGroupDoc(String,String,long)
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,long)
      * @verifies create new document with all values if none exists
      */
     @Test
@@ -56,7 +56,7 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        SolrInputDocument doc = solrHelper.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
         Assert.assertNotNull(doc);
         Assert.assertEquals("123456", doc.getFieldValue(SolrConstants.IDDOC));
         Long timestamp = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
@@ -70,7 +70,7 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see SolrHelper#checkAndCreateGroupDoc(String,String,long)
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,long)
      * @verifies create updated document with all values if one already exists
      */
     @Test
@@ -78,15 +78,15 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "old_shelfmark");
         moreMetadata.put("MD_TITLE", "old_title");
-        SolrInputDocument doc = solrHelper.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
         Assert.assertNotNull(doc);
-        solrHelper.writeToIndex(doc);
-        solrHelper.commit(false);
+        searchIndex.writeToIndex(doc);
+        searchIndex.commit(false);
 
         moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "new_shelfmark");
         moreMetadata.put("MD_TITLE", "new_title");
-        SolrInputDocument doc2 = solrHelper.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
         Assert.assertNotNull(doc2);
         Assert.assertEquals(doc.getFieldValue(SolrConstants.IDDOC), doc2.getFieldValue(SolrConstants.IDDOC));
         Assert.assertEquals(doc.getFieldValue(SolrConstants.DATECREATED), doc2.getFieldValue(SolrConstants.DATECREATED));
@@ -99,7 +99,7 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see SolrHelper#checkAndCreateGroupDoc(String,String,Map,long)
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,long)
      * @verifies add default field
      */
     @Test
@@ -107,7 +107,7 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        SolrInputDocument doc = solrHelper.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
         Assert.assertNotNull(doc);
         Assert.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
         String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
@@ -118,7 +118,7 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see SolrHelper#updateDoc(SolrDocument,Map)
+     * @see SolrSearchIndex#updateDoc(SolrDocument,Map)
      * @verifies update doc correctly
      */
     @Test
@@ -134,12 +134,12 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
             doc.addField("MD_FULLTEXT", "fulltext");
             doc.addField(SolrConstants.DATEUPDATED, System.currentTimeMillis());
             doc.addField(SolrConstants.PI_TOPSTRUCT, "PPN123");
-            Assert.assertTrue(solrHelper.writeToIndex(doc));
-            solrHelper.commit(false);
+            Assert.assertTrue(searchIndex.writeToIndex(doc));
+            searchIndex.commit(false);
         }
         {
             // Update doc
-            SolrDocumentList ret = solrHelper.search(SolrConstants.IDDOC + ":" + iddoc, null);
+            SolrDocumentList ret = searchIndex.search(SolrConstants.IDDOC + ":" + iddoc, null);
             Assert.assertNotNull(ret);
             Assert.assertFalse(ret.isEmpty());
             SolrDocument doc = ret.get(0);
@@ -158,11 +158,11 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
                 update.put("add", System.currentTimeMillis());
                 partialUpdates.put(SolrConstants.DATEUPDATED, update);
             }
-            Assert.assertTrue(solrHelper.updateDoc(doc, partialUpdates));
+            Assert.assertTrue(searchIndex.updateDoc(doc, partialUpdates));
         }
         {
             // Fetch and check updated doc
-            SolrDocumentList ret = solrHelper.search(SolrConstants.IDDOC + ":" + iddoc, null);
+            SolrDocumentList ret = searchIndex.search(SolrConstants.IDDOC + ":" + iddoc, null);
             Assert.assertNotNull(ret);
             Assert.assertFalse(ret.isEmpty());
             SolrDocument doc = ret.get(0);
@@ -174,7 +174,7 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see SolrHelper#createDocument(List)
+     * @see SolrSearchIndex#createDocument(List)
      * @verifies skip fields correctly
      */
     @Test
@@ -183,8 +183,8 @@ public class SolrHelperTest extends AbstractSolrEnabledTest {
         luceneFields.add(new LuceneField("foo", "bar"));
         luceneFields.add(new LuceneField("skip", "me"));
         luceneFields.get(1).setSkip(true);
-        
-        SolrInputDocument doc = SolrHelper.createDocument(luceneFields);
+
+        SolrInputDocument doc = SolrSearchIndex.createDocument(luceneFields);
         Assert.assertNotNull(doc);
         Assert.assertEquals("bar", doc.getFieldValue("foo"));
         Assert.assertFalse(doc.containsKey("skip"));

@@ -89,7 +89,7 @@ public class LuceneField {
         }
         return true;
     }
-    
+
     @Override
     public LuceneField clone() {
         return new LuceneField(field, value);
@@ -163,7 +163,7 @@ public class LuceneField {
      */
     public SolrInputField generateField() {
         SolrInputField field = new SolrInputField(getField());
-        field.setValue(getValue(), 1);
+        field.setValue(getValue());
 
         return field;
     }

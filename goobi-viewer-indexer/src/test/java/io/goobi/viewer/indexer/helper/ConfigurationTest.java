@@ -47,7 +47,7 @@ public class ConfigurationTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
+        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null, null);
     }
 
     @Before

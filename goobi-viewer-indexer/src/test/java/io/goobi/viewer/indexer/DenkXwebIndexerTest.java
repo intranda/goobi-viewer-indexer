@@ -32,7 +32,7 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
@@ -80,7 +80,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + PI, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             {
@@ -116,7 +116,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
         }
 
         // Top document
-        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI + ":" + PI2, null);
+        SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
         Assert.assertEquals(1, docList.size());
         SolrDocument topDoc = docList.get(0);
         {
@@ -132,7 +132,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
         // Pages
         {
             SolrDocumentList pageDocList =
-                    hotfolder.getSolrHelper().search(" +" + SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " +" + SolrConstants.DOCTYPE + ":PAGE", null);
+                    hotfolder.getSearchIndex().search(" +" + SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " +" + SolrConstants.DOCTYPE + ":PAGE", null);
             Assert.assertEquals(2, pageDocList.size());
             SolrDocument doc = pageDocList.get(0);
             {
@@ -143,7 +143,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             }
             Assert.assertEquals("https://example.com/10973880_1.jpg", doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED"));
             Assert.assertEquals("image", doc.getFieldValue(SolrConstants.MIMETYPE));
-            Assert.assertEquals("foo bar", SolrHelper.getSingleFieldStringValue(doc, "MD_DESCRIPTION"));
+            Assert.assertEquals("foo bar", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_DESCRIPTION"));
             Assert.assertEquals(topDoc.getFieldValue(SolrConstants.IDDOC), doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertEquals("Flächendenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
         }

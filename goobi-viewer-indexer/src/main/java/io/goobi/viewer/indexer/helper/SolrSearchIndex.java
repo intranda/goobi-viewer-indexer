@@ -27,16 +27,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -56,40 +57,48 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 /**
  * Solr connection and query methods.
  */
-public final class SolrHelper {
+public final class SolrSearchIndex {
 
-    private static final Logger logger = LoggerFactory.getLogger(SolrHelper.class);
+    private static final Logger logger = LoggerFactory.getLogger(SolrSearchIndex.class);
 
     private static final int MAX_HITS = Integer.MAX_VALUE;
-    private static final int TIMEOUT_SO = 300000;
-    private static final int TIMEOUT_CONNECTION = 300000;
+    public static final int TIMEOUT_SO = 300000;
+    public static final int TIMEOUT_CONNECTION = 300000;
     private static final int RETRY_ATTEMPTS = 20;
 
     /** Constant <code>optimize=false</code> */
     public static boolean optimize = false;
     private static Map<Long, Boolean> usedIddocs = new ConcurrentHashMap<>();
 
-    private SolrServer server;
+    private SolrClient server;
 
     /**
      * <p>
      * getNewHttpSolrServer.
      * </p>
      *
-     * @param confFilename a {@link java.lang.String} object.
+     * @param solrUrl URL to the Solr server
+     * @param timeoutSocket
+     * @param timeoutConnection
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @should return null if solrUrl is empty
      */
-    public static HttpSolrServer getNewHttpSolrServer(String confFilename) throws FatalIndexerException {
-        HttpSolrServer server = new HttpSolrServer(Configuration.getInstance(confFilename).getConfiguration("solrUrl"));
-        server.setSoTimeout(TIMEOUT_SO); // socket read timeout
-        server.setConnectionTimeout(TIMEOUT_CONNECTION);
-        server.setDefaultMaxConnectionsPerHost(100);
-        server.setMaxTotalConnections(100);
+    public static HttpSolrClient getNewHttpSolrServer(String solrUrl, int timeoutSocket, int timeoutConnection) throws FatalIndexerException {
+        if (StringUtils.isEmpty(solrUrl)) {
+            return null;
+        }
+
+        HttpSolrClient server = new HttpSolrClient.Builder()
+                .withBaseSolrUrl(solrUrl)
+                .withSocketTimeout(timeoutSocket)
+                .withConnectionTimeout(timeoutConnection)
+                .allowCompression(true)
+                .build();
+        //        server.setDefaultMaxConnectionsPerHost(100);
+        //        server.setMaxTotalConnections(100);
         server.setFollowRedirects(false); // defaults to false
-        server.setAllowCompression(true);
-        server.setMaxRetries(1); // defaults to 0. > 1 not recommended.
-        // server.setParser(new XMLResponseParser()); // binary parser is used by default
+        //        server.setMaxRetries(1); // defaults to 0. > 1 not recommended.
         server.setRequestWriter(new BinaryRequestWriter());
 
         return server;
@@ -97,12 +106,12 @@ public final class SolrHelper {
 
     /**
      * <p>
-     * Constructor for SolrHelper.
+     * Constructor for SolrSearchIndex.
      * </p>
      *
      * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
      */
-    public SolrHelper(SolrServer server) {
+    public SolrSearchIndex(SolrClient server) {
         this.server = server;
     }
 
@@ -141,6 +150,8 @@ public final class SolrHelper {
                 logger.error(e.getMessage(), e);
             } catch (NumberFormatException e) {
                 logger.error(e.getMessage(), e);
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
             }
         }
         if (!success) {
@@ -160,8 +171,9 @@ public final class SolrHelper {
      * @param query a {@link java.lang.String} object.
      * @return a long.
      * @throws org.apache.solr.client.solrj.SolrServerException if any.
+     * @throws IOException
      */
-    public long getNumHits(String query) throws SolrServerException {
+    public long getNumHits(String query) throws SolrServerException, IOException {
         return search(query, null, 0).getNumFound();
     }
 
@@ -174,8 +186,9 @@ public final class SolrHelper {
      * @param fields a {@link java.util.List} object.
      * @return a {@link org.apache.solr.common.SolrDocumentList} object.
      * @throws org.apache.solr.client.solrj.SolrServerException if any.
+     * @throws IOException
      */
-    public SolrDocumentList search(String query, List<String> fields) throws SolrServerException {
+    public SolrDocumentList search(String query, List<String> fields) throws SolrServerException, IOException {
         return search(query, fields, MAX_HITS);
     }
 
@@ -189,8 +202,9 @@ public final class SolrHelper {
      * @param rows a int.
      * @throws org.apache.solr.client.solrj.SolrServerException
      * @return a {@link org.apache.solr.common.SolrDocumentList} object.
+     * @throws IOException
      */
-    public SolrDocumentList search(String query, List<String> fields, int rows) throws SolrServerException {
+    public SolrDocumentList search(String query, List<String> fields, int rows) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery(query);
         solrQuery.setRows(MAX_HITS);
         if (fields != null) {
@@ -237,9 +251,10 @@ public final class SolrHelper {
      * @return The name of the data repository currently used for the record with the given PI; "?" if the record is indexed, but not in a repository;
      *         null if the record is not in the index
      * @throws org.apache.solr.client.solrj.SolrServerException
+     * @throws IOException
      * @should find correct data repository for record
      */
-    public String findCurrentDataRepository(String pi) throws SolrServerException {
+    public String findCurrentDataRepository(String pi) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery(SolrConstants.PI + ":" + pi);
         solrQuery.setRows(1);
         solrQuery.setFields(SolrConstants.DATAREPOSITORY);
@@ -449,6 +464,45 @@ public final class SolrHelper {
     }
 
     /**
+     * Deletes all documents that match the given query. Handle with care!
+     * 
+     * @return true if successful; false otherwise
+     */
+    public boolean deleteByQuery(String query) {
+        if (StringUtils.isEmpty(query)) {
+            return false;
+        }
+
+        boolean success = false;
+        int tries = RETRY_ATTEMPTS;
+
+        while (!success && tries > 0) {
+            tries--;
+            try {
+                UpdateResponse ur = server.deleteByQuery(query);
+                switch (ur.getStatus()) {
+                    case 0:
+                        success = true;
+                        break;
+                    default:
+                        logger.error("Update status: {}", ur.getStatus());
+                }
+            } catch (SolrServerException e) {
+                logger.error(e.getMessage());
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+        if (!success) {
+            logger.error("Could not delete docs matching query '{}' after {} attempts. Check the Solr server connection. Exiting...", query,
+                    RETRY_ATTEMPTS);
+            rollback();
+        }
+
+        return success;
+    }
+
+    /**
      * <p>
      * commit.
      * </p>
@@ -521,33 +575,27 @@ public final class SolrHelper {
      * getSolrSchemaDocument.
      * </p>
      *
+     * @param confFilename
      * @return a {@link org.jdom2.Document} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      */
-    public Document getSolrSchemaDocument() throws FatalIndexerException {
-        if (server instanceof HttpSolrServer) {
-            HttpSolrServer httpServer = (HttpSolrServer) server;
-            try {
-                // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
-                httpServer.setConnectionTimeout(30000);
-                HttpClient client = ((HttpSolrServer) server).getHttpClient();
-                HttpGet httpGet = new HttpGet(
-                        Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml");
-                ResponseHandler<String> responseHandler = new BasicResponseHandler();
-                String responseBody = client.execute(httpGet, responseHandler);
-                try (StringReader sr = new StringReader(responseBody)) {
-                    return new SAXBuilder().build(sr);
-                }
-            } catch (ClientProtocolException e) {
-                logger.error(e.getMessage(), e);
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            } catch (JDOMException e) {
-                logger.error(e.getMessage(), e);
-            } finally {
-                // Do not shut down the client here, otherwise queries will no longer work
-                httpServer.setConnectionTimeout(TIMEOUT_CONNECTION);
+    public Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
+        // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
+        try (HttpSolrClient httpClient = getNewHttpSolrServer(solrUrl, 30000, 30000)) {
+            HttpClient client = ((HttpSolrClient) server).getHttpClient();
+            HttpGet httpGet = new HttpGet(
+                    Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml");
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
+            String responseBody = client.execute(httpGet, responseHandler);
+            try (StringReader sr = new StringReader(responseBody)) {
+                return new SAXBuilder().build(sr);
             }
+        } catch (ClientProtocolException e) {
+            logger.error(e.getMessage(), e);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        } catch (JDOMException e) {
+            logger.error(e.getMessage(), e);
         }
 
         return null;
@@ -580,6 +628,8 @@ public final class SolrHelper {
                 return toDelete.size();
             }
         } catch (SolrServerException e) {
+            logger.error(e.getMessage(), e);
+        } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
 
@@ -637,6 +687,8 @@ public final class SolrHelper {
             doc.setField(SolrConstants.DEFAULT, sbDefault.toString().trim());
             return doc;
         } catch (SolrServerException e) {
+            logger.error(e.getMessage(), e);
+        } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
 

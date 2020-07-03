@@ -15,14 +15,12 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.apache.solr.core.CoreContainer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -31,7 +29,8 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 
 /**
  * JUnit test classes that extend this class can use the embedded Solr server setup with an empty index.
@@ -41,37 +40,21 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
     /** Logger for this class. */
     private static Logger logger;
 
-    private static final String CORE_NAME = "test-indexer";
-
-    private static String solrPath = "/opt/digiverso/viewer/apache-solr/";
-
-    private CoreContainer coreContainer;
-    protected EmbeddedSolrServer server;
-    protected SolrHelper solrHelper;
+    protected SolrClient server;
+    protected SolrSearchIndex searchIndex;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
         logger = LoggerFactory.getLogger(AbstractSolrEnabledTest.class);
-        
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.indexOf("win") >= 0) {
-            solrPath = "C:/digiverso/viewer/apache-solr-test/";
-        }
-        Path solrDir = Paths.get(solrPath);
-        Assert.assertTrue("Solr folder not found in " + solrPath, Files.isDirectory(solrDir));
     }
 
     @Before
     public void setUp() throws Exception {
-        coreContainer = new CoreContainer(solrPath);
-        coreContainer.load();
-
-        Assert.assertTrue(coreContainer.isLoaded(CORE_NAME));
-        server = new EmbeddedSolrServer(coreContainer, CORE_NAME);
-        Assert.assertNotNull(server);
-        solrHelper = new SolrHelper(server);
+        server = SolrSearchIndex.getNewHttpSolrServer(Configuration.getInstance("indexerconfig_solr_test.xml").getConfiguration("solrUrl"), 30000,
+                30000);
+        searchIndex = new SolrSearchIndex(server);
     }
 
     @After
@@ -94,13 +77,13 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
             Assert.assertFalse(Files.isDirectory(viewerRootFolder));
         }
 
-        if (coreContainer != null && !coreContainer.isShutDown()) {
-            coreContainer.shutdown();
+        // Delete all data after every test
+        if (searchIndex.deleteByQuery("*:*")) {
+            searchIndex.commit(false);
+            logger.debug("Index cleared");
         }
 
-        logger.debug("Deleting index...");
-        File dataDir = new File(solrPath + CORE_NAME + File.separator + "data");
-        FileUtils.deleteDirectory(dataDir);
+        server.close();
     }
 
     @AfterClass

@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.helper.Hotfolder;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.writestrategy.HierarchicalLazySolrWriteStrategy;
 
 public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
@@ -40,14 +40,14 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     }
 
     /**
-     * @see HierarchicalLazySolrWriteStrategy#HierarchicalLazySolrWriteStrategy(SolrHelper)
+     * @see HierarchicalLazySolrWriteStrategy#HierarchicalLazySolrWriteStrategy(SolrSearchIndex)
      * @verifies set attributes correctly
      */
     @Test
     public void HierarchicalLazySolrWriteStrategy_shouldSetAttributesCorrectly() throws Exception {
-        SolrHelper sh = new SolrHelper(server);
+        SolrSearchIndex sh = new SolrSearchIndex(server);
         HierarchicalLazySolrWriteStrategy strat = new HierarchicalLazySolrWriteStrategy(sh);
-        Assert.assertEquals(sh, strat.solrHelper);
+        Assert.assertEquals(sh, strat.searchIndex);
     }
 
     //    /**
@@ -57,7 +57,7 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     //    @Test
     //    public void writeDocs_shouldWriteAllStructureDocsCorrectly() throws Exception {
     //        Map<String, Path> dataFolders = new HashMap<>();
-    //        SolrHelper sh = new SolrHelper(server);
+    //        SolrSearchIndex sh = new SolrSearchIndex(server);
     //        HierarchicalLazySolrWriteStrategy strat = new HierarchicalLazySolrWriteStrategy(sh);
     //        MetsIndexer indexer = new MetsIndexer(hotfolder);
     //
@@ -74,7 +74,7 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     //    @Test
     //    public void writeDocs_shouldWriteAllPageDocsCorrectly() throws Exception {
     //        Map<String, Path> dataFolders = new HashMap<>();
-    //        SolrHelper sh = new SolrHelper(server);
+    //        SolrSearchIndex sh = new SolrSearchIndex(server);
     //        LazySolrWriteStrategy strat = new HierarchicalLazySolrWriteStrategy(sh);
     //        MetsIndexer indexer = new MetsIndexer(hotfolder);
     //

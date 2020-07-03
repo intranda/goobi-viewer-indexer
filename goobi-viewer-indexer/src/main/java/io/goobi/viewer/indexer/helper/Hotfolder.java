@@ -53,7 +53,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.WriterAppender;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -69,6 +69,7 @@ import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
@@ -107,7 +108,8 @@ public class Hotfolder {
     private StringWriter swSecondaryLog;
     private WriterAppender secondaryAppender;
 
-    private final SolrHelper solrHelper;
+    private final SolrSearchIndex searchIndex;
+    private final SolrSearchIndex oldSearchIndex;
     private final IDataRepositoryStrategy dataRepositoryStrategy;
     private final Queue<Path> reindexQueue = new LinkedList<>();
 
@@ -145,20 +147,43 @@ public class Hotfolder {
         }
     };
 
-    @SuppressWarnings("unchecked")
     /**
      * <p>
      * Constructor for Hotfolder.
      * </p>
      *
      * @param confFilename a {@link java.lang.String} object.
-     * @param solrServer a {@link org.apache.solr.client.solrj.SolrServer} object.
+     * @param solrClient SolrClient object
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      */
-    public Hotfolder(String confFilename, SolrServer solrServer) throws FatalIndexerException {
-        this.solrHelper = new SolrHelper(solrServer);
+    public Hotfolder(String confFilename, SolrClient solrClient) throws FatalIndexerException {
+        this(confFilename, solrClient, null);
+    }
+
+    /**
+     * <p>
+     * Constructor for Hotfolder.
+     * </p>
+     *
+     * @param confFilename a {@link java.lang.String} object.
+     * @param solrClient SolrClient object
+     * @param oldSolrClient Optional old SolrClient for data migration
+     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     */
+    @SuppressWarnings("unchecked")
+    public Hotfolder(String confFilename, SolrClient solrClient, SolrClient oldSolrClient) throws FatalIndexerException {
         logger.debug("Config file: {}", confFilename);
         Configuration config = Configuration.getInstance(confFilename);
+
+        this.searchIndex = new SolrSearchIndex(solrClient);
+        logger.info("Using Solr server at {}", config.getConfiguration("solrUrl"));
+        if (oldSolrClient != null) {
+            this.oldSearchIndex = new SolrSearchIndex(oldSolrClient);
+            logger.info("Also using old Solr server at {}", config.getConfiguration("oldSolrUrl"));
+        } else {
+            this.oldSearchIndex = null;
+        }
+
         try {
             minStorageSpace = Integer.valueOf(config.getConfiguration("minStorageSpace"));
         } catch (NumberFormatException e) {
@@ -312,8 +337,8 @@ public class Hotfolder {
         metsFileSizeThreshold = Configuration.getInstance().getInt("performance.metsFileSizeThreshold", 10485760);
         dataFolderSizeThreshold = Configuration.getInstance().getInt("performance.dataFolderSizeThreshold", 157286400);
 
-        SolrHelper.optimize = Boolean.valueOf(Configuration.getInstance().isAutoOptimize());
-        logger.info("Auto-optimize: {}", SolrHelper.optimize);
+        SolrSearchIndex.optimize = Boolean.valueOf(Configuration.getInstance().isAutoOptimize());
+        logger.info("Auto-optimize: {}", SolrSearchIndex.optimize);
 
         try {
             addVolumeCollectionsToAnchor = Configuration.getInstance().isAddVolumeCollectionsToAnchor();
@@ -447,7 +472,7 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_UGC, true);
             noerror = handleDataFile(fileToReindex, true, reindexSettings);
             if (swSecondaryLog != null) {
-                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")",
+                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                         swSecondaryLog.toString());
             }
         } else {
@@ -491,7 +516,7 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleDataFile(recordFile, false, reindexSettings);
                         // logger.error("for the lulz");
-                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (v" + SolrIndexerDaemon.VERSION + ")",
+                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                                 swSecondaryLog.toString());
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
@@ -519,7 +544,7 @@ public class Hotfolder {
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (swSecondaryLog != null) {
-                checkAndSendErrorReport("Record indexing failed due to insufficient space (v" + SolrIndexerDaemon.VERSION + ")",
+                checkAndSendErrorReport("Record indexing failed due to insufficient space (" + Version.asString() + ")",
                         swSecondaryLog.toString());
             }
             throw new FatalIndexerException("Insufficient free space");
@@ -602,18 +627,19 @@ public class Hotfolder {
                         Files.delete(dataFile);
                         return false;
                 }
+                Utils.submitVersion();
 
             } else if (filename.endsWith(".delete")) {
                 // DELETE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, solrHelper);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
                 removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], true);
             } else if (filename.endsWith(".purge")) {
                 // PURGE (delete with no "deleted" doc)
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, solrHelper);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
                 removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], false);
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, solrHelper);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
                 MetsIndexer.superupdate(dataFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
@@ -677,7 +703,7 @@ public class Hotfolder {
             }
             // Determine document format
             String[] fields = { SolrConstants.SOURCEDOCFORMAT, SolrConstants.DATEDELETED, SolrConstants.DOCTYPE };
-            SolrDocumentList result = solrHelper.search(SolrConstants.PI + ":" + baseFileName, Arrays.asList(fields));
+            SolrDocumentList result = searchIndex.search(SolrConstants.PI + ":" + baseFileName, Arrays.asList(fields));
             if (!result.isEmpty()) {
                 SolrDocument doc = result.get(0);
                 format = FileFormat.getByName((String) doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
@@ -719,7 +745,7 @@ public class Hotfolder {
                     } else {
                         logger.info("Deleting {} file '{}' (no trace document will be created)...", format.name(), actualXmlFile.getFileName());
                     }
-                    success = Indexer.delete(baseFileName, trace, solrHelper);
+                    success = Indexer.delete(baseFileName, trace, searchIndex);
                     break;
                 default:
                     logger.error("Unknown format: {}", format);
@@ -2057,13 +2083,20 @@ public class Hotfolder {
 
     /**
      * <p>
-     * Getter for the field <code>solrHelper</code>.
+     * Getter for the field <code>searchIndex</code>.
      * </p>
      *
-     * @return the solrHelper
+     * @return the searchIndex
      */
-    public SolrHelper getSolrHelper() {
-        return solrHelper;
+    public SolrSearchIndex getSearchIndex() {
+        return searchIndex;
+    }
+
+    /**
+     * @return the oldSearchIndex
+     */
+    public SolrSearchIndex getOldSearchIndex() {
+        return oldSearchIndex;
     }
 
     /**

@@ -32,7 +32,7 @@ import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -55,14 +55,14 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see LazySolrWriteStrategy#LazySolrWriteStrategy(SolrHelper)
+     * @see LazySolrWriteStrategy#LazySolrWriteStrategy(SolrSearchIndex)
      * @verifies set attributes correctly
      */
     @Test
     public void LazySolrWriteStrategy_shouldSetAttributesCorrectly() throws Exception {
-        SolrHelper sh = new SolrHelper(server);
+        SolrSearchIndex sh = new SolrSearchIndex(server);
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
-        Assert.assertEquals(sh, strat.solrHelper);
+        Assert.assertEquals(sh, strat.searchIndex);
     }
 
     /**
@@ -71,12 +71,12 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
-        SolrHelper sh = new SolrHelper(server);
+        SolrSearchIndex sh = new SolrSearchIndex(server);
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        indexer.generatePageDocuments(strat, null, dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, solrHelper)[0],
+        indexer.generatePageDocuments(strat, null, dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, searchIndex, null)[0],
                 "PPN517154005", 1);
         List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
         Assert.assertEquals(3, docs.size());
@@ -96,12 +96,12 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
-        SolrHelper sh = new SolrHelper(server);
+        SolrSearchIndex sh = new SolrSearchIndex(server);
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
         indexer.index(metsFile, false, dataFolders, strat, 1);
-        SolrDocumentList docList = hotfolder.getSolrHelper()
+        SolrDocumentList docList = hotfolder.getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.DOCSTRCT.name(), null);
         Assert.assertEquals(4, docList.size());
     }
@@ -117,12 +117,12 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
-        SolrHelper sh = new SolrHelper(server);
+        SolrSearchIndex sh = new SolrSearchIndex(server);
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
         indexer.index(metsFile, false, dataFolders, strat, 1);
-        SolrDocumentList docList = hotfolder.getSolrHelper()
+        SolrDocumentList docList = hotfolder.getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
         Assert.assertEquals(16, docList.size());
     }

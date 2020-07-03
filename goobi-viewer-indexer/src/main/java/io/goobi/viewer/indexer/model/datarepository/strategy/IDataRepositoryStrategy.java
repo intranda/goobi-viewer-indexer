@@ -19,18 +19,22 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import io.goobi.viewer.indexer.helper.SolrHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
- * <p>IDataRepositoryStrategy interface.</p>
+ * <p>
+ * IDataRepositoryStrategy interface.
+ * </p>
  *
  */
 public interface IDataRepositoryStrategy {
 
     /**
-     * <p>getAllDataRepositories.</p>
+     * <p>
+     * getAllDataRepositories.
+     * </p>
      *
      * @return a {@link java.util.List} object.
      */
@@ -42,11 +46,13 @@ public interface IDataRepositoryStrategy {
      * @param pi a {@link java.lang.String} object.
      * @param dataFile a {@link java.nio.file.Path} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param solrHelper a {@link io.goobi.viewer.indexer.helper.SolrHelper} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
+     * @param oldSearchIndex
      * @return DataReopository array with index 0 containing the selected repository and 1 containing the previous repository, if not equal to
      *         selected repository
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
-    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders, final SolrHelper solrHelper)
+    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders,
+            final SolrSearchIndex searchIndex, final SolrSearchIndex oldSearchIndex)
             throws FatalIndexerException;
 }

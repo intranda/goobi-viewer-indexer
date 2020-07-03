@@ -50,8 +50,10 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -66,6 +68,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.MetsIndexer;
+import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
@@ -157,6 +160,23 @@ public class Utils {
     }
 
     /**
+     * 
+     * @throws FatalIndexerException
+     * @throws HTTPException
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
+    public static void submitVersion()
+            throws FatalIndexerException {
+        String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version/";
+        try {
+            getWebContentPUT(url, new HashMap<>(0), null, Version.asJSON(), ContentType.APPLICATION_JSON.getMimeType());
+        } catch (IOException e) {
+            logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
+        }
+    }
+
+    /**
      * <p>
      * getWebContentGET.
      * </p>
@@ -204,6 +224,50 @@ public class Utils {
      */
     public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies, String body, String contentType)
             throws ClientProtocolException, IOException {
+        return getWebContent("POST", url, params, cookies, body, contentType);
+    }
+
+    /**
+     * <p>
+     * getWebContentPUT.
+     * </p>
+     *
+     * @param url a {@link java.lang.String} object.
+     * @param params a {@link java.util.Map} object.
+     * @param cookies a {@link java.util.Map} object.
+     * @param body Optional entity content.
+     * @param contentType Optional mime type.
+     * @return a {@link java.lang.String} object.
+     * @throws org.apache.http.client.ClientProtocolException if any.
+     * @throws java.io.IOException if any.
+     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     */
+    public static String getWebContentPUT(String url, Map<String, String> params, Map<String, String> cookies, String body, String contentType)
+            throws ClientProtocolException, IOException {
+        return getWebContent("PUT", url, params, cookies, body, contentType);
+    }
+
+    /**
+     * <p>
+     * getWebContent.
+     * </p>
+     *
+     * @param method POST or PUT
+     * @param url a {@link java.lang.String} object.
+     * @param params a {@link java.util.Map} object.
+     * @param cookies a {@link java.util.Map} object.
+     * @param body Optional entity content.
+     * @param contentType Optional mime type.
+     * @return a {@link java.lang.String} object.
+     * @throws org.apache.http.client.ClientProtocolException if any.
+     * @throws java.io.IOException if any.
+     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     */
+    static String getWebContent(String method, String url, Map<String, String> params, Map<String, String> cookies, String body, String contentType)
+            throws ClientProtocolException, IOException {
+        if (method == null || !("POST".equals(method.toUpperCase()) || "PUT".equals(method.toUpperCase()))) {
+            throw new IllegalArgumentException("Illegal method: " + method);
+        }
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
         }
@@ -237,18 +301,29 @@ public class Utils {
                 .setConnectionRequestTimeout(HTTP_TIMEOUT)
                 .build();
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            HttpPost post = new HttpPost(url);
+
+            HttpEntityEnclosingRequestBase requestBase;
+            switch (method.toUpperCase()) {
+                case "POST":
+                    requestBase = new HttpPost(url);
+                    break;
+                case "PUT":
+                    requestBase = new HttpPut(url);
+                    break;
+                default:
+                    return "";
+            }
             if (StringUtils.isNotEmpty(contentType)) {
-                post.setHeader("Content-Type", contentType);
+                requestBase.setHeader("Content-Type", contentType);
             }
             Charset.forName(TextHelper.DEFAULT_ENCODING);
             // TODO allow combinations of params + body
             if (StringUtils.isNotEmpty(body)) {
-                post.setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_ENCODING)));
+                requestBase.setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_ENCODING)));
             } else {
-                post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                requestBase.setEntity(new UrlEncodedFormEntity(nameValuePairs));
             }
-            try (CloseableHttpResponse response = (context == null ? httpClient.execute(post) : httpClient.execute(post, context));
+            try (CloseableHttpResponse response = (context == null ? httpClient.execute(requestBase) : httpClient.execute(requestBase, context));
                     StringWriter writer = new StringWriter()) {
                 int code = response.getStatusLine().getStatusCode();
                 if (code == HttpStatus.SC_OK) {
@@ -428,9 +503,9 @@ public class Utils {
      * @param destFolderPath a {@link java.lang.String} object.
      * @param baseName a {@link java.lang.String} object.
      * @param extension a {@link java.lang.String} object.
-     * @should construct path correctly and avoid collisions
      * @param separator a {@link java.lang.String} object.
      * @return a {@link java.nio.file.Path} object.
+     * @should construct path correctly and avoid collisions
      */
     public static Path getCollisionFreeDataFilePath(String destFolderPath, String baseName, String separator, String extension) {
         if (destFolderPath == null) {

@@ -48,7 +48,9 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
- * <p>DocUpdateIndexer class.</p>
+ * <p>
+ * DocUpdateIndexer class.
+ * </p>
  *
  */
 public class DocUpdateIndexer extends Indexer {
@@ -123,10 +125,11 @@ public class DocUpdateIndexer extends Indexer {
                     .append(iddoc)
                     .toString();
         }
-        dataRepository = hotfolder.getDataRepositoryStrategy().selectDataRepository(pi, null, null, hotfolder.getSolrHelper())[0];
+        dataRepository = hotfolder.getDataRepositoryStrategy()
+                .selectDataRepository(pi, null, null, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex())[0];
 
         try {
-            SolrDocumentList docList = hotfolder.getSolrHelper().search(query, null);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(query, null);
             if (docList == null || docList.isEmpty()) {
                 if (order != null) {
                     ret[1] = "Page not found in index: " + order;
@@ -260,7 +263,7 @@ public class DocUpdateIndexer extends Indexer {
 
             // Remove old UGC
             query = SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
-            SolrDocumentList ugcDocList = hotfolder.getSolrHelper()
+            SolrDocumentList ugcDocList = hotfolder.getSearchIndex()
                     .search(SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
                             Collections.singletonList(SolrConstants.IDDOC));
             if (ugcDocList != null && !ugcDocList.isEmpty()) {
@@ -270,7 +273,7 @@ public class DocUpdateIndexer extends Indexer {
                     oldIddocs.add((String) oldDoc.getFieldValue(SolrConstants.IDDOC));
                 }
                 if (!oldIddocs.isEmpty()) {
-                    hotfolder.getSolrHelper().deleteDocuments(oldIddocs);
+                    hotfolder.getSearchIndex().deleteDocuments(oldIddocs);
                 } else {
                     logger.error("No IDDOC values found in docs matching query: {}", query);
                 }
@@ -281,7 +284,7 @@ public class DocUpdateIndexer extends Indexer {
                 List<SolrInputDocument> newUgcDocList = generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
                         pi, anchorPi, groupIds, order, pageFileBaseName);
                 if (!newUgcDocList.isEmpty()) {
-                    hotfolder.getSolrHelper().writeToIndex(newUgcDocList);
+                    hotfolder.getSearchIndex().writeToIndex(newUgcDocList);
                 } else {
                     logger.warn("No user generated content values found for page {}.", order);
                 }
@@ -295,13 +298,13 @@ public class DocUpdateIndexer extends Indexer {
 
             if (!partialUpdates.isEmpty()) {
                 // Update doc (only if partialUpdates is not empty, otherwise all fields but IDDOC will be deleted!)
-                if (!hotfolder.getSolrHelper().updateDoc(doc, partialUpdates)) {
+                if (!hotfolder.getSearchIndex().updateDoc(doc, partialUpdates)) {
                     ret[1] = "Could not update document for IDDOC=" + iddoc;
                     return ret;
                 }
             } else {
                 // Otherwise just commit the new UGC docs
-                hotfolder.getSolrHelper().commit(false);
+                hotfolder.getSearchIndex().commit(false);
             }
 
             ret[0] = pi;
@@ -311,7 +314,7 @@ public class DocUpdateIndexer extends Indexer {
             logger.error(e.getMessage(), e);
             ret[0] = "ERROR";
             ret[1] = e.getMessage();
-            hotfolder.getSolrHelper().rollback();
+            hotfolder.getSearchIndex().rollback();
         }
 
         return ret;
