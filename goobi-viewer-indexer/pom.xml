@@ -374,7 +374,6 @@
 				<directory>src/main/resources/</directory>
 				<excludes>
 					<exclude>other/</exclude>
-					<exclude>rebel.xml</exclude>
 				</excludes>
 			</resource>
 		</resources>
