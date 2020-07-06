@@ -181,26 +181,26 @@ public class Utils {
      * getWebContentGET.
      * </p>
      *
-     * @param urlString a {@link java.lang.String} object.
+     * @param url a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
-    public static String getWebContentGET(String urlString) throws ClientProtocolException, IOException, HTTPException {
+    public static String getWebContentGET(String url) throws ClientProtocolException, IOException, HTTPException {
         RequestConfig defaultRequestConfig = RequestConfig.custom()
                 .setSocketTimeout(HTTP_TIMEOUT)
                 .setConnectTimeout(HTTP_TIMEOUT)
                 .setConnectionRequestTimeout(HTTP_TIMEOUT)
                 .build();
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            HttpGet get = new HttpGet(urlString);
+            HttpGet get = new HttpGet(url);
             try (CloseableHttpResponse response = httpClient.execute(get); StringWriter writer = new StringWriter()) {
                 int code = response.getStatusLine().getStatusCode();
                 if (code == HttpStatus.SC_OK) {
                     return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING);
                 }
-                logger.error("{}: {}\n{}", code, response.getStatusLine().getReasonPhrase(),
+                logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
                         EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING));
                 return response.getStatusLine().getReasonPhrase();
             }
@@ -330,7 +330,7 @@ public class Utils {
                     logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
                     return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING);
                 }
-                logger.error("{}: {}\n{}", code, response.getStatusLine().getReasonPhrase(),
+                logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
                         EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING));
                 return response.getStatusLine().getReasonPhrase();
             }
