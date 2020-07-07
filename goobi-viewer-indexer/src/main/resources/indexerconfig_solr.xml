@@ -2877,9 +2877,12 @@
 		<MD_GML_POLYGON>
 			<list>
 				<item>
-					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">gml:pos</field>
+                    </groupEntity>
 				</item>
 			</list>
 		</MD_GML_POLYGON>
@@ -2887,9 +2890,10 @@
 		<MD_GEOJSON_POLYGON>
 			<list>
 				<item>
-					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
+					<onefield separator="#SPACE#">true</onefield>
 					<geoJSONSource addSearchField="true">gml:Polygon:4326</geoJSONSource>
 				</item>
 			</list>

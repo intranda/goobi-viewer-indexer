@@ -77,11 +77,8 @@ public class MetadataHelper {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(MetadataHelper.class);
 
-    private static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
     private static final String XPATH_ROOT_PLACEHOLDER = "{{{ROOT}}}";
     public static final String FIELD_WKT_COORDS = "WKT_COORDS";
-
-    private static String multiValueSeparator = DEFAULT_MULTIVALUE_SEPARATOR;
 
     /** Constant <code>FORMAT_TWO_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
@@ -421,7 +418,7 @@ public class MetadataHelper {
                                         StringBuilder sb = new StringBuilder();
                                         sb.append(fieldValues.get(0));
                                         if (sb.length() > 0) {
-                                            sb.append(multiValueSeparator);
+                                            sb.append(configurationItem.getOneFieldSeparator());
                                         }
                                         sb.append(fieldValue);
                                         fieldValues.set(0, sb.toString());

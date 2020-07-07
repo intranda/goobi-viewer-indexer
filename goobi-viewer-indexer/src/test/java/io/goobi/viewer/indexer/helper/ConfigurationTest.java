@@ -89,6 +89,7 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertEquals("first", fieldConfig.getNode());
         Assert.assertTrue(fieldConfig.isOneToken());
         Assert.assertTrue(fieldConfig.isOneField());
+        Assert.assertEquals(" , ", fieldConfig.getOneFieldSeparator());
         Assert.assertEquals("XXX", fieldConfig.getConstantValue());
         Assert.assertTrue(fieldConfig.isLowercase());
         Assert.assertTrue(fieldConfig.isAddToDefault());
