@@ -48,7 +48,8 @@
 		<jackson.version>2.11.1</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
-		<javax.mail.version>1.6.2</javax.mail.version>
+        <javax.mail.version>1.6.2</javax.mail.version>
+        <javax.xml.ws.version>2.3.1</javax.xml.ws.version>
 		<jdom2.version>2.0.6</jdom2.version>
 		<jsoup.version>1.13.1</jsoup.version>
 		<junit.version>4.13</junit.version>
@@ -188,7 +189,12 @@
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
 			<version>${javax.mail.version}</version>
-		</dependency>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.ws</groupId>
+            <artifactId>jaxws-api</artifactId>
+            <version>${javax.xml.ws.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
