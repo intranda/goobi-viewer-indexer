@@ -1689,7 +1689,7 @@ public class MetsIndexer extends Indexer {
                 child.removeAttribute("CONTENTIDS");
             }
 
-            // ID Anpassen
+            // Normalize LOGID
             String strIdTail = String.valueOf(j + 1);
             String strId = strIdTail;
             if (j < 10) {
@@ -2271,6 +2271,7 @@ public class MetsIndexer extends Indexer {
      * @throws java.io.IOException in case of errors.
      * @should copy new METS file correctly
      * @should copy old METS file to updated mets folder if file already exists
+     * @should remove anti-collision name parts
      */
     public static void superupdate(Path metsFile, Path updatedMetsFolder, DataRepository dataRepository) throws IOException {
         logger.debug("Renaming and moving updated anchor...");
@@ -2285,6 +2286,10 @@ public class MetsIndexer extends Indexer {
         }
 
         String baseFileName = FilenameUtils.getBaseName(metsFile.getFileName().toString());
+        // Remove anti-collision name part
+        if (baseFileName.contains("#")) {
+            baseFileName = baseFileName.substring(0, baseFileName.indexOf('#'));
+        }
         StringBuilder sbNewFilename = new StringBuilder(baseFileName).append(".xml");
         if (sbNewFilename.length() > 0) {
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
@@ -2297,7 +2302,8 @@ public class MetsIndexer extends Indexer {
                         .append(LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime))
                         .append(".xml")
                         .toString();
-                Files.move(indexed, Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename));
+                Path destMetsFilePath = Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename);
+                Files.move(indexed, destMetsFilePath);
                 logger.debug("Old anchor file copied to '{}{}{}'.", updatedMetsFolder.toAbsolutePath(), File.separator, oldMetsFilename);
                 // Then copy the new file again, overwriting the old
                 Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed, StandardCopyOption.REPLACE_EXISTING);

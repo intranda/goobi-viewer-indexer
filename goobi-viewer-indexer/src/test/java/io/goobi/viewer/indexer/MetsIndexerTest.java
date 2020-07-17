@@ -966,5 +966,29 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(files[0].startsWith("PPN123"));
         Assert.assertTrue(files[0].endsWith(".xml"));
     }
+    
 
+    /**
+     * @see MetsIndexer#superupdate(Path,Path,DataRepository)
+     * @verifies remove anti-collision name parts
+     */
+    @Test
+    public void superupdate_shouldRemoveAnticollisionNameParts() throws Exception {
+        Path viewerRootFolder = Paths.get("target/viewer");
+        Assert.assertTrue(Files.isDirectory(viewerRootFolder));
+        Path updatedMetsFolder = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "updated_mets");
+        Assert.assertTrue(Files.isDirectory(updatedMetsFolder));
+
+        Path metsFile = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "PPN123#0.UPDATED");
+        Files.createFile(metsFile);
+        Assert.assertTrue(Files.isRegularFile(metsFile));
+
+        DataRepository dataRepository = new DataRepository(viewerRootFolder.toAbsolutePath().toString(), true);
+        MetsIndexer.superupdate(metsFile, updatedMetsFolder, dataRepository);
+
+        Path wrongMetsFile = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), "PPN123#0.xml");
+        Assert.assertFalse(Files.isRegularFile(wrongMetsFile));
+        Path newMetsFile = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), "PPN123.xml");
+        Assert.assertTrue(Files.isRegularFile(newMetsFile));
+    }
 }
