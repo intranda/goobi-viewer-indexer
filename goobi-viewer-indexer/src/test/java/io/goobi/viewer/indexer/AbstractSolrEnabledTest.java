@@ -58,7 +58,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
         Assert.assertTrue("Only default or localhost Solr URLs are allowed for testing.",
                 solrUrl.startsWith("http://localhost:") || solrUrl.equals("https://viewer-testing-index.goobi.io/solr/indexer-testing"));
 
-        client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, 30000, 30000);
+        client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, 30000, 30000, true);
         searchIndex = new SolrSearchIndex(client);
     }
 
