@@ -79,6 +79,7 @@ public class MetadataHelper {
 
     private static final String XPATH_ROOT_PLACEHOLDER = "{{{ROOT}}}";
     public static final String FIELD_WKT_COORDS = "WKT_COORDS";
+    public static final String FIELD_HAS_WKT_COORDS = "BOOL_WKT_COORDS";
 
     /** Constant <code>FORMAT_TWO_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
@@ -337,6 +338,7 @@ public class MetadataHelper {
                                         // Add WKT search field
                                         if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
                                             ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                                            ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
                                         }
                                     }
 
@@ -598,6 +600,7 @@ public class MetadataHelper {
                     if (textValueSplit.length > 1) {
                         String coords = textValueSplit[0] + " " + textValueSplit[1];
                         ret.add(new LuceneField(FIELD_WKT_COORDS, coords));
+                        ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
                     }
 
                     // Add geoJSON

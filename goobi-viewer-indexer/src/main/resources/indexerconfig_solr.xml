@@ -9,7 +9,7 @@
 		<minStorageSpace>2048</minStorageSpace>
 
         <!-- Main Solr index URL -->
-		<solrUrl>http://localhost:8081/solr/collection2</solrUrl>
+		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
 		<oldSolrUrl>http://localhost:8081/solr/collection1</oldSolrUrl>
 		<viewerUrl>http://localhost:8080/viewer</viewerUrl>
@@ -2970,5 +2970,41 @@
 				</item>
 			</list>
 		</MD2_ALLPERSONS>
+		
+        <MD_ACCESSLOCATIONS>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessLocations
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                                        <groupEntity type="VIAF">
+                                                <field name="MD_VALUE">text()</field>
+                                                <field name="MD_DISPLAYFORM">text()</field>
+                                                <field name="NORM_URI_VIAF">@valueURI</field>
+                                        </groupEntity>
+
+                </item>
+            </list>
+        </MD_ACCESSLOCATIONS>
+        
+        <MD_INTRANDAINSTITUTION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:Institution</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                            <addSortField>true</addSortField>
+                                        <groupEntity type="VIAF">
+                                                <field name="MD_VALUE">text()</field>
+                                                <field name="MD_DISPLAYFORM">text()</field>
+                                                <field name="NORM_URI_VIAF">@valueURI</field>
+                                        </groupEntity>
+
+                </item>
+            </list>
+        </MD_INTRANDAINSTITUTION>
+
+
 	</fields>
 </root>
