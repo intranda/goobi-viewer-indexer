@@ -1201,6 +1201,11 @@ public class MetadataHelper {
                     }
 
                     if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
+                        // Skip values that probably aren't real identifiers or URIs
+                        if (fieldValue.length() < 2) {
+                            logger.info("Authority URI too short: {}", fieldValue);
+                            continue;
+                        }
                         if (NormDataImporter.FIELD_URI.equals(subfield.getFieldname())) {
                             normUriFound = true;
                             ret.setAuthorityURI(fieldValue);

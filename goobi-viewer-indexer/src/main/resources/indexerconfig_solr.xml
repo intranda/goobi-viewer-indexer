@@ -11,7 +11,7 @@
         <!-- Main Solr index URL -->
 		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
-		<oldSolrUrl>http://localhost:8081/solr/collection1</oldSolrUrl>
+		<oldSolrUrl></oldSolrUrl>
 		<viewerUrl>http://localhost:8080/viewer</viewerUrl>
 
 		<!-- Folder configuration -->
