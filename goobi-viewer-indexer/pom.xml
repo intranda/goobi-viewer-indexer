@@ -55,7 +55,6 @@
 		<metadata-extractor.version>2.14.0</metadata-extractor.version>
 		<solr.version>8.5.2</solr.version>
 		<slf4j.version>1.7.30</slf4j.version>
-		<tomcat.version>9.0.37</tomcat.version>
 	</properties>
 
 
@@ -214,12 +213,6 @@
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-test-framework</artifactId>
 			<version>${solr.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tomcat</groupId>
-			<artifactId>tomcat-servlet-api</artifactId>
-			<version>${tomcat.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
