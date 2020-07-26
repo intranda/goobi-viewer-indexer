@@ -55,7 +55,6 @@
 		<jsoup.version>1.13.1</jsoup.version>
 		<json.version>20200518</json.version>
 		<junit.version>4.13</junit.version>
-		<lucene.version>8.5.1</lucene.version>
 		<metadata-extractor.version>2.14.0</metadata-extractor.version>
 		<solr.version>8.5.2</solr.version>
 		<slf4j.version>1.7.30</slf4j.version>
@@ -252,78 +251,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>${log4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-common</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-kuromoji</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-phonetic</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-codecs</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-core</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-grouping</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-highlighter</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-join</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-misc</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queries</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-suggest</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-test-framework</artifactId>
-			<version>${lucene.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.drewnoakes</groupId>
