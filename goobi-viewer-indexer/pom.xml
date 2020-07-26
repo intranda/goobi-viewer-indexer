@@ -295,7 +295,7 @@
                             <goal>analyze-only</goal>
                         </goals>
                         <configuration>
-                            <failOnWarning>false</failOnWarning>
+                            <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <!-- JXPath is used at XPathExpressionEngine from org.apache.commons.configuration2, i.e. LanguageHelper -->
                                 <ignoredUnusedDeclaredDependency>commons-jxpath:commons-jxpath</ignoredUnusedDeclaredDependency>
@@ -305,6 +305,9 @@
 
                                 <!-- imageio is used to read image dimensions during indexing -->
                                 <ignoredUnusedDeclaredDependency>com.github.jai-imageio:jai-imageio-core</ignoredUnusedDeclaredDependency>
+
+                                <!-- this is needed during runtime, otherwise we have no logfiles -->
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
