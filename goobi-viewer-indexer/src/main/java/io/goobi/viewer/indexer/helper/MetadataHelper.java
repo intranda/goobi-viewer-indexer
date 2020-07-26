@@ -39,8 +39,8 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -746,7 +746,7 @@ public class MetadataHelper {
         String ret = fieldValue;
         if (StringUtils.isNotEmpty(ret)) {
             // Remove any prior HTML escaping, otherwise strings like '&amp;amp;' might occur
-            ret = StringEscapeUtils.unescapeHtml(ret);
+            ret = StringEscapeUtils.unescapeHtml4(ret);
         }
 
         return ret;
