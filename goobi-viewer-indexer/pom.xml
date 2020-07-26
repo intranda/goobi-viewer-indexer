@@ -56,7 +56,6 @@
 		<solr.version>8.5.2</solr.version>
 		<slf4j.version>1.7.30</slf4j.version>
 		<tomcat.version>9.0.37</tomcat.version>
-		<xstream.version>1.4.12</xstream.version>
 	</properties>
 
 
@@ -228,11 +227,6 @@
 			<artifactId>tomcat-servlet-api</artifactId>
 			<version>${tomcat.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.thoughtworks.xstream</groupId>
-			<artifactId>xstream</artifactId>
-			<version>${xstream.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.jai-imageio</groupId>
