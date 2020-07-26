@@ -297,6 +297,9 @@
 
                                 <!-- jaxen is needed by jdom2 -->
                                 <ignoredUnusedDeclaredDependency>jaxen:jaxen</ignoredUnusedDeclaredDependency>
+
+                                <!-- imageio is used to read image dimensions during indexing -->
+                                <ignoredUnusedDeclaredDependency>com.github.jai-imageio:jai-imageio-core</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
