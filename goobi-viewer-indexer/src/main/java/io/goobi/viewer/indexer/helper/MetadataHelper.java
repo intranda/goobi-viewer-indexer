@@ -245,13 +245,13 @@ public class MetadataHelper {
                     String xpath = xpathConfig.getxPath();
                     String fieldValue = "";
                     String query;
-                    // Cut off "displayForm" if the field is to be aggregated
+                    // Cut off "displayForm" if the field is to be grouped
                     if (configurationItem.isGroupEntity() && xpath.endsWith("/mods:displayForm")) {
                         xpath = xpath.substring(0, xpath.length() - 17);
                         logger.debug("new xpath: {}", xpath);
                     }
                     if (xpath.contains(XPATH_ROOT_PLACEHOLDER)) {
-                        // Replace the placeholder with the prefix (e.g. in expresions using concat())
+                        // Replace the placeholder with the prefix (e.g. in expressions using concat())
                         query = xpath.replace(XPATH_ROOT_PLACEHOLDER, queryPrefix);
                     } else {
                         // User prefix as prefix
@@ -259,7 +259,7 @@ public class MetadataHelper {
                     }
                     for (Element currentElement : elementsToIterateOver) {
                         List list = xp.evaluate(query, currentElement);
-                        if (list == null) {
+                        if (list == null || list.isEmpty()) {
                             continue;
                         }
                         for (Object xpathAnswerObject : list) {
