@@ -50,7 +50,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -1212,13 +1212,15 @@ public class MetsIndexer extends Indexer {
             boolean foundCrowdsourcingData = false;
             boolean altoWritten = false;
             if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
+                File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
                 try {
-                    altoData = TextHelper.readAltoFile(
-                            new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
+                    altoData = TextHelper.readAltoFile(altoFile);
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
-                } catch (JDOMException | IOException e) {
-                    logger.error(e.getMessage(), e);
+                } catch (IOException | JDOMException e) {
+                    if (!e.getMessage().contains("Premature end of file")) {
+                        logger.error("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
+                    }
                 }
                 if (altoData != null) {
                     foundCrowdsourcingData = true;
@@ -1261,13 +1263,13 @@ public class MetsIndexer extends Indexer {
             // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
             if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
                     && dataFolders.get(DataRepository.PARAM_ALTO) != null && !"info".equals(baseFileName)) {
+                File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
                 try {
-                    altoData = TextHelper.readAltoFile(
-                            new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
-                } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
+                    altoData = TextHelper.readAltoFile(altoFile);
+                } catch (IOException | JDOMException e) {
+                    if (!e.getMessage().contains("Premature end of file")) {
+                        logger.error("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
+                    }
                 }
                 if (altoData != null) {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
@@ -1687,7 +1689,7 @@ public class MetsIndexer extends Indexer {
                 child.removeAttribute("CONTENTIDS");
             }
 
-            // ID Anpassen
+            // Normalize LOGID
             String strIdTail = String.valueOf(j + 1);
             String strId = strIdTail;
             if (j < 10) {
@@ -2269,6 +2271,7 @@ public class MetsIndexer extends Indexer {
      * @throws java.io.IOException in case of errors.
      * @should copy new METS file correctly
      * @should copy old METS file to updated mets folder if file already exists
+     * @should remove anti-collision name parts
      */
     public static void superupdate(Path metsFile, Path updatedMetsFolder, DataRepository dataRepository) throws IOException {
         logger.debug("Renaming and moving updated anchor...");
@@ -2283,6 +2286,10 @@ public class MetsIndexer extends Indexer {
         }
 
         String baseFileName = FilenameUtils.getBaseName(metsFile.getFileName().toString());
+        // Remove anti-collision name part
+        if (baseFileName.contains("#")) {
+            baseFileName = baseFileName.substring(0, baseFileName.indexOf('#'));
+        }
         StringBuilder sbNewFilename = new StringBuilder(baseFileName).append(".xml");
         if (sbNewFilename.length() > 0) {
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
@@ -2295,7 +2302,8 @@ public class MetsIndexer extends Indexer {
                         .append(LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime))
                         .append(".xml")
                         .toString();
-                Files.move(indexed, Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename));
+                Path destMetsFilePath = Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename);
+                Files.move(indexed, destMetsFilePath);
                 logger.debug("Old anchor file copied to '{}{}{}'.", updatedMetsFolder.toAbsolutePath(), File.separator, oldMetsFilename);
                 // Then copy the new file again, overwriting the old
                 Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed, StandardCopyOption.REPLACE_EXISTING);

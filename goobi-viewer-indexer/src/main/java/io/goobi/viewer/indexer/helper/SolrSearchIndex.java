@@ -80,11 +80,13 @@ public final class SolrSearchIndex {
      * @param solrUrl URL to the Solr server
      * @param timeoutSocket
      * @param timeoutConnection
+     * @param allowCompression
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      * @should return null if solrUrl is empty
      */
-    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, int timeoutSocket, int timeoutConnection) throws FatalIndexerException {
+    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, int timeoutSocket, int timeoutConnection, boolean allowCompression)
+            throws FatalIndexerException {
         if (StringUtils.isEmpty(solrUrl)) {
             return null;
         }
@@ -93,7 +95,7 @@ public final class SolrSearchIndex {
                 .withBaseSolrUrl(solrUrl)
                 .withSocketTimeout(timeoutSocket)
                 .withConnectionTimeout(timeoutConnection)
-                .allowCompression(true)
+                .allowCompression(allowCompression)
                 .build();
         //        server.setDefaultMaxConnectionsPerHost(100);
         //        server.setMaxTotalConnections(100);
@@ -579,12 +581,12 @@ public final class SolrSearchIndex {
      * @return a {@link org.jdom2.Document} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
      */
-    public Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
+    public static Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
-        try (HttpSolrClient httpClient = getNewHttpSolrClient(solrUrl, 30000, 30000)) {
-            HttpClient client = ((HttpSolrClient) server).getHttpClient();
-            HttpGet httpGet = new HttpGet(
-                    Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml");
+        String url = Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml";
+        try (HttpSolrClient solrClient = getNewHttpSolrClient(solrUrl, 30000, 30000, false)) {
+            HttpClient client = solrClient.getHttpClient();
+            HttpGet httpGet = new HttpGet(url);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = client.execute(httpGet, responseHandler);
             try (StringReader sr = new StringReader(responseBody)) {
@@ -593,7 +595,7 @@ public final class SolrSearchIndex {
         } catch (ClientProtocolException e) {
             logger.error(e.getMessage(), e);
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error(e.getMessage() + "; URL: " + url, e);
         } catch (JDOMException e) {
             logger.error(e.getMessage(), e);
         }

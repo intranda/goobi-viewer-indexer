@@ -28,7 +28,7 @@ import java.util.Set;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,6 +130,7 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("getchildren", config.getString("fields." + fieldname + ".list.item(" + i + ").getchildren"));
                 fieldValues.put("onetoken", config.getString("fields." + fieldname + ".list.item(" + i + ").onetoken"));
                 fieldValues.put("onefield", config.getString("fields." + fieldname + ".list.item(" + i + ").onefield"));
+                fieldValues.put("onefieldSeparator", config.getString("fields." + fieldname + ".list.item(" + i + ").onefield[@separator]"));
                 fieldValues.put("constantValue", config.getString("fields." + fieldname + ".list.item(" + i + ").constantValue"));
                 fieldValues.put("splittingCharacter", config.getString("fields." + fieldname + ".list.item(" + i + ").splittingCharacter"));
                 fieldValues.put("getnode", config.getString("fields." + fieldname + ".list.item(" + i + ").getnode"));
@@ -319,6 +320,10 @@ public final class MetadataConfigurationManager {
             } else {
                 configurationItem.setOneField(true);
             }
+        }
+
+        if (configurationMap.containsKey("onefieldSeparator")) {
+            configurationItem.setOneFieldSeparator(((String) configurationMap.get("onefieldSeparator")).replace(SPACE_PLACEHOLDER, " "));
         }
 
         if (configurationMap.containsKey("splittingCharacter")) {

@@ -172,7 +172,7 @@
 					<getchildren>false</getchildren>
 					<getnode>first</getnode>
 					<onetoken>true</onetoken>
-					<onefield>true</onefield>
+					<onefield separator="#SPACE#,#SPACE#">true</onefield>
 					<lowercase>true</lowercase>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>

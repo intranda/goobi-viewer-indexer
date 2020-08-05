@@ -26,6 +26,8 @@ import org.apache.commons.collections.map.MultiValueMap;
  */
 public class FieldConfig {
 
+    private static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
+
     private String fieldname;
     private List<XPathConfig> xPathConfigurations;
     private String node; // first
@@ -36,6 +38,7 @@ public class FieldConfig {
     private String valuepostfix = "";
     private boolean oneToken = false;
     private boolean oneField = false;
+    private String oneFieldSeparator = DEFAULT_MULTIVALUE_SEPARATOR;
     private boolean addUntokenizedVersion = true; // for the browsing menu
     private boolean lowercase = false;
     private String splittingCharacter = null;
@@ -295,6 +298,20 @@ public class FieldConfig {
      */
     public void setOneField(boolean oneField) {
         this.oneField = oneField;
+    }
+
+    /**
+     * @return the oneFieldSeparator
+     */
+    public String getOneFieldSeparator() {
+        return oneFieldSeparator;
+    }
+
+    /**
+     * @param oneFieldSeparator the oneFieldSeparator to set
+     */
+    public void setOneFieldSeparator(String oneFieldSeparator) {
+        this.oneFieldSeparator = oneFieldSeparator;
     }
 
     /**

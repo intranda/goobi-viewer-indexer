@@ -30,7 +30,7 @@
 	in server mode, and use a higher logging level that avoids logging every 
 	request -->
 
-<schema name="goobi_viewer-20200624" version="1.6">
+<schema name="goobi_viewer-20200717" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -633,7 +633,7 @@
       http://lucene.apache.org/solr/guide/spatial-search.html
     -->
     <fieldType name="location_rpt" class="solr.SpatialRecursivePrefixTreeFieldType"
-               geo="true" distErrPct="0.025" maxDistErr="0.001" distanceUnits="kilometers" />
+        spatialContextFactory="JTS" geo="true" distErrPct="0.025" maxDistErr="0.001" distanceUnits="kilometers" />
 
    <!-- Money/currency field type. See http://wiki.apache.org/solr/MoneyFieldType
         Parameters:

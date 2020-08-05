@@ -9,9 +9,9 @@
 		<minStorageSpace>2048</minStorageSpace>
 
         <!-- Main Solr index URL -->
-		<solrUrl>http://localhost:8081/solr/collection2</solrUrl>
+		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
-		<oldSolrUrl>http://localhost:8081/solr/collection1</oldSolrUrl>
+		<oldSolrUrl></oldSolrUrl>
 		<viewerUrl>http://localhost:8080/viewer</viewerUrl>
 
 		<!-- Folder configuration -->
@@ -555,6 +555,8 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@keyDate="yes"][@encoding="w3cdtf"]</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@keyDate)][@encoding="w3cdtf"]	</item>
+							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@keyDate="yes"][@encoding="iso8601"]</item>
+							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@keyDate)][@encoding="iso8601"]</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@encoding)][not(@point)]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue</item>
 						</list>
@@ -2045,6 +2047,7 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[@encoding='w3cdtf']</item>
+							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[@encoding='iso8601']</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[not(@encoding)][not(@point)]</item>
 							<item>dc:date</item>
 						</list>
@@ -2874,9 +2877,12 @@
 		<MD_GML_POLYGON>
 			<list>
 				<item>
-					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">gml:pos</field>
+                    </groupEntity>
 				</item>
 			</list>
 		</MD_GML_POLYGON>
@@ -2884,9 +2890,10 @@
 		<MD_GEOJSON_POLYGON>
 			<list>
 				<item>
-					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList</xpath>
+					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
+					<onefield separator="#SPACE#">true</onefield>
 					<geoJSONSource addSearchField="true">gml:Polygon:4326</geoJSONSource>
 				</item>
 			</list>
@@ -2963,5 +2970,41 @@
 				</item>
 			</list>
 		</MD2_ALLPERSONS>
+		
+        <MD_ACCESSLOCATIONS>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessLocations
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                                        <groupEntity type="VIAF">
+                                                <field name="MD_VALUE">text()</field>
+                                                <field name="MD_DISPLAYFORM">text()</field>
+                                                <field name="NORM_URI_VIAF">@valueURI</field>
+                                        </groupEntity>
+
+                </item>
+            </list>
+        </MD_ACCESSLOCATIONS>
+        
+        <MD_INTRANDAINSTITUTION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:Institution</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                            <addSortField>true</addSortField>
+                                        <groupEntity type="VIAF">
+                                                <field name="MD_VALUE">text()</field>
+                                                <field name="MD_DISPLAYFORM">text()</field>
+                                                <field name="NORM_URI_VIAF">@valueURI</field>
+                                        </groupEntity>
+
+                </item>
+            </list>
+        </MD_INTRANDAINSTITUTION>
+
+
 	</fields>
 </root>

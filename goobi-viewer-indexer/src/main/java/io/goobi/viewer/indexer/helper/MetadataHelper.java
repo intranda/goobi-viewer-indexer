@@ -39,8 +39,8 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -77,11 +77,9 @@ public class MetadataHelper {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(MetadataHelper.class);
 
-    private static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
     private static final String XPATH_ROOT_PLACEHOLDER = "{{{ROOT}}}";
     public static final String FIELD_WKT_COORDS = "WKT_COORDS";
-
-    private static String multiValueSeparator = DEFAULT_MULTIVALUE_SEPARATOR;
+    public static final String FIELD_HAS_WKT_COORDS = "BOOL_WKT_COORDS";
 
     /** Constant <code>FORMAT_TWO_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
@@ -247,13 +245,13 @@ public class MetadataHelper {
                     String xpath = xpathConfig.getxPath();
                     String fieldValue = "";
                     String query;
-                    // Cut off "displayForm" if the field is to be aggregated
+                    // Cut off "displayForm" if the field is to be grouped
                     if (configurationItem.isGroupEntity() && xpath.endsWith("/mods:displayForm")) {
                         xpath = xpath.substring(0, xpath.length() - 17);
                         logger.debug("new xpath: {}", xpath);
                     }
                     if (xpath.contains(XPATH_ROOT_PLACEHOLDER)) {
-                        // Replace the placeholder with the prefix (e.g. in expresions using concat())
+                        // Replace the placeholder with the prefix (e.g. in expressions using concat())
                         query = xpath.replace(XPATH_ROOT_PLACEHOLDER, queryPrefix);
                     } else {
                         // User prefix as prefix
@@ -261,7 +259,7 @@ public class MetadataHelper {
                     }
                     for (Element currentElement : elementsToIterateOver) {
                         List list = xp.evaluate(query, currentElement);
-                        if (list == null) {
+                        if (list == null || list.isEmpty()) {
                             continue;
                         }
                         for (Object xpathAnswerObject : list) {
@@ -340,6 +338,7 @@ public class MetadataHelper {
                                         // Add WKT search field
                                         if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
                                             ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                                            ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
                                         }
                                     }
 
@@ -421,7 +420,7 @@ public class MetadataHelper {
                                         StringBuilder sb = new StringBuilder();
                                         sb.append(fieldValues.get(0));
                                         if (sb.length() > 0) {
-                                            sb.append(multiValueSeparator);
+                                            sb.append(configurationItem.getOneFieldSeparator());
                                         }
                                         sb.append(fieldValue);
                                         fieldValues.set(0, sb.toString());
@@ -601,6 +600,7 @@ public class MetadataHelper {
                     if (textValueSplit.length > 1) {
                         String coords = textValueSplit[0] + " " + textValueSplit[1];
                         ret.add(new LuceneField(FIELD_WKT_COORDS, coords));
+                        ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
                     }
 
                     // Add geoJSON
@@ -746,7 +746,7 @@ public class MetadataHelper {
         String ret = fieldValue;
         if (StringUtils.isNotEmpty(ret)) {
             // Remove any prior HTML escaping, otherwise strings like '&amp;amp;' might occur
-            ret = StringEscapeUtils.unescapeHtml(ret);
+            ret = StringEscapeUtils.unescapeHtml4(ret);
         }
 
         return ret;
@@ -1201,6 +1201,11 @@ public class MetadataHelper {
                     }
 
                     if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
+                        // Skip values that probably aren't real identifiers or URIs
+                        if (fieldValue.length() < 2) {
+                            logger.trace("Authority URI too short: {}", fieldValue);
+                            continue;
+                        }
                         if (NormDataImporter.FIELD_URI.equals(subfield.getFieldname())) {
                             normUriFound = true;
                             ret.setAuthorityURI(fieldValue);

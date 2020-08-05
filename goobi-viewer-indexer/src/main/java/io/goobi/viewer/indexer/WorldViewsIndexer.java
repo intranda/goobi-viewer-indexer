@@ -39,7 +39,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -835,13 +835,15 @@ public class WorldViewsIndexer extends Indexer {
             // Add complete crowdsourcing ALTO document and full-text generated from ALTO, if available
             boolean foundCrowdsourcingData = false;
             if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
+                File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
                 try {
-                    altoData = TextHelper.readAltoFile(
-                            new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
+                    altoData = TextHelper.readAltoFile(altoFile);
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
                 } catch (JDOMException | IOException e) {
-                    logger.error(e.getMessage(), e);
+                    if (!e.getMessage().contains("Premature end of file")) {
+                        logger.error("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
+                    }
                 }
                 if (altoData != null) {
                     foundCrowdsourcingData = true;
@@ -885,13 +887,13 @@ public class WorldViewsIndexer extends Indexer {
             // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
             if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
                     && dataFolders.get(DataRepository.PARAM_ALTO) != null) {
+                File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
                 try {
-                    altoData = TextHelper.readAltoFile(
-                            new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
-                } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
+                    altoData = TextHelper.readAltoFile(altoFile);
+                } catch (IOException | JDOMException e) {
+                    if (!e.getMessage().contains("Premature end of file")) {
+                        logger.error("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
+                    }
                 }
                 if (altoData != null) {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {

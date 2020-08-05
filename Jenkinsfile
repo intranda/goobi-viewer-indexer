@@ -3,7 +3,7 @@ pipeline {
   agent {
     docker {
       image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
-      args '-v $HOME/.m2:/var/maven/.m2:z -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
+      args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
       registryUrl 'https://nexus.intranda.com:4443/'
       registryCredentialsId 'jenkins-docker'
     }
@@ -25,6 +25,18 @@ pipeline {
               recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
       }
     }
+    stage('sonarcloud') {
+      when {
+        anyOf {
+          branch 'sonar_*'
+        }
+      }
+      steps {
+        withCredentials([string(credentialsId: 'jenkins-sonarcloud', variable: 'TOKEN')]) {
+          sh 'mvn -f goobi-viewer-indexer/pom.xml verify sonar:sonar -Dsonar.login=$TOKEN'
+        }
+      }
+    }
     stage('deployment to maven repository') {
       when {
         anyOf {
@@ -40,6 +52,13 @@ pipeline {
   post {
     always {
       junit "**/target/surefire-reports/*.xml"
+      step([
+        $class           : 'JacocoPublisher',
+        execPattern      : 'goobi-viewer-indexer/target/jacoco.exec',
+        classPattern     : 'goobi-viewer-indexer/target/classes/',
+        sourcePattern    : 'goobi-viewer-indexer/src/main/java',
+        exclusionPattern : '**/*Test.class'
+      ])
     }
     success {
       archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/indexerconfig_solr.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true

@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -334,8 +334,8 @@ public class DocUpdateIndexer extends Indexer {
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder)) {
             for (Path path : stream) {
+                Path recordFile = path;
                 try {
-                    Path recordFile = path;
                     logger.info("Found file: {}/{}", recordFile.getParent().getFileName(), recordFile.getFileName());
                     if (recordFile.getFileName().toString().endsWith(".xml")) {
                         Map<String, Object> altoData = TextHelper.readAltoFile(recordFile.toFile());
@@ -349,7 +349,9 @@ public class DocUpdateIndexer extends Indexer {
                         logger.warn("Incompatible data file found: {}", recordFile.toAbsolutePath());
                     }
                 } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
+                    if (!e.getMessage().contains("Premature end of file")) {
+                        logger.error("Could not read ALTO file '{}': {}", recordFile.getFileName().toString(), e.getMessage());
+                    }
                 }
             }
         } catch (IOException e) {

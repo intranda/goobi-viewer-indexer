@@ -17,7 +17,7 @@ package io.goobi.viewer.indexer;
 
 import java.nio.file.Files;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -130,21 +130,22 @@ public final class SolrIndexerDaemon {
         if (MetsIndexer.noTimestampUpdate) {
             logger.warn("WARNING: No update mode - DATEUPDATED timestamps will not be updated.");
         }
+        
+        if (!checkSolrSchemaName(
+                SolrSearchIndex.getSolrSchemaDocument(Configuration.getInstance(confFilename).getConfiguration("solrUrl")))) {
+            throw new FatalIndexerException("Incompatible Solr schema, exiting..");
+        }
 
         // create hotfolder
         Hotfolder hotfolder =
                 new Hotfolder(confFilename,
                         SolrSearchIndex.getNewHttpSolrClient(Configuration.getInstance(confFilename).getConfiguration("solrUrl"),
-                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION),
+                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true),
                         SolrSearchIndex.getNewHttpSolrClient(Configuration.getInstance(confFilename).getConfiguration("oldSolrUrl"),
-                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION));
+                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true));
 
         if (hotfolder.getSuccess() == null || !Files.isDirectory(hotfolder.getSuccess())) {
             throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
-        }
-        if (!checkSolrSchemaName(
-                hotfolder.getSearchIndex().getSolrSchemaDocument(Configuration.getInstance(confFilename).getConfiguration("solrUrl")))) {
-            throw new FatalIndexerException("Incompatible Solr schema, exiting..");
         }
 
         running = true;
