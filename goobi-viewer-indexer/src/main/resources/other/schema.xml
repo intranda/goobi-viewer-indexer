@@ -240,7 +240,7 @@
 	<uniqueKey>IDDOC</uniqueKey>
 
 	<!-- Goobi viewer metadata fields -->
-    <dynamicField name="ACCESSCONDITION_" type="string" indexed="true"
+    <dynamicField name="ACCESSCONDITION_*" type="string" indexed="true"
         stored="true" />
 	<dynamicField name="FILENAME_*" type="string" indexed="true"
 		stored="true" />
