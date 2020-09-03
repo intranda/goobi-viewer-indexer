@@ -632,6 +632,9 @@ public class MetsIndexer extends Indexer {
             if (depth > currentDepth) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
                 pageDoc.setField("MDNUM_OWNERDEPTH", depth);
+                
+                // Add the parent document's LOGID value to the page
+                pageDoc.setField(SolrConstants.LOGID, indexObj.getLogId());
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());

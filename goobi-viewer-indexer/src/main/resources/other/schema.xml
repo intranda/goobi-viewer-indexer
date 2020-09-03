@@ -30,7 +30,7 @@
 	in server mode, and use a higher logging level that avoids logging every 
 	request -->
 
-<schema name="goobi_viewer-20200717" version="1.6">
+<schema name="goobi_viewer-20200804" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -240,6 +240,8 @@
 	<uniqueKey>IDDOC</uniqueKey>
 
 	<!-- Goobi viewer metadata fields -->
+    <dynamicField name="ACCESSCONDITION_" type="string" indexed="true"
+        stored="true" />
 	<dynamicField name="FILENAME_*" type="string" indexed="true"
 		stored="true" />
 	<dynamicField name="IMAGEURL_*" type="string" indexed="true"
