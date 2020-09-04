@@ -648,9 +648,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Child docstructs
         {
             SolrDocumentList docList = hotfolder.getSearchIndex()
-                    .search(new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
+                    .search(new StringBuilder().append("+")
+                            .append(SolrConstants.PI_TOPSTRUCT)
+                            .append(":")
                             .append(pi)
-                            .append(" AND ")
+                            .append(" +")
+                            .append(SolrConstants.DOCTYPE)
+                            .append(":DOCSTRCT  +")
                             .append(SolrConstants.LOGID)
                             .append(":LOG_0035")
                             .toString(), null);
@@ -966,7 +970,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(files[0].startsWith("PPN123"));
         Assert.assertTrue(files[0].endsWith(".xml"));
     }
-    
 
     /**
      * @see MetsIndexer#superupdate(Path,Path,DataRepository)

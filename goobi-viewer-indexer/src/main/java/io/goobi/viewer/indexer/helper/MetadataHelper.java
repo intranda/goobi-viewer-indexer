@@ -441,7 +441,7 @@ public class MetadataHelper {
                         try {
                             fieldValue = String.valueOf(Integer.valueOf(fieldValue));
                         } catch (NumberFormatException e) {
-                            logger.error("{} cannot be written because it is not a integer value: {}", SolrConstants.CURRENTNOSORT, fieldValue);
+                            logger.error("{} cannot be written because it's not an integer value: {}", SolrConstants.CURRENTNOSORT, fieldValue);
                             continue;
                         }
                     }

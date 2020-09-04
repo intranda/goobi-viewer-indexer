@@ -632,6 +632,9 @@ public class MetsIndexer extends Indexer {
             if (depth > currentDepth) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
                 pageDoc.setField("MDNUM_OWNERDEPTH", depth);
+                
+                // Add the parent document's LOGID value to the page
+                pageDoc.setField(SolrConstants.LOGID, indexObj.getLogId());
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
@@ -1005,47 +1008,60 @@ public class MetsIndexer extends Indexer {
         String xpath = "/mets:mets/mets:fileSec/mets:fileGrp";
         List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
         for (Element eleFileGrp : eleFileGrpList) {
-            String fileGroup = eleFileGrp.getAttributeValue("USE");
-            logger.debug("Found file group: {}", fileGroup);
+            String fileGrpUse = eleFileGrp.getAttributeValue("USE");
+            String fileGrpId = eleFileGrp.getAttributeValue("ID");
+            logger.debug("Found file group: {}", fileGrpUse);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
             if ((useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
-                    && (DEFAULT_FILEGROUP_1.equals(fileGroup) || DEFAULT_FILEGROUP_2.equals(fileGroup) || OBJECT_FILEGROUP.equals(fileGroup))) {
-                useFileGroup = fileGroup;
+                    && (DEFAULT_FILEGROUP_1.equals(fileGrpUse) || DEFAULT_FILEGROUP_2.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
+                useFileGroup = fileGrpUse;
             }
             String fileId = null;
             if (fileGroupPrefix) {
-                fileId = fileGroup + fileIdSeparator + fileIdRoot;
+                fileId = fileGrpUse + fileIdSeparator + fileIdRoot;
             } else if (fileGroupSuffix) {
-                fileId = fileIdRoot + fileIdSeparator + fileGroup;
+                fileId = fileIdRoot + fileIdSeparator + fileGrpUse;
             } else {
                 fileId = fileIdRoot;
+            }
+            // File ID containing the file group's ID value instead of USE
+            String fileIdAlt = null;
+            if (fileGrpId != null) {
+                if (fileGroupPrefix) {
+                    fileIdAlt = fileGrpId + fileIdSeparator + fileIdRoot;
+                } else if (fileGroupSuffix) {
+                    fileIdAlt = fileIdRoot + fileIdSeparator + fileGrpId;
+                }
             }
             logger.debug("fileId: {}", fileId);
 
             // If fileId is not null, use an XPath expression for the appropriate file element; otherwise get all file elements and get the one with the index of the page order
-            String fileIdXPathCondition = fileId != null ? "[@ID=\"" + fileId + "\"]" : "";
+            String fileIdXPathCondition = "";
+            if (fileId != null) {
+                if (fileIdAlt != null) {
+                    // File ID may contain the value of ID instead of USE
+                    fileIdXPathCondition = "[@ID=\"" + fileId + "\" or @ID=\"" + fileIdAlt + "\"]";
+                } else {
+                    fileIdXPathCondition = "[@ID=\"" + fileId + "\"]";
+                }
+            }
             int attrListIndex = fileId != null ? 0 : order - 1;
 
             // Check whether the fileId_fileGroup pattern applies for this file group, otherwise just use the fileId
             xpath = "mets:file" + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
             logger.debug(xpath);
             List<Attribute> filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-            //            if (filepathAttrList == null || filepathAttrList.isEmpty()) {
-            //                fileId = useFileID;
-            //                xpath = "mets:file[@ID=\"" + fileId + "\"]/mets:FLocat/@xlink:href";
-            //                filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-            //            }
             logger.trace(xpath);
             if (filepathAttrList == null || filepathAttrList.size() <= attrListIndex) {
                 // Skip silently
-                logger.debug("Skipping file group {}", fileGroup);
+                logger.debug("Skipping file group {}", fileGrpUse);
                 continue;
             }
 
             String filePath = filepathAttrList.get(attrListIndex).getValue();
             logger.trace("filePath: " + filePath);
             if (StringUtils.isEmpty(filePath)) {
-                logger.warn("{}: file path not found in file group '{}'.", fileId, fileGroup);
+                logger.warn("{}: file path not found in file group '{}'.", fileId, fileGrpUse);
                 //                break;
             }
             String fileName = FilenameUtils.getName(filePath);
@@ -1054,29 +1070,29 @@ public class MetsIndexer extends Indexer {
             xpath = "mets:file" + fileIdXPathCondition + "/@MIMETYPE";
             List<Attribute> mimetypeAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
             if (mimetypeAttrList == null || mimetypeAttrList.isEmpty()) {
-                logger.error("{}: mime type not found in file group '{}'.", fileId, fileGroup);
+                logger.error("{}: mime type not found in file group '{}'.", fileId, fileGrpUse);
                 break;
             }
 
             String mimetype = mimetypeAttrList.get(attrListIndex).getValue();
             if (StringUtils.isEmpty(mimetype)) {
-                logger.error("{}: mime type is blank in file group '{}'.", fileId, fileGroup);
+                logger.error("{}: mime type is blank in file group '{}'.", fileId, fileGrpUse);
                 break;
             }
 
             String[] mimetypeSplit = mimetype.split("/");
             if (mimetypeSplit.length != 2) {
-                logger.error("Illegal mime type '{}' in file group '{}'.", mimetype, fileGroup);
+                logger.error("Illegal mime type '{}' in file group '{}'.", mimetype, fileGrpUse);
                 break;
             }
 
-            if (fileGroup.equals(useFileGroup)) {
+            if (fileGrpUse.equals(useFileGroup)) {
                 // The file name from the main file group (PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     if (doc.containsKey(SolrConstants.FILENAME)) {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath,
-                                fileGroup);
+                                fileGrpUse);
                     }
                     doc.addField(SolrConstants.FILENAME, filePath);
                     if (!shapePageDocs.isEmpty()) {
@@ -1091,7 +1107,7 @@ public class MetsIndexer extends Indexer {
                 } else {
                     if (doc.containsKey(SolrConstants.FILENAME)) {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, fileName,
-                                fileGroup);
+                                fileGrpUse);
                     }
                     doc.addField(SolrConstants.FILENAME, fileName);
                     if (!shapePageDocs.isEmpty()) {
@@ -1130,7 +1146,7 @@ public class MetsIndexer extends Indexer {
                     }
                 }
 
-            } else if (fileGroup.equals(ALTO_FILEGROUP) || fileGroup.equals(FULLTEXT_FILEGROUP)) {
+            } else if (fileGrpUse.equals(ALTO_FILEGROUP) || fileGrpUse.equals(FULLTEXT_FILEGROUP)) {
                 altoURL = filePath;
             } else {
                 String fieldName = SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase();
@@ -1262,7 +1278,7 @@ public class MetsIndexer extends Indexer {
             }
             // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
             if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
-                    && dataFolders.get(DataRepository.PARAM_ALTO) != null && !"info".equals(baseFileName)) {
+                    && dataFolders.get(DataRepository.PARAM_ALTO) != null && !"info".equals(baseFileName) && !"native".equals(baseFileName)) {
                 File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
                 try {
                     altoData = TextHelper.readAltoFile(altoFile);
@@ -1424,7 +1440,7 @@ public class MetsIndexer extends Indexer {
             if (!altoWritten && !foundCrowdsourcingData && altoURL != null && altoURL.startsWith("http")
                     && !altoURL.startsWith(Configuration.getInstance().getString("init.viewerUrl", "missing?"))) {
                 try {
-                    logger.debug("Downloading ALTO from {}", altoURL);
+                    logger.info("Downloading ALTO from {}", altoURL);
                     String alto = Utils.getWebContentGET(altoURL);
                     if (StringUtils.isNotEmpty(alto)) {
                         Document altoDoc = XmlTools.getDocumentFromString(alto, null);
