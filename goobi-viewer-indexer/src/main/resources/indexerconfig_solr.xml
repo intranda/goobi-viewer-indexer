@@ -69,7 +69,7 @@
 
 		<namespaces>
 			<list>
-			    <intranda>http://intranda.com/MODS/</intranda>
+			    <intranda>https://intranda.com/MODS/</intranda>
 			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
@@ -3005,6 +3005,16 @@
             </list>
         </MD_INTRANDAINSTITUTION>
 
+        <ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:pdfDownloadQuota</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
 
 	</fields>
 </root>
