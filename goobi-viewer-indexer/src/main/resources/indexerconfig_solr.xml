@@ -69,7 +69,7 @@
 
 		<namespaces>
 			<list>
-			    <intranda>https://intranda.com/MODS/</intranda>
+			    <intranda>http://intranda.com/MODS/</intranda>
 			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
@@ -2850,26 +2850,47 @@
 		<MD_GML_POINT>
 			<list>
 				<item>
-					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</item>
+                            <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
+                        </list>
+                    </xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:location</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <groupEntity type="LOCATION">
+                        <field name="MD_VALUE">concat(intranda:longitude/text(), " / ", intranda:latitude/text())</field>
+                    </groupEntity>
+                </item>
 			</list>
 		</MD_GML_POINT>
 		
 		<MD_GEOJSON_POINT>
 			<list>
 				<item>
-					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</xpath>
+				    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</item>
+                            <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
+                        </list>
+				    </xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<geoJSONSource addSearchField="true">gml:Point:4326</geoJSONSource>
 				</item>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:location</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 					<geoJSONSource separator=" / " addSearchField="true">mods:coordinates/point</geoJSONSource>
+                    <groupEntity type="LOCATION">
+                        <field name="MD_VALUE">concat(intranda:longitude/text(), " / ", intranda:latitude/text())</field>
+                    </groupEntity>
 				</item>
 			</list>
 		</MD_GEOJSON_POINT>

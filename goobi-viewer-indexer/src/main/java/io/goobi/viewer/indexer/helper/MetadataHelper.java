@@ -331,16 +331,20 @@ public class MetadataHelper {
                                     String moddedValue = applyAllModifications(configurationItem, field.getValue());
 
                                     // Convert to geoJSON
-                                    if (configurationItem.getGeoJSONSource() != null) {
-                                        GeoCoords coords = GeoJSONTools.convert(moddedValue, configurationItem.getGeoJSONSource(),
-                                                configurationItem.getGeoJSONSourceSeparator());
-                                        if (coords.getGeoJSON() != null) {
-                                            moddedValue = coords.getGeoJSON();
-                                        }
-                                        // Add WKT search field
-                                        if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
-                                            ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
-                                            ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
+                                    if (configurationItem.getGeoJSONSource() != null && field.getField().equals("MD_VALUE")) {
+                                        try {
+                                            GeoCoords coords = GeoJSONTools.convert(moddedValue, configurationItem.getGeoJSONSource(),
+                                                    configurationItem.getGeoJSONSourceSeparator());
+                                            if (coords.getGeoJSON() != null) {
+                                                moddedValue = coords.getGeoJSON();
+                                            }
+                                            // Add WKT search field
+                                            if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
+                                                ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                                                ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
+                                            }
+                                        } catch (NumberFormatException e) {
+                                            logger.error("Cannot convert to geoJSON: {}", e.getMessage());
                                         }
                                     }
 
