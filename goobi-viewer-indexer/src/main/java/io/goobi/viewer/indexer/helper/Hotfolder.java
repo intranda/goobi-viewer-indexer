@@ -31,15 +31,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -917,8 +915,8 @@ public class Hotfolder {
             }
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
-                String oldMetsFilename = FilenameUtils.getBaseName(newMetsFileName) + "_" + sdf.format(new Date()) + ".xml";
+                String oldMetsFilename =
+                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime) + ".xml";
                 Path newFile = Paths.get(updatedMets.toAbsolutePath().toString(), oldMetsFilename);
                 Files.copy(indexed, newFile);
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
@@ -1669,8 +1667,8 @@ public class Hotfolder {
             }
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
-                String oldMetsFilename = FilenameUtils.getBaseName(newMetsFileName) + "_" + sdf.format(new Date()) + ".xml";
+                String oldMetsFilename =
+                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime) + ".xml";
                 Path newFile = Paths.get(updatedMets.toAbsolutePath().toString(), oldMetsFilename);
                 Files.copy(indexed, newFile);
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());

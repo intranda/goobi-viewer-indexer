@@ -1,7 +1,6 @@
 package io.goobi.viewer.indexer.model;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Test;

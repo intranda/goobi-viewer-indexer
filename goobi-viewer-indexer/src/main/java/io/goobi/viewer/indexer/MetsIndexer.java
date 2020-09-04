@@ -2253,7 +2253,7 @@ public class MetsIndexer extends Indexer {
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS
-     * @return a {@link java.util.Date} object.
+     * @return a {@link java.time.LocalDateTime} object.
      */
     protected LocalDateTime getMetsCreateDate() throws FatalIndexerException {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);

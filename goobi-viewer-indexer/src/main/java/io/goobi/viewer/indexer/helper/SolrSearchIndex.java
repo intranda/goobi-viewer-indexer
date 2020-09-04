@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -656,13 +655,13 @@ public final class SolrSearchIndex {
         try {
             SolrDocumentList docs = search(SolrConstants.PI + ":" + groupId, null);
             SolrInputDocument doc = new SolrInputDocument();
-            Date now = new Date();
+            long now = System.currentTimeMillis();
             if (docs.isEmpty()) {
                 // Document does not exist yet
                 doc.setField(SolrConstants.IDDOC, String.valueOf(iddoc));
                 doc.setField(SolrConstants.GROUPFIELD, String.valueOf(iddoc));
                 doc.setField(SolrConstants.DOCTYPE, DocType.GROUP.name());
-                doc.setField(SolrConstants.DATECREATED, now.getTime());
+                doc.setField(SolrConstants.DATECREATED, now);
             } else {
                 // A document already exists for this groupId
                 SolrDocument oldDoc = docs.get(0);
@@ -673,7 +672,7 @@ public final class SolrSearchIndex {
                 doc.setField(SolrConstants.DOCTYPE, DocType.GROUP.name());
                 doc.setField(SolrConstants.DATECREATED, oldDoc.getFieldValue(SolrConstants.DATECREATED));
             }
-            doc.setField(SolrConstants.DATEUPDATED, now.getTime());
+            doc.setField(SolrConstants.DATEUPDATED, now);
             doc.setField(SolrConstants.PI, groupId);
             doc.setField(SolrConstants.PI_TOPSTRUCT, groupId);
             doc.setField(SolrConstants.GROUPTYPE, groupIdField);
