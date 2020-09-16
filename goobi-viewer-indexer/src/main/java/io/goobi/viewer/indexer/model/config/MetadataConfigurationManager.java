@@ -171,6 +171,7 @@ public final class MetadataConfigurationManager {
                         for (Iterator it = elements.iterator(); it.hasNext();) {
                             HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
                             String name = sub.getString("[@name]", null);
+                            String defaultValue = sub.getString("[@defaultValue]", null);
                             boolean multivalued = sub.getBoolean("[@multivalued]", true);
                             String xpathExp = sub.getString("");
                             if (StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(xpathExp)) {
@@ -180,6 +181,7 @@ public final class MetadataConfigurationManager {
                                     groupedSubfieldConfigurations.put(name, sfc);
                                 }
                                 sfc.getXpaths().add(xpathExp);
+                                sfc.getDefaultValues().put(xpathExp, defaultValue);
                                 logger.debug("Loaded group entity field: {} - {}", name, xpathExp);
                             } else {
                                 logger.warn("Found incomplete groupEntity configuration for field '{}', skipping...", fieldname);

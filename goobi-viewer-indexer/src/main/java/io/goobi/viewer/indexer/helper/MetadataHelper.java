@@ -1188,7 +1188,13 @@ public class MetadataHelper {
                 logger.debug("XPath: {}", xpath);
                 List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
                 if (values == null || values.isEmpty()) {
-                    continue;
+                    // Use default value, if available
+                    if (subfield.getDefaultValues().get(xpath) != null) {
+                        values = Collections.singletonList(subfield.getDefaultValues().get(xpath));
+                    }
+                    if (values == null || values.isEmpty()) {
+                        continue;
+                    }
                 }
                 // Trim down to the first value if subfield is not multivalued
                 if (!subfield.isMultivalued() && values.size() > 1) {
