@@ -301,6 +301,20 @@
 				</item>
 			</list>
 		</ACCESSCONDITION>
+		
+        <ACCESSCONDITION_CONCURRENTUSE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:accessCondition[@type="concurrent use"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </ACCESSCONDITION_CONCURRENTUSE>
 
 		<EVENTDATE>
 			<list>
@@ -3036,6 +3050,6 @@
                 </item>
             </list>
         </ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
-
+        
 	</fields>
 </root>
