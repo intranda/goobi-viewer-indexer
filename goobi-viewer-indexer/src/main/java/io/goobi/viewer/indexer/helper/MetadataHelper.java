@@ -132,7 +132,7 @@ public class MetadataHelper {
     /** Constant <code>formatterBasicDateTime</code> */
     public static DateTimeFormatter formatterBasicDateTime = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     /** Constant <code>addNormDataFieldsToDefault</code> */
-    public static List<String> addNormDataFieldsToDefault;
+    public static List<String> addAuthorityDataFieldsToDefault;
 
     /**
      * Retrieves configured metadata fields from the given XML node. Written for LIDO events, but should theoretically work for any METS or LIDO node.
@@ -266,14 +266,14 @@ public class MetadataHelper {
                         }
                         for (Object xpathAnswerObject : list) {
                             if (configurationItem.isGroupEntity()) {
-                                // Aggregated / grouped metadata
+                                // Grouped metadata
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd =
                                         getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
-                                List<LuceneField> normData = new ArrayList<>();
+                                List<LuceneField> authorityData = new ArrayList<>();
                                 boolean groupFieldAlreadyReplaced = false;
-                                String normIdentifier = null;
-                                StringBuilder sbNormDataTerms = new StringBuilder();
+                                String authorityIdentifier = null;
+                                StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (gmd.getMainValue() != null) {
@@ -291,23 +291,23 @@ public class MetadataHelper {
 
                                 // Retrieve authority data
                                 if (gmd.getAuthorityURI() != null) {
-                                    normData.addAll(retrieveAuthorityData(sbDefaultMetadataValues, sbNormDataTerms, gmd.getAuthorityURI(),
-                                            addNormDataFieldsToDefault, configurationItem.getReplaceRules()));
-                                    // Add default norm data name to the docstruct doc so that it can be searched
-                                    for (LuceneField normField : normData) {
-                                        switch (normField.getField()) {
+                                    authorityData.addAll(retrieveAuthorityData(sbDefaultMetadataValues, sbAuthorityDataTerms, gmd.getAuthorityURI(),
+                                            addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules()));
+                                    // Add default authority data name to the docstruct doc so that it can be searched
+                                    for (LuceneField authorityField : authorityData) {
+                                        switch (authorityField.getField()) {
                                             case "NORM_NAME":
                                                 // Add NORM_NAME as MD_*_UNTOKENIZED and to DEFAULT to the docstruct
-                                                if (StringUtils.isNotBlank(normField.getValue())) {
+                                                if (StringUtils.isNotBlank(authorityField.getValue())) {
                                                     // fieldValues.add(normField.getValue());
                                                     if (configurationItem.isAddToDefault()) {
                                                         // Add norm value to DEFAULT
-                                                        addValueToDefault(normField.getValue(), sbDefaultMetadataValues);
+                                                        addValueToDefault(authorityField.getValue(), sbDefaultMetadataValues);
                                                     }
                                                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
                                                         ret.add(new LuceneField(
                                                                 new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(),
-                                                                normField.getValue()));
+                                                                authorityField.getValue()));
                                                     }
                                                 }
                                                 break;
@@ -315,11 +315,11 @@ public class MetadataHelper {
                                                 // If a NORM_IDENTIFIER exists for this metadata group, use it to replace the value of GROUPFIELD
                                                 for (LuceneField groupField : gmd.getFields()) {
                                                     if (groupField.getField().equals(SolrConstants.GROUPFIELD)) {
-                                                        groupField.setValue(normField.getValue());
+                                                        groupField.setValue(authorityField.getValue());
                                                         groupFieldAlreadyReplaced = true;
                                                         break;
                                                     }
-                                                    normIdentifier = normField.getValue();
+                                                    authorityIdentifier = authorityField.getValue();
                                                 }
                                                 break;
                                             default: // nothing
@@ -351,7 +351,7 @@ public class MetadataHelper {
                                     field.setValue(moddedValue);
 
                                     if (configurationItem.isAddToDefault()) {
-                                        // Add main value to DEFAULT
+                                        // Add main value to owner doc's DEFAULT field
                                         if (StringUtils.isNotBlank(fieldValue)) {
                                             addValueToDefault(fieldValue, sbDefaultMetadataValues);
                                         }
@@ -370,21 +370,21 @@ public class MetadataHelper {
                                 }
 
                                 // If there was no existing GROUPFIELD in the group metadata, add one now using the norm identifier
-                                if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(normIdentifier)) {
-                                    gmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, normIdentifier));
+                                if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(authorityIdentifier)) {
+                                    gmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, authorityIdentifier));
                                 }
-                                // Add MD_VALUE as DEFAULT to the metadata doc
-                                if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
-                                    gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, fieldValue));
+                                // Add MD_VALUE as DEFAULT to the grouped metadata doc
+                                if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(gmd.getMainValue())) {
+                                    gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, gmd.getMainValue()));
                                 }
-                                gmd.getFields().addAll(normData); // Add norm data outside the loop over groupMetadata
+                                gmd.getFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
 
                                 if (!indexObj.getGroupedMetadataFields().contains(gmd)) {
                                     indexObj.getGroupedMetadataFields().add(gmd);
                                 }
                                 // NORMDATATERMS is now in the metadata docs, not docstructs
-                                if (sbNormDataTerms.length() > 0) {
-                                    gmd.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbNormDataTerms.toString()));
+                                if (sbAuthorityDataTerms.length() > 0) {
+                                    gmd.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbAuthorityDataTerms.toString()));
                                 }
                             } else {
                                 // Regular metadata
@@ -1177,7 +1177,7 @@ public class MetadataHelper {
             type = "OTHER";
             logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
         }
-        boolean normUriFound = false;
+        boolean authorityUriFound = false;
         Map<String, List<String>> collectedValues = new HashMap<>();
         for (Object field : groupEntityFields.keySet()) {
             if ("type".equals(field) || !(groupEntityFields.get(field) instanceof SubfieldConfig)) {
@@ -1219,7 +1219,7 @@ public class MetadataHelper {
                             continue;
                         }
                         if (NormDataImporter.FIELD_URI.equals(subfield.getFieldname())) {
-                            normUriFound = true;
+                            authorityUriFound = true;
                             ret.setAuthorityURI(fieldValue);
                         }
                         // Add GND URL part, if the value is not a URL
@@ -1277,8 +1277,8 @@ public class MetadataHelper {
                     ret.getFields());
         }
 
-        // Add norm data URI, if available (GND only)
-        if (!normUriFound) {
+        // Add authority data URI, if available (GND only)
+        if (!authorityUriFound) {
             String authority = ele.getAttributeValue("authority");
             if (authority == null) {
                 // Add valueURI without any other specifications

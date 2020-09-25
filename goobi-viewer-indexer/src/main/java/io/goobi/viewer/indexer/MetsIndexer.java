@@ -2061,7 +2061,7 @@ public class MetsIndexer extends Indexer {
                     field.setSkip(true);
                 }
             }
-            // Add grouped configured to be inherited up to the return list (after adding child metadata first!)
+            // Add grouped fields configured to be inherited up to the return list (after adding child metadata first!)
             for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
                 if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getLabel())) {
                     indexObj.getFieldsToInheritToParents().add(field.getLabel());

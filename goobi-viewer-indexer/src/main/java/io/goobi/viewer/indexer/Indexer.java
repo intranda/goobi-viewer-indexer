@@ -226,7 +226,7 @@ public abstract class Indexer {
             }
             logger.debug("Removing instance: {}", iddoc);
             iddocsToDelete.add(iddoc);
-            
+
             // Build replacement document that is marked as deleted
             if (createTraceDoc && doc.getFieldValue(SolrConstants.DATEDELETED) == null) {
                 String urn = null;
@@ -928,6 +928,12 @@ public abstract class Indexer {
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
             if (gmd.isSkip()) {
+                continue;
+            }
+
+            // Skip if no MD_VALUE found
+            if (gmd.getMainValue() == null) {
+                logger.warn("No main value found on grouped field {}, skipping...", gmd.getLabel());
                 continue;
             }
 

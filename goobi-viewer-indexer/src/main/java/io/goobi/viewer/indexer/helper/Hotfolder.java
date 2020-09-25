@@ -360,9 +360,9 @@ public class Hotfolder {
         }
 
         // Norm data fields to be added to DEFAULT
-        MetadataHelper.addNormDataFieldsToDefault = config.getList("init.addNormDataFieldsToDefault.field");
-        if (MetadataHelper.addNormDataFieldsToDefault != null) {
-            for (String field : MetadataHelper.addNormDataFieldsToDefault) {
+        MetadataHelper.addAuthorityDataFieldsToDefault = config.getList("init.addNormDataFieldsToDefault.field");
+        if (MetadataHelper.addAuthorityDataFieldsToDefault != null) {
+            for (String field : MetadataHelper.addAuthorityDataFieldsToDefault) {
                 logger.info("{} values will be added to DEFAULT", field);
             }
         }
