@@ -336,7 +336,7 @@ public class MetsIndexer extends Indexer {
             }
             logger.debug("OPACURL: {}", opacUrl);
             if (StringUtils.isNotEmpty(opacUrl)) {
-                indexObj.addToLucene(SolrConstants.OPACURL, opacUrl);
+                indexObj.addToLucene(SolrConstants.OPACURL, opacUrl.trim());
             }
 
             // Process TEI files
