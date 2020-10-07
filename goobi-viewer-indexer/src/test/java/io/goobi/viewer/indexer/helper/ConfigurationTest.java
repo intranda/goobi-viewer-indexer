@@ -127,7 +127,7 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertNotNull(replaceRules);
         Assert.assertEquals(2, replaceRules.size());
         logger.info(replaceRules.keySet().toString());
-        Assert.assertEquals("replace1", replaceRules.get("stringToReplace1"));
+        Assert.assertEquals("replace1 ", replaceRules.get("stringToReplace1 "));
         Assert.assertEquals("replace2", replaceRules.get("REGEX:[ ]*stringToReplace2[ ]*"));
 
         List<NonSortConfiguration> nonSortConfigurations = fieldConfig.getNonSortConfigurations();
@@ -162,7 +162,7 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertTrue(configItem.isNormalizeYear());
         Assert.assertTrue(configItem.isInterpolateYears());
         Assert.assertEquals(2, configItem.getReplaceRules().size());
-        Assert.assertEquals("replace1", configItem.getReplaceRules().get("stringToReplace1"));
+        Assert.assertEquals("replace1 ", configItem.getReplaceRules().get("stringToReplace1 "));
         Assert.assertEquals("replace2", configItem.getReplaceRules().get("REGEX:[ ]*stringToReplace2[ ]*"));
         Assert.assertEquals(1, configItem.getNonSortConfigurations().size());
         Assert.assertEquals("nonSortPrefix", configItem.getNonSortConfigurations().get(0).getPrefix());
