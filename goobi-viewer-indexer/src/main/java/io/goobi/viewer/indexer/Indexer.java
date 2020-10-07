@@ -204,7 +204,7 @@ public abstract class Indexer {
             logger.error("Not found: {}", pi);
             return false;
         }
-        
+
         if (hits.getNumFound() == 1) {
             logger.info("Removing previous instance of this volume from the index...");
         } else {
@@ -218,31 +218,34 @@ public abstract class Indexer {
                 .append(SolrConstants.DOCTYPE)
                 .append(":PAGE")
                 .toString();
+        // Unless the index is broken, there should be only one hit
         for (SolrDocument doc : hits) {
             String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            if (iddoc != null) {
-                logger.debug("Removing instance: {}", iddoc);
-                iddocsToDelete.add(iddoc);
-                if (createTraceDoc && doc.getFieldValue(SolrConstants.DATEDELETED) == null) {
-                    // Build replacement document that is marked as deleted
-                    String urn = null;
-                    if (doc.getFieldValue(SolrConstants.URN) != null) {
-                        urn = (String) doc.getFieldValue(SolrConstants.URN);
-                    }
-                    // Collect page URNs
-                    hits = searchIndex.search(queryPageUrns, Collections.singletonList(SolrConstants.IMAGEURN));
-                    List<String> pageUrns = new ArrayList<>(hits.size());
-                    if (!hits.isEmpty()) {
-                        for (SolrDocument hit : hits) {
-                            String pageUrn = (String) hit.getFieldValue(SolrConstants.IMAGEURN);
-                            if (pageUrn != null) {
-                                pageUrns.add(pageUrn);
-                            }
+            if (iddoc == null) {
+                continue;
+            }
+            logger.debug("Removing instance: {}", iddoc);
+            iddocsToDelete.add(iddoc);
+
+            // Build replacement document that is marked as deleted
+            if (createTraceDoc && doc.getFieldValue(SolrConstants.DATEDELETED) == null) {
+                String urn = null;
+                if (doc.getFieldValue(SolrConstants.URN) != null) {
+                    urn = (String) doc.getFieldValue(SolrConstants.URN);
+                }
+                // Collect page URNs
+                hits = searchIndex.search(queryPageUrns, Collections.singletonList(SolrConstants.IMAGEURN));
+                List<String> pageUrns = new ArrayList<>(hits.size());
+                if (!hits.isEmpty()) {
+                    for (SolrDocument hit : hits) {
+                        String pageUrn = (String) hit.getFieldValue(SolrConstants.IMAGEURN);
+                        if (pageUrn != null) {
+                            pageUrns.add(pageUrn);
                         }
                     }
-                    String now = String.valueOf(System.currentTimeMillis());
-                    createDeletedDoc(pi, urn, pageUrns, now, now, searchIndex);
                 }
+                String now = String.valueOf(System.currentTimeMillis());
+                createDeletedDoc(pi, urn, pageUrns, now, now, searchIndex);
             }
         }
 
@@ -925,6 +928,12 @@ public abstract class Indexer {
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
             if (gmd.isSkip()) {
+                continue;
+            }
+
+            // Skip if no MD_VALUE found
+            if (gmd.getMainValue() == null) {
+                logger.warn("No main value found on grouped field {}, skipping...", gmd.getLabel());
                 continue;
             }
 

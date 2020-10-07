@@ -300,7 +300,29 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-		</ACCESSCONDITION>
+        </ACCESSCONDITION>
+
+        <ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:accessConditionPdfPercentageQuota</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
+
+        <ACCESSCONDITION_CONCURRENTUSE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:accessConditionConcurrentUse</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </ACCESSCONDITION_CONCURRENTUSE>
 
 		<EVENTDATE>
 			<list>
@@ -636,14 +658,14 @@
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-						
+
 						<!-- LIDO -->
 						<field name="MD_VALUE">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
 						<field name="MD_DISPLAYFORM">lido:nameActorSet/lido:appellationValue[@lido:pref="preferred"]</field>
 						<field name="MD_DOB">lido:vitalDatesActor/lido:earliestDate[@lido:type="Geburtsdatum"]</field>
 						<field name="MD_DOD">lido:vitalDatesActor/lido:latestDate[@lido:type="Sterbedatum"]</field>
 						<field name="NORM_URI">lido:actorID[@lido:source="http://d-nb.info/gnd"]</field>
-						
+
 						<!-- DUBLIN CORE -->
 						<field name="MD_VALUE">text()</field>
 					</groupEntity>
@@ -2836,7 +2858,7 @@
 				</item>
 			</list>
 		</BOOL_DIRECTION_RTL>
-		
+
 		<MD_COORDINATES>
 			<list>
 				<item>
@@ -2850,26 +2872,47 @@
 		<MD_GML_POINT>
 			<list>
 				<item>
-					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</item>
+                            <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
+                        </list>
+                    </xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:location</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <groupEntity type="LOCATION">
+                        <field name="MD_VALUE">concat(intranda:longitude/text(), " / ", intranda:latitude/text())</field>
+                    </groupEntity>
+                </item>
 			</list>
 		</MD_GML_POINT>
-		
+
 		<MD_GEOJSON_POINT>
 			<list>
 				<item>
-					<xpath>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</xpath>
+				    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</item>
+                            <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
+                        </list>
+				    </xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<geoJSONSource addSearchField="true">gml:Point:4326</geoJSONSource>
 				</item>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:location</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 					<geoJSONSource separator=" / " addSearchField="true">mods:coordinates/point</geoJSONSource>
+                    <groupEntity type="LOCATION">
+                        <field name="MD_VALUE">concat(intranda:longitude/text(), " / ", intranda:latitude/text())</field>
+                    </groupEntity>
 				</item>
 			</list>
 		</MD_GEOJSON_POINT>
@@ -2886,7 +2929,7 @@
 				</item>
 			</list>
 		</MD_GML_POLYGON>
-		
+
 		<MD_GEOJSON_POLYGON>
 			<list>
 				<item>
@@ -2970,7 +3013,7 @@
 				</item>
 			</list>
 		</MD2_ALLPERSONS>
-		
+
         <MD_ACCESSLOCATIONS>
             <list>
                 <item>
@@ -2987,7 +3030,7 @@
                 </item>
             </list>
         </MD_ACCESSLOCATIONS>
-        
+
         <MD_INTRANDAINSTITUTION>
             <list>
                 <item>
@@ -3004,7 +3047,6 @@
                 </item>
             </list>
         </MD_INTRANDAINSTITUTION>
-
 
 	</fields>
 </root>

@@ -336,7 +336,7 @@ public class MetsIndexer extends Indexer {
             }
             logger.debug("OPACURL: {}", opacUrl);
             if (StringUtils.isNotEmpty(opacUrl)) {
-                indexObj.addToLucene(SolrConstants.OPACURL, opacUrl);
+                indexObj.addToLucene(SolrConstants.OPACURL, opacUrl.trim());
             }
 
             // Process TEI files
@@ -2061,7 +2061,7 @@ public class MetsIndexer extends Indexer {
                     field.setSkip(true);
                 }
             }
-            // Add grouped configured to be inherited up to the return list (after adding child metadata first!)
+            // Add grouped fields configured to be inherited up to the return list (after adding child metadata first!)
             for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
                 if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getLabel())) {
                     indexObj.getFieldsToInheritToParents().add(field.getLabel());
@@ -2253,7 +2253,7 @@ public class MetsIndexer extends Indexer {
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS
-     * @return a {@link java.util.Date} object.
+     * @return a {@link java.time.LocalDateTime} object.
      */
     protected LocalDateTime getMetsCreateDate() throws FatalIndexerException {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);

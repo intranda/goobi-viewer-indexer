@@ -16,7 +16,9 @@
 package io.goobi.viewer.indexer.model.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Configuration object for a single grouped metadata subfield configuration.
@@ -24,15 +26,16 @@ import java.util.List;
 public class SubfieldConfig {
 
     private final String fieldname;
-    private final List<String> xpaths = new ArrayList<>();
     private final boolean multivalued;
+    private final List<String> xpaths = new ArrayList<>();
+    private final Map<String, String> defaultValues = new HashMap<>();
 
     /**
-     * Constructor.
+     * <p>
+     * Getter for the field <code>xpaths</code>.
+     * </p>
      *
-     * @param fieldname {@link java.lang.String}
-     * @param multivalued a boolean.
-     * @should set attributes correctly
+     * @return the xpaths
      */
     public SubfieldConfig(String fieldname, boolean multivalued) {
         this.fieldname = fieldname;
@@ -40,7 +43,9 @@ public class SubfieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>fieldname</code>.</p>
+     * <p>
+     * Getter for the field <code>fieldname</code>.
+     * </p>
      *
      * @return the fieldname
      */
@@ -49,8 +54,17 @@ public class SubfieldConfig {
     }
 
     /**
-     * <p>Getter for the field <code>xpaths</code>.</p>
+     * <p>
+     * isMultivalued.
+     * </p>
      *
+     * @return the multivalued
+     */
+    public boolean isMultivalued() {
+        return multivalued;
+    }
+
+    /**
      * @return the xpaths
      */
     public List<String> getXpaths() {
@@ -58,11 +72,9 @@ public class SubfieldConfig {
     }
 
     /**
-     * <p>isMultivalued.</p>
-     *
-     * @return the multivalued
+     * @return the defaultValues
      */
-    public boolean isMultivalued() {
-        return multivalued;
+    public Map<String, String> getDefaultValues() {
+        return defaultValues;
     }
 }

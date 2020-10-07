@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.goobi.viewer.indexer.helper.MetadataHelper;
 
 /**
  * <p>
@@ -59,7 +61,7 @@ public class Version {
         } else {
             APPLICATION_NAME = "goobi-viewer-indexer";
             VERSION = "unknown";
-            BUILDDATE = new Date().toString();
+            BUILDDATE = LocalDateTime.now().format(MetadataHelper.formatterISO8601DateTimeNoSeconds);
             BUILDVERSION = "unknown";
         }
     }

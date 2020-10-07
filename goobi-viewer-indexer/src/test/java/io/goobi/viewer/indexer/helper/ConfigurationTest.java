@@ -113,6 +113,7 @@ public class ConfigurationTest extends AbstractTest {
             Assert.assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
             Assert.assertEquals("xpath2", fieldSubconfig.getXpaths().get(1));
             Assert.assertTrue(fieldSubconfig.isMultivalued());
+            Assert.assertEquals("def", fieldSubconfig.getDefaultValues().get("xpath2"));
         }
         {
             SubfieldConfig fieldSubconfig = (SubfieldConfig) groupEntity.get("field2");
