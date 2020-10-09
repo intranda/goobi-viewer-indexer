@@ -452,9 +452,17 @@
 		<SORT_TITLE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:titleInfo[@type='uniform']/mods:title</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:titleInfo[@type='uniform']/mods:title</item>
+                            <item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</item>
+                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
+                            <item>dc:title</item>
+                        </list>
+                    </xpath>
 					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
+					<replace regex="[¬]\w+[ ]"></replace>
 				</item>
 			</list>
 		</SORT_TITLE>

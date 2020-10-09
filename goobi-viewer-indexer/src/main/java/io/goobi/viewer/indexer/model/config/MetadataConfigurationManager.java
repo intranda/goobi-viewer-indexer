@@ -250,9 +250,9 @@ public final class MetadataConfigurationManager {
                             if (character != null) {
                                 replaceRules.put(character, replaceWith);
                             } else if (string != null) {
-                                replaceRules.put(string, replaceWith);
+                                replaceRules.put(string.replace(SPACE_PLACEHOLDER, " "), replaceWith);
                             } else if (regex != null) {
-                                replaceRules.put("REGEX:" + regex, replaceWith);
+                                replaceRules.put("REGEX:" + regex.replace(SPACE_PLACEHOLDER, " "), replaceWith);
                             }
                         }
                         fieldValues.put("replaceRules", replaceRules);
