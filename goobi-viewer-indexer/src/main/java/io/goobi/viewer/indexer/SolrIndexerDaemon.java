@@ -160,9 +160,9 @@ public final class SolrIndexerDaemon {
         // Set the hotfolder sleep interval
         try {
             sleepInterval = Integer.valueOf(Configuration.getInstance().getConfiguration("sleep"));
-            if (sleepInterval < 1000) {
+            if (sleepInterval < 500) {
                 sleepInterval = DEFAULT_SLEEP_INTERVAL;
-                logger.warn("Sleep interval must be at lest 1000 ms, using default interval of {} ms instead.", DEFAULT_SLEEP_INTERVAL);
+                logger.warn("Sleep interval must be at lest 500 ms, using default interval of {} ms instead.", DEFAULT_SLEEP_INTERVAL);
             } else {
                 logger.info("Sleep interval is {} ms.", sleepInterval);
             }
