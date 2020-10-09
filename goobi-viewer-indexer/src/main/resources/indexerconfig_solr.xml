@@ -213,6 +213,19 @@
 				</item>
 			</list>
 		</PI>
+		
+        <!-- This field is important, see chapter 3.13 of the manual -->
+        <LABEL>
+            <list>
+                <item>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </LABEL>
 
 		<!-- This field includes the Goobi workflow process ID -->
 		<MD_PROCESSID>

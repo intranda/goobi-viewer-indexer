@@ -367,11 +367,11 @@ public class MetadataHelperTest extends AbstractTest {
 
     /**
      * @see MetadataHelper#applyReplaceRules(String,Map)
-     * @verifies throw IllegalArgumentException if replaceRules is null
+     * @verifies return unmodified value if replaceRules is null
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void applyReplaceRules_shouldThrowIllegalArgumentExceptionIfReplaceRulesIsNull() throws Exception {
-        MetadataHelper.applyReplaceRules("v<a>e", null);
+    @Test
+    public void applyReplaceRules_shouldReturnUnmodifiedValueIfReplaceRulesIsNull() throws Exception {
+        Assert.assertEquals("v<a>e", MetadataHelper.applyReplaceRules("v<a>e", null));
     }
 
     /**

@@ -16,7 +16,9 @@
 package io.goobi.viewer.indexer.model;
 
 /**
- * <p>SolrConstants class.</p>
+ * <p>
+ * SolrConstants class.
+ * </p>
  *
  */
 public final class SolrConstants {
@@ -120,6 +122,8 @@ public final class SolrConstants {
     public static final String ISANCHOR = "ISANCHOR";
     /** Constant <code>ISWORK="ISWORK"</code> */
     public static final String ISWORK = "ISWORK";
+    /** Constant <code>LABEL="LABEL"</code> */
+    public static final String LABEL = "LABEL";
     /** Constant <code>LANGUAGE="LANGUAGE"</code> */
     public static final String LANGUAGE = "LANGUAGE";
     /** Constant <code>LOGID="LOGID"</code> */
@@ -186,11 +190,6 @@ public final class SolrConstants {
     public static final String YEARMONTHDAY = "YEARMONTHDAY";
     /** Constant <code>WIDTH="WIDTH"</code> */
     public static final String WIDTH = "WIDTH";
-
-    /** Constant <code>LABEL="LABEL"</code> */
-    public static final String LABEL = "LABEL";
-    /** Constant <code>TYPO3_TYPE="TYPE"</code> */
-    public static final String TYPO3_TYPE = "TYPE";
 
     /** Constant <code>OPEN_ACCESS_VALUE="OPENACCESS"</code> */
     public static final String OPEN_ACCESS_VALUE = "OPENACCESS";

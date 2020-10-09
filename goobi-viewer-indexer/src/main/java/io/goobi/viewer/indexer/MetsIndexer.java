@@ -456,7 +456,7 @@ public class MetsIndexer extends Indexer {
                 for (LuceneField field : indexObj.getLuceneFields()) {
                     if (titleField.equals(field.getField())) {
                         // Add title/label
-                        moreMetadata.put("LABEL", field.getValue());
+                        moreMetadata.put(SolrConstants.LABEL, field.getValue());
                         moreMetadata.put("MD_TITLE", field.getValue());
                     } else if (field.getField().endsWith(groupSuffix)
                             && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
@@ -1724,7 +1724,7 @@ public class MetsIndexer extends Indexer {
             // Set LOGID
             child.setAttribute("ID", "LOG_" + strId);
             // Set LABEL
-            child.setAttribute("LABEL", labelInfo.get(pi));
+            child.setAttribute(SolrConstants.LABEL, labelInfo.get(pi));
 
             // Set TYPE
             if (typeInfo.get(pi) != null) {

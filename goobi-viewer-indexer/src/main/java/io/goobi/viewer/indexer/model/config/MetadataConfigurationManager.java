@@ -112,7 +112,7 @@ public final class MetadataConfigurationManager {
                         String suffix = xpathNode.getString("[@suffix]");
                         xPathConfigurations.add(new XPathConfig(xpath, prefix, suffix));
                     }
-                } else {
+                } else if (config.getMaxIndex("fields." + fieldname + ".list.item(" + i + ").xpath") > -1) {
                     // Single XPath item
                     SubnodeConfiguration xpathNode = config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath");
                     String xpath = xpathNode.getString(".");

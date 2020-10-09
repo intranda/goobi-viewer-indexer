@@ -158,6 +158,9 @@ public class MetadataHelper {
         for (String fieldName : fieldNamesList) {
             List<FieldConfig> configurationItemList =
                     Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
+            if (configurationItemList == null || configurationItemList.isEmpty()) {
+                continue;
+            }
             for (FieldConfig configurationItem : configurationItemList) {
                 // Constant value instead of XPath
                 if (configurationItem.getConstantValue() != null) {
@@ -709,7 +712,7 @@ public class MetadataHelper {
      * @param replaceRules a {@link java.util.Map} object.
      * @should apply rules correctly
      * @should throw IllegalArgumentException if value is null
-     * @should throw IllegalArgumentException if replaceRules is null
+     * @should return unmodified value if replaceRules is null
      * @return a {@link java.lang.String} object.
      */
     public static String applyReplaceRules(String value, Map<Object, String> replaceRules) {
@@ -717,7 +720,7 @@ public class MetadataHelper {
             throw new IllegalArgumentException("value may not be null");
         }
         if (replaceRules == null) {
-            throw new IllegalArgumentException("replaceRules may not be null");
+            return value;
         }
         String ret = value;
         for (Object key : replaceRules.keySet()) {

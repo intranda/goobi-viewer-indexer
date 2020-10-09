@@ -27,8 +27,10 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
+import io.goobi.viewer.indexer.model.config.FieldConfig;
 
 /**
  * Object representing a docstruct.
@@ -99,10 +101,12 @@ public class IndexObject {
 
     /**
      * Generates Solr fields for essential metadata.
+     * 
+     * @throws FatalIndexerException
      *
      * @should write all required fields
      */
-    public void pushSimpleDataToLuceneArray() {
+    public void pushSimpleDataToLuceneArray() throws FatalIndexerException {
         String iddocString = String.valueOf(iddoc);
         addToLucene(SolrConstants.IDDOC, iddocString);
         addToLucene(SolrConstants.GROUPFIELD, iddocString);
@@ -113,7 +117,16 @@ public class IndexObject {
             addToLucene(SolrConstants.PI_PARENT, parentPI);
             addToLucene(SolrConstants.PI_ANCHOR, parentPI);
         }
-        addToLucene(SolrConstants.LABEL, MetadataHelper.applyValueDefaultModifications(getLabel()));
+        if (label != null) {
+            // Apply default modifications and replace rules to LABEL
+            String moddedLabel = MetadataHelper.applyValueDefaultModifications(label);
+            List<FieldConfig> configurationItemList =
+                    Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.LABEL);
+            if (configurationItemList != null && !configurationItemList.isEmpty()) {
+                moddedLabel = MetadataHelper.applyReplaceRules(moddedLabel, configurationItemList.get(0).getReplaceRules());
+            }
+            addToLucene(SolrConstants.LABEL, moddedLabel);
+        }
         addToLucene(SolrConstants.DMDID, dmdId);
         addToLucene(SolrConstants.LOGID, logId);
 
