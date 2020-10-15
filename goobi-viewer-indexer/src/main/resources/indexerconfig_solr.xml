@@ -786,6 +786,7 @@
 			</list>
 		</MD_PUBLICATIONRUN>
 
+        <!--
 		<MDNUM_PUBLICRELEASEYEAR>
 			<list>
 				<item>
@@ -814,6 +815,7 @@
                 </item>
             </list>
         </DATE_PUBLICRELEASEDATE>
+        -->
 
 		<MD_PHYSICALCOPY>
 			<list>
@@ -2883,7 +2885,7 @@
 		<MD_COORDINATES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[not(@type)]</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2895,7 +2897,7 @@
 				<item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</item>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[not(@type)]</item>
                             <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
                         </list>
                     </xpath>
@@ -2918,7 +2920,7 @@
 				<item>
 				    <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</item>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[not(@type)]</item>
                             <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
                         </list>
 				    </xpath>
@@ -2962,6 +2964,22 @@
 				</item>
 			</list>
 		</MD_GEOJSON_POLYGON>
+		
+        <MD_GPS_POLYGON>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>concat(mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="western"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="eastern"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="northern"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="southern"])</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                    <onefield separator="#SPACE#">true</onefield>
+                    <geoJSONSource addSearchField="true">sexagesimal:polygon</geoJSONSource>
+                </item>
+            </list>
+        </MD_GPS_POLYGON>
 
 		<MD_DOCUMENT_PLACE>
 			<list>

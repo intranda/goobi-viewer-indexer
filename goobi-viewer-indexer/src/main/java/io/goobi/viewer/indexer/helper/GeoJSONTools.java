@@ -129,6 +129,7 @@ public class GeoJSONTools {
      * @should convert GML point correctly
      * @should convert GML polygon correctly
      * @should convert MODS point correctly
+     * @should convert deg min sec polygon correctly
      */
     public static String convertCoordinatesToGeoJSONString(String coords, String type, String separator) {
         FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
@@ -197,6 +198,20 @@ public class GeoJSONTools {
                 }
             }
                 break;
+            case "sexagesimal:point": {
+                List<LngLatAlt> polygon = convertSexagesimalToDecimalPoints(coords, separator);
+                if (!polygon.isEmpty()) {
+                    geometry = new Point(polygon.get(0));
+                }
+            }
+                break;
+            case "sexagesimal:polygon": {
+                List<LngLatAlt> polygon = convertSexagesimalToDecimalPoints(coords, separator);
+                if (!polygon.isEmpty()) {
+                    geometry = new Polygon(polygon);
+                }
+            }
+                break;
             default:
                 logger.error("Unknown type: {}", type);
                 return null;
@@ -252,5 +267,72 @@ public class GeoJSONTools {
         }
 
         return ret;
+    }
+
+    /**
+     * Converts a string containing two or four sexagesimal coordinates into <code>LngLatAlt</code> objects.
+     * 
+     * @param coords Two or four sexagesimal coordinates in the order "lon lat" (point) or "west east north south" (rectangle)
+     * @param separator Optional custom separator between coordinates
+     * @return List of LngLatAlt points
+     * @should convert points correctly
+     * @should convert polygons correctly
+     */
+    static List<LngLatAlt> convertSexagesimalToDecimalPoints(String coords, String separator) {
+        if (StringUtils.isEmpty(coords)) {
+            return Collections.emptyList();
+        }
+        if (separator == null) {
+            separator = " ";
+        }
+
+        String[] coordsSplit = coords.split(separator);
+        List<LngLatAlt> ret = new ArrayList<>();
+        double[] decimalValues = new double[coordsSplit.length];
+        for (int i = 0; i < coordsSplit.length; ++i) {
+            decimalValues[i] = convertSexagesimalCoordinateToDecimal(coordsSplit[i]);
+        }
+        switch (decimalValues.length) {
+            case 2:
+                ret.add(new LngLatAlt(decimalValues[0], decimalValues[1]));
+                break;
+            case 4:
+                ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
+                ret.add(new LngLatAlt(decimalValues[1], decimalValues[2]));
+                ret.add(new LngLatAlt(decimalValues[1], decimalValues[3]));
+                ret.add(new LngLatAlt(decimalValues[0], decimalValues[3]));
+                ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
+                break;
+            default:
+                logger.warn("Incompatible coordinates: {}", coords);
+                break;
+        }
+
+        return ret;
+
+    }
+
+    /**
+     * Converts a single sexagesimal (XX° YY' UU") coordinate in degrees, minutes and seconds to a decimal coordinate.
+     * 
+     * @param coordinate 8-character coordinate string (e.g. E0080756)
+     * @return
+     * @should convert coordinate correctly
+     */
+    static double convertSexagesimalCoordinateToDecimal(String coordinate) {
+        if (coordinate == null) {
+            throw new IllegalArgumentException("coordinate may not be null");
+        }
+        if (coordinate.length() != 8) {
+            throw new IllegalArgumentException("coordinate length must be 8");
+        }
+
+        int deg = Integer.valueOf(coordinate.substring(1, 4));
+        double min = Integer.valueOf(coordinate.substring(4, 6));
+        double sec = Integer.valueOf(coordinate.substring(6, 8));
+        double ret = deg + (min / 60) + (sec / 3600);
+
+        return ret;
+        // return Double.valueOf(MetadataHelper.FORMAT_EIGHT_DECIMAL_PLACES.get().format(ret));
     }
 }

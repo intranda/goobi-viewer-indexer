@@ -130,7 +130,7 @@ public final class SolrIndexerDaemon {
         if (MetsIndexer.noTimestampUpdate) {
             logger.warn("WARNING: No update mode - DATEUPDATED timestamps will not be updated.");
         }
-        
+
         if (!checkSolrSchemaName(
                 SolrSearchIndex.getSolrSchemaDocument(Configuration.getInstance(confFilename).getConfiguration("solrUrl")))) {
             throw new FatalIndexerException("Incompatible Solr schema, exiting..");
