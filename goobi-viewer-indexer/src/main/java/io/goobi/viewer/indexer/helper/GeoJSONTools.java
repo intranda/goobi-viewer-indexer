@@ -199,6 +199,7 @@ public class GeoJSONTools {
             }
                 break;
             case "sexagesimal:point": {
+                // TODO untested due to lack of examples
                 List<LngLatAlt> polygon = convertSexagesimalToDecimalPoints(coords, separator);
                 if (!polygon.isEmpty()) {
                     geometry = new Point(polygon.get(0));
@@ -208,7 +209,11 @@ public class GeoJSONTools {
             case "sexagesimal:polygon": {
                 List<LngLatAlt> polygon = convertSexagesimalToDecimalPoints(coords, separator);
                 if (!polygon.isEmpty()) {
-                    geometry = new Polygon(polygon);
+                    if (polygon.size() == 1) {
+                        geometry = new Point(polygon.get(0));
+                    } else {
+                        geometry = new Polygon(polygon);
+                    }
                 }
             }
                 break;
@@ -277,6 +282,7 @@ public class GeoJSONTools {
      * @return List of LngLatAlt points
      * @should convert points correctly
      * @should convert polygons correctly
+     * @should return single point if coordinates duplicate
      */
     static List<LngLatAlt> convertSexagesimalToDecimalPoints(String coords, String separator) {
         if (StringUtils.isEmpty(coords)) {
@@ -297,11 +303,17 @@ public class GeoJSONTools {
                 ret.add(new LngLatAlt(decimalValues[0], decimalValues[1]));
                 break;
             case 4:
-                ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
-                ret.add(new LngLatAlt(decimalValues[1], decimalValues[2]));
-                ret.add(new LngLatAlt(decimalValues[1], decimalValues[3]));
-                ret.add(new LngLatAlt(decimalValues[0], decimalValues[3]));
-                ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
+                if (decimalValues[0] == decimalValues[1] && decimalValues[2] == decimalValues[3]) {
+                    // A single point in four duplicate coords
+                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[1]));
+                } else {
+                    // Proper polygon
+                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
+                    ret.add(new LngLatAlt(decimalValues[1], decimalValues[2]));
+                    ret.add(new LngLatAlt(decimalValues[1], decimalValues[3]));
+                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[3]));
+                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
+                }
                 break;
             default:
                 logger.warn("Incompatible coordinates: {}", coords);

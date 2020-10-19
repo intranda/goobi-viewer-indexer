@@ -59,9 +59,6 @@ public class GeoJSONToolsTest {
      */
     @Test
     public void convertCoordinatesToGeoJSONString_shouldConvertDegMinSecPolygonCorrectly() throws Exception {
-        System.out.println(GeoJSONTools.convertCoordinatesToGeoJSONString(
-                "E0080756 E0083024 N0465228 N0465228",
-                "sexagesimal:polygon", " "));
         Assert.assertTrue(GeoJSONTools.convertCoordinatesToGeoJSONString(
                 "E0080756 E0083024 N0465228 N0465228",
                 "sexagesimal:polygon", " ").contains("Polygon"));
@@ -99,7 +96,6 @@ public class GeoJSONToolsTest {
      */
     @Test
     public void convertSexagesimalToDecimalPoints_shouldConvertPolygonsCorrectly() throws Exception {
-
         List<LngLatAlt> result = GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 E0083024 N0465228 N0465228", " ");
         Assert.assertEquals(5, result.size());
     }
@@ -111,6 +107,17 @@ public class GeoJSONToolsTest {
     @Test
     public void convertSexagesimalToDecimalPoints_shouldConvertPointsCorrectly() throws Exception {
         List<LngLatAlt> result = GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 N0465228", " ");
+        Assert.assertEquals(1, result.size());
+    }
+    
+
+    /**
+     * @see GeoJSONTools#convertSexagesimalToDecimalPoints(String,String)
+     * @verifies return single point if coordinates duplicate
+     */
+    @Test
+    public void convertSexagesimalToDecimalPoints_shouldReturnSinglePointIfCoordinatesDuplicate() throws Exception {
+        List<LngLatAlt> result = GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 E0080756 N0465228 N0465228", " ");
         Assert.assertEquals(1, result.size());
     }
 
