@@ -136,6 +136,7 @@ public class MetsIndexer extends Indexer {
      * @should update record correctly
      * @should set access conditions correctly
      * @should write cms page texts into index
+     * @should write shape metadata correctly
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
@@ -632,7 +633,7 @@ public class MetsIndexer extends Indexer {
             if (depth > currentDepth) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
                 pageDoc.setField("MDNUM_OWNERDEPTH", depth);
-                
+
                 // Add the parent document's LOGID value to the page
                 pageDoc.setField(SolrConstants.LOGID, indexObj.getLogId());
 
@@ -751,10 +752,14 @@ public class MetsIndexer extends Indexer {
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.METADATATYPE, MetadataGroupType.SHAPE.name()));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, String.valueOf(pageDoc.getFieldValue(SolrConstants.IDDOC))));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) pageDoc.getFieldValue("MD_COORDS")));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.LOGID, indexObj.getLogId()));
                 shapeGmd.getFields().add(new LuceneField("MD_COORDS", (String) pageDoc.getFieldValue("MD_COORDS")));
                 shapeGmd.getFields().add(new LuceneField("MD_SHAPE", (String) pageDoc.getFieldValue("MD_SHAPE")));
+                shapeGmd.getFields().add(new LuceneField("MD_VALUE", (String) pageDoc.getFieldValue("MD_COORDS")));
+                // Add main value, otherwise the document will be skipped
+                shapeGmd.setMainValue((String) pageDoc.getFieldValue("MD_COORDS"));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
-                logger.debug("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
+                logger.info("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
 
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
@@ -940,9 +945,9 @@ public class MetsIndexer extends Indexer {
                         SolrInputDocument shapePageDoc = new SolrInputDocument();
                         shapePageDoc.addField(SolrConstants.IDDOC, getNextIddoc(hotfolder.getSearchIndex()));
                         shapePageDoc.setField(SolrConstants.DOCTYPE, "SHAPE");
+                        shapePageDoc.setField(SolrConstants.DOCTYPE, "SHAPE");
                         shapePageDoc.addField(SolrConstants.ORDER, Utils.generateLongOrderNumber(order, count));
                         shapePageDoc.addField(SolrConstants.PHYSID, physId);
-                        ;
                         shapePageDoc.addField("MD_COORDS", coords);
                         shapePageDoc.addField("MD_SHAPE", shape);
                         shapePageDoc.addField("ORDER_PARENT", order);

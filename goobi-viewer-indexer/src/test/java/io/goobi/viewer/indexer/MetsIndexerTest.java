@@ -713,6 +713,49 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see MetsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int)
+     * @verifies write shape metadata correctly
+     */
+    @Test
+    public void index_shouldWriteShapeMetadataCorrectly() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
+        String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
+        Assert.assertEquals(1, hotfolder.getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0004 +" + SolrConstants.METADATATYPE + ":SHAPE",
+                        null)
+                .size());
+        Assert.assertEquals(1, hotfolder.getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0005 +" + SolrConstants.METADATATYPE + ":SHAPE",
+                        null)
+                .size());
+        Assert.assertEquals(1, hotfolder.getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0006 +" + SolrConstants.METADATATYPE + ":SHAPE",
+                        null)
+                .size());
+        Assert.assertEquals(1, hotfolder.getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0007 +" + SolrConstants.METADATATYPE + ":SHAPE",
+                        null)
+                .size());
+        Assert.assertEquals(1, hotfolder.getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0009 +" + SolrConstants.METADATATYPE + ":SHAPE",
+                        null)
+                .size());
+        Assert.assertEquals(1, hotfolder.getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0010 +" + SolrConstants.METADATATYPE + ":SHAPE",
+                        null)
+                .size());
+        Assert.assertEquals(1, hotfolder.getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0011 +" + SolrConstants.METADATATYPE + ":SHAPE",
+                        null)
+                .size());
+        Assert.assertEquals(1, hotfolder.getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0012 +" + SolrConstants.METADATATYPE + ":SHAPE",
+                        null)
+                .size());
+    }
+
+    /**
      * @see MetsIndexer#generatePageDocuments(JDomXP)
      * @verifies create documents for all mapped pages
      */
