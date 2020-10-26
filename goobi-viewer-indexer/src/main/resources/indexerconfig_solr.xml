@@ -3056,16 +3056,15 @@
         <MD_ACCESSLOCATIONS>
             <list>
                 <item>
-                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessLocations
-                    </xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessLocations</xpath>
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
-                                        <groupEntity type="VIAF">
-                                                <field name="MD_VALUE">text()</field>
-                                                <field name="MD_DISPLAYFORM">text()</field>
-                                                <field name="NORM_URI_VIAF">@valueURI</field>
-                                        </groupEntity>
-
+                    <groupEntity type="VIAF">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_DISPLAYFORM">text()</field>
+                        <field name="NORM_URI">@valueURI</field>
+                        <field name="NORM_IDENTIFIER_GEONAMES">substring-after(@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
                 </item>
             </list>
         </MD_ACCESSLOCATIONS>
@@ -3076,13 +3075,12 @@
                     <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:Institution</xpath>
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
-                            <addSortField>true</addSortField>
-                                        <groupEntity type="VIAF">
-                                                <field name="MD_VALUE">text()</field>
-                                                <field name="MD_DISPLAYFORM">text()</field>
-                                                <field name="NORM_URI_VIAF">@valueURI</field>
-                                        </groupEntity>
-
+                    <addSortField>true</addSortField>
+                    <groupEntity type="VIAF">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_DISPLAYFORM">text()</field>
+                        <field name="NORM_URI_VIAF">@valueURI</field>
+                    </groupEntity>
                 </item>
             </list>
         </MD_INTRANDAINSTITUTION>
