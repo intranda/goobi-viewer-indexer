@@ -50,7 +50,6 @@ public class FieldConfig {
     private Map<String, Object> groupEntityFields = new MultiValueMap();
     private Map<Object, String> replaceRules = new LinkedHashMap<>();
     private List<NonSortConfiguration> nonSortConfigurations;
-    private boolean addToChildren = false;
     private boolean addToPages = false;
     private ValueNormalizer valueNormalizer;
     private String geoJSONSource;
@@ -567,27 +566,7 @@ public class FieldConfig {
         this.nonSortConfigurations = nonSortConfigurations;
     }
 
-    /**
-     * <p>
-     * isAddToChildren.
-     * </p>
-     *
-     * @return the addToChildren
-     */
-    public boolean isAddToChildren() {
-        return addToChildren;
-    }
 
-    /**
-     * <p>
-     * Setter for the field <code>addToChildren</code>.
-     * </p>
-     *
-     * @param addToChildren the addToChildren to set
-     */
-    public void setAddToChildren(boolean addToChildren) {
-        this.addToChildren = addToChildren;
-    }
 
     /**
      * <p>

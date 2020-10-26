@@ -420,18 +420,14 @@ public final class MetadataConfigurationManager {
 
         if (configurationMap.containsKey("addToParents")) {
             if (((String) configurationMap.get("addToParents")).equals("true")) {
-                configurationItem.setAddToChildren(true);
                 fieldsToAddToParents.add(configurationItem.getFieldname());
             } else {
-                configurationItem.setAddToChildren(false);
             }
         }
         if (configurationMap.containsKey("addToChildren")) {
             if (((String) configurationMap.get("addToChildren")).equals("true")) {
-                configurationItem.setAddToChildren(true);
                 fieldsToAddToChildren.add(configurationItem.getFieldname());
             } else {
-                configurationItem.setAddToChildren(false);
             }
         }
         if (configurationMap.containsKey("addToPages")) {
