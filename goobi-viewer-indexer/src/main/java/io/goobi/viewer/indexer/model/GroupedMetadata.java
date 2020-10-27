@@ -30,6 +30,8 @@ public class GroupedMetadata {
     private String mainValue;
     private String authorityURI;
     private final List<LuceneField> fields;
+    private final List<LuceneField> authorityDataFields;
+    private boolean addAuthorityDataToDocstruct = false;
     /** If true, this field won't be added to he index. */
     private boolean skip = false;
 
@@ -40,6 +42,7 @@ public class GroupedMetadata {
      */
     public GroupedMetadata() {
         fields = new ArrayList<>();
+        authorityDataFields = new ArrayList<>();
     }
 
     /* (non-Javadoc)
@@ -173,6 +176,27 @@ public class GroupedMetadata {
      */
     public List<LuceneField> getFields() {
         return fields;
+    }
+
+    /**
+     * @return the authorityDataFields
+     */
+    public List<LuceneField> getAuthorityDataFields() {
+        return authorityDataFields;
+    }
+
+    /**
+     * @return the addAuthorityDataToDocstruct
+     */
+    public boolean isAddAuthorityDataToDocstruct() {
+        return addAuthorityDataToDocstruct;
+    }
+
+    /**
+     * @param addAuthorityDataToDocstruct the addAuthorityDataToDocstruct to set
+     */
+    public void setAddAuthorityDataToDocstruct(boolean addAuthorityDataToDocstruct) {
+        this.addAuthorityDataToDocstruct = addAuthorityDataToDocstruct;
     }
 
     /**

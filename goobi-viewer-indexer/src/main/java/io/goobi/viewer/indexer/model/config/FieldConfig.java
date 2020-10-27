@@ -47,6 +47,7 @@ public class FieldConfig {
     private boolean normalizeYear = false;
     private boolean interpolateYears = false;
     private int normalizeYearMinDigits = 3;
+    @SuppressWarnings("unchecked")
     private Map<String, Object> groupEntityFields = new MultiValueMap();
     private Map<Object, String> replaceRules = new LinkedHashMap<>();
     private List<NonSortConfiguration> nonSortConfigurations;

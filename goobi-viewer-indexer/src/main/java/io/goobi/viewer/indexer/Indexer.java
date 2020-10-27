@@ -921,11 +921,14 @@ public abstract class Indexer {
      * @should set PI_TOPSTRUCT to child docstruct metadata
      * @should set DOCSTRCT_TOP
      * @should skip fields correctly
+     * @should add authority metadata to group metadata docs correctly
+     * @should add authority metadata to docstruct metadata doc correctly
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj)
             throws FatalIndexerException {
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
+        Set<String> skipFields = new HashSet<>();
         for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
             if (gmd.isSkip()) {
                 continue;
@@ -937,7 +940,30 @@ public abstract class Indexer {
                 continue;
             }
 
-            SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
+            List<LuceneField> fieldsToAdd = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
+            fieldsToAdd.addAll(gmd.getFields());
+            if (gmd.isAddAuthorityDataToDocstruct()) {
+                // Add authority data to docstruct doc instead of grouped metadata
+                for (LuceneField field : gmd.getAuthorityDataFields()) {
+                    if (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_")) {
+                        // Only add single valued fields once
+                        if (skipFields.contains(field.getField())) {
+                            continue;
+                        }
+                        skipFields.add(field.getField());
+                    } else {
+                        // Avoid field+value duplicates for all other fields
+                        if (skipFields.contains(field.getField() + field.getValue())) {
+                            continue;
+                        }
+                        skipFields.add(field.getField() + field.getValue());
+                    }
+                    indexObj.getLuceneFields().add(field);
+                }
+            } else {
+                fieldsToAdd.addAll(gmd.getAuthorityDataFields());
+            }
+            SolrInputDocument doc = SolrSearchIndex.createDocument(fieldsToAdd);
             long iddoc = getNextIddoc(hotfolder.getSearchIndex());
             doc.addField(SolrConstants.IDDOC, iddoc);
             if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {

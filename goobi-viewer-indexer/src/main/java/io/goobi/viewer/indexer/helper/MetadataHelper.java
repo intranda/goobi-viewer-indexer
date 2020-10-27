@@ -270,6 +270,7 @@ public class MetadataHelper {
                         for (Object xpathAnswerObject : list) {
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
+                                logger.info(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd =
                                         getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
@@ -381,7 +382,7 @@ public class MetadataHelper {
                                 if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(gmd.getMainValue())) {
                                     gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, gmd.getMainValue()));
                                 }
-                                gmd.getFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
+                                gmd.getAuthorityDataFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
 
                                 if (!indexObj.getGroupedMetadataFields().contains(gmd)) {
                                     indexObj.getGroupedMetadataFields().add(gmd);
@@ -1199,10 +1200,10 @@ public class MetadataHelper {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
-
-        String type = null;
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
+
         // Grouped metadata type
+        String type = null;
         if (groupEntityFields.get("type") != null) {
             type = (String) groupEntityFields.get("type");
             ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.trim()));
@@ -1210,6 +1211,13 @@ public class MetadataHelper {
             type = "OTHER";
             logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
         }
+
+        boolean addAuthorityDataToDocstruct = false;
+        if (groupEntityFields.get("addAuthorityDataToDocstruct") != null) {
+            addAuthorityDataToDocstruct = (boolean) groupEntityFields.get("addAuthorityDataToDocstruct");
+        }
+        ret.setAddAuthorityDataToDocstruct(addAuthorityDataToDocstruct);
+
         boolean authorityUriFound = false;
         Map<String, List<String>> collectedValues = new HashMap<>();
         for (Object field : groupEntityFields.keySet()) {

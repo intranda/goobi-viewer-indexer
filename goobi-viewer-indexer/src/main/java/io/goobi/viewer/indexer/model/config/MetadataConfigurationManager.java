@@ -166,6 +166,11 @@ public final class MetadataConfigurationManager {
                     if (type != null) {
                         groupedSubfieldConfigurations.put("type", type);
                     }
+                    Boolean addAuthorityDataToDocstruct =
+                            config.getBoolean("fields." + fieldname + ".list.item(" + i + ").groupEntity[@addAuthorityDataToDocstruct]", null);
+                    if (addAuthorityDataToDocstruct != null) {
+                        groupedSubfieldConfigurations.put("addAuthorityDataToDocstruct", addAuthorityDataToDocstruct);
+                    }
                     List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").groupEntity.field");
                     if (elements != null) {
                         for (Iterator it = elements.iterator(); it.hasNext();) {
