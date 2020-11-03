@@ -3059,7 +3059,7 @@
                     <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessLocations</xpath>
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
-                    <groupEntity type="VIAF" addAuthorityDataToDocstruct="true">
+                    <groupEntity type="LOCATION" addAuthorityDataToDocstruct="true">
                         <field name="MD_VALUE">text()</field>
                         <field name="MD_DISPLAYFORM">text()</field>
                         <field name="NORM_URI">@valueURI</field>

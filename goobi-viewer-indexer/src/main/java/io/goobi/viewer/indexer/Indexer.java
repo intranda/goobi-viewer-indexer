@@ -71,6 +71,7 @@ import de.intranda.api.annotation.wa.FragmentSelector;
 import de.intranda.api.annotation.wa.SpecificResource;
 import de.intranda.api.annotation.wa.TextualResource;
 import de.intranda.api.annotation.wa.WebAnnotation;
+import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -921,7 +922,7 @@ public abstract class Indexer {
      * @should set PI_TOPSTRUCT to child docstruct metadata
      * @should set DOCSTRCT_TOP
      * @should skip fields correctly
-     * @should add authority metadata to group metadata docs correctly
+     * @should add authority metadata to group metadata docs correctly except coordinates
      * @should add authority metadata to docstruct metadata doc correctly
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj)
@@ -946,11 +947,22 @@ public abstract class Indexer {
                 // Add authority data to docstruct doc instead of grouped metadata
                 for (LuceneField field : gmd.getAuthorityDataFields()) {
                     if (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_")) {
+                        // Keep BOOL_WKT_COORDS on the metadata doc
+                        if (field.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS)) {
+                            fieldsToAdd.add(field);
+                            continue;
+                        }
                         // Only add single valued fields once
                         if (skipFields.contains(field.getField())) {
                             continue;
                         }
                         skipFields.add(field.getField());
+                    } else if (field.getField().startsWith("WKT_")
+                            || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
+                            || field.getField().startsWith("NORM_COORDS_")) {
+                        // Keep coordinate fields on the metadata doc
+                        fieldsToAdd.add(field);
+                        continue;
                     } else {
                         // Avoid field+value duplicates for all other fields
                         if (skipFields.contains(field.getField() + field.getValue())) {
