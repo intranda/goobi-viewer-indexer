@@ -279,8 +279,7 @@ public abstract class Indexer {
      * @throws FatalIndexerException
      */
     private static void createDeletedDoc(String pi, String urn, List<String> pageUrns, String dateDeleted, String dateUpdated,
-            SolrSearchIndex searchIndex)
-            throws NumberFormatException, IOException, FatalIndexerException {
+            SolrSearchIndex searchIndex) throws NumberFormatException, IOException, FatalIndexerException {
         // Build replacement document that is marked as deleted
         logger.info("Creating 'DELETED' document for {}...", pi);
         List<LuceneField> fields = new ArrayList<>();
@@ -614,7 +613,7 @@ public abstract class Indexer {
             if (annotation == null) {
                 return null;
             }
-            
+
             String annotationId = Paths.get(annotation.getId().getPath()).getFileName().toString();
 
             StringBuilder sbTerms = new StringBuilder();
@@ -624,25 +623,29 @@ public abstract class Indexer {
             doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
             doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
             doc.addField(SolrConstants.MD_ANNOTATION_ID, annotationId);
-            if(StringUtils.isNotBlank(annotation.getRights())) {
+            if (StringUtils.isNotBlank(annotation.getRights())) {
                 doc.addField(SolrConstants.ACCESSCONDITION, annotation.getRights());
+            } else {
+                doc.addField(SolrConstants.ACCESSCONDITION, "OPENACCESS");
+
             }
             Integer pageOrder = WebAnnotationTools.parsePageOrder(annotation.getTarget().getId());
-            if (pageOrder == null) {
-                // Map all non-page-specific annotations to page 1 for now
-                pageOrder = 1;
-            }
-            doc.setField(SolrConstants.ORDER, pageOrder);
+            if (pageOrder != null) {
+                doc.setField(SolrConstants.ORDER, pageOrder);
 
-            // Look up owner page doc
-            SolrInputDocument pageDoc = pageDocs.get(pageOrder);
-            if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
-                doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
-            }
+                // Look up owner page doc
+                SolrInputDocument pageDoc = pageDocs.get(pageOrder);
+                if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
+                    doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
+                }
 
-            // Add topstruct type
-            if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
-                doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                // Add topstruct type
+                if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
+                    doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                }
+            } else {
+                //TODO: add doc directly to work
+                
             }
 
             if (StringUtils.isNotEmpty(anchorPi)) {
@@ -931,8 +934,7 @@ public abstract class Indexer {
      * @should add authority metadata to group metadata docs correctly except coordinates
      * @should add authority metadata to docstruct metadata doc correctly
      */
-    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj)
-            throws FatalIndexerException {
+    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         Set<String> skipFields = new HashSet<>();
@@ -963,8 +965,7 @@ public abstract class Indexer {
                             continue;
                         }
                         skipFields.add(field.getField());
-                    } else if (field.getField().startsWith("WKT_")
-                            || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
+                    } else if (field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
                             || field.getField().startsWith("NORM_COORDS_")) {
                         // Keep coordinate fields on the metadata doc
                         fieldsToAdd.add(field);

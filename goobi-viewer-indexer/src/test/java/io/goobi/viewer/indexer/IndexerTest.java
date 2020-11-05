@@ -300,7 +300,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             SolrInputDocument doc = docs.stream().filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("geo")).findAny().orElseThrow(() -> new IllegalStateException("No annotation with id 'geo'"));
             Assert.assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
             Assert.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.ORDER));
+            Assert.assertNull(doc.getFieldValue(SolrConstants.ORDER));
             Assert.assertEquals(123, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertEquals("9.967025 51.521737", doc.getFieldValue("MD_COORDS"));
             Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
