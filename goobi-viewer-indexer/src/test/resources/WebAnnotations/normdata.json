@@ -1,0 +1,30 @@
+{
+
+    "id": "https://viewer.goobi.io/api/v1/annotations/normdata/",
+    "type": "Annotation",
+    "body": {
+        "type": "AuthorityResource",
+        "id": "https://d-nb.info/gnd/117110922"
+    },
+    "target": {
+        "type": "SpecificResource",
+        "selector": {
+            "value": "xywh=855,4694,385,123",
+            "type": "FragmentSelector"
+        },
+        "source": "https://viewer.goobi.io/api/v1/records/AC02949962/pages/10/canvas/"
+    },
+    "creator": {
+        "id": "https://viewer.goobi.io/rest/users/17",
+        "type": "Person",
+        "name": "Jan"
+    },
+    "generator": {
+        "id": "https://viewer.goobi.io/rest/crowdsourcing/campaigns/5/questions/7",
+        "type": "Software",
+        "name": "Spaß in AC02949962"
+    },
+    "created": "2020-11-05T04:36:40Z",
+    "modified": "2020-11-05T04:36:40Z"
+
+}

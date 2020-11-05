@@ -1,5 +1,5 @@
 {
-	"id": "http://localhost:8080/viewer/rest/annotations/3",
+	"id": "http://localhost:8080/viewer/rest/annotations/PPN517154005_3",
 	"type": "Annotation",
 	"body": {
 		"type": "TextualBody",
@@ -12,7 +12,7 @@
 			"value": "xywh=1378,3795,486,113",
 			"type": "FragmentSelector"
 		},
-		"source": "http://localhost:8080/viewer/rest/iiif/manifests/PPN517154005/canvas/1"
+		"source": "http://localhost:8080/viewer/api/v1/records/PPN517154005/pages/2/canvas"
 	},
 	"creator": {
 		"id": "http://localhost:8080/viewer/rest/users/45",
@@ -20,7 +20,7 @@
 		"name": "Andrey (admin)"
 	},
 	"generator": {
-		"id": "http://localhost:8080/viewer/rest/crowdsourcing/campaigns/1/questions/2",
+		"id": "http://localhost:8080/viewer/api/v1/crowdsourcing/campaigns/1/questions/2",
 		"type": "Software",
 		"name": "Campaign 1"
 	}

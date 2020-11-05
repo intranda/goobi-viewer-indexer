@@ -220,4 +220,8 @@ public final class SolrConstants {
     public static final String _UGC_TYPE_COMMENT = "COMMENT";
     /** Constant <code>NAMEDENTITIES="NAMEDENTITIES"</code> */
     public static final String NAMEDENTITIES = "NAMEDENTITIES";
+    
+    /** Constant <code>MD_ANNOTATION_ID="MD_ANNOTATION_ID"</code> */
+    public static final String MD_ANNOTATION_ID = "MD_ANNOTATION_ID";
+    
 }

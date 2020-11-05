@@ -614,6 +614,8 @@ public abstract class Indexer {
             if (annotation == null) {
                 return null;
             }
+            
+            String annotationId = Paths.get(annotation.getId().getPath()).getFileName().toString();
 
             StringBuilder sbTerms = new StringBuilder();
             SolrInputDocument doc = new SolrInputDocument();
@@ -621,6 +623,7 @@ public abstract class Indexer {
             doc.addField(SolrConstants.GROUPFIELD, iddoc);
             doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
             doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+            doc.addField(SolrConstants.MD_ANNOTATION_ID, annotationId);
             Integer pageOrder = WebAnnotationTools.parsePageOrder(annotation.getTarget().getId());
             if (pageOrder == null) {
                 // Map all non-page-specific annotations to page 1 for now
@@ -663,11 +666,11 @@ public abstract class Indexer {
                         doc.addField("MD_COORDS", coords[0] + " " + coords[1]);
                     }
                 }
-                // Add annotation body as JSON
-                doc.addField("MD_BODY", annotation.getBody().toString());
             } else {
                 logger.warn("Cannot interpret annotation body of type " + annotation.getBody().getClass());
             }
+            // Add annotation body as JSON, always!
+            doc.addField("MD_BODY", annotation.getBody().toString());
 
             if (annotation.getTarget() instanceof SpecificResource) {
                 // Coords

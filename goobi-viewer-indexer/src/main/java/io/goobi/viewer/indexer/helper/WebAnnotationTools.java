@@ -28,6 +28,9 @@ import org.apache.commons.lang3.StringUtils;
 public class WebAnnotationTools {
 
     private static final String TARGET_REGEX = ".*/iiif/manifests/(.+?)/(?:canvas|manifest)?(?:/(\\d+))?/?$";
+    private static final String TARGET_REGEX_CANVAS = ".*/records/(.+?)/pages/(\\d+)/canvas/?$";
+    private static final String TARGET_REGEX_MANIFEST = ".*/records/(.+?)/manifest/?$";
+    private static final String TARGET_REGEX_SECTION = ".*/records/(.+?)/sections/(.+?)/range/?$";
 
     /**
      * Extract the page order from a canvas url. If the url points to a manifest, return null
@@ -36,14 +39,59 @@ public class WebAnnotationTools {
      * @return a {@link java.lang.Integer} object.
      */
     public static Integer parsePageOrder(URI uri) {
-        Matcher matcher = Pattern.compile(TARGET_REGEX).matcher(uri.toString());
-        if (matcher.find()) {
+        
+        Matcher matcher = getMatchingMatcher(uri);
+
             String pageNo = matcher.group(2);
-            if (StringUtils.isNotBlank(pageNo)) {
+            if (StringUtils.isNotBlank(pageNo) && StringUtils.isNumeric(pageNo)) {
                 return Integer.parseInt(pageNo);
             }
             return null;
-        }
+        
+    }
+    
+    public static String parsePI(URI uri) {
+        Matcher matcher = getMatchingMatcher(uri);
+        
+            String pi = matcher.group(1);
+            if (StringUtils.isNotBlank(pi)) {
+            return pi;
+            }
         return null;
+    }
+    
+    public static String parseDivId(URI uri) {
+        Matcher matcher = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString());
+        
+        if (matcher.find()) {
+            String divId = matcher.group(2);
+            if (StringUtils.isNotBlank(divId)) {
+                return divId;
+            }
+        } 
+        return null;
+    }
+
+    /**
+     * @param uri
+     * @return
+     */
+    public static Matcher getMatchingMatcher(URI uri) {
+        Matcher matcher = null;
+        Matcher matcherOld = Pattern.compile(TARGET_REGEX).matcher(uri.toString());
+        Matcher matcherCanvas = Pattern.compile(TARGET_REGEX_CANVAS).matcher(uri.toString());
+        Matcher matcherManifest = Pattern.compile(TARGET_REGEX_MANIFEST).matcher(uri.toString());
+        Matcher matcherSection = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString());
+
+        if(matcherOld.matches()) {
+            matcher = matcherOld;
+        } else if(matcherCanvas.matches()) {
+            matcher = matcherCanvas;
+        } else if(matcherManifest.matches()) {
+            matcher = matcherManifest;
+        } else if(matcherSection.matches()) {
+            matcher = matcherSection;
+        }
+        return matcher;
     }
 }

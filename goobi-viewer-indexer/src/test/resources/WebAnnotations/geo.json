@@ -1,5 +1,5 @@
 {
-	"id": "http://localhost:8080/viewer/rest/annotations/3",
+	"id": "http://localhost:8080/viewer/rest/annotations/geo",
 	"type": "Annotation",
 	"body": {
         "type": "Feature",
