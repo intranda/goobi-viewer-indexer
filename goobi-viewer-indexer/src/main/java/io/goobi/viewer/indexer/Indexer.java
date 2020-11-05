@@ -624,6 +624,9 @@ public abstract class Indexer {
             doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
             doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
             doc.addField(SolrConstants.MD_ANNOTATION_ID, annotationId);
+            if(StringUtils.isNotBlank(annotation.getRights())) {
+                doc.addField(SolrConstants.ACCESSCONDITION, annotation.getRights());
+            }
             Integer pageOrder = WebAnnotationTools.parsePageOrder(annotation.getTarget().getId());
             if (pageOrder == null) {
                 // Map all non-page-specific annotations to page 1 for now

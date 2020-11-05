@@ -326,6 +326,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(10, doc.getFieldValue(SolrConstants.ORDER));
             Assert.assertEquals(133, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertNotNull(doc.getFieldValue("MD_BODY"));
+            Assert.assertEquals("Spaß in AC02949962", doc.getFieldValue(SolrConstants.ACCESSCONDITION));
             Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
         }
     }
