@@ -22,7 +22,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * <p>WebAnnotationTools class.</p>
+ * <p>
+ * WebAnnotationTools class.
+ * </p>
  *
  */
 public class WebAnnotationTools {
@@ -39,36 +41,38 @@ public class WebAnnotationTools {
      * @return a {@link java.lang.Integer} object.
      */
     public static Integer parsePageOrder(URI uri) {
-        
-        Matcher matcher = getMatchingMatcher(uri);
 
+        Matcher matcher = getMatchingMatcher(uri);
+        if (matcher.groupCount() > 1) {
             String pageNo = matcher.group(2);
             if (StringUtils.isNotBlank(pageNo) && StringUtils.isNumeric(pageNo)) {
                 return Integer.parseInt(pageNo);
             }
-            return null;
-        
+        }
+        return null;
+
     }
-    
+
     public static String parsePI(URI uri) {
         Matcher matcher = getMatchingMatcher(uri);
-        
+        if (matcher.groupCount() > 0) {
             String pi = matcher.group(1);
             if (StringUtils.isNotBlank(pi)) {
-            return pi;
+                return pi;
             }
+        }
         return null;
     }
-    
+
     public static String parseDivId(URI uri) {
         Matcher matcher = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString());
-        
+
         if (matcher.find()) {
             String divId = matcher.group(2);
             if (StringUtils.isNotBlank(divId)) {
                 return divId;
             }
-        } 
+        }
         return null;
     }
 
@@ -83,13 +87,13 @@ public class WebAnnotationTools {
         Matcher matcherManifest = Pattern.compile(TARGET_REGEX_MANIFEST).matcher(uri.toString());
         Matcher matcherSection = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString());
 
-        if(matcherOld.matches()) {
+        if (matcherOld.matches()) {
             matcher = matcherOld;
-        } else if(matcherCanvas.matches()) {
+        } else if (matcherCanvas.matches()) {
             matcher = matcherCanvas;
-        } else if(matcherManifest.matches()) {
+        } else if (matcherManifest.matches()) {
             matcher = matcherManifest;
-        } else if(matcherSection.matches()) {
+        } else if (matcherSection.matches()) {
             matcher = matcherSection;
         }
         return matcher;
