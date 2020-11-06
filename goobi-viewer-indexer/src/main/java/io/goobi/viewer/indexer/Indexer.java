@@ -645,7 +645,10 @@ public abstract class Indexer {
                 }
             } else {
                 //TODO: add doc directly to work
-                
+                if(pageDocs != null && !pageDocs.isEmpty()) {
+                    SolrInputDocument pageDoc = pageDocs.values().iterator().next();
+                    doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                }
             }
 
             if (StringUtils.isNotEmpty(anchorPi)) {
