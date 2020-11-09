@@ -546,6 +546,7 @@ public class MetadataHelper {
 
         Record record = NormDataImporter.getSingleRecord(url.trim());
         if (record == null) {
+            logger.warn("Authority dataset could not be retrieved: {}", url);
             return Collections.emptyList();
         }
         if (record.getNormDataList().isEmpty()) {
