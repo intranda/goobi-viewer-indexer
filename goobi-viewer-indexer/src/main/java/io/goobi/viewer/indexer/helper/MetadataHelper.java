@@ -1174,7 +1174,7 @@ public class MetadataHelper {
                             continue;
                         }
                         newValues.add(new LuceneField(fieldName, String.valueOf(i)));
-                        logger.info("Added implicit {}: {}", fieldName, i);
+                        logger.debug("Added implicit {}: {}", fieldName, i);
                         count++;
                     }
                     //                    if (count == 10) {
