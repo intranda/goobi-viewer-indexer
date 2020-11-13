@@ -70,6 +70,7 @@ import de.intranda.api.annotation.ISelector;
 import de.intranda.api.annotation.wa.FragmentSelector;
 import de.intranda.api.annotation.wa.SpecificResource;
 import de.intranda.api.annotation.wa.TextualResource;
+import de.intranda.api.annotation.wa.TypedResource;
 import de.intranda.api.annotation.wa.WebAnnotation;
 import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -675,8 +676,15 @@ public abstract class Indexer {
                         doc.addField("MD_COORDS", coords[0] + " " + coords[1]);
                     }
                 }
+            }  else if(annotation.getBody() instanceof TypedResource) {
+                //any other resource with a "type" property
+                String type = ((TypedResource)annotation.getBody()).getType();
+                switch(type) {
+                    case "AuthorityResource":
+                        //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
+                }
             } else {
-                //any other type of resource doesn't need specific handling just write the body below
+                logger.warn("Cannot interpret annotation body of type " + annotation.getBody().getClass());
             }
             // Add annotation body as JSON, always!
             doc.addField("MD_BODY", annotation.getBody().toString());
