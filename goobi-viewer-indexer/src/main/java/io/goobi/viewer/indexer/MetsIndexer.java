@@ -2324,7 +2324,7 @@ public class MetsIndexer extends Indexer {
                         .append(".xml")
                         .toString();
                 Path destMetsFilePath = Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename);
-                Files.move(indexed, destMetsFilePath);
+                Files.move(indexed, destMetsFilePath, StandardCopyOption.REPLACE_EXISTING);
                 logger.debug("Old anchor file copied to '{}{}{}'.", updatedMetsFolder.toAbsolutePath(), File.separator, oldMetsFilename);
                 // Then copy the new file again, overwriting the old
                 Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed, StandardCopyOption.REPLACE_EXISTING);
