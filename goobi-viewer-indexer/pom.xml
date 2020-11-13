@@ -32,7 +32,7 @@
 
 		<!-- intranda libraries -->
 		<alto.version>1.5.5</alto.version>
-		<iiif-api-model.version>1.9.1</iiif-api-model.version>
+		<iiif-api-model.version>1.9.2</iiif-api-model.version>
 		<normdataimporter.version>1.5.2</normdataimporter.version>
 
 		<!-- other libraries -->
