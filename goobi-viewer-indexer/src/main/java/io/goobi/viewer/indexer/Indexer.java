@@ -676,7 +676,7 @@ public abstract class Indexer {
                     }
                 }
             } else {
-                logger.warn("Cannot interpret annotation body of type " + annotation.getBody().getClass());
+                //any other type of resource doesn't need specific handling just write the body below
             }
             // Add annotation body as JSON, always!
             doc.addField("MD_BODY", annotation.getBody().toString());
