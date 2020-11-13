@@ -141,6 +141,10 @@ public class Utils {
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
             throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
+        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+            return;
+        }
+
         if (pi == null) {
             throw new IllegalArgumentException("pi may not be null");
         }
@@ -168,7 +172,11 @@ public class Utils {
      */
     public static void submitVersion()
             throws FatalIndexerException {
-        String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version/";
+        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+            return;
+        }
+
+        String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version?token=" + Configuration.getInstance().getViewerAuthorizationToken();
         try {
             getWebContentPUT(url, new HashMap<>(0), null, Version.asJSON(), ContentType.APPLICATION_JSON.getMimeType());
         } catch (IOException e) {

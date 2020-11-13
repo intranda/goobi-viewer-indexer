@@ -127,6 +127,7 @@ public class Hotfolder {
     private Indexer currentIndexer;
     private boolean addVolumeCollectionsToAnchor = false;
     private boolean deleteContentFilesOnFailure = true;
+    private boolean emailConfigurationComplete = false;
 
     /** Constant <code>filterDataFile</code> */
     public static FilenameFilter filterDataFile = new FilenameFilter() {
@@ -366,6 +367,12 @@ public class Hotfolder {
                 logger.info("{} values will be added to DEFAULT", field);
             }
         }
+
+        // E-mail configuration
+        emailConfigurationComplete = checkEmailConfiguration();
+        if(emailConfigurationComplete) {
+            logger.info("E-mail configuration OK.");
+        }
     }
 
     /**
@@ -399,6 +406,36 @@ public class Hotfolder {
         context.updateLoggers();
     }
 
+    /**
+     * 
+     * @return true if all email configuration date is complete; false otherwise
+     * @throws FatalIndexerException
+     */
+    static boolean checkEmailConfiguration() throws FatalIndexerException {
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.recipients"))) {
+            logger.warn("init.email.recipients not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpServer"))) {
+            logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderAddress"))) {
+            logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderName"))) {
+            logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSecurity"))) {
+            logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
+            return false;
+        }
+
+        return true;
+    }
+
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
         logger.debug("body:\n{}", body);
         // Send report e-mail if the text body contains at least one ERROR level log message
@@ -408,29 +445,24 @@ public class Hotfolder {
 
         String recipients = Configuration.getInstance().getString("init.email.recipients");
         if (StringUtils.isEmpty(recipients)) {
-            logger.warn("init.email.recipients not configured, cannot send e-mail report.");
             return;
         }
         String smtpServer = Configuration.getInstance().getString("init.email.smtpServer");
         if (StringUtils.isEmpty(smtpServer)) {
-            logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
             return;
         }
         String smtpUser = Configuration.getInstance().getString("init.email.smtpUser");
         String smtpPassword = Configuration.getInstance().getString("init.email.smtpPassword");
         String smtpSenderAddress = Configuration.getInstance().getString("init.email.smtpSenderAddress");
         if (StringUtils.isEmpty(smtpSenderAddress)) {
-            logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
             return;
         }
         String smtpSenderName = Configuration.getInstance().getString("init.email.smtpSenderName");
         if (StringUtils.isEmpty(smtpSenderName)) {
-            logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
             return;
         }
         String smtpSecurity = Configuration.getInstance().getString("init.email.smtpSecurity");
         if (StringUtils.isEmpty(smtpSecurity)) {
-            logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
             return;
         }
         String[] recipientsSplit = recipients.split(";");
@@ -469,7 +501,7 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_MIX, true);
             reindexSettings.put(DataRepository.PARAM_UGC, true);
             noerror = handleDataFile(fileToReindex, true, reindexSettings);
-            if (swSecondaryLog != null) {
+            if (swSecondaryLog != null && emailConfigurationComplete) {
                 checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                         swSecondaryLog.toString());
             }
@@ -541,7 +573,7 @@ public class Hotfolder {
         logger.debug("Available storage space: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
-            if (swSecondaryLog != null) {
+            if (swSecondaryLog != null && emailConfigurationComplete) {
                 checkAndSendErrorReport("Record indexing failed due to insufficient space (" + Version.asString() + ")",
                         swSecondaryLog.toString());
             }

@@ -283,31 +283,51 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             pageDoc.setField(SolrConstants.DOCSTRCT_TOP, "topstruct");
             pageDocs.put(2, pageDoc);
         }
+        {
+            SolrInputDocument pageDoc = new SolrInputDocument();
+            pageDoc.setField(SolrConstants.IDDOC, 133);
+            pageDoc.setField(SolrConstants.ORDER, 10);
+            pageDoc.setField(SolrConstants.DOCSTRCT_TOP, "topstruct");
+            pageDocs.put(10, pageDoc);
+        }
 
         Path dataFolder = Paths.get("src/test/resources/WebAnnotations");
         Assert.assertTrue(Files.isDirectory(dataFolder));
 
         List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(pageDocs, dataFolder, "PPN517154005", null, null);
-        Assert.assertEquals(2, docs.size());
+        Assert.assertEquals(3, docs.size());
         {
-            Assert.assertEquals("PPN517154005", docs.get(0).getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assert.assertEquals("topstruct", docs.get(0).getFieldValue(SolrConstants.DOCSTRCT_TOP));
-            Assert.assertEquals(1, docs.get(0).getFieldValue(SolrConstants.ORDER));
-            Assert.assertEquals(123, docs.get(0).getFieldValue(SolrConstants.IDDOC_OWNER));
-            Assert.assertEquals("9.967025 51.521737", docs.get(0).getFieldValue("MD_COORDS"));
-            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, docs.get(0).getFieldValue(SolrConstants.UGCTYPE));
-            Assert.assertNotNull(docs.get(0).getFieldValue("MD_BODY"));
+            SolrInputDocument doc = docs.stream().filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("geo")).findAny().orElseThrow(() -> new IllegalStateException("No annotation with id 'geo'"));
+            Assert.assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            Assert.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            Assert.assertNull(doc.getFieldValue(SolrConstants.ORDER));
+            Assert.assertNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            Assert.assertEquals("9.967025 51.521737", doc.getFieldValue("MD_COORDS"));
+            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
+            Assert.assertNotNull(doc.getFieldValue("MD_BODY"));
             //            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", docs.get(0).getFieldValue(SolrConstants.UGCTERMS));
         }
         {
-            Assert.assertEquals("PPN517154005", docs.get(1).getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assert.assertEquals("topstruct", docs.get(1).getFieldValue(SolrConstants.DOCSTRCT_TOP));
-            Assert.assertEquals(1, docs.get(1).getFieldValue(SolrConstants.ORDER));
-            Assert.assertEquals(123, docs.get(1).getFieldValue(SolrConstants.IDDOC_OWNER));
-            Assert.assertEquals("Leipzig", docs.get(1).getFieldValue("MD_TEXT"));
-            Assert.assertEquals("xywh=1378,3795,486,113", docs.get(1).getFieldValue(SolrConstants.UGCCOORDS));
-            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, docs.get(1).getFieldValue(SolrConstants.UGCTYPE));
-            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", docs.get(1).getFieldValue(SolrConstants.UGCTERMS));
+            SolrInputDocument doc = docs.stream().filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("PPN517154005_3")).findAny().orElseThrow(() -> new IllegalStateException("No annotation with id 'PPN517154005_3'"));
+            Assert.assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            Assert.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            Assert.assertEquals(2, doc.getFieldValue(SolrConstants.ORDER));
+            Assert.assertEquals(124, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            Assert.assertEquals("Leipzig", doc.getFieldValue("MD_TEXT"));
+            Assert.assertEquals("xywh=1378,3795,486,113", doc.getFieldValue(SolrConstants.UGCCOORDS));
+            Assert.assertNotNull(doc.getFieldValue("MD_BODY"));
+            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
+            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", doc.getFieldValue(SolrConstants.UGCTERMS));
+        }
+        {
+            SolrInputDocument doc = docs.stream().filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("normdata")).findAny().orElseThrow(() -> new IllegalStateException("No annotation with id 'normdata'"));
+            Assert.assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            Assert.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            Assert.assertEquals(10, doc.getFieldValue(SolrConstants.ORDER));
+            Assert.assertEquals(133, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            Assert.assertNotNull(doc.getFieldValue("MD_BODY"));
+            Assert.assertEquals("Spaß in AC02949962", doc.getFieldValue(SolrConstants.ACCESSCONDITION));
+            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
         }
     }
 }

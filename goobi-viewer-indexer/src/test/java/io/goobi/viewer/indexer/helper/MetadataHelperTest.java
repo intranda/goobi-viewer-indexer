@@ -32,6 +32,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.intranda.digiverso.normdataimporter.model.NormData;
+import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -367,11 +369,11 @@ public class MetadataHelperTest extends AbstractTest {
 
     /**
      * @see MetadataHelper#applyReplaceRules(String,Map)
-     * @verifies throw IllegalArgumentException if replaceRules is null
+     * @verifies return unmodified value if replaceRules is null
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void applyReplaceRules_shouldThrowIllegalArgumentExceptionIfReplaceRulesIsNull() throws Exception {
-        MetadataHelper.applyReplaceRules("v<a>e", null);
+    @Test
+    public void applyReplaceRules_shouldReturnUnmodifiedValueIfReplaceRulesIsNull() throws Exception {
+        Assert.assertEquals("v<a>e", MetadataHelper.applyReplaceRules("v<a>e", null));
     }
 
     /**
@@ -589,5 +591,22 @@ public class MetadataHelperTest extends AbstractTest {
         List<Document> docs = JDomXP.splitDenkXwebFile(path.toFile());
         String pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));
         Assert.assertEquals("30596824", pi);
+    }
+
+    /**
+     * @see MetadataHelper#parseAuthorityMetadata(List,StringBuilder,StringBuilder,List,Map,String)
+     * @verifies add name search field correctly
+     */
+    @Test
+    public void parseAuthorityMetadata_shouldAddNameSearchFieldCorrectly() throws Exception {
+        List<NormData> authorityDataList = new ArrayList<>(2);
+        authorityDataList.add(new NormData("NORM_OFFICIALNAME", new NormDataValue("foo", null, null)));
+        authorityDataList.add(new NormData("NORM_ALTNAME", new NormDataValue("bar", null, null)));
+        List<LuceneField> result = MetadataHelper.parseAuthorityMetadata(authorityDataList, null, null, null, null, "MD_FIELD");
+        Assert.assertEquals(8, result.size());
+        Assert.assertEquals("MD_FIELD_NAME_SEARCH", result.get(2).getField());
+        Assert.assertEquals("foo", result.get(2).getValue());
+        Assert.assertEquals("MD_FIELD_NAME_SEARCH", result.get(6).getField());
+        Assert.assertEquals("bar", result.get(6).getValue());
     }
 }

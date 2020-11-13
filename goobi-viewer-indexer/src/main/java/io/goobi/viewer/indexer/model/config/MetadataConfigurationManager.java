@@ -112,7 +112,7 @@ public final class MetadataConfigurationManager {
                         String suffix = xpathNode.getString("[@suffix]");
                         xPathConfigurations.add(new XPathConfig(xpath, prefix, suffix));
                     }
-                } else {
+                } else if (config.getMaxIndex("fields." + fieldname + ".list.item(" + i + ").xpath") > -1) {
                     // Single XPath item
                     SubnodeConfiguration xpathNode = config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath");
                     String xpath = xpathNode.getString(".");
@@ -165,6 +165,11 @@ public final class MetadataConfigurationManager {
                     String type = config.getString("fields." + fieldname + ".list.item(" + i + ").groupEntity[@type]");
                     if (type != null) {
                         groupedSubfieldConfigurations.put("type", type);
+                    }
+                    Boolean addAuthorityDataToDocstruct =
+                            config.getBoolean("fields." + fieldname + ".list.item(" + i + ").groupEntity[@addAuthorityDataToDocstruct]", null);
+                    if (addAuthorityDataToDocstruct != null) {
+                        groupedSubfieldConfigurations.put("addAuthorityDataToDocstruct", addAuthorityDataToDocstruct);
                     }
                     List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").groupEntity.field");
                     if (elements != null) {
@@ -250,9 +255,9 @@ public final class MetadataConfigurationManager {
                             if (character != null) {
                                 replaceRules.put(character, replaceWith);
                             } else if (string != null) {
-                                replaceRules.put(string, replaceWith);
+                                replaceRules.put(string.replace(SPACE_PLACEHOLDER, " "), replaceWith);
                             } else if (regex != null) {
-                                replaceRules.put("REGEX:" + regex, replaceWith);
+                                replaceRules.put("REGEX:" + regex.replace(SPACE_PLACEHOLDER, " "), replaceWith);
                             }
                         }
                         fieldValues.put("replaceRules", replaceRules);
@@ -420,18 +425,14 @@ public final class MetadataConfigurationManager {
 
         if (configurationMap.containsKey("addToParents")) {
             if (((String) configurationMap.get("addToParents")).equals("true")) {
-                configurationItem.setAddToChildren(true);
                 fieldsToAddToParents.add(configurationItem.getFieldname());
             } else {
-                configurationItem.setAddToChildren(false);
             }
         }
         if (configurationMap.containsKey("addToChildren")) {
             if (((String) configurationMap.get("addToChildren")).equals("true")) {
-                configurationItem.setAddToChildren(true);
                 fieldsToAddToChildren.add(configurationItem.getFieldname());
             } else {
-                configurationItem.setAddToChildren(false);
             }
         }
         if (configurationMap.containsKey("addToPages")) {

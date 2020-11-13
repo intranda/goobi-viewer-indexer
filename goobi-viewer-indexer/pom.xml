@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>4.11.0</version>
+	<version>4.12.0-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -31,9 +31,9 @@
         <buildDate>${maven.build.timestamp}</buildDate>
 
 		<!-- intranda libraries -->
-		<alto.version>1.5.4</alto.version>
-		<iiif-api-model.version>1.8.0</iiif-api-model.version>
-		<normdataimporter.version>1.4.0</normdataimporter.version>
+		<alto.version>1.5.5</alto.version>
+		<iiif-api-model.version>1.9.2</iiif-api-model.version>
+		<normdataimporter.version>1.5.2</normdataimporter.version>
 
 		<!-- other libraries -->
 		<commons-collections.version>3.2.2</commons-collections.version>
@@ -43,11 +43,11 @@
 		<commons-lang3.version>3.11</commons-lang3.version>
 		<commons-text.version>1.9</commons-text.version>
 		<geojson-jackson.version>1.14</geojson-jackson.version>
-		<httpclient.version>4.5.12</httpclient.version>
+		<httpclient.version>4.5.13</httpclient.version>
 		<httpcore.version>4.4.13</httpcore.version>
-		<icu.version>67.1</icu.version>
+		<icu.version>68.1</icu.version>
 		<imageio-openjpeg.version>0.4.4</imageio-openjpeg.version>
-		<log4j.version>2.13.3</log4j.version>
+		<log4j.version>2.14.0</log4j.version>
 		<jackson.version>2.11.3</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
@@ -56,9 +56,9 @@
 		<jdom2.version>2.0.6</jdom2.version>
 		<jsoup.version>1.13.1</jsoup.version>
 		<json.version>20200518</json.version>
-		<junit.version>4.13</junit.version>
-		<metadata-extractor.version>2.14.0</metadata-extractor.version>
-		<solr.version>8.6.2</solr.version>
+		<junit.version>4.13.1</junit.version>
+		<metadata-extractor.version>2.15.0</metadata-extractor.version>
+		<solr.version>8.6.3</solr.version>
 		<slf4j.version>1.7.30</slf4j.version>
 	</properties>
 

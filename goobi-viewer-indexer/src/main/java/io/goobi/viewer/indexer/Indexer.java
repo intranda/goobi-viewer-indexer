@@ -70,7 +70,9 @@ import de.intranda.api.annotation.ISelector;
 import de.intranda.api.annotation.wa.FragmentSelector;
 import de.intranda.api.annotation.wa.SpecificResource;
 import de.intranda.api.annotation.wa.TextualResource;
+import de.intranda.api.annotation.wa.TypedResource;
 import de.intranda.api.annotation.wa.WebAnnotation;
+import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -278,8 +280,7 @@ public abstract class Indexer {
      * @throws FatalIndexerException
      */
     private static void createDeletedDoc(String pi, String urn, List<String> pageUrns, String dateDeleted, String dateUpdated,
-            SolrSearchIndex searchIndex)
-            throws NumberFormatException, IOException, FatalIndexerException {
+            SolrSearchIndex searchIndex) throws NumberFormatException, IOException, FatalIndexerException {
         // Build replacement document that is marked as deleted
         logger.info("Creating 'DELETED' document for {}...", pi);
         List<LuceneField> fields = new ArrayList<>();
@@ -614,28 +615,41 @@ public abstract class Indexer {
                 return null;
             }
 
+            String annotationId = Paths.get(annotation.getId().getPath()).getFileName().toString();
+
             StringBuilder sbTerms = new StringBuilder();
             SolrInputDocument doc = new SolrInputDocument();
             doc.addField(SolrConstants.IDDOC, iddoc);
             doc.addField(SolrConstants.GROUPFIELD, iddoc);
             doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
             doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+            doc.addField(SolrConstants.MD_ANNOTATION_ID, annotationId);
+            if (StringUtils.isNotBlank(annotation.getRights())) {
+                doc.addField(SolrConstants.ACCESSCONDITION, annotation.getRights());
+            } else {
+                doc.addField(SolrConstants.ACCESSCONDITION, "OPENACCESS");
+
+            }
             Integer pageOrder = WebAnnotationTools.parsePageOrder(annotation.getTarget().getId());
-            if (pageOrder == null) {
-                // Map all non-page-specific annotations to page 1 for now
-                pageOrder = 1;
-            }
-            doc.setField(SolrConstants.ORDER, pageOrder);
+            if (pageOrder != null) {
+                doc.setField(SolrConstants.ORDER, pageOrder);
 
-            // Look up owner page doc
-            SolrInputDocument pageDoc = pageDocs.get(pageOrder);
-            if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
-                doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
-            }
+                // Look up owner page doc
+                SolrInputDocument pageDoc = pageDocs.get(pageOrder);
+                if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
+                    doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
+                }
 
-            // Add topstruct type
-            if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
-                doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                // Add topstruct type
+                if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
+                    doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                }
+            } else {
+                //TODO: add doc directly to work
+                if(pageDocs != null && !pageDocs.isEmpty()) {
+                    SolrInputDocument pageDoc = pageDocs.values().iterator().next();
+                    doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                }
             }
 
             if (StringUtils.isNotEmpty(anchorPi)) {
@@ -662,11 +676,18 @@ public abstract class Indexer {
                         doc.addField("MD_COORDS", coords[0] + " " + coords[1]);
                     }
                 }
-                // Add annotation body as JSON
-                doc.addField("MD_BODY", annotation.getBody().toString());
+            }  else if(annotation.getBody() instanceof TypedResource) {
+                //any other resource with a "type" property
+                String type = ((TypedResource)annotation.getBody()).getType();
+                switch(type) {
+                    case "AuthorityResource":
+                        //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
+                }
             } else {
                 logger.warn("Cannot interpret annotation body of type " + annotation.getBody().getClass());
             }
+            // Add annotation body as JSON, always!
+            doc.addField("MD_BODY", annotation.getBody().toString());
 
             if (annotation.getTarget() instanceof SpecificResource) {
                 // Coords
@@ -921,11 +942,13 @@ public abstract class Indexer {
      * @should set PI_TOPSTRUCT to child docstruct metadata
      * @should set DOCSTRCT_TOP
      * @should skip fields correctly
+     * @should add authority metadata to group metadata docs correctly except coordinates
+     * @should add authority metadata to docstruct metadata doc correctly
      */
-    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj)
-            throws FatalIndexerException {
+    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
+        Set<String> skipFields = new HashSet<>();
         for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
             if (gmd.isSkip()) {
                 continue;
@@ -937,7 +960,40 @@ public abstract class Indexer {
                 continue;
             }
 
-            SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
+            List<LuceneField> fieldsToAdd = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
+            fieldsToAdd.addAll(gmd.getFields());
+            if (gmd.isAddAuthorityDataToDocstruct()) {
+                // Add authority data to docstruct doc instead of grouped metadata
+                for (LuceneField field : gmd.getAuthorityDataFields()) {
+                    if (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_")) {
+                        // Keep BOOL_WKT_COORDS on the metadata doc
+                        if (field.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS)) {
+                            fieldsToAdd.add(field);
+                            continue;
+                        }
+                        // Only add single valued fields once
+                        if (skipFields.contains(field.getField())) {
+                            continue;
+                        }
+                        skipFields.add(field.getField());
+                    } else if (field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
+                            || field.getField().startsWith("NORM_COORDS_")) {
+                        // Keep coordinate fields on the metadata doc
+                        fieldsToAdd.add(field);
+                        continue;
+                    } else {
+                        // Avoid field+value duplicates for all other fields
+                        if (skipFields.contains(field.getField() + field.getValue())) {
+                            continue;
+                        }
+                        skipFields.add(field.getField() + field.getValue());
+                    }
+                    indexObj.getLuceneFields().add(field);
+                }
+            } else {
+                fieldsToAdd.addAll(gmd.getAuthorityDataFields());
+            }
+            SolrInputDocument doc = SolrSearchIndex.createDocument(fieldsToAdd);
             long iddoc = getNextIddoc(hotfolder.getSearchIndex());
             doc.addField(SolrConstants.IDDOC, iddoc);
             if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {

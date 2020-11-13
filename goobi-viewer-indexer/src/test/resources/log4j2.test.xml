@@ -14,7 +14,7 @@
 	</Appenders>
 	
 	<Loggers>
-		<Logger name="io.goobi" level="ERROR" additivity="true" />
+		<Logger name="io.goobi" level="FATAL" additivity="true" />
 		<Logger name="de.intranda.digiverso.ocr" level="WARN" additivity="true" />
 		<Logger name="org.apache" level="ERROR" additivity="true" />
 		<Root level="info">

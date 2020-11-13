@@ -158,6 +158,9 @@ public class MetadataHelper {
         for (String fieldName : fieldNamesList) {
             List<FieldConfig> configurationItemList =
                     Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
+            if (configurationItemList == null || configurationItemList.isEmpty()) {
+                continue;
+            }
             for (FieldConfig configurationItem : configurationItemList) {
                 // Constant value instead of XPath
                 if (configurationItem.getConstantValue() != null) {
@@ -267,6 +270,7 @@ public class MetadataHelper {
                         for (Object xpathAnswerObject : list) {
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
+                                logger.trace(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd =
                                         getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
@@ -291,8 +295,9 @@ public class MetadataHelper {
 
                                 // Retrieve authority data
                                 if (gmd.getAuthorityURI() != null) {
-                                    authorityData.addAll(retrieveAuthorityData(sbDefaultMetadataValues, sbAuthorityDataTerms, gmd.getAuthorityURI(),
-                                            addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules()));
+                                    authorityData.addAll(retrieveAuthorityData(gmd.getAuthorityURI(), sbDefaultMetadataValues,
+                                            sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
+                                            configurationItem.getFieldname()));
                                     // Add default authority data name to the docstruct doc so that it can be searched
                                     for (LuceneField authorityField : authorityData) {
                                         switch (authorityField.getField()) {
@@ -377,7 +382,7 @@ public class MetadataHelper {
                                 if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(gmd.getMainValue())) {
                                     gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, gmd.getMainValue()));
                                 }
-                                gmd.getFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
+                                gmd.getAuthorityDataFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
 
                                 if (!indexObj.getGroupedMetadataFields().contains(gmd)) {
                                     indexObj.getGroupedMetadataFields().add(gmd);
@@ -519,26 +524,21 @@ public class MetadataHelper {
 
     /**
      * 
-     * @param sbDefaultMetadataValues
+     * @param url URL to query
+     * @param sbDefaultMetadataValues StringBuilder for collecting
      * @param sbNormDataTerms
-     * @param url
-     * @param addToDefaultFields
-     * @param replaceRulesaddToDefaultfields
-     * @param url URL to query.
+     * @param addToDefaultFields Optional list of fields whose values should be added to DEFAULT
+     * @param replaceRules Optional metadata value replace rules
+     * @param labelField Field name of the metadata group to which this authority data belongs
      * @return
      */
-    private static List<LuceneField> retrieveAuthorityData(StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms, String url,
-            List<String> addToDefaultFields, Map<Object, String> replaceRules) {
+    private static List<LuceneField> retrieveAuthorityData(String url, StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms,
+            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
         logger.info("retrieveAuthorityData: {}", url);
-        if (sbDefaultMetadataValues == null) {
-            throw new IllegalArgumentException("sbDefaultMetadataValues may not be null");
-        }
-        if (sbNormDataTerms == null) {
-            throw new IllegalArgumentException("sbNormDataTerms may not be null");
-        }
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
         }
+
         // If it's just an identifier, assume it's GND
         if (!url.startsWith("http")) {
             url = "https://d-nb.info/gnd/" + url;
@@ -546,6 +546,7 @@ public class MetadataHelper {
 
         Record record = NormDataImporter.getSingleRecord(url.trim());
         if (record == null) {
+            logger.warn("Authority dataset could not be retrieved: {}", url);
             return Collections.emptyList();
         }
         if (record.getNormDataList().isEmpty()) {
@@ -553,14 +554,37 @@ public class MetadataHelper {
             return Collections.emptyList();
         }
 
-        List<LuceneField> ret = new ArrayList<>(record.getNormDataList().size());
-        for (NormData normData : record.getNormDataList()) {
-            if (!normData.getKey().startsWith("NORM_")) {
+        return parseAuthorityMetadata(record.getNormDataList(), sbDefaultMetadataValues, sbNormDataTerms, addToDefaultFields,
+                replaceRules, labelField);
+    }
+
+    /**
+     * 
+     * @param authorityDataList
+     * @param sbDefaultMetadataValues
+     * @param sbNormDataTerms
+     * @param addToDefaultFields Optional list of fields whose values should be added to DEFAULT
+     * @param replaceRules Optional metadata value replace rules
+     * @param labelField Field name of the metadata group to which this authority data belongs
+     * @should add name search field correctly
+     * @return
+     */
+    static List<LuceneField> parseAuthorityMetadata(List<NormData> authorityDataList, StringBuilder sbDefaultMetadataValues,
+            StringBuilder sbNormDataTerms, List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
+        if (authorityDataList == null || authorityDataList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<LuceneField> ret = new ArrayList<>(authorityDataList.size());
+        Set<String> nameSearchFieldValues = new HashSet<>();
+        Set<String> placeSearchFieldValues = new HashSet<>();
+        for (NormData authorityDataField : authorityDataList) {
+            if (!authorityDataField.getKey().startsWith("NORM_")) {
                 continue;
             }
-            for (NormDataValue val : normData.getValues()) {
+            for (NormDataValue val : authorityDataField.getValues()) {
                 // IKFN norm data browsing hack
-                if (StringUtils.isBlank(val.getText()) || normData.getKey().equals("NORM_STATICPAGE")) {
+                if (StringUtils.isBlank(val.getText()) || authorityDataField.getKey().equals("NORM_STATICPAGE")) {
                     continue;
                 }
                 String textValue = TextHelper.normalizeSequence(val.getText());
@@ -568,39 +592,50 @@ public class MetadataHelper {
                     textValue = applyReplaceRules(textValue, replaceRules);
                 }
 
-                ret.add(new LuceneField(normData.getKey(), textValue));
-                ret.add(new LuceneField(normData.getKey() + SolrConstants._UNTOKENIZED, textValue));
+                ret.add(new LuceneField(authorityDataField.getKey(), textValue));
+                ret.add(new LuceneField(authorityDataField.getKey() + SolrConstants._UNTOKENIZED, textValue));
                 String valWithSpaces = new StringBuilder(" ").append(textValue).append(' ').toString();
 
                 // Add to DEFAULT
-                if (addToDefaultFields != null && !addToDefaultFields.isEmpty() && addToDefaultFields.contains(normData.getKey())
+                if (sbDefaultMetadataValues != null && addToDefaultFields != null && !addToDefaultFields.isEmpty()
+                        && addToDefaultFields.contains(authorityDataField.getKey())
                         && !sbDefaultMetadataValues.toString().contains(valWithSpaces)) {
                     addValueToDefault(textValue, sbDefaultMetadataValues);
                     logger.trace("Added to DEFAULT: {}", textValue);
                 }
 
                 // Add to the norm data search field NORMDATATERMS
-                if (!normData.getKey().startsWith("NORM_URI") && !sbNormDataTerms.toString().contains(valWithSpaces)) {
+                if (sbNormDataTerms != null && !authorityDataField.getKey().startsWith("NORM_URI")
+                        && !sbNormDataTerms.toString().contains(valWithSpaces)) {
                     sbNormDataTerms.append(valWithSpaces);
                     logger.trace("Added to NORMDATATERMS: {}", textValue);
                 }
 
                 // Aggregate place fields into the same untokenized field for term browsing
-                if (normData.getKey().equals("NORM_ALTNAME")) {
-                    ret.add(new LuceneField("NORM_NAME_SEARCH", textValue));
+                if ((authorityDataField.getKey().equals("NORM_ALTNAME") || authorityDataField.getKey().equals("NORM_OFFICIALNAME"))
+                        && !nameSearchFieldValues.contains(textValue)) {
+                    if (StringUtils.isNotEmpty(labelField)) {
+                        ret.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
+                    }
                     ret.add(new LuceneField("NORM_NAME" + SolrConstants._UNTOKENIZED, textValue));
-                } else if (normData.getKey().startsWith("NORM_PLACE")) {
-                    ret.add(new LuceneField("NORM_PLACE_SEARCH", textValue));
+                    nameSearchFieldValues.add(textValue);
+                } else if (authorityDataField.getKey().startsWith("NORM_PLACE") && !placeSearchFieldValues.contains(textValue)) {
+                    if (StringUtils.isNotEmpty(labelField)) {
+                        ret.add(new LuceneField(labelField + "_PLACE_SEARCH", textValue));
+                    }
                     ret.add(new LuceneField("NORM_PLACE" + SolrConstants._UNTOKENIZED, textValue));
-                } else if (normData.getKey().equals("NORM_LIFEPERIOD")) {
+                    placeSearchFieldValues.add(textValue);
+                } else if (authorityDataField.getKey().equals("NORM_LIFEPERIOD")) {
                     String[] valueSplit = textValue.split("-");
                     if (valueSplit.length > 0) {
                         for (String date : valueSplit) {
-                            ret.add(new LuceneField("NORM_DATE_SEARCH", date.trim()));
+                            if (StringUtils.isNotEmpty(labelField)) {
+                                ret.add(new LuceneField(labelField + "_DATE_SEARCH", date.trim()));
+                            }
                             ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
                         }
                     }
-                } else if (normData.getKey().equals(GeoNamesRecord.AUTOCOORDS_FIELD)) {
+                } else if (authorityDataField.getKey().equals(GeoNamesRecord.AUTOCOORDS_FIELD)) {
                     // Add searchable WKT lon-lat coordinates
                     String[] textValueSplit = textValue.split(" ");
                     if (textValueSplit.length > 1) {
@@ -709,7 +744,7 @@ public class MetadataHelper {
      * @param replaceRules a {@link java.util.Map} object.
      * @should apply rules correctly
      * @should throw IllegalArgumentException if value is null
-     * @should throw IllegalArgumentException if replaceRules is null
+     * @should return unmodified value if replaceRules is null
      * @return a {@link java.lang.String} object.
      */
     public static String applyReplaceRules(String value, Map<Object, String> replaceRules) {
@@ -717,7 +752,7 @@ public class MetadataHelper {
             throw new IllegalArgumentException("value may not be null");
         }
         if (replaceRules == null) {
-            throw new IllegalArgumentException("replaceRules may not be null");
+            return value;
         }
         String ret = value;
         for (Object key : replaceRules.keySet()) {
@@ -1139,7 +1174,7 @@ public class MetadataHelper {
                             continue;
                         }
                         newValues.add(new LuceneField(fieldName, String.valueOf(i)));
-                        logger.info("Added implicit {}: {}", fieldName, i);
+                        logger.debug("Added implicit {}: {}", fieldName, i);
                         count++;
                     }
                     //                    if (count == 10) {
@@ -1166,10 +1201,10 @@ public class MetadataHelper {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
-
-        String type = null;
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
+
         // Grouped metadata type
+        String type = null;
         if (groupEntityFields.get("type") != null) {
             type = (String) groupEntityFields.get("type");
             ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.trim()));
@@ -1177,6 +1212,13 @@ public class MetadataHelper {
             type = "OTHER";
             logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
         }
+
+        boolean addAuthorityDataToDocstruct = false;
+        if (groupEntityFields.get("addAuthorityDataToDocstruct") != null) {
+            addAuthorityDataToDocstruct = (boolean) groupEntityFields.get("addAuthorityDataToDocstruct");
+        }
+        ret.setAddAuthorityDataToDocstruct(addAuthorityDataToDocstruct);
+
         boolean authorityUriFound = false;
         Map<String, List<String>> collectedValues = new HashMap<>();
         for (Object field : groupEntityFields.keySet()) {

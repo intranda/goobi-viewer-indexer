@@ -213,6 +213,19 @@
 				</item>
 			</list>
 		</PI>
+		
+        <!-- This field is important, see chapter 3.13 of the manual -->
+        <LABEL>
+            <list>
+                <item>
+                    <replace string="&lt;ns&gt;"></replace>
+                    <replace string="&lt;/ns&gt;"></replace>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace string="¬"></replace>
+                </item>
+            </list>
+        </LABEL>
 
 		<!-- This field includes the Goobi workflow process ID -->
 		<MD_PROCESSID>
@@ -452,9 +465,17 @@
 		<SORT_TITLE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:titleInfo[@type='uniform']/mods:title</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:titleInfo[@type='uniform']/mods:title</item>
+                            <item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</item>
+                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
+                            <item>dc:title</item>
+                        </list>
+                    </xpath>
 					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
+					<replace regex="[¬]\w+[ ]"></replace>
 				</item>
 			</list>
 		</SORT_TITLE>
@@ -765,6 +786,7 @@
 			</list>
 		</MD_PUBLICATIONRUN>
 
+        <!--
 		<MDNUM_PUBLICRELEASEYEAR>
 			<list>
 				<item>
@@ -793,6 +815,7 @@
                 </item>
             </list>
         </DATE_PUBLICRELEASEDATE>
+        -->
 
 		<MD_PHYSICALCOPY>
 			<list>
@@ -2862,7 +2885,7 @@
 		<MD_COORDINATES>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[not(@type)]</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
@@ -2874,7 +2897,7 @@
 				<item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</item>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[not(@type)]</item>
                             <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
                         </list>
                     </xpath>
@@ -2897,7 +2920,7 @@
 				<item>
 				    <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates</item>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[not(@type)]</item>
                             <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
                         </list>
 				    </xpath>
@@ -2941,6 +2964,22 @@
 				</item>
 			</list>
 		</MD_GEOJSON_POLYGON>
+		
+        <MD_GPS_POLYGON>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>concat(mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="western"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="eastern"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="northern"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="southern"])</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                    <onefield separator="#SPACE#">true</onefield>
+                    <geoJSONSource addSearchField="true">sexagesimal:polygon</geoJSONSource>
+                </item>
+            </list>
+        </MD_GPS_POLYGON>
 
 		<MD_DOCUMENT_PLACE>
 			<list>
@@ -3017,16 +3056,15 @@
         <MD_ACCESSLOCATIONS>
             <list>
                 <item>
-                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessLocations
-                    </xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessLocations</xpath>
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
-                                        <groupEntity type="VIAF">
-                                                <field name="MD_VALUE">text()</field>
-                                                <field name="MD_DISPLAYFORM">text()</field>
-                                                <field name="NORM_URI_VIAF">@valueURI</field>
-                                        </groupEntity>
-
+                    <groupEntity type="LOCATION" addAuthorityDataToDocstruct="true">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_DISPLAYFORM">text()</field>
+                        <field name="NORM_URI">@valueURI</field>
+                        <field name="NORM_IDENTIFIER_GEONAMES">substring-after(@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
                 </item>
             </list>
         </MD_ACCESSLOCATIONS>
@@ -3037,13 +3075,12 @@
                     <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:Institution</xpath>
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
-                            <addSortField>true</addSortField>
-                                        <groupEntity type="VIAF">
-                                                <field name="MD_VALUE">text()</field>
-                                                <field name="MD_DISPLAYFORM">text()</field>
-                                                <field name="NORM_URI_VIAF">@valueURI</field>
-                                        </groupEntity>
-
+                    <addSortField>true</addSortField>
+                    <groupEntity type="VIAF">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_DISPLAYFORM">text()</field>
+                        <field name="NORM_URI_VIAF">@valueURI</field>
+                    </groupEntity>
                 </item>
             </list>
         </MD_INTRANDAINSTITUTION>
