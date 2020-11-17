@@ -94,6 +94,8 @@
 		</addNormDataFieldsToDefault>
 
 		<aggregateRecords>true</aggregateRecords>
+		
+		<fulltextForceUTF8>false</fulltextForceUTF8>
 
 		<lido>
 			<!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
