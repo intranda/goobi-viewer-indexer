@@ -68,7 +68,7 @@ public class FileTools {
         String result = "";
 
         if (encoding == null) {
-            encoding = TextHelper.DEFAULT_ENCODING;
+            encoding = TextHelper.DEFAULT_CHARSET;
         }
 
         Scanner scanner = null;
@@ -103,7 +103,7 @@ public class FileTools {
             throw new IllegalArgumentException("string may not be null");
         }
         if (encoding == null) {
-            encoding = TextHelper.DEFAULT_ENCODING;
+            encoding = TextHelper.DEFAULT_CHARSET;
         }
 
         File file = new File(filePath);

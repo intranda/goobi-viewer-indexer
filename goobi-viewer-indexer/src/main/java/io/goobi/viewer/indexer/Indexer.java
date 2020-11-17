@@ -609,7 +609,7 @@ public abstract class Indexer {
     public SolrInputDocument readAnnotation(Path path, long iddoc, String pi, String anchorPi, Map<Integer, SolrInputDocument> pageDocs,
             Map<String, String> groupIds) {
         try (FileInputStream fis = new FileInputStream(path.toFile())) {
-            String json = TextHelper.readFileToString(path.toFile(), TextHelper.DEFAULT_ENCODING);
+            String json = TextHelper.readFileToString(path.toFile(), TextHelper.DEFAULT_CHARSET);
             WebAnnotation annotation = new ObjectMapper().readValue(json, WebAnnotation.class);
             if (annotation == null) {
                 return null;

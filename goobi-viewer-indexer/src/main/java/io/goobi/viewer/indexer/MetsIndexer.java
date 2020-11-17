@@ -1272,7 +1272,8 @@ public class MetsIndexer extends Indexer {
             // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
             if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
                 String fulltext =
-                        TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD), false);
+                        TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
+                                false, Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
@@ -1320,7 +1321,9 @@ public class MetsIndexer extends Indexer {
             // If FULLTEXT is still empty, look for a plain full-text
             if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null
                     && !"info".equals(baseFileName)) {
-                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
+                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION,
+                        dataFolders.get(DataRepository.PARAM_FULLTEXT), true,
+                        Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
                 if (fulltext != null) {
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                     doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepository.getDir(DataRepository.PARAM_FULLTEXT).getFileName().toString() + '/'

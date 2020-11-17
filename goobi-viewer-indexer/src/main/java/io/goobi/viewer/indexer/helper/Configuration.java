@@ -197,7 +197,7 @@ public final class Configuration {
      * @param defaultValue
      * @return
      */
-    private Boolean getBoolean(String inPath, boolean defaultValue) {
+    public Boolean getBoolean(String inPath, boolean defaultValue) {
         return config.getBoolean(inPath, defaultValue);
     }
 

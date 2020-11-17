@@ -206,10 +206,10 @@ public class Utils {
             try (CloseableHttpResponse response = httpClient.execute(get); StringWriter writer = new StringWriter()) {
                 int code = response.getStatusLine().getStatusCode();
                 if (code == HttpStatus.SC_OK) {
-                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING);
+                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
                 }
                 logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
-                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING));
+                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
                 return response.getStatusLine().getReasonPhrase();
             }
         }
@@ -324,10 +324,10 @@ public class Utils {
             if (StringUtils.isNotEmpty(contentType)) {
                 requestBase.setHeader("Content-Type", contentType);
             }
-            Charset.forName(TextHelper.DEFAULT_ENCODING);
+            Charset.forName(TextHelper.DEFAULT_CHARSET);
             // TODO allow combinations of params + body
             if (StringUtils.isNotEmpty(body)) {
-                requestBase.setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_ENCODING)));
+                requestBase.setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_CHARSET)));
             } else {
                 requestBase.setEntity(new UrlEncodedFormEntity(nameValuePairs));
             }
@@ -336,10 +336,10 @@ public class Utils {
                 int code = response.getStatusLine().getStatusCode();
                 if (code == HttpStatus.SC_OK) {
                     logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
-                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING);
+                    return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
                 }
                 logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
-                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_ENCODING));
+                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
                 return response.getStatusLine().getReasonPhrase();
             }
         }
