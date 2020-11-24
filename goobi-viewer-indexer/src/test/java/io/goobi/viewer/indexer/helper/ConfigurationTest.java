@@ -100,6 +100,7 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertTrue(fieldConfig.isNormalizeYear());
         Assert.assertEquals(2, fieldConfig.getNormalizeYearMinDigits());
         Assert.assertTrue(fieldConfig.isGroupEntity());
+        Assert.assertTrue(fieldConfig.isAllowDuplicateValues());
 
         Map<String, Object> groupEntity = fieldConfig.getGroupEntityFields();
         Assert.assertNotNull(groupEntity);

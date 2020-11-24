@@ -180,7 +180,6 @@
 					<addSortFieldToTopstruct>true</addSortFieldToTopstruct>
 					<normalizeYear minYearDigits="2">true</normalizeYear>
 					<interpolateYears>true</interpolateYears>
-					<aggregateEntity>true</aggregateEntity>
 					<groupEntity type="TYPE">
 						<field name="field1">xpath1</field>
 						<field name="field1" defaultValue="def">xpath2</field>
@@ -192,6 +191,7 @@
 					<replace regex="[ ]*stringToReplace2[ ]*">replace2</replace>
 					<nonSortCharacters prefix="nonSortPrefix" suffix="nonSortSuffix" />
 					<normalizeValue length="5" filler="a" position="front" />
+					<allowDuplicateValues>true</allowDuplicateValues>
                     <geoJSONSource separator="#SPACE#/#SPACE#">mods:coordinates/point</geoJSONSource>
 				</item>
 			</list>

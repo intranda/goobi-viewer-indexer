@@ -142,6 +142,7 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("addToParents", config.getString("fields." + fieldname + ".list.item(" + i + ").addToParents"));
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
+                fieldValues.put("allowDuplicateValues", config.getString("fields." + fieldname + ".list.item(" + i + ").allowDuplicateValues"));
                 fieldValues.put("geoJSONSource", config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource"));
                 fieldValues.put("geoJSONSourceSeparator",
                         config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@separator]"));
@@ -443,6 +444,15 @@ public final class MetadataConfigurationManager {
                 configurationItem.setAddToPages(false);
             }
         }
+        if (configurationMap.containsKey("allowDuplicateValues")) {
+            if (((String) configurationMap.get("allowDuplicateValues")).equals("true")) {
+                configurationItem.setAllowDuplicateValues(true);
+                fieldsToAddToPages.add(configurationItem.getFieldname());
+            } else {
+                configurationItem.setAllowDuplicateValues(false);
+            }
+        }
+
         if (configurationMap.containsKey("valueNormalizer")) {
             configurationItem.setValueNormalizer((ValueNormalizer) configurationMap.get("valueNormalizer"));
         }
@@ -472,12 +482,10 @@ public final class MetadataConfigurationManager {
      *
      * @param fieldname {@link java.lang.String}
      * @return a {@link java.util.List} object.
+     * @should return correct FieldConfig
      */
     public List<FieldConfig> getConfigurationListForField(String fieldname) {
-        if (configurationList.containsKey(fieldname)) {
-            return configurationList.get(fieldname);
-        }
-        return null;
+        return configurationList.get(fieldname);
     }
 
     /**

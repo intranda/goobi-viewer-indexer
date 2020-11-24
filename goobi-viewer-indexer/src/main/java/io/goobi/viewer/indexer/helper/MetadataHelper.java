@@ -274,6 +274,8 @@ public class MetadataHelper {
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd =
                                         getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
+                                // Allow duplicate values for this GMD, if the configuration item allows it
+                                gmd.setAllowDuplicateValues(configurationItem.isAllowDuplicateValues());
                                 List<LuceneField> authorityData = new ArrayList<>();
                                 boolean groupFieldAlreadyReplaced = false;
                                 String authorityIdentifier = null;
@@ -384,7 +386,8 @@ public class MetadataHelper {
                                 }
                                 gmd.getAuthorityDataFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
 
-                                if (!indexObj.getGroupedMetadataFields().contains(gmd)) {
+                                // Add GMD to index object (if not duplicate or duplicates are allowed for this field)
+                                if (!indexObj.getGroupedMetadataFields().contains(gmd) || configurationItem.isAllowDuplicateValues()) {
                                     indexObj.getGroupedMetadataFields().add(gmd);
                                 }
                                 // NORMDATATERMS is now in the metadata docs, not docstructs
@@ -682,8 +685,12 @@ public class MetadataHelper {
                     }
                 }
                 if (duplicate) {
-                    logger.debug("Duplicate field found: {}:{}", field.getField(), indexObj.getLuceneFieldWithName(field.getField()).getValue());
-                    continue;
+                    List<FieldConfig> fieldConfigList =
+                            Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(field.getField());
+                    if (fieldConfigList == null || fieldConfigList.isEmpty() || !fieldConfigList.get(0).isAllowDuplicateValues()) {
+                        logger.debug("Duplicate field found: {}:{}", field.getField(), field.getValue());
+                        continue;
+                    }
                 }
             }
 

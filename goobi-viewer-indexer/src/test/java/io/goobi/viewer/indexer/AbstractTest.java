@@ -18,6 +18,8 @@ package io.goobi.viewer.indexer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import io.goobi.viewer.indexer.helper.Configuration;
+
 /**
  * JUnit test classes that extend this class will have test-specific logging configurations.
  */
@@ -26,6 +28,8 @@ public abstract class AbstractTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         System.setProperty("log4j.configurationFile", "src/test/resources/log4j2.test.xml");
+        
+        Configuration.getInstance("src/test/resources/indexerconfig_solr_test.xml");
     }
 
     @AfterClass

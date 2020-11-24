@@ -52,6 +52,7 @@ public class FieldConfig {
     private Map<Object, String> replaceRules = new LinkedHashMap<>();
     private List<NonSortConfiguration> nonSortConfigurations;
     private boolean addToPages = false;
+    private boolean allowDuplicateValues = false;
     private ValueNormalizer valueNormalizer;
     private String geoJSONSource;
     private String geoJSONSourceSeparator;
@@ -567,8 +568,6 @@ public class FieldConfig {
         this.nonSortConfigurations = nonSortConfigurations;
     }
 
-
-
     /**
      * <p>
      * isAddToPages.
@@ -589,6 +588,20 @@ public class FieldConfig {
      */
     public void setAddToPages(boolean addToPages) {
         this.addToPages = addToPages;
+    }
+
+    /**
+     * @return the allowDuplicateValues
+     */
+    public boolean isAllowDuplicateValues() {
+        return allowDuplicateValues;
+    }
+
+    /**
+     * @param allowDuplicateValues the allowDuplicateValues to set
+     */
+    public void setAllowDuplicateValues(boolean allowDuplicateValues) {
+        this.allowDuplicateValues = allowDuplicateValues;
     }
 
     /**

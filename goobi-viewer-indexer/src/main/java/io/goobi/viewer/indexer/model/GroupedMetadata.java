@@ -34,6 +34,7 @@ public class GroupedMetadata {
     private boolean addAuthorityDataToDocstruct = false;
     /** If true, this field won't be added to he index. */
     private boolean skip = false;
+    private boolean allowDuplicateValues = false;
 
     /**
      * <p>
@@ -212,4 +213,19 @@ public class GroupedMetadata {
     public void setSkip(boolean skip) {
         this.skip = skip;
     }
+
+    /**
+     * @return the allowDuplicateValues
+     */
+    public boolean isAllowDuplicateValues() {
+        return allowDuplicateValues;
+    }
+
+    /**
+     * @param allowDuplicateValues the allowDuplicateValues to set
+     */
+    public void setAllowDuplicateValues(boolean allowDuplicateValues) {
+        this.allowDuplicateValues = allowDuplicateValues;
+    }
+
 }

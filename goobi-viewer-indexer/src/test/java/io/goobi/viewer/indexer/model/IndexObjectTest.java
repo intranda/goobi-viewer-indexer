@@ -463,6 +463,33 @@ public class IndexObjectTest extends AbstractTest {
         indexObj.removeDuplicateGroupedMetadata();
         Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
     }
+    
+
+    /**
+     * @see IndexObject#removeDuplicateGroupedMetadata()
+     * @verifies not remove allowed duplicates
+     */
+    @Test
+    public void removeDuplicateGroupedMetadata_shouldNotRemoveAllowedDuplicates() throws Exception {
+        IndexObject indexObj = new IndexObject(1);
+        {
+            GroupedMetadata gmd = new GroupedMetadata();
+            gmd.setAllowDuplicateValues(true);
+            gmd.getFields().add(new LuceneField(SolrConstants.LABEL, "label"));
+            gmd.getFields().add(new LuceneField("MD_VALUE", "value"));
+            indexObj.getGroupedMetadataFields().add(gmd);
+        }
+        {
+            GroupedMetadata gmd = new GroupedMetadata();
+            gmd.setAllowDuplicateValues(true);
+            gmd.getFields().add(new LuceneField(SolrConstants.LABEL, "label"));
+            gmd.getFields().add(new LuceneField("MD_VALUE", "value"));
+            indexObj.getGroupedMetadataFields().add(gmd);
+        }
+        Assert.assertEquals(2, indexObj.getGroupedMetadataFields().size());
+        indexObj.removeDuplicateGroupedMetadata();
+        Assert.assertEquals(2, indexObj.getGroupedMetadataFields().size());
+    }
 
     /**
      * @see IndexObject#removeNonMultivaluedFields(String)
