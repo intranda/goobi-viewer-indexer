@@ -167,6 +167,7 @@ public class LidoIndexer extends Indexer {
                 ret[0] = indexObj.getPi();
 
                 // Check and use old data folders, if no new ones found
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
                 checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
                 checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
                 checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
