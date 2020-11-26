@@ -95,6 +95,8 @@
 
 		<aggregateRecords>true</aggregateRecords>
 		
+		<!-- fulltextForceUTF8: If true, full-text files will automatically be converted to UTF-8
+		    if a different charset is detected. Default is true. -->
 		<fulltextForceUTF8>false</fulltextForceUTF8>
 
 		<lido>
@@ -215,6 +217,21 @@
 				</item>
 			</list>
 		</PI>
+		
+        <MD_TECTONICS_ID>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="tectonics"]</item>
+                        </list>
+                    </xpath>
+                    <getnode>first</getnode>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_TECTONICS_ID>
 		
         <!-- This field is important, see chapter 3.13 of the manual -->
         <LABEL>
@@ -3086,6 +3103,86 @@
                 </item>
             </list>
         </MD_INTRANDAINSTITUTION>
+        
+        <!-- Inscription -->
+        <MD_INSCRIPTION_LANG_FR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="fre"]</field>
+                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
+                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_FR">mods:note[@type="marks"][@lang="fre"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_FR">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_FR">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_FR">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
+                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
+                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_FR">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_INSCRIPTION_LANG_FR>
+
+        <MD_INSCRIPTION_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="eng"]</field>
+                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
+                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_EN">mods:note[@type="marks"][@lang="eng"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_EN">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_EN">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_EN">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
+                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
+                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
+                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_EN">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_INSCRIPTION_LANG_EN>
+
+        <MD_INSCRIPTION_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="ger"]</field>
+                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
+                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_DE">mods:note[@type="marks"][@lang="ger"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_DE">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_DE">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
+                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_DE">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
+                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
+                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
+                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_DE">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_INSCRIPTION_LANG_DE>
+
 
 	</fields>
 </root>

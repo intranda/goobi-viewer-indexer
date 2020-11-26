@@ -613,9 +613,14 @@ public class LidoIndexer extends Indexer {
                             logger.warn("Could not download file: {}", filePath);
                         }
                     } catch (IOException e) {
-                        logger.error(e.getMessage());
+                        logger.error("Could not download image: {}", filePath);
                     }
+                } else if (dataFolders.get(DataRepository.PARAM_MEDIA) != null
+                        && dataFolders.get(DataRepository.PARAM_MEDIA).startsWith(Configuration.getInstance().getViewerHome())) {
+                    // If image previously downloaded, use local version, when re-indexing
+                    doc.addField(SolrConstants.FILENAME, fileName);
                 } else {
+                    // Use external image
                     doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                 }
             } else {
@@ -662,7 +667,9 @@ public class LidoIndexer extends Indexer {
         }
 
         // Add file size
-        if (dataFolders != null) {
+        if (dataFolders != null)
+
+        {
             try {
                 Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
                 // TODO other mime types/folders
