@@ -188,7 +188,6 @@ public class MetsIndexer extends Indexer {
                     }
                     indexObj.setPi(pi);
                     indexObj.setTopstructPI(pi);
-                    logger.debug("PI: {}", indexObj.getPi());
 
                     // Determine the data repository to use
                     DataRepository[] repositories =

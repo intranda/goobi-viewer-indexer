@@ -201,6 +201,23 @@ public class DataRepository {
 
     /**
      * 
+     * @param dataFolder Data folder Path
+     * @param paramName Data folder type
+     * @return true if given data folder path represents the data folder in this repository; false otherwise
+     */
+    public boolean isRepositoryDataFolder(Path dataFolder, String paramName) {
+        if (dataFolder == null) {
+            return false;
+        }
+        if (paramName == null) {
+            return false;
+        }
+
+        return dataFolder.equals(getDir(paramName));
+    }
+
+    /**
+     * 
      * @param dataDirName
      * @param create
      * @throws FatalIndexerException

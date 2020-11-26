@@ -29,7 +29,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -82,7 +81,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_MEDIA, lidoVideoMediaFolder.getAbsoluteFile().toPath());
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getList("init.lido.imageXPath"), false);
+                    Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -114,7 +113,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getList("init.lido.imageXPath"), false);
+                    Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -311,7 +310,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         for (Document lidoDoc : lidoDocs) {
             @SuppressWarnings("unchecked")
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getList("init.lido.imageXPath"), false);
+                    Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -375,7 +374,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         // Re-index
         @SuppressWarnings("unchecked")
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
-                Configuration.getInstance().getList("init.lido.imageXPath"), false);
+                Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
         Assert.assertNotEquals("ERROR", ret[0]);
 
         String newIddoc;
