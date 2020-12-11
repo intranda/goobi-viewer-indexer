@@ -218,12 +218,12 @@
 			</list>
 		</PI>
 		
-        <MD_TECTONICS_ID>
+        <MD_ARCHIVE_ENTRY_ID>
             <list>
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:identifier[@type="tectonics"]</item>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</item>
                         </list>
                     </xpath>
                     <getnode>first</getnode>
@@ -231,7 +231,7 @@
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                 </item>
             </list>
-        </MD_TECTONICS_ID>
+        </MD_ARCHIVE_ENTRY_ID>
 		
         <!-- This field is important, see chapter 3.13 of the manual -->
         <LABEL>
