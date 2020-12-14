@@ -221,12 +221,7 @@
         <MD_ARCHIVE_ENTRY_ID>
             <list>
                 <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</item>
-                        </list>
-                    </xpath>
-                    <getnode>first</getnode>
+                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</xpath>
                     <addToDefault>true</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                 </item>
