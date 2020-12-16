@@ -104,12 +104,13 @@ public class LidoIndexer extends Indexer {
      * @param pageCountStart a int.
      * @param imageXPaths a {@link java.util.List} object.
      * @param downloadExternalImages a boolean.
+     * @param useOldImageFolderIfAvailable
      * @should index record correctly
      * @should update record correctly
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart, List<String> imageXPaths,
-            boolean downloadExternalImages) {
+    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
+            List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
         String[] ret = { "ERROR", null };
         String pi = null;
         try {
@@ -152,7 +153,7 @@ public class LidoIndexer extends Indexer {
                 }
                 indexObj.setPi(pi);
                 indexObj.setTopstructPI(pi);
-                logger.debug("PI: {}", indexObj.getPi());
+                logger.info("Record PI: {}", pi);
 
                 // Determine the data repository to use
                 DataRepository[] repositories =
@@ -167,6 +168,7 @@ public class LidoIndexer extends Indexer {
                 ret[0] = indexObj.getPi();
 
                 // Check and use old data folders, if no new ones found
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
                 checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
                 checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
                 checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
@@ -225,7 +227,7 @@ public class LidoIndexer extends Indexer {
                 }
             }
 
-            generatePageDocuments(writeStrategy, dataFolders, pageCountStart, imageXPaths, downloadExternalImages);
+            generatePageDocuments(writeStrategy, dataFolders, pageCountStart, imageXPaths, downloadExternalImages, useOldImageFolderIfAvailable);
 
             // Set access conditions
             indexObj.writeAccessConditions(null);
@@ -498,10 +500,11 @@ public class LidoIndexer extends Indexer {
      * @param pageCountStart a int.
      * @param imageXPaths a {@link java.util.List} object.
      * @param downloadExternalImages a boolean.
+     * @param useOldImageFolderIfAvailable
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
-    public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart, List<String> imageXPaths,
-            boolean downloadExternalImages) throws FatalIndexerException {
+    public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart,
+            List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) throws FatalIndexerException {
         String xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet";
         List<Element> resourceSetList = xp.evaluateToElements(xpath, null);
         if (resourceSetList == null || resourceSetList.isEmpty()) {
@@ -527,7 +530,7 @@ public class LidoIndexer extends Indexer {
                 order = Integer.valueOf(orderAttribute);
             }
             if (generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), order, writeStrategy, dataFolders,
-                    imageXPaths, downloadExternalImages)) {
+                    imageXPaths, downloadExternalImages, useOldImageFolderIfAvailable)) {
                 order++;
             }
         }
@@ -542,12 +545,15 @@ public class LidoIndexer extends Indexer {
      * @param order
      * @param writeStrategy
      * @param dataFolders
+     * @param imageXPaths
      * @param downloadExternalImages
+     * @param useOldImageFolderIfAvailable
      * @return
      * @throws FatalIndexerException
      */
-    boolean generatePageDocument(Element eleResourceSet, String iddoc, Integer order, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders,
-            List<String> imageXPaths, boolean downloadExternalImages) throws FatalIndexerException {
+    boolean generatePageDocument(Element eleResourceSet, String iddoc, Integer order, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders, List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable)
+            throws FatalIndexerException {
         if (order == null) {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
         }
@@ -599,6 +605,7 @@ public class LidoIndexer extends Indexer {
                 // Download image, if so requested (and not a local resource)
                 String baseFileName = FilenameUtils.getBaseName(fileName);
                 String viewerUrl = Configuration.getInstance().getViewerUrl();
+                logger.info("media folder: {}", dataFolders.get(DataRepository.PARAM_MEDIA));
                 if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                         && !filePath.startsWith(viewerUrl)) {
                     try {
@@ -612,9 +619,13 @@ public class LidoIndexer extends Indexer {
                             logger.warn("Could not download file: {}", filePath);
                         }
                     } catch (IOException e) {
-                        logger.error(e.getMessage());
+                        logger.error("Could not download image: {}", filePath);
                     }
+                } else if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && useOldImageFolderIfAvailable) {
+                    // If image previously downloaded, use local version, when re-indexing
+                    doc.addField(SolrConstants.FILENAME, fileName);
                 } else {
+                    // Use external image
                     doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                 }
             } else {
@@ -661,7 +672,9 @@ public class LidoIndexer extends Indexer {
         }
 
         // Add file size
-        if (dataFolders != null) {
+        if (dataFolders != null)
+
+        {
             try {
                 Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
                 // TODO other mime types/folders

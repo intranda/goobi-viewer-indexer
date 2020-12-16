@@ -670,7 +670,7 @@ public class Hotfolder {
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
-                MetsIndexer.superupdate(dataFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
+                MetsIndexer.anchorSuperupdate(dataFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
                 updateSingleDocument(dataFile);
@@ -1095,7 +1095,7 @@ public class Hotfolder {
                     currentIndexer = new LidoIndexer(this);
                     resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
                             Configuration.getInstance().getList("init.lido.imageXPath"),
-                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER), reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
                 } finally {
                     dataRepository = currentIndexer.getDataRepository();
                     previousDataRepository = currentIndexer.getPreviousDataRepository();

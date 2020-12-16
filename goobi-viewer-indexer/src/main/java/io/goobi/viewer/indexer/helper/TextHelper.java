@@ -75,7 +75,7 @@ public final class TextHelper {
     private static final Logger logger = LoggerFactory.getLogger(TextHelper.class);
 
     /** Constant <code>DEFAULT_ENCODING="UTF-8"</code> */
-    public static final String DEFAULT_ENCODING = "UTF-8";
+    public static final String DEFAULT_CHARSET = "UTF-8";
 
     private static final String ALTO_WIDTH = "WIDTH";
     private static final String ALTO_HEIGHT = "HEIGHT";
@@ -168,7 +168,7 @@ public final class TextHelper {
             // logger.debug("{} charset: {}", file.getAbsolutePath(), charset);
             if (charset == null) {
                 charsetDetected = false;
-                charset = DEFAULT_ENCODING;
+                charset = DEFAULT_CHARSET;
             }
             try (InputStreamReader in = new InputStreamReader(fis, charset); BufferedReader r = new BufferedReader(in)) {
                 String line = null;
@@ -542,12 +542,13 @@ public final class TextHelper {
      * @param fileName a {@link java.lang.String} object.
      * @param folder a {@link java.nio.file.Path} object.
      * @param warnIfMissing a boolean.
+     * @param forceDefaultCharset If true, files will be force converted to UTF-8, if different charset detected
      * @should return text if fulltext file exists
      * @should return null if fulltext folder exists but no file
      * @should return null of fulltext folder does not exist
      * @return a {@link java.lang.String} object.
      */
-    public static String generateFulltext(String fileName, Path folder, boolean warnIfMissing) {
+    public static String generateFulltext(String fileName, Path folder, boolean warnIfMissing, boolean forceDefaultCharset) {
         if (!Files.isDirectory(folder)) {
             return null;
         }
@@ -556,7 +557,7 @@ public final class TextHelper {
         Path txt = Paths.get(folder.toAbsolutePath().toString(), fileName);
         if (Files.isRegularFile(txt)) {
             try {
-                text = TextHelper.readFileToString(txt.toFile(), DEFAULT_ENCODING);
+                text = TextHelper.readFileToString(txt.toFile(), forceDefaultCharset ? DEFAULT_CHARSET : null);
             } catch (IOException e) {
                 logger.error("{}: {}", e.getMessage(), txt.toAbsolutePath());
             }

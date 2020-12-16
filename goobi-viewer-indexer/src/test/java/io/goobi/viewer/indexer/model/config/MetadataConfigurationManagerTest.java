@@ -15,11 +15,13 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
+import io.goobi.viewer.indexer.helper.Configuration;
 
 public class MetadataConfigurationManagerTest extends AbstractTest {
 
@@ -40,5 +42,18 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
     @Test
     public void getLanguageMapping_shouldReturnNullIfCodeNotConfigured() throws Exception {
         Assert.assertNull(MetadataConfigurationManager.getLanguageMapping("epo"));
+    }
+
+    /**
+     * @see MetadataConfigurationManager#getConfigurationListForField(String)
+     * @verifies return correct FieldConfig
+     */
+    @Test
+    public void getConfigurationListForField_shouldReturnCorrectFieldConfig() throws Exception {
+        List<FieldConfig> result =
+                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("MD_TESTFIELD", result.get(0).getFieldname());
     }
 }

@@ -112,7 +112,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
-                Configuration.getInstance().getList("init.lido.imageXPath"), false);
+                Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
         Assert.assertEquals("ERROR: " + ret[1], pi, ret[0]);
         String iddoc;
         {
@@ -175,7 +175,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
-                Configuration.getInstance().getList("init.lido.imageXPath"), false);
+                Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
         Assert.assertEquals(pi, ret[0]);
         String iddoc;
         {

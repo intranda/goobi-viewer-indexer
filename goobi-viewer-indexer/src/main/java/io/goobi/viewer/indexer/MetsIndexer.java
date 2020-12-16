@@ -108,7 +108,7 @@ public class MetsIndexer extends Indexer {
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
     /** Constant <code>DEFAULT_FULLTEXT_CHARSET="UTF-8"</code> */
     public static final String DEFAULT_FULLTEXT_CHARSET = "UTF-8";
-
+    /** */
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
     private volatile String useFileGroup = null;
@@ -137,6 +137,7 @@ public class MetsIndexer extends Indexer {
      * @should set access conditions correctly
      * @should write cms page texts into index
      * @should write shape metadata correctly
+     * @should keep volume count up to date in anchor
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
@@ -188,7 +189,6 @@ public class MetsIndexer extends Indexer {
                     }
                     indexObj.setPi(pi);
                     indexObj.setTopstructPI(pi);
-                    logger.debug("PI: {}", indexObj.getPi());
 
                     // Determine the data repository to use
                     DataRepository[] repositories =
@@ -271,10 +271,10 @@ public class MetsIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.METS.name());
             prepareUpdate(indexObj);
 
-            int workDepth = 0; // depth of the docstrct that has ISWORK (volume or monograph)
+            int hierarchyLevel = 0; // depth of the docstrct that has ISWORK (volume or monograph)
             if (indexObj.isVolume()) {
                 // Find anchor document for this volume
-                workDepth = 1;
+                hierarchyLevel = 1;
                 StringBuilder sbXpath = new StringBuilder(170);
                 sbXpath.append("/mets:mets/mets:dmdSec[@ID='")
                         .append(structNode.getAttributeValue("DMDID"))
@@ -305,22 +305,7 @@ public class MetsIndexer extends Indexer {
                         anchor.setVolume(false);
                         if (parentDocstrct == null) {
                             logger.warn("Anchor docstruct not found in the index document, determining by volume type...");
-                            switch (indexObj.getType()) {
-                                case "PeriodicalVolume":
-                                    parentDocstrct = "Periodical";
-                                    break;
-                                case "Volume":
-                                    parentDocstrct = "MultiVolumeWork";
-                                    break;
-                                case "Record":
-                                    parentDocstrct = "Record";
-                                    break;
-                                case "MapVolume":
-                                    parentDocstrct = "MultiVolumeMap";
-                                    break;
-                                default:
-                                    // nothing
-                            }
+                            parentDocstrct = "generic_anchor";
                         }
                         anchor.setType(parentDocstrct);
                         indexObj.setParent(anchor);
@@ -390,7 +375,19 @@ public class MetsIndexer extends Indexer {
             // Write created/updated timestamps
             indexObj.writeDateModified(!fromReindexQueue && !noTimestampUpdate);
 
-            if (!indexObj.isAnchor()) {
+            if (indexObj.isAnchor()) {
+                // Anchors: add NUMVOLUMES
+                indexObj.addToLucene(SolrConstants.ISANCHOR, "true");
+                long numVolumes = hotfolder.getSearchIndex()
+                        .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":")
+                                .append(indexObj.getPi())
+                                .append(" AND ")
+                                .append(SolrConstants.ISWORK)
+                                .append(":true")
+                                .toString());
+                indexObj.addToLucene(SolrConstants.NUMVOLUMES, String.valueOf(numVolumes));
+                logger.info("Added number of volumes: {}", numVolumes);
+            } else {
                 // Generate docs for all pages and add to the write strategy
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
 
@@ -404,7 +401,7 @@ public class MetsIndexer extends Indexer {
                 generatePageUrns(indexObj);
 
                 // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, dataFolders, workDepth);
+                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, dataFolders, hierarchyLevel);
                 if (thumbnailFields != null) {
                     indexObj.getLuceneFields().addAll(thumbnailFields);
                 }
@@ -412,18 +409,6 @@ public class MetsIndexer extends Indexer {
                 // ISWORK only for non-anchors
                 indexObj.addToLucene(SolrConstants.ISWORK, "true");
                 logger.trace("ISWORK: {}", indexObj.getLuceneFieldWithName(SolrConstants.ISWORK).getValue());
-            } else {
-                // Anchors
-                indexObj.addToLucene(SolrConstants.ISANCHOR, "true");
-                long numVolumes = hotfolder.getSearchIndex()
-                        .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":")
-                                .append(indexObj.getPi())
-                                .append(" AND ")
-                                .append(SolrConstants.ISWORK)
-                                .append(":true")
-                                .toString());
-                indexObj.addToLucene(SolrConstants.NUMVOLUMES, String.valueOf(numVolumes));
-                logger.info("Added number of volumes: {}", numVolumes);
             }
 
             // Add DEFAULT field
@@ -476,12 +461,25 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
+            // If this is a new volume, force anchor update to keep its volume count consistent
+            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
+                logger.info("This is a new volume - anchor updated needed.");
+                copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
+            }
+
             boolean indexedChildrenFileList = false;
-            if (!indexObj.isAnchor()) {
+            if (indexObj.isAnchor()) {
+                // Create and index new anchor file that includes all currently indexed children (priority queue)
+                logger.debug("'{}' is an anchor file.", metsFile.getFileName());
+                anchorMerge(indexObj);
+                // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue)
+                updateAnchorChildrenParentIddoc(indexObj);
+            } else {
                 // Index all child elements recursively
-                List<IndexObject> childObjectList = indexAllChildren(indexObj, workDepth + 1, writeStrategy, dataFolders);
+                List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy, dataFolders);
                 indexObj.addChildMetadata(childObjectList);
 
+                // Remove this record from re-index list
                 logger.debug("reindexedChildrenFileList.size(): {}", MetsIndexer.reindexedChildrenFileList.size());
                 if (MetsIndexer.reindexedChildrenFileList.contains(metsFile)) {
                     logger.debug("{} in reindexedChildrenFileList, removing...", metsFile.toAbsolutePath());
@@ -506,12 +504,6 @@ public class MetsIndexer extends Indexer {
                     // Add used-generated content docs
                     writeUserGeneratedContents(writeStrategy, dataFolders, indexObj);
                 }
-            } else {
-                // Create and index new anchor file that includes all currently indexed children
-                logger.debug("'{}' is an anchor file.", metsFile.getFileName());
-                anchorMerge(indexObj);
-                // Then re-index all children
-                updateAllAnchorChildren(indexObj);
             }
 
             // Add grouped metadata as separate documents
@@ -566,7 +558,6 @@ public class MetsIndexer extends Indexer {
         String xpath = "/mets:mets/mets:structLink/mets:smLink[@xlink:from=\"" + indexObj.getLogId() + "\"]/@xlink:to";
         List<String> physIdList = xp.evaluateToStringList(xpath, null);
         if (physIdList == null || physIdList.isEmpty()) {
-            //            throw new IndexerException("No image associated with '" + logId + "'");
             logger.warn("No pages mapped to '{}'.", indexObj.getLogId());
             return null;
         }
@@ -1272,7 +1263,8 @@ public class MetsIndexer extends Indexer {
             // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
             if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
                 String fulltext =
-                        TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD), false);
+                        TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
+                                false, Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
@@ -1320,7 +1312,9 @@ public class MetsIndexer extends Indexer {
             // If FULLTEXT is still empty, look for a plain full-text
             if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null
                     && !"info".equals(baseFileName)) {
-                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true);
+                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION,
+                        dataFolders.get(DataRepository.PARAM_FULLTEXT), true,
+                        Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
                 if (fulltext != null) {
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                     doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepository.getDir(DataRepository.PARAM_FULLTEXT).getFileName().toString() + '/'
@@ -1530,7 +1524,8 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * Updates the anchor METS file by looking up all indexed children and updating the links.
+     * Updates the anchor METS file by looking up all indexed children and updating the links. The updated anchor file is placed into the high
+     * priority re-indexing queue.
      * 
      * @param indexObj {@link IndexObject}
      * @throws IndexerException in case of errors.
@@ -1784,7 +1779,6 @@ public class MetsIndexer extends Indexer {
         } catch (IOException e) {
             logger.error("Error while merging the anchor.", e);
         }
-        // }
     }
 
     /**
@@ -1797,30 +1791,32 @@ public class MetsIndexer extends Indexer {
      */
     void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) throws UnsupportedEncodingException {
         logger.debug("copyAndReIndexAnchor: {}", indexObj.getPi());
-        if (indexObj.getParent() != null) {
-            String piParent = indexObj.getParent().getPi();
-            String indexedAnchorFilePath =
-                    new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
-                            .append(piParent)
-                            .append(Indexer.XML_EXTENSION)
-                            .toString();
-            Path indexedAnchor = Paths.get(indexedAnchorFilePath);
-            if (Files.exists(indexedAnchor)) {
-                hotfolder.getReindexQueue().add(indexedAnchor);
-            }
-        } else {
-            logger.warn("No anchor file has been indexed for this work yet.");
+        if (indexObj.getParent() == null) {
+            logger.warn("No anchor file has been indexed for this {} yet.", indexObj.getPi());
+            return;
+        }
+
+        String piParent = indexObj.getParent().getPi();
+        String indexedAnchorFilePath =
+                new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
+                        .append(piParent)
+                        .append(Indexer.XML_EXTENSION)
+                        .toString();
+        Path indexedAnchor = Paths.get(indexedAnchorFilePath);
+        if (Files.exists(indexedAnchor)) {
+            hotfolder.getReindexQueue().add(indexedAnchor);
         }
     }
 
     /***
-     * Re-indexes all child records of the given anchor document.
+     * Re-indexes all child records of the given anchor document, in case the anchor's IDDOC has changed after re-indexing and those child records
+     * still point to the old IDDOC. The records are added to a high priority re-indexing queue.
      * 
      * @param indexObj {@link IndexObject}
      * @throws IOException -
      * @throws SolrServerException
      */
-    private void updateAllAnchorChildren(IndexObject indexObj) throws IOException, SolrServerException {
+    private void updateAnchorChildrenParentIddoc(IndexObject indexObj) throws IOException, SolrServerException {
         logger.debug("Scheduling all METS files that belong to this anchor for re-indexing...");
         SolrDocumentList hits = hotfolder.getSearchIndex()
                 .search(new StringBuilder(SolrConstants.PI_PARENT).append(":")
@@ -2283,8 +2279,8 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * Moves an updated anchor METS file to the indexed METS folder and the previous version to the updated_mets folder without doing any index
-     * operations.
+     * Moves an updated anchor METS file (with an .UPDATED extension) to the indexed METS folder and the previous version to the updated_mets folder
+     * without doing any index operations.
      *
      * @param metsFile {@link java.nio.file.Path} z.B.: PPN1234567890.UPDATED
      * @param updatedMetsFolder Updated METS folder for old METS files.
@@ -2294,7 +2290,7 @@ public class MetsIndexer extends Indexer {
      * @should copy old METS file to updated mets folder if file already exists
      * @should remove anti-collision name parts
      */
-    public static void superupdate(Path metsFile, Path updatedMetsFolder, DataRepository dataRepository) throws IOException {
+    public static void anchorSuperupdate(Path metsFile, Path updatedMetsFolder, DataRepository dataRepository) throws IOException {
         logger.debug("Renaming and moving updated anchor...");
         if (metsFile == null) {
             throw new IllegalArgumentException("metsFile may not be null");
@@ -2324,7 +2320,7 @@ public class MetsIndexer extends Indexer {
                         .append(".xml")
                         .toString();
                 Path destMetsFilePath = Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename);
-                Files.move(indexed, destMetsFilePath);
+                Files.move(indexed, destMetsFilePath, StandardCopyOption.REPLACE_EXISTING);
                 logger.debug("Old anchor file copied to '{}{}{}'.", updatedMetsFolder.toAbsolutePath(), File.separator, oldMetsFilename);
                 // Then copy the new file again, overwriting the old
                 Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed, StandardCopyOption.REPLACE_EXISTING);

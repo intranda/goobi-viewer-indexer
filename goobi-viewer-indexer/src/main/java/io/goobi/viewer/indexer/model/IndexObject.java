@@ -397,12 +397,13 @@ public class IndexObject {
      * </p>
      *
      * @should remove duplicates correctly
+     * @should not remove allowed duplicates
      */
     public void removeDuplicateGroupedMetadata() {
         Set<GroupedMetadata> existing = new HashSet<>();
         List<GroupedMetadata> metadataToRemove = new ArrayList<>();
         for (GroupedMetadata gmd : getGroupedMetadataFields()) {
-            if (existing.contains(gmd)) {
+            if (existing.contains(gmd) && !gmd.isAllowDuplicateValues()) {
                 metadataToRemove.add(gmd);
             } else {
                 existing.add(gmd);
