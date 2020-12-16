@@ -1542,9 +1542,9 @@ public class MetsIndexer extends Indexer {
             return;
         }
 
-        Map<Integer, String> childrenInfo = new HashMap<>();
+        Map<Long, String> childrenInfo = new HashMap<>();
         Map<String, String> labelInfo = new HashMap<>();
-        Map<String, Integer> orderInfo = new HashMap<>();
+        Map<String, Long> orderInfo = new HashMap<>();
         Map<String, String> urnInfo = new HashMap<>();
         Map<String, String> typeInfo = new HashMap<>();
         List<String> childrenInfoUnsorted = new ArrayList<>();
@@ -1552,12 +1552,12 @@ public class MetsIndexer extends Indexer {
         boolean labelSort = false;
         for (SolrDocument doc : hits) {
             String pi = null;
-            int num = 0;
+            long num = 0;
             if (doc.getFieldValue(SolrConstants.PI) != null) {
                 pi = (String) doc.getFieldValue(SolrConstants.PI);
                 if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
                     try {
-                        num = (Integer) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                        num = (Long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
                         orderInfo.put(pi, num);
                     } catch (ClassCastException e) {
                         logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT).toString());
@@ -1607,7 +1607,7 @@ public class MetsIndexer extends Indexer {
             }
         }
 
-        SortedMap<Integer, String> sortedChildrenMap = null;
+        SortedMap<Long, String> sortedChildrenMap = null;
         List<Element> childrenE = new ArrayList<>();
 
         if (!labelSort) {
@@ -1619,7 +1619,7 @@ public class MetsIndexer extends Indexer {
             }
             Collections.sort(childrenInfoUnsorted);
             for (int k = 0; k < childrenInfoUnsorted.size(); k++) {
-                sortedChildrenMap.put(k, childrenInfoUnsorted.get(k));
+                sortedChildrenMap.put(Long.valueOf(k), childrenInfoUnsorted.get(k));
             }
         }
 
