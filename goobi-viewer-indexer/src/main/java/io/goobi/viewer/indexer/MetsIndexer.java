@@ -1695,7 +1695,7 @@ public class MetsIndexer extends Indexer {
         Element firstChild = indexObj.getRootStructNode().getChildren().get(0);
         for (int j = 0; j < sortedChildrenMap.size(); j++) {
             Element child = firstChild.clone();
-            int currentNo = (Integer) sortedChildrenMap.keySet().toArray()[j];
+            long currentNo = (Long) sortedChildrenMap.keySet().toArray()[j];
             String pi = sortedChildrenMap.get(currentNo);
 
             // Set URN
