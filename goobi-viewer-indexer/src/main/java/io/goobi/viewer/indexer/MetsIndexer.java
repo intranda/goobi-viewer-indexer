@@ -1557,7 +1557,11 @@ public class MetsIndexer extends Indexer {
                 pi = (String) doc.getFieldValue(SolrConstants.PI);
                 if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
                     try {
-                        num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                        if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) instanceof Integer) {
+                            num = Long.valueOf((int) doc.getFieldValue(SolrConstants.CURRENTNOSORT));
+                        } else {
+                            num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                        }
                         orderInfo.put(pi, num);
                     } catch (ClassCastException e) {
                         logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT).toString());
