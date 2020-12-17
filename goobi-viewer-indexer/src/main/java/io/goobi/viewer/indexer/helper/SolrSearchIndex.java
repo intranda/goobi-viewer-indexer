@@ -751,34 +751,4 @@ public final class SolrSearchIndex {
             return null;
         }
     }
-
-    public static void main(String[] args) throws FatalIndexerException, SolrServerException, IOException {
-        Hotfolder hotfolder =
-                new Hotfolder("src/main/resources/indexerconfig_solr.xml",
-                        SolrSearchIndex.getNewHttpSolrClient("https://viewer-testing-index.goobi.io/solr/indexer-andrey",
-                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true),
-                        null);
-
-        String[] sorting = { "1", "10", "01", "11", "100", "101", "a1", "1a" };
-        for (int i = 0; i < sorting.length; ++i) {
-            SolrInputDocument doc = new SolrInputDocument();
-            doc.setField(SolrConstants.IDDOC, String.valueOf(i));
-            doc.setField("SORTALPHANUM_FOO", sorting[i]);
-            hotfolder.getSearchIndex().writeToIndex(doc);
-        }
-        hotfolder.getSearchIndex().commit(false);
-
-        SolrQuery solrQuery = new SolrQuery("SORTALPHANUM_FOO:*");
-        solrQuery.setRows(MAX_HITS);
-        solrQuery.setSort("SORTALPHANUM_FOO", ORDER.asc);
-
-        QueryResponse resp = hotfolder.getSearchIndex().server.query(solrQuery);
-        if(resp.getResults().isEmpty()) {
-            System.out.println("No hits");
-        }
-
-        for (SolrDocument doc : resp.getResults()) {
-            System.out.println(doc.getFieldValue("SORTALPHANUM_FOO"));
-        }
-    }
 }

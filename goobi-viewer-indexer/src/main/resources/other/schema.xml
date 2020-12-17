@@ -30,7 +30,7 @@
 	in server mode, and use a higher logging level that avoids logging every 
 	request -->
 
-<schema name="goobi_viewer-20201216" version="1.6">
+<schema name="goobi_viewer-20201217" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -250,7 +250,6 @@
     <dynamicField name="DATE_*" type="date" indexed="true" stored="true" />
 	<dynamicField name="SORT_*" type="sort_de" indexed="true" stored="true" docValues="true" multiValued="false" />
 	<dynamicField name="SORTNUM_*" type="tlong" indexed="false" stored="true" docValues="true" multiValued="false" />
-    <dynamicField name="SORTALPHANUM_*" type="sort_alphanum_natural" indexed="true" stored="true" docValues="false" multiValued="false" />
 	<dynamicField name="FACET_*" type="string" indexed="false" stored="false" docValues="true" multiValued="true" />
 	<dynamicField name="NORM_*" type="text_general_rev" indexed="true" stored="true" multiValued="true" />
 	<dynamicField name="GROUPID_*" type="string" indexed="true" stored="true" />
@@ -597,28 +596,6 @@
 		<fieldType name="sort_es" class="solr.ICUCollationField"
 			locale="es" strength="primary" />
 			
-        <fieldType name="sort_alphanum_natural" class="solr.TextField" sortMissingLast="false" omitNorms="true">
-            <analyzer>
-                <!-- KeywordTokenizer does no actual tokenizing, so the entire
-                input string is preserved as a single token -->
-                <tokenizer class="solr.KeywordTokenizerFactory" />
-                <!-- The LowerCase TokenFilter does what you expect, which can be
-                    when you want your sorting to be case insensitive -->
-                <filter class="solr.LowerCaseFilterFactory" />
-                <!-- The TrimFilter removes any leading or trailing whitespace -->
-                <filter class="solr.TrimFilterFactory" />
-                <!-- Left-pad numbers with zeroes -->
-                <filter class="solr.PatternReplaceFilterFactory"
-                    pattern="(\d+)" replacement="00000$1" replace="all" />
-                <!-- Left-trim zeroes to produce 12 digit numbers -->
-                <filter class="solr.PatternReplaceFilterFactory"
-                    pattern="0*([0-9]{12,})" replacement="$1" replace="all" />
-                <!-- Remove all but alphanumeric characters -->
-                <filter class="solr.PatternReplaceFilterFactory"
-                    pattern="([^a-z0-9])" replacement="" replace="all" />
-            </analyzer>
-        </fieldType>
-
     <!-- This point type indexes the coordinates as separate fields (subFields)
       If subFieldType is defined, it references a type, and a dynamic field
       definition is created matching *___<typename>.  Alternately, if 
