@@ -16,9 +16,11 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -69,6 +71,41 @@ public class FileToolsTest extends AbstractTest {
         String text = "Lorem ipsum dolor sit amet";
         FileTools.getFileFromString(text, file.getAbsolutePath(), null, false);
         Assert.assertTrue(file.isFile());
+    }
+
+    /**
+     * @see FileTools#getCharset(InputStream)
+     * @verifies detect charset correctly
+     */
+    @Test
+    public void getCharset_shouldDetectCharsetCorrectly() throws Exception {
+        File file = new File("src/test/resources/stopwords_de_en.txt");
+        try (FileInputStream fis = new FileInputStream(file)) {
+            Assert.assertEquals("UTF-8", FileTools.getCharset(fis));
+        }
+    }
+
+    /**
+     * @see FileTools#readFileToString(File,String)
+     * @verifies read file correctly
+     */
+    @Test
+    public void readFileToString_shouldReadFileCorrectly() throws Exception {
+        File file = new File("src/test/resources/stopwords_de_en.txt");
+        Assert.assertTrue(file.isFile());
+        String text = FileTools.readFileToString(file, null);
+        Assert.assertTrue(StringUtils.isNotEmpty(text));
+    }
+
+    /**
+     * @see FileTools#readFileToString(File,String)
+     * @verifies throw IOException if file not found
+     */
+    @Test
+    public void readFileToString_shouldThrowIOExceptionIfFileNotFound() throws Exception {
+        File file = new File("src/test/resources/filenotfound.txt");
+        Assert.assertFalse(file.isFile());
+        FileTools.readFileToString(file, null);
     }
 
 }

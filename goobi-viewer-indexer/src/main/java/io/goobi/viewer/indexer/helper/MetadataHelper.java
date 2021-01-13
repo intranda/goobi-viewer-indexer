@@ -39,6 +39,8 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.ws.http.HTTPException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jdom2.Attribute;
@@ -59,10 +61,11 @@ import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PrimitiveDate;
+import io.goobi.viewer.indexer.model.PrimoDocument;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
-import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
@@ -1211,12 +1214,12 @@ public class MetadataHelper {
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
 
         // Grouped metadata type
-        String type = null;
+        MetadataGroupType type = null;
         if (groupEntityFields.get("type") != null) {
-            type = (String) groupEntityFields.get("type");
-            ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.trim()));
+            type = MetadataGroupType.getByName(((String) groupEntityFields.get("type")).trim());
+            ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.name()));
         } else {
-            type = "OTHER";
+            type = MetadataGroupType.OTHER;
             logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
         }
 
@@ -1228,69 +1231,12 @@ public class MetadataHelper {
 
         boolean authorityUriFound = false;
         Map<String, List<String>> collectedValues = new HashMap<>();
-        for (Object field : groupEntityFields.keySet()) {
-            if ("type".equals(field) || !(groupEntityFields.get(field) instanceof SubfieldConfig)) {
-                continue;
-            }
-            SubfieldConfig subfield = (SubfieldConfig) groupEntityFields.get(field);
-            for (String xpath : subfield.getXpaths()) {
-                logger.debug("XPath: {}", xpath);
-                List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
-                if (values == null || values.isEmpty()) {
-                    // Use default value, if available
-                    if (subfield.getDefaultValues().get(xpath) != null) {
-                        values = Collections.singletonList(subfield.getDefaultValues().get(xpath));
-                    }
-                    if (values == null || values.isEmpty()) {
-                        continue;
-                    }
-                }
-                // Trim down to the first value if subfield is not multivalued
-                if (!subfield.isMultivalued() && values.size() > 1) {
-                    logger.info("{} is not multivalued", subfield.getFieldname());
-                    values = values.subList(0, 1);
-                }
-                for (Object val : values) {
-                    String fieldValue = JDomXP.objectToString(val);
-                    logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
-                    if (fieldValue == null) {
-                        continue;
-                    }
-                    fieldValue = fieldValue.trim();
-                    if (fieldValue.isEmpty()) {
-                        continue;
-                    }
-
-                    if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
-                        // Skip values that probably aren't real identifiers or URIs
-                        if (fieldValue.length() < 2) {
-                            logger.trace("Authority URI too short: {}", fieldValue);
-                            continue;
-                        }
-                        if (NormDataImporter.FIELD_URI.equals(subfield.getFieldname())) {
-                            authorityUriFound = true;
-                            ret.setAuthorityURI(fieldValue);
-                        }
-                        // Add GND URL part, if the value is not a URL
-                        if (!fieldValue.startsWith("http")) {
-                            fieldValue = "http://d-nb.info/gnd/" + fieldValue;
-                        }
-                    }
-
-                    ret.getFields().add(new LuceneField(subfield.getFieldname(), fieldValue));
-                    if (!collectedValues.containsKey(fieldValue)) {
-                        collectedValues.put(subfield.getFieldname(), new ArrayList<>(values.size()));
-                    }
-                    collectedValues.get(subfield.getFieldname()).add(fieldValue);
-                }
-
-            }
-        }
+        ret.collectGroupMetadataValues(collectedValues, groupEntityFields, ele);
 
         String mdValue = null;
         for (LuceneField field : ret.getFields()) {
-            if (field.getField().equals("MD_VALUE") || (field.getField().equals("MD_DISPLAYFORM") && "name".equals(type))
-                    || (field.getField().equals("MD_LOCATION") && "location".equals(type))) {
+            if (field.getField().equals("MD_VALUE") || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(type))
+                    || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(type))) {
                 mdValue = cleanUpName(field.getValue());
                 field.setValue(mdValue);
             }
@@ -1299,7 +1245,7 @@ public class MetadataHelper {
         if (mdValue == null) {
             StringBuilder sbValue = new StringBuilder();
             switch (type) {
-                case "PERSON":
+                case PERSON:
                     if (collectedValues.containsKey("MD_LASTNAME") && !collectedValues.get("MD_LASTNAME").isEmpty()) {
                         sbValue.append(collectedValues.get("MD_LASTNAME").get(0));
                     }
@@ -1309,6 +1255,8 @@ public class MetadataHelper {
                         }
                         sbValue.append(collectedValues.get("MD_FIRSTNAME").get(0));
                     }
+                    break;
+                default:
                     break;
             }
             if (sbValue.length() > 0) {
@@ -1320,6 +1268,22 @@ public class MetadataHelper {
             ret.setMainValue(mdValue);
         }
 
+        // Query citation resource
+        if (MetadataGroupType.CITATION.equals(type)) {
+            String url = (String) groupEntityFields.get("url");
+            if (StringUtils.isNotEmpty(url)) {
+                // TODO insert identifier into URL
+                try {
+                    PrimoDocument primo = new PrimoDocument(url).fetch().build().parse();
+                    ret.collectGroupMetadataValues(collectedValues, groupEntityFields, primo.getXp().getRootElement());
+                } catch (HTTPException | JDOMException | IOException e) {
+                    logger.error(e.getMessage());
+                }
+            } else {
+                logger.warn("Citation metadata fieled {} is missing a URL.", groupLabel);
+            }
+        }
+
         // Add SORT_DISPLAYFORM so that there is a single-valued field by which to group metadata search hits
         if (mdValue != null) {
             addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValue).toString(), "", null, null,
@@ -1327,7 +1291,7 @@ public class MetadataHelper {
         }
 
         // Add authority data URI, if available (GND only)
-        if (!authorityUriFound) {
+        if (ret.getAuthorityURI() == null) {
             String authority = ele.getAttributeValue("authority");
             if (authority == null) {
                 // Add valueURI without any other specifications

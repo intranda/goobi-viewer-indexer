@@ -3178,6 +3178,26 @@
             </list>
         </MD_INSCRIPTION_LANG_DE>
 
+        <MD_CITATION_APA_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:relatedWorksWrap/lido:relatedWorkSet/lido:relatedWork/lido:object[lido:objectID[@lido:source="a-z.lu"]]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="CITATION"
+                        url="https://a-z.lu/primo_library/libweb/webservices/rest/primo-explore/v1/pnxs/xml/L/ALEPH_LUX01${MD_VALUE}?vid=BIBNET&inst=BIBNET&showPnx=true">
+                        <field name="MD_VALUE">lido:objectID[@lido:source="a-z.lu"]</field>
+                        <field name="MD_CITATION_RECORDID">record/control/recordid</field>
+                        <field name="MD_CITATION_TITLE">record/display/title</field>
+                        <field name="MD_CITATION_CONTRIBUTOR">record/display/contributor</field>
+                        <field name="MD_CITATION_PUBLISHER">record/display/publisher</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CITATION_APA_LANG_EN>
 
 	</fields>
 </root>

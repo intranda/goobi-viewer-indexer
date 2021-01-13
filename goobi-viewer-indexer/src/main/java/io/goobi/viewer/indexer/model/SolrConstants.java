@@ -35,11 +35,42 @@ public final class SolrConstants {
     public enum MetadataGroupType {
         PERSON,
         CORPORATION,
+        CONFERENCE,
         LOCATION,
         SUBJECT,
         ORIGININFO,
+        RECORD,
         SHAPE,
+        CITATION,
         OTHER;
+
+        public static MetadataGroupType getByName(String name) {
+            if (name != null) {
+                switch (name) {
+                    case "PERSON":
+                        return PERSON;
+                    case "CORPORATION":
+                        return CORPORATION;
+                    case "CONFERENCE":
+                        return CONFERENCE;
+                    case "LOCATION":
+                        return LOCATION;
+                    case "SUBJECT":
+                        return SUBJECT;
+                    case "ORIGININFO":
+                        return ORIGININFO;
+                    case "CITATION":
+                        return CITATION;
+                    case "OTHER":
+                        return OTHER;
+                    default:
+                        return null;
+                }
+
+            }
+
+            return null;
+        }
     }
 
     /** Constant <code>ACCESSCONDITION="ACCESSCONDITION"</code> */

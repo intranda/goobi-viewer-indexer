@@ -15,6 +15,8 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +25,10 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,11 +40,15 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.FileWriterWithEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 
 /**
  * File I/O utilities.
@@ -84,6 +93,75 @@ public class FileTools {
         }
         result = text.toString();
         return result.trim();
+    }
+    
+    /**
+     * <p>
+     * readFileToString.
+     * </p>
+     *
+     * @param file a {@link java.io.File} object.
+     * @param convertFileToCharset a {@link java.lang.String} object.
+     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
+     * @should read file correctly
+     * @should throw IOException if file not found
+     * @return a {@link java.lang.String} object.
+     */
+    public static String readFileToString(File file, String convertFileToCharset) throws FileNotFoundException, IOException {
+        StringBuilder sb = new StringBuilder();
+        logger.trace("readFileToString: {}", file.getAbsolutePath());
+        try (FileInputStream fis = new FileInputStream(file)) {
+            boolean charsetDetected = true;
+            String charset = getCharset(new FileInputStream(file));
+            // logger.debug("{} charset: {}", file.getAbsolutePath(), charset);
+            if (charset == null) {
+                charsetDetected = false;
+                charset = TextHelper.DEFAULT_CHARSET;
+            }
+            try (InputStreamReader in = new InputStreamReader(fis, charset); BufferedReader r = new BufferedReader(in)) {
+                String line = null;
+                while ((line = r.readLine()) != null) {
+                    sb.append(line).append('\n');
+                }
+            }
+            // Force conversion to target charset, if different charset detected
+            if (charsetDetected && convertFileToCharset != null && !charset.equals(convertFileToCharset)) {
+                try {
+                    Charset toCharset = Charset.forName(convertFileToCharset);
+                    FileUtils.write(file, sb.toString(), toCharset);
+                    logger.info("File '{}' has been converted from {} to {}.", file.getAbsolutePath(), charset, convertFileToCharset);
+                } catch (UnsupportedEncodingException e) {
+                    logger.error("Cannot convert file '{}' - Unsupported target encoding '{}'.", file.getAbsolutePath(), e.getMessage());
+                }
+
+            }
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Unsupported encoding '{}' in '{}'.", e.getMessage(), file.getAbsolutePath());
+        }
+
+        return sb.toString();
+    }
+    
+    /**
+     * Uses ICU4J to determine the charset of the given InputStream.
+     *
+     * @param input a {@link java.io.InputStream} object.
+     * @return Detected charset name; null if not detected.
+     * @throws java.io.IOException
+     * @should detect charset correctly
+     */
+    public static String getCharset(InputStream input) throws IOException {
+        CharsetDetector cd = new CharsetDetector();
+        try (BufferedInputStream bis = new BufferedInputStream(input)) {
+            cd.setText(bis);
+            CharsetMatch cm = cd.detect();
+            if (cm != null) {
+                return cm.getName();
+            }
+        }
+
+        return null;
     }
 
     /**

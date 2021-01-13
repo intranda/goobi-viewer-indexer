@@ -167,6 +167,10 @@ public final class MetadataConfigurationManager {
                     if (type != null) {
                         groupedSubfieldConfigurations.put("type", type);
                     }
+                    String url = config.getString("fields." + fieldname + ".list.item(" + i + ").groupEntity[@url]");
+                    if (url != null) {
+                        groupedSubfieldConfigurations.put("url", url);
+                    }
                     Boolean addAuthorityDataToDocstruct =
                             config.getBoolean("fields." + fieldname + ".list.item(" + i + ").groupEntity[@addAuthorityDataToDocstruct]", null);
                     if (addAuthorityDataToDocstruct != null) {

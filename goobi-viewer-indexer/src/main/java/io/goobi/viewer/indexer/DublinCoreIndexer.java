@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -311,7 +312,7 @@ public class DublinCoreIndexer extends Indexer {
                         for (Path file : stream) {
                             // Add a new CMS_TEXT_* field for each file
                             String field = FilenameUtils.getBaseName(file.getFileName().toString()).toUpperCase();
-                            String content = TextHelper.readFileToString(file.toFile(), null);
+                            String content = FileTools.readFileToString(file.toFile(), null);
                             String value = TextHelper.cleanUpHtmlTags(content);
                             indexObj.addToLucene(SolrConstants.CMS_TEXT_ + field, value);
                             indexObj.addToLucene(SolrConstants.CMS_TEXT_ALL, value);
