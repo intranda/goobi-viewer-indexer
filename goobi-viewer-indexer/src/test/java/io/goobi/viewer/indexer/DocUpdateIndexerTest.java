@@ -27,9 +27,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.DocUpdateIndexer;
-import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -143,7 +142,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertNotNull(altoFileName);
                 Path altoFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), altoFileName);
                 Assert.assertTrue("File not found at " + altoFile.toAbsolutePath().toString(), Files.isRegularFile(altoFile));
-                String altoText = TextHelper.readFileToString(altoFile.toFile(), null);
+                String altoText = FileTools.readFileToString(altoFile.toFile(), null);
                 Assert.assertNotNull(altoText);
                 Assert.assertTrue(altoText.contains("Bollywood!"));
                 Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
@@ -201,7 +200,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(textFileName);
             Path textFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), textFileName);
             Assert.assertTrue(Files.isRegularFile(textFile));
-            String altoText = TextHelper.readFileToString(textFile.toFile(), null);
+            String altoText = FileTools.readFileToString(textFile.toFile(), null);
             Assert.assertNotNull(altoText);
             Assert.assertEquals("updated text file", altoText.trim());
         }
