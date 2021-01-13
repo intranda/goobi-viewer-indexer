@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer.helper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -101,7 +102,7 @@ public class FileToolsTest extends AbstractTest {
      * @see FileTools#readFileToString(File,String)
      * @verifies throw IOException if file not found
      */
-    @Test
+    @Test(expected = IOException.class)
     public void readFileToString_shouldThrowIOExceptionIfFileNotFound() throws Exception {
         File file = new File("src/test/resources/filenotfound.txt");
         Assert.assertFalse(file.isFile());
