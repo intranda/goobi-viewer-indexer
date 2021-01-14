@@ -166,7 +166,7 @@ public final class Configuration {
         namespaces.put("tei", Namespace.getNamespace("tei", "http://www.tei-c.org/ns/1.0"));
         namespaces.put("denkxweb", Namespace.getNamespace("denkxweb", "http://denkxweb.de/"));
         namespaces.put("dc", Namespace.getNamespace("dc", "http://purl.org/dc/elements/1.1/"));
-        namespaces.put("sear", Namespace.getNamespace("primo", "http://www.exlibrisgroup.com/xsd/jaguar/search"));
+        namespaces.put("pnx", Namespace.getNamespace("pnx", "http://www.exlibrisgroup.com/xsd/primo/primo_nm_bib"));
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         if (additionalNamespaces != null) {

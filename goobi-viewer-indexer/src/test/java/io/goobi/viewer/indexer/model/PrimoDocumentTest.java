@@ -16,6 +16,10 @@
 package io.goobi.viewer.indexer.model;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
@@ -37,5 +41,18 @@ public class PrimoDocumentTest {
         Assert.assertTrue(StringUtils.isNotEmpty(xml));
         PrimoDocument pd = new PrimoDocument().setXml(xml).build();
         Assert.assertNotNull(pd.getXp());
+    }
+
+    /**
+     * @see PrimoDocument#prepareURL(Map)
+     * @verifies find and replace identifier correctly
+     */
+    @Test
+    public void prepare_shouldFindAndReplaceIdentifierCorrectly() throws Exception {
+        Map<String, List<String>> values = new HashMap<>(1);
+        values.put("MD_FOO", Collections.singletonList("123"));
+        PrimoDocument pd = new PrimoDocument("https://example.com?id=${MD_FOO}&format=xml");
+        pd.prepareURL(values);
+        Assert.assertEquals("https://example.com?id=123&format=xml", pd.getUrl());
     }
 }

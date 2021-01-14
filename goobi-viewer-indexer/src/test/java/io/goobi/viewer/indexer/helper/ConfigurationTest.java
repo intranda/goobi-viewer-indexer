@@ -108,7 +108,7 @@ public class ConfigurationTest extends AbstractTest {
         String type = (String) groupEntity.get("type");
         Assert.assertEquals("TYPE", type);
         String url = (String) groupEntity.get("url");
-        Assert.assertEquals("https://example.com", url);
+        Assert.assertEquals("https://example.com?param1=value1&param2=value2", url);
         {
             SubfieldConfig fieldSubconfig = (SubfieldConfig) groupEntity.get("field1");
             Assert.assertNotNull(fieldSubconfig);

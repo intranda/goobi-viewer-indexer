@@ -16,6 +16,10 @@
 package io.goobi.viewer.indexer.model;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.ws.http.HTTPException;
 
@@ -23,6 +27,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.TextHelper;
@@ -30,8 +37,13 @@ import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
 
 public class PrimoDocument {
+    
+    private static final Logger logger = LoggerFactory.getLogger(PrimoDocument.class);
+
+    private static final String REGEX = "\\$\\{(.*)\\}.*$";
 
     private String url;
+    private String identifier;
     private String xml;
     private JDomXP xp;
 
@@ -49,9 +61,45 @@ public class PrimoDocument {
         this.url = url;
     }
 
-    public PrimoDocument fetch() throws HTTPException, ClientProtocolException, IOException {
+    /**
+     * 
+     * @param collectedValues Metadata values collected so far; one of the fields must match the placeholder field name in the URL
+     * @return
+     * @should find and replace identifier correctly
+     */
+    public PrimoDocument prepareURL(Map<String, List<String>> collectedValues) {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException("url may not be null or empty");
+        }
+
+        if (collectedValues == null || collectedValues.isEmpty()) {
+            return this;
+        }
+
+        Pattern p = Pattern.compile(REGEX);
+        Matcher m = p.matcher(url);
+
+        if (!m.find()) {
+            return this;
+        }
+
+        String identifierField = m.group(1);
+        if (collectedValues.get(identifierField) == null || collectedValues.get(identifierField).isEmpty()) {
+            return this;
+        }
+
+        identifier = collectedValues.get(identifierField).get(0);
+        url = url.replace("${" + identifierField + "}", identifier);
+
+        return this;
+    }
+
+    public PrimoDocument fetch() throws HTTPException, ClientProtocolException, IOException {
+        if (StringUtils.isEmpty(url)) {
+            throw new IllegalStateException("url may not be null or empty");
+        }
+        if (StringUtils.isEmpty(identifier)) {
+            throw new IllegalStateException("Identifier not found");
         }
 
         xml = Utils.getWebContentGET(url);
@@ -73,14 +121,6 @@ public class PrimoDocument {
 
         Document doc = XmlTools.getDocumentFromString(xml, TextHelper.DEFAULT_CHARSET);
         this.xp = new JDomXP(doc);
-
-        return this;
-    }
-
-    public PrimoDocument parse() {
-        if (xp == null) {
-            throw new IllegalStateException("Document not built");
-        }
 
         return this;
     }

@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import io.goobi.viewer.indexer.helper.JDomXP;
-import io.goobi.viewer.indexer.helper.XmlTools;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 
 /**
@@ -124,6 +123,11 @@ public class GroupedMetadata {
      */
     public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, Object> groupEntityFields, Element ele)
             throws FatalIndexerException {
+        if (ele == null) {
+            throw new IllegalArgumentException("element may not be null");
+        }
+        
+        logger.debug("element: {}", ele.getName());
         for (Object field : groupEntityFields.keySet()) {
             if ("type".equals(field) || "url".equals(field) || !(groupEntityFields.get(field) instanceof SubfieldConfig)) {
                 continue;

@@ -1272,15 +1272,17 @@ public class MetadataHelper {
         if (MetadataGroupType.CITATION.equals(type)) {
             String url = (String) groupEntityFields.get("url");
             if (StringUtils.isNotEmpty(url)) {
-                // TODO insert identifier into URL
                 try {
-                    PrimoDocument primo = new PrimoDocument(url).fetch().build().parse();
+                    PrimoDocument primo = new PrimoDocument(url)
+                            .prepareURL(collectedValues)
+                            .fetch()
+                            .build();
                     ret.collectGroupMetadataValues(collectedValues, groupEntityFields, primo.getXp().getRootElement());
-                } catch (HTTPException | JDOMException | IOException e) {
+                } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
                     logger.error(e.getMessage());
                 }
             } else {
-                logger.warn("Citation metadata fieled {} is missing a URL.", groupLabel);
+                logger.warn("Citation metadata field {} is missing a URL.", groupLabel);
             }
         }
 
