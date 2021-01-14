@@ -683,8 +683,11 @@ public abstract class Indexer {
                     case "AuthorityResource":
                         //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
                 }
-            } else {
+            } else if(annotation.getBody() != null){
                 logger.warn("Cannot interpret annotation body of type " + annotation.getBody().getClass());
+            } else {
+                logger.warn("Annotaton has no body:" + annotation.toString());
+
             }
             // Add annotation body as JSON, always!
             doc.addField("MD_BODY", annotation.getBody().toString());
