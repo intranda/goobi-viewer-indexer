@@ -690,7 +690,9 @@ public abstract class Indexer {
 
             }
             // Add annotation body as JSON, always!
-            doc.addField("MD_BODY", annotation.getBody().toString());
+            if(annotation.getBody() != null) {                
+                doc.addField("MD_BODY", annotation.getBody().toString());
+            }
 
             if (annotation.getTarget() instanceof SpecificResource) {
                 // Coords
