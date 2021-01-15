@@ -178,6 +178,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<addSortField>true</addSortField>
 					<addSortFieldToTopstruct>true</addSortFieldToTopstruct>
+					<addExistenceBoolean>true</addExistenceBoolean>
 					<normalizeYear minYearDigits="2">true</normalizeYear>
 					<interpolateYears>true</interpolateYears>
 					<groupEntity type="TYPE">

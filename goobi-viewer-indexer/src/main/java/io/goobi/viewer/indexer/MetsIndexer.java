@@ -509,6 +509,9 @@ public class MetsIndexer extends Indexer {
             // Add grouped metadata as separate documents
             addGroupedMetadataDocs(writeStrategy, indexObj);
 
+            // Apply field modifications that should happen at the very end
+            indexObj.applyFinalModifications();
+
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
 
             logger.debug("Writing document to index...");
@@ -2083,6 +2086,9 @@ public class MetsIndexer extends Indexer {
 
             // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
             addGroupedMetadataDocs(writeStrategy, indexObj);
+
+            // Apply field modifications that should happen at the very end
+            indexObj.applyFinalModifications();
 
             // Write to Solr
             logger.debug("Writing child document '{}'...", indexObj.getIddoc());

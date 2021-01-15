@@ -34,7 +34,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
@@ -750,5 +749,23 @@ public final class SolrSearchIndex {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    /**
+     * 
+     * @param field
+     * @return
+     * @should boolify field correctly
+     */
+    public static String getBooleanFieldName(String field) {
+        if (field == null) {
+            return null;
+        }
+
+        if (field.contains("_")) {
+            field = field.substring(field.indexOf("_") + 1);
+        }
+
+        return "BOOL_" + field;
     }
 }
