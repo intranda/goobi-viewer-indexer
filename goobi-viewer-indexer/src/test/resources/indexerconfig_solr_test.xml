@@ -178,6 +178,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<addSortField>true</addSortField>
 					<addSortFieldToTopstruct>true</addSortFieldToTopstruct>
+					<addExistenceBoolean>true</addExistenceBoolean>
 					<normalizeYear minYearDigits="2">true</normalizeYear>
 					<interpolateYears>true</interpolateYears>
 					<groupEntity type="TYPE" url="https://example.com?param1=value1\&amp;param2=value2">

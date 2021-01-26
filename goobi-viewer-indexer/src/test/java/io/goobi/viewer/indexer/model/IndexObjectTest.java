@@ -463,7 +463,6 @@ public class IndexObjectTest extends AbstractTest {
         indexObj.removeDuplicateGroupedMetadata();
         Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
     }
-    
 
     /**
      * @see IndexObject#removeDuplicateGroupedMetadata()
@@ -612,5 +611,32 @@ public class IndexObjectTest extends AbstractTest {
 
         indexObj.addChildMetadata(Collections.singletonList(childObj));
         Assert.assertEquals(1, indexObj.getGroupedMetadataFields().size());
+    }
+
+    /**
+     * @see IndexObject#applyFinalModifications()
+     * @verifies add existence booleans correctly
+     */
+    @Test
+    public void applyFinalModifications_shouldAddExistenceBooleansCorrectly() throws Exception {
+        {
+            // true
+            IndexObject indexObject = new IndexObject(1L);
+            indexObject.addToLucene("MD_TESTFIELD", "foo");
+            indexObject.applyFinalModifications();
+            Assert.assertEquals(2, indexObject.getLuceneFields().size());
+            LuceneField boolField = indexObject.getLuceneFields().get(1);
+            Assert.assertEquals("BOOL_TESTFIELD", boolField.getField());
+            Assert.assertEquals("true", boolField.getValue());
+        }
+        {
+            // false
+            IndexObject indexObject = new IndexObject(1L);
+            indexObject.applyFinalModifications();
+            Assert.assertEquals(1, indexObject.getLuceneFields().size());
+            LuceneField boolField = indexObject.getLuceneFields().get(0);
+            Assert.assertEquals("BOOL_TESTFIELD", boolField.getField());
+            Assert.assertEquals("false", boolField.getValue());
+        }
     }
 }

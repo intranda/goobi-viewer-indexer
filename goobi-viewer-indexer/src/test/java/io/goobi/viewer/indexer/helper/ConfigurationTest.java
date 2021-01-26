@@ -96,6 +96,7 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertFalse(fieldConfig.isAddUntokenizedVersion());
         Assert.assertTrue(fieldConfig.isAddSortField());
         Assert.assertTrue(fieldConfig.isAddSortFieldToTopstruct());
+        Assert.assertTrue(fieldConfig.isAddExistenceBoolean());
         Assert.assertEquals("#", fieldConfig.getSplittingCharacter());
         Assert.assertTrue(fieldConfig.isNormalizeYear());
         Assert.assertEquals(2, fieldConfig.getNormalizeYearMinDigits());

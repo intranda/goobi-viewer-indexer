@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 
@@ -308,7 +309,7 @@ public class IndexObject {
      *
      * @param luceneField a {@link io.goobi.viewer.indexer.model.LuceneField} object.
      * @param skipDuplicates if true; fields with the same name and value as existing fields will not be added
-     * @return atrue if field was added; false otherwise
+     * @return true if field was added; false otherwise
      */
     public boolean addToLucene(LuceneField luceneField, boolean skipDuplicates) {
         if (luceneField == null) {
@@ -469,6 +470,42 @@ public class IndexObject {
                 }
                 if (count > 0) {
                     logger.debug("Added {} grouped field(s)", count);
+                }
+            }
+        }
+    }
+
+    /**
+     * Applies modifications that should happen that the very end, after all values have been collected.
+     * 
+     * @throws FatalIndexerException
+     * @should add existence booleans correctly
+     */
+    public void applyFinalModifications() throws FatalIndexerException {
+        Set<String> existingFields = new HashSet<>(luceneFields.size());
+        Set<String> alreadyFinishedFields = new HashSet<>();
+
+        // Collect existing metadata fields
+        for (LuceneField field : luceneFields) {
+            existingFields.add(field.getField());
+        }
+        // Check each field configuration where additional modifications might be configured
+        List<String> fieldNamesList = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
+        for (String fieldName : fieldNamesList) {
+            List<FieldConfig> fieldConfigList =
+                    Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
+            if (fieldConfigList == null || fieldConfigList.isEmpty()) {
+                continue;
+            }
+            for (FieldConfig fieldConfig : fieldConfigList) {
+                if (alreadyFinishedFields.contains(fieldName)) {
+                    continue;
+                }
+                // Existence boolean field
+                if (fieldConfig.isAddExistenceBoolean()) {
+                    luceneFields.add(new LuceneField(SolrSearchIndex.getBooleanFieldName(fieldName),
+                            existingFields.contains(fieldName) ? "true" : "false"));
+                    alreadyFinishedFields.add(fieldName);
                 }
             }
         }

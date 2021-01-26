@@ -44,6 +44,7 @@ public class FieldConfig {
     private String splittingCharacter = null;
     private boolean addSortField = false;
     private boolean addSortFieldToTopstruct = false;
+    private boolean addExistenceBoolean = false;
     private boolean normalizeYear = false;
     private boolean interpolateYears = false;
     private int normalizeYearMinDigits = 3;
@@ -423,6 +424,20 @@ public class FieldConfig {
      */
     public void setAddSortFieldToTopstruct(boolean addSortFieldToTopstruct) {
         this.addSortFieldToTopstruct = addSortFieldToTopstruct;
+    }
+
+    /**
+     * @return the addExistenceBoolean
+     */
+    public boolean isAddExistenceBoolean() {
+        return addExistenceBoolean;
+    }
+
+    /**
+     * @param addExistenceBoolean the addExistenceBoolean to set
+     */
+    public void setAddExistenceBoolean(boolean addExistenceBoolean) {
+        this.addExistenceBoolean = addExistenceBoolean;
     }
 
     /**

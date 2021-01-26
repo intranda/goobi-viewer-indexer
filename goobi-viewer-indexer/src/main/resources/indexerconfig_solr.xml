@@ -3177,6 +3177,17 @@
                 </item>
             </list>
         </MD_INSCRIPTION_LANG_DE>
+        
+        <MD_FINDINGAIDSLINK>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:FindingAidsLink</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addExistenceBoolean>true</addExistenceBoolean>
+                    <onefield>false</onefield>
+                </item>
+            </list>
+        </MD_FINDINGAIDSLINK>
 
         <MD_CITATION_APA_LANG_EN>
             <list>

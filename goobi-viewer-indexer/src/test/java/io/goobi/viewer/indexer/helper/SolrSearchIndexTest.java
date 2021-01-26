@@ -189,4 +189,16 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Assert.assertEquals("bar", doc.getFieldValue("foo"));
         Assert.assertFalse(doc.containsKey("skip"));
     }
+
+    /**
+     * @see SolrSearchIndex#getBooleanFieldName(String)
+     * @verifies boolify field correctly
+     */
+    @Test
+    public void getBooleanFieldName_shouldBoolifyFieldCorrectly() throws Exception {
+        Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("FOO"));
+        Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MD_FOO"));
+        Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MDNUM_FOO"));
+        Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("SORT_FOO"));
+    }
 }

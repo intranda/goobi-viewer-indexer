@@ -517,9 +517,7 @@ public class MetadataHelper {
                 }
             }
         }
-        if (sbDefaultMetadataValues.length() > 0)
-
-        {
+        if (sbDefaultMetadataValues.length() > 0) {
             indexObj.setDefaultValue(sbDefaultMetadataValues.toString());
         }
         ret.addAll(completeCenturies(ret));

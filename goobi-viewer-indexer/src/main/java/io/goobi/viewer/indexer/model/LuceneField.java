@@ -26,6 +26,7 @@ public class LuceneField {
     private String value;
     /** If true, this field won't be added to he index. */
     private boolean skip = false;
+    private boolean addExistenceBoolean = false;
 
     /**
      * Constructor.
@@ -151,6 +152,20 @@ public class LuceneField {
      */
     public void setSkip(boolean skip) {
         this.skip = skip;
+    }
+
+    /**
+     * @return the addExistenceBoolean
+     */
+    public boolean isAddExistenceBoolean() {
+        return addExistenceBoolean;
+    }
+
+    /**
+     * @param addExistenceBoolean the addExistenceBoolean to set
+     */
+    public void setAddExistenceBoolean(boolean addExistenceBoolean) {
+        this.addExistenceBoolean = addExistenceBoolean;
     }
 
     /**
