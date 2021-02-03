@@ -139,6 +139,7 @@ public final class MetadataConfigurationManager {
                 fieldValues.put("lowercase", config.getString("fields." + fieldname + ".list.item(" + i + ").lowercase"));
                 fieldValues.put("addSortField", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortField"));
                 fieldValues.put("addSortFieldToTopstruct", config.getString("fields." + fieldname + ".list.item(" + i + ").addSortFieldToTopstruct"));
+                fieldValues.put("addExistenceBoolean", config.getString("fields." + fieldname + ".list.item(" + i + ").addExistenceBoolean"));
                 fieldValues.put("addToParents", config.getString("fields." + fieldname + ".list.item(" + i + ").addToParents"));
                 fieldValues.put("addToChildren", config.getString("fields." + fieldname + ".list.item(" + i + ").addToChildren"));
                 fieldValues.put("addToPages", config.getString("fields." + fieldname + ".list.item(" + i + ").addToPages"));
@@ -390,6 +391,14 @@ public final class MetadataConfigurationManager {
                 configurationItem.setAddSortFieldToTopstruct(false);
             } else {
                 configurationItem.setAddSortFieldToTopstruct(true);
+            }
+        }
+        
+        if (configurationMap.containsKey("addExistenceBoolean")) {
+            if (((String) configurationMap.get("addExistenceBoolean")).equals(FALSE)) {
+                configurationItem.setAddExistenceBoolean(false);
+            } else {
+                configurationItem.setAddExistenceBoolean(true);
             }
         }
 

@@ -509,6 +509,9 @@ public class MetsIndexer extends Indexer {
             // Add grouped metadata as separate documents
             addGroupedMetadataDocs(writeStrategy, indexObj);
 
+            // Apply field modifications that should happen at the very end
+            indexObj.applyFinalModifications();
+
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
 
             logger.debug("Writing document to index...");
@@ -1542,9 +1545,9 @@ public class MetsIndexer extends Indexer {
             return;
         }
 
-        Map<Integer, String> childrenInfo = new HashMap<>();
+        Map<Long, String> childrenInfo = new HashMap<>();
         Map<String, String> labelInfo = new HashMap<>();
-        Map<String, Integer> orderInfo = new HashMap<>();
+        Map<String, Long> orderInfo = new HashMap<>();
         Map<String, String> urnInfo = new HashMap<>();
         Map<String, String> typeInfo = new HashMap<>();
         List<String> childrenInfoUnsorted = new ArrayList<>();
@@ -1552,12 +1555,16 @@ public class MetsIndexer extends Indexer {
         boolean labelSort = false;
         for (SolrDocument doc : hits) {
             String pi = null;
-            int num = 0;
+            long num = 0;
             if (doc.getFieldValue(SolrConstants.PI) != null) {
                 pi = (String) doc.getFieldValue(SolrConstants.PI);
                 if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
                     try {
-                        num = (Integer) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                        if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) instanceof Integer) {
+                            num = Long.valueOf((int) doc.getFieldValue(SolrConstants.CURRENTNOSORT));
+                        } else {
+                            num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                        }
                         orderInfo.put(pi, num);
                     } catch (ClassCastException e) {
                         logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT).toString());
@@ -1607,7 +1614,7 @@ public class MetsIndexer extends Indexer {
             }
         }
 
-        SortedMap<Integer, String> sortedChildrenMap = null;
+        SortedMap<Long, String> sortedChildrenMap = null;
         List<Element> childrenE = new ArrayList<>();
 
         if (!labelSort) {
@@ -1619,7 +1626,7 @@ public class MetsIndexer extends Indexer {
             }
             Collections.sort(childrenInfoUnsorted);
             for (int k = 0; k < childrenInfoUnsorted.size(); k++) {
-                sortedChildrenMap.put(k, childrenInfoUnsorted.get(k));
+                sortedChildrenMap.put(Long.valueOf(k), childrenInfoUnsorted.get(k));
             }
         }
 
@@ -1695,7 +1702,7 @@ public class MetsIndexer extends Indexer {
         Element firstChild = indexObj.getRootStructNode().getChildren().get(0);
         for (int j = 0; j < sortedChildrenMap.size(); j++) {
             Element child = firstChild.clone();
-            int currentNo = (Integer) sortedChildrenMap.keySet().toArray()[j];
+            long currentNo = (Long) sortedChildrenMap.keySet().toArray()[j];
             String pi = sortedChildrenMap.get(currentNo);
 
             // Set URN
@@ -2079,6 +2086,9 @@ public class MetsIndexer extends Indexer {
 
             // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
             addGroupedMetadataDocs(writeStrategy, indexObj);
+
+            // Apply field modifications that should happen at the very end
+            indexObj.applyFinalModifications();
 
             // Write to Solr
             logger.debug("Writing child document '{}'...", indexObj.getIddoc());

@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>4.13.0</version>
+	<version>21.01-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -45,7 +45,7 @@
 		<geojson-jackson.version>1.14</geojson-jackson.version>
 		<httpclient.version>4.5.13</httpclient.version>
 		<httpcore.version>4.4.14</httpcore.version>
-		<icu.version>68.1</icu.version>
+		<icu.version>68.2</icu.version>
 		<imageio-openjpeg.version>0.4.4</imageio-openjpeg.version>
 		<log4j.version>2.14.0</log4j.version>
 		<jackson.version>2.11.3</jackson.version>

@@ -30,7 +30,7 @@
 	in server mode, and use a higher logging level that avoids logging every 
 	request -->
 
-<schema name="goobi_viewer-20200804" version="1.6">
+<schema name="goobi_viewer-20210125" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -119,7 +119,7 @@
 		multiValued="true" />
 	<field name="COLORSPACE" type="string" indexed="false" stored="true" />
 	<field name="CURRENTNO" type="string" indexed="true" stored="true" />
-	<field name="CURRENTNOSORT" type="tint" indexed="true" stored="true" />
+	<field name="CURRENTNOSORT" type="tlong" indexed="true" stored="true" />
 	<field name="DATAREPOSITORY" type="string" indexed="true"
 		stored="true" />
 	<field name="DATECREATED" type="tlong" indexed="true" stored="true" />
@@ -240,45 +240,25 @@
 	<uniqueKey>IDDOC</uniqueKey>
 
 	<!-- Goobi viewer metadata fields -->
-    <dynamicField name="ACCESSCONDITION_*" type="string" indexed="true"
-        stored="true" />
-	<dynamicField name="FILENAME_*" type="string" indexed="true"
-		stored="true" />
-	<dynamicField name="IMAGEURL_*" type="string" indexed="true"
-		stored="true" />
-	<dynamicField name="*_UNTOKENIZED" type="text_untokenized" indexed="true"
-		stored="true" multiValued="true" />
-	<dynamicField name="MD_*" type="text_general_rev"
-		indexed="true" stored="true" multiValued="true" />
-	<dynamicField name="MDNUM_*" type="tlong" indexed="true"
-		stored="true" />
-		<dynamicField name="MD2_*" type="text_general_rev"
-            indexed="true" stored="true" multiValued="true" />
-        <dynamicField name="DATE_*" type="date" indexed="true"
-        stored="true" />
-	<dynamicField name="SORT_*" type="sort_de" indexed="true"
-		stored="true" docValues="true" multiValued="false" />
-	<dynamicField name="SORTNUM_*" type="tlong" indexed="false"
-		stored="true" docValues="true" multiValued="false" />
-	<dynamicField name="FACET_*" type="string"
-        indexed="false" stored="false" docValues="true"
-        multiValued="true" />
-	<dynamicField name="NORM_*" type="text_general_rev"
-		indexed="true" stored="true" multiValued="true" />
-	<dynamicField name="GROUPID_*" type="string" indexed="true"
-		stored="true" />
-	<dynamicField name="GROUPORDER_*" type="tint" indexed="true"
-		stored="true" />
-	<dynamicField name="NE_*" type="preanalyzed" indexed="true"
-		stored="true" multiValued="true" />
-	<dynamicField name="BOOL_*" type="boolean" indexed="true"
-        stored="true" />
-        <dynamicField name="DOCSTRCT_*" type="string" indexed="true"
-            stored="true" />
-    <dynamicField name="CMS_TEXT_*" type="text_general_rev"
-            indexed="true" stored="false" multiValued="true" />
-        <dynamicField name="WKT_*" type="location_rpt"
-            indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="ACCESSCONDITION_*" type="string" indexed="true" stored="true" />
+	<dynamicField name="FILENAME_*" type="string" indexed="true" stored="true" />
+	<dynamicField name="IMAGEURL_*" type="string" indexed="true" stored="true" />
+	<dynamicField name="*_UNTOKENIZED" type="text_untokenized" indexed="true" stored="true" multiValued="true" />
+	<dynamicField name="MD_*" type="text_general_rev" indexed="true" stored="true" multiValued="true" />
+	<dynamicField name="MDNUM_*" type="tlong" indexed="true" stored="true" />
+	<dynamicField name="MD2_*" type="text_general_rev" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="DATE_*" type="date" indexed="true" stored="true" />
+	<dynamicField name="SORT_*" type="sort_de" indexed="true" stored="true" docValues="true" multiValued="false" />
+	<dynamicField name="SORTNUM_*" type="tlong" indexed="false" stored="true" docValues="true" multiValued="false" />
+	<dynamicField name="FACET_*" type="string" indexed="false" stored="false" docValues="true" multiValued="true" />
+	<dynamicField name="NORM_*" type="text_general_rev" indexed="true" stored="true" multiValued="true" />
+	<dynamicField name="GROUPID_*" type="string" indexed="true" stored="true" />
+	<dynamicField name="GROUPORDER_*" type="tint" indexed="true" stored="true" />
+	<dynamicField name="NE_*" type="preanalyzed" indexed="true" stored="true" multiValued="true" />
+	<dynamicField name="BOOL_*" type="boolean" indexed="true" stored="true" />
+    <dynamicField name="DOCSTRCT_*" type="string" indexed="true" stored="true" />
+    <dynamicField name="CMS_TEXT_*" type="text_general_rev" indexed="true" stored="false" multiValued="true" />
+    <dynamicField name="WKT_*" type="location_rpt" indexed="true" stored="true" multiValued="true" />
             
 	<dynamicField name="random_*" type="random" />
 	
@@ -295,6 +275,7 @@
 	<copyField source="YEAR" dest="FACET_YEAR" />
 	<copyField source="MD_*" dest="FACET_*" maxChars="10000" />
 	<copyField source="MD2_*" dest="FACET_*" maxChars="10000" />
+	<copyField source="NE_*" dest="FACET_*" maxChars="10000" />
 	<copyField source="URN" dest="URN_UNTOKENIZED" />
 	<copyField source="IMAGEURN" dest="IMAGEURN_UNTOKENIZED"  />
 	<copyField source="IMAGEURN_OAI" dest="IMAGEURN_OAI_UNTOKENIZED"  />
@@ -303,7 +284,7 @@
 		<fieldType name="preanalyzed" class="solr.PreAnalyzedField"
 			parserImpl="org.apache.solr.schema.JsonPreAnalyzedParser" />
 
-<!-- Add fieldTypes needed by Solr 8 -->
+    <!-- Add fieldTypes needed by Solr 8 -->
     <fieldType name="pint" class="solr.IntPointField" docValues="true"/>
     <fieldType name="pfloat" class="solr.FloatPointField" docValues="true"/>
     <fieldType name="plong" class="solr.LongPointField" docValues="true"/>
@@ -615,7 +596,7 @@
 
 		<fieldType name="sort_es" class="solr.ICUCollationField"
 			locale="es" strength="primary" />
-
+			
     <!-- This point type indexes the coordinates as separate fields (subFields)
       If subFieldType is defined, it references a type, and a dynamic field
       definition is created matching *___<typename>.  Alternately, if 

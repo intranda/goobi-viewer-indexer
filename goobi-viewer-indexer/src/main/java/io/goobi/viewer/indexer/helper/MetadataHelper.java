@@ -453,7 +453,7 @@ public class MetadataHelper {
                     // CURRENTNOSORT must be an integer value
                     if (fieldName.equals(SolrConstants.CURRENTNOSORT)) {
                         try {
-                            fieldValue = String.valueOf(Integer.valueOf(fieldValue));
+                            fieldValue = String.valueOf(Long.valueOf(fieldValue));
                         } catch (NumberFormatException e) {
                             logger.error("{} cannot be written because it's not an integer value: {}", SolrConstants.CURRENTNOSORT, fieldValue);
                             continue;
@@ -514,9 +514,7 @@ public class MetadataHelper {
                 }
             }
         }
-        if (sbDefaultMetadataValues.length() > 0)
-
-        {
+        if (sbDefaultMetadataValues.length() > 0) {
             indexObj.setDefaultValue(sbDefaultMetadataValues.toString());
         }
         ret.addAll(completeCenturies(ret));

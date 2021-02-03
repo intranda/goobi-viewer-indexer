@@ -750,4 +750,22 @@ public final class SolrSearchIndex {
             return null;
         }
     }
+
+    /**
+     * 
+     * @param field
+     * @return
+     * @should boolify field correctly
+     */
+    public static String getBooleanFieldName(String field) {
+        if (field == null) {
+            return null;
+        }
+
+        if (field.contains("_")) {
+            field = field.substring(field.indexOf("_") + 1);
+        }
+
+        return "BOOL_" + field;
+    }
 }
