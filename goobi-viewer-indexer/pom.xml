@@ -58,7 +58,7 @@
 		<json.version>20201115</json.version>
 		<junit.version>4.13.1</junit.version>
 		<metadata-extractor.version>2.15.0</metadata-extractor.version>
-		<solr.version>8.7.0</solr.version>
+		<solr.version>8.8.0</solr.version>
 		<slf4j.version>1.7.30</slf4j.version>
 	</properties>
 
