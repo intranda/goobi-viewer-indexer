@@ -141,6 +141,11 @@ public class Utils {
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
             throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
+        updateDataRepositoryCache(pi, dataRepositoryName, Configuration.getInstance().getViewerUrl(), Configuration.getInstance().getViewerAuthorizationToken());
+    }
+    
+        public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
+                throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
         if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
             return;
         }
@@ -155,11 +160,11 @@ public class Utils {
         logger.info("Updating data repository cache...");
         Map<String, String> params = new HashMap<>(2);
         JSONObject json = new JSONObject();
+        json.put("type", "UPDATE_DATA_REPOSITORY_NAMES");
         json.put("pi", pi);
         json.put("dataRepositoryName", dataRepositoryName);
 
-        String url = Configuration.getInstance().getViewerUrl() + "/rest/tools/updatedatarepository?token="
-                + Configuration.getInstance().getViewerAuthorizationToken();
+        String url = viewerUrl + "/api/v1/tasks?token=" + token;
         getWebContentPOST(url, params, null, json.toString(), ContentType.APPLICATION_JSON.getMimeType());
     }
 
