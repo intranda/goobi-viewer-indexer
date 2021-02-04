@@ -3189,7 +3189,7 @@
             </list>
         </MD_FINDINGAIDSLINK>
 
-        <MD_CITATION_APA_LANG_EN>
+        <MD_CITATION_APA>
             <list>
                 <item>
                     <xpath>
@@ -3208,7 +3208,7 @@
                     </groupEntity>
                 </item>
             </list>
-        </MD_CITATION_APA_LANG_EN>
+        </MD_CITATION_APA>
 
 	</fields>
 </root>
