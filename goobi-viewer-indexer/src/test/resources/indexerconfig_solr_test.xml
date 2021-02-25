@@ -181,7 +181,7 @@
 					<addExistenceBoolean>true</addExistenceBoolean>
 					<normalizeYear minYearDigits="2">true</normalizeYear>
 					<interpolateYears>true</interpolateYears>
-					<groupEntity type="TYPE">
+					<groupEntity type="TYPE" url="https://example.com?param1=value1\&amp;param2=value2">
 						<field name="field1">xpath1</field>
 						<field name="field1" defaultValue="def">xpath2</field>
 						<field name="field2" multivalued="false">xpath3</field>

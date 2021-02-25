@@ -16,10 +16,8 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jdom2.Document;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,61 +32,6 @@ import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
 public class TextHelperTest extends AbstractTest {
-    /**
-     * @see TextHelper#readFileToString(File)
-     * @verifies read file correctly
-     */
-    @Test
-    public void readFileToString_shouldReadFileCorrectly() throws Exception {
-        File file = new File("src/test/resources/stopwords_de_en.txt");
-        Assert.assertTrue(file.isFile());
-        String text = TextHelper.readFileToString(file, null);
-        Assert.assertTrue(StringUtils.isNotEmpty(text));
-    }
-
-    /**
-     * @see TextHelper#readFileToString(File)
-     * @verifies throw IOException if file not found
-     */
-    @Test(expected = IOException.class)
-    public void readFileToString_shouldThrowIOExceptionIfFileNotFound() throws Exception {
-        File file = new File("src/test/resources/filenotfound.txt");
-        Assert.assertFalse(file.isFile());
-        TextHelper.readFileToString(file, null);
-    }
-
-    /**
-     * @see TextHelper#readXmlFileToDoc(File)
-     * @verifies read XML file correctly
-     */
-    @Test
-    public void readXmlFileToDoc_shouldReadXMLFileCorrectly() throws Exception {
-        File folder = new File("src/test/resources/ALTO");
-        Assert.assertTrue(folder.isDirectory());
-        Document doc = TextHelper.readXmlFileToDoc(new File(folder, "birdsbeneficialt00froh_0031.xml"));
-        Assert.assertNotNull(doc);
-    }
-
-    /**
-     * @see TextHelper#readXmlFileToDoc(File)
-     * @verifies throw IOException if file not found
-     */
-    @Test(expected = IOException.class)
-    public void readXmlFileToDoc_shouldThrowIOExceptionIfFileNotFound() throws Exception {
-        TextHelper.readXmlFileToDoc(new File("filenotfound"));
-    }
-
-    /**
-     * @see TextHelper#getCharset(InputStream)
-     * @verifies detect charset correctly
-     */
-    @Test
-    public void getCharset_shouldDetectCharsetCorrectly() throws Exception {
-        File file = new File("src/test/resources/stopwords_de_en.txt");
-        try (FileInputStream fis = new FileInputStream(file)) {
-            Assert.assertEquals("UTF-8", TextHelper.getCharset(fis));
-        }
-    }
 
     /**
      * @see TextHelper#readAltoFile(String,File)
@@ -113,7 +55,7 @@ public class TextHelperTest extends AbstractTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
         String altoRead = (String) result.get(SolrConstants.ALTO);
-        String altoOrig = TextHelper.readFileToString(origFile, null);
+        String altoOrig = FileTools.readFileToString(origFile, null);
         Assert.assertTrue(altoRead.contains("NamedEntityTag") && altoRead.contains("TAGREFS"));
         Assert.assertTrue("person_Heinrich".equals(((List<String>) result.get("NAMEDENTITIES")).get(0)));
         //        Assert.assertEquals(altoOrig.replaceAll("\\s", "").toLowerCase(), altoRead.replaceAll("\\s", "").toLowerCase());

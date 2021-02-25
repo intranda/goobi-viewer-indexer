@@ -73,6 +73,7 @@ import de.intranda.api.annotation.wa.TextualResource;
 import de.intranda.api.annotation.wa.TypedResource;
 import de.intranda.api.annotation.wa.WebAnnotation;
 import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
+import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -609,7 +610,7 @@ public abstract class Indexer {
     public SolrInputDocument readAnnotation(Path path, long iddoc, String pi, String anchorPi, Map<Integer, SolrInputDocument> pageDocs,
             Map<String, String> groupIds) {
         try (FileInputStream fis = new FileInputStream(path.toFile())) {
-            String json = TextHelper.readFileToString(path.toFile(), TextHelper.DEFAULT_CHARSET);
+            String json = FileTools.readFileToString(path.toFile(), TextHelper.DEFAULT_CHARSET);
             WebAnnotation annotation = new ObjectMapper().readValue(json, WebAnnotation.class);
             if (annotation == null) {
                 return null;

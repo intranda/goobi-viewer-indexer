@@ -102,9 +102,8 @@ public class JDomXP {
      * @throws org.jdom2.JDOMException in case of errors.
      * @throws java.io.FileNotFoundException in case of errors.
      * @throws java.io.IOException in case of errors.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
-    public JDomXP(File file) throws JDOMException, FileNotFoundException, IOException, FatalIndexerException {
+    public JDomXP(File file) throws JDOMException, FileNotFoundException, IOException {
         SAXBuilder builder = new SAXBuilder();
         try (FileInputStream fis = new FileInputStream(file)) {
             doc = builder.build(fis);
@@ -115,9 +114,8 @@ public class JDomXP {
      * Constructor that takes an existing Document.
      *
      * @param doc a {@link org.jdom2.Document} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
-    public JDomXP(Document doc) throws FatalIndexerException {
+    public JDomXP(Document doc) {
         this.doc = doc;
     }
 

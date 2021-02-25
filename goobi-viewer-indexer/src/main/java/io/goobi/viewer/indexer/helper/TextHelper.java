@@ -15,15 +15,10 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -42,7 +37,6 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -51,9 +45,6 @@ import org.jdom2.output.XMLOutputter;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
 
 import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
 import de.intranda.digiverso.ocr.alto.utils.HyphenationLinker;
@@ -102,27 +93,6 @@ public final class TextHelper {
     }
 
     /**
-     * Uses ICU4J to determine the charset of the given InputStream.
-     *
-     * @param input a {@link java.io.InputStream} object.
-     * @return Detected charset name; null if not detected.
-     * @throws java.io.IOException
-     * @should detect charset correctly
-     */
-    public static String getCharset(InputStream input) throws IOException {
-        CharsetDetector cd = new CharsetDetector();
-        try (BufferedInputStream bis = new BufferedInputStream(input)) {
-            cd.setText(bis);
-            CharsetMatch cm = cd.detect();
-            if (cm != null) {
-                return cm.getName();
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Converts a <code>String</code> from one given encoding to the other.
      *
      * @param string The string to convert.
@@ -146,73 +116,7 @@ public final class TextHelper {
         return string;
     }
 
-    /**
-     * <p>
-     * readFileToString.
-     * </p>
-     *
-     * @param file a {@link java.io.File} object.
-     * @param convertFileToCharset a {@link java.lang.String} object.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
-     * @should read file correctly
-     * @should throw IOException if file not found
-     * @return a {@link java.lang.String} object.
-     */
-    public static String readFileToString(File file, String convertFileToCharset) throws FileNotFoundException, IOException {
-        StringBuilder sb = new StringBuilder();
-        logger.trace("readFileToString: {}", file.getAbsolutePath());
-        try (FileInputStream fis = new FileInputStream(file)) {
-            boolean charsetDetected = true;
-            String charset = getCharset(new FileInputStream(file));
-            // logger.debug("{} charset: {}", file.getAbsolutePath(), charset);
-            if (charset == null) {
-                charsetDetected = false;
-                charset = DEFAULT_CHARSET;
-            }
-            try (InputStreamReader in = new InputStreamReader(fis, charset); BufferedReader r = new BufferedReader(in)) {
-                String line = null;
-                while ((line = r.readLine()) != null) {
-                    sb.append(line).append('\n');
-                }
-            }
-            // Force conversion to target charset, if different charset detected
-            if (charsetDetected && convertFileToCharset != null && !charset.equals(convertFileToCharset)) {
-                try {
-                    Charset toCharset = Charset.forName(convertFileToCharset);
-                    FileUtils.write(file, sb.toString(), toCharset);
-                    logger.info("File '{}' has been converted from {} to {}.", file.getAbsolutePath(), charset, convertFileToCharset);
-                } catch (UnsupportedEncodingException e) {
-                    logger.error("Cannot convert file '{}' - Unsupported target encoding '{}'.", file.getAbsolutePath(), e.getMessage());
-                }
 
-            }
-        } catch (UnsupportedEncodingException e) {
-            logger.error("Unsupported encoding '{}' in '{}'.", e.getMessage(), file.getAbsolutePath());
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * <p>
-     * readXmlFileToDoc.
-     * </p>
-     *
-     * @param file a {@link java.io.File} object.
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.IOException
-     * @throws org.jdom2.JDOMException
-     * @should read XML file correctly
-     * @should throw IOException if file not found
-     * @return a {@link org.jdom2.Document} object.
-     */
-    public static Document readXmlFileToDoc(File file) throws FileNotFoundException, IOException, JDOMException {
-        try (FileInputStream fis = new FileInputStream(file)) {
-            org.jdom2.Document doc = new SAXBuilder().build(fis);
-            return doc;
-        }
-    }
 
     /**
      * Reads the ALTO document in the file with the given file name, links hyphenated words and extracts plain text.
@@ -557,7 +461,7 @@ public final class TextHelper {
         Path txt = Paths.get(folder.toAbsolutePath().toString(), fileName);
         if (Files.isRegularFile(txt)) {
             try {
-                text = TextHelper.readFileToString(txt.toFile(), forceDefaultCharset ? DEFAULT_CHARSET : null);
+                text = FileTools.readFileToString(txt.toFile(), forceDefaultCharset ? DEFAULT_CHARSET : null);
             } catch (IOException e) {
                 logger.error("{}: {}", e.getMessage(), txt.toAbsolutePath());
             }

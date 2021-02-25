@@ -101,8 +101,9 @@ public class XmlTools {
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
-     * @should build document from path correctly
      * @return a {@link org.jdom2.Document} object.
+     * @should build document from path correctly
+     * @should throw IOException if file not found
      */
     public static Document readXmlFile(Path path) throws FileNotFoundException, IOException, JDOMException {
         try (InputStream is = Files.newInputStream(path)) {

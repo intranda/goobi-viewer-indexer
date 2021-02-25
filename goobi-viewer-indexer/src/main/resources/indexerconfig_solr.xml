@@ -3177,7 +3177,7 @@
                 </item>
             </list>
         </MD_INSCRIPTION_LANG_DE>
-
+        
         <MD_FINDINGAIDSLINK>
             <list>
                 <item>
@@ -3188,6 +3188,27 @@
                 </item>
             </list>
         </MD_FINDINGAIDSLINK>
+
+        <MD_CITATION_APA>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:relatedWorksWrap/lido:relatedWorkSet/lido:relatedWork/lido:object[lido:objectID[@lido:source="a-z.lu"]]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="CITATION"
+                        url="https://a-z.lu/primo_library/libweb/webservices/rest/primo-explore/v1/pnxs/xml/L/ALEPH_LUX01${MD_VALUE}?vid=BIBNET\&amp;inst=BIBNET\&amp;showPnx=true">
+                        <field name="MD_VALUE">lido:objectID[@lido:source="a-z.lu"]</field>
+                        <field name="MD_CITATION_RECORDID">pnx:control/pnx:recordid</field>
+                        <field name="MD_CITATION_TITLE">pnx:display/pnx:title</field>
+                        <field name="MD_CITATION_CONTRIBUTOR">pnx:display/pnx:contributor</field>
+                        <field name="MD_CITATION_PUBLISHER">pnx:display/pnx:publisher</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CITATION_APA>
 
 	</fields>
 </root>

@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record xmlns="http://www.exlibrisgroup.com/xsd/primo/primo_nm_bib" xmlns:sear="http://www.exlibrisgroup.com/xsd/jaguar/search">
+  <control>
+    <sourcerecordid>000110550</sourcerecordid>
+    <sourceid>ALEPH_LUX01</sourceid>
+    <recordid>ALEPH_LUX01000110550</recordid>
+    <originalsourceid>LUX01</originalsourceid>
+    <ilsapiid>LUX01000110550</ilsapiid>
+    <sourceformat>MARC21</sourceformat>
+    <sourcesystem>Aleph</sourcesystem>
+  </control>
+  <display>
+    <type>book</type>
+    <title>Robert Brandy : 20 ans de peinture</title>
+    <contributor>Brandy, Robert, 1946-</contributor>
+    <contributor>Kayser, Lucien, 1945-</contributor>
+    <contributor>Lorent, Claude</contributor>
+    <contributor>Schneider, Joseph Paul, 1940-1998</contributor>
+    <contributor>Sorrente, Jean, 1954-</contributor>
+    <contributor>Aufderstrasse, Hartmut</contributor>
+    <contributor>Krier, Jean, auteur, 1949-2013</contributor>
+    <contributor>Van Maele, Francis, 1947-</contributor>
+    <publisher>Echternach : éd. Phi : Luxembourg : Galerie la Cité</publisher>
+    <creationdate>cop. 1991</creationdate>
+    <format>142 p. : ill. ; 26 cm</format>
+    <identifier>ISBN 3-88865-096-8</identifier>
+    <subject>Brandy, Robert 1946-</subject>
+    <language>fre</language>
+    <source>ALEPH_LUX01</source>
+    <availlibrary>$$IBIBNET$$LBESA$$Sunavailable$$31$$41$$5N$$60$$XLUX50$$YBESA$$ZBEF</availlibrary>
+    <availlibrary>$$IBIBNET$$LBIMU$$Savailable$$31$$40$$5N$$62$$XLUX50$$YBIMU$$ZLU</availlibrary>
+    <availlibrary>$$IBIBNET$$LBINA$$Savailable$$34$$41$$5N$$62$$XLUX50$$YBINA$$ZO0A1</availlibrary>
+    <availlibrary>$$IBIBNET$$LCELI$$Savailable$$31$$40$$5N$$60$$XLUX50$$YCELI$$ZBL</availlibrary>
+    <availlibrary>$$IBIBNET$$LECEL$$Savailable$$31$$40$$5N$$60$$XLUX50$$YECEL$$ZE2</availlibrary>
+    <availlibrary>$$IBIBNET$$LLCD$$Savailable$$31$$40$$5N$$60$$XLUX50$$YLCD$$ZMAG</availlibrary>
+    <availlibrary>$$IBIBNET$$LMUHA$$Savailable$$31$$40$$5N$$60$$XLUX50$$YMUHA$$ZMA</availlibrary>
+    <availlibrary>$$IBIBNET$$LMUVI$$Savailable$$31$$40$$5N$$60$$XLUX50$$YMUVI$$ZBI</availlibrary>
+    <availlibrary>$$IBIBNET$$LULLC$$Savailable$$31$$40$$5N$$60$$XLUX50$$YULLC$$ZULS2C</availlibrary>
+    <lds10>Robert Brandy : 20 ans de peinture / textes de Lucien Kayser, Claude Lorent, Joseph Paul Schneider, Jean Sorrente ; [trad.: Hartmut Aufderstrasse, Jean Krier ; conception et mise en p.: Robert Brandy et Francis van Maele]</lds10>
+    <lds16>Bibliogr.: p. 138-139.</lds16>
+    <lds19>textes de Lucien Kayser, Claude Lorent, Joseph Paul Schneider, Jean Sorrente ; [trad.: Hartmut Aufderstrasse, Jean Krier ; conception et mise en p.: Robert Brandy et Francis van Maele]</lds19>
+    <lds20>Arts. Arts appliqués. Photographie$$8fre</lds20>
+    <lds20>Arts. Applied arts. Photography$$8eng</lds20>
+    <lds20>Kunst. Angewandte Kunst. Fotografie$$8ger</lds20>
+    <availinstitution>$$IBIBNET$$Savailable</availinstitution>
+    <availpnx>available</availpnx>
+  </display>
+  <links>
+    <thumbnail>$$Tbnl_thumbnail</thumbnail>
+    <thumbnail>$$Tsyndetics_thumb</thumbnail>
+    <thumbnail>$$Tgoogle_thumb</thumbnail>
+    <linktoholdings>$$Taleph_holdings</linktoholdings>
+    <lln07>$$Tbnl_permalink$$Ebnl_permalink</lln07>
+    <lln08>$$Uhttp://www.autorenlexikon.lu/page/author/344/3447/FRE/index.html$$DKayser, Lucien</lln08>
+    <lln08>$$Uhttp://www.autorenlexikon.lu/page/author/363/3635/FRE/index.html$$DKrier, Jean</lln08>
+    <lln08>$$Uhttp://www.autorenlexikon.lu/page/author/493/4931/FRE/index.html$$DSchneider, Joseph Paul</lln08>
+    <lln08>$$Uhttp://www.autorenlexikon.lu/page/author/263/263/FRE/index.html$$DSorrente, Jean</lln08>
+  </links>
+  <search>
+    <creatorcontrib>Brandy, Robert, 1946-</creatorcontrib>
+    <creatorcontrib>Kayser, Lucien, 1945-</creatorcontrib>
+    <creatorcontrib>Lorent, Claude</creatorcontrib>
+    <creatorcontrib>Schneider, Joseph Paul, 1940-1998</creatorcontrib>
+    <creatorcontrib>Sorrente, Jean, 1954-</creatorcontrib>
+    <creatorcontrib>Aufderstrasse, Hartmut</creatorcontrib>
+    <creatorcontrib>Krier, Jean, auteur, 1949-2013</creatorcontrib>
+    <creatorcontrib>Van Maele, Francis, 1947-</creatorcontrib>
+    <creatorcontrib>Robert Brandy</creatorcontrib>
+    <creatorcontrib>Lucien Kayser</creatorcontrib>
+    <creatorcontrib>Claude Lorent</creatorcontrib>
+    <creatorcontrib>Joseph Paul Schneider</creatorcontrib>
+    <creatorcontrib>Jean Sorrente</creatorcontrib>
+    <creatorcontrib>Hartmut Aufderstrasse</creatorcontrib>
+    <creatorcontrib>Jean Krier</creatorcontrib>
+    <creatorcontrib>Francis Van Maele</creatorcontrib>
+    <creatorcontrib>/ textes de Lucien Kayser, Claude Lorent, Joseph Paul Schneider, Jean Sorrente ; [trad.: Hartmut Aufderstrasse, Jean Krier ; conception et mise en p.: Robert Brandy et Francis van Maele]</creatorcontrib>
+    <creatorcontrib>Brandenbourger, Robert 1946-</creatorcontrib>
+    <creatorcontrib>Brandy 1946-</creatorcontrib>
+    <creatorcontrib>J.S. Jean Sorrente 1954-</creatorcontrib>
+    <creatorcontrib>L.K. Lucien Kayser 1945-</creatorcontrib>
+    <creatorcontrib>Schneider, Joseph-Paul 1940-1998</creatorcontrib>
+    <creatorcontrib>Maele, Francis van 1947-</creatorcontrib>
+    <creatorcontrib>Franticham 1947-</creatorcontrib>
+    <title>Robert Brandy</title>
+    <title>Robert Brandy : 20 ans de peinture / textes de Lucien Kayser, Claude Lorent, Joseph Paul Schneider, Jean Sorrente ; [trad.: Hartmut Aufderstrasse, Jean Krier ; conception et mise en p.: Robert Brandy et Francis van Maele]</title>
+    <subject>Brandy, Robert -- 1946-</subject>
+    <general>éd. Phi Galerie la Cité</general>
+    <sourceid>ALEPH_LUX01</sourceid>
+    <recordid>ALEPH_LUX01000110550</recordid>
+    <isbn>3-88865-096-8</isbn>
+    <isbn>3888650968</isbn>
+    <creationdate>1991</creationdate>
+    <startdate>19910101</startdate>
+    <enddate>19911231</enddate>
+    <searchscope>BIBNET</searchscope>
+    <searchscope>MUVI</searchscope>
+    <searchscope>BINA</searchscope>
+    <searchscope>ECEL</searchscope>
+    <searchscope>CELI</searchscope>
+    <searchscope>BIMU</searchscope>
+    <searchscope>LCD</searchscope>
+    <searchscope>BESA</searchscope>
+    <searchscope>ULLC</searchscope>
+    <searchscope>MUHA</searchscope>
+    <searchscope>ALEPH_LUX01</searchscope>
+    <scope>BIBNET</scope>
+    <scope>MUVI</scope>
+    <scope>BINA</scope>
+    <scope>ECEL</scope>
+    <scope>CELI</scope>
+    <scope>BIMU</scope>
+    <scope>LCD</scope>
+    <scope>BESA</scope>
+    <scope>ULLC</scope>
+    <scope>MUHA</scope>
+    <scope>ALEPH_LUX01</scope>
+    <lsr13>newbina0502</lsr13>
+    <lsr13>newecel0105</lsr13>
+    <lsr14>Robert Brandy : 20 ans de peinture / textes de Lucien Kayser, Claude Lorent, Joseph Paul Schneider, Jean Sorrente ; [trad.: Hartmut Aufderstrasse, Jean Krier ; conception et mise en p.: Robert Brandy et Francis van Maele]</lsr14>
+    <lsr18>Bibliogr.: p. 138-139.</lsr18>
+    <rsrctype>books</rsrctype>
+    <lsr12>Books B&amp;uuml;cher Livres</lsr12>
+    <lsr11/>
+    <lsr10>Arts. Arts appliqués. Photographie</lsr10>
+    <lsr10>Arts. Applied arts. Photography</lsr10>
+    <lsr10>Kunst. Angewandte Kunst. Fotografie</lsr10>
+  </search>
+  <sort>
+    <title>Robert Brandy : 20 ans de peinture</title>
+    <creationdate>19911231</creationdate>
+    <author>Brandy, Robert 1946-</author>
+    <lso02>19911231</lso02>
+  </sort>
+  <facets>
+    <language>fre</language>
+    <creationdate>1991</creationdate>
+    <topic>Beaux-arts </topic>
+    <collection>BESA</collection>
+    <collection>BIMU</collection>
+    <collection>BINA</collection>
+    <collection>CELI</collection>
+    <collection>ECEL</collection>
+    <collection>LCD</collection>
+    <collection>MUHA</collection>
+    <collection>MUVI</collection>
+    <collection>ULLC</collection>
+    <toplevel>available</toplevel>
+    <rsrctype>books</rsrctype>
+    <creatorcontrib>Brandy, Robert</creatorcontrib>
+    <creatorcontrib>Kayser, Lucien</creatorcontrib>
+    <creatorcontrib>Lorent, Claude</creatorcontrib>
+    <creatorcontrib>Schneider, Joseph Paul</creatorcontrib>
+    <creatorcontrib>Sorrente, Jean</creatorcontrib>
+    <creatorcontrib>Aufderstrasse, Hartmut</creatorcontrib>
+    <creatorcontrib>Krier, Jean</creatorcontrib>
+    <creatorcontrib>Van Maele, Francis</creatorcontrib>
+    <library>BESA</library>
+    <library>BIMU</library>
+    <library>BINA</library>
+    <library>CELI</library>
+    <library>ECEL</library>
+    <library>LCD</library>
+    <library>MUHA</library>
+    <library>MUVI</library>
+    <library>ULLC</library>
+    <lfc04>Arts. Arts appliqués. Photographie</lfc04>
+    <lfc10>Brandy, Robert -- 1946-</lfc10>
+    <prefilter>books</prefilter>
+    <newrecords>20130328_422</newrecords>
+    <frbrgroupid>1198974559</frbrgroupid>
+    <frbrtype>6</frbrtype>
+  </facets>
+  <dedup>
+    <t>1</t>
+    <c2>9783888650963</c2>
+    <c3>robertbrandy20ansdepeinture</c3>
+    <c4>1991</c4>
+    <f3>3888650968</f3>
+    <f5>robertbrandy20ansdepeinture</f5>
+    <f6>1991</f6>
+    <f7>robert brandy 20 ans de peinture</f7>
+    <f8>lu</f8>
+    <f9>142 p.</f9>
+    <f10>ed phi</f10>
+    <f12>ALEPH_LUX01</f12>
+  </dedup>
+  <frbr>
+    <t>99</t>
+    <k1>$$KALEPH_LUX01000110550$$AA</k1>
+    <k3>$$Krobert brandy 20 ans de peinture$$AT</k3>
+  </frbr>
+  <delivery>
+    <institution>BIBNET</institution>
+    <delcategory>Physical Item</delcategory>
+  </delivery>
+  <ranking>
+    <booster1>1</booster1>
+    <booster2>1</booster2>
+  </ranking>
+  <addata>
+    <aulast>Brandy</aulast>
+    <aufirst>Robert</aufirst>
+    <addau>Brandy, Robert 1946-</addau>
+    <addau>Kayser, Lucien 1945-</addau>
+    <addau>Lorent, Claude</addau>
+    <addau>Schneider, Joseph Paul 1940-1998</addau>
+    <addau>Sorrente, Jean 1954-</addau>
+    <addau>Aufderstrasse, Hartmut</addau>
+    <addau>Krier, Jean auteur 1949-2013</addau>
+    <addau>Van Maele, Francis 1947-</addau>
+    <btitle>Robert Brandy : 20 ans de peinture</btitle>
+    <date>1991</date>
+    <risdate>cop. 1991</risdate>
+    <isbn>3-88865-096-8</isbn>
+    <format>book</format>
+    <ristype>BOOK</ristype>
+    <notes>Bibliogr.: p. 138-139.</notes>
+    <cop>Echternach Luxembourg</cop>
+    <pub>éd. Phi Galerie la Cité</pub>
+    <lad03>11.2</lad03>
+  </addata>
+</record>
