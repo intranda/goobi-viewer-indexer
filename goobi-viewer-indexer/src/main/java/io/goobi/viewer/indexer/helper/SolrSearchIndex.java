@@ -653,6 +653,7 @@ public final class SolrSearchIndex {
      * @should create new document with all values if none exists
      * @should create updated document with all values if one already exists
      * @should add default field
+     * @should add access conditions
      */
     public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, long iddoc) {
         try {
@@ -679,6 +680,7 @@ public final class SolrSearchIndex {
             doc.setField(SolrConstants.PI, groupId);
             doc.setField(SolrConstants.PI_TOPSTRUCT, groupId);
             doc.setField(SolrConstants.GROUPTYPE, groupIdField);
+            doc.setField(SolrConstants.ACCESSCONDITION, SolrConstants.OPEN_ACCESS_VALUE);
             StringBuilder sbDefault = new StringBuilder();
             sbDefault.append(groupId).append(' ');
             if (metadata != null) {
