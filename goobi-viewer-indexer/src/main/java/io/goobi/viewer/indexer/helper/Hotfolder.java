@@ -1214,7 +1214,7 @@ public class Hotfolder {
         } catch (IOException e) {
             logger.error("'{}' could not be deleted; please delete it manually.", lidoFile.toAbsolutePath());
         }
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
+        if (!reindexSettings.get(DataRepository.PARAM_MEDIA) && dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
                 && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
             logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
         }
@@ -1404,7 +1404,7 @@ public class Hotfolder {
         } catch (IOException e) {
             logger.error("'{}' could not be deleted; please delete it manually.", denkxwebFile.toAbsolutePath());
         }
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
+        if (!reindexSettings.get(DataRepository.PARAM_MEDIA) && dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
                 && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
             logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
         }
