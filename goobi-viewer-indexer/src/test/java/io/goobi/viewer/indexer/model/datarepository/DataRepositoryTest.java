@@ -512,7 +512,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ALTO, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ALTO, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -527,7 +528,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ALTOCROWD, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ALTOCROWD, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -542,7 +544,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_FULLTEXT, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_FULLTEXT, dataFolder.toPath()),
+                Collections.emptyMap());
     }
 
     /**
@@ -556,7 +559,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_FULLTEXTCROWD, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_FULLTEXTCROWD, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -571,7 +575,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_CMDI, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_CMDI, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -586,7 +591,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_TEIMETADATA, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_TEIMETADATA, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -601,7 +607,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_TEIWC, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_TEIWC, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -616,7 +623,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ABBYY, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ABBYY, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -631,7 +639,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_MEDIA, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_MEDIA, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -646,7 +655,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_SOURCE, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_SOURCE, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -661,7 +671,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_UGC, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_UGC, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -676,7 +687,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_MIX, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_MIX, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -691,7 +703,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_PAGEPDF, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_PAGEPDF, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -706,7 +719,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_CMS, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_CMS, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 
@@ -721,7 +735,8 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.mkdirs());
         Assert.assertTrue(dataFolder.exists());
 
-        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ANNOTATIONS, dataFolder.toPath()), null);
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ANNOTATIONS, dataFolder.toPath()),
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 

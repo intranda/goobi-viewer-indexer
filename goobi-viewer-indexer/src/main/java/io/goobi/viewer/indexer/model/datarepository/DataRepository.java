@@ -528,10 +528,10 @@ public class DataRepository {
      */
     static void deleteDataFolder(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param) {
         if (param == null) {
-            throw new IllegalArgumentException("param may notbe null");
+            throw new IllegalArgumentException("param may not be null");
         }
 
-        if ((reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
+        if ((reindexSettings == null || reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
             logger.info("Deleting data folder: {}", dataFolders.get(param).toAbsolutePath().toString());
             Utils.deleteDirectory(dataFolders.get(param));
         }
