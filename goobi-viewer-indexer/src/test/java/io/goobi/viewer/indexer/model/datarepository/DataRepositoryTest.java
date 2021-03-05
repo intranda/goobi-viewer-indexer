@@ -481,7 +481,7 @@ public class DataRepositoryTest extends AbstractTest {
 
         DataRepository.deleteDataFolder(Collections.singletonMap(DataRepository.PARAM_MEDIA, dataFolder.toPath()),
                 Collections.singletonMap("other", true), DataRepository.PARAM_MEDIA);
-        Assert.assertTrue(dataFolder.exists());
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -752,7 +752,7 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataFolder.exists());
 
         DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, dataFolder.toPath()),
-                null);
+                Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
     }
 }

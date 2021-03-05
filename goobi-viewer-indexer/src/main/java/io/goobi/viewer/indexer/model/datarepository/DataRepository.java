@@ -498,6 +498,7 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_TEIMETADATA);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_TEIWC);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ABBYY);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_MEDIA);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_MIX);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_UGC);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_CMS);
