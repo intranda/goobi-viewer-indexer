@@ -17,7 +17,7 @@
 		<Logger name="io.goobi" level="FATAL" additivity="true" />
 		<Logger name="de.intranda.digiverso.ocr" level="WARN" additivity="true" />
 		<Logger name="org.apache" level="ERROR" additivity="true" />
-		<Root level="info">
+		<Root level="ERROR">
 			<AppenderRef ref="stdout" />
 			<AppenderRef ref="rolling" />
 		</Root>
