@@ -19,6 +19,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -33,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
-import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public class DataRepositoryTest extends AbstractTest {
 
@@ -465,5 +466,199 @@ public class DataRepositoryTest extends AbstractTest {
     @Test
     public void getAbsolutePath_shouldReturnCorrectPath() throws Exception {
         Assert.assertEquals("target/viewer/data/1", DataRepository.getAbsolutePath("1"));
+    }
+
+
+    /**
+     * @see DataRepository#deleteDataFolder(Map,Map,String)
+     * @verifies delete folders correctly
+     */
+    @Test
+    public void deleteDataFolder_shouldDeleteFoldersCorrectly() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFolder(Collections.singletonMap(DataRepository.PARAM_MEDIA, dataFolder.toPath()),
+                Collections.singletonMap("other", true), DataRepository.PARAM_MEDIA);
+        Assert.assertTrue(dataFolder.exists());
+    }
+    
+    /**
+     * @see DataRepository#deleteDataFolder(Map,Map,String)
+     * @verifies not delete reindexed folders
+     */
+    @Test
+    public void deleteDataFolder_shouldNotDeleteReindexedFolders() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFolder(Collections.singletonMap(DataRepository.PARAM_MEDIA, dataFolder.toPath()),
+                Collections.singletonMap(DataRepository.PARAM_MEDIA, true), DataRepository.PARAM_MEDIA);
+        Assert.assertTrue(dataFolder.exists());
+
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete ALTO folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteALTOFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete ALTO crowdsourcing folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteALTOCrowdsourcingFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete fulltext folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteFulltextFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete fulltext crowdsourcing folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteFulltextCrowdsourcingFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete CMDI folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteCMDIFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete TEI folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteTEIFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete word coords folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete ABBYY folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteABBYYFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete media folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteMediaFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete source folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteSourceFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete user generated content folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteUserGeneratedContentFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete MIX folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteMIXFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete page PDF folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeletePagePDFFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete CMS folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteCMSFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete annotations folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteAnnotationsFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete download images trigger folder correctly
+     */
+    @Test
+    public void deleteDataFoldersFromHotfolder_shouldDeleteDownloadImagesTriggerFolderCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
     }
 }

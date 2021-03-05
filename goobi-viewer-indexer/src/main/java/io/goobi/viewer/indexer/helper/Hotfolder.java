@@ -370,7 +370,7 @@ public class Hotfolder {
 
         // E-mail configuration
         emailConfigurationComplete = checkEmailConfiguration();
-        if(emailConfigurationComplete) {
+        if (emailConfigurationComplete) {
             logger.info("E-mail configuration OK.");
         }
     }
@@ -1010,7 +1010,7 @@ public class Hotfolder {
             // Error
             if (deleteContentFilesOnFailure) {
                 // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFolders(dataFolders, reindexSettings);
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
             handleError(metsFile, resp[1]);
             try {
@@ -1095,7 +1095,8 @@ public class Hotfolder {
                     currentIndexer = new LidoIndexer(this);
                     resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
                             Configuration.getInstance().getList("init.lido.imageXPath"),
-                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER), reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
+                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
+                            reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
                 } finally {
                     dataRepository = currentIndexer.getDataRepository();
                     previousDataRepository = currentIndexer.getPreviousDataRepository();
@@ -1214,40 +1215,8 @@ public class Hotfolder {
         } catch (IOException e) {
             logger.error("'{}' could not be deleted; please delete it manually.", lidoFile.toAbsolutePath());
         }
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
-        }
-        if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
-                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath());
-        }
-        if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.",
-                    dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath());
-        }
-
-        //        if (deleteContentFilesOnFailure) {
-        //            // Delete all folders
-        //            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
-        //            }
-        //            if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
-        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
-        //            }
-        //            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-        //            }
-        //        }
-        if (deleteContentFilesOnFailure) {
-            // Delete all data folders for this record from the hotfolder
-            DataRepository.deleteDataFolders(dataFolders, reindexSettings);
-        }
+        // Delete all data folders for this record from the hotfolder
+        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
     }
 
     /**
@@ -1404,31 +1373,8 @@ public class Hotfolder {
         } catch (IOException e) {
             logger.error("'{}' could not be deleted; please delete it manually.", denkxwebFile.toAbsolutePath());
         }
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
-        }
-        if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.",
-                    dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath());
-        }
-
-        //        if (deleteContentFilesOnFailure) {
-        //            // Delete all folders
-        //            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
-        //            }
-        //            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-        //            }
-        //        }
-        if (deleteContentFilesOnFailure) {
-            // Delete all data folders for this record from the hotfolder
-            DataRepository.deleteDataFolders(dataFolders, reindexSettings);
-        }
+        // Delete all data folders for this record from the hotfolder
+        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
     }
 
     /**
@@ -1614,7 +1560,7 @@ public class Hotfolder {
             // Error
             if (deleteContentFilesOnFailure) {
                 // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFolders(dataFolders, reindexSettings);
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
             try {
                 Files.delete(dcFile);
@@ -1762,7 +1708,7 @@ public class Hotfolder {
             // Error
             if (deleteContentFilesOnFailure) {
                 // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFolders(dataFolders, reindexSettings);
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
             handleError(mainFile, resp[1]);
             try {

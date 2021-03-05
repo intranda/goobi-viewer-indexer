@@ -472,9 +472,24 @@ public class DataRepository {
      * </p>
      *
      * @param dataFolders a {@link java.util.Map} object.
-     * @param reindexSettings a {@link java.util.Map} object.
+     * @should delete ALTO folder correctly
+     * @should delete ALTO crowdsourcing folder correctly
+     * @should delete fulltext folder correctly
+     * @should delete fulltext crowdsourcing folder correctly
+     * @should delete CMDI folder correctly
+     * @should delete TEI folder correctly
+     * @should delete word coords folder correctly
+     * @should delete ABBYY folder correctly
+     * @should delete media folder correctly
+     * @should delete source folder correctly
+     * @should delete user generated content folder correctly
+     * @should delete MIX folder correctly
+     * @should delete page PDF folder correctly
+     * @should delete CMS folder correctly
+     * @should delete annotations folder correctly
+     * @should delete download images trigger folder correctly
      */
-    public static void deleteDataFolders(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
+    public static void deleteDataFoldersFromHotfolder(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ALTO);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ALTOCROWD);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_FULLTEXT);
@@ -489,6 +504,7 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_PAGEPDF);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER);
 
         // Delete unsupported data folders
         //                List<File> unknownDirs = Arrays.asList(hotfolderPath.listFiles(getDataFolderFilter(fileNameRoot + "_")));
@@ -507,8 +523,10 @@ public class DataRepository {
      * @param dataFolders
      * @param reindexSettings
      * @param param Data folder parameter name
+     * @should delete folders correctly
+     * @should not delete reindexed folders
      */
-    private static void deleteDataFolder(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param) {
+    static void deleteDataFolder(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param) {
         if (param == null) {
             throw new IllegalArgumentException("param may notbe null");
         }
