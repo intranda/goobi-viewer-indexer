@@ -1118,7 +1118,7 @@ public class Hotfolder {
                         previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
                     }
 
-                    if (!reindexSettings.get(DataRepository.PARAM_MEDIA)) {
+                    if (reindexSettings.get(DataRepository.PARAM_MEDIA) == null || !reindexSettings.get(DataRepository.PARAM_MEDIA)) {
                         // copy media files
                         boolean mediaFilesCopied = false;
                         Path destMediaDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
@@ -1168,7 +1168,7 @@ public class Hotfolder {
                     }
 
                     // Copy and delete MIX files
-                    if (!reindexSettings.get(DataRepository.PARAM_MIX)) {
+                    if (reindexSettings.get(DataRepository.PARAM_MIX) == null || !reindexSettings.get(DataRepository.PARAM_MIX)) {
                         Path destMixDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), identifier);
                         if (!Files.exists(destMixDir)) {
                             Files.createDirectory(destMixDir);
