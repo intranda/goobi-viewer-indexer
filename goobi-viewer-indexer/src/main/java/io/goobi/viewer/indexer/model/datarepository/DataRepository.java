@@ -21,11 +21,15 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +40,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
+import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 
 /**
  * <p>
@@ -656,6 +661,73 @@ public class DataRepository {
         }
 
         return counter;
+    }
+
+    /**
+     * Copies image files for the given record identifier from a media folder that may contain images for more than one record.
+     * 
+     * @param sourceMediaFolder Media folder in hotfolder
+     * @param identifier Record identifier
+     * @param recordFileName File name of the source file
+     * @param dataRepositoryStrategy
+     * @param fileNames Semicolon-separated file name list
+     * @param reindexing true if using old media folder; false otherwise
+     * @return Number of copied files
+     * @throws IOException
+     */
+    public int copyImagesFromMultiRecordMediaFolder(Path sourceMediaFolder, String identifier, String recordFileName,
+            IDataRepositoryStrategy dataRepositoryStrategy, String fileNames, boolean reindexing) throws IOException {
+        int imageCounter = 0;
+        if (!reindexing) {
+            // copy media files
+            Path destMediaFolder = Paths.get(getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
+            if (!Files.exists(destMediaFolder)) {
+                Files.createDirectory(destMediaFolder);
+            }
+            if (StringUtils.isNotEmpty(fileNames) && sourceMediaFolder != null) {
+                logger.info("Copying image files...");
+                String[] imgFileNamesSplit = fileNames.split(";");
+                Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
+                try (DirectoryStream<Path> mediaFileStream = Files.newDirectoryStream(sourceMediaFolder)) {
+                    for (Path mediaFile : mediaFileStream) {
+                        if (Files.isRegularFile(mediaFile) && imgFileNames.contains(mediaFile.getFileName().toString())) {
+                            logger.info("Copying file {} to {}", mediaFile.toAbsolutePath(), destMediaFolder.toAbsolutePath());
+                            Files.copy(mediaFile, Paths.get(destMediaFolder.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
+                                    StandardCopyOption.REPLACE_EXISTING);
+                            imageCounter++;
+                        }
+                    }
+                }
+            } else {
+                logger.warn("No media file names could be extracted for record '{}'.", identifier);
+            }
+            if (imageCounter > 0) {
+                logger.info("{} media file(s) copied.", imageCounter);
+                return imageCounter;
+            }
+        }
+
+        if (imageCounter == 0) {
+            // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
+            if (reindexing) {
+                for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
+                    if (!repo.equals(this) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
+                        Path misplacedDataDir =
+                                Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
+                        if (Files.isDirectory(misplacedDataDir)) {
+                            logger.warn("Found data folder for this record in different data repository: {}",
+                                    misplacedDataDir.toAbsolutePath().toString());
+                            logger.warn("Moving data folder to new repository...");
+                            repo.moveDataFolderToRepository(this, identifier, DataRepository.PARAM_MEDIA);
+                        }
+                    }
+                }
+            } else {
+                logger.warn("No media folder found for '{}'.", recordFileName);
+            }
+        }
+
+        return imageCounter;
     }
 
     /**

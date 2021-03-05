@@ -35,12 +35,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 import javax.mail.MessagingException;
 
@@ -1118,56 +1116,12 @@ public class Hotfolder {
                         previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
                     }
 
-                    if (reindexSettings.get(DataRepository.PARAM_MEDIA) == null || !reindexSettings.get(DataRepository.PARAM_MEDIA)) {
-                        // copy media files
-                        boolean mediaFilesCopied = false;
-                        Path destMediaDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
-                        if (!Files.exists(destMediaDir)) {
-                            Files.createDirectory(destMediaDir);
-                        }
-                        int imageCounter = 0;
-                        if (StringUtils.isNotEmpty(resp[1]) && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
-                            logger.info("Copying image files...");
-                            String[] imgFileNamesSplit = resp[1].split(";");
-                            Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
-                            try (DirectoryStream<Path> mediaFileStream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-                                for (Path mediaFile : mediaFileStream) {
-                                    if (Files.isRegularFile(mediaFile) && imgFileNames.contains(mediaFile.getFileName().toString())) {
-                                        logger.info("Copying file {} to {}", mediaFile.toAbsolutePath(), destMediaDir.toAbsolutePath());
-                                        Files.copy(mediaFile, Paths.get(destMediaDir.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
-                                                StandardCopyOption.REPLACE_EXISTING);
-                                        imageCounter++;
-                                    }
-                                }
-                            }
-                            mediaFilesCopied = true;
-                        } else {
-                            logger.warn("No media file names could be extracted from '{}'.", identifier);
-                        }
-                        if (!mediaFilesCopied) {
-                            logger.warn("No media folder found for '{}'.", lidoFile);
+                    // Copy media files
+                    int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
+                            lidoFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
+                            reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
 
-                            // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
-                            if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA)) {
-                                for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
-                                    if (!repo.equals(dataRepository) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
-                                        Path misplacedDataDir =
-                                                Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
-                                        if (Files.isDirectory(misplacedDataDir)) {
-                                            logger.warn("Found data folder for this record in different data repository: {}",
-                                                    misplacedDataDir.toAbsolutePath().toString());
-                                            logger.warn("Moving data folder to new repository...");
-                                            repo.moveDataFolderToRepository(dataRepository, identifier, DataRepository.PARAM_MEDIA);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            logger.info("{} media file(s) copied.", imageCounter);
-                        }
-                    }
-
-                    // Copy and delete MIX files
+                    // Copy MIX files
                     if (reindexSettings.get(DataRepository.PARAM_MIX) == null || !reindexSettings.get(DataRepository.PARAM_MIX)) {
                         Path destMixDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), identifier);
                         if (!Files.exists(destMixDir)) {
@@ -1306,55 +1260,10 @@ public class Hotfolder {
                         previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
                     }
 
-                    if (reindexSettings.get(DataRepository.PARAM_MEDIA) == null || !reindexSettings.get(DataRepository.PARAM_MEDIA)) {
-                        // copy media files
-                        boolean mediaFilesCopied = false;
-                        Path destMediaDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
-                        if (!Files.exists(destMediaDir)) {
-                            Files.createDirectory(destMediaDir);
-                        }
-
-                        int imageCounter = 0;
-                        if (StringUtils.isNotEmpty(resp[1]) && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
-                            logger.info("Copying image files...");
-                            String[] imgFileNamesSplit = resp[1].split(";");
-                            Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
-                            try (DirectoryStream<Path> mediaFileStream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-                                for (Path mediaFile : mediaFileStream) {
-                                    if (Files.isRegularFile(mediaFile) && imgFileNames.contains(mediaFile.getFileName().toString())) {
-                                        logger.info("Copying file {} to {}", mediaFile.toAbsolutePath(), destMediaDir.toAbsolutePath());
-                                        Files.copy(mediaFile, Paths.get(destMediaDir.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
-                                                StandardCopyOption.REPLACE_EXISTING);
-                                        imageCounter++;
-                                    }
-                                }
-                            }
-                            mediaFilesCopied = true;
-                        } else {
-                            //                        logger.warn("No media file names could be extracted from '{}'.", identifier);
-                        }
-                        if (!mediaFilesCopied) {
-                            logger.debug("No media folder found for '{}'.", denkxwebFile);
-
-                            // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
-                            if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA)) {
-                                for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
-                                    if (!repo.equals(dataRepository) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
-                                        Path misplacedDataDir =
-                                                Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
-                                        if (Files.isDirectory(misplacedDataDir)) {
-                                            logger.warn("Found data folder for this record in different data repository: {}",
-                                                    misplacedDataDir.toAbsolutePath().toString());
-                                            logger.warn("Moving data folder to new repository...");
-                                            repo.moveDataFolderToRepository(dataRepository, identifier, DataRepository.PARAM_MEDIA);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            logger.info("{} media file(s) copied.", imageCounter);
-                        }
-                    }
+                    // Copy media files
+                    int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
+                            denkxwebFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
+                            reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
 
                     // Update data repository cache map in the Goobi viewer
                     if (previousDataRepository != null) {
