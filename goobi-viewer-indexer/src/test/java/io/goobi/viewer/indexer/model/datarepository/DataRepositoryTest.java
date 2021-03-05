@@ -508,8 +508,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteALTOFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ALTO, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**

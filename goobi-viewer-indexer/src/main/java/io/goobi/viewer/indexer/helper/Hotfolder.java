@@ -1126,7 +1126,8 @@ public class Hotfolder {
                     }
 
                     int imageCounter = 0;
-                    if (StringUtils.isNotEmpty(resp[1]) && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
+                    if (StringUtils.isNotEmpty(resp[1]) && dataFolders.get(DataRepository.PARAM_MEDIA) != null
+                            && !reindexSettings.get(DataRepository.PARAM_MEDIA)) {
                         logger.info("Copying image files...");
                         String[] imgFileNamesSplit = resp[1].split(";");
                         Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
