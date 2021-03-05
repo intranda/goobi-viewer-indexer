@@ -468,7 +468,6 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertEquals("target/viewer/data/1", DataRepository.getAbsolutePath("1"));
     }
 
-
     /**
      * @see DataRepository#deleteDataFolder(Map,Map,String)
      * @verifies delete folders correctly
@@ -484,7 +483,7 @@ public class DataRepositoryTest extends AbstractTest {
                 Collections.singletonMap("other", true), DataRepository.PARAM_MEDIA);
         Assert.assertTrue(dataFolder.exists());
     }
-    
+
     /**
      * @see DataRepository#deleteDataFolder(Map,Map,String)
      * @verifies not delete reindexed folders
@@ -523,8 +522,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteALTOCrowdsourcingFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ALTOCROWD, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -533,8 +537,12 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteFulltextFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_FULLTEXT, dataFolder.toPath()), null);
     }
 
     /**
@@ -543,8 +551,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteFulltextCrowdsourcingFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_FULLTEXTCROWD, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -553,8 +566,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteCMDIFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_CMDI).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_CMDI, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -563,8 +581,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteTEIFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_TEIMETADATA, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -573,8 +596,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_TEIWC, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -583,8 +611,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteABBYYFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ABBYY, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -593,8 +626,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteMediaFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_MEDIA, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -603,8 +641,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteSourceFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_SOURCE).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_SOURCE, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -613,8 +656,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteUserGeneratedContentFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_UGC, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -623,8 +671,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteMIXFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_MIX, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -633,8 +686,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeletePagePDFFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_PAGEPDF).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_PAGEPDF, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -643,8 +701,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteCMSFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_CMS).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_CMS, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -653,8 +716,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteAnnotationsFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ANNOTATIONS).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_ANNOTATIONS, dataFolder.toPath()), null);
+        Assert.assertFalse(dataFolder.exists());
     }
 
     /**
@@ -663,7 +731,13 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void deleteDataFoldersFromHotfolder_shouldDeleteDownloadImagesTriggerFolderCorrectly() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assert.assertTrue(dataFolder.mkdirs());
+        Assert.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, dataFolder.toPath()),
+                null);
+        Assert.assertFalse(dataFolder.exists());
     }
 }
