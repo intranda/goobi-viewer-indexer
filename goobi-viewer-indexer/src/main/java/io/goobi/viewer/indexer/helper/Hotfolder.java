@@ -711,17 +711,18 @@ public class Hotfolder {
                 return;
             }
 
-            Path actualXmlFile =
-                    Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), baseFileName + ".xml");
-            if (!Files.exists(actualXmlFile)) {
+            Path actualXmlFile = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) != null
+                    ? Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), baseFileName + ".xml")
+                    : Paths.get("" + System.currentTimeMillis() + ".foo");
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName + ".xml");
             }
-            if (!Files.exists(actualXmlFile)) {
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
             }
-            if (!Files.exists(actualXmlFile)) {
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), baseFileName + ".xml");
             }
