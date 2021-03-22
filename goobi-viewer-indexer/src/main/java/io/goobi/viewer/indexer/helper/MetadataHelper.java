@@ -1215,6 +1215,10 @@ public class MetadataHelper {
         MetadataGroupType type = null;
         if (groupEntityFields.get("type") != null) {
             type = MetadataGroupType.getByName(((String) groupEntityFields.get("type")).trim());
+            if (type == null) {
+                type = MetadataGroupType.OTHER;
+                logger.warn("Metadata group type not found: '{}', using '{}' instead.", groupEntityFields.get("type"), type.name());
+            }
             ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.name()));
         } else {
             type = MetadataGroupType.OTHER;
