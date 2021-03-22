@@ -843,7 +843,7 @@ public class WorldViewsIndexer extends Indexer {
                     // Not all pages will have custom ALTO docs
                 } catch (JDOMException | IOException e) {
                     if (!e.getMessage().contains("Premature end of file")) {
-                        logger.error("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
+                        logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                     }
                 }
                 if (altoData != null) {
@@ -894,7 +894,7 @@ public class WorldViewsIndexer extends Indexer {
                     altoData = TextHelper.readAltoFile(altoFile);
                 } catch (IOException | JDOMException e) {
                     if (!e.getMessage().contains("Premature end of file")) {
-                        logger.error("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
+                        logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                     }
                 }
                 if (altoData != null) {
