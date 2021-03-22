@@ -1234,7 +1234,7 @@ public class MetsIndexer extends Indexer {
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
                 } catch (IOException | JDOMException e) {
-                    if (!e.getMessage().contains("Premature end of file")) {
+                    if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
                         logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                     }
                 }
@@ -1284,7 +1284,7 @@ public class MetsIndexer extends Indexer {
                 try {
                     altoData = TextHelper.readAltoFile(altoFile);
                 } catch (IOException | JDOMException e) {
-                    if (!e.getMessage().contains("Premature end of file")) {
+                    if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
                         logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                     }
                 }
