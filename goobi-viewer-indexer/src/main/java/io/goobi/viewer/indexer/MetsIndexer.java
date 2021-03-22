@@ -525,6 +525,9 @@ public class MetsIndexer extends Indexer {
             }
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
         } catch (Exception e) {
+            if (e instanceof NullPointerException) {
+                throw (NullPointerException) e;
+            }
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();

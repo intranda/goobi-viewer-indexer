@@ -291,6 +291,9 @@ public class LidoIndexer extends Indexer {
             ret[1] = sbImgFileNames.toString();
             logger.info("Successfully finished indexing '{}'.", pi);
         } catch (Exception e) {
+            if (e instanceof NullPointerException) {
+                throw (NullPointerException) e;
+            }
             if ("No image resource sets found.".equals(e.getMessage())) {
                 logger.error("Indexing of '{}' could not be finished due to an error: {}", pi, e.getMessage());
             } else {
