@@ -376,9 +376,6 @@ public class DublinCoreIndexer extends Indexer {
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
             logger.info("Successfully finished indexing '{}'.", dcFile.getFileName());
         } catch (Exception e) {
-            if (e instanceof NullPointerException) {
-                throw (NullPointerException) e;
-            }
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
