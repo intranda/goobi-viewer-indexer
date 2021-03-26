@@ -605,7 +605,7 @@ public class LidoIndexer extends Indexer {
                 // Download image, if so requested (and not a local resource)
                 String baseFileName = FilenameUtils.getBaseName(fileName);
                 String viewerUrl = Configuration.getInstance().getViewerUrl();
-                logger.info("media folder: {}", dataFolders.get(DataRepository.PARAM_MEDIA));
+                logger.debug("media folder: {}", dataFolders.get(DataRepository.PARAM_MEDIA));
                 if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                         && !filePath.startsWith(viewerUrl)) {
                     try {

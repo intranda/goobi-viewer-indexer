@@ -35,12 +35,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 import javax.mail.MessagingException;
 
@@ -370,7 +368,7 @@ public class Hotfolder {
 
         // E-mail configuration
         emailConfigurationComplete = checkEmailConfiguration();
-        if(emailConfigurationComplete) {
+        if (emailConfigurationComplete) {
             logger.info("E-mail configuration OK.");
         }
     }
@@ -713,17 +711,18 @@ public class Hotfolder {
                 return;
             }
 
-            Path actualXmlFile =
-                    Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), baseFileName + ".xml");
-            if (!Files.exists(actualXmlFile)) {
+            Path actualXmlFile = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) != null
+                    ? Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), baseFileName + ".xml")
+                    : Paths.get("" + System.currentTimeMillis() + ".foo");
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName + ".xml");
             }
-            if (!Files.exists(actualXmlFile)) {
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
             }
-            if (!Files.exists(actualXmlFile)) {
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), baseFileName + ".xml");
             }
@@ -1010,7 +1009,7 @@ public class Hotfolder {
             // Error
             if (deleteContentFilesOnFailure) {
                 // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFolders(dataFolders, reindexSettings);
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
             handleError(metsFile, resp[1]);
             try {
@@ -1095,7 +1094,8 @@ public class Hotfolder {
                     currentIndexer = new LidoIndexer(this);
                     resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
                             Configuration.getInstance().getList("init.lido.imageXPath"),
-                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER), reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
+                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
+                            reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
                 } finally {
                     dataRepository = currentIndexer.getDataRepository();
                     previousDataRepository = currentIndexer.getPreviousDataRepository();
@@ -1117,59 +1117,13 @@ public class Hotfolder {
                         previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
                     }
 
-                    // copy media files
-                    boolean mediaFilesCopied = false;
-                    Path destMediaDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
-                    if (!Files.exists(destMediaDir)) {
-                        Files.createDirectory(destMediaDir);
-                    }
+                    // Copy media files
+                    int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
+                            lidoFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
+                            reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
 
-                    int imageCounter = 0;
-                    if (StringUtils.isNotEmpty(resp[1]) && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
-                        logger.info("Copying image files...");
-                        String[] imgFileNamesSplit = resp[1].split(";");
-                        Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
-                        try (DirectoryStream<Path> mediaFileStream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-                            for (Path mediaFile : mediaFileStream) {
-                                if (Files.isRegularFile(mediaFile) && imgFileNames.contains(mediaFile.getFileName().toString())) {
-                                    logger.info("Copying file {} to {}", mediaFile.toAbsolutePath(), destMediaDir.toAbsolutePath());
-                                    Files.copy(mediaFile, Paths.get(destMediaDir.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
-                                            StandardCopyOption.REPLACE_EXISTING);
-                                    imageCounter++;
-                                }
-                            }
-                        }
-                        mediaFilesCopied = true;
-                    } else {
-                        logger.warn("No media file names could be extracted from '{}'.", identifier);
-                    }
-                    if (!mediaFilesCopied) {
-                        logger.warn("No media folder found for '{}'.", lidoFile);
-                        
-                        if(reindexSettings == null)
-                            logger.error("reindexSettings is null");
-
-                        // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
-                        if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA)) {
-                            for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
-                                if (!repo.equals(dataRepository) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
-                                    Path misplacedDataDir =
-                                            Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
-                                    if (Files.isDirectory(misplacedDataDir)) {
-                                        logger.warn("Found data folder for this record in different data repository: {}",
-                                                misplacedDataDir.toAbsolutePath().toString());
-                                        logger.warn("Moving data folder to new repository...");
-                                        repo.moveDataFolderToRepository(dataRepository, identifier, DataRepository.PARAM_MEDIA);
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        logger.info("{} media file(s) copied.", imageCounter);
-                    }
-
-                    // Copy and delete MIX files
-                    if (!reindexSettings.get(DataRepository.PARAM_MIX)) {
+                    // Copy MIX files
+                    if (reindexSettings.get(DataRepository.PARAM_MIX) == null || !reindexSettings.get(DataRepository.PARAM_MIX)) {
                         Path destMixDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), identifier);
                         if (!Files.exists(destMixDir)) {
                             Files.createDirectory(destMixDir);
@@ -1217,40 +1171,8 @@ public class Hotfolder {
         } catch (IOException e) {
             logger.error("'{}' could not be deleted; please delete it manually.", lidoFile.toAbsolutePath());
         }
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
-        }
-        if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
-                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath());
-        }
-        if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.",
-                    dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath());
-        }
-
-        //        if (deleteContentFilesOnFailure) {
-        //            // Delete all folders
-        //            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
-        //            }
-        //            if (!reindexSettings.get(DataRepository.PARAM_MIX) && dataFolders.get(DataRepository.PARAM_MIX) != null
-        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MIX));
-        //            }
-        //            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-        //            }
-        //        }
-        if (deleteContentFilesOnFailure) {
-            // Delete all data folders for this record from the hotfolder
-            DataRepository.deleteDataFolders(dataFolders, reindexSettings);
-        }
+        // Delete all data folders for this record from the hotfolder
+        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
     }
 
     /**
@@ -1339,53 +1261,10 @@ public class Hotfolder {
                         previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
                     }
 
-                    // copy media files
-                    boolean mediaFilesCopied = false;
-                    Path destMediaDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
-                    if (!Files.exists(destMediaDir)) {
-                        Files.createDirectory(destMediaDir);
-                    }
-
-                    int imageCounter = 0;
-                    if (StringUtils.isNotEmpty(resp[1]) && dataFolders.get(DataRepository.PARAM_MEDIA) != null) {
-                        logger.info("Copying image files...");
-                        String[] imgFileNamesSplit = resp[1].split(";");
-                        Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
-                        try (DirectoryStream<Path> mediaFileStream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-                            for (Path mediaFile : mediaFileStream) {
-                                if (Files.isRegularFile(mediaFile) && imgFileNames.contains(mediaFile.getFileName().toString())) {
-                                    logger.info("Copying file {} to {}", mediaFile.toAbsolutePath(), destMediaDir.toAbsolutePath());
-                                    Files.copy(mediaFile, Paths.get(destMediaDir.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
-                                            StandardCopyOption.REPLACE_EXISTING);
-                                    imageCounter++;
-                                }
-                            }
-                        }
-                        mediaFilesCopied = true;
-                    } else {
-                        //                        logger.warn("No media file names could be extracted from '{}'.", identifier);
-                    }
-                    if (!mediaFilesCopied) {
-                        logger.debug("No media folder found for '{}'.", denkxwebFile);
-
-                        // Check for a data folder in different repositories (fixing broken migration from old-style data repositories to new)
-                        if (reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA)) {
-                            for (DataRepository repo : dataRepositoryStrategy.getAllDataRepositories()) {
-                                if (!repo.equals(dataRepository) && repo.getDir(DataRepository.PARAM_MEDIA) != null) {
-                                    Path misplacedDataDir =
-                                            Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
-                                    if (Files.isDirectory(misplacedDataDir)) {
-                                        logger.warn("Found data folder for this record in different data repository: {}",
-                                                misplacedDataDir.toAbsolutePath().toString());
-                                        logger.warn("Moving data folder to new repository...");
-                                        repo.moveDataFolderToRepository(dataRepository, identifier, DataRepository.PARAM_MEDIA);
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        logger.info("{} media file(s) copied.", imageCounter);
-                    }
+                    // Copy media files
+                    int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
+                            denkxwebFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
+                            reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
 
                     // Update data repository cache map in the Goobi viewer
                     if (previousDataRepository != null) {
@@ -1407,31 +1286,8 @@ public class Hotfolder {
         } catch (IOException e) {
             logger.error("'{}' could not be deleted; please delete it manually.", denkxwebFile.toAbsolutePath());
         }
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.", dataFolders.get(DataRepository.PARAM_MEDIA).toAbsolutePath());
-        }
-        if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-                && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))
-                && !Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-            logger.warn("'{}' could not be deleted; please delete it manually.",
-                    dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER).toAbsolutePath());
-        }
-
-        //        if (deleteContentFilesOnFailure) {
-        //            // Delete all folders
-        //            if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MEDIA))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_MEDIA));
-        //            }
-        //            if (dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER) != null
-        //                    && Files.isDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER))) {
-        //                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-        //            }
-        //        }
-        if (deleteContentFilesOnFailure) {
-            // Delete all data folders for this record from the hotfolder
-            DataRepository.deleteDataFolders(dataFolders, reindexSettings);
-        }
+        // Delete all data folders for this record from the hotfolder
+        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
     }
 
     /**
@@ -1617,7 +1473,7 @@ public class Hotfolder {
             // Error
             if (deleteContentFilesOnFailure) {
                 // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFolders(dataFolders, reindexSettings);
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
             try {
                 Files.delete(dcFile);
@@ -1765,7 +1621,7 @@ public class Hotfolder {
             // Error
             if (deleteContentFilesOnFailure) {
                 // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFolders(dataFolders, reindexSettings);
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
             handleError(mainFile, resp[1]);
             try {

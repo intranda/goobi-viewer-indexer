@@ -41,22 +41,12 @@ public class GroupedMetadata {
     private String label;
     private String mainValue;
     private String authorityURI;
-    private final List<LuceneField> fields;
-    private final List<LuceneField> authorityDataFields;
+    private final List<LuceneField> fields = new ArrayList<>();
+    private final List<LuceneField> authorityDataFields = new ArrayList<>();
     private boolean addAuthorityDataToDocstruct = false;
     /** If true, this field won't be added to he index. */
     private boolean skip = false;
     private boolean allowDuplicateValues = false;
-
-    /**
-     * <p>
-     * Constructor for GroupedMetadata.
-     * </p>
-     */
-    public GroupedMetadata() {
-        fields = new ArrayList<>();
-        authorityDataFields = new ArrayList<>();
-    }
 
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
@@ -126,7 +116,7 @@ public class GroupedMetadata {
         if (ele == null) {
             throw new IllegalArgumentException("element may not be null");
         }
-        
+
         logger.debug("element: {}", ele.getName());
         for (Object field : groupEntityFields.keySet()) {
             if ("type".equals(field) || "url".equals(field) || !(groupEntityFields.get(field) instanceof SubfieldConfig)) {

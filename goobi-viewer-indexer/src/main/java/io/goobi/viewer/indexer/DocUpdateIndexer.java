@@ -351,7 +351,7 @@ public class DocUpdateIndexer extends Indexer {
                     }
                 } catch (JDOMException e) {
                     if (!e.getMessage().contains("Premature end of file")) {
-                        logger.error("Could not read ALTO file '{}': {}", recordFile.getFileName().toString(), e.getMessage());
+                        logger.warn("Could not read ALTO file '{}': {}", recordFile.getFileName().toString(), e.getMessage());
                     }
                 }
             }

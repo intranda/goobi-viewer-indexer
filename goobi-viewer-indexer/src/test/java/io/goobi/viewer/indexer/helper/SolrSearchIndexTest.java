@@ -118,6 +118,17 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,Map,long)
+     * @verifies add access conditions
+     */
+    @Test
+    public void checkAndCreateGroupDoc_shouldAddAccessConditions() throws Exception {
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", null, 123456L);
+        Assert.assertNotNull(doc);
+        Assert.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
+    }
+
+    /**
      * @see SolrSearchIndex#updateDoc(SolrDocument,Map)
      * @verifies update doc correctly
      */
