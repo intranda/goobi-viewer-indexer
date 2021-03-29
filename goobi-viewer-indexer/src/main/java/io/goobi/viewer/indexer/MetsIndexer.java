@@ -982,13 +982,21 @@ public class MetsIndexer extends Indexer {
             }
             doc.addField(SolrConstants.FILEIDROOT, fileIdRoot);
         }
+        
 
+        // Double page view
+        boolean doublePage =
+                "double page".equals(eleStructMapPhysical.getAttributeValue("label", Configuration.getInstance().getNamespaces().get("xlink")));
+        doc.addField("BOOL_DOUBLE_PAGE", doublePage);
+
+        // ORDERLABEL
         String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
             doc.addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
             doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
         }
+
         String contentIDs = eleStructMapPhysical.getAttributeValue("CONTENTIDS");
         if (Utils.isUrn(contentIDs)) {
             doc.addField(SolrConstants.IMAGEURN, contentIDs);
