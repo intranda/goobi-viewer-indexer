@@ -39,19 +39,17 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
  * SingleRepositoryStrategy class.
  * </p>
  */
-public class SingleRepositoryStrategy implements IDataRepositoryStrategy {
+public class SingleRepositoryStrategy extends AbstractDataRepositoryStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleRepositoryStrategy.class);
 
-    private final List<DataRepository> dataRepositories;
-
     /**
-     * Constructor.
+     * Protected constructor.
      *
      * @param config a {@link io.goobi.viewer.indexer.helper.Configuration} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
-    public SingleRepositoryStrategy(Configuration config) throws FatalIndexerException {
+    protected SingleRepositoryStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
         dataRepositories = DataRepository.loadDataRepositories(config, false);
     }

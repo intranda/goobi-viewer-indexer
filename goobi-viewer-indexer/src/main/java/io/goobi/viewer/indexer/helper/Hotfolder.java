@@ -72,10 +72,8 @@ import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
-import io.goobi.viewer.indexer.model.datarepository.strategy.MaxRecordNumberStrategy;
-import io.goobi.viewer.indexer.model.datarepository.strategy.RemainingSpaceStrategy;
-import io.goobi.viewer.indexer.model.datarepository.strategy.SingleRepositoryStrategy;
 
 /**
  * <p>
@@ -220,42 +218,7 @@ public class Hotfolder {
             throw new FatalIndexerException("Configuration error, see log for details.");
         }
 
-        //        String repositoryClassName = "io.goobi.viewer.indexer.model.datarepository.strategy." + config.getDataRepositoryStrategy();
-        //        logger.info("Data repositories strategy: {}", repositoryClassName);
-        //        try {
-        //            dataRepositoryStrategy = (IDataRepositoryStrategy) Class.forName(repositoryClassName).getConstructor(Configuration.class).newInstance(
-        //                    config);
-        //        } catch (InstantiationException e) {
-        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
-        //        } catch (IllegalAccessException e) {
-        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
-        //        } catch (ClassNotFoundException e) {
-        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
-        //        } catch (IllegalArgumentException e) {
-        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
-        //        } catch (InvocationTargetException e) {
-        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
-        //        } catch (NoSuchMethodException e) {
-        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
-        //        } catch (SecurityException e) {
-        //            throw new FatalIndexerException(e.getClass().getName() + ": " + e.getMessage());
-        //        }
-
-        logger.info("Data repository strategy: {}", config.getDataRepositoryStrategy());
-        switch (config.getDataRepositoryStrategy()) {
-            case "SingleRepositoryStrategy":
-                dataRepositoryStrategy = new SingleRepositoryStrategy(config);
-                break;
-            case "MaxRecordNumberStrategy":
-                dataRepositoryStrategy = new MaxRecordNumberStrategy(config);
-                break;
-            case "RemainingSpaceStrategy":
-                dataRepositoryStrategy = new RemainingSpaceStrategy(config);
-                break;
-            default:
-                logger.error("Unknown data repository strategy: '{}', using SingleRepositoryStrategy instead.");
-                dataRepositoryStrategy = new SingleRepositoryStrategy(config);
-        }
+        dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(config);
 
         // METS folders
         if (config.getConfiguration(DataRepository.PARAM_INDEXED_METS) == null) {
@@ -1977,8 +1940,6 @@ public class Hotfolder {
     public SolrSearchIndex getSearchIndex() {
         return searchIndex;
     }
-    
-    
 
     /**
      * @return the oldSearchIndex

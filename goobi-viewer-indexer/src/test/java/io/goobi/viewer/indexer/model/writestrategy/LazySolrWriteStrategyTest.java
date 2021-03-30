@@ -36,8 +36,8 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
-import io.goobi.viewer.indexer.model.datarepository.strategy.SingleRepositoryStrategy;
 
 public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
 
@@ -70,7 +70,7 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
     public void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
         SolrSearchIndex sh = new SolrSearchIndex(client);
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
-        IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
+        IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(Configuration.getInstance());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
         indexer.generatePageDocuments(strat, null,
