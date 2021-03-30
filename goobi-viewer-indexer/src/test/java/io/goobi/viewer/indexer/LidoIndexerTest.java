@@ -52,6 +52,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
 
         lidoFile = new File("src/test/resources/LIDO/khm_lido_export.xml");

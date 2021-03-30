@@ -83,9 +83,8 @@ import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
-import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
-import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
 /**
  * Indexer implementation for METS documents.
@@ -223,47 +222,8 @@ public class MetsIndexer extends Indexer {
             }
 
             if (writeStrategy == null) {
-                boolean useSerializingStrategy = false;
-                long size = Files.size(metsFile);
-                if (size >= hotfolder.metsFileSizeThreshold) {
-                    useSerializingStrategy = true;
-                    logger.info("METS file is {} bytes, using a slower Solr write strategy to avoid memory overflows.", size);
-                } else {
-                    for (String key : dataFolders.keySet()) {
-                        switch (key) {
-                            case DataRepository.PARAM_ALTO:
-                            case DataRepository.PARAM_ALTOCROWD:
-                            case DataRepository.PARAM_FULLTEXT:
-                            case DataRepository.PARAM_FULLTEXTCROWD:
-                            case DataRepository.PARAM_ABBYY:
-                            case DataRepository.PARAM_TEIWC:
-                                Path dataFolder = dataFolders.get(key);
-                                if (dataFolder != null) {
-                                    // Files.size() does not work with directories, so use FileUtils
-                                    long dataFolderSize = FileUtils.sizeOfDirectory(dataFolder.toFile());
-                                    if (dataFolderSize >= hotfolder.dataFolderSizeThreshold) {
-                                        useSerializingStrategy = true;
-                                        logger.info("Data folder '{}' is {} bytes, using a slower Solr write strategy to avoid memory overflows.",
-                                                dataFolder.toAbsolutePath().toString(), dataFolderSize);
-                                        break;
-                                    }
-                                }
-                                break;
-                            default:
-                                // do nothing
-                        }
-                    }
-                }
-                if (useSerializingStrategy) {
-                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSearchIndex(), hotfolder.getTempFolder());
-
-                }
-                //                else if (IndexerConfig.getInstance().getBoolean("init.aggregateRecords")) {
-                //                    writeStrategy = new HierarchicalLazySolrWriteStrategy(hotfolder.getSolrHelper());
-                //                }
-                else {
-                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSearchIndex());
-                }
+                // Request appropriate write strategy
+                writeStrategy = AbstractWriteStrategy.create(metsFile, dataFolders, hotfolder);
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }

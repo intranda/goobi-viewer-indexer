@@ -22,6 +22,7 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test_worldviews.xml", client);
     }
 

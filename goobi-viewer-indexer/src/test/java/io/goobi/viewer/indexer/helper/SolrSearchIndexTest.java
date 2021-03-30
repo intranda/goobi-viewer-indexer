@@ -15,17 +15,25 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -35,7 +43,49 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    //    private static final Logger logger = LoggerFactory.getLogger(searchIndexTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(SolrSearchIndexTest.class);
+
+    private SolrSearchIndex searchIndex;
+
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+
+        searchIndex = new SolrSearchIndex(client);
+    }
+
+    @Override
+    @After
+    public void tearDown() throws Exception {
+        {
+            Path indexerFolder = Paths.get("target/indexer");
+            if (Files.isDirectory(indexerFolder)) {
+                logger.info("Deleting {}...", indexerFolder);
+                FileUtils.deleteDirectory(indexerFolder.toFile());
+            }
+            Assert.assertFalse(Files.isDirectory(indexerFolder));
+        }
+        {
+            Path viewerRootFolder = Paths.get("target/viewer");
+            if (Files.isDirectory(viewerRootFolder)) {
+                logger.info("Deleting {}...", viewerRootFolder);
+                FileUtils.deleteDirectory(viewerRootFolder.toFile());
+                Assert.assertFalse(Files.isDirectory(viewerRootFolder));
+            }
+            Assert.assertFalse(Files.isDirectory(viewerRootFolder));
+        }
+
+        // Delete all data after every test
+        if (searchIndex != null && searchIndex.deleteByQuery("*:*")) {
+            searchIndex.commit(false);
+            logger.debug("Index cleared");
+        }
+
+        if (client != null) {
+            client.close();
+        }
+    }
 
     /**
      * @see SolrSearchIndex#deleteDocuments(List)

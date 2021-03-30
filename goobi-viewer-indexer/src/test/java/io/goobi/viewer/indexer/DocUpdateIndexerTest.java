@@ -30,7 +30,6 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
-import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -49,7 +48,9 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
+        
         metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile));
     }
@@ -73,7 +74,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         String iddoc = null;
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        DataRepository dataRepository = dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, searchIndex, null)[0];
+        DataRepository dataRepository = dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, hotfolder.getSearchIndex(), null)[0];
 
         // Index original doc and make sure all fields that will be updated already exist
         {

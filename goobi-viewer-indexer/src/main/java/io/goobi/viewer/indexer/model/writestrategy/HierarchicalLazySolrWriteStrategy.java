@@ -38,7 +38,7 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
      * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @should set attributes correctly
      */
-    public HierarchicalLazySolrWriteStrategy(SolrSearchIndex searchIndex) {
+    protected HierarchicalLazySolrWriteStrategy(SolrSearchIndex searchIndex) {
         super(searchIndex);
     }
 

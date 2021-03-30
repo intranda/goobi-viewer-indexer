@@ -45,8 +45,8 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.SingleRepositoryStrategy;
+import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
-import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 
 public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
@@ -70,6 +70,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
 
         metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
@@ -760,10 +761,10 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void generatePageDocuments_shouldCreateDocumentsForAllMappedPages() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, searchIndex, null)[0], PI,
-                1);
+        indexer.generatePageDocuments(writeStrategy, null,
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, hotfolder.getSearchIndex(), null)[0], PI, 1);
         Assert.assertEquals(16, writeStrategy.getPageDocsSize());
     }
 
@@ -775,10 +776,10 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void generatePageDocuments_shouldSetCorrectORDERValues() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
-        indexer.generatePageDocuments(writeStrategy, null, dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, searchIndex, null)[0], PI,
-                1);
+        indexer.generatePageDocuments(writeStrategy, null,
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, hotfolder.getSearchIndex(), null)[0], PI, 1);
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             SolrInputDocument doc = writeStrategy.getPageDocForOrder(i);
             Assert.assertEquals(i, doc.getFieldValue(SolrConstants.ORDER));
@@ -821,7 +822,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void generatePageDocument_shouldAddFILENAME_HTMLSANDBOXEDFieldForUrlPaths() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(Paths.get("src/test/resources/METS/ppn750544996.dv.mets.xml"));
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
         Assert.assertNotNull(eleStructMapPhysicalList);
@@ -831,7 +832,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSearchIndex())), "ppn750544996", page, writeStrategy, null,
-                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, null, searchIndex, null)[0]));
+                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, null, hotfolder.getSearchIndex(), null)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertEquals("http://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn750544996%252Fphys_0001/full/full/0/native.jpg",
@@ -887,13 +888,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
 
         int page = 1;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSearchIndex())), PI, page, writeStrategy, dataFolders,
-                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, searchIndex, null)[0]));
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, hotfolder.getSearchIndex(), null)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
 
@@ -913,13 +914,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
 
         int page = 1;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSearchIndex())), PI, page, writeStrategy, dataFolders,
-                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, searchIndex, null)[0]));
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, hotfolder.getSearchIndex(), null)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertEquals("fulltext/" + PI + "/00000001.txt", doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT));
@@ -936,13 +937,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
+        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
 
         int page = 3;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getSearchIndex())), PI, page, writeStrategy, null,
-                dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, searchIndex, null)[0]));
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, hotfolder.getSearchIndex(), null)[0]));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assert.assertNotNull(doc);
         Assert.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC));

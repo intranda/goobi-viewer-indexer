@@ -498,7 +498,7 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_ALTO, true);
             reindexSettings.put(DataRepository.PARAM_MIX, true);
             reindexSettings.put(DataRepository.PARAM_UGC, true);
-            noerror = handleDataFile(fileToReindex, true, reindexSettings);
+            noerror = handleSourceFile(fileToReindex, true, reindexSettings);
             if (swSecondaryLog != null && emailConfigurationComplete) {
                 checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                         swSecondaryLog.toString());
@@ -542,7 +542,7 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_ALTO, false);
                         reindexSettings.put(DataRepository.PARAM_MIX, false);
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
-                        noerror = handleDataFile(recordFile, false, reindexSettings);
+                        noerror = handleSourceFile(recordFile, false, reindexSettings);
                         // logger.error("for the lulz");
                         checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                                 swSecondaryLog.toString());
@@ -581,102 +581,102 @@ public class Hotfolder {
 
     /**
      * 
-     * @param dataFile
-     * @param fromReindexQueue
+     * @param sourceFile File containing the record(s)
+     * @param fromReindexQueue true if file is coming from the re-index queue; false if from the hotfolder
      * @param reindexSettings
-     * @return Boolean
+     * @return true if successful; false otherwise
      * @throws FatalIndexerException
      */
-    private boolean handleDataFile(Path dataFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
-        logger.trace("handleDataFile: {}", dataFile);
+    private boolean handleSourceFile(Path sourceFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
+        logger.trace("handleSourceFile: {}", sourceFile);
         // Always unselect repository
-        String filename = dataFile.getFileName().toString();
+        String filename = sourceFile.getFileName().toString();
         try {
             if (filename.endsWith(".xml")) {
                 // INPUT o. UPDATE
-                if (Files.size(dataFile) == 0) {
+                if (Files.size(sourceFile) == 0) {
                     // Check whether the file is actually empty or just hasn't finished copying yet
                     try {
                         Thread.sleep(WAIT_IF_FILE_EMPTY);
                     } catch (InterruptedException e) {
                     }
-                    if (Files.size(dataFile) == 0) {
-                        logger.error("Empty data file '{}' found, deleting...", dataFile.toAbsolutePath());
-                        Files.delete(dataFile);
+                    if (Files.size(sourceFile) == 0) {
+                        logger.error("Empty data file '{}' found, deleting...", sourceFile.toAbsolutePath());
+                        Files.delete(sourceFile);
                         return false;
                     }
                 }
 
                 // Check file format and start the appropriate indexing routine
-                FileFormat fileType = JDomXP.determineFileFormat(dataFile.toFile());
+                FileFormat fileType = JDomXP.determineFileFormat(sourceFile.toFile());
                 switch (fileType) {
                     case METS:
                         if (metsEnabled) {
-                            addMetsToIndex(dataFile, fromReindexQueue, reindexSettings);
+                            addMetsToIndex(sourceFile, fromReindexQueue, reindexSettings);
                         } else {
                             logger.error("METS indexing is disabled - please make sure all folders are configured.");
-                            Files.delete(dataFile);
+                            Files.delete(sourceFile);
                         }
                         break;
                     case LIDO:
                         if (lidoEnabled) {
-                            addLidoToIndex(dataFile, reindexSettings);
+                            addLidoToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("LIDO indexing is disabled - please make sure all folders are configured.");
-                            Files.delete(dataFile);
+                            Files.delete(sourceFile);
                         }
                         break;
                     case DENKXWEB:
                         if (denkxwebEnabled) {
-                            addDenkXwebToIndex(dataFile, reindexSettings);
+                            addDenkXwebToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("DenkXweb indexing is disabled - please make sure all folders are configured.");
-                            Files.delete(dataFile);
+                            Files.delete(sourceFile);
                         }
                         break;
                     case DUBLINCORE:
                         if (dcEnabled) {
-                            addDublinCoreToIndex(dataFile, reindexSettings);
+                            addDublinCoreToIndex(sourceFile, reindexSettings);
                         } else {
                             logger.error("Dublin Core indexing is disabled - please make sure all folders are configured.");
-                            Files.delete(dataFile);
+                            Files.delete(sourceFile);
                         }
                         break;
                     case WORLDVIEWS:
                         if (worldviewsEnabled) {
-                            addWorldViewsToIndex(dataFile, fromReindexQueue, reindexSettings);
+                            addWorldViewsToIndex(sourceFile, fromReindexQueue, reindexSettings);
                         } else {
                             logger.error("WorldViews indexing is disabled - please make sure all folders are configured.");
-                            Files.delete(dataFile);
+                            Files.delete(sourceFile);
                         }
                         break;
                     default:
                         logger.error("Unknown file format, deleting: {}", filename);
-                        Files.delete(dataFile);
+                        Files.delete(sourceFile);
                         return false;
                 }
                 Utils.submitVersion();
 
             } else if (filename.endsWith(".delete")) {
                 // DELETE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
-                removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], true);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
+                removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], true);
             } else if (filename.endsWith(".purge")) {
                 // PURGE (delete with no "deleted" doc)
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
-                removeFromIndex(dataFile, repositories[1] != null ? repositories[1] : repositories[0], false);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
+                removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], false);
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, dataFile, null, searchIndex, oldSearchIndex);
-                MetsIndexer.anchorSuperupdate(dataFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
+                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
+                MetsIndexer.anchorSuperupdate(sourceFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
-                updateSingleDocument(dataFile);
+                updateSingleDocument(sourceFile);
             }
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             try {
-                Files.delete(dataFile);
+                Files.delete(sourceFile);
             } catch (IOException e1) {
                 logger.error(e1.getMessage(), e1);
             }
@@ -1977,6 +1977,8 @@ public class Hotfolder {
     public SolrSearchIndex getSearchIndex() {
         return searchIndex;
     }
+    
+    
 
     /**
      * @return the oldSearchIndex
