@@ -41,8 +41,6 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.SingleRepositoryStr
 
 public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
 
-    private static Hotfolder hotfolder;
-
     private Path metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
 
     @Override
