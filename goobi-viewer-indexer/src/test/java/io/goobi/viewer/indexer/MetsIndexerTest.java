@@ -56,8 +56,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     private static final String PI = "PPN517154005";
     private static final String PI2 = "H030001";
 
-    private static Hotfolder hotfolder;
-
     private Path metsFile;
     private Path metsFile2;
     private Path metsFile3;

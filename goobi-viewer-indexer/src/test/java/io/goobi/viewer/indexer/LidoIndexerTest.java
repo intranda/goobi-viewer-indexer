@@ -44,8 +44,6 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
     private static final String PI = "V0011127";
 
-    private static Hotfolder hotfolder;
-
     private File lidoFile;
 
     @Override

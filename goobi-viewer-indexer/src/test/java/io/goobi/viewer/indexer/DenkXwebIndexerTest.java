@@ -29,11 +29,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
-import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
@@ -41,8 +40,6 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
     //    private static final Logger logger = LoggerFactory.getLogger(DenkXwebIndexerTest.class);
-
-    private static Hotfolder hotfolder;
 
     private static final String PI = "30596824";
     private static final String PI2 = "10973880";

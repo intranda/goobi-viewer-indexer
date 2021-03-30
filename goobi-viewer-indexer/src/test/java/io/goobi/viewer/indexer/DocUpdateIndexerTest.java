@@ -40,8 +40,6 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
     private static final String PI = "PPN517154005";
 
-    private static Hotfolder hotfolder;
-
     private Path metsFile;
 
     @Override
