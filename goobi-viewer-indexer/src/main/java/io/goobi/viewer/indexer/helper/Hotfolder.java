@@ -39,6 +39,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
 
@@ -524,6 +525,28 @@ public class Hotfolder {
     }
 
     /**
+     * Returns the number of record and command (delete, update) files in the hotfolder.
+     * 
+     * @return Number of files
+     * @should count files correctly
+     */
+    public long countRecordFiles() {
+        try (Stream<Path> files = Files.list(hotfolderPath)) {
+            long ret = files.filter(p -> !Files.isDirectory(p))
+                    .map(p -> p.toString().toLowerCase())
+                    .filter(f -> (f.endsWith(".xml") || f.endsWith(".delete") || f.endsWith(".purge") || f.endsWith(".docupdate")
+                            || f.endsWith(".UPDATED")))
+                    .count();
+            logger.info("{} files in hotfolder", ret);
+            return ret;
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+
+        return 0;
+    }
+
+    /**
      * Checks whether there is at least as much free storage space available as configured. If not, the program will shut down.
      * 
      * @throws FatalIndexerException
@@ -618,23 +641,26 @@ public class Hotfolder {
                         Files.delete(sourceFile);
                         return false;
                 }
-                Utils.submitVersion();
-
+                Utils.submitDataToViewer(countRecordFiles());
             } else if (filename.endsWith(".delete")) {
                 // DELETE
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
                 removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], true);
+                Utils.submitDataToViewer(countRecordFiles());
             } else if (filename.endsWith(".purge")) {
                 // PURGE (delete with no "deleted" doc)
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
                 removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], false);
+                Utils.submitDataToViewer(countRecordFiles());
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
                 MetsIndexer.anchorSuperupdate(sourceFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
+                Utils.submitDataToViewer(countRecordFiles());
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
                 updateSingleDocument(sourceFile);
+                Utils.submitDataToViewer(countRecordFiles());
             }
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -1967,4 +1993,27 @@ public class Hotfolder {
         return filter;
     }
 
+    /**
+     * 
+     * @return
+     */
+    public static FilenameFilter getRecordFileFilter() {
+        FilenameFilter filter = new FilenameFilter() {
+            private final List<String> extensions = Arrays.asList(new String[] { ".xml", ".delete", ".purge", ".docupdate", ".UPDATED" });
+
+            @Override
+            public boolean accept(File dir, String name) {
+                if (new File(dir, name).isDirectory()) {
+                    return false;
+                }
+                String extension = FilenameUtils.getExtension(name);
+                if (extension != null) {
+                    return extensions.contains(extension.toLowerCase());
+                }
+                return false;
+            }
+        };
+
+        return filter;
+    }
 }

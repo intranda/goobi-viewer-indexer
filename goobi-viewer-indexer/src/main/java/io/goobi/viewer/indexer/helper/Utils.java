@@ -141,11 +141,12 @@ public class Utils {
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
             throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
-        updateDataRepositoryCache(pi, dataRepositoryName, Configuration.getInstance().getViewerUrl(), Configuration.getInstance().getViewerAuthorizationToken());
+        updateDataRepositoryCache(pi, dataRepositoryName, Configuration.getInstance().getViewerUrl(),
+                Configuration.getInstance().getViewerAuthorizationToken());
     }
-    
-        public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
-                throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
+
+    public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
+            throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
         if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
             return;
         }
@@ -169,21 +170,24 @@ public class Utils {
     }
 
     /**
-     * 
+     * @param fileCount
      * @throws FatalIndexerException
      * @throws HTTPException
      * @throws ClientProtocolException
      * @throws IOException
      */
-    public static void submitVersion()
+    public static void submitDataToViewer(long fileCount)
             throws FatalIndexerException {
         if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
             return;
         }
 
-        String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version?token=" + Configuration.getInstance().getViewerAuthorizationToken();
+        String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version?token="
+                + Configuration.getInstance().getViewerAuthorizationToken();
         try {
-            getWebContentPUT(url, new HashMap<>(0), null, Version.asJSON(), ContentType.APPLICATION_JSON.getMimeType());
+            JSONObject json = Version.asJSON();
+            json.put("hotfolder-file-count", fileCount);
+            getWebContentPUT(url, new HashMap<>(0), null, json.toString(), ContentType.APPLICATION_JSON.getMimeType());
         } catch (IOException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }

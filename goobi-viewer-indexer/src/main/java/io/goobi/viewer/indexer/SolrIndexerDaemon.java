@@ -173,7 +173,7 @@ public final class SolrIndexerDaemon {
 
         logger.info("Using {} CPU thread(s).", Configuration.getInstance().getThreads());
 
-        Utils.submitVersion();
+        Utils.submitDataToViewer(hotfolder.countRecordFiles());
 
         // main loop
         logger.info("Program started, monitoring hotfolder...");
