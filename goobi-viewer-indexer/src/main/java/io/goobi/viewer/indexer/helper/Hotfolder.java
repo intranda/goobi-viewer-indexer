@@ -533,8 +533,8 @@ public class Hotfolder {
     public long countRecordFiles() {
         try (Stream<Path> files = Files.list(hotfolderPath)) {
             long ret = files.filter(p -> !Files.isDirectory(p))
-                    .map(p -> p.toString().toLowerCase())
-                    .filter(f -> (f.endsWith(".xml") || f.endsWith(".delete") || f.endsWith(".purge") || f.endsWith(".docupdate")
+                    .map(p -> p.toString())
+                    .filter(f -> (f.toLowerCase().endsWith(".xml") || f.endsWith(".delete") || f.endsWith(".purge") || f.endsWith(".docupdate")
                             || f.endsWith(".UPDATED")))
                     .count();
             logger.info("{} files in hotfolder", ret);
