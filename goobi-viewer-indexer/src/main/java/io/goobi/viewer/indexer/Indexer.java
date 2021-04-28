@@ -413,7 +413,7 @@ public abstract class Indexer {
 
         Path file = Paths.get(dataFolder.toAbsolutePath().toString(), fileNameRoot + Indexer.XML_EXTENSION);
         if (!Files.isRegularFile(file)) {
-            logger.warn("'{}' is not a file.", file.getFileName().toString());
+            logger.debug("'{}' does not exist or is not a file.", file.getFileName().toString());
             return Collections.emptyList();
         }
 

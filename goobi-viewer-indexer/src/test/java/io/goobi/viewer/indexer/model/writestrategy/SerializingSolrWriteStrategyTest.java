@@ -39,14 +39,12 @@ import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
-import io.goobi.viewer.indexer.model.datarepository.strategy.SingleRepositoryStrategy;
-import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
 public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
 
     private static Path tempFolder = Paths.get("target/temp");
-    private static Hotfolder hotfolder;
 
     private Path metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
 
@@ -77,10 +75,11 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
     public void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
         SolrSearchIndex sh = new SolrSearchIndex(client);
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
-        IDataRepositoryStrategy dataRepositoryStrategy = new SingleRepositoryStrategy(Configuration.getInstance());
+        IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(Configuration.getInstance());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        indexer.generatePageDocuments(strat, null, dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, searchIndex, null)[0],
+        indexer.generatePageDocuments(strat, null,
+                dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, hotfolder.getSearchIndex(), null)[0],
                 "PPN517154005", 1);
         List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
         Assert.assertEquals(3, docs.size());

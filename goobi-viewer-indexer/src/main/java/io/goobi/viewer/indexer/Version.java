@@ -109,11 +109,10 @@ public class Version {
      * 
      * @return JSON object containing version info
      */
-    public static String asJSON() {
+    public static JSONObject asJSON() {
         return new JSONObject().put("application", APPLICATION_NAME)
                 .put("version", VERSION)
                 .put("build-date", BUILDDATE)
-                .put("git-revision", BUILDVERSION)
-                .toString();
+                .put("git-revision", BUILDVERSION);
     }
 }

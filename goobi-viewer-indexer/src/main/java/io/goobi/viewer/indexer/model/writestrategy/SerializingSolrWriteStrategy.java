@@ -80,7 +80,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
      * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @param tempFolder a {@link java.nio.file.Path} object.
      */
-    public SerializingSolrWriteStrategy(SolrSearchIndex searchIndex, Path tempFolder) {
+    protected SerializingSolrWriteStrategy(SolrSearchIndex searchIndex, Path tempFolder) {
         this.searchIndex = searchIndex;
         this.tempFolder = tempFolder;
     }

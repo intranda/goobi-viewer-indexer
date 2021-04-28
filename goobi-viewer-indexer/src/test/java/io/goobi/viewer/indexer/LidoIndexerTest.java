@@ -44,14 +44,13 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
     private static final String PI = "V0011127";
 
-    private static Hotfolder hotfolder;
-
     private File lidoFile;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
 
         lidoFile = new File("src/test/resources/LIDO/khm_lido_export.xml");

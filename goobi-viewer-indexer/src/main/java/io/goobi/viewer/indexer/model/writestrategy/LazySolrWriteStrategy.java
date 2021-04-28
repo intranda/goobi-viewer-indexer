@@ -41,10 +41,10 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(LazySolrWriteStrategy.class);
 
-    SolrSearchIndex searchIndex;
-    SolrInputDocument rootDoc;
-    List<SolrInputDocument> docsToAdd = new CopyOnWriteArrayList<>();
-    Map<Integer, SolrInputDocument> pageOrderMap = new ConcurrentHashMap<>();
+    protected SolrSearchIndex searchIndex;
+    protected SolrInputDocument rootDoc;
+    protected List<SolrInputDocument> docsToAdd = new CopyOnWriteArrayList<>();
+    protected Map<Integer, SolrInputDocument> pageOrderMap = new ConcurrentHashMap<>();
     /** Map for fast doc retrieval via its PHYSID. */
     private Map<String, SolrInputDocument> physIdPageMap = new ConcurrentHashMap<>();
 
@@ -54,7 +54,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
      * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @should set attributes correctly
      */
-    public LazySolrWriteStrategy(SolrSearchIndex searchIndex) {
+    protected LazySolrWriteStrategy(SolrSearchIndex searchIndex) {
         this.searchIndex = searchIndex;
     }
 
