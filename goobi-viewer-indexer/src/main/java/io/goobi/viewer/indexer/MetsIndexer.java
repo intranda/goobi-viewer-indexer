@@ -942,12 +942,13 @@ public class MetsIndexer extends Indexer {
             }
             doc.addField(SolrConstants.FILEIDROOT, fileIdRoot);
         }
-        
 
         // Double page view
-        boolean doublePage =
+        boolean doubleImage =
                 "double page".equals(eleStructMapPhysical.getAttributeValue("label", Configuration.getInstance().getNamespaces().get("xlink")));
-        doc.addField("BOOL_DOUBLE_PAGE", doublePage);
+        if (doubleImage) {
+            doc.addField(SolrConstants.BOOL_DOUBLE_IMAGE, doubleImage);
+        }
 
         // ORDERLABEL
         String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
