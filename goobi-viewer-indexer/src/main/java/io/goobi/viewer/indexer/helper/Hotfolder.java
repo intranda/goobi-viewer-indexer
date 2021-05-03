@@ -528,9 +528,14 @@ public class Hotfolder {
      * Returns the number of record and command (delete, update) files in the hotfolder.
      * 
      * @return Number of files
+     * @throws FatalIndexerException 
      * @should count files correctly
      */
-    public long countRecordFiles() {
+    public long countRecordFiles() throws FatalIndexerException {
+        if (!Configuration.getInstance().isCountHotfolderFiles()) {
+            return 0;
+        }
+        
         try (Stream<Path> files = Files.list(hotfolderPath)) {
             long ret = files.filter(p -> !Files.isDirectory(p))
                     .map(p -> p.toString())

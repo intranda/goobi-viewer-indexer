@@ -365,10 +365,19 @@ public final class Configuration {
      * getThreads.
      * </p>
      *
-     * @return a int.
+     * @return Number of CPU threads to be used for page generation.
      */
     public int getThreads() {
         return getInt("performance.threads", 1);
+    }
+    
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public boolean isCountHotfolderFiles() {
+    	   return getBoolean("performance.countHotfolderFiles", true);
     }
 
     /**
