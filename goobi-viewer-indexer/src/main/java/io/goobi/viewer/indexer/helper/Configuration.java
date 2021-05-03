@@ -495,4 +495,13 @@ public final class Configuration {
         return namespaces;
     }
 
+    /**
+     * Overrides values in the config file (for unit test purposes).
+     * 
+     * @param property Property path (e.g. "accessConditions.fullAccessForLocalhost")
+     * @param value New value to set
+     */
+    public void overrideValue(String property, Object value) {
+        config.setProperty(property, value);
+    }
 }
