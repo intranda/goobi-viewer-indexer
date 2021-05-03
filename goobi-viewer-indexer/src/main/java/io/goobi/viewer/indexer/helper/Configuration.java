@@ -365,10 +365,19 @@ public final class Configuration {
      * getThreads.
      * </p>
      *
-     * @return a int.
+     * @return Number of CPU threads to be used for page generation.
      */
     public int getThreads() {
         return getInt("performance.threads", 1);
+    }
+    
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public boolean isCountHotfolderFiles() {
+    	   return getBoolean("performance.countHotfolderFiles", true);
     }
 
     /**
@@ -486,4 +495,13 @@ public final class Configuration {
         return namespaces;
     }
 
+    /**
+     * Overrides values in the config file (for unit test purposes).
+     * 
+     * @param property Property path (e.g. "accessConditions.fullAccessForLocalhost")
+     * @param value New value to set
+     */
+    public void overrideValue(String property, Object value) {
+        config.setProperty(property, value);
+    }
 }

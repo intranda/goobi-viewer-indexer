@@ -647,7 +647,7 @@ public abstract class Indexer {
                 }
             } else {
                 //TODO: add doc directly to work
-                if(pageDocs != null && !pageDocs.isEmpty()) {
+                if (pageDocs != null && !pageDocs.isEmpty()) {
                     SolrInputDocument pageDoc = pageDocs.values().iterator().next();
                     doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
                 }
@@ -677,21 +677,21 @@ public abstract class Indexer {
                         doc.addField("MD_COORDS", coords[0] + " " + coords[1]);
                     }
                 }
-            }  else if(annotation.getBody() instanceof TypedResource) {
+            } else if (annotation.getBody() instanceof TypedResource) {
                 //any other resource with a "type" property
-                String type = ((TypedResource)annotation.getBody()).getType();
-                switch(type) {
+                String type = ((TypedResource) annotation.getBody()).getType();
+                switch (type) {
                     case "AuthorityResource":
                         //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
                 }
-            } else if(annotation.getBody() != null){
+            } else if (annotation.getBody() != null) {
                 logger.warn("Cannot interpret annotation body of type " + annotation.getBody().getClass());
             } else {
                 logger.warn("Annotaton has no body:" + annotation.toString());
 
             }
             // Add annotation body as JSON, always!
-            if(annotation.getBody() != null) {                
+            if (annotation.getBody() != null) {
                 doc.addField("MD_BODY", annotation.getBody().toString());
             }
 
