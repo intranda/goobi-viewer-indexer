@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 
 /**
@@ -38,10 +38,12 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     /** Logger for this class. */
-    private static Logger logger;
+    private static Logger logger = LoggerFactory.getLogger(AbstractSolrEnabledTest.class);
+
+    protected static Hotfolder hotfolder;
 
     protected SolrClient client;
-    protected SolrSearchIndex searchIndex;
+    //    protected SolrSearchIndex searchIndex;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -59,7 +61,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
                 solrUrl.startsWith("http://localhost:") || solrUrl.equals("https://viewer-testing-index.goobi.io/solr/indexer-testing"));
 
         client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, 30000, 30000, true);
-        searchIndex = new SolrSearchIndex(client);
+        //        searchIndex = new SolrSearchIndex(client);
     }
 
     @After
@@ -83,8 +85,8 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
         }
 
         // Delete all data after every test
-        if (searchIndex != null && searchIndex.deleteByQuery("*:*")) {
-            searchIndex.commit(false);
+        if (hotfolder != null && hotfolder.getSearchIndex() != null && hotfolder.getSearchIndex().deleteByQuery("*:*")) {
+            hotfolder.getSearchIndex().commit(false);
             logger.debug("Index cleared");
         }
 

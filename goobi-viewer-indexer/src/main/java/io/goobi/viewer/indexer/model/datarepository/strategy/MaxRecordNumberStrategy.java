@@ -37,21 +37,19 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 /**
  * Data repository strategy that avoids full repositories where the number of records equals <code>dataRepositoriesMaxRecords</code>.
  */
-public class MaxRecordNumberStrategy implements IDataRepositoryStrategy {
+public class MaxRecordNumberStrategy extends AbstractDataRepositoryStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(MaxRecordNumberStrategy.class);
-
-    private final List<DataRepository> dataRepositories;
 
     private final int dataRepositoriesMaxRecords;
 
     /**
-     * Constructor.
+     * Protected constructor.
      *
      * @param config a {@link io.goobi.viewer.indexer.helper.Configuration} object.
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
      */
-    public MaxRecordNumberStrategy(Configuration config) throws FatalIndexerException {
+    protected MaxRecordNumberStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories
         dataRepositories = DataRepository.loadDataRepositories(config, true);
         if (dataRepositories.isEmpty()) {

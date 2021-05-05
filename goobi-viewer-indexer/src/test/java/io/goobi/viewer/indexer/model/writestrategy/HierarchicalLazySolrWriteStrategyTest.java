@@ -22,12 +22,8 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
-import io.goobi.viewer.indexer.model.writestrategy.HierarchicalLazySolrWriteStrategy;
 
 public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
-
-    @SuppressWarnings("unused")
-    private static Hotfolder hotfolder;
 
     //    private Path metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
 

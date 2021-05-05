@@ -250,4 +250,13 @@ public class ConfigurationTest extends AbstractTest {
     public void getViewerAuthorizationToken_shouldReturnCorrectValue() throws Exception {
         Assert.assertEquals("test", Configuration.getInstance().getViewerAuthorizationToken());
     }
+
+	/**
+	 * @see Configuration#isCountHotfolderFiles()
+	 * @verifies return correct value
+	 */
+	@Test
+	public void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
+		 Assert.assertFalse(Configuration.getInstance().isCountHotfolderFiles());
+	}
 }

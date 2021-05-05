@@ -3,25 +3,19 @@ package io.goobi.viewer.indexer;
 import java.nio.file.Path;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.helper.Hotfolder;
-import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
-import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
-
-    @SuppressWarnings("unused")
-    private Hotfolder hotfolder;
 
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
+
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test_worldviews.xml", client);
     }
 
@@ -29,7 +23,7 @@ public class WorldViewsIndexerTest extends AbstractSolrEnabledTest {
      * @see WorldViewsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int)
      * @verifies index record correctly
      */
-//    @SuppressWarnings("unchecked")
+    //    @SuppressWarnings("unchecked")
     @Test
     public void index_shouldIndexRecordCorrectly() throws Exception {
         //        String pi = "gei_test_sthe_quelle_01";

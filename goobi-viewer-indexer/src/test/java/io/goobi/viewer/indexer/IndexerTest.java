@@ -45,8 +45,6 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public class IndexerTest extends AbstractSolrEnabledTest {
 
-    private static Hotfolder hotfolder;
-
     private Path metsFile;
     private Path lidoFile;
     private static String libraryPath = "";

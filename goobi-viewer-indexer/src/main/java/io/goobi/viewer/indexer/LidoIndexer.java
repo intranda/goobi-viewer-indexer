@@ -48,11 +48,11 @@ import org.slf4j.LoggerFactory;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
-import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -63,9 +63,8 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
-import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
-import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
 /**
  * <p>
@@ -177,16 +176,8 @@ public class LidoIndexer extends Indexer {
             }
 
             if (writeStrategy == null) {
-                boolean useSerializingStrategy = false;
-                if (useSerializingStrategy) {
-                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSearchIndex(), hotfolder.getTempFolder());
-                }
-                //                else if (IndexerConfig.getInstance().getBoolean("init.aggregateRecords")) {
-                //                    writeStrategy = new HierarchicalLazySolrWriteStrategy(hotfolder.getSolrHelper());
-                //                }
-                else {
-                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSearchIndex());
-                }
+                // Request appropriate write strategy
+                writeStrategy = AbstractWriteStrategy.create(null, dataFolders, hotfolder);
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }

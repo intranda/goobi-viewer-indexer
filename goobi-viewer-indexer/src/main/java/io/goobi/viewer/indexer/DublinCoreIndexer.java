@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -61,9 +60,8 @@ import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
-import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
-import io.goobi.viewer.indexer.model.writestrategy.SerializingSolrWriteStrategy;
 
 /**
  * Indexer implementation for Goobi viewer-generated Dublin Core documents.
@@ -185,47 +183,8 @@ public class DublinCoreIndexer extends Indexer {
             }
 
             if (writeStrategy == null) {
-                boolean useSerializingStrategy = false;
-                long size = Files.size(dcFile);
-                if (size >= hotfolder.metsFileSizeThreshold) {
-                    useSerializingStrategy = true;
-                    logger.info("Dublin Core file is {} bytes, using a slower Solr write strategy to avoid memory overflows.", size);
-                } else {
-                    for (String key : dataFolders.keySet()) {
-                        switch (key) {
-                            case DataRepository.PARAM_ALTO:
-                            case DataRepository.PARAM_ALTOCROWD:
-                            case DataRepository.PARAM_FULLTEXT:
-                            case DataRepository.PARAM_FULLTEXTCROWD:
-                            case DataRepository.PARAM_ABBYY:
-                            case DataRepository.PARAM_TEIWC:
-                                Path dataFolder = dataFolders.get(key);
-                                if (dataFolder != null) {
-                                    // Files.size() does not work with directories, so use FileUtils
-                                    long dataFolderSize = FileUtils.sizeOfDirectory(dataFolder.toFile());
-                                    if (dataFolderSize >= hotfolder.dataFolderSizeThreshold) {
-                                        useSerializingStrategy = true;
-                                        logger.info("Data folder '{}' is {} bytes, using a slower Solr write strategy to avoid memory overflows.",
-                                                dataFolder.toAbsolutePath().toString(), dataFolderSize);
-                                        break;
-                                    }
-                                }
-                                break;
-                            default:
-                                // do nothing
-                        }
-                    }
-                }
-                if (useSerializingStrategy) {
-                    writeStrategy = new SerializingSolrWriteStrategy(hotfolder.getSearchIndex(), hotfolder.getTempFolder());
-
-                }
-                //                else if (IndexerConfig.getInstance().getBoolean("init.aggregateRecords")) {
-                //                    writeStrategy = new HierarchicalLazySolrWriteStrategy(hotfolder.getSolrHelper());
-                //                }
-                else {
-                    writeStrategy = new LazySolrWriteStrategy(hotfolder.getSearchIndex());
-                }
+                // Request appropriate write strategy
+                writeStrategy = AbstractWriteStrategy.create(dcFile, dataFolders, hotfolder);
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
