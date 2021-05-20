@@ -948,9 +948,9 @@ public abstract class Indexer {
      * @should set PI_TOPSTRUCT to child docstruct metadata
      * @should set DOCSTRCT_TOP
      * @should skip fields correctly
-     * @should add authority metadata to group metadata docs correctly except coordinates
-     * @should add authority metadata to docstruct metadata doc correctly
-     * @should add coordinates to docstruct metadata doc correctly
+     * @should add authority metadata to group metadata docs correctly
+     * @should add authority metadata to docstruct doc correctly except coordinates
+     * @should add coordinates to docstruct doc correctly
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
         int count = 0;
@@ -974,7 +974,7 @@ public abstract class Indexer {
                 for (LuceneField field : gmd.getAuthorityDataFields()) {
                     if (gmd.isAddAuthorityDataToDocstruct() && (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_"))) {
                         // Only add single valued fields once
-                        
+
                         // Skip BOOL_WKT_COORDS, if not explicitly configured to add coordinate fields
                         if (field.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS) && !gmd.isAddCoordsToDocstruct()) {
                             fieldsToAdd.add(field);
@@ -985,10 +985,9 @@ public abstract class Indexer {
                             continue;
                         }
                         skipFields.add(field.getField());
-                    } else if (gmd.isAddCoordsToDocstruct()
-                            && (field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
-                                    || field.getField().startsWith("NORM_COORDS_"))) {
-                        // Add coordinates to docstruct field, if explicitly configured
+                    } else if ((field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
+                            || field.getField().startsWith("NORM_COORDS_")) && !gmd.isAddCoordsToDocstruct()) {
+                        // Do not add coordinates to docstruct field, unless explicitly configured
                         fieldsToAdd.add(field);
                         continue;
                     } else {

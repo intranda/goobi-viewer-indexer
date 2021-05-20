@@ -40,8 +40,15 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.MetadataHelper;
+import io.goobi.viewer.indexer.model.GroupedMetadata;
+import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
+import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
+import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 
 public class IndexerTest extends AbstractSolrEnabledTest {
 
@@ -295,7 +302,10 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(pageDocs, dataFolder, "PPN517154005", null, null);
         Assert.assertEquals(3, docs.size());
         {
-            SolrInputDocument doc = docs.stream().filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("geo")).findAny().orElseThrow(() -> new IllegalStateException("No annotation with id 'geo'"));
+            SolrInputDocument doc = docs.stream()
+                    .filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("geo"))
+                    .findAny()
+                    .orElseThrow(() -> new IllegalStateException("No annotation with id 'geo'"));
             Assert.assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
             Assert.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             Assert.assertNull(doc.getFieldValue(SolrConstants.ORDER));
@@ -306,7 +316,10 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             //            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", docs.get(0).getFieldValue(SolrConstants.UGCTERMS));
         }
         {
-            SolrInputDocument doc = docs.stream().filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("PPN517154005_3")).findAny().orElseThrow(() -> new IllegalStateException("No annotation with id 'PPN517154005_3'"));
+            SolrInputDocument doc = docs.stream()
+                    .filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("PPN517154005_3"))
+                    .findAny()
+                    .orElseThrow(() -> new IllegalStateException("No annotation with id 'PPN517154005_3'"));
             Assert.assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
             Assert.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             Assert.assertEquals(2, doc.getFieldValue(SolrConstants.ORDER));
@@ -318,7 +331,10 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", doc.getFieldValue(SolrConstants.UGCTERMS));
         }
         {
-            SolrInputDocument doc = docs.stream().filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("normdata")).findAny().orElseThrow(() -> new IllegalStateException("No annotation with id 'normdata'"));
+            SolrInputDocument doc = docs.stream()
+                    .filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("normdata"))
+                    .findAny()
+                    .orElseThrow(() -> new IllegalStateException("No annotation with id 'normdata'"));
             Assert.assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
             Assert.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             Assert.assertEquals(10, doc.getFieldValue(SolrConstants.ORDER));
@@ -327,5 +343,206 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("Spaß in AC02949962", doc.getFieldValue(SolrConstants.ACCESSCONDITION));
             Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
         }
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(ISolrWriteStrategy,IndexObject)
+     * @verifies add docs correctly
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldAddDocsCorrectly() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(1);
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("MD_GROUP");
+        gmd.setMainValue("a");
+        gmd.getFields().add(new LuceneField("MD_ONE", "foo"));
+        gmd.getFields().add(new LuceneField("MD_TWO", "bar"));
+        indexObj.getGroupedMetadataFields().add(gmd);
+
+        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        Assert.assertEquals(1, strategy.getDocsToAdd().size());
+        Assert.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        Assert.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(ISolrWriteStrategy,IndexObject)
+     * @verifies set PI_TOPSTRUCT to child docstruct metadata
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldSetPI_TOPSTRUCTToChildDocstructMetadata() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(1);
+        indexObj.setTopstructPI("PPN123");
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("MD_GROUP");
+        gmd.setMainValue("a");
+        indexObj.getGroupedMetadataFields().add(gmd);
+
+        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        Assert.assertEquals(1, strategy.getDocsToAdd().size());
+        Assert.assertEquals("PPN123", strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.PI_TOPSTRUCT));
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(ISolrWriteStrategy,IndexObject)
+     * @verifies set DOCSTRCT_TOP
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldSetDOCSTRCT_TOP() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(1);
+        indexObj.addToLucene(SolrConstants.DOCSTRCT_TOP, "monograph");
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("MD_GROUP");
+        gmd.setMainValue("a");
+        indexObj.getGroupedMetadataFields().add(gmd);
+
+        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        Assert.assertEquals(1, strategy.getDocsToAdd().size());
+        Assert.assertEquals("monograph", strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.DOCSTRCT_TOP));
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(ISolrWriteStrategy,IndexObject)
+     * @verifies skip fields correctly
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldSkipFieldsCorrectly() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(1);
+        {
+            GroupedMetadata gmd = new GroupedMetadata();
+            gmd.setLabel("MD_GROUP");
+            gmd.setMainValue("a");
+            gmd.getFields().add(new LuceneField("MD_ONE", "foo"));
+            gmd.setSkip(true); // skip this group
+            indexObj.getGroupedMetadataFields().add(gmd);
+        }
+        {
+            GroupedMetadata gmd = new GroupedMetadata();
+            gmd.setLabel("MD_GROUP2");
+            gmd.setMainValue("a");
+            gmd.getFields().add(new LuceneField("MD_TWO", "bar"));
+            indexObj.getGroupedMetadataFields().add(gmd);
+        }
+
+        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        Assert.assertEquals(1, strategy.getDocsToAdd().size());
+        Assert.assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        Assert.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(ISolrWriteStrategy,IndexObject)
+     * @verifies add authority metadata to group metadata docs correctly
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldAddAuthorityMetadataToGroupMetadataDocsCorrectly() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(1);
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("MD_GROUP");
+        gmd.setMainValue("a");
+        gmd.getAuthorityDataFields().add(new LuceneField("MD_ONE", "foo"));
+        gmd.getAuthorityDataFields().add(new LuceneField("MD_TWO", "bar"));
+        gmd.getAuthorityDataFields().add(new LuceneField("BOOL_WHAT", "true"));
+        gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_WKT_COORDS, "1,2,3,1"));
+        gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
+        indexObj.getGroupedMetadataFields().add(gmd);
+
+        indexer.addGroupedMetadataDocs(strategy, indexObj);
+
+        Assert.assertFalse(gmd.isAddCoordsToDocstruct());
+
+        // Values are not added to metadata docs
+        Assert.assertEquals(1, strategy.getDocsToAdd().size());
+        Assert.assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        Assert.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        Assert.assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+        Assert.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(ISolrWriteStrategy,IndexObject)
+     * @verifies add authority metadata to docstruct doc correctly except coordinates
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldAddAuthorityMetadataToDocstructDocCorrectlyExceptCoordinates() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(1);
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("MD_GROUP");
+        gmd.setMainValue("a");
+        gmd.setAddAuthorityDataToDocstruct(true);
+        gmd.getAuthorityDataFields().add(new LuceneField("MD_ONE", "foo"));
+        gmd.getAuthorityDataFields().add(new LuceneField("MD_TWO", "bar"));
+        gmd.getAuthorityDataFields().add(new LuceneField("BOOL_WHAT", "true"));
+        gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_WKT_COORDS, "1,2,3,1"));
+        gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
+        indexObj.getGroupedMetadataFields().add(gmd);
+
+        indexer.addGroupedMetadataDocs(strategy, indexObj);
+
+        Assert.assertFalse(gmd.isAddCoordsToDocstruct());
+
+        // Values are not added to metadata docs
+        Assert.assertEquals(1, strategy.getDocsToAdd().size());
+        Assert.assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        Assert.assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+
+        // Coordinate fields are still on metadata docs
+        Assert.assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_WKT_COORDS));
+        Assert.assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
+
+        // Regular authority metadata are rerouted to IndexObject
+        Assert.assertNotNull(indexObj.getLuceneFieldWithName("MD_ONE"));
+        Assert.assertEquals("foo", indexObj.getLuceneFieldWithName("MD_ONE").getValue());
+        Assert.assertNotNull(indexObj.getLuceneFieldWithName("MD_TWO"));
+        Assert.assertEquals("bar", indexObj.getLuceneFieldWithName("MD_TWO").getValue());
+        Assert.assertNotNull(indexObj.getLuceneFieldWithName("BOOL_WHAT"));
+        Assert.assertEquals("true", indexObj.getLuceneFieldWithName("BOOL_WHAT").getValue());
+
+        // Except for coordinate fields
+        Assert.assertNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS));
+        Assert.assertNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS));
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(ISolrWriteStrategy,IndexObject)
+     * @verifies add coordinates to docstruct doc correctly
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldAddCoordinatesToDocstructDocCorrectly() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(1);
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("MD_GROUP");
+        gmd.setMainValue("a");
+        gmd.setAddCoordsToDocstruct(true);
+        gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_WKT_COORDS, "1,2,3,1"));
+        gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
+        indexObj.getGroupedMetadataFields().add(gmd);
+
+        indexer.addGroupedMetadataDocs(strategy, indexObj);
+
+        // Coordinate fields are no longer on metadata docs
+        Assert.assertNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_WKT_COORDS));
+        Assert.assertNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
+
+        // Coordinate fields are rerouted to IndexObject
+        Assert.assertNotNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS));
+        Assert.assertEquals("1,2,3,1", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS).getValue());
+        Assert.assertNotNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS));
+        Assert.assertEquals("true", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS).getValue());
     }
 }
