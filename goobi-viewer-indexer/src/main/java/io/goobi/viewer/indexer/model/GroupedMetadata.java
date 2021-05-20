@@ -44,6 +44,7 @@ public class GroupedMetadata {
     private final List<LuceneField> fields = new ArrayList<>();
     private final List<LuceneField> authorityDataFields = new ArrayList<>();
     private boolean addAuthorityDataToDocstruct = false;
+    private boolean addCoordsToDocstruct = false;
     /** If true, this field won't be added to he index. */
     private boolean skip = false;
     private boolean allowDuplicateValues = false;
@@ -273,6 +274,20 @@ public class GroupedMetadata {
      */
     public void setAddAuthorityDataToDocstruct(boolean addAuthorityDataToDocstruct) {
         this.addAuthorityDataToDocstruct = addAuthorityDataToDocstruct;
+    }
+
+    /**
+     * @return the addCoordsToDocstruct
+     */
+    public boolean isAddCoordsToDocstruct() {
+        return addCoordsToDocstruct;
+    }
+
+    /**
+     * @param addCoordsToDocstruct the addCoordsToDocstruct to set
+     */
+    public void setAddCoordsToDocstruct(boolean addCoordsToDocstruct) {
+        this.addCoordsToDocstruct = addCoordsToDocstruct;
     }
 
     /**

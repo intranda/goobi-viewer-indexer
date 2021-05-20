@@ -950,6 +950,7 @@ public abstract class Indexer {
      * @should skip fields correctly
      * @should add authority metadata to group metadata docs correctly except coordinates
      * @should add authority metadata to docstruct metadata doc correctly
+     * @should add coordinates to docstruct metadata doc correctly
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
         int count = 0;
@@ -968,23 +969,26 @@ public abstract class Indexer {
 
             List<LuceneField> fieldsToAdd = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
             fieldsToAdd.addAll(gmd.getFields());
-            if (gmd.isAddAuthorityDataToDocstruct()) {
+            if (gmd.isAddAuthorityDataToDocstruct() || gmd.isAddCoordsToDocstruct()) {
                 // Add authority data to docstruct doc instead of grouped metadata
                 for (LuceneField field : gmd.getAuthorityDataFields()) {
-                    if (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_")) {
-                        // Keep BOOL_WKT_COORDS on the metadata doc
-                        if (field.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS)) {
+                    if (gmd.isAddAuthorityDataToDocstruct() && (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_"))) {
+                        // Only add single valued fields once
+                        
+                        // Skip BOOL_WKT_COORDS, if not explicitly configured to add coordinate fields
+                        if (field.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS) && !gmd.isAddCoordsToDocstruct()) {
                             fieldsToAdd.add(field);
                             continue;
                         }
-                        // Only add single valued fields once
+
                         if (skipFields.contains(field.getField())) {
                             continue;
                         }
                         skipFields.add(field.getField());
-                    } else if (field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
-                            || field.getField().startsWith("NORM_COORDS_")) {
-                        // Keep coordinate fields on the metadata doc
+                    } else if (gmd.isAddCoordsToDocstruct()
+                            && (field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
+                                    || field.getField().startsWith("NORM_COORDS_"))) {
+                        // Add coordinates to docstruct field, if explicitly configured
                         fieldsToAdd.add(field);
                         continue;
                     } else {

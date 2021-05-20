@@ -1225,13 +1225,21 @@ public class MetadataHelper {
             logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
         }
 
-        boolean addAuthorityDataToDocstruct = false;
-        if (groupEntityFields.get("addAuthorityDataToDocstruct") != null) {
-            addAuthorityDataToDocstruct = (boolean) groupEntityFields.get("addAuthorityDataToDocstruct");
+        {
+            boolean addAuthorityDataToDocstruct = false;
+            if (groupEntityFields.get("addAuthorityDataToDocstruct") != null) {
+                addAuthorityDataToDocstruct = (boolean) groupEntityFields.get("addAuthorityDataToDocstruct");
+            }
+            ret.setAddAuthorityDataToDocstruct(addAuthorityDataToDocstruct);
         }
-        ret.setAddAuthorityDataToDocstruct(addAuthorityDataToDocstruct);
+        {
+            boolean addCoordsToDocstruct = false;
+            if (groupEntityFields.get("addCoordsToDocstruct") != null) {
+                addCoordsToDocstruct = (boolean) groupEntityFields.get("addCoordsToDocstruct");
+            }
+            ret.setAddCoordsToDocstruct(addCoordsToDocstruct);
+        }
 
-        boolean authorityUriFound = false;
         Map<String, List<String>> collectedValues = new HashMap<>();
         ret.collectGroupMetadataValues(collectedValues, groupEntityFields, ele);
 
