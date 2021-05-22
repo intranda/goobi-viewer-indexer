@@ -58,7 +58,7 @@
 		<jsoup.version>1.13.1</jsoup.version>
 		<json.version>20210307</json.version>
 		<junit.version>4.13.2</junit.version>
-		<metadata-extractor.version>2.15.0</metadata-extractor.version>
+		<metadata-extractor.version>2.16.0</metadata-extractor.version>
 		<solr.version>8.8.2</solr.version>
 		<slf4j.version>1.7.30</slf4j.version>
 	</properties>
