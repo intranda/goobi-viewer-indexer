@@ -19,7 +19,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -35,10 +35,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
-import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -752,6 +752,29 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see MetsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int)
+     * @verifies read datecreated from mets with correct time zone
+     */
+    @Test
+    public void index_shouldReadDatecreatedFromMetsWithCorrectTimeZone() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        String[] ret = new MetsIndexer(hotfolder).index(metsFile2, false, dataFolders, null, 1);
+        Assert.assertEquals(PI2 + ".xml", ret[0]);
+        Assert.assertNull(ret[1]);
+
+        // Top document
+        {
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
+            Assert.assertEquals(1, docList.size());
+            SolrDocument doc = docList.get(0);
+
+            Long dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
+            Assert.assertNotNull(dateCreated);
+            Assert.assertEquals(Long.valueOf(1372770217000L), dateCreated);
+        }
+    }
+
+    /**
      * @see MetsIndexer#generatePageDocuments(JDomXP)
      * @verifies create documents for all mapped pages
      */
@@ -790,12 +813,11 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getMetsCreateDate_shouldReturnCREATEDATEValue() throws Exception {
-        Map<String, Path> dataFolders = new HashMap<>();
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile2);
-        LocalDateTime dateCreated = indexer.getMetsCreateDate();
+        ZonedDateTime dateCreated = indexer.getMetsCreateDate();
         Assert.assertNotNull(dateCreated);
-        Assert.assertEquals("2013-07-02T15:03:37", dateCreated.format(MetadataHelper.formatterISO8601Full));
+        Assert.assertEquals("2013-07-02T13:03:37", dateCreated.format(DateTools.formatterISO8601Full));
 
     }
 
@@ -805,10 +827,9 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getMetsCreateDate_shouldReturnNullIfDateDoesNotExistInMETS() throws Exception {
-        Map<String, Path> dataFolders = new HashMap<>();
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        LocalDateTime dateCreated = indexer.getMetsCreateDate();
+        ZonedDateTime dateCreated = indexer.getMetsCreateDate();
         Assert.assertNull(dateCreated);
     }
 

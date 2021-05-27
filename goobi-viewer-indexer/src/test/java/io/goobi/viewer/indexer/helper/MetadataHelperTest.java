@@ -38,7 +38,6 @@ import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
-import io.goobi.viewer.indexer.model.PrimitiveDate;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
@@ -53,115 +52,6 @@ public class MetadataHelperTest extends AbstractTest {
         AbstractTest.setUpClass();
 
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
-    }
-
-    /**
-     * @see MetadataHelper#normalizeDate(String)
-     * @verifies parse german date formats correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseGermanDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = MetadataHelper.normalizeDate("05.08.2014", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-    }
-
-    /**
-     * @see MetadataHelper#normalizeDate(String)
-     * @verifies parse rfc date formats correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseRfcDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = MetadataHelper.normalizeDate("2014-08-05", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-
-        ret = MetadataHelper.normalizeDate("0002-05", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getMonth());
-    }
-
-    /**
-     * @see MetadataHelper#normalizeDate(String)
-     * @verifies parse american date formats correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseAmericanDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = MetadataHelper.normalizeDate("08/05/2014", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-    }
-
-    /**
-     * @see MetadataHelper#normalizeDate(String)
-     * @verifies parse chinese date formats correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseChineseDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = MetadataHelper.normalizeDate("2014.08.05", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-    }
-
-    /**
-     * @see MetadataHelper#normalizeDate(String)
-     * @verifies parse japanese date formats correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseJapaneseDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = MetadataHelper.normalizeDate("2014/08/05", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-    }
-
-    /**
-     * @see MetadataHelper#normalizeDate(String)
-     * @verifies parse year ranges correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseYearRangesCorrectly() throws Exception {
-        List<PrimitiveDate> ret = MetadataHelper.normalizeDate("2010-2014", 3);
-        Assert.assertEquals(2, ret.size());
-        Assert.assertEquals(Integer.valueOf(2010), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(1).getYear());
-
-        ret = MetadataHelper.normalizeDate("10-20", 2);
-        Assert.assertEquals(2, ret.size());
-        Assert.assertEquals(Integer.valueOf(10), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(20), ret.get(1).getYear());
-    }
-
-    /**
-     * @see MetadataHelper#normalizeDate(String)
-     * @verifies parse single years correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseSingleYearsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = MetadataHelper.normalizeDate("-300 -30 -3", 2);
-        Assert.assertEquals(2, ret.size());
-        Assert.assertEquals(Integer.valueOf(-300), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(-30), ret.get(1).getYear());
-
-        ret = MetadataHelper.normalizeDate("300 30 3", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(300), ret.get(0).getYear());
-
-        ret = MetadataHelper.normalizeDate("300 30 3", 1);
-        Assert.assertEquals(3, ret.size());
-        Assert.assertEquals(Integer.valueOf(300), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(30), ret.get(1).getYear());
-        Assert.assertEquals(Integer.valueOf(3), ret.get(2).getYear());
     }
 
     /**
@@ -377,15 +267,6 @@ public class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#normalizeDate(String,int)
-     * @verifies throw IllegalArgumentException if normalizeYearMinDigits less than 1
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void normalizeDate_shouldThrowIllegalArgumentExceptionIfNormalizeYearMinDigitsLessThan1() throws Exception {
-        MetadataHelper.normalizeDate("05.08.2014", 0);
-    }
-
-    /**
      * @see MetadataHelper#getConcatenatedValue(String)
      * @verifies concatenate value terms correctly
      */
@@ -432,17 +313,6 @@ public class MetadataHelperTest extends AbstractTest {
     @Test(expected = IllegalArgumentException.class)
     public void addValueToDefault_shouldThrowIllegalArgumentExceptionIfSbDefaultMetadataValuesIsNull() throws Exception {
         MetadataHelper.addValueToDefault("foo-bar", null);
-    }
-
-    /**
-     * @see MetadataHelper#convertDateStringForSolrField(String)
-     * @verifies convert date correctly
-     */
-    @Test
-    public void convertDateStringForSolrField_shouldConvertDateCorrectly() throws Exception {
-        Assert.assertEquals("2016-11-02T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016-11-02", true));
-        Assert.assertEquals("2016-11-01T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016-11", true));
-        Assert.assertEquals("2016-01-01T00:00:00Z", MetadataHelper.convertDateStringForSolrField("2016", true));
     }
 
     /**

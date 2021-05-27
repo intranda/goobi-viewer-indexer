@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +64,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -130,6 +131,8 @@ public class MetsIndexer extends Indexer {
      * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart Order number for the first page.
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should index metadata groups correctly
      * @should index multi volume records correctly
@@ -138,8 +141,8 @@ public class MetsIndexer extends Indexer {
      * @should write cms page texts into index
      * @should write shape metadata correctly
      * @should keep volume count up to date in anchor
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
-     * @return an array of {@link java.lang.String} objects.
+     * @should read datecreated from mets with correct time zone
+     * 
      */
     public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
@@ -327,9 +330,9 @@ public class MetsIndexer extends Indexer {
 
             // Read DATECREATED from METS
             if (indexObj.getDateCreated() == -1) {
-                LocalDateTime dateCreated = getMetsCreateDate();
+                ZonedDateTime dateCreated = getMetsCreateDate();
                 if (dateCreated != null) {
-                    indexObj.setDateCreated(dateCreated.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                    indexObj.setDateCreated(dateCreated.toInstant().toEpochMilli());
                     logger.info("Using creation timestamp from METS: {}", indexObj.getDateCreated());
                 }
             }
@@ -2223,30 +2226,30 @@ public class MetsIndexer extends Indexer {
      * </p>
      *
      * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @return a {@link java.time.LocalDateTime} object.
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS
-     * @return a {@link java.time.LocalDateTime} object.
      */
-    protected LocalDateTime getMetsCreateDate() throws FatalIndexerException {
+    protected ZonedDateTime getMetsCreateDate() throws FatalIndexerException {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
-        if (dateString != null) {
-            try {
-                return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601DateTimeInstant);
-            } catch (DateTimeParseException e) {
-                try {
-                    return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601Full);
-                } catch (DateTimeParseException e1) {
-                    try {
-                        return LocalDateTime.parse(dateString, MetadataHelper.formatterISO8601DateTimeWithOffset);
-                    } catch (DateTimeParseException e2) {
-                        logger.error(e2.getMessage());
-                    }
-                }
-            }
-
+        if (dateString == null) {
+            return null;
         }
 
-        return null;
+        try {
+            return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeInstant);
+        } catch (DateTimeParseException e) {
+            try {
+                return ZonedDateTime.parse(dateString, DateTools.formatterISO8601Full);
+            } catch (DateTimeParseException e1) {
+                try {
+                    return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeWithOffset);
+                } catch (DateTimeParseException e2) {
+                    logger.error(e2.getMessage());
+                    return null;
+                }
+            }
+        }
     }
 
     /**
@@ -2287,7 +2290,7 @@ public class MetsIndexer extends Indexer {
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
                 String oldMetsFilename = new StringBuilder(FilenameUtils.getBaseName(sbNewFilename.toString())).append("_")
-                        .append(LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime))
+                        .append(LocalDateTime.now().format(DateTools.formatterBasicDateTime))
                         .append(".xml")
                         .toString();
                 Path destMetsFilePath = Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename);
