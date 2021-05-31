@@ -2893,7 +2893,7 @@
 		<BOOL_DIRECTION_RTL>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:directionRTL</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:directionRTL</xpath>
 					<addToDefault>false</addToDefault>
 					<addSortField>true</addSortField>
 				</item>
