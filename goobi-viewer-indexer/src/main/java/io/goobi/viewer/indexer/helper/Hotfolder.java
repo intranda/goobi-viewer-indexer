@@ -542,7 +542,7 @@ public class Hotfolder {
                     .filter(f -> (f.toLowerCase().endsWith(".xml") || f.endsWith(".delete") || f.endsWith(".purge") || f.endsWith(".docupdate")
                             || f.endsWith(".UPDATED")))
                     .count();
-            logger.info("{} files in hotfolder", ret);
+            logger.trace("{} files in hotfolder", ret);
             return ret;
         } catch (IOException e) {
             logger.error(e.getMessage());
