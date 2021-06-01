@@ -946,12 +946,21 @@ public class MetsIndexer extends Indexer {
             doc.addField(SolrConstants.FILEIDROOT, fileIdRoot);
         }
 
+        // Double page view
+        boolean doubleImage =
+                "double page".equals(eleStructMapPhysical.getAttributeValue("label", Configuration.getInstance().getNamespaces().get("xlink")));
+        if (doubleImage) {
+            doc.addField(SolrConstants.BOOL_DOUBLE_IMAGE, doubleImage);
+        }
+
+        // ORDERLABEL
         String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
             doc.addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
             doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
         }
+
         String contentIDs = eleStructMapPhysical.getAttributeValue("CONTENTIDS");
         if (Utils.isUrn(contentIDs)) {
             doc.addField(SolrConstants.IMAGEURN, contentIDs);
