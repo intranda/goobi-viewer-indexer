@@ -542,7 +542,7 @@ public class Hotfolder {
                     .filter(f -> (f.toLowerCase().endsWith(".xml") || f.endsWith(".delete") || f.endsWith(".purge") || f.endsWith(".docupdate")
                             || f.endsWith(".UPDATED")))
                     .count();
-            logger.info("{} files in hotfolder", ret);
+            logger.trace("{} files in hotfolder", ret);
             return ret;
         } catch (IOException e) {
             logger.error(e.getMessage());
@@ -941,7 +941,7 @@ public class Hotfolder {
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
                 String oldMetsFilename =
-                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime) + ".xml";
+                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.formatterBasicDateTime) + ".xml";
                 Path newFile = Paths.get(updatedMets.toAbsolutePath().toString(), oldMetsFilename);
                 Files.copy(indexed, newFile);
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
@@ -1553,7 +1553,7 @@ public class Hotfolder {
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
                 String oldMetsFilename =
-                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(MetadataHelper.formatterBasicDateTime) + ".xml";
+                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.formatterBasicDateTime) + ".xml";
                 Path newFile = Paths.get(updatedMets.toAbsolutePath().toString(), oldMetsFilename);
                 Files.copy(indexed, newFile);
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());

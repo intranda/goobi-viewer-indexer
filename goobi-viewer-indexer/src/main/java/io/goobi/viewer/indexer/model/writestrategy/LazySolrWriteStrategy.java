@@ -68,6 +68,13 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     }
 
+    /**
+     * For unit testing purposes.
+     */
+    public List<SolrInputDocument> getDocsToAdd() {
+        return docsToAdd;
+    }
+
     /* (non-Javadoc)
      * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDoc(org.apache.solr.common.SolrInputDocument)
      */

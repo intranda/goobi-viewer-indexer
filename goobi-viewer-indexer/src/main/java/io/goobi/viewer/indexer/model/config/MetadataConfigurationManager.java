@@ -164,18 +164,31 @@ public final class MetadataConfigurationManager {
                 // Grouped entity config
                 {
                     Map<String, Object> groupedSubfieldConfigurations = new HashMap<>();
-                    String type = config.getString("fields." + fieldname + ".list.item(" + i + ").groupEntity[@type]");
-                    if (type != null) {
-                        groupedSubfieldConfigurations.put("type", type);
+                    {
+                        String type = config.getString("fields." + fieldname + ".list.item(" + i + ").groupEntity[@type]");
+                        if (type != null) {
+                            groupedSubfieldConfigurations.put("type", type);
+                        }
                     }
-                    String url = config.getString("fields." + fieldname + ".list.item(" + i + ").groupEntity[@url]");
-                    if (url != null) {
-                        groupedSubfieldConfigurations.put("url", url);
+                    {
+                        String url = config.getString("fields." + fieldname + ".list.item(" + i + ").groupEntity[@url]");
+                        if (url != null) {
+                            groupedSubfieldConfigurations.put("url", url);
+                        }
                     }
-                    Boolean addAuthorityDataToDocstruct =
-                            config.getBoolean("fields." + fieldname + ".list.item(" + i + ").groupEntity[@addAuthorityDataToDocstruct]", null);
-                    if (addAuthorityDataToDocstruct != null) {
-                        groupedSubfieldConfigurations.put("addAuthorityDataToDocstruct", addAuthorityDataToDocstruct);
+                    {
+                        Boolean addAuthorityDataToDocstruct =
+                                config.getBoolean("fields." + fieldname + ".list.item(" + i + ").groupEntity[@addAuthorityDataToDocstruct]", null);
+                        if (addAuthorityDataToDocstruct != null) {
+                            groupedSubfieldConfigurations.put("addAuthorityDataToDocstruct", addAuthorityDataToDocstruct);
+                        }
+                    }
+                    {
+                        Boolean addCoordsToDocstruct =
+                                config.getBoolean("fields." + fieldname + ".list.item(" + i + ").groupEntity[@addCoordsToDocstruct]", null);
+                        if (addCoordsToDocstruct != null) {
+                            groupedSubfieldConfigurations.put("addCoordsToDocstruct", addCoordsToDocstruct);
+                        }
                     }
                     List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").groupEntity.field");
                     if (elements != null) {
@@ -397,7 +410,7 @@ public final class MetadataConfigurationManager {
                 configurationItem.setAddSortFieldToTopstruct(true);
             }
         }
-        
+
         if (configurationMap.containsKey("addExistenceBoolean")) {
             if (((String) configurationMap.get("addExistenceBoolean")).equals(FALSE)) {
                 configurationItem.setAddExistenceBoolean(false);

@@ -30,7 +30,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.helper.MetadataHelper;
+import io.goobi.viewer.indexer.helper.DateTools;
 
 /**
  * <p>
@@ -61,7 +61,7 @@ public class Version {
         } else {
             APPLICATION_NAME = "goobi-viewer-indexer";
             VERSION = "unknown";
-            BUILDDATE = LocalDateTime.now().format(MetadataHelper.formatterISO8601DateTimeNoSeconds);
+            BUILDDATE = LocalDateTime.now().format(DateTools.formatterISO8601DateTimeNoSeconds);
             BUILDVERSION = "unknown";
         }
     }
