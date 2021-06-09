@@ -339,12 +339,15 @@ public class GeoJSONTools {
             throw new IllegalArgumentException("coordinate length must be 8");
         }
 
+        String direction = coordinate.substring(0, 1); // W, E, N, S
+        int directionFactor = direction.matches("(?i)W|S") ? -1 : 1;
         int deg = Integer.valueOf(coordinate.substring(1, 4));
         double min = Integer.valueOf(coordinate.substring(4, 6));
         double sec = Integer.valueOf(coordinate.substring(6, 8));
         double ret = deg + (min / 60) + (sec / 3600);
 
-        return ret;
+        return ret * directionFactor;
         // return Double.valueOf(MetadataHelper.FORMAT_EIGHT_DECIMAL_PLACES.get().format(ret));
     }
+
 }
