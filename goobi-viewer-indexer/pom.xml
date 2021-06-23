@@ -60,7 +60,7 @@
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.16.0</metadata-extractor.version>
 		<solr.version>8.8.2</solr.version>
-		<slf4j.version>1.7.30</slf4j.version>
+		<slf4j.version>1.7.31</slf4j.version>
 	</properties>
 
 
