@@ -69,7 +69,7 @@
 
 		<namespaces>
 			<list>
-			    <intranda>http://intranda.com/MODS/</intranda>
+			    <intranda>http://intranda.com/</intranda>
 			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
@@ -2893,7 +2893,7 @@
 		<BOOL_DIRECTION_RTL>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:directionRTL</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:directionRTL</xpath>
 					<addToDefault>false</addToDefault>
 					<addSortField>true</addSortField>
 				</item>
@@ -3211,6 +3211,26 @@
                 </item>
             </list>
         </MD_CITATION_APA>
+        
+                <MD_CLASSIFICATION_COMBINED>
+                        <list>
+                                <item>
+                                        <xpath>mets:xmlData/mods:mods/mods:classification[@displayLabel='category']</xpath>
+                                       
+                <!-- <getnode>first</getnode> -->
+                <!-- <getparents>all</getparents> -->
+                <onetoken>true</onetoken>
+                <onefield>false</onefield>
+                <!-- <urlEncoding>false</urlEncoding> -->
+                <addToDefault>false</addToDefault>
+                <splittingCharacter>#</splittingCharacter>
+                <addUntokenizedVersion>false</addUntokenizedVersion>
+                <lowercase>true</lowercase>
+                <!-- <addToChildren>true</addToChildren> -->
+                <addToPages>true</addToPages>
+                                </item>
+                        </list>
+                </MD_CLASSIFICATION_COMBINED>
 
 	</fields>
 </root>

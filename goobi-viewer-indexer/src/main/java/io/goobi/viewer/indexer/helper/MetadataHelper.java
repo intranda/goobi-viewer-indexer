@@ -607,16 +607,29 @@ public class MetadataHelper {
                         }
                     }
                 } else if (authorityDataField.getKey().equals(GeoNamesRecord.AUTOCOORDS_FIELD)) {
-                    // Add searchable WKT lon-lat coordinates
                     String[] textValueSplit = textValue.split(" ");
-                    if (textValueSplit.length > 1) {
-                        String coords = textValueSplit[0] + " " + textValueSplit[1];
-                        ret.add(new LuceneField(FIELD_WKT_COORDS, coords));
-                        ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
+
+                    String type = "mods:coordinates/point";
+                    if (textValue.startsWith("E")) {
+                        switch (textValueSplit.length) {
+                            case 2:
+                                type = "sexagesimal:point";
+                                break;
+                            case 4:
+                                type = "sexagesimal:polygon";
+                                break;
+                        }
                     }
 
+                    GeoCoords coords = GeoJSONTools.convert(textValue, type, " ");
+
+                    // Add searchable WKT lon-lat coordinates
+                    //                        String coords = textValueSplit[0] + " " + textValueSplit[1];
+                    ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                    ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
+
                     // Add geoJSON
-                    String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSONString(textValue, "mods:coordinates/point", " ");
+                    String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSONString(textValue, type, " ");
                     if (StringUtils.isNotEmpty(geoJSON)) {
                         ret.add(new LuceneField("NORM_COORDS_GEOJSON", geoJSON));
                     }

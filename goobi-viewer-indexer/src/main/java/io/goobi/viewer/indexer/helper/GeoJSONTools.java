@@ -156,6 +156,7 @@ public class GeoJSONTools {
         if (type == null) {
             throw new IllegalArgumentException("type may not be null");
         }
+        logger.trace("convertCoordinatesToGeoJSONFeatureCollection: {} / {}", coords, type);
 
         FeatureCollection featureCollection = new FeatureCollection();
         Feature feature = new Feature();
@@ -225,7 +226,7 @@ public class GeoJSONTools {
         if (geometry != null) {
             feature.setGeometry(geometry);
         }
-
+        
         return featureCollection;
     }
 
@@ -336,7 +337,7 @@ public class GeoJSONTools {
             throw new IllegalArgumentException("coordinate may not be null");
         }
         if (coordinate.length() != 8) {
-            throw new IllegalArgumentException("coordinate length must be 8");
+            throw new IllegalArgumentException("coordinate length must be 8: " + coordinate);
         }
 
         String direction = coordinate.substring(0, 1); // W, E, N, S

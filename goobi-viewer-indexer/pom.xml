@@ -33,7 +33,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.5.5</alto.version>
 		<iiif-api-model.version>2.0.0</iiif-api-model.version>
-		<normdataimporter.version>1.5.3</normdataimporter.version>
+		<normdataimporter.version>1.5.4-SNAPSHOT</normdataimporter.version>
 
 		<!-- other libraries -->
 		<commons-collections.version>3.2.2</commons-collections.version>
