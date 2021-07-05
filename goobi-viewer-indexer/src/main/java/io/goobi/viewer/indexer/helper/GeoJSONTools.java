@@ -76,8 +76,6 @@ public class GeoJSONTools {
         if (geometry instanceof Polygon) {
             // Polygon
             Polygon polygon = (Polygon) geometry;
-            StringBuilder sb = new StringBuilder("POLYGON((");
-            int count = 0;
             if (polygon.getCoordinates().isEmpty()) {
                 return null;
             }
@@ -226,7 +224,7 @@ public class GeoJSONTools {
         if (geometry != null) {
             feature.setGeometry(geometry);
         }
-        
+
         return featureCollection;
     }
 
@@ -306,7 +304,7 @@ public class GeoJSONTools {
             case 4:
                 if (decimalValues[0] == decimalValues[1] && decimalValues[2] == decimalValues[3]) {
                     // A single point in four duplicate coords
-                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[1]));
+                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
                 } else {
                     // Proper polygon
                     ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
