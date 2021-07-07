@@ -1,25 +1,27 @@
 pipeline {
 
-  agent {
-    docker {
-      image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
-      args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
-      registryUrl 'https://nexus.intranda.com:4443/'
-      registryCredentialsId 'jenkins-docker'
-    }
-  }
+  agent none
 
   options {
     buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '15', daysToKeepStr: '90', numToKeepStr: '')
   }
 
   stages {
+    agent any
     stage('prepare') {
       steps {
         sh 'git clean -fdx'
       }
     }
     stage('build') {
+      agent {
+        docker {
+          image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
+          args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
+          registryUrl 'https://nexus.intranda.com:4443/'
+          registryCredentialsId 'jenkins-docker'
+        }
+      }
       steps {
               sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean install -U'
               recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
@@ -31,6 +33,14 @@ pipeline {
           branch 'sonar_*'
         }
       }
+      agent {
+        docker {
+          image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
+          args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
+          registryUrl 'https://nexus.intranda.com:4443/'
+          registryCredentialsId 'jenkins-docker'
+        }
+      }
       steps {
         withCredentials([string(credentialsId: 'jenkins-sonarcloud', variable: 'TOKEN')]) {
           sh 'mvn -f goobi-viewer-indexer/pom.xml verify sonar:sonar -Dsonar.login=$TOKEN'
@@ -38,6 +48,14 @@ pipeline {
       }
     }
     stage('deployment to maven repository') {
+      agent {
+        docker {
+          image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
+          args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
+          registryUrl 'https://nexus.intranda.com:4443/'
+          registryCredentialsId 'jenkins-docker'
+        }
+      }
       when {
         anyOf {
         branch 'master'
@@ -48,20 +66,68 @@ pipeline {
         sh 'mvn -f goobi-viewer-indexer/pom.xml deploy'
       }
     }
+    stage('build docker image') {
+      agent any
+      steps {
+        script{
+          docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
+            indexerimage = docker.build("goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+          }
+        }
+      }
+    }
+    stage('basic tests'){
+      agent any
+      steps{
+        script {
+          indexerimage.inside {
+            sh 'test -f  /opt/digiverso/indexer/solrIndexer.jar || echo "/opt/digiverso/indexer/solrIndexer.jar missing"'
+            sh 'envsubst -V'
+          }
+        }
+      }
+    }
+    stage('publish docker devel image to internal repository'){
+      agent any
+      steps{
+        script {
+          docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
+            indexerimage.push("${env.BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            indexerimage.push("${env.BRANCH_NAME}")
+          }
+        }
+      }
+    }
+    stage('publish docker production image to internal repository'){
+      agent any
+      when { branch 'master' }
+      steps{
+        script {
+          docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
+            indexerimage.push("${env.TAG_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            indexerimage.push("latest")
+          }
+        }
+      }
+    }
   }
   post {
     always {
-      junit "**/target/surefire-reports/*.xml"
-      step([
-        $class           : 'JacocoPublisher',
-        execPattern      : 'goobi-viewer-indexer/target/jacoco.exec',
-        classPattern     : 'goobi-viewer-indexer/target/classes/',
-        sourcePattern    : 'goobi-viewer-indexer/src/main/java',
-        exclusionPattern : '**/*Test.class'
-      ])
+      node(null) {
+        junit "**/target/surefire-reports/*.xml"
+        step([
+          $class           : 'JacocoPublisher',
+          execPattern      : 'goobi-viewer-indexer/target/jacoco.exec',
+          classPattern     : 'goobi-viewer-indexer/target/classes/',
+          sourcePattern    : 'goobi-viewer-indexer/src/main/java',
+          exclusionPattern : '**/*Test.class'
+        ])
+      }
     }
     success {
-      archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/indexerconfig_solr.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
+      node(null){
+        archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/indexerconfig_solr.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
+      }
     }
     changed {
       emailext(
