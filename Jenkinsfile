@@ -82,7 +82,6 @@ pipeline {
         script {
           indexerimage.inside {
             sh 'test -f  /opt/digiverso/indexer/solrIndexer.jar || echo "/opt/digiverso/indexer/solrIndexer.jar missing"'
-            sh 'envsubst -V'
           }
         }
       }
