@@ -7,7 +7,6 @@ pipeline {
   }
 
   stages {
-    agent any
     stage('prepare') {
       agent any
       steps {
