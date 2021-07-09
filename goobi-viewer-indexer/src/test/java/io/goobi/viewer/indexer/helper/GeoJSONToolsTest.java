@@ -109,7 +109,6 @@ public class GeoJSONToolsTest {
         List<LngLatAlt> result = GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 N0465228", " ");
         Assert.assertEquals(1, result.size());
     }
-    
 
     /**
      * @see GeoJSONTools#convertSexagesimalToDecimalPoints(String,String)
@@ -119,6 +118,8 @@ public class GeoJSONToolsTest {
     public void convertSexagesimalToDecimalPoints_shouldReturnSinglePointIfCoordinatesDuplicate() throws Exception {
         List<LngLatAlt> result = GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 E0080756 N0465228 N0465228", " ");
         Assert.assertEquals(1, result.size());
+        Assert.assertEquals(Double.valueOf(8.13), Double.valueOf(Math.floor(result.get(0).getLongitude() * 100) / 100));
+        Assert.assertEquals(Double.valueOf(46.87), Double.valueOf(Math.floor(result.get(0).getLatitude() * 100) / 100));
     }
 
     /**
@@ -128,5 +129,15 @@ public class GeoJSONToolsTest {
     @Test
     public void convertSexagesimalCoordinateToDecimal_shouldConvertCoordinateCorrectly() throws Exception {
         Assert.assertEquals(8.13222222, GeoJSONTools.convertSexagesimalCoordinateToDecimal("E0080756"), 1e-8);
+    }
+
+    @Test
+    public void convertSexagesimalCoordinateToDecimal_shouldConvertWesternCoordinateCorrectly() throws Exception {
+        Assert.assertEquals(-8.13222222, GeoJSONTools.convertSexagesimalCoordinateToDecimal("W0080756"), 1e-8);
+    }
+
+    @Test
+    public void convertSexagesimalCoordinateToDecimal_shouldConvertSouthernCoordinateCorrectly() throws Exception {
+        Assert.assertEquals(-8.13222222, GeoJSONTools.convertSexagesimalCoordinateToDecimal("S0080756"), 1e-8);
     }
 }

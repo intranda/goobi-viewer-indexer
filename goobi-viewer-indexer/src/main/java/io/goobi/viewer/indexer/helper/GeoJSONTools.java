@@ -76,8 +76,6 @@ public class GeoJSONTools {
         if (geometry instanceof Polygon) {
             // Polygon
             Polygon polygon = (Polygon) geometry;
-            StringBuilder sb = new StringBuilder("POLYGON((");
-            int count = 0;
             if (polygon.getCoordinates().isEmpty()) {
                 return null;
             }
@@ -156,6 +154,7 @@ public class GeoJSONTools {
         if (type == null) {
             throw new IllegalArgumentException("type may not be null");
         }
+        logger.trace("convertCoordinatesToGeoJSONFeatureCollection: {} / {}", coords, type);
 
         FeatureCollection featureCollection = new FeatureCollection();
         Feature feature = new Feature();
@@ -305,7 +304,7 @@ public class GeoJSONTools {
             case 4:
                 if (decimalValues[0] == decimalValues[1] && decimalValues[2] == decimalValues[3]) {
                     // A single point in four duplicate coords
-                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[1]));
+                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
                 } else {
                     // Proper polygon
                     ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
@@ -336,15 +335,18 @@ public class GeoJSONTools {
             throw new IllegalArgumentException("coordinate may not be null");
         }
         if (coordinate.length() != 8) {
-            throw new IllegalArgumentException("coordinate length must be 8");
+            throw new IllegalArgumentException("coordinate length must be 8: " + coordinate);
         }
 
+        String direction = coordinate.substring(0, 1); // W, E, N, S
+        int directionFactor = direction.matches("(?i)W|S") ? -1 : 1;
         int deg = Integer.valueOf(coordinate.substring(1, 4));
         double min = Integer.valueOf(coordinate.substring(4, 6));
         double sec = Integer.valueOf(coordinate.substring(6, 8));
         double ret = deg + (min / 60) + (sec / 3600);
 
-        return ret;
+        return ret * directionFactor;
         // return Double.valueOf(MetadataHelper.FORMAT_EIGHT_DECIMAL_PLACES.get().format(ret));
     }
+
 }
