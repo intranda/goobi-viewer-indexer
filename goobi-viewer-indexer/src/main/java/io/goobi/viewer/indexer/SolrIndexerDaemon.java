@@ -119,6 +119,16 @@ public final class SolrIndexerDaemon {
             logger.warn("Indexer is already running");
             return;
         }
+
+        // Add shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                logger.info("Received shutdown signal.");
+                SolrIndexerDaemon.getInstance().stop();
+            }
+        });
+
         logger.info(Version.asString());
         if (StringUtils.isNotEmpty(configFilePath)) {
             confFilename = configFilePath;
