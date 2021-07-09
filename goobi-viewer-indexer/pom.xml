@@ -48,8 +48,8 @@
 		<icu.version>69.1</icu.version>
 		<imageio-openjpeg.version>0.6.0</imageio-openjpeg.version>
 		<log4j.version>2.14.1</log4j.version>
-        <!-- Do not update to version later than 2.11.3 because the geojson-jackson module is not compatible yet -->
-		<jackson.version>2.11.3</jackson.version>
+        <!-- Do not update to version later than 2.11.4 because the geojson-jackson module is not compatible yet -->
+		<jackson.version>2.11.4</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
