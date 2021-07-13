@@ -23,4 +23,4 @@ RUN sed -e "s|<solrUrl>.*</solrUrl>|<solrUrl>${SORL_URL}</solrUrl>|" -e 's|C:|/o
 
 # TODO: check for solr availability before start (wait-for-solr from solr image?)
 
-CMD /run.sh
+CMD ["/run.sh"]
