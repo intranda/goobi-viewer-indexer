@@ -41,6 +41,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
+import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -544,5 +545,111 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals("1,2,3,1", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS).getValue());
         Assert.assertNotNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS));
         Assert.assertEquals("true", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS).getValue());
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies add filename for native alto file
+     */
+    @Test
+    public void addIndexFieldsFromAltoData_shouldAddFilenameForNativeAltoFile() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.setDataRepository(new DataRepository("src/test/resources", true));
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
+        Assert.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
+        Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
+
+        Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+        Assert.assertEquals("alto/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies add filename for crowdsourcing alto file
+     */
+    @Test
+    public void addIndexFieldsFromAltoData_shouldAddFilenameForCrowdsourcingAltoFile() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.setDataRepository(new DataRepository("src/test/resources", true));
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_ALTOCROWD, Paths.get("src/test/resources/ALTO/"));
+        Assert.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD)));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), "00000010.xml");
+        Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
+
+        Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, "PPN123", "00000010", 10, false));
+        Assert.assertEquals("alto_crowd/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies add filename for converted alto file
+     */
+    @Test
+    public void addIndexFieldsFromAltoData_shouldAddFilenameForConvertedAltoFile() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.setDataRepository(new DataRepository("build/viewer", true));
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get("src/test/resources/ABBYYXML"));
+        Assert.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY)));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        File abbyyfile = new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), "00000001.xml");
+        Map<String, Object> altoData = TextHelper.readAbbyyToAlto(abbyyfile);
+
+        Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, "PPN123", "00000001", 1, true));
+        Assert.assertEquals("alto/PPN123/00000001.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies add fulltext
+     */
+    @Test
+    public void addIndexFieldsFromAltoData_shouldAddFulltext() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.setDataRepository(new DataRepository("src/test/resources", true));
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
+        Assert.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
+        Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
+
+        Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+        Assert.assertNotNull(doc.getFieldValue(SolrConstants.FULLTEXT));
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies add width and height
+     */
+    @Test
+    public void addIndexFieldsFromAltoData_shouldAddWidthAndHeight() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.setDataRepository(new DataRepository("src/test/resources", true));
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
+        Assert.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
+        Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
+
+        Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+        Assert.assertEquals(2480, doc.getFieldValue(SolrConstants.WIDTH));
+        Assert.assertEquals(3508, doc.getFieldValue(SolrConstants.HEIGHT));
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies add named entities
+     */
+    @Test
+    public void addIndexFieldsFromAltoData_shouldAddNamedEntities() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
     }
 }

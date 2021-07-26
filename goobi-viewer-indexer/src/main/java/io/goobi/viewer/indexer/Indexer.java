@@ -42,6 +42,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -798,7 +799,7 @@ public abstract class Indexer {
      * @should return size correctly
      */
     static Optional<Dimension> getSize(Path mediaFolder, String filename) {
-        logger.trace("getSize");
+        logger.trace("getSize: {}", filename);
         if (filename == null || mediaFolder == null) {
             return Optional.empty();
         }
@@ -807,7 +808,7 @@ public abstract class Indexer {
         if (!imageFile.isFile()) {
             return Optional.empty();
         }
-        logger.trace("Found image file {}", imageFile.getAbsolutePath());
+        logger.debug("Found image file {}", imageFile.getAbsolutePath());
         Dimension imageSize = new Dimension(0, 0);
         try {
             Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
@@ -1150,4 +1151,84 @@ public abstract class Indexer {
             return name.endsWith(Indexer.XML_EXTENSION);
         }
     };
+
+    /**
+     * 
+     * @param doc Solr input document
+     * @param altoData Parsed ALTO data
+     * @param dataFolders Map containing data folders
+     * @param altoParamName name of the data repository folder containing the alto file
+     * @param pi Record identifier
+     * @param baseFileName Base name of the page data file
+     * @param order Page order
+     * @return
+     * @throws IOException
+     * @should add filename for native alto file
+     * @should add filename for crowdsourcing alto file
+     * @should add filename for converted alto file
+     * @should add fulltext
+     * @should add width and height
+     * @should add named entities
+     */
+    boolean addIndexFieldsFromAltoData(final SolrInputDocument doc, final Map<String, Object> altoData, final Map<String, Path> dataFolders,
+            final String altoParamName, final String pi, final String baseFileName, final int order, final boolean converted) throws IOException {
+        if (altoData == null) {
+            return false;
+        }
+        if (doc == null) {
+            throw new IllegalArgumentException("doc may not be null");
+        }
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+        if (pi == null) {
+            throw new IllegalArgumentException("pi may not be null");
+        }
+        if (baseFileName == null) {
+            throw new IllegalArgumentException("baseFileName may not be null");
+        }
+
+        boolean ret = false;
+        // Write ALTO converted from ABBYY/TEI
+        if (converted) {
+            if (dataFolders.get(altoParamName) != null) {
+                FileUtils.writeStringToFile(
+                        new File(dataFolders.get(altoParamName).toFile(), baseFileName + XML_EXTENSION),
+                        (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+                ret = true;
+            } else {
+                logger.error("Data folder not defined: {}", dataFolders.get(altoParamName));
+            }
+        }
+
+        // FILENAME_ALTO
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
+            doc.addField(SolrConstants.FILENAME_ALTO, dataRepository.getDir(altoParamName).getFileName().toString() + '/' + pi
+                    + '/' + baseFileName + XML_EXTENSION);
+            ret = true;
+            logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName().toString(), order);
+        }
+        // FULLTEXT
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
+                && doc.getField(SolrConstants.FULLTEXT) == null) {
+            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
+            logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
+        }
+        // WIDTH
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
+            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
+            logger.debug("Added WIDTH from regular ALTO for page {}", order);
+        }
+        // HEIGHT
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
+            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
+            logger.debug("Added WIDTH from regular ALTO for page {}", order);
+        }
+        // NAMEDENTITIES
+        if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
+            addNamedEntitiesFields(altoData, doc);
+        }
+
+        return ret;
+    }
 }
