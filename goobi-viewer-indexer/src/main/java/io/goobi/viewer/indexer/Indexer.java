@@ -1202,8 +1202,10 @@ public abstract class Indexer {
         }
 
         // FILENAME_ALTO
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
-            doc.addField(SolrConstants.FILENAME_ALTO, dataRepository.getDir(altoParamName).getFileName().toString() + '/' + pi
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null && dataRepository != null) {
+            doc.addField(SolrConstants.FILENAME_ALTO,
+                    dataRepository.getDir(altoParamName)
+                    .getFileName().toString() + '/' + pi
                     + '/' + baseFileName + XML_EXTENSION);
             ret = true;
             logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName().toString(), order);

@@ -639,17 +639,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
 
         Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-        Assert.assertEquals(2480, doc.getFieldValue(SolrConstants.WIDTH));
-        Assert.assertEquals(3508, doc.getFieldValue(SolrConstants.HEIGHT));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies add named entities
-     */
-    @Test
-    public void addIndexFieldsFromAltoData_shouldAddNamedEntities() throws Exception {
-        //TODO auto-generated
-        Assert.fail("Not yet implemented");
+        Assert.assertEquals("2480", doc.getFieldValue(SolrConstants.WIDTH));
+        Assert.assertEquals("3508", doc.getFieldValue(SolrConstants.HEIGHT));
     }
 }
