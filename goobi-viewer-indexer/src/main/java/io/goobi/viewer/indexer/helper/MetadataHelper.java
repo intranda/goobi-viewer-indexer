@@ -31,8 +31,6 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.ws.http.HTTPException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jdom2.Attribute;
@@ -46,8 +44,9 @@ import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import de.intranda.digiverso.normdataimporter.model.Record;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GeoCoords;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -110,7 +109,7 @@ public class MetadataHelper {
      * @param element a {@link org.jdom2.Element} object.
      * @param queryPrefix a {@link java.lang.String} object.
      * @param indexObj The IndexObject is needed to alter its DEFAULT field value.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.util.List} object.
      */
@@ -647,7 +646,7 @@ public class MetadataHelper {
      * @param indexObj The IndexObject into which the metadata shall be written.
      * @param element The JDOM Element relative to which to search.
      * @param queryPrefix a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      */
     public static void writeMetadataToObject(IndexObject indexObj, Element element, String queryPrefix, JDomXP xp) throws FatalIndexerException {
@@ -787,7 +786,7 @@ public class MetadataHelper {
      * </p>
      *
      * @param pi a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should trim identifier
      * @should apply replace rules
      * @should replace spaces with underscores
@@ -892,7 +891,7 @@ public class MetadataHelper {
      *
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public static String getAnchorPi(JDomXP xp) throws FatalIndexerException {
         String query =
@@ -911,7 +910,7 @@ public class MetadataHelper {
      * @param prefix a {@link java.lang.String} object.
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return String or null
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should extract DenkXweb PI correctly
      */
     public static String getPIFromXML(String prefix, JDomXP xp) throws FatalIndexerException {
@@ -1348,7 +1347,7 @@ public class MetadataHelper {
      *
      * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      * @param teiFolder a {@link java.nio.file.Path} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
      * @should append fulltext from all files

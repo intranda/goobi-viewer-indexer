@@ -38,7 +38,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.xml.ws.http.HTTPException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -69,7 +68,8 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.Version;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 
 /**
  * <p>
@@ -140,13 +140,13 @@ public class Utils {
      * @throws HTTPException
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
-            throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
+            throws FatalIndexerException, ClientProtocolException, IOException {
         updateDataRepositoryCache(pi, dataRepositoryName, Configuration.getInstance().getViewerUrl(),
                 Configuration.getInstance().getViewerAuthorizationToken());
     }
 
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
-            throws FatalIndexerException, HTTPException, ClientProtocolException, IOException {
+            throws FatalIndexerException, ClientProtocolException, IOException {
         if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
             return;
         }
@@ -198,28 +198,29 @@ public class Utils {
      * getWebContentGET.
      * </p>
      *
-     * @param url a {@link java.lang.String} object.
+     * @param urlString a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
-    public static String getWebContentGET(String url) throws ClientProtocolException, IOException, HTTPException {
+    public static String getWebContentGET(String urlString) throws ClientProtocolException, IOException, HTTPException {
         RequestConfig defaultRequestConfig = RequestConfig.custom()
                 .setSocketTimeout(HTTP_TIMEOUT)
                 .setConnectTimeout(HTTP_TIMEOUT)
                 .setConnectionRequestTimeout(HTTP_TIMEOUT)
                 .build();
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            HttpGet get = new HttpGet(url);
+            HttpGet get = new HttpGet(urlString);
             try (CloseableHttpResponse response = httpClient.execute(get); StringWriter writer = new StringWriter()) {
                 int code = response.getStatusLine().getStatusCode();
                 if (code == HttpStatus.SC_OK) {
                     return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
+                    // IOUtils.copy(response.getEntity().getContent(), writer);
+                    // return writer.toString();
                 }
-                logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
-                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
-                return response.getStatusLine().getReasonPhrase();
+                logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
+                throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
             }
         }
     }
@@ -480,7 +481,7 @@ public class Utils {
      * </p>
      *
      * @param pi a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a {@link java.lang.String} object.
      */
     public static String removeRecordImagesFromCache(String pi) throws FatalIndexerException {
@@ -497,7 +498,7 @@ public class Utils {
 
         try {
             return Utils.getWebContentGET(sbUrl.toString());
-        } catch (IOException e) {
+        } catch (IOException | HTTPException e) {
             return "Could not clear viewer cache: " + e.getMessage();
         }
     }

@@ -74,6 +74,8 @@ import de.intranda.api.annotation.wa.TextualResource;
 import de.intranda.api.annotation.wa.TypedResource;
 import de.intranda.api.annotation.wa.WebAnnotation;
 import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -81,10 +83,8 @@ import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
-import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -140,7 +140,7 @@ public abstract class Indexer {
      * @param searchIndex
      * @return {@link java.lang.Boolean}
      * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should delete METS record from index completely
      * @should delete LIDO record from index completely
      * @should leave trace document for METS record if requested
@@ -195,7 +195,7 @@ public abstract class Indexer {
      * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @throws java.io.IOException
      * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a boolean.
      */
     protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrSearchIndex searchIndex)
@@ -311,7 +311,7 @@ public abstract class Indexer {
      * Returns the next available IDDOC value.
      *
      * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a long.
      */
     protected static synchronized long getNextIddoc(SolrSearchIndex searchIndex) throws FatalIndexerException {
@@ -728,7 +728,7 @@ public abstract class Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
      * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     protected void writeUserGeneratedContents(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, IndexObject indexObj)
             throws FatalIndexerException {
@@ -766,8 +766,8 @@ public abstract class Indexer {
      * @param xmlFile a {@link java.nio.file.Path} object.
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
-     * @throws io.goobi.viewer.indexer.model.IndexerException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.IndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void initJDomXP(Path xmlFile) throws IOException, JDOMException, IndexerException, FatalIndexerException {
         xp = new JDomXP(xmlFile.toFile());
@@ -944,7 +944,7 @@ public abstract class Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
      * @return number of created docs
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should add docs correctly
      * @should set PI_TOPSTRUCT to child docstruct metadata
      * @should set DOCSTRCT_TOP

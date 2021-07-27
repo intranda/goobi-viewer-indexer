@@ -42,7 +42,7 @@ import org.jdom2.xpath.XPathFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.model.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 
 /**
  * <p>
@@ -126,7 +126,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.List}
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public List<Object> evaluate(String expr, Object parent) throws FatalIndexerException {
         if (parent == null) {
@@ -163,7 +163,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.ArrayList} or null
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return all values
      */
     public List<Element> evaluateToElements(String expr, Object parent) throws FatalIndexerException {
@@ -190,7 +190,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.ArrayList} or null
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return all values
      */
     public List<Attribute> evaluateToAttributes(String expr, Object parent) throws FatalIndexerException {
@@ -216,7 +216,7 @@ public class JDomXP {
      *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return value correctly
      * @return a {@link java.lang.String} object.
      */
@@ -241,7 +241,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.lang.String} or null
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return value correctly
      * @should convert string to NFC
      */
@@ -269,7 +269,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.ArrayList} or null
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return all values
      * @should convert strings to NFC
      */
@@ -287,7 +287,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.ArrayList} or null
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public static List<String> evaluateToStringListStatic(String expr, Object parent) throws FatalIndexerException {
         List<Object> list = evaluate(expr, parent, Filters.fpassthrough());
@@ -307,7 +307,7 @@ public class JDomXP {
      *
      * @param expr a {@link java.lang.String} object.
      * @param parent a {@link java.lang.Object} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return value correctly
      * @return a {@link java.lang.String} object.
      */
@@ -391,7 +391,7 @@ public class JDomXP {
      * Returns the mets:dmdSec element with the given DMDID
      *
      * @param dmdId a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return mdWrap correctly
      * @return a {@link org.jdom2.Element} object.
      */
@@ -407,7 +407,7 @@ public class JDomXP {
     /**
      * Splits a multi-record LIDO document into a list of individual record documents.
      *
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should split multi record documents correctly
      * @should leave single record documents as is
      * @should return empty list for non lido documents
@@ -458,7 +458,7 @@ public class JDomXP {
     /**
      * Splits a multi-record DenkXweb document into a list of individual record documents.
      *
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should split multi record documents correctly
      * @should leave single record documents as is
      * @should return empty list for non lido documents
@@ -551,7 +551,7 @@ public class JDomXP {
      *
      * @param file a {@link java.io.File} object.
      * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should detect mets files correctly
      * @should detect lido files correctly
      * @should detect denkxweb files correctly

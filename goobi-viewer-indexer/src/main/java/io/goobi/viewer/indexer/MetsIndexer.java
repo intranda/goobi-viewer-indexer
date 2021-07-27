@@ -63,6 +63,9 @@ import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
@@ -73,10 +76,8 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
-import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -765,7 +766,7 @@ public class MetsIndexer extends Indexer {
      * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
      * @should skip unmapped pages
@@ -1310,7 +1311,7 @@ public class MetsIndexer extends Indexer {
 
             // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
             if (!altoWritten && !foundCrowdsourcingData && altoURL != null && altoURL.startsWith("http")
-                    && !altoURL.startsWith(Configuration.getInstance().getString("init.viewerUrl", "missing?"))) {
+                    && Configuration.getInstance().getViewerUrl() != null && !altoURL.startsWith(Configuration.getInstance().getViewerUrl())) {
                 try {
                     logger.info("Downloading ALTO from {}", altoURL);
                     String alto = Utils.getWebContentGET(altoURL);
@@ -1361,6 +1362,8 @@ public class MetsIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
+                } catch (HTTPException e) {
+                    logger.warn(e.getMessage());
                 }
 
             }
@@ -1735,7 +1738,7 @@ public class MetsIndexer extends Indexer {
      * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
      * @throws java.io.IOException
      * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should keep creation timestamp
      * @should set update timestamp correctly
      * @should keep representation thumbnail
@@ -2134,7 +2137,7 @@ public class MetsIndexer extends Indexer {
      * getMetsCreateDate.
      * </p>
      *
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a {@link java.time.LocalDateTime} object.
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS

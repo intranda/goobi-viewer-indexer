@@ -32,8 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
 
 /**
@@ -535,7 +535,7 @@ public final class MetadataConfigurationManager {
      * </p>
      *
      * @param code a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return correct mapping
      * @should return null if code not configured
      * @return a {@link java.lang.String} object.
@@ -550,7 +550,7 @@ public final class MetadataConfigurationManager {
      * @param string a {@link java.lang.String} object.
      * @return The mapped replacement name, if available; default docstruct name, if configured to be used; the original name (without spaces)
      *         otherwise.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public static String mapDocStrct(String string) throws FatalIndexerException {
         String ret = string.replace(" ", "_");

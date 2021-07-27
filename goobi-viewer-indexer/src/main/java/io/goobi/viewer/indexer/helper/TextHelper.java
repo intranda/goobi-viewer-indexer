@@ -50,8 +50,8 @@ import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocumen
 import de.intranda.digiverso.ocr.alto.utils.HyphenationLinker;
 import de.intranda.digiverso.ocr.conversion.ConvertAbbyyToAltoStaX;
 import de.intranda.digiverso.ocr.conversion.ConvertTeiToAlto;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**
@@ -320,7 +320,7 @@ public final class TextHelper {
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
      * @return a {@link java.util.Map} object.
@@ -360,7 +360,7 @@ public final class TextHelper {
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @throws javax.xml.stream.XMLStreamException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
      * @return a {@link java.util.Map} object.
@@ -392,7 +392,7 @@ public final class TextHelper {
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return correct values
      * @should throw FileNotFoundException if file not found
      * @return a {@link java.util.Map} object.

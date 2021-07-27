@@ -49,7 +49,7 @@ import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.model.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -82,7 +82,7 @@ public final class SolrSearchIndex {
      * @param timeoutConnection
      * @param allowCompression
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      * @should return null if solrUrl is empty
      */
     public static HttpSolrClient getNewHttpSolrClient(String solrUrl, int timeoutSocket, int timeoutConnection, boolean allowCompression)
@@ -124,7 +124,7 @@ public final class SolrSearchIndex {
      *
      * @param iddoc a long.
      * @return a boolean.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public synchronized boolean checkIddocAvailability(long iddoc) throws FatalIndexerException {
         if (usedIddocs.get(iddoc) != null) {
@@ -278,7 +278,7 @@ public final class SolrSearchIndex {
      *
      * @param doc a {@link org.apache.solr.common.SolrDocument} object.
      * @param partialUpdates Map of update operations (usage: Map<field, Map<operation, value>>)
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should update doc correctly
      * @should add GROUPFIELD if original doc doesn't have it
      * @return a boolean.
@@ -311,7 +311,7 @@ public final class SolrSearchIndex {
      *
      * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
      * @return Error message, if occurred; null otherwise.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should write doc correctly
      */
     public boolean writeToIndex(SolrInputDocument doc) throws FatalIndexerException {
@@ -351,7 +351,7 @@ public final class SolrSearchIndex {
      *
      * @param docs a {@link java.util.List} object.
      * @return Error message, if occurred; null otherwise.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should write all docs correctly
      */
     public boolean writeToIndex(List<SolrInputDocument> docs) throws FatalIndexerException {
@@ -390,7 +390,7 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param id a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void deleteDocument(String id) throws FatalIndexerException {
         boolean success = false;
@@ -426,7 +426,7 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param ids a {@link java.util.List} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return false if id list empty
      * @should delete ids correctly
      * @return a boolean.
@@ -510,7 +510,7 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param optimize a boolean.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void commit(boolean optimize) throws FatalIndexerException {
         boolean success = false;
@@ -581,7 +581,7 @@ public final class SolrSearchIndex {
      *
      * @param confFilename
      * @return a {@link org.jdom2.Document} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public static Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
@@ -611,7 +611,7 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @return a int.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public int removeGrievingAnchors() throws FatalIndexerException {
         String[] fields = { SolrConstants.IDDOC, SolrConstants.PI };

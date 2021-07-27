@@ -34,7 +34,7 @@ import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.model.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
@@ -68,7 +68,7 @@ public final class Configuration {
      * Re-inits the instance with the given config file name.
      *
      * @param confFilename a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a {@link io.goobi.viewer.indexer.helper.Configuration} object.
      */
     public static synchronized Configuration getInstance(String confFilename) throws FatalIndexerException {
@@ -83,7 +83,7 @@ public final class Configuration {
      * Do not call this method before the correct config file path has been passed!
      *
      * @return a {@link io.goobi.viewer.indexer.helper.Configuration} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public static synchronized Configuration getInstance() throws FatalIndexerException {
         Configuration conf = instance;

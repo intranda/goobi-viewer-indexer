@@ -23,11 +23,11 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 
 /**
  * Entry Point into Application.
@@ -112,7 +112,7 @@ public final class SolrIndexerDaemon {
      * @param configFilePath a {@link java.lang.String} object.
      * @param noUpdate a boolean.
      * @param cleanupAnchors a boolean.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void start(String configFilePath, boolean noUpdate, boolean cleanupAnchors) throws FatalIndexerException {
         if (running) {
