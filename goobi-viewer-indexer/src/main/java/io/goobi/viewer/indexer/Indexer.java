@@ -941,8 +941,10 @@ public abstract class Indexer {
      * <code>IndexObject.groupedMetadataFields</code> has been populated completely.
      * </p>
      *
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param writeStrategy WriteStrategy that holds the added Solr documets
      * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
+     * @param groupedMetadataList The list of grouped metadata objects to add as Solr fields
+     * @param ownerIddoc Value for IDDOC_OWNER
      * @return number of created docs
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should add docs correctly
@@ -952,12 +954,21 @@ public abstract class Indexer {
      * @should add authority metadata to group metadata docs correctly
      * @should add authority metadata to docstruct doc correctly except coordinates
      * @should add coordinates to docstruct doc correctly
+     * @should recursively add child metadata
      */
-    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
+    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj, List<GroupedMetadata> groupedMetadataList, long ownerIddoc)
+            throws FatalIndexerException {
+        if (groupedMetadataList == null || groupedMetadataList.isEmpty()) {
+            return 0;
+        }
+        if (indexObj == null) {
+            throw new IllegalArgumentException("indexObj may not be null");
+        }
+
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         Set<String> skipFields = new HashSet<>();
-        for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
+        for (GroupedMetadata gmd : groupedMetadataList) {
             if (gmd.isSkip()) {
                 continue;
             }
@@ -1011,7 +1022,7 @@ public abstract class Indexer {
                         doc.getFieldValue(SolrConstants.LABEL));
                 doc.addField(SolrConstants.GROUPFIELD, iddoc);
             }
-            doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
+            doc.addField(SolrConstants.IDDOC_OWNER, ownerIddoc);
             doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
             doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
 
@@ -1034,6 +1045,11 @@ public abstract class Indexer {
 
             writeStrategy.addDoc(doc);
             count++;
+
+            // Recursively add children
+            if (!gmd.getChildren().isEmpty()) {
+                count += addGroupedMetadataDocs(writeStrategy, indexObj, gmd.getChildren(), iddoc);
+            }
         }
 
         return count;
@@ -1202,11 +1218,13 @@ public abstract class Indexer {
         }
 
         // FILENAME_ALTO
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null && dataRepository != null) {
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null
+                && dataRepository != null) {
             doc.addField(SolrConstants.FILENAME_ALTO,
                     dataRepository.getDir(altoParamName)
-                    .getFileName().toString() + '/' + pi
-                    + '/' + baseFileName + XML_EXTENSION);
+                            .getFileName()
+                            .toString() + '/' + pi
+                            + '/' + baseFileName + XML_EXTENSION);
             ret = true;
             logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName().toString(), order);
         }

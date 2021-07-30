@@ -242,7 +242,6 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         String[] filenames = { "00000001.tif", "00225231.png", "test1.jp2" };
         Dimension[] imageSizes = { new Dimension(3192, 4790), new Dimension(2794, 3838), new Dimension(3448, 6499) };
 
-        MetsIndexer indexer = new MetsIndexer(hotfolder);
         File dataFolder = new File("src/test/resources/image_size");
 
         int i = 0;
@@ -362,7 +361,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         gmd.getFields().add(new LuceneField("MD_TWO", "bar"));
         indexObj.getGroupedMetadataFields().add(gmd);
 
-        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
         Assert.assertEquals(1, strategy.getDocsToAdd().size());
         Assert.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
         Assert.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
@@ -383,7 +382,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         gmd.setMainValue("a");
         indexObj.getGroupedMetadataFields().add(gmd);
 
-        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
         Assert.assertEquals(1, strategy.getDocsToAdd().size());
         Assert.assertEquals("PPN123", strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.PI_TOPSTRUCT));
     }
@@ -403,7 +402,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         gmd.setMainValue("a");
         indexObj.getGroupedMetadataFields().add(gmd);
 
-        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
         Assert.assertEquals(1, strategy.getDocsToAdd().size());
         Assert.assertEquals("monograph", strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.DOCSTRCT_TOP));
     }
@@ -433,7 +432,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             indexObj.getGroupedMetadataFields().add(gmd);
         }
 
-        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
         Assert.assertEquals(1, strategy.getDocsToAdd().size());
         Assert.assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
         Assert.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
@@ -458,7 +457,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
         indexObj.getGroupedMetadataFields().add(gmd);
 
-        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
         Assert.assertFalse(gmd.isAddCoordsToDocstruct());
 
@@ -491,7 +490,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
         indexObj.getGroupedMetadataFields().add(gmd);
 
-        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
         Assert.assertFalse(gmd.isAddCoordsToDocstruct());
 
@@ -534,7 +533,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
         indexObj.getGroupedMetadataFields().add(gmd);
 
-        indexer.addGroupedMetadataDocs(strategy, indexObj);
+        indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
         // Coordinate fields are no longer on metadata docs
         Assert.assertNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_WKT_COORDS));
@@ -545,6 +544,57 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals("1,2,3,1", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS).getValue());
         Assert.assertNotNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS));
         Assert.assertEquals("true", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS).getValue());
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(ISolrWriteStrategy,IndexObject,List)
+     * @verifies recursively add child metadata
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldRecursivelyAddChildMetadata() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(1);
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setLabel("MD_GROUP");
+        gmd.setMainValue("a");
+        gmd.getFields().add(new LuceneField("MD_ONE", "foo"));
+        gmd.getFields().add(new LuceneField("MD_TWO", "bar"));
+        indexObj.getGroupedMetadataFields().add(gmd);
+
+        GroupedMetadata gmdChild = new GroupedMetadata();
+        gmdChild.setLabel("MD_GROUP");
+        gmdChild.setMainValue("a");
+        gmdChild.getFields().add(new LuceneField("MD_ONE", "foo"));
+        gmdChild.getFields().add(new LuceneField("MD_TWO", "bar"));
+        gmd.getChildren().add(gmdChild);
+
+        GroupedMetadata gmdGrandchild = new GroupedMetadata();
+        gmdGrandchild.setLabel("MD_GROUP");
+        gmdGrandchild.setMainValue("a");
+        gmdGrandchild.getFields().add(new LuceneField("MD_ONE", "foo"));
+        gmdGrandchild.getFields().add(new LuceneField("MD_TWO", "bar"));
+        gmdChild.getChildren().add(gmdGrandchild);
+
+        indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
+        Assert.assertEquals(3, strategy.getDocsToAdd().size());
+
+        long iddocParent = (long) strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.IDDOC);
+        Assert.assertNotNull(iddocParent);
+        Assert.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        Assert.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+
+        long iddocChild = (long) strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC);
+        Assert.assertNotNull(iddocChild);
+        Assert.assertEquals(iddocParent, strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC_OWNER));
+        Assert.assertEquals("foo", strategy.getDocsToAdd().get(1).getFieldValue("MD_ONE"));
+        Assert.assertEquals("bar", strategy.getDocsToAdd().get(1).getFieldValue("MD_TWO"));
+
+        long iddocGrandchild = (long) strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC);
+        Assert.assertNotNull(iddocGrandchild);
+        Assert.assertEquals(iddocChild, strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC_OWNER));
+        Assert.assertEquals("foo", strategy.getDocsToAdd().get(2).getFieldValue("MD_ONE"));
+        Assert.assertEquals("bar", strategy.getDocsToAdd().get(2).getFieldValue("MD_TWO"));
     }
 
     /**
@@ -581,7 +631,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), "00000010.xml");
         Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
 
-        Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, "PPN123", "00000010", 10, false));
+        Assert.assertTrue(
+                indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, "PPN123", "00000010", 10, false));
         Assert.assertEquals("alto_crowd/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
     }
 
@@ -600,7 +651,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         File abbyyfile = new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), "00000001.xml");
         Map<String, Object> altoData = TextHelper.readAbbyyToAlto(abbyyfile);
 
-        Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, "PPN123", "00000001", 1, true));
+        Assert.assertTrue(
+                indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, "PPN123", "00000001", 1, true));
         Assert.assertEquals("alto/PPN123/00000001.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
     }
 

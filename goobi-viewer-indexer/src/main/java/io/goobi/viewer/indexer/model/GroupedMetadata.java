@@ -49,6 +49,7 @@ public class GroupedMetadata {
     /** If true, this field won't be added to he index. */
     private boolean skip = false;
     private boolean allowDuplicateValues = false;
+    private List<GroupedMetadata> children = new ArrayList<>();
 
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
@@ -95,6 +96,9 @@ public class GroupedMetadata {
         return true;
     }
 
+    /**
+     * @should clone child metadata
+     */
     @Override
     public GroupedMetadata clone() {
         GroupedMetadata ret = new GroupedMetadata();
@@ -102,6 +106,9 @@ public class GroupedMetadata {
         ret.setMainValue(mainValue);
         ret.setAuthorityURI(authorityURI);
         ret.getFields().addAll(fields);
+        for (GroupedMetadata gmd : getChildren()) {
+            ret.getChildren().add(gmd.clone());
+        }
 
         return ret;
     }
@@ -319,4 +326,17 @@ public class GroupedMetadata {
         this.allowDuplicateValues = allowDuplicateValues;
     }
 
+    /**
+     * @return the children
+     */
+    public List<GroupedMetadata> getChildren() {
+        return children;
+    }
+
+    /**
+     * @param children the children to set
+     */
+    public void setChildren(List<GroupedMetadata> children) {
+        this.children = children;
+    }
 }
