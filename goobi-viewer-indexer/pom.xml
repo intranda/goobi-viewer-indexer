@@ -54,7 +54,7 @@
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6</jdom2.version>
-		<jsoup.version>1.13.1</jsoup.version>
+		<jsoup.version>1.14.1</jsoup.version>
 		<json.version>20210307</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.16.0</metadata-extractor.version>
