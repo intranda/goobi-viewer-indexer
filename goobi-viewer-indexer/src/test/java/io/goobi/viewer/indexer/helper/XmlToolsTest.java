@@ -18,7 +18,7 @@ package io.goobi.viewer.indexer.helper;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -97,7 +97,7 @@ public class XmlToolsTest extends AbstractTest {
      * @see XmlTools#writeXmlFile(Document,String)
      * @verifies throw FileNotFoundException if file is directory
      */
-    @Test(expected = AccessDeniedException.class)
+    @Test(expected = FileSystemException.class)
     public void writeXmlFile_shouldThrowFileNotFoundExceptionIfFileIsDirectory() throws Exception {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
