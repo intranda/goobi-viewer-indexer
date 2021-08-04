@@ -128,10 +128,11 @@ public class GroupedMetadata {
 
         logger.debug("element: {}", ele.getName());
         for (Object field : groupEntityFields.keySet()) {
-            if ("type".equals(field) || "url".equals(field) || !(groupEntityFields.get(field) instanceof SubfieldConfig)) {
+            if (field == null || "type".equals(field) || "url".equals(field) || !(groupEntityFields.get(field) instanceof SubfieldConfig)) {
                 continue;
             }
             SubfieldConfig subfield = (SubfieldConfig) groupEntityFields.get(field);
+
             for (String xpath : subfield.getXpaths()) {
                 logger.debug("XPath: {}", xpath);
                 List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
@@ -185,6 +186,69 @@ public class GroupedMetadata {
             }
         }
     }
+
+//    void collectGroupMetadataFieldValues(SubfieldConfig subfield, Element ele) {
+//        if (subfield == null) {
+//            return;
+//        }
+//
+//        if (subfield.isHasChildren()) {
+//            for (SubfieldConfig child : subfield.getChildren()) {
+//                collectGroupMetadataFieldValues(child, ele);
+//            }
+//        } else {
+//            for (String xpath : subfield.getXpaths()) {
+//                logger.debug("XPath: {}", xpath);
+//                List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
+//                if (values == null || values.isEmpty()) {
+//                    // Use default value, if available
+//                    if (subfield.getDefaultValues().get(xpath) != null) {
+//                        values = Collections.singletonList(subfield.getDefaultValues().get(xpath));
+//                    }
+//                    if (values == null || values.isEmpty()) {
+//                        continue;
+//                    }
+//                }
+//                // Trim down to the first value if subfield is not multivalued
+//                if (!subfield.isMultivalued() && values.size() > 1) {
+//                    logger.info("{} is not multivalued", subfield.getFieldname());
+//                    values = values.subList(0, 1);
+//                }
+//                for (Object val : values) {
+//                    String fieldValue = JDomXP.objectToString(val);
+//                    logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
+//                    if (fieldValue == null) {
+//                        continue;
+//                    }
+//                    fieldValue = fieldValue.trim();
+//                    if (fieldValue.isEmpty()) {
+//                        continue;
+//                    }
+//
+//                    if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
+//                        // Skip values that probably aren't real identifiers or URIs
+//                        if (fieldValue.length() < 2) {
+//                            logger.trace("Authority URI too short: {}", fieldValue);
+//                            continue;
+//                        }
+//                        if (NormDataImporter.FIELD_URI.equals(subfield.getFieldname())) {
+//                            setAuthorityURI(fieldValue);
+//                        }
+//                        // Add GND URL part, if the value is not a URL
+//                        if (!fieldValue.startsWith("http")) {
+//                            fieldValue = "http://d-nb.info/gnd/" + fieldValue;
+//                        }
+//                    }
+//
+//                    fields.add(new LuceneField(subfield.getFieldname(), fieldValue));
+//                    if (!collectedValues.containsKey(fieldValue)) {
+//                        collectedValues.put(subfield.getFieldname(), new ArrayList<>(values.size()));
+//                    }
+//                    collectedValues.get(subfield.getFieldname()).add(fieldValue);
+//                }
+//            }
+//        }
+//    }
 
     /**
      * <p>

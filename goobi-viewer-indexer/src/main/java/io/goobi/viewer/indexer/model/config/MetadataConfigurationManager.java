@@ -194,21 +194,12 @@ public final class MetadataConfigurationManager {
                     if (elements != null) {
                         for (Iterator it = elements.iterator(); it.hasNext();) {
                             HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
-                            String name = sub.getString("[@name]", null);
-                            String defaultValue = sub.getString("[@defaultValue]", null);
-                            boolean multivalued = sub.getBoolean("[@multivalued]", true);
-                            String xpathExp = sub.getString("");
-                            if (StringUtils.isNotEmpty(name) && StringUtils.isNotEmpty(xpathExp)) {
-                                SubfieldConfig sfc = (SubfieldConfig) groupedSubfieldConfigurations.get(name);
-                                if (sfc == null) {
-                                    sfc = new SubfieldConfig(name, multivalued);
-                                    groupedSubfieldConfigurations.put(name, sfc);
-                                }
-                                sfc.getXpaths().add(xpathExp);
-                                sfc.getDefaultValues().put(xpathExp, defaultValue);
-                                logger.debug("Loaded group entity field: {} - {}", name, xpathExp);
-                            } else {
-                                logger.warn("Found incomplete groupEntity configuration for field '{}', skipping...", fieldname);
+                            SubfieldConfig sfc = readSubfield(sub);
+                            if (sfc == null) {
+                                continue;
+                            }
+                            if (!groupedSubfieldConfigurations.containsKey(sfc)) {
+                                groupedSubfieldConfigurations.put(sfc.getFieldname(), sfc);
                             }
                         }
                         fieldValues.put("groupEntity", groupedSubfieldConfigurations);
@@ -290,6 +281,47 @@ public final class MetadataConfigurationManager {
 
         logger.info("{} field configurations loaded.", ret.size());
         return ret;
+    }
+
+    /**
+     * 
+     * @param sub
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    static SubfieldConfig readSubfield(HierarchicalConfiguration sub) {
+        if (sub == null) {
+            return null;
+        }
+
+        String fieldName = sub.getString("[@name]", null);
+        String defaultValue = sub.getString("[@defaultValue]", null);
+        boolean multivalued = sub.getBoolean("[@multivalued]", true);
+        String xpathExp = sub.getString("[@xpath]");
+        if (xpathExp == null) {
+            xpathExp = sub.getString("");
+        }
+        if (StringUtils.isEmpty(fieldName) || StringUtils.isEmpty(xpathExp)) {
+            return null;
+        }
+
+        SubfieldConfig sfc = new SubfieldConfig(fieldName, multivalued);
+        sfc.getXpaths().add(xpathExp);
+        sfc.getDefaultValues().put(xpathExp, defaultValue);
+        logger.info("Loaded group entity field: {} - {}", fieldName, xpathExp);
+
+        List children = sub.configurationsAt("field");
+        if (children != null) {
+            for (Iterator it = children.iterator(); it.hasNext();) {
+                HierarchicalConfiguration childSub = (HierarchicalConfiguration) it.next();
+                SubfieldConfig child = readSubfield(childSub);
+                if (child != null) {
+                    sfc.getChildren().add(child);
+                }
+            }
+        }
+
+        return sfc;
     }
 
     /**

@@ -251,10 +251,10 @@ public final class SolrConstants {
     public static final String _UGC_TYPE_COMMENT = "COMMENT";
     /** Constant <code>NAMEDENTITIES="NAMEDENTITIES"</code> */
     public static final String NAMEDENTITIES = "NAMEDENTITIES";
-    
+
     /** Field containing true if a page contains a double image. */
     public static final String BOOL_DOUBLE_IMAGE = "BOOL_DOUBLE_IMAGE";
     /** Constant <code>MD_ANNOTATION_ID="MD_ANNOTATION_ID"</code> */
     public static final String MD_ANNOTATION_ID = "MD_ANNOTATION_ID";
-    
+
 }

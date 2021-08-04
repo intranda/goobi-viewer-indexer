@@ -29,6 +29,7 @@ public class SubfieldConfig {
     private final boolean multivalued;
     private final List<String> xpaths = new ArrayList<>();
     private final Map<String, String> defaultValues = new HashMap<>();
+    private final List<SubfieldConfig> children = new ArrayList<>();
 
     /**
      * <p>
@@ -40,6 +41,10 @@ public class SubfieldConfig {
     public SubfieldConfig(String fieldname, boolean multivalued) {
         this.fieldname = fieldname;
         this.multivalued = multivalued;
+    }
+
+    public boolean isHasChildren() {
+        return !children.isEmpty();
     }
 
     /**
@@ -76,5 +81,12 @@ public class SubfieldConfig {
      */
     public Map<String, String> getDefaultValues() {
         return defaultValues;
+    }
+
+    /**
+     * @return the children
+     */
+    public List<SubfieldConfig> getChildren() {
+        return children;
     }
 }
