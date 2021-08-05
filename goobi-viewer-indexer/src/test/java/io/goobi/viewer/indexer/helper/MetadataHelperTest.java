@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.MultiMap;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Assert;
@@ -120,7 +121,7 @@ public class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,String)
+     * @see MetadataHelper#getGroupedMetadata(Element,MultiMap,String)
      * @verifies group correctly
      */
     @Test
