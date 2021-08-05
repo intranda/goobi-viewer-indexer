@@ -29,7 +29,6 @@ public class SubfieldConfig {
     private final boolean multivalued;
     private final List<String> xpaths = new ArrayList<>();
     private final Map<String, String> defaultValues = new HashMap<>();
-    private final List<SubfieldConfig> children = new ArrayList<>();
 
     /**
      * <p>
@@ -43,8 +42,22 @@ public class SubfieldConfig {
         this.multivalued = multivalued;
     }
 
-    public boolean isHasChildren() {
-        return !children.isEmpty();
+    /**
+     * Copies XPath and default values from the given SubfieldConfig.
+     * 
+     * @param other SubfieldConfig to copy from
+     * @should copy xpath expressions correctly
+     * @should copy default values correctly
+     */
+    public void ingestXpaths(SubfieldConfig other) {
+        if (other == null) {
+            return;
+        }
+
+        xpaths.addAll(other.getXpaths());
+        for (String xpath : other.getDefaultValues().keySet()) {
+            defaultValues.put(xpath, other.getDefaultValues().get(xpath));
+        }
     }
 
     /**
@@ -81,12 +94,5 @@ public class SubfieldConfig {
      */
     public Map<String, String> getDefaultValues() {
         return defaultValues;
-    }
-
-    /**
-     * @return the children
-     */
-    public List<SubfieldConfig> getChildren() {
-        return children;
     }
 }

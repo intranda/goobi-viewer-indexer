@@ -56,6 +56,7 @@ import io.goobi.viewer.indexer.model.PrimoDocument;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
+import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
@@ -242,7 +243,7 @@ public class MetadataHelper {
                                 logger.trace(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd =
-                                        getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
+                                        getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem.getFieldname());
                                 // Allow duplicate values for this GMD, if the configuration item allows it
                                 gmd.setAllowDuplicateValues(configurationItem.isAllowDuplicateValues());
                                 List<LuceneField> authorityData = new ArrayList<>();
@@ -1051,7 +1052,7 @@ public class MetadataHelper {
             }
             if (!oldValues.isEmpty()) {
                 Collections.sort(oldValues);
-                int count = 0;
+                // int count = 0;
                 for (int i = oldValues.get(0); i < oldValues.get(oldValues.size() - 1); ++i) {
                     if (!oldValues.contains(i)) {
                         if (skipValues != null && skipValues.contains(i)) {
@@ -1059,7 +1060,7 @@ public class MetadataHelper {
                         }
                         newValues.add(new LuceneField(fieldName, String.valueOf(i)));
                         logger.debug("Added implicit {}: {}", fieldName, i);
-                        count++;
+                        // count++;
                     }
                     //                    if (count == 10) {
                     //                        break;
@@ -1074,55 +1075,30 @@ public class MetadataHelper {
     /**
      * 
      * @param ele
-     * @param groupEntityFields
+     * @param groupEntity
      * @param groupLabel
      * @param xp
      * @return
      * @throws FatalIndexerException
      * @should group correctly
      */
-    static GroupedMetadata getGroupedMetadata(Element ele, Map<String, Object> groupEntityFields, String groupLabel) throws FatalIndexerException {
+    static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, String groupLabel) throws FatalIndexerException {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
-
-        // Grouped metadata type
-        MetadataGroupType type = null;
-        if (groupEntityFields.get("type") != null) {
-            type = MetadataGroupType.getByName(((String) groupEntityFields.get("type")).trim());
-            if (type == null) {
-                type = MetadataGroupType.OTHER;
-                logger.warn("Metadata group type not found: '{}', using '{}' instead.", groupEntityFields.get("type"), type.name());
-            }
-            ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.name()));
-        } else {
-            type = MetadataGroupType.OTHER;
-            logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
-        }
-
-        {
-            boolean addAuthorityDataToDocstruct = false;
-            if (groupEntityFields.get("addAuthorityDataToDocstruct") != null) {
-                addAuthorityDataToDocstruct = (boolean) groupEntityFields.get("addAuthorityDataToDocstruct");
-            }
-            ret.setAddAuthorityDataToDocstruct(addAuthorityDataToDocstruct);
-        }
-        {
-            boolean addCoordsToDocstruct = false;
-            if (groupEntityFields.get("addCoordsToDocstruct") != null) {
-                addCoordsToDocstruct = (boolean) groupEntityFields.get("addCoordsToDocstruct");
-            }
-            ret.setAddCoordsToDocstruct(addCoordsToDocstruct);
-        }
+        ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, groupEntity.getType().name()));
+        ret.setAddAuthorityDataToDocstruct(groupEntity.isAddAuthorityDataToDocstruct());
+        ret.setAddCoordsToDocstruct(groupEntity.isAddCoordsToDocstruct());
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntityFields, ele);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele);
 
         String mdValue = null;
         for (LuceneField field : ret.getFields()) {
-            if (field.getField().equals("MD_VALUE") || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(type))
-                    || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(type))) {
+            if (field.getField().equals("MD_VALUE")
+                    || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(groupEntity.getType()))
+                    || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(groupEntity.getType()))) {
                 mdValue = cleanUpName(field.getValue());
                 field.setValue(mdValue);
             }
@@ -1130,7 +1106,7 @@ public class MetadataHelper {
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
             StringBuilder sbValue = new StringBuilder();
-            switch (type) {
+            switch (groupEntity.getType()) {
                 case PERSON:
                     if (collectedValues.containsKey("MD_LASTNAME") && !collectedValues.get("MD_LASTNAME").isEmpty()) {
                         sbValue.append(collectedValues.get("MD_LASTNAME").get(0));
@@ -1155,15 +1131,14 @@ public class MetadataHelper {
         }
 
         // Query citation resource
-        if (MetadataGroupType.CITATION.equals(type)) {
-            String url = (String) groupEntityFields.get("url");
-            if (StringUtils.isNotEmpty(url)) {
+        if (MetadataGroupType.CITATION.equals(groupEntity.getType())) {
+            if (StringUtils.isNotEmpty(groupEntity.getUrl())) {
                 try {
-                    PrimoDocument primo = new PrimoDocument(url)
+                    PrimoDocument primo = new PrimoDocument(groupEntity.getUrl())
                             .prepareURL(collectedValues)
                             .fetch()
                             .build();
-                    ret.collectGroupMetadataValues(collectedValues, groupEntityFields, primo.getXp().getRootElement());
+                    ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), primo.getXp().getRootElement());
                 } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
                     logger.error(e.getMessage());
                 }

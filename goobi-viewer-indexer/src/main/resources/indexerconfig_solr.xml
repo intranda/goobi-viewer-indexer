@@ -3232,5 +3232,29 @@
                         </list>
                 </MD_CLASSIFICATION_COMBINED>
 
+        <MD_EVENT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/mods:event</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="EVENT">
+                        <field name="MD_VALUE">intranda:type</field>
+                        <field name="EVENTYPE">intranda:type</field>
+                        <field name="MD_MATERIAL">intranda:material</field>
+                        <groupEntity name="MD_ARTIST" type="PERSON" xpath="intranda:actor[intranda:role='Künstler/-in']">
+                            <field name="MD_NAME">intranda:name</field>
+                            <field name="MD_ROLE">intranda:role</field>
+                            <field name="MD_DISPLAYNAME">intranda:displayName</field>
+                            <field name="MD_STARTDATE">intranda:startDate</field>
+                            <field name="MD_ENDDATE">intranda:endDate</field>
+                            <field name="MD_URI_GETTY">@getty</field>
+                            <field name="MD_URI_SIKART">@sikart</field>
+                            <field name="NORM_URI">@gnd</field>
+                        </groupEntity>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_EVENT>
+
 	</fields>
 </root>
