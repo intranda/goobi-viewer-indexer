@@ -905,6 +905,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
+        indexer.setDataRepository(new DataRepository("build/viewer", true));
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
         ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);

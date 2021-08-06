@@ -34,10 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.MetsIndexer;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
@@ -55,7 +55,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
      * Protected constructor.
      *
      * @param config a {@link io.goobi.viewer.indexer.helper.Configuration} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     protected RemainingSpaceStrategy(Configuration config) throws FatalIndexerException {
         // Load data repositories

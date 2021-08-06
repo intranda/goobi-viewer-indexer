@@ -19,8 +19,8 @@ import java.util.List;
 
 import org.apache.solr.common.SolrInputDocument;
 
-import io.goobi.viewer.indexer.model.FatalIndexerException;
-import io.goobi.viewer.indexer.model.IndexerException;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 
 /**
  * <p>
@@ -99,7 +99,7 @@ public interface ISolrWriteStrategy {
      *
      * @param order a int.
      * @return a {@link org.apache.solr.common.SolrInputDocument} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public SolrInputDocument getPageDocForOrder(int order) throws FatalIndexerException;
 
@@ -110,7 +110,7 @@ public interface ISolrWriteStrategy {
      *
      * @param physIdList a {@link java.util.List} object.
      * @return a {@link java.util.List} object.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public List<SolrInputDocument> getPageDocsForPhysIdList(List<String> physIdList) throws FatalIndexerException;
 
@@ -120,8 +120,8 @@ public interface ISolrWriteStrategy {
      * </p>
      *
      * @param aggregateRecords a boolean.
-     * @throws io.goobi.viewer.indexer.model.IndexerException if any.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.IndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public void writeDocs(boolean aggregateRecords) throws IndexerException, FatalIndexerException;
 

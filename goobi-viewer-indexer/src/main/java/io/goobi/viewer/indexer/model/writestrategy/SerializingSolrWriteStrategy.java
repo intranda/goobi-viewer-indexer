@@ -43,10 +43,10 @@ import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
-import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**

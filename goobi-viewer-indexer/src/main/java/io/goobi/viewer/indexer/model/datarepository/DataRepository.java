@@ -36,10 +36,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.Utils;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 
 /**
@@ -119,7 +119,7 @@ public class DataRepository {
      *
      * @param path Absolute path to the repository; empty string means the default folder structure in init.viewerHome will be used
      * @param createFolders If true, the data subfolders will be automatically created
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create dummy repository correctly
      * @should create real repository correctly
      * @should set rootDir to viewerHome path if empty string was given
@@ -551,7 +551,7 @@ public class DataRepository {
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
      * @param dataRepositories a {@link java.util.List} object.
      * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings,
             List<DataRepository> dataRepositories) throws IOException, FatalIndexerException {
@@ -602,7 +602,7 @@ public class DataRepository {
      * @param param Folder parameter name
      * @param dataRepositories a {@link java.util.List} object.
      * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a int.
      */
     public int checkCopyAndDeleteDataFolder(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param,
@@ -761,7 +761,7 @@ public class DataRepository {
      *
      * @param dataRepository a {@link java.lang.String} object.
      * @return Absolute path to the given data repository name
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return correct path
      */
     public static String getAbsolutePath(String dataRepository) throws FatalIndexerException {
@@ -783,7 +783,7 @@ public class DataRepository {
      * @param config a {@link io.goobi.viewer.indexer.helper.Configuration} object.
      * @param createFolders a boolean.
      * @return List of properly configured data repositories
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public static List<DataRepository> loadDataRepositories(Configuration config, boolean createFolders) throws FatalIndexerException {
         if (config == null) {

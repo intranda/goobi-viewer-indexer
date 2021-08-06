@@ -19,8 +19,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
@@ -50,7 +50,7 @@ public interface IDataRepositoryStrategy {
      * @param oldSearchIndex
      * @return DataReopository array with index 0 containing the selected repository and 1 containing the previous repository, if not equal to
      *         selected repository
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders,
             final SolrSearchIndex searchIndex, final SolrSearchIndex oldSearchIndex)

@@ -48,6 +48,8 @@ import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -55,9 +57,7 @@ import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.IndexObject;
-import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -639,7 +639,7 @@ public class WorldViewsIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart a int.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
      * @should skip unmapped pages
@@ -1042,7 +1042,7 @@ public class WorldViewsIndexer extends Indexer {
      * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
      * @throws java.io.IOException
      * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should keep creation timestamp
      * @should set update timestamp correctly
      * @should keep representation thumbnail

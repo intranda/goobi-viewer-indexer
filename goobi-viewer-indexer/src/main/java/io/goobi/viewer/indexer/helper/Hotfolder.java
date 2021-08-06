@@ -68,8 +68,8 @@ import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -150,7 +150,7 @@ public class Hotfolder {
      *
      * @param confFilename a {@link java.lang.String} object.
      * @param solrClient SolrClient object
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public Hotfolder(String confFilename, SolrClient solrClient) throws FatalIndexerException {
         this(confFilename, solrClient, null);
@@ -164,7 +164,7 @@ public class Hotfolder {
      * @param confFilename a {@link java.lang.String} object.
      * @param solrClient SolrClient object
      * @param oldSolrClient Optional old SolrClient for data migration
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     @SuppressWarnings("unchecked")
     public Hotfolder(String confFilename, SolrClient solrClient, SolrClient oldSolrClient) throws FatalIndexerException {
@@ -441,7 +441,7 @@ public class Hotfolder {
      * Scans the hotfolder for new files and executes appropriate actions.
      *
      * @return boolean true if successful; false othewise.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public boolean scan() throws FatalIndexerException {
         boolean noerror = true;

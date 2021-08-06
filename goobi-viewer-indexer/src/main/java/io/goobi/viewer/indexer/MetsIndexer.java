@@ -63,6 +63,9 @@ import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
@@ -73,10 +76,8 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
-import io.goobi.viewer.indexer.model.FatalIndexerException;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
-import io.goobi.viewer.indexer.model.IndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -765,7 +766,7 @@ public class MetsIndexer extends Indexer {
      * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
      * @should skip unmapped pages
@@ -1173,8 +1174,8 @@ public class MetsIndexer extends Indexer {
                         if (frameSizeSplit.length == 2) {
                             doc.addField(SolrConstants.WIDTH, frameSizeSplit[0].trim());
                             doc.addField(SolrConstants.HEIGHT, frameSizeSplit[1].trim());
-                            logger.debug("WIDTH: {}", doc.getFieldValue(SolrConstants.WIDTH));
-                            logger.debug("HEIGHT: {}", doc.getFieldValue(SolrConstants.HEIGHT));
+                            logger.info("WIDTH: {}", doc.getFieldValue(SolrConstants.WIDTH));
+                            logger.info("HEIGHT: {}", doc.getFieldValue(SolrConstants.HEIGHT));
                         } else {
                             logger.warn("Invalid formatFrameSize value in mets:techMD[@ID='{}']: '{}'", amdId, frameSize);
                         }
@@ -1203,35 +1204,16 @@ public class MetsIndexer extends Indexer {
                 File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
                 try {
                     altoData = TextHelper.readAltoFile(altoFile);
+                    altoWritten =
+                            addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, pi, baseFileName, order, false);
+                    if (altoWritten) {
+                        foundCrowdsourcingData = true;
+                    }
                 } catch (FileNotFoundException e) {
                     // Not all pages will have custom ALTO docs
                 } catch (IOException | JDOMException e) {
                     if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
                         logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
-                    }
-                }
-                if (altoData != null) {
-                    foundCrowdsourcingData = true;
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-                        doc.addField(SolrConstants.FILENAME_ALTO, dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).getFileName().toString() + '/'
-                                + pi + '/' + baseFileName + XML_EXTENSION);
-                        altoWritten = true;
-                        logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
-                        doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                        logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                        doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                        logger.debug("Added WIDTH from crowdsourcing ALTO for page {}", order);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                        doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                        logger.debug("Added WIDTH from crowdsourcing ALTO for page {}", order);
-                    }
-                    if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                        addNamedEntitiesFields(altoData, doc);
                     }
                 }
             }
@@ -1249,38 +1231,17 @@ public class MetsIndexer extends Indexer {
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
                 }
             }
+
             // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
             if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
                     && dataFolders.get(DataRepository.PARAM_ALTO) != null && !"info".equals(baseFileName) && !"native".equals(baseFileName)) {
                 File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
                 try {
                     altoData = TextHelper.readAltoFile(altoFile);
+                    altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, pi, baseFileName, order, false);
                 } catch (IOException | JDOMException e) {
                     if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
                         logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
-                    }
-                }
-                if (altoData != null) {
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
-                        doc.addField(SolrConstants.FILENAME_ALTO, dataRepository.getDir(DataRepository.PARAM_ALTO).getFileName().toString() + '/' + pi
-                                + '/' + baseFileName + XML_EXTENSION);
-                        altoWritten = true;
-                        logger.debug("Added ALTO from regular ALTO for page {}", order);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                        doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                        logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                        doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                        logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                        doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                        logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                    }
-                    if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                        addNamedEntitiesFields(altoData, doc);
                     }
                 }
             }
@@ -1299,46 +1260,14 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            // ABBYY XML (converted to ALTO)
+            // Convert ABBYY XML to ALTO
             if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null && !"info".equals(baseFileName)) {
                 try {
                     try {
                         altoData = TextHelper.readAbbyyToAlto(
                                 new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
-                        if (altoData != null) {
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))
-                                    && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
-                                if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                    doc.addField(SolrConstants.FILENAME_ALTO,
-                                            dataRepository.getDir(DataRepository.PARAM_ALTO_CONVERTED).getFileName().toString() + '/' + pi + '/'
-                                                    + baseFileName + XML_EXTENSION);
-                                    // Write converted ALTO file
-                                    FileUtils.writeStringToFile(
-                                            new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName + XML_EXTENSION),
-                                            (String) altoData.get(SolrConstants.ALTO), "UTF-8");
-                                    altoWritten = true;
-                                    logger.debug("Added ALTO from regular ALTO for page {}", order);
-                                } else {
-                                    logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
-                                }
-                            }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
-                                    && doc.getField(SolrConstants.FULLTEXT) == null) {
-                                doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                                logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
-                            }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                                doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                                logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                            }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                                doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                                logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                            }
-                            if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                                addNamedEntitiesFields(altoData, doc);
-                            }
-                        }
+                        altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName,
+                                order, true);
                     } catch (FileNotFoundException e) {
                         logger.warn(e.getMessage());
                     }
@@ -1349,44 +1278,13 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            // Read word coords from TEI only if none has been read from ALTO for this page yet
+            // Convert TEI to ALTO
             if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null && !"info".equals(baseFileName)) {
                 try {
                     altoData = TextHelper.readTeiToAlto(
                             new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
-                    if (altoData != null) {
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null) {
-                            if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                doc.addField(SolrConstants.FILENAME_ALTO,
-                                        dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent().getFileName().toString() + '/' + pi + '/'
-                                                + baseFileName + XML_EXTENSION);
-                                logger.debug("Added ALTO from regular ALTO for page {}", order);
-                                FileUtils.writeStringToFile(
-                                        new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), baseFileName + XML_EXTENSION),
-                                        (String) altoData.get(SolrConstants.ALTO), "UTF-8");
-                                altoWritten = true;
-                                // Write converted ALTO file
-                            } else {
-                                logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
-                            }
-
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                            logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                        }
-                        if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                            addNamedEntitiesFields(altoData, doc);
-                        }
-                    }
+                    altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName, order,
+                            true);
                 } catch (JDOMException e) {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
@@ -1413,7 +1311,7 @@ public class MetsIndexer extends Indexer {
 
             // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
             if (!altoWritten && !foundCrowdsourcingData && altoURL != null && altoURL.startsWith("http")
-                    && !altoURL.startsWith(Configuration.getInstance().getString("init.viewerUrl", "missing?"))) {
+                    && Configuration.getInstance().getViewerUrl() != null && !altoURL.startsWith(Configuration.getInstance().getViewerUrl())) {
                 try {
                     logger.info("Downloading ALTO from {}", altoURL);
                     String alto = Utils.getWebContentGET(altoURL);
@@ -1464,12 +1362,17 @@ public class MetsIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
+                } catch (HTTPException e) {
+                    logger.warn(e.getMessage());
                 }
 
             }
 
             // Add image dimension values from EXIF
-            if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
+            if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)
+                    || ("0".equals(doc.getFieldValue(SolrConstants.WIDTH)) && "0".equals(doc.getFieldValue(SolrConstants.HEIGHT)))) {
+                doc.removeField(SolrConstants.WIDTH);
+                doc.removeField(SolrConstants.HEIGHT);
                 getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
                     doc.addField(SolrConstants.WIDTH, dimension.width);
                     doc.addField(SolrConstants.HEIGHT, dimension.height);
@@ -1835,7 +1738,7 @@ public class MetsIndexer extends Indexer {
      * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
      * @throws java.io.IOException
      * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should keep creation timestamp
      * @should set update timestamp correctly
      * @should keep representation thumbnail
@@ -2234,7 +2137,7 @@ public class MetsIndexer extends Indexer {
      * getMetsCreateDate.
      * </p>
      *
-     * @throws io.goobi.viewer.indexer.model.FatalIndexerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a {@link java.time.LocalDateTime} object.
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS
