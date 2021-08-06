@@ -18,7 +18,8 @@
     </scm>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>11</maven.compiler.release>
 		<skipTests>true</skipTests>
 
         <!-- Sonar -->
@@ -271,9 +272,8 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+                <configuration>
+                    <compilerArgument>-Xlint:deprecation</compilerArgument>
 				</configuration>
 			</plugin>
 			<plugin>
