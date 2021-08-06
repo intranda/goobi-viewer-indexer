@@ -19,7 +19,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<skipTests>false</skipTests>
+		<skipTests>true</skipTests>
 
         <!-- Sonar -->
         <sonar.projectKey>intranda_goobi-viewer-indexer</sonar.projectKey>
