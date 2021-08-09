@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.MultiMap;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Assert;
@@ -41,6 +40,7 @@ import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
+import io.goobi.viewer.indexer.model.config.GroupEntity;
 
 public class MetadataHelperTest extends AbstractTest {
 
@@ -121,7 +121,7 @@ public class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getGroupedMetadata(Element,MultiMap,String)
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,String)
      * @verifies group correctly
      */
     @Test
