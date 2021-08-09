@@ -22,13 +22,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.builder.ConfigurationBuilderEvent;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.event.Event;
+import org.apache.commons.configuration2.event.EventListener;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Namespace;
 import org.slf4j.Logger;
@@ -49,17 +53,18 @@ public final class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
     private static final Object lock = new Object();
-    
-    public static final String SPACE_SPLACEHOLDER = "#SPACE#";
 
-    private final XMLConfiguration config;
-    //    private Map<String, List<Map<String, Object>>> fieldConfiguration;
-    private MetadataConfigurationManager metadataConfigurationManager;
-    private Map<String, Namespace> namespaces;
+    public static final String SPACE_SPLACEHOLDER = "#SPACE#";
 
     /* default */
     private static String configPath = "indexerconfig_solr.xml";
     private static Configuration instance = null;
+
+    private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
+    private MetadataConfigurationManager metadataConfigurationManager;
+    private Map<String, Namespace> namespaces;
+    private long lastFileReload = -1;
+    private long lastConfigManagerReload = -1;
 
     /** Timer that checks for changes in the config file and repopulates some configuration objects. */
     private Timer reloadTimer = new Timer();
@@ -106,26 +111,56 @@ public final class Configuration {
         return instance;
     }
 
+    /**
+     * Private constructor.
+     * 
+     * @throws ConfigurationException
+     */
+    @SuppressWarnings("unchecked")
     private Configuration() throws ConfigurationException {
-        AbstractConfiguration.setDefaultListDelimiter('&');
-        config = new XMLConfiguration(configPath);
-        config.setReloadingStrategy(new FileChangedReloadingStrategy());
-        reloadConfig(config);
+        builder =
+                new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
+                        .configure(new Parameters().properties()
+                                .setFileName(configPath)
+                                .setListDelimiterHandler(new DefaultListDelimiterHandler('&')) // TODO Why '&'?
+                                .setThrowExceptionOnMissing(false));
+        lastFileReload = System.currentTimeMillis();
+        reloadConfig(builder.getConfiguration());
 
         // Check every 10 seconds for changed config files and refresh maps if necessary
-        reloadTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (config != null && config.getReloadingStrategy() != null && config.getReloadingStrategy().reloadingRequired()) {
-                    logger.info("Reloading configuration...");
-                    reloadConfig(config);
-                }
-            }
-        }, 0, 10000);
+        builder.addEventListener(ConfigurationBuilderEvent.CONFIGURATION_REQUEST,
+                new EventListener() {
 
+                    @Override
+                    public void onEvent(Event event) {
+                        if (builder.getReloadingController().checkForReloading(null)) {
+                            lastFileReload = System.currentTimeMillis();
+                        }
+                    }
+                });
+        //        PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
+        //                null, 10, TimeUnit.SECONDS);
+        //        trigger.start();
+    }
+
+    private XMLConfiguration getConfig() {
+        try {
+            XMLConfiguration ret = builder.getConfiguration();
+            if (lastFileReload > lastConfigManagerReload) {
+                logger.info("Reloading configuration...");
+                lastConfigManagerReload = lastFileReload;
+                reloadConfig(ret);
+            }
+            return ret;
+        } catch (ConfigurationException e) {
+            logger.error(e.getMessage());
+        }
+
+        return new XMLConfiguration();
     }
 
     /**
+     * Reloads metadata fields, namespaces, etc. from the configuration object.
      * 
      * @param config
      */
@@ -185,9 +220,9 @@ public final class Configuration {
      */
     public String getConfiguration(String elementName) {
         String answer = elementName;
-        int countInit = config.getMaxIndex("init");
+        int countInit = getConfig().getMaxIndex("init");
         for (int i = 0; i <= countInit; i++) {
-            answer = config.getString("init(" + i + ")." + elementName);
+            answer = getConfig().getString("init(" + i + ")." + elementName);
         }
         return answer;
     }
@@ -199,7 +234,7 @@ public final class Configuration {
      * @return
      */
     public Boolean getBoolean(String inPath, boolean defaultValue) {
-        return config.getBoolean(inPath, defaultValue);
+        return getConfig().getBoolean(inPath, defaultValue);
     }
 
     /**
@@ -212,7 +247,7 @@ public final class Configuration {
      * @return a {@link java.lang.Integer} object.
      */
     public Integer getInt(String inPath, int defaultValue) {
-        return config.getInt(inPath, defaultValue);
+        return getConfig().getInt(inPath, defaultValue);
     }
 
     /**
@@ -225,7 +260,7 @@ public final class Configuration {
      * @return a {@link java.lang.String} object.
      */
     public String getString(String inPath, String defaultValue) {
-        return config.getString(inPath, defaultValue);
+        return getConfig().getString(inPath, defaultValue);
     }
 
     /**
@@ -237,7 +272,7 @@ public final class Configuration {
      * @return a {@link java.lang.String} object.
      */
     public String getString(String inPath) {
-        return config.getString(inPath);
+        return getConfig().getString(inPath);
     }
 
     /**
@@ -250,7 +285,7 @@ public final class Configuration {
      */
     @SuppressWarnings({ "rawtypes" })
     public List getList(String inPath) {
-        return config.getList(inPath, config.getList(inPath));
+        return getConfig().getList(inPath, getConfig().getList(inPath));
     }
 
     /**
@@ -261,10 +296,10 @@ public final class Configuration {
      * @param inPath a {@link java.lang.String} object.
      * @return a {@link java.util.List} object.
      */
-    protected List<HierarchicalConfiguration> getLocalConfigurationsAt(String inPath) {
-        List<HierarchicalConfiguration> ret = config.configurationsAt(inPath);
+    protected List<HierarchicalConfiguration<ImmutableNode>> getLocalConfigurationsAt(String inPath) {
+        List<HierarchicalConfiguration<ImmutableNode>> ret = getConfig().configurationsAt(inPath);
         if (ret == null || ret.isEmpty()) {
-            ret = config.configurationsAt(inPath);
+            ret = getConfig().configurationsAt(inPath);
         }
 
         return ret;
@@ -370,14 +405,14 @@ public final class Configuration {
     public int getThreads() {
         return getInt("performance.threads", 1);
     }
-    
+
     /**
      * 
      * @return
      * @should return correct value
      */
     public boolean isCountHotfolderFiles() {
-    	   return getBoolean("performance.countHotfolderFiles", true);
+        return getBoolean("performance.countHotfolderFiles", true);
     }
 
     /**
@@ -389,7 +424,7 @@ public final class Configuration {
      * @return a int.
      */
     public int getPageCountStart() {
-        return config.getInt("init.pageCountStart", 1);
+        return getConfig().getInt("init.pageCountStart", 1);
     }
 
     /**
@@ -410,7 +445,7 @@ public final class Configuration {
      * @should return correct value
      */
     public String getViewerAuthorizationToken() {
-        return config.getString("init.viewerAuthorizationToken");
+        return getConfig().getString("init.viewerAuthorizationToken");
     }
 
     /**
@@ -423,10 +458,10 @@ public final class Configuration {
      */
     public Map<String, String> getListConfiguration(String elementName) {
         Map<String, String> answerList = new HashMap<>();
-        Iterator<String> it = config.getKeys(elementName + ".list");
+        Iterator<String> it = getConfig().getKeys(elementName + ".list");
         while (it.hasNext()) {
             String key = it.next();
-            answerList.put(key.substring(key.lastIndexOf('.') + 1), config.getString(key));
+            answerList.put(key.substring(key.lastIndexOf('.') + 1), getConfig().getString(key));
         }
         return answerList;
     }
@@ -440,14 +475,14 @@ public final class Configuration {
      * @return a {@link java.util.List} object.
      */
     public List<DataRepository> getDataRepositoryConfigurations() {
-        List<HierarchicalConfiguration> elements = getLocalConfigurationsAt("init.dataRepositories.dataRepository");
+        List<HierarchicalConfiguration<ImmutableNode>> elements = getLocalConfigurationsAt("init.dataRepositories.dataRepository");
         if (elements == null) {
             return Collections.emptyList();
         }
 
         List<DataRepository> ret = new ArrayList<>(elements.size());
-        for (Iterator<HierarchicalConfiguration> it2 = elements.iterator(); it2.hasNext();) {
-            HierarchicalConfiguration sub = it2.next();
+        for (Iterator<HierarchicalConfiguration<ImmutableNode>> it2 = elements.iterator(); it2.hasNext();) {
+            HierarchicalConfiguration<ImmutableNode> sub = it2.next();
             String path = sub.getString(".");
             long buffer = 0;
             String bufferString = sub.getString("[@buffer]");
@@ -502,6 +537,6 @@ public final class Configuration {
      * @param value New value to set
      */
     public void overrideValue(String property, Object value) {
-        config.setProperty(property, value);
+        getConfig().setProperty(property, value);
     }
 }

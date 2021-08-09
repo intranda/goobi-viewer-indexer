@@ -1,20 +1,23 @@
 package io.goobi.viewer.indexer.helper.language;
 
-import java.io.File;
-import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.SubnodeConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
-import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.goobi.viewer.indexer.WorldViewsIndexer;
-
 /**
- * <p>LanguageHelper class.</p>
+ * <p>
+ * LanguageHelper class.
+ * </p>
  *
  */
 public class LanguageHelper {
@@ -22,14 +25,14 @@ public class LanguageHelper {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(LanguageHelper.class);
 
-    private static XMLConfiguration config;
+    ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
 
     private static LanguageHelper helper;
 
-    private Locale locale;
-
     /**
-     * <p>getInstance.</p>
+     * <p>
+     * getInstance.
+     * </p>
      *
      * @return a {@link io.goobi.viewer.indexer.helper.language.LanguageHelper} object.
      */
@@ -37,31 +40,48 @@ public class LanguageHelper {
         if (helper == null) {
             helper = new LanguageHelper();
             try {
-                config = new XMLConfiguration("languages.xml");
+                helper.builder =
+                        new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
+                                .configure(new Parameters().properties()
+                                        .setFileName("languages.xml")
+                                        .setListDelimiterHandler(new DefaultListDelimiterHandler('&')) // TODO Why '&'?
+                                        .setThrowExceptionOnMissing(false));
+                helper.builder.getConfiguration().setExpressionEngine(new XPathExpressionEngine());
+                PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(helper.builder.getReloadingController(),
+                        null, 10, TimeUnit.SECONDS);
+                trigger.start();
             } catch (ConfigurationException e) {
-                config = new XMLConfiguration();
+                logger.error(e.getMessage());
             }
-            config.setListDelimiter('&');
-            config.setReloadingStrategy(new FileChangedReloadingStrategy());
-            config.setExpressionEngine(new XPathExpressionEngine());
         }
 
         return helper;
     }
 
+    private XMLConfiguration getConfig() {
+        try {
+            return builder.getConfiguration();
+        } catch (ConfigurationException e) {
+            logger.error(e.getMessage());
+            return new XMLConfiguration();
+        }
+    }
+
     /**
-     * <p>getLanguage.</p>
+     * <p>
+     * getLanguage.
+     * </p>
      *
      * @param isoCode a {@link java.lang.String} object.
      * @return a {@link io.goobi.viewer.indexer.helper.language.Language} object.
      */
     public Language getLanguage(String isoCode) {
-        SubnodeConfiguration languageConfig = null;
+        HierarchicalConfiguration<ImmutableNode> languageConfig = null;
         try {
             if (isoCode.length() == 3) {
-                languageConfig = (SubnodeConfiguration) config.configurationsAt("language[iso_639-2=\"" + isoCode + "\"]").get(0);
+                languageConfig = getConfig().configurationsAt("language[iso_639-2=\"" + isoCode + "\"]").get(0);
             } else if (isoCode.length() == 2) {
-                languageConfig = (SubnodeConfiguration) config.configurationsAt("language[iso_639-1=\"" + isoCode + "\"]").get(0);
+                languageConfig = getConfig().configurationsAt("language[iso_639-1=\"" + isoCode + "\"]").get(0);
             }
         } catch (Throwable e) {
             throw new IllegalArgumentException("No matching language found for " + isoCode, e);

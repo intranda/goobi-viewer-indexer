@@ -25,9 +25,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.SubnodeConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.SubnodeConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +97,7 @@ public final class MetadataConfigurationManager {
                 if (items > -1) {
                     // Multiple XPath items
                     for (int j = 0; j <= items; j++) {
-                        SubnodeConfiguration xpathNode =
+                        HierarchicalConfiguration<ImmutableNode> xpathNode =
                                 config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath.list.item(" + j + ")");
                         String xpath = xpathNode.getString(".");
                         if (StringUtils.isEmpty(xpath)) {
@@ -108,7 +110,8 @@ public final class MetadataConfigurationManager {
                     }
                 } else if (config.getMaxIndex("fields." + fieldname + ".list.item(" + i + ").xpath") > -1) {
                     // Single XPath item
-                    SubnodeConfiguration xpathNode = config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath");
+                    HierarchicalConfiguration<ImmutableNode> xpathNode =
+                            config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath");
                     String xpath = xpathNode.getString(".");
                     if (StringUtils.isEmpty(xpath)) {
                         logger.error("Found empty XPath configuration for field: {}", fieldname);
@@ -157,14 +160,14 @@ public final class MetadataConfigurationManager {
                 // Normalize and interpolate years
                 List eleNormalizeYearList = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeYear");
                 if (eleNormalizeYearList != null && !eleNormalizeYearList.isEmpty()) {
-                    SubnodeConfiguration eleNormalizeYear = (SubnodeConfiguration) eleNormalizeYearList.get(0);
+                    BaseHierarchicalConfiguration eleNormalizeYear = (BaseHierarchicalConfiguration) eleNormalizeYearList.get(0);
                     fieldConfig.setNormalizeYear(eleNormalizeYear.getBoolean("", false));
                     fieldConfig.setNormalizeYearMinDigits(eleNormalizeYear.getInt("[@minYearDigits]", 3));
                     fieldConfig.setInterpolateYears(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").interpolateYears", false));
                 }
 
                 // Group entity config
-                List<HierarchicalConfiguration> groupEntityList =
+                List<HierarchicalConfiguration<ImmutableNode>> groupEntityList =
                         config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").groupEntity");
                 if (groupEntityList != null && !groupEntityList.isEmpty()) {
                     GroupEntity groupEntity = readGroupEntity(groupEntityList.get(0));
@@ -185,7 +188,7 @@ public final class MetadataConfigurationManager {
                 }
 
                 // Normalize value
-                List<HierarchicalConfiguration> normalizeValueList =
+                List<HierarchicalConfiguration<ImmutableNode>> normalizeValueList =
                         config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeValue");
                 if (normalizeValueList != null && !normalizeValueList.isEmpty()) {
                     int length = normalizeValueList.get(0).getInt("[@length]");
@@ -261,7 +264,7 @@ public final class MetadataConfigurationManager {
      * @should read group entity correctly
      * @should recursively read child group entities
      */
-    static GroupEntity readGroupEntity(HierarchicalConfiguration config) {
+    static GroupEntity readGroupEntity(HierarchicalConfiguration<ImmutableNode> config) {
         MetadataGroupType type = MetadataGroupType.OTHER;
         String typeName = config.getString("[@type]");
         if (typeName != null) {
@@ -279,10 +282,10 @@ public final class MetadataConfigurationManager {
 
         // Subfield configurations
         {
-            List<HierarchicalConfiguration> elements = config.configurationsAt("field");
+            List<HierarchicalConfiguration<ImmutableNode>> elements = config.configurationsAt("field");
             if (elements != null) {
-                for (Iterator<HierarchicalConfiguration> it = elements.iterator(); it.hasNext();) {
-                    HierarchicalConfiguration sub = it.next();
+                for (Iterator<HierarchicalConfiguration<ImmutableNode>> it = elements.iterator(); it.hasNext();) {
+                    HierarchicalConfiguration<ImmutableNode> sub = it.next();
                     SubfieldConfig sfc = readSubfield(sub);
                     if (sfc == null) {
                         continue;
@@ -299,9 +302,9 @@ public final class MetadataConfigurationManager {
         }
 
         // Child group entities
-        List<HierarchicalConfiguration> children = config.configurationsAt("groupEntity");
+        List<HierarchicalConfiguration<ImmutableNode>> children = config.configurationsAt("groupEntity");
         if (children != null && !children.isEmpty()) {
-            for (HierarchicalConfiguration child : children) {
+            for (HierarchicalConfiguration<ImmutableNode> child : children) {
                 GroupEntity childGroupEntity = readGroupEntity(child);
                 if (childGroupEntity != null) {
                     ret.getChildren().add(childGroupEntity);
@@ -319,7 +322,7 @@ public final class MetadataConfigurationManager {
      * @return
      * @should read subfield config correctly
      */
-    static SubfieldConfig readSubfield(HierarchicalConfiguration sub) {
+    static SubfieldConfig readSubfield(HierarchicalConfiguration<ImmutableNode> sub) {
         if (sub == null) {
             return null;
         }
@@ -338,7 +341,7 @@ public final class MetadataConfigurationManager {
         SubfieldConfig ret = new SubfieldConfig(fieldName, multivalued);
         ret.getXpaths().add(xpathExp);
         ret.getDefaultValues().put(xpathExp, defaultValue);
-        logger.info("Loaded group entity field: {} - {}", fieldName, xpathExp);
+        logger.debug("Loaded group entity field: {} - {}", fieldName, xpathExp);
 
         return ret;
     }
