@@ -159,13 +159,14 @@ public class Utils {
         }
 
         logger.info("Updating data repository cache...");
-        Map<String, String> params = new HashMap<>(2);
+        Map<String, String> params = new HashMap<>(1);
+        params.put("token", token);
         JSONObject json = new JSONObject();
         json.put("type", "UPDATE_DATA_REPOSITORY_NAMES");
         json.put("pi", pi);
         json.put("dataRepositoryName", dataRepositoryName);
 
-        String url = viewerUrl + "/api/v1/tasks?token=" + token;
+        String url = viewerUrl + "/api/v1/tasks";
         getWebContentPOST(url, params, null, json.toString(), ContentType.APPLICATION_JSON.getMimeType());
     }
 
