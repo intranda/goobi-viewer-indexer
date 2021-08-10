@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -159,15 +160,16 @@ public class Utils {
         }
 
         logger.info("Updating data repository cache...");
-        Map<String, String> params = new HashMap<>(1);
-        params.put("token", token);
         JSONObject json = new JSONObject();
         json.put("type", "UPDATE_DATA_REPOSITORY_NAMES");
         json.put("pi", pi);
         json.put("dataRepositoryName", dataRepositoryName);
 
-        String url = viewerUrl + "/api/v1/tasks";
-        getWebContentPOST(url, params, null, json.toString(), ContentType.APPLICATION_JSON.getMimeType());
+        String url = viewerUrl + "/api/v1/tasks/";
+        Map<String, String> headerParams = new HashMap<>(2);
+        headerParams.put("Content-Type", ContentType.APPLICATION_JSON.getMimeType());
+        headerParams.put("token", token);
+        getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
     }
 
     /**
@@ -185,10 +187,12 @@ public class Utils {
 
         String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version?token="
                 + Configuration.getInstance().getViewerAuthorizationToken();
+
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
-            getWebContentPUT(url, new HashMap<>(0), null, json.toString(), ContentType.APPLICATION_JSON.getMimeType());
+            getWebContentPUT(url, new HashMap<>(0), null, json.toString(),
+                    Collections.singletonMap("Content-Type", ContentType.APPLICATION_JSON.getMimeType()));
         } catch (IOException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }
@@ -241,9 +245,10 @@ public class Utils {
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
-    public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies, String body, String contentType)
+    public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies, String body,
+            Map<String, String> headerParams)
             throws ClientProtocolException, IOException {
-        return getWebContent("POST", url, params, cookies, body, contentType);
+        return getWebContent("POST", url, params, cookies, body, headerParams);
     }
 
     /**
@@ -261,9 +266,10 @@ public class Utils {
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
-    public static String getWebContentPUT(String url, Map<String, String> params, Map<String, String> cookies, String body, String contentType)
+    public static String getWebContentPUT(String url, Map<String, String> params, Map<String, String> cookies, String body,
+            Map<String, String> headerParams)
             throws ClientProtocolException, IOException {
-        return getWebContent("PUT", url, params, cookies, body, contentType);
+        return getWebContent("PUT", url, params, cookies, body, headerParams);
     }
 
     /**
@@ -276,13 +282,14 @@ public class Utils {
      * @param params a {@link java.util.Map} object.
      * @param cookies a {@link java.util.Map} object.
      * @param body Optional entity content.
-     * @param contentType Optional mime type.
+     * @param headerParams Header parameters
      * @return a {@link java.lang.String} object.
      * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
-    static String getWebContent(String method, String url, Map<String, String> params, Map<String, String> cookies, String body, String contentType)
+    static String getWebContent(String method, String url, Map<String, String> params, Map<String, String> cookies, String body,
+            Map<String, String> headerParams)
             throws ClientProtocolException, IOException {
         if (method == null || !("POST".equals(method.toUpperCase()) || "PUT".equals(method.toUpperCase()))) {
             throw new IllegalArgumentException("Illegal method: " + method);
@@ -332,8 +339,13 @@ public class Utils {
                 default:
                     return "";
             }
-            if (StringUtils.isNotEmpty(contentType)) {
-                requestBase.setHeader("Content-Type", contentType);
+            //            if (StringUtils.isNotEmpty(contentType)) {
+            //                requestBase.setHeader("Content-Type", contentType);
+            //            }
+            if (headerParams != null) {
+                for (String key : headerParams.keySet()) {
+                    requestBase.setHeader(key, headerParams.get(key));
+                }
             }
             Charset.forName(TextHelper.DEFAULT_CHARSET);
             // TODO allow combinations of params + body
