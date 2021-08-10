@@ -31,6 +31,7 @@ public class GroupEntity {
     private boolean addAuthorityDataToDocstruct = false;
     private boolean addCoordsToDocstruct = false;
     private String url;
+    private String xpath;
     private final Map<String, SubfieldConfig> subfields = new HashMap<>();
     private final List<GroupEntity> children = new ArrayList<>();
 
@@ -95,6 +96,22 @@ public class GroupEntity {
      */
     public GroupEntity setUrl(String url) {
         this.url = url;
+        return this;
+    }
+
+    /**
+     * @return the xpath
+     */
+    public String getXpath() {
+        return xpath;
+    }
+
+    /**
+     * @param xpath the xpath to set
+     * @return this
+     */
+    public GroupEntity setXpath(String xpath) {
+        this.xpath = xpath;
         return this;
     }
 

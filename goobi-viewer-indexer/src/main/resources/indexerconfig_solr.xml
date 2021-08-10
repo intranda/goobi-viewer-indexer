@@ -12,7 +12,7 @@
 		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
 		<oldSolrUrl></oldSolrUrl>
-		<viewerUrl>http://localhost:8080/viewer</viewerUrl>
+		<viewerUrl>https://viewer.goobi.io</viewerUrl>
 
 		<!-- Folder configuration -->
 		<hotFolder>C:/digiverso/viewer/hotfolder/</hotFolder>

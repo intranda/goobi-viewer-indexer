@@ -185,7 +185,7 @@
 					<addExistenceBoolean>true</addExistenceBoolean>
 					<normalizeYear minYearDigits="2">true</normalizeYear>
 					<interpolateYears>true</interpolateYears>
-					<groupEntity type="OTHER" url="https://example.com?param1=value1\&amp;param2=value2">
+					<groupEntity type="OTHER" url="https://example.com?param1=value1&amp;param2=value2">
 						<field name="field1">xpath1</field>
 						<field name="field1" defaultValue="def">xpath2</field>
 						<field name="field2" multivalued="false">xpath3</field>
@@ -201,6 +201,30 @@
 				</item>
 			</list>
 		</MD_TESTFIELD>
+        
+        <MD_EVENT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/mods:event</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="EVENT">
+                        <field name="MD_VALUE">intranda:type</field>
+                        <field name="EVENTYPE">intranda:type</field>
+                        <field name="MD_MATERIAL">intranda:material</field>
+                        <groupEntity name="MD_ARTIST" type="PERSON" xpath="intranda:actor[intranda:role='Künstler/-in']">
+                            <field name="MD_NAME">intranda:name</field>
+                            <field name="MD_ROLE">intranda:role</field>
+                            <field name="MD_DISPLAYNAME">intranda:displayName</field>
+                            <field name="MD_STARTDATE">intranda:startDate</field>
+                            <field name="MD_ENDDATE">intranda:endDate</field>
+                            <field name="MD_URI_GETTY">@getty</field>
+                            <field name="MD_URI_SIKART">@sikart</field>
+                            <field name="NORM_URI">@gnd</field>
+                        </groupEntity>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_EVENT>
 
 		<URN>
 			<list>

@@ -70,6 +70,7 @@ public final class MetadataConfigurationManager {
      * @param config
      * @return
      * @should load all field configs correctly
+     * @should load nested group entities correctly
      */
     @SuppressWarnings({ "rawtypes" })
     private Map<String, List<FieldConfig>> loadFieldConfiguration(XMLConfiguration config) {
@@ -272,11 +273,13 @@ public final class MetadataConfigurationManager {
         }
 
         String url = config.getString("[@url]");
+        String xpath = config.getString("[@xpath]");
         boolean addAuthorityDataToDocstruct = config.getBoolean("@addAuthorityDataToDocstruct", false);
         boolean addCoordsToDocstruct = config.getBoolean("@addCoordsToDocstruct", false);
         GroupEntity ret = new GroupEntity()
                 .setType(type)
                 .setUrl(url)
+                .setXpath(xpath)
                 .setAddAuthorityDataToDocstruct(addAuthorityDataToDocstruct)
                 .setAddCoordsToDocstruct(addCoordsToDocstruct);
 

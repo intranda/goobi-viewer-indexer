@@ -139,7 +139,8 @@ public class MetadataHelperTest extends AbstractTest {
 
         Element eleName = docMods.getRootElement().getChild("name", Configuration.getInstance().getNamespaces().get("mods"));
         Assert.assertNotNull(eleName);
-        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), "label");
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "label", new StringBuilder(),
+                new ArrayList<>());
         Assert.assertFalse(gmd.getFields().isEmpty());
         Assert.assertEquals("label", gmd.getLabel());
         Assert.assertEquals("display_form", gmd.getMainValue());
