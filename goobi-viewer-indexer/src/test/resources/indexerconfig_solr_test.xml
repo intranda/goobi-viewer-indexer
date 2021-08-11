@@ -205,7 +205,7 @@
         <MD_EVENT>
             <list>
                 <item>
-                    <xpath>mets:xmlData/mods:mods/mods:extension/mods:event</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:event</xpath>
                     <addToDefault>true</addToDefault>
                     <groupEntity type="EVENT">
                         <field name="MD_VALUE">intranda:type</field>

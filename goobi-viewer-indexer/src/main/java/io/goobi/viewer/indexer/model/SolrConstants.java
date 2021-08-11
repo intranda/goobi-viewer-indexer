@@ -42,31 +42,22 @@ public final class SolrConstants {
         RECORD,
         SHAPE,
         CITATION,
+        EVENT,
         OTHER;
 
+        /**
+         * 
+         * @param name
+         * @return
+         */
         public static MetadataGroupType getByName(String name) {
             if (name != null) {
-                switch (name) {
-                    case "PERSON":
-                        return PERSON;
-                    case "CORPORATION":
-                        return CORPORATION;
-                    case "CONFERENCE":
-                        return CONFERENCE;
-                    case "LOCATION":
-                        return LOCATION;
-                    case "SUBJECT":
-                        return SUBJECT;
-                    case "ORIGININFO":
-                        return ORIGININFO;
-                    case "CITATION":
-                        return CITATION;
-                    case "OTHER":
-                        return OTHER;
-                    default:
-                        return null;
+                name = name.toUpperCase();
+                for (MetadataGroupType type : MetadataGroupType.values()) {
+                    if (type.name().equals(name)) {
+                        return type;
+                    }
                 }
-
             }
 
             return null;

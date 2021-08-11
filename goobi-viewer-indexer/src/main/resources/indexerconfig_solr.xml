@@ -3098,7 +3098,7 @@
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
                     <addSortField>true</addSortField>
-                    <groupEntity type="VIAF">
+                    <groupEntity type="OTHER">
                         <field name="MD_VALUE">text()</field>
                         <field name="MD_DISPLAYFORM">text()</field>
                         <field name="NORM_URI_VIAF">@valueURI</field>
@@ -3106,85 +3106,6 @@
                 </item>
             </list>
         </MD_INTRANDAINSTITUTION>
-        
-        <!-- Inscription -->
-        <MD_INSCRIPTION_LANG_FR>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
-                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <allowDuplicateValues>true</allowDuplicateValues>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="fre"]</field>
-                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_FR">mods:note[@type="marks"][@lang="fre"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_FR">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_FR">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_FR">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
-                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_FR">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_INSCRIPTION_LANG_FR>
-
-        <MD_INSCRIPTION_LANG_EN>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
-                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <allowDuplicateValues>true</allowDuplicateValues>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="eng"]</field>
-                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_EN">mods:note[@type="marks"][@lang="eng"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_EN">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_EN">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_EN">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
-                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_EN">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_INSCRIPTION_LANG_EN>
-
-        <MD_INSCRIPTION_LANG_DE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
-                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <allowDuplicateValues>true</allowDuplicateValues>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="ger"]</field>
-                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_DE">mods:note[@type="marks"][@lang="ger"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_DE">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_DE">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_DE">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
-                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_DE">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_INSCRIPTION_LANG_DE>
         
         <MD_FINDINGAIDSLINK>
             <list>
@@ -3239,13 +3160,14 @@
         <MD_EVENT>
             <list>
                 <item>
-                    <xpath>mets:xmlData/mods:mods/mods:extension/mods:event</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:event</xpath>
                     <addToDefault>true</addToDefault>
                     <groupEntity type="EVENT">
                         <field name="MD_VALUE">intranda:type</field>
-                        <field name="EVENTYPE">intranda:type</field>
+                        <field name="EVENTTYPE">intranda:type</field>
                         <field name="MD_MATERIAL">intranda:material</field>
                         <groupEntity name="MD_ARTIST" type="PERSON" xpath="intranda:actor[intranda:role='Künstler/-in']">
+                            <field name="MD_VALUE">intranda:name</field>
                             <field name="MD_NAME">intranda:name</field>
                             <field name="MD_ROLE">intranda:role</field>
                             <field name="MD_DISPLAYNAME">intranda:displayName</field>

@@ -988,7 +988,6 @@ public class MetadataHelper {
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
             StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields)
             throws FatalIndexerException {
-        // TODO
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
@@ -1196,12 +1195,20 @@ public class MetadataHelper {
             ret.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbAuthorityDataTerms.toString()));
         }
 
+        // Nested group entities
         if (!groupEntity.getChildren().isEmpty()) {
             for (GroupEntity childGroupEntity : groupEntity.getChildren()) {
-                GroupedMetadata child =
-                        getGroupedMetadata(ele, childGroupEntity, configurationItem, groupLabel, sbDefaultMetadataValues, luceneFields);
-                if (child != null) {
+                logger.info("Processing child config: {}", childGroupEntity.getName());
+                List<Element> eleChildList = JDomXP.evaluateToElementsStatic(childGroupEntity.getXpath(), ele);
+                if (eleChildList == null) {
+                    continue;
+                }
+                for (Element eleChild : eleChildList) {
+                    GroupedMetadata child =
+                            getGroupedMetadata(eleChild, childGroupEntity, configurationItem, childGroupEntity.getName(), sbDefaultMetadataValues,
+                                    luceneFields);
                     ret.getChildren().add(child);
+                    logger.debug("added child: {}", child.getMainValue());
                 }
             }
         }

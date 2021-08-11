@@ -27,7 +27,8 @@ import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
  */
 public class GroupEntity {
 
-    private MetadataGroupType type;
+    private final String name;
+    private final MetadataGroupType type;
     private boolean addAuthorityDataToDocstruct = false;
     private boolean addCoordsToDocstruct = false;
     private String url;
@@ -35,20 +36,26 @@ public class GroupEntity {
     private final Map<String, SubfieldConfig> subfields = new HashMap<>();
     private final List<GroupEntity> children = new ArrayList<>();
 
+    public GroupEntity(String name, MetadataGroupType type) {
+        if (type == null) {
+            throw new IllegalArgumentException("type may not be null");
+        }
+        this.name = name;
+        this.type = type;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
     /**
      * @return the type
      */
     public MetadataGroupType getType() {
         return type;
-    }
-
-    /**
-     * @param type the type to set
-     * @return this
-     */
-    public GroupEntity setType(MetadataGroupType type) {
-        this.type = type;
-        return this;
     }
 
     /**

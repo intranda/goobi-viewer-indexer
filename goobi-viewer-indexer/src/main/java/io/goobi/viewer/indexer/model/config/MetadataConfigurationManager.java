@@ -272,12 +272,12 @@ public final class MetadataConfigurationManager {
             type = MetadataGroupType.getByName(typeName);
         }
 
+        String name = config.getString("[@name]");
         String url = config.getString("[@url]");
         String xpath = config.getString("[@xpath]");
         boolean addAuthorityDataToDocstruct = config.getBoolean("@addAuthorityDataToDocstruct", false);
         boolean addCoordsToDocstruct = config.getBoolean("@addCoordsToDocstruct", false);
-        GroupEntity ret = new GroupEntity()
-                .setType(type)
+        GroupEntity ret = new GroupEntity(name, type)
                 .setUrl(url)
                 .setXpath(xpath)
                 .setAddAuthorityDataToDocstruct(addAuthorityDataToDocstruct)
