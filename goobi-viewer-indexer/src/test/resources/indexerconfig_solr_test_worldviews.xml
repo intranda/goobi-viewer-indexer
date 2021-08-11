@@ -168,7 +168,7 @@
 					<normalizeYear minYearDigits="2">true</normalizeYear>
 					<interpolateYears>true</interpolateYears>
 					<aggregateEntity>true</aggregateEntity>
-					<groupEntity type="TYPE">
+					<groupEntity type="OTHER">
 						<field name="field1">xpath1</field>
 						<field name="field1">xpath2</field>
 						<field name="field2">xpath3</field>
