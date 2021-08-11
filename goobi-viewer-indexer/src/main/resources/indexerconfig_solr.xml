@@ -2773,8 +2773,12 @@
 		<MD_SUBJECTGEOGRAPHIC>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:geographic</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:subject/mods:geographic</xpath>
 					<addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION" addCoordsToDocstruct="true">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="NORM_URI">@valueURI</field>
+                    </groupEntity>
 				</item>
 			</list>
 		</MD_SUBJECTGEOGRAPHIC>
