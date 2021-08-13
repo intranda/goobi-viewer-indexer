@@ -5,7 +5,7 @@ set -e
 
 set -u
 
-# set solrUrl and viewerUrl from environment variables (defaults are given in Dockerfile) 
+# set solrUrl and viewerUrl from environment variables (defaults are given in Dockerfile)
 sed -e "s|<solrUrl>.*</solrUrl>|<solrUrl>${SOLR_URL}</solrUrl>|" -e "s|<viewerUrl>.*</viewerUrl>|<viewerUrl>${VIEWER_URL}</viewerUrl>|" -i /opt/digiverso/indexer/solr_indexerconfig.xml
 
 #if [ -n "${WORKING_STORAGE:-}" ]
@@ -38,9 +38,9 @@ case $CONFIGSOURCE in
       echo "CONFIG_FOLDER: $CONFIG_FOLDER does not exists or is not a folder"
       exit 1
     fi
-    
+
     echo "Copying configuration from local folder"
-    [ -d "$CONFIG_FOLDER" ] && cp -arv "$CONFIG_FOLDER"/* /opt/digiverso/viewer/config/ 
+    [ -d "$CONFIG_FOLDER" ] && cp -arv "$CONFIG_FOLDER"/* /opt/digiverso/viewer/config/
     ;;
 
   *)
