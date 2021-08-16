@@ -15,9 +15,9 @@
 		<viewerUrl>https://viewer.goobi.io</viewerUrl>
 
 		<!-- Folder configuration -->
-		<hotFolder>C:/digiverso/viewer/hotfolder/</hotFolder>
-		<tempFolder>C:/digiverso/indexer/temp/</tempFolder>
-		<viewerHome>C:/digiverso/viewer/</viewerHome>
+		<hotFolder>C:/opt/digiverso/viewer/hotfolder/</hotFolder>
+		<tempFolder>C:/opt/digiverso/indexer/temp/</tempFolder>
+		<viewerHome>C:/opt/digiverso/viewer/</viewerHome>
 		<dataRepositories>
 			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
 			<strategy>SingleRepositoryStrategy</strategy>
@@ -26,9 +26,9 @@
 			<maxRecords>10000</maxRecords>
 
 			<!-- Data repository folders (absolute paths to be used (a new folder structure will be created for each dataRepository) -->
-			<dataRepository>C:/digiverso/viewer/data/1</dataRepository>
-			<dataRepository>C:/digiverso/viewer/data/2</dataRepository>
-			<dataRepository>C:/digiverso/viewer/data/3</dataRepository>
+			<dataRepository>C:/opt/digiverso/viewer/data/1</dataRepository>
+			<dataRepository>C:/opt/digiverso/viewer/data/2</dataRepository>
+			<dataRepository>C:/opt/digiverso/viewer/data/3</dataRepository>
 		</dataRepositories>
 
 		<!-- Data subfolder names (path is relative to either a data repository or viewerHome) -->
@@ -54,12 +54,12 @@
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
 
 		<!-- Misc folders -->
-		<successFolder>C:/digiverso/viewer/success/</successFolder>
-		<updatedMets>C:/digiverso/viewer/updated_mets/</updatedMets>
-		<deletedMets>C:/digiverso/viewer/deleted_mets/</deletedMets>
-		<errorMets>C:/digiverso/viewer/error_mets/</errorMets>
-		<origLido>C:/digiverso/viewer/orig_lido/</origLido>
-		<origDenkXweb>C:/digiverso/viewer/orig_denkxweb/</origDenkXweb>
+		<successFolder>C:/opt/digiverso/viewer/success/</successFolder>
+		<updatedMets>C:/opt/digiverso/viewer/updated_mets/</updatedMets>
+		<deletedMets>C:/opt/digiverso/viewer/deleted_mets/</deletedMets>
+		<errorMets>C:/opt/digiverso/viewer/error_mets/</errorMets>
+		<origLido>C:/opt/digiverso/viewer/orig_lido/</origLido>
+		<origDenkXweb>C:/opt/digiverso/viewer/orig_denkxweb/</origDenkXweb>
 
 		<!-- Delete images, full-texts, etc. from the hotfolder if indexing has failed (default is false) -->
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
