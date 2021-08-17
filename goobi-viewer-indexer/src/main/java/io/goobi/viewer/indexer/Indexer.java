@@ -966,6 +966,7 @@ public abstract class Indexer {
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         Set<String> skipFields = new HashSet<>();
+        logger.debug("{} has {} grouped metadata elements.", indexObj.getLogId(), groupedMetadataList.size());
         for (GroupedMetadata gmd : groupedMetadataList) {
             count += addGroupedMetadataDocs(gmd, writeStrategy, indexObj, ownerIddoc, skipFields, dcFields);
         }
@@ -1076,6 +1077,7 @@ public abstract class Indexer {
 
         // Recursively add children
         if (!gmd.getChildren().isEmpty()) {
+            logger.debug("{}:{} has {} child metadata entries.", gmd.getLabel(), gmd.getMainValue(), gmd.getChildren().size());
             count += addGroupedMetadataDocs(writeStrategy, indexObj, gmd.getChildren(), iddoc);
         }
 

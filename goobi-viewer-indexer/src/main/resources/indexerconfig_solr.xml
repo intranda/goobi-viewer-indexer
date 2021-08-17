@@ -3177,6 +3177,28 @@
                             <field name="MD_URI_SIKART">@sikart</field>
                             <field name="NORM_URI">@gnd</field>
                         </groupEntity>
+                        <groupEntity name="MD_DESIGNER" type="PERSON" xpath="intranda:actor[intranda:role='Design']">
+                            <field name="MD_VALUE">intranda:name</field>
+                            <field name="MD_NAME">intranda:name</field>
+                            <field name="MD_ROLE">intranda:role</field>
+                            <field name="MD_DISPLAYNAME">intranda:displayName</field>
+                            <field name="MD_STARTDATE">intranda:startDate</field>
+                            <field name="MD_ENDDATE">intranda:endDate</field>
+                            <field name="MD_URI_GETTY">@getty</field>
+                            <field name="MD_URI_SIKART">@sikart</field>
+                            <field name="NORM_URI">@gnd</field>
+                        </groupEntity>
+                        <groupEntity name="MD_CREATOR" type="PERSON" xpath="intranda:actor[not(intranda:role)]">
+                            <field name="MD_VALUE">intranda:name</field>
+                            <field name="MD_NAME">intranda:name</field>
+                            <field name="MD_ROLE">intranda:role</field>
+                            <field name="MD_DISPLAYNAME">intranda:displayName</field>
+                            <field name="MD_STARTDATE">intranda:startDate</field>
+                            <field name="MD_ENDDATE">intranda:endDate</field>
+                            <field name="MD_URI_GETTY">@getty</field>
+                            <field name="MD_URI_SIKART">@sikart</field>
+                            <field name="NORM_URI">@gnd</field>
+                        </groupEntity>
                     </groupEntity>
                 </item>
             </list>

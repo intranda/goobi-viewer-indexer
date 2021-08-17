@@ -1198,7 +1198,7 @@ public class MetadataHelper {
         // Nested group entities
         if (!groupEntity.getChildren().isEmpty()) {
             for (GroupEntity childGroupEntity : groupEntity.getChildren()) {
-                logger.info("Processing child config: {}", childGroupEntity.getName());
+                logger.debug("Processing child config: {}", childGroupEntity.getName());
                 List<Element> eleChildList = JDomXP.evaluateToElementsStatic(childGroupEntity.getXpath(), ele);
                 if (eleChildList == null) {
                     continue;
