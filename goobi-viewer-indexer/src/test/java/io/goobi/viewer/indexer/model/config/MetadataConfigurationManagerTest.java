@@ -73,7 +73,7 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
         Assert.assertNotNull(fieldConfig.getGroupEntity());
         Assert.assertEquals(3, fieldConfig.getGroupEntity().getSubfields().size());
 
-        Assert.assertEquals(1, fieldConfig.getGroupEntity().getChildren().size());
+        Assert.assertEquals(3, fieldConfig.getGroupEntity().getChildren().size());
         GroupEntity child = fieldConfig.getGroupEntity().getChildren().get(0);
         Assert.assertEquals("MD_ARTIST", child.getName());
         Assert.assertEquals(MetadataGroupType.PERSON, child.getType());
