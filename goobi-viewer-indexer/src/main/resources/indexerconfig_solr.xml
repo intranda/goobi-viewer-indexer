@@ -2981,7 +2981,7 @@
 					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
-					<onefield separator="#SPACE#">true</onefield>
+					<onefield separator=" ">true</onefield>
 					<geoJSONSource addSearchField="true">gml:Polygon:4326</geoJSONSource>
 				</item>
 			</list>
@@ -2989,7 +2989,7 @@
 		
         <MD_GPS_POLYGON>
             <list>
-                <item>
+                <item xml:space="preserve">
                     <xpath>
                         <list>
                             <item>concat(mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="western"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="eastern"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="northern"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="southern"])</item>
@@ -2997,7 +2997,7 @@
                     </xpath>
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
-                    <onefield separator="#SPACE#">true</onefield>
+                    <onefield separator=" ">true</onefield>
                     <geoJSONSource addSearchField="true">sexagesimal:polygon</geoJSONSource>
                 </item>
             </list>
@@ -3203,6 +3203,30 @@
                 </item>
             </list>
         </MD_EVENT>
+        
+        <MD_GROUP>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:mainGroup</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">intranda:firstMetadata</field>
+                        <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                        <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                        <groupEntity name="MD_SUBGROUP" type="OTHER" xpath="intranda:subGroup[@type='sub group']">
+                            <field name="MD_VALUE">intranda:firstMetadata</field>
+                            <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                            <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                            <groupEntity name="MD_SUBSUBGROUP" type="OTHER" xpath="intranda:subSubGroup[@type='sub sub group']">
+                                <field name="MD_VALUE">intranda:firstMetadata</field>
+                                <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                                <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                            </groupEntity>
+                        </groupEntity>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_GROUP>
 
 	</fields>
 </root>

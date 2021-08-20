@@ -54,8 +54,6 @@ public final class Configuration {
 
     private static final Object lock = new Object();
 
-    public static final String SPACE_SPLACEHOLDER = "#SPACE#";
-
     /* default */
     private static String configPath = "indexerconfig_solr.xml";
     private static Configuration instance = null;

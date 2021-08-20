@@ -128,7 +128,7 @@ public final class MetadataConfigurationManager {
                 fieldConfig.setOneToken(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").onetoken", false));
                 fieldConfig.setOneField(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").onefield", false));
                 fieldConfig.setOneFieldSeparator(config.getString("fields." + fieldname + ".list.item(" + i + ").onefield[@separator]",
-                        FieldConfig.DEFAULT_MULTIVALUE_SEPARATOR).replace(Configuration.SPACE_SPLACEHOLDER, " "));
+                        FieldConfig.DEFAULT_MULTIVALUE_SEPARATOR).replace(SPACE_PLACEHOLDER, " "));
                 fieldConfig.setConstantValue(config.getString("fields." + fieldname + ".list.item(" + i + ").constantValue", null));
                 fieldConfig.setSplittingCharacter(config.getString("fields." + fieldname + ".list.item(" + i + ").splittingCharacter", null));
                 fieldConfig.setNode(config.getString("fields." + fieldname + ".list.item(" + i + ").getnode", null));
@@ -154,7 +154,7 @@ public final class MetadataConfigurationManager {
                 fieldConfig.setGeoJSONSource(config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource", null));
                 fieldConfig
                         .setGeoJSONSourceSeparator(config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@separator]", "")
-                                .replace(Configuration.SPACE_SPLACEHOLDER, " "));
+                                .replace(SPACE_PLACEHOLDER, " "));
                 fieldConfig.setGeoJSONAddSearchField(
                         config.getBoolean("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@addSearchField]", false));
 

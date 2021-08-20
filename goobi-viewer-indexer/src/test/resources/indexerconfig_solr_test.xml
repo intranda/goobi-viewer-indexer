@@ -163,7 +163,7 @@
 
 		<MD_TESTFIELD>
 			<list>
-				<item>
+				<item xml:space="preserve">
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:test
@@ -176,7 +176,7 @@
 					<getchildren>false</getchildren>
 					<getnode>first</getnode>
 					<onetoken>true</onetoken>
-					<onefield separator="#SPACE#,#SPACE#">true</onefield>
+					<onefield separator=" , ">true</onefield>
 					<lowercase>true</lowercase>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
@@ -192,12 +192,12 @@
 					</groupEntity>
 					<splittingCharacter>#</splittingCharacter>
 					<constantValue>XXX</constantValue>
-					<replace string="stringToReplace1#SPACE#">replace1#SPACE#</replace>
+					<replace string="stringToReplace1 ">replace1 </replace>
 					<replace regex="[ ]*stringToReplace2[ ]*">replace2</replace>
 					<nonSortCharacters prefix="nonSortPrefix" suffix="nonSortSuffix" />
 					<normalizeValue length="5" filler="a" position="front" />
 					<allowDuplicateValues>true</allowDuplicateValues>
-                    <geoJSONSource separator="#SPACE#/#SPACE#">mods:coordinates/point</geoJSONSource>
+                    <geoJSONSource separator=" / ">mods:coordinates/point</geoJSONSource>
 				</item>
 			</list>
 		</MD_TESTFIELD>
