@@ -97,6 +97,19 @@ pipeline {
         }
       }
     }
+    stage('publish develop image to Docker Hub'){
+      agent any
+      when {
+        branch 'develop'
+      }
+      steps{
+        script{
+          docker.withRegistry('','0b13af35-a2fb-41f7-8ec7-01eaddcbe99d'){
+            indexerimage.push("${env.BRANCH_NAME}")
+          }
+        }
+      }
+    }
     stage('publish docker production image to internal repository'){
       agent any
       when { branch 'master' }
@@ -104,6 +117,20 @@ pipeline {
         script {
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
             indexerimage.push("${env.TAG_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            indexerimage.push("latest")
+          }
+        }
+      }
+    }
+    stage('publish production image to Docker Hub'){
+      agent any
+      when {
+        branch 'master'
+      }
+      steps{
+        script{
+          docker.withRegistry('','0b13af35-a2fb-41f7-8ec7-01eaddcbe99d'){
+            indexerimage.push("${env.TAG_NAME}")
             indexerimage.push("latest")
           }
         }
