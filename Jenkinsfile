@@ -72,6 +72,7 @@ pipeline {
         script{
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
             indexerimage = docker.build("goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            indexerimage_public = docker.build("intranda/goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
           }
         }
       }
@@ -105,7 +106,7 @@ pipeline {
       steps{
         script{
           docker.withRegistry('','0b13af35-a2fb-41f7-8ec7-01eaddcbe99d'){
-            indexerimage.push("${env.BRANCH_NAME}")
+            indexerimage_public.push("${env.BRANCH_NAME}")
           }
         }
       }
@@ -130,8 +131,8 @@ pipeline {
       steps{
         script{
           docker.withRegistry('','0b13af35-a2fb-41f7-8ec7-01eaddcbe99d'){
-            indexerimage.push("${env.TAG_NAME}")
-            indexerimage.push("latest")
+            indexerimage_public.push("${env.TAG_NAME}")
+            indexerimage_public.push("latest")
           }
         }
       }
