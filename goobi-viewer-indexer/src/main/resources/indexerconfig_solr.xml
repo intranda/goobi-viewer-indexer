@@ -2989,7 +2989,7 @@
 		
         <MD_GPS_POLYGON>
             <list>
-                <item xml:space="preserve">
+                <item>
                     <xpath>
                         <list>
                             <item>concat(mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="western"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="eastern"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="northern"], ' ', mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[@type="southern"])</item>
@@ -3137,7 +3137,7 @@
             </list>
         </MD_CITATION_APA>
         
-                <MD_CLASSIFICATION_COMBINED>
+        <MD_CLASSIFICATION_COMBINED>
                         <list>
                                 <item>
                                         <xpath>mets:xmlData/mods:mods/mods:classification[@displayLabel='category']</xpath>
@@ -3155,7 +3155,48 @@
                 <addToPages>true</addToPages>
                                 </item>
                         </list>
-                </MD_CLASSIFICATION_COMBINED>
+        </MD_CLASSIFICATION_COMBINED>
+        
+        <MD_GROUP>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:mainGroup</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">intranda:firstMetadata</field>
+                        <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                        <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                        <groupEntity name="MD_SUBGROUP" type="OTHER" xpath="intranda:subGroup[@type='sub group']">
+                            <field name="MD_VALUE">intranda:firstMetadata</field>
+                            <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                            <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                            <groupEntity name="MD_SUBSUBGROUP" type="OTHER" xpath="intranda:subSubGroup[@type='sub sub group']">
+                                <field name="MD_VALUE">intranda:firstMetadata</field>
+                                <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                                <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                            </groupEntity>
+                        </groupEntity>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_GROUP>
+                
+        <MD_REPOSITORY>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:repository</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">intranda:repositoryName</field>
+                        <field name="MD_REPOSITORY_NAME">intranda:repositoryName</field>
+                        <field name="MD_REPOSITORY_LINK">intranda:repositoryLink</field>
+                        <field name="MD_REPOSITORY_INVENTORY_NUMBER">intranda:inventoryNumber</field>
+                        <field name="MD_REPOSITORY_FORMER_INVENTORY_NUMBER">intranda:formerInventoryNumber</field>
+                        <field name="MD_REPOSITORY_LOCATION">intranda:location</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_REPOSITORY>
 
         <MD_EVENT>
             <list>
@@ -3166,6 +3207,9 @@
                         <field name="MD_VALUE">intranda:type</field>
                         <field name="EVENTTYPE">intranda:type</field>
                         <field name="MD_MATERIAL">intranda:material</field>
+                        <field name="MD_DISPLAYDATE">intranda:eventDate/intranda:displayDate</field>
+                        <field name="MD_EARLIESTDATE">intranda:eventDate/intranda:earliestDate</field>
+                        <field name="MD_DESCRIPTION">intranda:description/intranda:descriptiveNoteValue</field>
                         <groupEntity name="MD_ARTIST" type="PERSON" xpath="intranda:actor[intranda:role='Künstler/-in']">
                             <field name="MD_VALUE">intranda:name</field>
                             <field name="MD_NAME">intranda:name</field>
@@ -3203,30 +3247,6 @@
                 </item>
             </list>
         </MD_EVENT>
-        
-        <MD_GROUP>
-            <list>
-                <item>
-                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:mainGroup</xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">intranda:firstMetadata</field>
-                        <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
-                        <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
-                        <groupEntity name="MD_SUBGROUP" type="OTHER" xpath="intranda:subGroup[@type='sub group']">
-                            <field name="MD_VALUE">intranda:firstMetadata</field>
-                            <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
-                            <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
-                            <groupEntity name="MD_SUBSUBGROUP" type="OTHER" xpath="intranda:subSubGroup[@type='sub sub group']">
-                                <field name="MD_VALUE">intranda:firstMetadata</field>
-                                <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
-                                <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
-                            </groupEntity>
-                        </groupEntity>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_GROUP>
 
 	</fields>
 </root>

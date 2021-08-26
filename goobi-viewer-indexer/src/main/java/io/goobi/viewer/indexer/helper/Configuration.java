@@ -114,7 +114,7 @@ public final class Configuration {
      * 
      * @throws ConfigurationException
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Configuration() throws ConfigurationException {
         builder =
                 new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
