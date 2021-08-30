@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.MultiMap;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Assert;
@@ -41,6 +40,7 @@ import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
+import io.goobi.viewer.indexer.model.config.GroupEntity;
 
 public class MetadataHelperTest extends AbstractTest {
 
@@ -121,7 +121,7 @@ public class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getGroupedMetadata(Element,MultiMap,String)
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,String)
      * @verifies group correctly
      */
     @Test
@@ -131,8 +131,7 @@ public class MetadataHelperTest extends AbstractTest {
         Assert.assertNotNull(fieldConfigurations);
         Assert.assertEquals(1, fieldConfigurations.size());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
-        Map<String, Object> groupEntity = fieldConfig.getGroupEntityFields();
-        Assert.assertNotNull(fieldConfig.getGroupEntityFields());
+        Assert.assertNotNull(fieldConfig.getGroupEntity());
 
         Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
         Assert.assertNotNull(docMods);
@@ -140,7 +139,8 @@ public class MetadataHelperTest extends AbstractTest {
 
         Element eleName = docMods.getRootElement().getChild("name", Configuration.getInstance().getNamespaces().get("mods"));
         Assert.assertNotNull(eleName);
-        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, groupEntity, "label");
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "label", new StringBuilder(),
+                new ArrayList<>());
         Assert.assertFalse(gmd.getFields().isEmpty());
         Assert.assertEquals("label", gmd.getLabel());
         Assert.assertEquals("display_form", gmd.getMainValue());

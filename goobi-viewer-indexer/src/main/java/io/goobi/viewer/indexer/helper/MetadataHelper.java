@@ -56,6 +56,7 @@ import io.goobi.viewer.indexer.model.PrimoDocument;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
+import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
@@ -242,13 +243,9 @@ public class MetadataHelper {
                                 logger.trace(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd =
-                                        getGroupedMetadata(eleMods, configurationItem.getGroupEntityFields(), configurationItem.getFieldname());
-                                // Allow duplicate values for this GMD, if the configuration item allows it
-                                gmd.setAllowDuplicateValues(configurationItem.isAllowDuplicateValues());
-                                List<LuceneField> authorityData = new ArrayList<>();
-                                boolean groupFieldAlreadyReplaced = false;
-                                String authorityIdentifier = null;
-                                StringBuilder sbAuthorityDataTerms = new StringBuilder();
+                                        getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
+                                                configurationItem.getFieldname(), sbDefaultMetadataValues,
+                                                ret);
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (gmd.getMainValue() != null) {
@@ -264,104 +261,9 @@ public class MetadataHelper {
                                     fieldValues.add(fieldValue);
                                 }
 
-                                // Retrieve authority data
-                                if (gmd.getAuthorityURI() != null) {
-                                    authorityData.addAll(retrieveAuthorityData(gmd.getAuthorityURI(), sbDefaultMetadataValues,
-                                            sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
-                                            configurationItem.getFieldname()));
-                                    // Add default authority data name to the docstruct doc so that it can be searched
-                                    for (LuceneField authorityField : authorityData) {
-                                        switch (authorityField.getField()) {
-                                            case "NORM_NAME":
-                                                // Add NORM_NAME as MD_*_UNTOKENIZED and to DEFAULT to the docstruct
-                                                if (StringUtils.isNotBlank(authorityField.getValue())) {
-                                                    // fieldValues.add(normField.getValue());
-                                                    if (configurationItem.isAddToDefault()) {
-                                                        // Add norm value to DEFAULT
-                                                        addValueToDefault(authorityField.getValue(), sbDefaultMetadataValues);
-                                                    }
-                                                    if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
-                                                        ret.add(new LuceneField(
-                                                                new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(),
-                                                                authorityField.getValue()));
-                                                    }
-                                                }
-                                                break;
-                                            case "NORM_IDENTIFIER":
-                                                // If a NORM_IDENTIFIER exists for this metadata group, use it to replace the value of GROUPFIELD
-                                                for (LuceneField groupField : gmd.getFields()) {
-                                                    if (groupField.getField().equals(SolrConstants.GROUPFIELD)) {
-                                                        groupField.setValue(authorityField.getValue());
-                                                        groupFieldAlreadyReplaced = true;
-                                                        break;
-                                                    }
-                                                    authorityIdentifier = authorityField.getValue();
-                                                }
-                                                break;
-                                            default: // nothing
-                                        }
-                                    }
-                                }
-                                for (LuceneField field : gmd.getFields()) {
-                                    // Apply modifications configured for the main field to all the group field values
-                                    String moddedValue = applyAllModifications(configurationItem, field.getValue());
-
-                                    // Convert to geoJSON
-                                    if (configurationItem.getGeoJSONSource() != null && field.getField().equals("MD_VALUE")) {
-                                        try {
-                                            GeoCoords coords = GeoJSONTools.convert(moddedValue, configurationItem.getGeoJSONSource(),
-                                                    configurationItem.getGeoJSONSourceSeparator());
-                                            if (coords.getGeoJSON() != null) {
-                                                moddedValue = coords.getGeoJSON();
-                                            }
-                                            // Add WKT search field
-                                            if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
-                                                ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
-                                                ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
-                                            }
-                                        } catch (NumberFormatException e) {
-                                            logger.error("Cannot convert to geoJSON: {}", e.getMessage());
-                                        }
-                                    }
-
-                                    field.setValue(moddedValue);
-
-                                    if (configurationItem.isAddToDefault()) {
-                                        // Add main value to owner doc's DEFAULT field
-                                        if (StringUtils.isNotBlank(fieldValue)) {
-                                            addValueToDefault(fieldValue, sbDefaultMetadataValues);
-                                        }
-                                        // Add grouped metadata field to DEFAULT
-                                        if (StringUtils.isNotEmpty(field.getValue()) && !moddedValue.equals(fieldValue)) {
-                                            switch (field.getField()) {
-                                                case SolrConstants.LABEL:
-                                                case SolrConstants.METADATATYPE:
-                                                    // skip
-                                                    break;
-                                                default:
-                                                    addValueToDefault(moddedValue, sbDefaultMetadataValues);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // If there was no existing GROUPFIELD in the group metadata, add one now using the norm identifier
-                                if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(authorityIdentifier)) {
-                                    gmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, authorityIdentifier));
-                                }
-                                // Add MD_VALUE as DEFAULT to the grouped metadata doc
-                                if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(gmd.getMainValue())) {
-                                    gmd.getFields().add(new LuceneField(SolrConstants.DEFAULT, gmd.getMainValue()));
-                                }
-                                gmd.getAuthorityDataFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
-
                                 // Add GMD to index object (if not duplicate or duplicates are allowed for this field)
                                 if (!indexObj.getGroupedMetadataFields().contains(gmd) || configurationItem.isAllowDuplicateValues()) {
                                     indexObj.getGroupedMetadataFields().add(gmd);
-                                }
-                                // NORMDATATERMS is now in the metadata docs, not docstructs
-                                if (sbAuthorityDataTerms.length() > 0) {
-                                    gmd.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbAuthorityDataTerms.toString()));
                                 }
                             } else {
                                 // Regular metadata
@@ -1051,7 +953,7 @@ public class MetadataHelper {
             }
             if (!oldValues.isEmpty()) {
                 Collections.sort(oldValues);
-                int count = 0;
+                // int count = 0;
                 for (int i = oldValues.get(0); i < oldValues.get(oldValues.size() - 1); ++i) {
                     if (!oldValues.contains(i)) {
                         if (skipValues != null && skipValues.contains(i)) {
@@ -1059,7 +961,7 @@ public class MetadataHelper {
                         }
                         newValues.add(new LuceneField(fieldName, String.valueOf(i)));
                         logger.debug("Added implicit {}: {}", fieldName, i);
-                        count++;
+                        // count++;
                     }
                     //                    if (count == 10) {
                     //                        break;
@@ -1073,56 +975,40 @@ public class MetadataHelper {
 
     /**
      * 
-     * @param ele
-     * @param groupEntityFields
-     * @param groupLabel
-     * @param xp
-     * @return
+     * @param ele Relative JDOM2 root element
+     * @param groupEntity {@link GroupEntity} configuration from which to create the {@link GroupedMetadata}
+     * @param configurationItem Master field configuration
+     * @param groupLabel Main field name
+     * @param sbDefaultMetadataValues StringBuilder that collects default values
+     * @param luceneFields
+     * @return Generated {@link GroupedMetadata}
      * @throws FatalIndexerException
      * @should group correctly
      */
-    static GroupedMetadata getGroupedMetadata(Element ele, Map<String, Object> groupEntityFields, String groupLabel) throws FatalIndexerException {
+    static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
+            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields)
+            throws FatalIndexerException {
         logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
-
-        // Grouped metadata type
-        MetadataGroupType type = null;
-        if (groupEntityFields.get("type") != null) {
-            type = MetadataGroupType.getByName(((String) groupEntityFields.get("type")).trim());
-            if (type == null) {
-                type = MetadataGroupType.OTHER;
-                logger.warn("Metadata group type not found: '{}', using '{}' instead.", groupEntityFields.get("type"), type.name());
-            }
-            ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, type.name()));
-        } else {
-            type = MetadataGroupType.OTHER;
-            logger.warn("Attribute groupedMetadata/@type not configured for field '{}', using 'OTHER'.", groupLabel);
-        }
-
-        {
-            boolean addAuthorityDataToDocstruct = false;
-            if (groupEntityFields.get("addAuthorityDataToDocstruct") != null) {
-                addAuthorityDataToDocstruct = (boolean) groupEntityFields.get("addAuthorityDataToDocstruct");
-            }
-            ret.setAddAuthorityDataToDocstruct(addAuthorityDataToDocstruct);
-        }
-        {
-            boolean addCoordsToDocstruct = false;
-            if (groupEntityFields.get("addCoordsToDocstruct") != null) {
-                addCoordsToDocstruct = (boolean) groupEntityFields.get("addCoordsToDocstruct");
-            }
-            ret.setAddCoordsToDocstruct(addCoordsToDocstruct);
-        }
+        ret.getFields().add(new LuceneField(SolrConstants.METADATATYPE, groupEntity.getType().name()));
+        ret.setAddAuthorityDataToDocstruct(groupEntity.isAddAuthorityDataToDocstruct());
+        ret.setAddCoordsToDocstruct(groupEntity.isAddCoordsToDocstruct());
+        ret.setAllowDuplicateValues(configurationItem.isAllowDuplicateValues());
+        List<LuceneField> authorityData = new ArrayList<>();
+        boolean groupFieldAlreadyReplaced = false;
+        String authorityIdentifier = null;
+        StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntityFields, ele);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele);
 
         String mdValue = null;
         for (LuceneField field : ret.getFields()) {
-            if (field.getField().equals("MD_VALUE") || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(type))
-                    || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(type))) {
+            if (field.getField().equals("MD_VALUE")
+                    || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(groupEntity.getType()))
+                    || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(groupEntity.getType()))) {
                 mdValue = cleanUpName(field.getValue());
                 field.setValue(mdValue);
             }
@@ -1130,7 +1016,7 @@ public class MetadataHelper {
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
             StringBuilder sbValue = new StringBuilder();
-            switch (type) {
+            switch (groupEntity.getType()) {
                 case PERSON:
                     if (collectedValues.containsKey("MD_LASTNAME") && !collectedValues.get("MD_LASTNAME").isEmpty()) {
                         sbValue.append(collectedValues.get("MD_LASTNAME").get(0));
@@ -1155,15 +1041,15 @@ public class MetadataHelper {
         }
 
         // Query citation resource
-        if (MetadataGroupType.CITATION.equals(type)) {
-            String url = (String) groupEntityFields.get("url");
-            if (StringUtils.isNotEmpty(url)) {
+        if (MetadataGroupType.CITATION.equals(groupEntity.getType())) {
+            if (StringUtils.isNotEmpty(groupEntity.getUrl())) {
                 try {
-                    PrimoDocument primo = new PrimoDocument(url)
+                    PrimoDocument primo = new PrimoDocument(groupEntity.getUrl())
                             .prepareURL(collectedValues)
                             .fetch()
                             .build();
-                    ret.collectGroupMetadataValues(collectedValues, groupEntityFields, primo.getXp().getRootElement());
+                    ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
+                            primo.getXp().getRootElement());
                 } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
                     logger.error(e.getMessage());
                 }
@@ -1208,6 +1094,121 @@ public class MetadataHelper {
                             ret.setAuthorityURI(valueURI);
                         }
                         break;
+                }
+            }
+        }
+
+        // Retrieve authority data
+        if (ret.getAuthorityURI() != null) {
+            authorityData.addAll(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
+                    sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
+                    configurationItem.getFieldname()));
+            // Add default authority data name to the docstruct doc so that it can be searched
+            for (LuceneField authorityField : authorityData) {
+                switch (authorityField.getField()) {
+                    case "NORM_NAME":
+                        // Add NORM_NAME as MD_*_UNTOKENIZED and to DEFAULT to the docstruct
+                        if (StringUtils.isNotBlank(authorityField.getValue())) {
+                            // fieldValues.add(normField.getValue());
+                            if (configurationItem.isAddToDefault()) {
+                                // Add norm value to DEFAULT
+                                addValueToDefault(authorityField.getValue(), sbDefaultMetadataValues);
+                            }
+                            if (configurationItem.isAddUntokenizedVersion() || groupLabel.startsWith("MD_")) {
+                                luceneFields.add(new LuceneField(
+                                        new StringBuilder(groupLabel).append(SolrConstants._UNTOKENIZED).toString(),
+                                        authorityField.getValue()));
+                            }
+                        }
+                        break;
+                    case "NORM_IDENTIFIER":
+                        // If a NORM_IDENTIFIER exists for this metadata group, use it to replace the value of GROUPFIELD
+                        for (LuceneField groupField : ret.getFields()) {
+                            if (groupField.getField().equals(SolrConstants.GROUPFIELD)) {
+                                groupField.setValue(authorityField.getValue());
+                                groupFieldAlreadyReplaced = true;
+                                break;
+                            }
+                            authorityIdentifier = authorityField.getValue();
+                        }
+                        break;
+                    default: // nothing
+                }
+            }
+        }
+
+        for (LuceneField field : ret.getFields()) {
+            // Apply modifications configured for the main field to all the group field values
+            String moddedValue = applyAllModifications(configurationItem, field.getValue());
+
+            // Convert to geoJSON
+            if (configurationItem.getGeoJSONSource() != null && field.getField().equals("MD_VALUE")) {
+                try {
+                    GeoCoords coords = GeoJSONTools.convert(moddedValue, configurationItem.getGeoJSONSource(),
+                            configurationItem.getGeoJSONSourceSeparator());
+                    if (coords.getGeoJSON() != null) {
+                        moddedValue = coords.getGeoJSON();
+                    }
+                    // Add WKT search field
+                    if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
+                        luceneFields.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                        luceneFields.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
+                    }
+                } catch (NumberFormatException e) {
+                    logger.error("Cannot convert to geoJSON: {}", e.getMessage());
+                }
+            }
+
+            field.setValue(moddedValue);
+
+            if (configurationItem.isAddToDefault()) {
+                // Add main value to owner doc's DEFAULT field
+                if (StringUtils.isNotBlank(ret.getMainValue())) {
+                    addValueToDefault(ret.getMainValue(), sbDefaultMetadataValues);
+                }
+                // Add grouped metadata field to DEFAULT
+                if (StringUtils.isNotEmpty(field.getValue()) && !moddedValue.equals(ret.getMainValue())) {
+                    switch (field.getField()) {
+                        case SolrConstants.LABEL:
+                        case SolrConstants.METADATATYPE:
+                            // skip
+                            break;
+                        default:
+                            addValueToDefault(moddedValue, sbDefaultMetadataValues);
+                    }
+                }
+            }
+        }
+
+        // If there was no existing GROUPFIELD in the group metadata, add one now using the norm identifier
+        if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(authorityIdentifier)) {
+            ret.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, authorityIdentifier));
+        }
+        // Add MD_VALUE as DEFAULT to the grouped metadata doc
+        if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(ret.getMainValue())) {
+            ret.getFields().add(new LuceneField(SolrConstants.DEFAULT, ret.getMainValue()));
+        }
+        ret.getAuthorityDataFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
+
+        // NORMDATATERMS is now in the metadata docs, not docstructs
+        if (sbAuthorityDataTerms.length() > 0) {
+            ret.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbAuthorityDataTerms.toString()));
+        }
+
+        // Nested group entities
+        if (!groupEntity.getChildren().isEmpty()) {
+            for (GroupEntity childGroupEntity : groupEntity.getChildren()) {
+                logger.debug("Processing child config: {}", childGroupEntity.getName());
+                List<Element> eleChildList = JDomXP.evaluateToElementsStatic(childGroupEntity.getXpath(), ele);
+                if (eleChildList == null) {
+                    continue;
+                }
+                for (Element eleChild : eleChildList) {
+                    GroupedMetadata child =
+                            getGroupedMetadata(eleChild, childGroupEntity, configurationItem, childGroupEntity.getName(), sbDefaultMetadataValues,
+                                    luceneFields);
+                    ret.getChildren().add(child);
+                    logger.debug("added child: {}", child.getMainValue());
                 }
             }
         }

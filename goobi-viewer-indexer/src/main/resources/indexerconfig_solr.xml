@@ -12,7 +12,7 @@
 		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
 		<oldSolrUrl></oldSolrUrl>
-		<viewerUrl>http://localhost:8080/viewer</viewerUrl>
+		<viewerUrl>https://viewer.goobi.io</viewerUrl>
 
 		<!-- Folder configuration -->
 		<hotFolder>C:/opt/digiverso/viewer/hotfolder/</hotFolder>
@@ -2981,7 +2981,7 @@
 					<xpath>denkxweb:geoReference/denkxweb:surface/gml:MultiSurface[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:pos</xpath>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
-					<onefield separator="#SPACE#">true</onefield>
+					<onefield separator=" ">true</onefield>
 					<geoJSONSource addSearchField="true">gml:Polygon:4326</geoJSONSource>
 				</item>
 			</list>
@@ -2997,7 +2997,7 @@
                     </xpath>
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
-                    <onefield separator="#SPACE#">true</onefield>
+                    <onefield separator=" ">true</onefield>
                     <geoJSONSource addSearchField="true">sexagesimal:polygon</geoJSONSource>
                 </item>
             </list>
@@ -3098,7 +3098,7 @@
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
                     <addSortField>true</addSortField>
-                    <groupEntity type="VIAF">
+                    <groupEntity type="OTHER">
                         <field name="MD_VALUE">text()</field>
                         <field name="MD_DISPLAYFORM">text()</field>
                         <field name="NORM_URI_VIAF">@valueURI</field>
@@ -3106,85 +3106,6 @@
                 </item>
             </list>
         </MD_INTRANDAINSTITUTION>
-        
-        <!-- Inscription -->
-        <MD_INSCRIPTION_LANG_FR>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
-                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <allowDuplicateValues>true</allowDuplicateValues>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="fre"]</field>
-                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_FR">mods:note[@type="marks"][@lang="fre"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_FR">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_FR">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_FR">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
-                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_FR">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_INSCRIPTION_LANG_FR>
-
-        <MD_INSCRIPTION_LANG_EN>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
-                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <allowDuplicateValues>true</allowDuplicateValues>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="eng"]</field>
-                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_EN">mods:note[@type="marks"][@lang="eng"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_EN">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_EN">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_EN">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
-                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_EN">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[@xml:lang="en"]</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_INSCRIPTION_LANG_EN>
-
-        <MD_INSCRIPTION_LANG_DE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:physicalDescription</item>
-                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <allowDuplicateValues>true</allowDuplicateValues>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:note[@type="marks"][@lang="ger"]</field>
-                        <field name="MD_VALUE">lido:inscriptionTranscription</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_DE">mods:note[@type="marks"][@lang="ger"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_MARKS_LANG_DE">lido:inscriptionDescription[@lido:type="type"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_LOCATION_LANG_DE">lido:inscriptionDescription[@lido:type="location"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
-                        <field name="MD_PHYSICALDESCRIPTION_DETAIL_LANG_DE">lido:inscriptionDescription[@lido:type="detail"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">../mods:note[@type="citation/reference"]</field>
-                        <field name="MD_NOTE_CITATION_REFERENCE">lido:inscriptionTranscription</field>
-                        <field name="MD_INSCRIPTION_TRANSLATION_LANG_DE">lido:inscriptionDescription[@lido:type="translation"]/lido:descriptiveNoteValue[@xml:lang="de"]</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_INSCRIPTION_LANG_DE>
         
         <MD_FINDINGAIDSLINK>
             <list>
@@ -3216,7 +3137,7 @@
             </list>
         </MD_CITATION_APA>
         
-                <MD_CLASSIFICATION_COMBINED>
+        <MD_CLASSIFICATION_COMBINED>
                         <list>
                                 <item>
                                         <xpath>mets:xmlData/mods:mods/mods:classification[@displayLabel='category']</xpath>
@@ -3234,7 +3155,98 @@
                 <addToPages>true</addToPages>
                                 </item>
                         </list>
-                </MD_CLASSIFICATION_COMBINED>
+        </MD_CLASSIFICATION_COMBINED>
+        
+        <MD_GROUP>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:mainGroup</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">intranda:firstMetadata</field>
+                        <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                        <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                        <groupEntity name="MD_SUBGROUP" type="OTHER" xpath="intranda:subGroup[@type='sub group']">
+                            <field name="MD_VALUE">intranda:firstMetadata</field>
+                            <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                            <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                            <groupEntity name="MD_SUBSUBGROUP" type="OTHER" xpath="intranda:subSubGroup[@type='sub sub group']">
+                                <field name="MD_VALUE">intranda:firstMetadata</field>
+                                <field name="MD_FIRSTMETADATA">intranda:firstMetadata</field>
+                                <field name="MD_SECONDMETADATA">intranda:secondMetadata</field>
+                            </groupEntity>
+                        </groupEntity>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_GROUP>
+                
+        <MD_REPOSITORY>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:repository</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">intranda:repositoryName</field>
+                        <field name="MD_REPOSITORY_NAME">intranda:repositoryName</field>
+                        <field name="MD_REPOSITORY_LINK">intranda:repositoryLink</field>
+                        <field name="MD_REPOSITORY_INVENTORY_NUMBER">intranda:inventoryNumber</field>
+                        <field name="MD_REPOSITORY_FORMER_INVENTORY_NUMBER">intranda:formerInventoryNumber</field>
+                        <field name="MD_REPOSITORY_LOCATION">intranda:location</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_REPOSITORY>
+
+        <MD_EVENT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:event</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="EVENT">
+                        <field name="MD_VALUE">intranda:type</field>
+                        <field name="EVENTTYPE">intranda:type</field>
+                        <field name="MD_MATERIAL">intranda:material</field>
+                        <field name="MD_DISPLAYDATE">intranda:eventDate/intranda:displayDate</field>
+                        <field name="MD_EARLIESTDATE">intranda:eventDate/intranda:earliestDate</field>
+                        <field name="MD_DESCRIPTION">intranda:description/intranda:descriptiveNoteValue</field>
+                        <groupEntity name="MD_ARTIST" type="PERSON" xpath="intranda:actor[intranda:role='Künstler/-in']">
+                            <field name="MD_VALUE">intranda:name</field>
+                            <field name="MD_NAME">intranda:name</field>
+                            <field name="MD_ROLE">intranda:role</field>
+                            <field name="MD_DISPLAYNAME">intranda:displayName</field>
+                            <field name="MD_STARTDATE">intranda:startDate</field>
+                            <field name="MD_ENDDATE">intranda:endDate</field>
+                            <field name="MD_URI_GETTY">@getty</field>
+                            <field name="MD_URI_SIKART">@sikart</field>
+                            <field name="NORM_URI">@gnd</field>
+                        </groupEntity>
+                        <groupEntity name="MD_DESIGNER" type="PERSON" xpath="intranda:actor[intranda:role='Design']">
+                            <field name="MD_VALUE">intranda:name</field>
+                            <field name="MD_NAME">intranda:name</field>
+                            <field name="MD_ROLE">intranda:role</field>
+                            <field name="MD_DISPLAYNAME">intranda:displayName</field>
+                            <field name="MD_STARTDATE">intranda:startDate</field>
+                            <field name="MD_ENDDATE">intranda:endDate</field>
+                            <field name="MD_URI_GETTY">@getty</field>
+                            <field name="MD_URI_SIKART">@sikart</field>
+                            <field name="NORM_URI">@gnd</field>
+                        </groupEntity>
+                        <groupEntity name="MD_CREATOR" type="PERSON" xpath="intranda:actor[not(intranda:role)]">
+                            <field name="MD_VALUE">intranda:name</field>
+                            <field name="MD_NAME">intranda:name</field>
+                            <field name="MD_ROLE">intranda:role</field>
+                            <field name="MD_DISPLAYNAME">intranda:displayName</field>
+                            <field name="MD_STARTDATE">intranda:startDate</field>
+                            <field name="MD_ENDDATE">intranda:endDate</field>
+                            <field name="MD_URI_GETTY">@getty</field>
+                            <field name="MD_URI_SIKART">@sikart</field>
+                            <field name="NORM_URI">@gnd</field>
+                        </groupEntity>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_EVENT>
 
 	</fields>
 </root>

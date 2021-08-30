@@ -265,7 +265,7 @@ public class LidoIndexer extends Indexer {
             writeStrategy.addDocs(events);
 
             // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj);
+            addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
             // Add root doc
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
