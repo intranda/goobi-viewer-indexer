@@ -40,7 +40,7 @@ case $CONFIGSOURCE in
     fi
 
     echo "Copying configuration from local folder"
-    [ -d "$CONFIG_FOLDER" ] && cp -arv "$CONFIG_FOLDER"/* /opt/digiverso/viewer/config/
+    [ -d "$CONFIG_FOLDER" ] && cp -arv "$CONFIG_FOLDER"/* /opt/digiverso/indexer/
     ;;
 
   *)
