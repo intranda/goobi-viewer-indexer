@@ -50,4 +50,4 @@ esac
 
 
 echo "Starting application"
-exec java -jar /opt/digiverso/indexer/solrIndexer.jar /opt/digiverso/indexer/solr_indexerconfig.xml
+exec java -Dlog4j.configurationFile=/log4j2.xml -jar /opt/digiverso/indexer/solrIndexer.jar /opt/digiverso/indexer/solr_indexerconfig.xml
