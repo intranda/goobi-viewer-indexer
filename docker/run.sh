@@ -5,9 +5,6 @@ set -e
 
 set -u
 
-# set solrUrl and viewerUrl from environment variables (defaults are given in Dockerfile)
-sed -e "s|<solrUrl>.*</solrUrl>|<solrUrl>${SOLR_URL}</solrUrl>|" -e "s|<viewerUrl>.*</viewerUrl>|<viewerUrl>${VIEWER_URL}</viewerUrl>|" -i /opt/digiverso/indexer/solr_indexerconfig.xml
-
 #if [ -n "${WORKING_STORAGE:-}" ]
 #then
   #CATALINA_TMPDIR="${WORKING_STORAGE}/goobi/jvmtemp"
@@ -45,6 +42,9 @@ case $CONFIGSOURCE in
 
   *)
     echo "Keeping configuration"
+    # set solrUrl and viewerUrl from environment variables (defaults are given in Dockerfile)
+    [ -w /opt/digiverso/indexer/solr_indexerconfig.xml ] && sed -e "s|<solrUrl>.*</solrUrl>|<solrUrl>${SOLR_URL}</solrUrl>|" -e "s|<viewerUrl>.*</viewerUrl>|<viewerUrl>${VIEWER_URL}</viewerUrl>|" -i /opt/digiverso/indexer/solr_indexerconfig.xml || echo "Did not modify indexer configuration from environment."
+
     ;;
 esac
 
