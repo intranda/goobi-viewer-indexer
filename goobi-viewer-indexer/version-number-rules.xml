@@ -18,6 +18,7 @@
                 <ignoreVersion>2.12.2</ignoreVersion>
                 <ignoreVersion>2.12.3</ignoreVersion>
                 <ignoreVersion>2.12.4</ignoreVersion>
+                <ignoreVersion>2.12.5</ignoreVersion>
             </ignoreVersions>
         </rule>
     </rules>

@@ -596,6 +596,7 @@
 
 		<fieldType name="sort_es" class="solr.ICUCollationField"
 			locale="es" strength="primary" />
+            
 			
     <!-- This point type indexes the coordinates as separate fields (subFields)
       If subFieldType is defined, it references a type, and a dynamic field

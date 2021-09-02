@@ -158,7 +158,7 @@ public class JDomXP {
     }
 
     /**
-     * Evaluates the given XPath expression to a list of elements.
+     * Evaluates the given XPath expression to a list of elements. Defaults to root element if no node was given in <code>parent</code>.
      *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
@@ -167,10 +167,24 @@ public class JDomXP {
      * @should return all values
      */
     public List<Element> evaluateToElements(String expr, Object parent) throws FatalIndexerException {
-        List<Element> retList = new ArrayList<>();
         if (parent == null) {
             parent = doc;
         }
+
+        return evaluateToElementsStatic(expr, parent);
+    }
+
+    /**
+     * Evaluates the given XPath expression to a list of elements.
+     *
+     * @param expr XPath expression to evaluate.
+     * @param parent The expression is evaluated relative to this element.
+     * @return {@link java.util.ArrayList} or null
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     */
+    public static List<Element> evaluateToElementsStatic(String expr, Object parent) throws FatalIndexerException {
+        List<Element> retList = new ArrayList<>();
+
         List<Object> list = evaluate(expr, parent, Filters.element());
         if (list == null) {
             return null;

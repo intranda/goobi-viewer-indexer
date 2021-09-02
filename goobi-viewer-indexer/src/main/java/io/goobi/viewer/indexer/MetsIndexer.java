@@ -472,7 +472,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj);
+            addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
             // Apply field modifications that should happen at the very end
             indexObj.applyFinalModifications();
@@ -1363,7 +1363,7 @@ public class MetsIndexer extends Indexer {
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
                 } catch (HTTPException e) {
-                    logger.warn(e.getMessage());
+                    logger.warn(e.getMessage() + ": " + altoURL);
                 }
 
             }
@@ -1961,7 +1961,7 @@ public class MetsIndexer extends Indexer {
             // The following steps must be performed after adding child metadata and marking own metadata for skipping
 
             // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
-            addGroupedMetadataDocs(writeStrategy, indexObj);
+            addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
             // Apply field modifications that should happen at the very end
             indexObj.applyFinalModifications();

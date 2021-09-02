@@ -42,31 +42,22 @@ public final class SolrConstants {
         RECORD,
         SHAPE,
         CITATION,
+        EVENT,
         OTHER;
 
+        /**
+         * 
+         * @param name
+         * @return
+         */
         public static MetadataGroupType getByName(String name) {
             if (name != null) {
-                switch (name) {
-                    case "PERSON":
-                        return PERSON;
-                    case "CORPORATION":
-                        return CORPORATION;
-                    case "CONFERENCE":
-                        return CONFERENCE;
-                    case "LOCATION":
-                        return LOCATION;
-                    case "SUBJECT":
-                        return SUBJECT;
-                    case "ORIGININFO":
-                        return ORIGININFO;
-                    case "CITATION":
-                        return CITATION;
-                    case "OTHER":
-                        return OTHER;
-                    default:
-                        return null;
+                name = name.toUpperCase();
+                for (MetadataGroupType type : MetadataGroupType.values()) {
+                    if (type.name().equals(name)) {
+                        return type;
+                    }
                 }
-
             }
 
             return null;
@@ -251,10 +242,10 @@ public final class SolrConstants {
     public static final String _UGC_TYPE_COMMENT = "COMMENT";
     /** Constant <code>NAMEDENTITIES="NAMEDENTITIES"</code> */
     public static final String NAMEDENTITIES = "NAMEDENTITIES";
-    
+
     /** Field containing true if a page contains a double image. */
     public static final String BOOL_DOUBLE_IMAGE = "BOOL_DOUBLE_IMAGE";
     /** Constant <code>MD_ANNOTATION_ID="MD_ANNOTATION_ID"</code> */
     public static final String MD_ANNOTATION_ID = "MD_ANNOTATION_ID";
-    
+
 }

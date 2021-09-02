@@ -30,7 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.AbstractTest;
+import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
+import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
@@ -75,7 +77,7 @@ public class ConfigurationTest extends AbstractTest {
     @Test
     public void configItemTest() throws Exception {
         List<String> fieldNames = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
-        Assert.assertEquals(120, fieldNames.size());
+        Assert.assertEquals(121, fieldNames.size());
         List<FieldConfig> fieldConfigList =
                 Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(fieldConfigList);
@@ -103,15 +105,12 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertTrue(fieldConfig.isGroupEntity());
         Assert.assertTrue(fieldConfig.isAllowDuplicateValues());
 
-        Map<String, Object> groupEntity = fieldConfig.getGroupEntityFields();
+        GroupEntity groupEntity = fieldConfig.getGroupEntity();
         Assert.assertNotNull(groupEntity);
-        Assert.assertEquals(4, groupEntity.size());
-        String type = (String) groupEntity.get("type");
-        Assert.assertEquals("TYPE", type);
-        String url = (String) groupEntity.get("url");
-        Assert.assertEquals("https://example.com?param1=value1&param2=value2", url);
+        Assert.assertEquals(MetadataGroupType.OTHER, groupEntity.getType());
+        Assert.assertEquals("https://example.com?param1=value1&param2=value2", groupEntity.getUrl());
         {
-            SubfieldConfig fieldSubconfig = (SubfieldConfig) groupEntity.get("field1");
+            SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field1");
             Assert.assertNotNull(fieldSubconfig);
             Assert.assertEquals(2, fieldSubconfig.getXpaths().size());
             Assert.assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
@@ -120,7 +119,7 @@ public class ConfigurationTest extends AbstractTest {
             Assert.assertEquals("def", fieldSubconfig.getDefaultValues().get("xpath2"));
         }
         {
-            SubfieldConfig fieldSubconfig = (SubfieldConfig) groupEntity.get("field2");
+            SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field2");
             Assert.assertNotNull(fieldSubconfig);
             Assert.assertEquals(1, fieldSubconfig.getXpaths().size());
             Assert.assertEquals("xpath3", fieldSubconfig.getXpaths().get(0));
@@ -143,7 +142,7 @@ public class ConfigurationTest extends AbstractTest {
 
     @Test
     public void metadataConfigTest() throws Exception {
-        Assert.assertEquals(120, Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames().size());
+        Assert.assertEquals(121, Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames().size());
         List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(configItems);
         Assert.assertEquals(1, configItems.size());

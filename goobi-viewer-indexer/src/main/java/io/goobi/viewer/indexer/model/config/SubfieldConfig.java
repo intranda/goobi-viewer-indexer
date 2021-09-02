@@ -43,6 +43,24 @@ public class SubfieldConfig {
     }
 
     /**
+     * Copies XPath and default values from the given SubfieldConfig.
+     * 
+     * @param other SubfieldConfig to copy from
+     * @should copy xpath expressions correctly
+     * @should copy default values correctly
+     */
+    public void ingestXpaths(SubfieldConfig other) {
+        if (other == null) {
+            return;
+        }
+
+        xpaths.addAll(other.getXpaths());
+        for (String xpath : other.getDefaultValues().keySet()) {
+            defaultValues.put(xpath, other.getDefaultValues().get(xpath));
+        }
+    }
+
+    /**
      * <p>
      * Getter for the field <code>fieldname</code>.
      * </p>

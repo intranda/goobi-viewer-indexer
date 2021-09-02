@@ -15,21 +15,20 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.collections.map.MultiValueMap;
 
 /**
  * Configuration object for a single metadata field configuration.
  */
 public class FieldConfig {
 
-    private static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
+    static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
 
     private String fieldname;
-    private List<XPathConfig> xPathConfigurations;
+    private List<XPathConfig> xPathConfigurations = new ArrayList<>();
     private String node; // first
     private String child; // false,all
     private String parents; // false,all,first
@@ -48,8 +47,7 @@ public class FieldConfig {
     private boolean normalizeYear = false;
     private boolean interpolateYears = false;
     private int normalizeYearMinDigits = 3;
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> groupEntityFields = new MultiValueMap();
+    private GroupEntity groupEntity = null;
     private Map<Object, String> replaceRules = new LinkedHashMap<>();
     private List<NonSortConfiguration> nonSortConfigurations;
     private boolean addToPages = false;
@@ -514,29 +512,21 @@ public class FieldConfig {
      * @return a boolean.
      */
     public boolean isGroupEntity() {
-        return groupEntityFields != null && !groupEntityFields.isEmpty();
+        return groupEntity != null;
     }
 
     /**
-     * <p>
-     * Getter for the field <code>groupEntityFields</code>.
-     * </p>
-     *
-     * @return the groupEntityFields
+     * @return the groupEntity
      */
-    public Map<String, Object> getGroupEntityFields() {
-        return groupEntityFields;
+    public GroupEntity getGroupEntity() {
+        return groupEntity;
     }
 
     /**
-     * <p>
-     * Setter for the field <code>groupEntityFields</code>.
-     * </p>
-     *
-     * @param groupEntityFields the groupEntityFields to set
+     * @param groupEntity the groupEntity to set
      */
-    public void setGroupEntityFields(Map<String, Object> groupEntityFields) {
-        this.groupEntityFields = groupEntityFields;
+    public void setGroupEntity(GroupEntity groupEntity) {
+        this.groupEntity = groupEntity;
     }
 
     /**

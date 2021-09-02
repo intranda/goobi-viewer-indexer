@@ -941,8 +941,10 @@ public abstract class Indexer {
      * <code>IndexObject.groupedMetadataFields</code> has been populated completely.
      * </p>
      *
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param writeStrategy WriteStrategy that holds the added Solr documets
      * @param indexObj a {@link io.goobi.viewer.indexer.model.IndexObject} object.
+     * @param groupedMetadataList The list of grouped metadata objects to add as Solr fields
+     * @param ownerIddoc Value for IDDOC_OWNER
      * @return number of created docs
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should add docs correctly
@@ -952,88 +954,131 @@ public abstract class Indexer {
      * @should add authority metadata to group metadata docs correctly
      * @should add authority metadata to docstruct doc correctly except coordinates
      * @should add coordinates to docstruct doc correctly
+     * @should recursively add child metadata
      */
-    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj) throws FatalIndexerException {
+    public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj, List<GroupedMetadata> groupedMetadataList,
+            long ownerIddoc)
+            throws FatalIndexerException {
+        if (groupedMetadataList == null || groupedMetadataList.isEmpty()) {
+            return 0;
+        }
+
         int count = 0;
         List<LuceneField> dcFields = indexObj.getLuceneFieldsWithName(SolrConstants.DC);
         Set<String> skipFields = new HashSet<>();
-        for (GroupedMetadata gmd : indexObj.getGroupedMetadataFields()) {
-            if (gmd.isSkip()) {
-                continue;
-            }
+        logger.debug("{} has {} grouped metadata elements.", indexObj.getLogId(), groupedMetadataList.size());
+        for (GroupedMetadata gmd : groupedMetadataList) {
+            count += addGroupedMetadataDocs(gmd, writeStrategy, indexObj, ownerIddoc, skipFields, dcFields);
+        }
 
-            // Skip if no MD_VALUE found
-            if (gmd.getMainValue() == null) {
-                logger.debug("No main value found on grouped field {}, skipping...", gmd.getLabel());
-                continue;
-            }
+        return count;
+    }
 
-            List<LuceneField> fieldsToAdd = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
-            fieldsToAdd.addAll(gmd.getFields());
-            if (gmd.isAddAuthorityDataToDocstruct() || gmd.isAddCoordsToDocstruct()) {
-                // Add authority data to docstruct doc instead of grouped metadata
-                for (LuceneField field : gmd.getAuthorityDataFields()) {
-                    if (gmd.isAddAuthorityDataToDocstruct() && (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_"))) {
-                        // Only add single valued fields once
+    /**
+     * 
+     * @param gmd
+     * @param writeStrategy
+     * @param indexObj
+     * @param ownerIddoc
+     * @param skipFields
+     * @param dcFields
+     * @return Number of added Solr docs
+     * @throws FatalIndexerException
+     */
+    int addGroupedMetadataDocs(GroupedMetadata gmd, ISolrWriteStrategy writeStrategy, IndexObject indexObj, long ownerIddoc, Set<String> skipFields,
+            List<LuceneField> dcFields) throws FatalIndexerException {
+        if (gmd == null) {
+            throw new IllegalArgumentException("gmd may not be null");
+        }
+        if (indexObj == null) {
+            throw new IllegalArgumentException("indexObj may not be null");
+        }
+        if (writeStrategy == null) {
+            throw new IllegalArgumentException("writeStrategy may not be null");
+        }
 
-                        // Skip BOOL_WKT_COORDS, if not explicitly configured to add coordinate fields
-                        if (field.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS) && !gmd.isAddCoordsToDocstruct()) {
-                            fieldsToAdd.add(field);
-                            continue;
-                        }
+        if (gmd.isSkip()) {
+            return 0;
+        }
 
-                        if (skipFields.contains(field.getField())) {
-                            continue;
-                        }
-                        skipFields.add(field.getField());
-                    } else if ((field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
-                            || field.getField().startsWith("NORM_COORDS_")) && !gmd.isAddCoordsToDocstruct()) {
-                        // Do not add coordinates to docstruct field, unless explicitly configured
+        // Skip if no MD_VALUE found
+        if (gmd.getMainValue() == null) {
+            logger.debug("No main value found on grouped field {}, skipping...", gmd.getLabel());
+            return 0;
+        }
+
+        int count = 0;
+        List<LuceneField> fieldsToAdd = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
+        fieldsToAdd.addAll(gmd.getFields());
+        if (gmd.isAddAuthorityDataToDocstruct() || gmd.isAddCoordsToDocstruct()) {
+            // Add authority data to docstruct doc instead of grouped metadata
+            for (LuceneField field : gmd.getAuthorityDataFields()) {
+                if (gmd.isAddAuthorityDataToDocstruct() && (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_"))) {
+                    // Only add single valued fields once
+
+                    // Skip BOOL_WKT_COORDS, if not explicitly configured to add coordinate fields
+                    if (field.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS) && !gmd.isAddCoordsToDocstruct()) {
                         fieldsToAdd.add(field);
                         continue;
-                    } else {
-                        // Avoid field+value duplicates for all other fields
-                        if (skipFields.contains(field.getField() + field.getValue())) {
-                            continue;
-                        }
-                        skipFields.add(field.getField() + field.getValue());
                     }
-                    indexObj.getLuceneFields().add(field);
+
+                    if (skipFields.contains(field.getField())) {
+                        continue;
+                    }
+                    skipFields.add(field.getField());
+                } else if ((field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
+                        || field.getField().startsWith("NORM_COORDS_")) && !gmd.isAddCoordsToDocstruct()) {
+                    // Do not add coordinates to docstruct field, unless explicitly configured
+                    fieldsToAdd.add(field);
+                    continue;
+                } else {
+                    // Avoid field+value duplicates for all other fields
+                    if (skipFields.contains(field.getField() + field.getValue())) {
+                        continue;
+                    }
+                    skipFields.add(field.getField() + field.getValue());
                 }
-            } else {
-                fieldsToAdd.addAll(gmd.getAuthorityDataFields());
+                indexObj.getLuceneFields().add(field);
             }
-            SolrInputDocument doc = SolrSearchIndex.createDocument(fieldsToAdd);
-            long iddoc = getNextIddoc(hotfolder.getSearchIndex());
-            doc.addField(SolrConstants.IDDOC, iddoc);
-            if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
-                logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
-                        doc.getFieldValue(SolrConstants.LABEL));
-                doc.addField(SolrConstants.GROUPFIELD, iddoc);
-            }
-            doc.addField(SolrConstants.IDDOC_OWNER, indexObj.getIddoc());
-            doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-            doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
+        } else {
+            fieldsToAdd.addAll(gmd.getAuthorityDataFields());
+        }
+        SolrInputDocument doc = SolrSearchIndex.createDocument(fieldsToAdd);
+        long iddoc = getNextIddoc(hotfolder.getSearchIndex());
+        doc.addField(SolrConstants.IDDOC, iddoc);
+        if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
+            logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
+                    doc.getFieldValue(SolrConstants.LABEL));
+            doc.addField(SolrConstants.GROUPFIELD, iddoc);
+        }
+        doc.addField(SolrConstants.IDDOC_OWNER, ownerIddoc);
+        doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
+        doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
 
-            // Add topstruct type
-            if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
-                doc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
-            }
+        // Add topstruct type
+        if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
+            doc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
+        }
 
-            // Add access conditions
-            for (String s : indexObj.getAccessConditions()) {
-                doc.addField(SolrConstants.ACCESSCONDITION, s);
-            }
+        // Add access conditions
+        for (String s : indexObj.getAccessConditions()) {
+            doc.addField(SolrConstants.ACCESSCONDITION, s);
+        }
 
-            // Add DC values to metadata doc
-            if (dcFields != null) {
-                for (LuceneField field : dcFields) {
-                    doc.addField(field.getField(), field.getValue());
-                }
+        // Add DC values to metadata doc
+        if (dcFields != null) {
+            for (LuceneField field : dcFields) {
+                doc.addField(field.getField(), field.getValue());
             }
+        }
 
-            writeStrategy.addDoc(doc);
-            count++;
+        writeStrategy.addDoc(doc);
+        count++;
+
+        // Recursively add children
+        if (!gmd.getChildren().isEmpty()) {
+            logger.debug("{}:{} has {} child metadata entries.", gmd.getLabel(), gmd.getMainValue(), gmd.getChildren().size());
+            count += addGroupedMetadataDocs(writeStrategy, indexObj, gmd.getChildren(), iddoc);
         }
 
         return count;
@@ -1202,11 +1247,13 @@ public abstract class Indexer {
         }
 
         // FILENAME_ALTO
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null && dataRepository != null) {
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null
+                && dataRepository != null) {
             doc.addField(SolrConstants.FILENAME_ALTO,
                     dataRepository.getDir(altoParamName)
-                    .getFileName().toString() + '/' + pi
-                    + '/' + baseFileName + XML_EXTENSION);
+                            .getFileName()
+                            .toString() + '/' + pi
+                            + '/' + baseFileName + XML_EXTENSION);
             ret = true;
             logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName().toString(), order);
         }
