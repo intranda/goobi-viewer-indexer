@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>21.08-SNAPSHOT</version>
+	<version>21.09-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -20,7 +20,7 @@
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
-		<skipTests>false</skipTests>
+		<skipTests>true</skipTests>
 
         <!-- Sonar -->
         <sonar.projectKey>intranda_goobi-viewer-indexer</sonar.projectKey>
@@ -34,7 +34,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.5.5</alto.version>
 		<iiif-api-model.version>2.0.0</iiif-api-model.version>
-		<normdataimporter.version>1.6.1-SNAPSHOT</normdataimporter.version>
+		<normdataimporter.version>1.7.0</normdataimporter.version>
 
 		<!-- other libraries -->
         <commons-beanutils.version>1.9.4</commons-beanutils.version>

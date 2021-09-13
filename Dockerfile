@@ -16,9 +16,9 @@ ENV VIEWER_URL http://viewer:8080/viewer
 
 RUN mkdir -p /opt/digiverso/indexer
 
-COPY --from=BUILD  /indexer/goobi-viewer-indexer/target/solr-Indexer.jar /opt/digiverso/indexer/solrIndexer.jar
+COPY --from=BUILD  /indexer/goobi-viewer-indexer/target/solr-Indexer.jar /usr/local/bin/solrIndexer.jar
 COPY --from=BUILD  /indexer/goobi-viewer-indexer/src/main/resources/indexerconfig_solr.xml /opt/digiverso/indexer/solr_indexerconfig.xml
-COPY ./run.sh /run.sh
+COPY ./docker/* /
 RUN sed -e "s|<solrUrl>.*</solrUrl>|<solrUrl>${SOLR_URL}</solrUrl>|" -e 's|C:|/opt|g' -e "s|<viewerUrl>.*</viewerUrl>|<viewerUrl>${VIEWER_URL}</viewerUrl>|" -i /opt/digiverso/indexer/solr_indexerconfig.xml
 
 # TODO: check for solr availability before start (wait-for-solr from solr image?)
