@@ -2942,7 +2942,7 @@
 				<item>
 				    <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[not(@type)]</item>
+<!--                             <item>mets:xmlData/mods:mods/mods:subject/mods:cartographics/mods:coordinates[not(@type)]</item> -->
                             <item>denkxweb:geoReference/denkxweb:position/gml:Point[@srsName="http://www.opengis.net/def/crs/epsg/0/4326"]/gml:pos</item>
                         </list>
 				    </xpath>
@@ -2998,7 +2998,7 @@
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                     <onefield separator=" ">true</onefield>
-                    <geoJSONSource addSearchField="true">sexagesimal:polygon</geoJSONSource>
+                    <geoJSONSource addSearchField="true" separator=" ">sexagesimal:polygon</geoJSONSource>
                 </item>
             </list>
         </MD_GPS_POLYGON>
@@ -3034,7 +3034,7 @@
 		<MD_ACCESSLICENSE>
 			<list>
 				<item>
-					<xpath>dc:rights[contains(text(),'http')]</xpath>
+					<xpath>dc:rights[contains(text()\,'http')]</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
@@ -3220,6 +3220,17 @@
                             <field name="MD_URI_GETTY">@getty</field>
                             <field name="MD_URI_SIKART">@sikart</field>
                             <field name="NORM_URI">@gnd</field>
+                            <groupEntity name="MD_MOTHER" type="PERSON" xpath="intranda:actor[intranda:role='Mutter']">
+                                <field name="MD_VALUE">intranda:name</field>
+                                <field name="MD_NAME">intranda:name</field>
+                                <field name="MD_ROLE">intranda:role</field>
+                                <field name="MD_DISPLAYNAME">intranda:displayName</field>
+                                <field name="MD_STARTDATE">intranda:startDate</field>
+                                <field name="MD_ENDDATE">intranda:endDate</field>
+                                <field name="MD_URI_GETTY">@getty</field>
+                                <field name="MD_URI_SIKART">@sikart</field>
+                                <field name="NORM_URI">@gnd</field>
+                            </groupEntity>
                         </groupEntity>
                         <groupEntity name="MD_DESIGNER" type="PERSON" xpath="intranda:actor[intranda:role='Design']">
                             <field name="MD_VALUE">intranda:name</field>
