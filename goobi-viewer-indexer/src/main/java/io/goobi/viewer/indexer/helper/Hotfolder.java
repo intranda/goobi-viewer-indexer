@@ -922,7 +922,7 @@ public class Hotfolder {
         try {
             currentIndexer = new MetsIndexer(this);
             resp = ((MetsIndexer) currentIndexer).index(metsFile, fromReindexQueue, dataFolders, null,
-                    Configuration.getInstance().getPageCountStart());
+                    Configuration.getInstance().getPageCountStart(), dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
         } finally {
             dataRepository = currentIndexer.getDataRepository();
             previousDataRepository = currentIndexer.getPreviousDataRepository();

@@ -19,6 +19,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -146,7 +149,7 @@ public class MetsIndexer extends Indexer {
      * 
      */
     public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
-            int pageCountStart) {
+            int pageCountStart, boolean downloadExternalImages) {
         String[] ret = { null, null };
 
         if (metsFile == null || !Files.exists(metsFile)) {
@@ -354,7 +357,7 @@ public class MetsIndexer extends Indexer {
                 logger.info("Added number of volumes: {}", numVolumes);
             } else {
                 // Generate docs for all pages and add to the write strategy
-                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
+                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
                 // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
                 indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
@@ -774,7 +777,7 @@ public class MetsIndexer extends Indexer {
      * @should maintain page order after parallel processing
      */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
-            final DataRepository dataRepository, final String pi, int pageCountStart) throws FatalIndexerException {
+            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages) throws FatalIndexerException {
         // Get all physical elements
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
@@ -791,7 +794,7 @@ public class MetsIndexer extends Indexer {
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository);
+                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository, downloadExternalImages);
                         map.put(iddoc, true);
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
@@ -806,7 +809,7 @@ public class MetsIndexer extends Indexer {
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
                 if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, order, writeStrategy,
-                        dataFolders, dataRepository)) {
+                        dataFolders, dataRepository, downloadExternalImages)) {
                     order++;
                 }
             }
@@ -840,7 +843,7 @@ public class MetsIndexer extends Indexer {
      * @should add shape metadata as page documents
      */
     boolean generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, Integer order, final ISolrWriteStrategy writeStrategy,
-            final Map<String, Path> dataFolders, final DataRepository dataRepository) throws FatalIndexerException {
+            final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders != null && dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
         }
@@ -878,7 +881,11 @@ public class MetsIndexer extends Indexer {
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
-            if (fileID.contains(DEFAULT_FILEGROUP_1)) {
+            if(downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP_2)) {
+                //If images should be downloaded, do so from DEFAULT
+                useFileGroup = DEFAULT_FILEGROUP_2;
+                useFileID = fileID;
+            } else if (fileID.contains(DEFAULT_FILEGROUP_1)) {
                 // Always prefer PRESENTATION: override if already set to something else
                 useFileGroup = DEFAULT_FILEGROUP_1;
                 useFileID = fileID;
@@ -1066,6 +1073,15 @@ public class MetsIndexer extends Indexer {
                     if (doc.containsKey(SolrConstants.FILENAME)) {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath,
                                 fileGrpUse);
+                    }
+                    String viewerUrl = Configuration.getInstance().getViewerUrl();
+                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
+                            && !filePath.startsWith(viewerUrl)) {
+                        try {
+                            filePath = downloadExternalImage(filePath, dataFolders);
+                        } catch (IOException e) {
+                            logger.warn("Could not download file: {}", filePath);
+                        }
                     }
                     doc.addField(SolrConstants.FILENAME, filePath);
                     if (!shapePageDocs.isEmpty()) {
@@ -1401,6 +1417,26 @@ public class MetsIndexer extends Indexer {
         }
         return true;
     }
+
+    /**
+     * @param filePath
+     * @param dataFolders 
+     * @return
+     * @throws IOException 
+     * @throws MalformedURLException 
+     */
+    private String downloadExternalImage(String fileUrl, Map<String, Path> dataFolders) throws MalformedURLException, IOException {
+        String fileName = Path.of(URI.create(fileUrl).getPath()).getFileName().toString();
+        File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
+        FileUtils.copyURLToFile(new URL(fileUrl), file);
+        if (file.isFile()) {
+            logger.info("Downloaded {}", file);
+            return file.getAbsolutePath();
+        } else {
+            throw new IOException("Failed to write file '" + file + "' from url '" + fileUrl + "'" );
+        }
+    }
+
 
     /**
      * Updates the anchor METS file by looking up all indexed children and updating the links. The updated anchor file is placed into the high
