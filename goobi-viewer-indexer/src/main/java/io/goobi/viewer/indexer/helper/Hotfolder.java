@@ -923,7 +923,7 @@ public class Hotfolder {
         DataRepository dataRepository;
         DataRepository previousDataRepository;
         try {
-            currentIndexer = new MetsIndexer(this);
+            currentIndexer = getMetsIndexer();
             resp = ((MetsIndexer) currentIndexer).index(metsFile, fromReindexQueue, dataFolders, null,
                     Configuration.getInstance().getPageCountStart(), dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
         } finally {
@@ -1015,6 +1015,13 @@ public class Hotfolder {
                 logger.error("'{}' could not be deleted! Please delete it manually!", metsFile.toAbsolutePath());
             }
         }
+    }
+
+    /**
+     * @return
+     */
+    private Indexer getMetsIndexer() {
+        return new MetsIndexer(this);
     }
 
     /**

@@ -69,6 +69,7 @@ public class DocUpdateIndexer extends Indexer {
      * @should set attributes correctly
      */
     public DocUpdateIndexer(Hotfolder hotfolder) {
+        super();
         this.hotfolder = hotfolder;
     }
 

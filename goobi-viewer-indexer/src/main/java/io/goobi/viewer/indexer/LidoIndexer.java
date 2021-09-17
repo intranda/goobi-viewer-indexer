@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -91,6 +92,7 @@ public class LidoIndexer extends Indexer {
      * @should set attributes correctly
      */
     public LidoIndexer(Hotfolder hotfolder) {
+        super();
         this.hotfolder = hotfolder;
     }
 
@@ -600,8 +602,7 @@ public class LidoIndexer extends Indexer {
                 if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                         && !filePath.startsWith(viewerUrl)) {
                     try {
-                        File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
-                        FileUtils.copyURLToFile(new URL(filePath), file);
+                        File file = new File(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA)));
                         if (file.isFile()) {
                             logger.info("Downloaded {}", file);
                             sbImgFileNames.append(';').append(fileName);
@@ -609,7 +610,7 @@ public class LidoIndexer extends Indexer {
                         } else {
                             logger.warn("Could not download file: {}", filePath);
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | URISyntaxException e) {
                         logger.error("Could not download image: {}", filePath);
                     }
                 } else if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && useOldImageFolderIfAvailable) {

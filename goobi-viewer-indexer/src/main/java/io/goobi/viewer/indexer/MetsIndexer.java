@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -73,6 +74,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
@@ -125,6 +127,12 @@ public class MetsIndexer extends Indexer {
      * @should set attributes correctly
      */
     public MetsIndexer(Hotfolder hotfolder) {
+        super();
+        this.hotfolder = hotfolder;
+    }
+    
+    public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
+        super(httpConnector);
         this.hotfolder = hotfolder;
     }
 
@@ -995,7 +1003,7 @@ public class MetsIndexer extends Indexer {
             String fileGrpId = eleFileGrp.getAttributeValue("ID");
             logger.debug("Found file group: {}", fileGrpUse);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if ((useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
+            if (!downloadExternalImages &&  (useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
                     && (DEFAULT_FILEGROUP_1.equals(fileGrpUse) || DEFAULT_FILEGROUP_2.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
                 useFileGroup = fileGrpUse;
             }
@@ -1081,8 +1089,8 @@ public class MetsIndexer extends Indexer {
                     if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                             && !filePath.startsWith(viewerUrl)) {
                         try {
-                            filePath = downloadExternalImage(filePath, dataFolders);
-                        } catch (IOException e) {
+                            filePath = downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA));
+                        } catch (IOException | URISyntaxException e) {
                             logger.warn("Could not download file: {}", filePath);
                         }
                     }
@@ -1421,24 +1429,7 @@ public class MetsIndexer extends Indexer {
         return true;
     }
 
-    /**
-     * @param filePath
-     * @param dataFolders 
-     * @return
-     * @throws IOException 
-     * @throws MalformedURLException 
-     */
-    private String downloadExternalImage(String fileUrl, Map<String, Path> dataFolders) throws MalformedURLException, IOException {
-        String fileName = Path.of(URI.create(fileUrl).getPath()).getFileName().toString();
-        File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
-        FileUtils.copyURLToFile(new URL(fileUrl), file);
-        if (file.isFile()) {
-            logger.info("Downloaded {}", file);
-            return file.getAbsolutePath();
-        } else {
-            throw new IOException("Failed to write file '" + file + "' from url '" + fileUrl + "'" );
-        }
-    }
+
 
 
     /**
