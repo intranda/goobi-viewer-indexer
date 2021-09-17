@@ -878,21 +878,24 @@ public class MetsIndexer extends Indexer {
         // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
         String fileIdRoot = null;
         String useFileID = null;
+        boolean preferCurrentFileGroup = false;
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
             if(downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP_2)) {
-                //If images should be downloaded, do so from DEFAULT
+                //If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
                 useFileGroup = DEFAULT_FILEGROUP_2;
                 useFileID = fileID;
-            } else if (fileID.contains(DEFAULT_FILEGROUP_1)) {
+                preferCurrentFileGroup = true;
+            } else if (fileID.contains(DEFAULT_FILEGROUP_1) && !preferCurrentFileGroup) {
                 // Always prefer PRESENTATION: override if already set to something else
                 useFileGroup = DEFAULT_FILEGROUP_1;
                 useFileID = fileID;
-            } else if (fileID.contains(DEFAULT_FILEGROUP_2) && !DEFAULT_FILEGROUP_1.equals(useFileGroup)) {
+                preferCurrentFileGroup = true;
+            } else if (fileID.contains(DEFAULT_FILEGROUP_2) && !preferCurrentFileGroup) {
                 useFileGroup = DEFAULT_FILEGROUP_2;
                 useFileID = fileID;
-            } else if (fileID.contains(OBJECT_FILEGROUP) && !DEFAULT_FILEGROUP_1.equals(useFileGroup)) {
+            } else if (fileID.contains(OBJECT_FILEGROUP) && !preferCurrentFileGroup) {
                 useFileGroup = OBJECT_FILEGROUP;
                 useFileID = fileID;
             }
