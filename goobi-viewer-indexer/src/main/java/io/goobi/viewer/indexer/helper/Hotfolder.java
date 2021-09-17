@@ -873,6 +873,9 @@ public class Hotfolder {
                     case "_annotations":
                         dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
                         break;
+                    case "_downloadimages":
+                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
+                        break;
                     default:
                         // nothing
                 }
