@@ -809,7 +809,7 @@ public class Hotfolder {
      * @throws FatalIndexerException
      * 
      */
-    private void addMetsToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+    protected void addMetsToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
             throws IOException, FatalIndexerException {
         // index file
         String[] resp = { null, null };
@@ -873,7 +873,7 @@ public class Hotfolder {
                     case "_annotations":
                         dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
                         break;
-                    case "_downloadimages":
+                    case "_downloadImages":
                         dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
                         break;
                     default:
