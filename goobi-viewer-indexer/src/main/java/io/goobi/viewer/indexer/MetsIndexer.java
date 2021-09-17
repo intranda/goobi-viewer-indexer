@@ -1089,7 +1089,7 @@ public class MetsIndexer extends Indexer {
                     if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                             && !filePath.startsWith(viewerUrl)) {
                         try {
-                            filePath = downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA));
+                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA))).getFileName().toString();
                         } catch (IOException | URISyntaxException e) {
                             logger.warn("Could not download file: {}", filePath);
                         }
@@ -1101,7 +1101,8 @@ public class MetsIndexer extends Indexer {
                         }
                     }
                     // RosDok IIIF
-                    if (DEFAULT_FILEGROUP_2.equals(useFileGroup) && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
+                    //Don't use if images are downloaded. Then we haven them locally
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup) && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
                         doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                     }
                 } else {
