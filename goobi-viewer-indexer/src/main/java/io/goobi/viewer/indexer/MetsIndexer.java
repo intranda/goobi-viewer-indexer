@@ -19,10 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -31,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -130,7 +128,7 @@ public class MetsIndexer extends Indexer {
         super();
         this.hotfolder = hotfolder;
     }
-    
+
     public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
@@ -802,7 +800,8 @@ public class MetsIndexer extends Indexer {
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository, downloadExternalImages);
+                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository,
+                                downloadExternalImages);
                         map.put(iddoc, true);
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
@@ -890,7 +889,7 @@ public class MetsIndexer extends Indexer {
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
-            if(downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP_2)) {
+            if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP_2)) {
                 //If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
                 useFileGroup = DEFAULT_FILEGROUP_2;
                 useFileID = fileID;
@@ -1003,7 +1002,7 @@ public class MetsIndexer extends Indexer {
             String fileGrpId = eleFileGrp.getAttributeValue("ID");
             logger.debug("Found file group: {}", fileGrpUse);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if (!downloadExternalImages &&  (useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
+            if (!downloadExternalImages && (useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
                     && (DEFAULT_FILEGROUP_1.equals(fileGrpUse) || DEFAULT_FILEGROUP_2.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
                 useFileGroup = fileGrpUse;
             }
@@ -1102,7 +1101,8 @@ public class MetsIndexer extends Indexer {
                     }
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
-                    if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup) && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup)
+                            && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
                         doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                     }
                 } else {
@@ -1429,9 +1429,6 @@ public class MetsIndexer extends Indexer {
         }
         return true;
     }
-
-
-
 
     /**
      * Updates the anchor METS file by looking up all indexed children and updating the links. The updated anchor file is placed into the high
@@ -2175,7 +2172,19 @@ public class MetsIndexer extends Indexer {
      */
     protected ZonedDateTime getMetsCreateDate() throws FatalIndexerException {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
-        if (dateString == null) {
+        return parseCreateDate(dateString);
+    }
+
+    /**
+     * 
+     * @param dateString Date string to parse
+     * @return {@link ZonedDateTime} parsed from the given string
+     * @should parse iso instant corretly
+     * @should parse iso local dateTime correctly
+     * @should parse iso offset dateTime correctly
+     */
+   static ZonedDateTime parseCreateDate(String dateString) {
+        if (StringUtils.isEmpty(dateString)) {
             return null;
         }
 
@@ -2183,8 +2192,9 @@ public class MetsIndexer extends Indexer {
             return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeInstant);
         } catch (DateTimeParseException e) {
             try {
-                return ZonedDateTime.parse(dateString, DateTools.formatterISO8601Full);
+                return LocalDateTime.parse(dateString, DateTools.formatterISO8601Full).atZone(ZoneOffset.systemDefault());
             } catch (DateTimeParseException e1) {
+                logger.error(e.getMessage());
                 try {
                     return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeWithOffset);
                 } catch (DateTimeParseException e2) {

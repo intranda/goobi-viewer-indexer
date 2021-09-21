@@ -16,7 +16,6 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1055,5 +1054,35 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertFalse(Files.isRegularFile(wrongMetsFile));
         Path newMetsFile = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), "PPN123.xml");
         Assert.assertTrue(Files.isRegularFile(newMetsFile));
+    }
+
+    /**
+     * @see MetsIndexer#parseCreateDate(String)
+     * @verifies parse iso instant corretly
+     */
+    @Test
+    public void parseCreateDate_shouldParseIsoInstantCorretly() throws Exception {
+        ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00Z");
+        Assert.assertNotNull(date);
+    }
+
+    /**
+     * @see MetsIndexer#parseCreateDate(String)
+     * @verifies parse iso local dateTime correctly
+     */
+    @Test
+    public void parseCreateDate_shouldParseIsoLocalDateTimeCorrectly() throws Exception {
+        ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00");
+        Assert.assertNotNull(date);
+    }
+
+    /**
+     * @see MetsIndexer#parseCreateDate(String)
+     * @verifies parse iso offset dateTime correctly
+     */
+    @Test
+    public void parseCreateDate_shouldParseIsoOffsetDateTimeCorrectly() throws Exception {
+        ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00+01:00");
+        Assert.assertNotNull(date);
     }
 }
