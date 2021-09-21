@@ -120,7 +120,7 @@ public final class Configuration {
                 new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
                         .configure(new Parameters().properties()
                                 .setFileName(configPath)
-                                .setListDelimiterHandler(new DefaultListDelimiterHandler('&'))
+                                .setListDelimiterHandler(new DefaultListDelimiterHandler(';'))
                                 .setThrowExceptionOnMissing(false));
         lastFileReload = System.currentTimeMillis();
         reloadConfig(builder.getConfiguration());
