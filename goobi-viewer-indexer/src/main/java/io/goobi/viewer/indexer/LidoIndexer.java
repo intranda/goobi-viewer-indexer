@@ -778,6 +778,11 @@ public class LidoIndexer extends Indexer {
                 logger.error("Event type not found.");
             }
 
+            // Copy access conditions
+            for (String accessCondition : indexObj.getAccessConditions()) {
+                eventDoc.addField(SolrConstants.ACCESSCONDITION, accessCondition);
+            }
+
             // Create a backup of the current grouped metadata list of the parent docstruct
             List<GroupedMetadata> groupedFieldsBackup = new ArrayList<>(indexObj.getGroupedMetadataFields());
             List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eleEvent, "", indexObj, xp);
