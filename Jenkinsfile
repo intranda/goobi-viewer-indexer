@@ -72,8 +72,8 @@ pipeline {
       steps {
         script{
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
-            indexerimage = docker.build("goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
-            indexerimage_public = docker.build("intranda/goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            dockerimage = docker.build("goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            dockerimage_public = docker.build("intranda/goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
           }
         }
       }
@@ -82,7 +82,7 @@ pipeline {
       agent any
       steps{
         script {
-          indexerimage.inside {
+          dockerimage.inside {
             sh 'test -f  /opt/digiverso/indexer/solrIndexer.jar || echo "/opt/digiverso/indexer/solrIndexer.jar missing"'
           }
         }
@@ -93,8 +93,24 @@ pipeline {
       steps{
         script {
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
-            indexerimage.push("${env.BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
-            indexerimage.push("${env.BRANCH_NAME}")
+            dockerimage.push("${env.BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            dockerimage.push("${env.BRANCH_NAME}")
+          }
+        }
+      }
+    }
+    stage('publish docker production image to internal repository'){
+      agent any
+      when { 
+        tag "v*" 
+        branch 'master'
+      }
+      steps{
+        script {
+          docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
+            dockerimage.push("${env.TAG_NAME}-${env.BUILD_ID}")
+            dockerimage.push("${env.TAG_NAME}")
+            dockerimage.push("latest")
           }
         }
       }
@@ -107,19 +123,7 @@ pipeline {
       steps{
         script{
           docker.withRegistry('','0b13af35-a2fb-41f7-8ec7-01eaddcbe99d'){
-            indexerimage_public.push("${env.BRANCH_NAME}")
-          }
-        }
-      }
-    }
-    stage('publish docker production image to internal repository'){
-      agent any
-      when { branch 'master' }
-      steps{
-        script {
-          docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
-            indexerimage.push("${env.TAG_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
-            indexerimage.push("latest")
+            dockerimage_public.push("${env.BRANCH_NAME}")
           }
         }
       }
@@ -127,13 +131,14 @@ pipeline {
     stage('publish production image to Docker Hub'){
       agent any
       when {
+        tag "v*"
         branch 'master'
       }
       steps{
         script{
           docker.withRegistry('','0b13af35-a2fb-41f7-8ec7-01eaddcbe99d'){
-            indexerimage_public.push("${env.TAG_NAME}")
-            indexerimage_public.push("latest")
+            dockerimage_public.push("${env.TAG_NAME}")
+            dockerimage_public.push("latest")
           }
         }
       }
