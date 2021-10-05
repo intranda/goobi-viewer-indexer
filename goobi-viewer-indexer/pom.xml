@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>21.08</version>
+	<version>21.09-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -34,7 +34,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.5.5</alto.version>
 		<iiif-api-model.version>2.0.0</iiif-api-model.version>
-		<normdataimporter.version>1.7.0</normdataimporter.version>
+		<normdataimporter.version>1.8.0</normdataimporter.version>
 
 		<!-- other libraries -->
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -55,11 +55,11 @@
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6</jdom2.version>
-		<jsoup.version>1.14.2</jsoup.version>
+		<jsoup.version>1.14.3</jsoup.version>
 		<json.version>20210307</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.16.0</metadata-extractor.version>
-		<solr.version>8.9.0</solr.version>
+		<solr.version>8.10.0</solr.version>
 		<slf4j.version>1.7.32</slf4j.version>
 	</properties>
 

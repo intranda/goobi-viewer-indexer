@@ -79,7 +79,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
             dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_alto"));
             dataFolders.put(DataRepository.PARAM_UGC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ugc"));
-            String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1);
+            String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
             Assert.assertEquals(PI + ".xml", ret[0]);
             Assert.assertNull(ret[1]);
             SolrDocumentList docList = hotfolder.getSearchIndex()

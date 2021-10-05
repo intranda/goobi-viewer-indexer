@@ -225,10 +225,6 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     .search(SolrConstants.IDDOC_OWNER + ":" + iddoc + " AND " + SolrConstants.DOCTYPE + ":" + DocType.EVENT, null);
             Assert.assertEquals(1, docList.size());
 
-            Map<String, Boolean> filenameMap = new HashMap<>();
-            Map<Integer, Boolean> orderMap = new HashMap<>();
-            Map<String, Boolean> physIdMap = new HashMap<>();
-
             for (SolrDocument doc : docList) {
                 String eventType = (String) doc.getFieldValue(SolrConstants.EVENTTYPE);
                 Assert.assertNotNull(eventType);
@@ -290,6 +286,12 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     Assert.assertNotNull(mdList);
                     Assert.assertEquals(3, mdList.size());
                     Assert.assertNotNull(doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEAR));
+                }
+                {
+                    List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
+                    Assert.assertNotNull(mdList);
+                    Assert.assertEquals(1, mdList.size());
+                    Assert.assertEquals("OPENACCESS", mdList.get(0));
                 }
                 Assert.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }

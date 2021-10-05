@@ -80,7 +80,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         indexer.generatePageDocuments(strat, null,
                 dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, hotfolder.getSearchIndex(), null)[0],
-                "PPN517154005", 1);
+                "PPN517154005", 1, false);
         List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
         Assert.assertEquals(3, docs.size());
         Assert.assertEquals("PHYS_0001", docs.get(0).getFieldValue(SolrConstants.PHYSID));
@@ -103,7 +103,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        indexer.index(metsFile, false, dataFolders, strat, 1);
+        indexer.index(metsFile, false, dataFolders, strat, 1, false);
         SolrDocumentList docList = hotfolder.getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.DOCSTRCT.name(), null);
         Assert.assertEquals(4, docList.size());
@@ -124,7 +124,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        indexer.index(metsFile, false, dataFolders, strat, 1);
+        indexer.index(metsFile, false, dataFolders, strat, 1, false);
         SolrDocumentList docList = hotfolder.getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
         Assert.assertEquals(16, docList.size());

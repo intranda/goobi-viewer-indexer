@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,6 +87,7 @@ public class DenkXwebIndexer extends Indexer {
      * @should set attributes correctly
      */
     public DenkXwebIndexer(Hotfolder hotfolder) {
+        super();
         this.hotfolder = hotfolder;
     }
 
@@ -661,8 +663,7 @@ public class DenkXwebIndexer extends Indexer {
                         && !url.startsWith(viewerUrl)) {
                     // Download image and use locally
                     try {
-                        File file = new File(dataFolders.get(DataRepository.PARAM_MEDIA).toFile(), fileName);
-                        FileUtils.copyURLToFile(new URL(url), file);
+                        File file = new File(downloadExternalImage(url, dataFolders.get(DataRepository.PARAM_MEDIA)));
                         if (file.isFile()) {
                             logger.info("Downloaded {}", file);
                             sbImgFileNames.append(';').append(fileName);
@@ -675,7 +676,7 @@ public class DenkXwebIndexer extends Indexer {
                         } else {
                             logger.warn("Could not download file: {}", url);
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | URISyntaxException e) {
                         logger.error(e.getMessage());
                     }
                 } else {

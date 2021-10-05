@@ -23,6 +23,10 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,6 +50,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -78,6 +88,7 @@ import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
@@ -98,6 +109,11 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
  *
  */
 public abstract class Indexer {
+
+    /**
+     * 
+     */
+    private static final int HTTP_CONNECTION_TIMEOUT = 4000;
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
@@ -131,7 +147,17 @@ public abstract class Indexer {
     protected boolean recordHasImages = false;
     /** Indicates whether any of this record's pages has full-text. */
     protected boolean recordHasFulltext = false;
+    
+    private final HttpConnector httpConnector;
 
+    protected Indexer() {
+        httpConnector = new HttpConnector(HTTP_CONNECTION_TIMEOUT);
+    }
+    
+    protected Indexer(HttpConnector httpConnector) {
+        this.httpConnector = httpConnector;
+    }
+    
     /**
      * Removes the document represented by the given METS or LIDO file from the index.
      *
@@ -1280,4 +1306,29 @@ public abstract class Indexer {
 
         return ret;
     }
+    
+    /**
+     * Download the content if the given fileUrl into the given Path target. If target denotes a directory, create a file within
+     * using the filename from the URI to write the content
+     * 
+     * @param filePath
+     * @param dataFolders 
+     * @return  The file the data was written into
+     * @throws IOException 
+     * @throws MalformedURLException 
+     */
+    protected String downloadExternalImage(String fileUrl, Path target) throws URISyntaxException, IOException {
+        if(Files.isDirectory(target)) {            
+            String fileName = Path.of(URI.create(fileUrl).getPath()).getFileName().toString();
+            target = target.resolve(fileName);
+        }
+        httpConnector.downloadFile(new URI(fileUrl), target);
+        if (Files.isRegularFile(target)) {
+            logger.info("Downloaded {}", target);
+            return target.toAbsolutePath().toString();
+        } else {
+            throw new IOException("Failed to write file '" + target + "' from url '" + fileUrl + "'" );
+        }
+    }
+
 }

@@ -809,7 +809,7 @@ public class Hotfolder {
      * @throws FatalIndexerException
      * 
      */
-    private void addMetsToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+    protected void addMetsToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
             throws IOException, FatalIndexerException {
         // index file
         String[] resp = { null, null };
@@ -873,6 +873,9 @@ public class Hotfolder {
                     case "_annotations":
                         dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
                         break;
+                    case "_downloadImages":
+                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
+                        break;
                     default:
                         // nothing
                 }
@@ -920,9 +923,9 @@ public class Hotfolder {
         DataRepository dataRepository;
         DataRepository previousDataRepository;
         try {
-            currentIndexer = new MetsIndexer(this);
+            currentIndexer = getMetsIndexer();
             resp = ((MetsIndexer) currentIndexer).index(metsFile, fromReindexQueue, dataFolders, null,
-                    Configuration.getInstance().getPageCountStart());
+                    Configuration.getInstance().getPageCountStart(), dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
         } finally {
             dataRepository = currentIndexer.getDataRepository();
             previousDataRepository = currentIndexer.getPreviousDataRepository();
@@ -1012,6 +1015,13 @@ public class Hotfolder {
                 logger.error("'{}' could not be deleted! Please delete it manually!", metsFile.toAbsolutePath());
             }
         }
+    }
+
+    /**
+     * @return
+     */
+    private Indexer getMetsIndexer() {
+        return new MetsIndexer(this);
     }
 
     /**

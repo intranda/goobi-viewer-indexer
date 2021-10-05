@@ -153,7 +153,7 @@ public final class MetadataConfigurationManager {
                 fieldConfig.setAllowDuplicateValues(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").allowDuplicateValues", false));
                 fieldConfig.setGeoJSONSource(config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource", null));
                 fieldConfig
-                        .setGeoJSONSourceSeparator(config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@separator]", "")
+                        .setGeoJSONSourceSeparator(config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@separator]", " ")
                                 .replace(SPACE_PLACEHOLDER, " "));
                 fieldConfig.setGeoJSONAddSearchField(
                         config.getBoolean("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@addSearchField]", false));

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -27,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -70,6 +72,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
@@ -122,6 +125,12 @@ public class MetsIndexer extends Indexer {
      * @should set attributes correctly
      */
     public MetsIndexer(Hotfolder hotfolder) {
+        super();
+        this.hotfolder = hotfolder;
+    }
+
+    public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
+        super(httpConnector);
         this.hotfolder = hotfolder;
     }
 
@@ -146,7 +155,7 @@ public class MetsIndexer extends Indexer {
      * 
      */
     public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
-            int pageCountStart) {
+            int pageCountStart, boolean downloadExternalImages) {
         String[] ret = { null, null };
 
         if (metsFile == null || !Files.exists(metsFile)) {
@@ -354,7 +363,7 @@ public class MetsIndexer extends Indexer {
                 logger.info("Added number of volumes: {}", numVolumes);
             } else {
                 // Generate docs for all pages and add to the write strategy
-                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
+                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
                 // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
                 indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
@@ -774,7 +783,7 @@ public class MetsIndexer extends Indexer {
      * @should maintain page order after parallel processing
      */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
-            final DataRepository dataRepository, final String pi, int pageCountStart) throws FatalIndexerException {
+            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages) throws FatalIndexerException {
         // Get all physical elements
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
@@ -791,7 +800,8 @@ public class MetsIndexer extends Indexer {
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository);
+                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository,
+                                downloadExternalImages);
                         map.put(iddoc, true);
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
@@ -806,7 +816,7 @@ public class MetsIndexer extends Indexer {
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
                 if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, order, writeStrategy,
-                        dataFolders, dataRepository)) {
+                        dataFolders, dataRepository, downloadExternalImages)) {
                     order++;
                 }
             }
@@ -840,7 +850,7 @@ public class MetsIndexer extends Indexer {
      * @should add shape metadata as page documents
      */
     boolean generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, Integer order, final ISolrWriteStrategy writeStrategy,
-            final Map<String, Path> dataFolders, final DataRepository dataRepository) throws FatalIndexerException {
+            final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders != null && dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
         }
@@ -875,17 +885,24 @@ public class MetsIndexer extends Indexer {
         // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
         String fileIdRoot = null;
         String useFileID = null;
+        boolean preferCurrentFileGroup = false;
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
-            if (fileID.contains(DEFAULT_FILEGROUP_1)) {
+            if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP_2)) {
+                //If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
+                useFileGroup = DEFAULT_FILEGROUP_2;
+                useFileID = fileID;
+                preferCurrentFileGroup = true;
+            } else if (fileID.contains(DEFAULT_FILEGROUP_1) && !preferCurrentFileGroup) {
                 // Always prefer PRESENTATION: override if already set to something else
                 useFileGroup = DEFAULT_FILEGROUP_1;
                 useFileID = fileID;
-            } else if (fileID.contains(DEFAULT_FILEGROUP_2) && !DEFAULT_FILEGROUP_1.equals(useFileGroup)) {
+                preferCurrentFileGroup = true;
+            } else if (fileID.contains(DEFAULT_FILEGROUP_2) && !preferCurrentFileGroup) {
                 useFileGroup = DEFAULT_FILEGROUP_2;
                 useFileID = fileID;
-            } else if (fileID.contains(OBJECT_FILEGROUP) && !DEFAULT_FILEGROUP_1.equals(useFileGroup)) {
+            } else if (fileID.contains(OBJECT_FILEGROUP) && !preferCurrentFileGroup) {
                 useFileGroup = OBJECT_FILEGROUP;
                 useFileID = fileID;
             }
@@ -985,7 +1002,7 @@ public class MetsIndexer extends Indexer {
             String fileGrpId = eleFileGrp.getAttributeValue("ID");
             logger.debug("Found file group: {}", fileGrpUse);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if ((useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
+            if (!downloadExternalImages && (useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
                     && (DEFAULT_FILEGROUP_1.equals(fileGrpUse) || DEFAULT_FILEGROUP_2.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
                 useFileGroup = fileGrpUse;
             }
@@ -1067,6 +1084,15 @@ public class MetsIndexer extends Indexer {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath,
                                 fileGrpUse);
                     }
+                    String viewerUrl = Configuration.getInstance().getViewerUrl();
+                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
+                            && !filePath.startsWith(viewerUrl)) {
+                        try {
+                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA))).getFileName().toString();
+                        } catch (IOException | URISyntaxException e) {
+                            logger.warn("Could not download file: {}", filePath);
+                        }
+                    }
                     doc.addField(SolrConstants.FILENAME, filePath);
                     if (!shapePageDocs.isEmpty()) {
                         for (SolrInputDocument shapePageDoc : shapePageDocs) {
@@ -1074,7 +1100,9 @@ public class MetsIndexer extends Indexer {
                         }
                     }
                     // RosDok IIIF
-                    if (DEFAULT_FILEGROUP_2.equals(useFileGroup) && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
+                    //Don't use if images are downloaded. Then we haven them locally
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup)
+                            && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
                         doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
                     }
                 } else {
@@ -2144,7 +2172,19 @@ public class MetsIndexer extends Indexer {
      */
     protected ZonedDateTime getMetsCreateDate() throws FatalIndexerException {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
-        if (dateString == null) {
+        return parseCreateDate(dateString);
+    }
+
+    /**
+     * 
+     * @param dateString Date string to parse
+     * @return {@link ZonedDateTime} parsed from the given string
+     * @should parse iso instant corretly
+     * @should parse iso local dateTime correctly
+     * @should parse iso offset dateTime correctly
+     */
+   static ZonedDateTime parseCreateDate(String dateString) {
+        if (StringUtils.isEmpty(dateString)) {
             return null;
         }
 
@@ -2152,7 +2192,7 @@ public class MetsIndexer extends Indexer {
             return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeInstant);
         } catch (DateTimeParseException e) {
             try {
-                return ZonedDateTime.parse(dateString, DateTools.formatterISO8601Full);
+                return LocalDateTime.parse(dateString, DateTools.formatterISO8601Full).atZone(ZoneOffset.systemDefault());
             } catch (DateTimeParseException e1) {
                 try {
                     return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeWithOffset);

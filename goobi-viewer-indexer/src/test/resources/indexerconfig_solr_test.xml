@@ -125,7 +125,7 @@
         <autoOptimize>false</autoOptimize>
         
         <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
-        <threads>4</threads>
+        <threads>1</threads>
         
 	    <!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
 	        Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->

@@ -94,6 +94,7 @@ public class DublinCoreIndexer extends Indexer {
      * @should set attributes correctly
      */
     public DublinCoreIndexer(Hotfolder hotfolder) {
+        super();
         this.hotfolder = hotfolder;
     }
 
