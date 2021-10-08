@@ -103,7 +103,6 @@ pipeline {
       agent any
       when { 
         tag "v*" 
-        branch 'master'
       }
       steps{
         script {
@@ -132,7 +131,6 @@ pipeline {
       agent any
       when {
         tag "v*"
-        branch 'master'
       }
       steps{
         script{
