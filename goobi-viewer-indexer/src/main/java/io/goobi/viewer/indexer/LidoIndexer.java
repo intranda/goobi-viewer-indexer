@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,7 +32,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -596,7 +594,7 @@ public class LidoIndexer extends Indexer {
             // External image
             if (filePath.startsWith("http")) {
                 // Download image, if so requested (and not a local resource)
-                String baseFileName = FilenameUtils.getBaseName(fileName);
+                // String baseFileName = FilenameUtils.getBaseName(fileName);
                 String viewerUrl = Configuration.getInstance().getViewerUrl();
                 logger.debug("media folder: {}", dataFolders.get(DataRepository.PARAM_MEDIA));
                 if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
@@ -811,6 +809,11 @@ public class LidoIndexer extends Indexer {
                         for (LuceneField field : dcFields) {
                             doc.addField(field.getField(), field.getValue());
                         }
+                    }
+
+                    // Copy access conditions to metadata docs
+                    for (String accessCondition : indexObj.getAccessConditions()) {
+                        doc.addField(SolrConstants.ACCESSCONDITION, accessCondition);
                     }
 
                     ret.add(doc);
