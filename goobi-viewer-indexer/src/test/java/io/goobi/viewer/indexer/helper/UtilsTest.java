@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
+import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.helper.Utils;
 
 public class UtilsTest extends AbstractTest {
@@ -105,5 +106,16 @@ public class UtilsTest extends AbstractTest {
         Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
         Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
         Assert.assertEquals(111111000, Utils.generateLongOrderNumber(11111, 1000));
+    }
+
+    /**
+     * @see Utils#isFileNameMatchesRegex(String,String[])
+     * @verifies match correctly
+     */
+    @Test
+    public void isFileNameMatchesRegex_shouldMatchCorrectly() throws Exception {
+        Assert.assertTrue(Utils.isFileNameMatchesRegex("foo/bar/default.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
+        Assert.assertTrue(Utils.isFileNameMatchesRegex("foo/bar/color.png", Indexer.IIIF_IMAGE_FILE_NAMES));
+        Assert.assertFalse(Utils.isFileNameMatchesRegex("foo/bar/other.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
     }
 }

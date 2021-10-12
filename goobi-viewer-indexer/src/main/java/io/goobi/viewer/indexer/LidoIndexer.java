@@ -580,7 +580,7 @@ public class LidoIndexer extends Indexer {
 
         String fileName;
         if (StringUtils.isNotEmpty(filePath) && filePath.contains("/")) {
-            if (filePath.endsWith("default.jpg")) {
+            if (Utils.isFileNameMatchesRegex(filePath, IIIF_IMAGE_FILE_NAMES)) {
                 // Extract correct original file name from IIIF
                 fileName = Utils.getFileNameFromIiifUrl(filePath);
             } else {
@@ -600,7 +600,7 @@ public class LidoIndexer extends Indexer {
                 if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                         && !filePath.startsWith(viewerUrl)) {
                     try {
-                        File file = new File(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA)));
+                        File file = new File(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName));
                         if (file.isFile()) {
                             logger.info("Downloaded {}", file);
                             sbImgFileNames.append(';').append(fileName);

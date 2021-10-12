@@ -591,6 +591,27 @@ public class Utils {
     }
 
     /**
+     * 
+     * @param fileName
+     * @param regexes
+     * @return true if fileName matches any of the regexes in the array; false otherwise
+     * @should match correctly
+     */
+    public static boolean isFileNameMatchesRegex(String fileName, String[] regexes) {
+        if (StringUtils.isEmpty(fileName) || regexes == null || regexes.length == 0) {
+            return false;
+        }
+
+        for (String regex : regexes) {
+            if (fileName.matches(regex)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * <p>
      * getFileNameFromIiifUrl.
      * </p>
