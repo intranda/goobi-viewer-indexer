@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer.helper;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -617,12 +618,19 @@ public class Utils {
      * </p>
      *
      * @param url a {@link java.lang.String} object.
-     * @should extract file name correctly
      * @return a {@link java.lang.String} object.
+     * @should extract file name correctly
+     * @should extract escaped file name correctly
      */
     public static String getFileNameFromIiifUrl(String url) {
         if (StringUtils.isEmpty(url)) {
             return null;
+        }
+
+        try {
+            url = URLDecoder.decode(url, TextHelper.DEFAULT_CHARSET);
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getMessage());
         }
 
         String[] filePathSplit = url.split("/");
