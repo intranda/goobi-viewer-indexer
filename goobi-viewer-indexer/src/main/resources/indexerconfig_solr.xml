@@ -69,7 +69,7 @@
 
 		<namespaces>
 			<list>
-			    <intranda>http://intranda.com/</intranda>
+			    <intranda>http://intranda.com/MODS/</intranda>
 			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
@@ -3258,6 +3258,18 @@
                 </item>
             </list>
         </MD_EVENT>
+        
+        <MD_SCOPECONTENT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:ScopeContent
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                </item>
+            </list>
+        </MD_SCOPECONTENT>
+
 
 	</fields>
 </root>
