@@ -471,13 +471,16 @@ public class MetadataHelperTest extends AbstractTest {
     @Test
     public void parseAuthorityMetadata_shouldAddNameSearchFieldCorrectly() throws Exception {
         List<NormData> authorityDataList = new ArrayList<>(2);
-        authorityDataList.add(new NormData("NORM_OFFICIALNAME", new NormDataValue("foo", null, null)));
-        authorityDataList.add(new NormData("NORM_ALTNAME", new NormDataValue("bar", null, null)));
+        authorityDataList.add(new NormData("NORM_NAME", new NormDataValue("one", null, null)));
+        authorityDataList.add(new NormData("NORM_OFFICIALNAME", new NormDataValue("two", null, null)));
+        authorityDataList.add(new NormData("NORM_ALTNAME", new NormDataValue("three", null, null)));
         List<LuceneField> result = MetadataHelper.parseAuthorityMetadata(authorityDataList, null, null, null, null, "MD_FIELD");
-        Assert.assertEquals(8, result.size());
+        Assert.assertEquals(12, result.size());
         Assert.assertEquals("MD_FIELD_NAME_SEARCH", result.get(2).getField());
-        Assert.assertEquals("foo", result.get(2).getValue());
+        Assert.assertEquals("one", result.get(2).getValue());
         Assert.assertEquals("MD_FIELD_NAME_SEARCH", result.get(6).getField());
-        Assert.assertEquals("bar", result.get(6).getValue());
+        Assert.assertEquals("two", result.get(6).getValue());
+        Assert.assertEquals("MD_FIELD_NAME_SEARCH", result.get(10).getField());
+        Assert.assertEquals("three", result.get(10).getValue());
     }
 }
