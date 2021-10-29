@@ -540,9 +540,12 @@ public class Utils {
                 .append(Configuration.getInstance().getViewerAuthorizationToken());
 
         try {
-            return Utils.getWebContentDELETE(sbUrl.toString(), new HashMap<>(0), null, null,
+            String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), new HashMap<>(0), null, null,
                     Collections.singletonMap("Content-Type", ContentType.APPLICATION_JSON.getMimeType()));
-            //            return "Image cache cleared.";
+            if (StringUtils.isNotEmpty(jsonString)) {
+                return (String) new JSONObject(jsonString).get("message");
+            }
+            throw new IOException("No JSON response");
         } catch (IOException | HTTPException e) {
             return "Could not clear viewer cache: " + e.getMessage();
         }
