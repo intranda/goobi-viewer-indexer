@@ -119,7 +119,7 @@
 		</email>
 
 		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
-		<viewerAuthorizationToken>CHANGEME</viewerAuthorizationToken>
+		<viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>
 
 

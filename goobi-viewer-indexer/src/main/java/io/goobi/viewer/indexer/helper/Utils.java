@@ -313,7 +313,8 @@ public class Utils {
     static String getWebContent(String method, String url, Map<String, String> params, Map<String, String> cookies, String body,
             Map<String, String> headerParams)
             throws ClientProtocolException, IOException {
-        if (method == null || !("POST".equals(method.toUpperCase()) || "PUT".equals(method.toUpperCase()))) {
+        if (method == null
+                || !("POST".equals(method.toUpperCase()) || "PUT".equals(method.toUpperCase()) || "DELETE".equals(method.toUpperCase()))) {
             throw new IllegalArgumentException("Illegal method: " + method);
         }
         if (url == null) {
@@ -536,8 +537,9 @@ public class Utils {
                 .append(Configuration.getInstance().getViewerAuthorizationToken());
 
         try {
-            return Utils.getWebContentGET(sbUrl.toString());
-        } catch (IOException | HTTPException e) {
+            Utils.getWebContentDELETE(viewerUrl, null, null, null, null);
+            return "Image cache cleared.";
+        } catch (IOException e) {
             return "Could not clear viewer cache: " + e.getMessage();
         }
     }
