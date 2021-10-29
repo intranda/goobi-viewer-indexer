@@ -275,6 +275,27 @@ public class Utils {
 
     /**
      * <p>
+     * getWebContentDELETE.
+     * </p>
+     *
+     * @param url a {@link java.lang.String} object.
+     * @param params a {@link java.util.Map} object.
+     * @param cookies a {@link java.util.Map} object.
+     * @param body Optional entity content.
+     * @param contentType Optional mime type.
+     * @return a {@link java.lang.String} object.
+     * @throws org.apache.http.client.ClientProtocolException if any.
+     * @throws java.io.IOException if any.
+     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     */
+    public static String getWebContentDELETE(String url, Map<String, String> params, Map<String, String> cookies, String body,
+            Map<String, String> headerParams)
+            throws ClientProtocolException, IOException {
+        return getWebContent("DELETE", url, params, cookies, body, headerParams);
+    }
+
+    /**
+     * <p>
      * getWebContent.
      * </p>
      *
@@ -508,7 +529,11 @@ public class Utils {
         if (!viewerUrl.endsWith("/")) {
             sbUrl.append('/');
         }
-        sbUrl.append("tools?action=emptyCache&identifier=").append(pi).append("&fromContent=true&fromThumbs=true");
+        sbUrl.append("api/v1/cache/")
+                .append(pi)
+                .append("&content=true&thumbs=true&pdf=true")
+                .append("&token=")
+                .append(Configuration.getInstance().getViewerAuthorizationToken());
 
         try {
             return Utils.getWebContentGET(sbUrl.toString());
