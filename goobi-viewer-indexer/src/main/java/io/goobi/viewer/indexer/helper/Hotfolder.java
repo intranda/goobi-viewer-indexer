@@ -528,14 +528,14 @@ public class Hotfolder {
      * Returns the number of record and command (delete, update) files in the hotfolder.
      * 
      * @return Number of files
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should count files correctly
      */
     public long countRecordFiles() throws FatalIndexerException {
         if (!Configuration.getInstance().isCountHotfolderFiles()) {
             return 0;
         }
-        
+
         try (Stream<Path> files = Files.list(hotfolderPath)) {
             long ret = files.filter(p -> !Files.isDirectory(p))
                     .map(p -> p.toString())
@@ -1125,6 +1125,12 @@ public class Hotfolder {
                     int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
                             lidoFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
                             reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
+                    if (imageCounter > 0) {
+                        String msg = Utils.removeRecordImagesFromCache(identifier);
+                        if (msg != null) {
+                            logger.info(msg);
+                        }
+                    }
 
                     // Copy MIX files
                     if (reindexSettings.get(DataRepository.PARAM_MIX) == null || !reindexSettings.get(DataRepository.PARAM_MIX)) {
@@ -1269,6 +1275,12 @@ public class Hotfolder {
                     int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
                             denkxwebFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
                             reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
+                    if (imageCounter > 0) {
+                        String msg = Utils.removeRecordImagesFromCache(identifier);
+                        if (msg != null) {
+                            logger.info(msg);
+                        }
+                    }
 
                     // Update data repository cache map in the Goobi viewer
                     if (previousDataRepository != null) {
