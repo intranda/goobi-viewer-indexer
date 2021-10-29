@@ -51,10 +51,12 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -142,13 +144,13 @@ public class Utils {
      * @throws HTTPException
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
-            throws FatalIndexerException, ClientProtocolException, IOException {
+            throws FatalIndexerException, ClientProtocolException, IOException, HTTPException {
         updateDataRepositoryCache(pi, dataRepositoryName, Configuration.getInstance().getViewerUrl(),
                 Configuration.getInstance().getViewerAuthorizationToken());
     }
 
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
-            throws FatalIndexerException, ClientProtocolException, IOException {
+            throws FatalIndexerException, ClientProtocolException, IOException, HTTPException {
         if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
             return;
         }
@@ -194,7 +196,7 @@ public class Utils {
             json.put("hotfolder-file-count", fileCount);
             getWebContentPUT(url, new HashMap<>(0), null, json.toString(),
                     Collections.singletonMap("Content-Type", ContentType.APPLICATION_JSON.getMimeType()));
-        } catch (IOException e) {
+        } catch (IOException | HTTPException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }
     }
@@ -247,8 +249,7 @@ public class Utils {
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
     public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies, String body,
-            Map<String, String> headerParams)
-            throws ClientProtocolException, IOException {
+            Map<String, String> headerParams) throws ClientProtocolException, IOException, HTTPException {
         return getWebContent("POST", url, params, cookies, body, headerParams);
     }
 
@@ -268,8 +269,7 @@ public class Utils {
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
     public static String getWebContentPUT(String url, Map<String, String> params, Map<String, String> cookies, String body,
-            Map<String, String> headerParams)
-            throws ClientProtocolException, IOException {
+            Map<String, String> headerParams) throws ClientProtocolException, IOException, HTTPException {
         return getWebContent("PUT", url, params, cookies, body, headerParams);
     }
 
@@ -289,8 +289,7 @@ public class Utils {
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
     public static String getWebContentDELETE(String url, Map<String, String> params, Map<String, String> cookies, String body,
-            Map<String, String> headerParams)
-            throws ClientProtocolException, IOException {
+            Map<String, String> headerParams) throws ClientProtocolException, IOException, HTTPException {
         return getWebContent("DELETE", url, params, cookies, body, headerParams);
     }
 
@@ -311,8 +310,7 @@ public class Utils {
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
     static String getWebContent(String method, String url, Map<String, String> params, Map<String, String> cookies, String body,
-            Map<String, String> headerParams)
-            throws ClientProtocolException, IOException {
+            Map<String, String> headerParams) throws ClientProtocolException, IOException, HTTPException {
         if (method == null
                 || !("POST".equals(method.toUpperCase()) || "PUT".equals(method.toUpperCase()) || "DELETE".equals(method.toUpperCase()))) {
             throw new IllegalArgumentException("Illegal method: " + method);
@@ -351,8 +349,11 @@ public class Utils {
                 .build();
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
 
-            HttpEntityEnclosingRequestBase requestBase;
+            HttpRequestBase requestBase;
             switch (method.toUpperCase()) {
+                case "DELETE":
+                    requestBase = new HttpDelete(url);
+                    break;
                 case "POST":
                     requestBase = new HttpPost(url);
                     break;
@@ -372,10 +373,12 @@ public class Utils {
             }
             Charset.forName(TextHelper.DEFAULT_CHARSET);
             // TODO allow combinations of params + body
-            if (StringUtils.isNotEmpty(body)) {
-                requestBase.setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_CHARSET)));
-            } else {
-                requestBase.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            if (requestBase instanceof HttpPost || requestBase instanceof HttpPut) {
+                if (StringUtils.isNotEmpty(body)) {
+                    ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new ByteArrayEntity(body.getBytes(TextHelper.DEFAULT_CHARSET)));
+                } else {
+                    ((HttpEntityEnclosingRequestBase) requestBase).setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                }
             }
             try (CloseableHttpResponse response = (context == null ? httpClient.execute(requestBase) : httpClient.execute(requestBase, context));
                     StringWriter writer = new StringWriter()) {
@@ -386,7 +389,7 @@ public class Utils {
                 }
                 logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
                         EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
-                return response.getStatusLine().getReasonPhrase();
+                throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
             }
         }
     }
@@ -532,14 +535,15 @@ public class Utils {
         }
         sbUrl.append("api/v1/cache/")
                 .append(pi)
-                .append("&content=true&thumbs=true&pdf=true")
+                .append("?content=true&thumbs=true&pdf=true")
                 .append("&token=")
                 .append(Configuration.getInstance().getViewerAuthorizationToken());
 
         try {
-            Utils.getWebContentDELETE(viewerUrl, null, null, null, null);
-            return "Image cache cleared.";
-        } catch (IOException e) {
+            return Utils.getWebContentDELETE(sbUrl.toString(), new HashMap<>(0), null, null,
+                    Collections.singletonMap("Content-Type", ContentType.APPLICATION_JSON.getMimeType()));
+            //            return "Image cache cleared.";
+        } catch (IOException | HTTPException e) {
             return "Could not clear viewer cache: " + e.getMessage();
         }
     }

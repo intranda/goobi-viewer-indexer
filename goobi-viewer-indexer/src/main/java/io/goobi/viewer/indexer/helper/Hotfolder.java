@@ -69,6 +69,7 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -1000,7 +1001,11 @@ public class Hotfolder {
 
             // Update data repository cache map in the Goobi viewer
             if (previousDataRepository != null) {
-                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         } else {
             // Error
@@ -1163,7 +1168,11 @@ public class Hotfolder {
 
                     // Update data repository cache map in the Goobi viewer
                     if (previousDataRepository != null) {
-                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                        try {
+                            Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                        } catch (HTTPException e) {
+                            logger.error(e.getMessage(), e);
+                        }
                     }
                 }
             }
@@ -1284,7 +1293,11 @@ public class Hotfolder {
 
                     // Update data repository cache map in the Goobi viewer
                     if (previousDataRepository != null) {
-                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                        try {
+                            Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                        } catch (HTTPException e) {
+                            logger.error(e.getMessage(), e);
+                        }
                     }
                 }
             }
@@ -1483,7 +1496,11 @@ public class Hotfolder {
 
             // Update data repository cache map in the Goobi viewer
             if (previousDataRepository != null) {
-                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         } else {
             // Error
@@ -1631,7 +1648,11 @@ public class Hotfolder {
 
             // Update data repository cache map in the Goobi viewer
             if (previousDataRepository != null) {
-                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         } else {
             // Error
