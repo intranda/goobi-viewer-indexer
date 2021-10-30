@@ -46,7 +46,7 @@
 		<geojson-jackson.version>1.14</geojson-jackson.version>
 		<httpclient.version>4.5.13</httpclient.version>
 		<httpcore.version>4.4.14</httpcore.version>
-		<icu.version>69.1</icu.version>
+		<icu.version>70.1</icu.version>
 		<imageio-openjpeg.version>0.6.0</imageio-openjpeg.version>
 		<log4j.version>2.14.1</log4j.version>
         <!-- Do not update to version later than 2.11.4 because the geojson-jackson module is not compatible yet -->
