@@ -41,44 +41,44 @@ public class WebAnnotationTools {
      * @return a {@link java.lang.Integer} object.
      */
     public static Integer parsePageOrder(URI uri) {
-
         Matcher matcher = getMatchingMatcher(uri);
-        if (matcher.groupCount() > 1) {
+        if (matcher != null && matcher.groupCount() > 1) {
             String pageNo = matcher.group(2);
             if (StringUtils.isNotBlank(pageNo) && StringUtils.isNumeric(pageNo)) {
                 return Integer.parseInt(pageNo);
             }
         }
-        return null;
 
+        return null;
     }
 
     public static String parsePI(URI uri) {
         Matcher matcher = getMatchingMatcher(uri);
-        if (matcher.groupCount() > 0) {
+        if (matcher != null && matcher.groupCount() > 0) {
             String pi = matcher.group(1);
             if (StringUtils.isNotBlank(pi)) {
                 return pi;
             }
         }
+
         return null;
     }
 
     public static String parseDivId(URI uri) {
         Matcher matcher = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString());
-
         if (matcher.find()) {
             String divId = matcher.group(2);
             if (StringUtils.isNotBlank(divId)) {
                 return divId;
             }
         }
+
         return null;
     }
 
     /**
      * @param uri
-     * @return
+     * @return appropriate matcher; null if none found
      */
     public static Matcher getMatchingMatcher(URI uri) {
         Matcher matcher = null;

@@ -271,12 +271,9 @@ public final class MetadataConfigurationManager {
         if (typeName != null) {
             type = MetadataGroupType.getByName(typeName);
             if (type == null) {
-                logger.warn("Unknown metadata group type: {}", typeName);
+                type = MetadataGroupType.OTHER;
+                logger.warn("Unknown metadata group type: {}, using {} instead.", typeName, type.name());
             }
-        }
-        if (type == null) {
-            type = MetadataGroupType.OTHER;
-            logger.warn("Using group type: {}", MetadataGroupType.OTHER.name());
         }
 
         String name = config.getString("[@name]");

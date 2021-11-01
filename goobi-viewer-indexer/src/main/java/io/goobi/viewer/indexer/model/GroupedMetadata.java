@@ -59,7 +59,7 @@ public class GroupedMetadata {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fields == null) ? 0 : fields.hashCode());
+        result = prime * result + (fields.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         result = prime * result + ((mainValue == null) ? 0 : mainValue.hashCode());
         return result;
@@ -78,10 +78,7 @@ public class GroupedMetadata {
         if (getClass() != obj.getClass())
             return false;
         GroupedMetadata other = (GroupedMetadata) obj;
-        if (fields == null) {
-            if (other.fields != null)
-                return false;
-        } else if (!fields.equals(other.fields))
+        if (!fields.equals(other.fields))
             return false;
         if (label == null) {
             if (other.label != null)
