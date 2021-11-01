@@ -579,18 +579,18 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
         Assert.assertEquals(3, strategy.getDocsToAdd().size());
 
-        long iddocParent = (long) strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.IDDOC);
+        Long iddocParent = (Long) strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.IDDOC);
         Assert.assertNotNull(iddocParent);
         Assert.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
         Assert.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
 
-        long iddocChild = (long) strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC);
+        Long iddocChild = (Long) strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC);
         Assert.assertNotNull(iddocChild);
         Assert.assertEquals(iddocParent, strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC_OWNER));
         Assert.assertEquals("foo", strategy.getDocsToAdd().get(1).getFieldValue("MD_ONE"));
         Assert.assertEquals("bar", strategy.getDocsToAdd().get(1).getFieldValue("MD_TWO"));
 
-        long iddocGrandchild = (long) strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC);
+        Long iddocGrandchild = (Long) strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC);
         Assert.assertNotNull(iddocGrandchild);
         Assert.assertEquals(iddocChild, strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC_OWNER));
         Assert.assertEquals("foo", strategy.getDocsToAdd().get(2).getFieldValue("MD_ONE"));

@@ -146,6 +146,10 @@ public class JDomXP {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private static List<Object> evaluate(String expr, Object parent, Filter filter) throws FatalIndexerException {
+        if (expr == null) {
+            throw new IllegalArgumentException("expr may not be null");
+        }
+        
         XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
         // Add all namespaces
         for (String key : Configuration.getInstance().getNamespaces().keySet()) {
@@ -263,8 +267,11 @@ public class JDomXP {
         if (parent == null) {
             parent = doc;
         }
+        if (expr == null) {
+            return "";
+        }
         // JDOM2 requires '/text()' for string evaluation
-        if (expr != null && !expr.endsWith("/text()")) {
+        if (!expr.endsWith("/text()")) {
             expr += "/text()";
         }
         List<Object> list = evaluate(expr, parent, Filters.text());
@@ -329,8 +336,11 @@ public class JDomXP {
         if (parent == null) {
             parent = doc;
         }
+        if (expr == null) {
+            return "";
+        }
         // JDOM2 requires '/text()' for string evaluation
-        if (expr != null && !expr.endsWith("/text()")) {
+        if (!expr.endsWith("/text()")) {
             expr += "/text()";
         }
         List<Object> list = evaluate(expr, parent, Filters.cdata());
