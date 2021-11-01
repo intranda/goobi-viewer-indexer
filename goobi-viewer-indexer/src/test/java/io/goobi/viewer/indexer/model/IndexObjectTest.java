@@ -319,7 +319,7 @@ public class IndexObjectTest extends AbstractTest {
         Thread.sleep(1);
         io.writeDateModified(true);
 
-        Assert.assertNotEquals(now, io.getDateUpdated());
+        Assert.assertTrue(now == io.getDateUpdated().get(0));
         List<LuceneField> fieldsDateUpdated = io.getLuceneFieldsWithName(SolrConstants.DATEUPDATED);
         Assert.assertNotNull(fieldsDateUpdated);
         Assert.assertEquals(2, fieldsDateUpdated.size());

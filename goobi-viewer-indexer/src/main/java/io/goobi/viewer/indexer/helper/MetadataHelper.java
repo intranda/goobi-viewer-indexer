@@ -349,6 +349,7 @@ public class MetadataHelper {
                     // Add value to DEFAULT
                     if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
                         addValueToDefault(fieldValue, sbDefaultMetadataValues);
+                        logger.info("Added to DEFAULT: {}", fieldValue);
                     }
                     // Add normalized year
                     if (configurationItem.isNormalizeYear()) {
@@ -484,8 +485,9 @@ public class MetadataHelper {
                 }
 
                 // Aggregate place fields into the same untokenized field for term browsing
-                if ((authorityDataField.getKey().equals("NORM_ALTNAME") || authorityDataField.getKey().equals("NORM_OFFICIALNAME"))
-                        && !nameSearchFieldValues.contains(textValue)) {
+                if (authorityDataField.getKey().equals("NORM_NAME")
+                        || (authorityDataField.getKey().equals("NORM_ALTNAME") || authorityDataField.getKey().equals("NORM_OFFICIALNAME"))
+                                && !nameSearchFieldValues.contains(textValue)) {
                     if (StringUtils.isNotEmpty(labelField)) {
                         ret.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
                     }
@@ -1263,13 +1265,14 @@ public class MetadataHelper {
         if (!sbDefaultMetadataValues.toString().contains(defaultValueWithSpaces)) {
             sbDefaultMetadataValues.append(defaultValueWithSpaces);
         }
-        String concatValue = getConcatenatedValue(fieldValueTrim);
-        if (!concatValue.equals(value)) {
-            String concatValueWithSpaces = new StringBuilder(" ").append(concatValue).append(' ').toString();
-            if (!sbDefaultMetadataValues.toString().contains(concatValueWithSpaces)) {
-                sbDefaultMetadataValues.append(concatValueWithSpaces);
-            }
-        }
+        // 2021-10-22: Commented out concatenation to reduce autosuggest noise
+        //        String concatValue = getConcatenatedValue(fieldValueTrim);
+        //        if (!concatValue.equals(value)) {
+        //            String concatValueWithSpaces = new StringBuilder(" ").append(concatValue).append(' ').toString();
+        //            if (!sbDefaultMetadataValues.toString().contains(concatValueWithSpaces)) {
+        //                sbDefaultMetadataValues.append(concatValueWithSpaces);
+        //            }
+        //        }
     }
 
     /**

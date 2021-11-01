@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.Indexer;
 
 public class UtilsTest extends AbstractTest {
 
@@ -88,9 +88,20 @@ public class UtilsTest extends AbstractTest {
     @Test
     public void getFileNameFromIiifUrl_shouldExtractFileNameCorrectly() throws Exception {
         Assert.assertEquals("00000001.jpg",
-                Utils.getFileNameFromIiifUrl("http://localhost:8080/viewer/rest/image/AC05725455/00000001.tif/full/!400,400/0/default.jpg"));
+                Utils.getFileNameFromIiifUrl("https://localhost:8080/viewer/rest/image/AC05725455/00000001.tif/full/!400,400/0/default.jpg"));
         Assert.assertEquals("AFE_1284_1999-17-557-1_a.jpg", Utils
-                .getFileNameFromIiifUrl("http://pecunia2.zaw.uni-heidelberg.de:49200/iiif/2/AFE_1284_1999-17-557-1_a.jpg/full/full/0/default.jpg"));
+                .getFileNameFromIiifUrl("https://pecunia2.zaw.uni-heidelberg.de:49200/iiif/2/AFE_1284_1999-17-557-1_a.jpg/full/full/0/default.jpg"));
+    }
+
+    /**
+     * @see Utils#getFileNameFromIiifUrl(String)
+     * @verifies extract escaped file name correctly
+     */
+    @Test
+    public void getFileNameFromIiifUrl_shouldExtractEscapedFileNameCorrectly() throws Exception {
+        Assert.assertEquals("00000001.jpg",
+                Utils.getFileNameFromIiifUrl(
+                        "https://example.com/api/iiif/image/v2/dbbs_derivate_00041856%2fmax%2F00000001.jpg/full/!256,256/0/color.jpg"));
     }
 
     /**
@@ -105,5 +116,16 @@ public class UtilsTest extends AbstractTest {
         Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
         Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
         Assert.assertEquals(111111000, Utils.generateLongOrderNumber(11111, 1000));
+    }
+
+    /**
+     * @see Utils#isFileNameMatchesRegex(String,String[])
+     * @verifies match correctly
+     */
+    @Test
+    public void isFileNameMatchesRegex_shouldMatchCorrectly() throws Exception {
+        Assert.assertTrue(Utils.isFileNameMatchesRegex("foo/bar/default.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
+        Assert.assertTrue(Utils.isFileNameMatchesRegex("foo/bar/color.png", Indexer.IIIF_IMAGE_FILE_NAMES));
+        Assert.assertFalse(Utils.isFileNameMatchesRegex("foo/bar/other.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
     }
 }

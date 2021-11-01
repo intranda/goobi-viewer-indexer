@@ -1049,12 +1049,19 @@ public class MetsIndexer extends Indexer {
             }
 
             String filePath = filepathAttrList.get(attrListIndex).getValue();
-            logger.trace("filePath: " + filePath);
+            logger.trace("filePath: {}", filePath);
             if (StringUtils.isEmpty(filePath)) {
                 logger.warn("{}: file path not found in file group '{}'.", fileId, fileGrpUse);
                 //                break;
             }
-            String fileName = FilenameUtils.getName(filePath);
+
+            String fileName;
+            if (Utils.isFileNameMatchesRegex(filePath, IIIF_IMAGE_FILE_NAMES)) {
+                // Extract correct original file name from IIIF
+                fileName = Utils.getFileNameFromIiifUrl(filePath);
+            } else {
+                fileName = FilenameUtils.getName(filePath);
+            }
 
             // Mime type
             xpath = "mets:file" + fileIdXPathCondition + "/@MIMETYPE";
@@ -1087,8 +1094,9 @@ public class MetsIndexer extends Indexer {
                     String viewerUrl = Configuration.getInstance().getViewerUrl();
                     if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                             && !filePath.startsWith(viewerUrl)) {
+                        logger.info("Downloading file: {}", filePath);
                         try {
-                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA))).getFileName().toString();
+                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName)).getFileName().toString();
                         } catch (IOException | URISyntaxException e) {
                             logger.warn("Could not download file: {}", filePath);
                         }
@@ -2183,7 +2191,7 @@ public class MetsIndexer extends Indexer {
      * @should parse iso local dateTime correctly
      * @should parse iso offset dateTime correctly
      */
-   static ZonedDateTime parseCreateDate(String dateString) {
+    static ZonedDateTime parseCreateDate(String dateString) {
         if (StringUtils.isEmpty(dateString)) {
             return null;
         }

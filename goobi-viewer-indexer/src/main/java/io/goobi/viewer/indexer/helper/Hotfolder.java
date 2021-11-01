@@ -69,6 +69,7 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -528,14 +529,14 @@ public class Hotfolder {
      * Returns the number of record and command (delete, update) files in the hotfolder.
      * 
      * @return Number of files
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      * @should count files correctly
      */
     public long countRecordFiles() throws FatalIndexerException {
         if (!Configuration.getInstance().isCountHotfolderFiles()) {
             return 0;
         }
-        
+
         try (Stream<Path> files = Files.list(hotfolderPath)) {
             long ret = files.filter(p -> !Files.isDirectory(p))
                     .map(p -> p.toString())
@@ -873,7 +874,7 @@ public class Hotfolder {
                     case "_annotations":
                         dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
                         break;
-                    case "_downloadImages":
+                    case "_downloadimages":
                         dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
                         break;
                     default:
@@ -1000,7 +1001,11 @@ public class Hotfolder {
 
             // Update data repository cache map in the Goobi viewer
             if (previousDataRepository != null) {
-                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         } else {
             // Error
@@ -1125,6 +1130,12 @@ public class Hotfolder {
                     int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
                             lidoFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
                             reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
+                    if (imageCounter > 0) {
+                        String msg = Utils.removeRecordImagesFromCache(identifier);
+                        if (msg != null) {
+                            logger.info(msg);
+                        }
+                    }
 
                     // Copy MIX files
                     if (reindexSettings.get(DataRepository.PARAM_MIX) == null || !reindexSettings.get(DataRepository.PARAM_MIX)) {
@@ -1157,7 +1168,11 @@ public class Hotfolder {
 
                     // Update data repository cache map in the Goobi viewer
                     if (previousDataRepository != null) {
-                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                        try {
+                            Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                        } catch (HTTPException e) {
+                            logger.error(e.getMessage(), e);
+                        }
                     }
                 }
             }
@@ -1269,10 +1284,20 @@ public class Hotfolder {
                     int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
                             denkxwebFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
                             reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
+                    if (imageCounter > 0) {
+                        String msg = Utils.removeRecordImagesFromCache(identifier);
+                        if (msg != null) {
+                            logger.info(msg);
+                        }
+                    }
 
                     // Update data repository cache map in the Goobi viewer
                     if (previousDataRepository != null) {
-                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                        try {
+                            Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                        } catch (HTTPException e) {
+                            logger.error(e.getMessage(), e);
+                        }
                     }
                 }
             }
@@ -1471,7 +1496,11 @@ public class Hotfolder {
 
             // Update data repository cache map in the Goobi viewer
             if (previousDataRepository != null) {
-                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         } else {
             // Error
@@ -1619,7 +1648,11 @@ public class Hotfolder {
 
             // Update data repository cache map in the Goobi viewer
             if (previousDataRepository != null) {
-                Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         } else {
             // Error

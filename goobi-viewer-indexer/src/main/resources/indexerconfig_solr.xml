@@ -12,7 +12,7 @@
 		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
 		<oldSolrUrl></oldSolrUrl>
-		<viewerUrl>https://viewer.goobi.io</viewerUrl>
+		<viewerUrl>http://localhost:8080/viewer/</viewerUrl>
 
 		<!-- Folder configuration -->
 		<hotFolder>C:/opt/digiverso/viewer/hotfolder/</hotFolder>
@@ -69,7 +69,7 @@
 
 		<namespaces>
 			<list>
-			    <intranda>http://intranda.com/</intranda>
+			    <intranda>http://intranda.com/MODS/</intranda>
 			    <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
@@ -119,7 +119,7 @@
 		</email>
 
 		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
-		<viewerAuthorizationToken>CHANGEME</viewerAuthorizationToken>
+		<viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>
 
 
@@ -3258,6 +3258,18 @@
                 </item>
             </list>
         </MD_EVENT>
+        
+        <MD_SCOPECONTENT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:ScopeContent
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                </item>
+            </list>
+        </MD_SCOPECONTENT>
+
 
 	</fields>
 </root>

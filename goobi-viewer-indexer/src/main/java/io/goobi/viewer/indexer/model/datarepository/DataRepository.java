@@ -590,6 +590,8 @@ public class DataRepository {
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_CMS, dataRepositories);
         // Copy and delete WebAnnotation files
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS, dataRepositories);
+        // Delete image download trigger folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, dataRepositories);
     }
 
     /**
@@ -601,9 +603,9 @@ public class DataRepository {
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
      * @param param Folder parameter name
      * @param dataRepositories a {@link java.util.List} object.
+     * @return Number of copied files
      * @throws java.io.IOException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @return a int.
      */
     public int checkCopyAndDeleteDataFolder(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param,
             List<DataRepository> dataRepositories) throws IOException, FatalIndexerException {
@@ -653,9 +655,12 @@ public class DataRepository {
             throw new IllegalArgumentException("identifier may not be null");
         }
 
-        logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath().toString());
-        int counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
-        logger.info("{} {} files copied.", counter, paramName);
+        int counter = 0;
+        if (!DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER.equals(paramName)) {
+            logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath().toString());
+            counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
+            logger.info("{} {} files copied.", counter, paramName);
+        }
         if (!Utils.deleteDirectory(srcFolder)) {
             logger.warn("'{}' could not be deleted.", srcFolder.toAbsolutePath());
         }

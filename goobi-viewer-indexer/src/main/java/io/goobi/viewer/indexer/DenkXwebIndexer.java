@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,7 +32,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -644,7 +642,7 @@ public class DenkXwebIndexer extends Indexer {
         String url = eleStandard.getAttributeValue("url");
         String fileName;
         if (StringUtils.isNotEmpty(url) && url.contains("/")) {
-            if (url.endsWith("default.jpg")) {
+            if (Utils.isFileNameMatchesRegex(url, IIIF_IMAGE_FILE_NAMES)) {
                 // Extract correct original file name from IIIF
                 fileName = Utils.getFileNameFromIiifUrl(url);
             } else {
@@ -657,13 +655,13 @@ public class DenkXwebIndexer extends Indexer {
             // External image
             if (url.startsWith("http")) {
                 // Download image, if so requested (and not a local resource)
-                String baseFileName = FilenameUtils.getBaseName(fileName);
+                // String baseFileName = FilenameUtils.getBaseName(fileName);
                 String viewerUrl = Configuration.getInstance().getViewerUrl();
                 if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                         && !url.startsWith(viewerUrl)) {
                     // Download image and use locally
                     try {
-                        File file = new File(downloadExternalImage(url, dataFolders.get(DataRepository.PARAM_MEDIA)));
+                        File file = new File(downloadExternalImage(url, dataFolders.get(DataRepository.PARAM_MEDIA), fileName));
                         if (file.isFile()) {
                             logger.info("Downloaded {}", file);
                             sbImgFileNames.append(';').append(fileName);
@@ -761,7 +759,7 @@ public class DenkXwebIndexer extends Indexer {
             doc.addField("MDNUM_FILESIZE", -1);
         }
 
-        String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
+        // String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
 
         // Add image dimension values from EXIF
         if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
