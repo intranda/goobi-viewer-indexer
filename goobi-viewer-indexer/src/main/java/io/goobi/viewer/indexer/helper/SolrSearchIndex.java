@@ -587,6 +587,10 @@ public final class SolrSearchIndex {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
         String url = Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml";
         try (HttpSolrClient solrClient = getNewHttpSolrClient(solrUrl, 30000, 30000, false)) {
+            if (solrClient == null) {
+                return null;
+            }
+            
             HttpClient client = solrClient.getHttpClient();
             HttpGet httpGet = new HttpGet(url);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
