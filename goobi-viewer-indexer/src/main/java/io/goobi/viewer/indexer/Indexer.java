@@ -794,9 +794,6 @@ public abstract class Indexer {
      */
     public void initJDomXP(Path xmlFile) throws IOException, JDOMException, IndexerException, FatalIndexerException {
         xp = new JDomXP(xmlFile.toFile());
-        if (xp == null) {
-            throw new IndexerException("Could not create XML parser.");
-        }
     }
 
     /**
