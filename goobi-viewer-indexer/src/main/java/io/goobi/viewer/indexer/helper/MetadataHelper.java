@@ -349,7 +349,7 @@ public class MetadataHelper {
                     // Add value to DEFAULT
                     if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
                         addValueToDefault(fieldValue, sbDefaultMetadataValues);
-                        logger.info("Added to DEFAULT: {}", fieldValue);
+                        logger.trace("Added to DEFAULT: {}", fieldValue);
                     }
                     // Add normalized year
                     if (configurationItem.isNormalizeYear()) {
@@ -359,7 +359,7 @@ public class MetadataHelper {
                         // Add sort fields for normalized years, centuries, etc.
                         for (LuceneField normalizedDateField : normalizedFields) {
                             addSortField(normalizedDateField.getField(), normalizedDateField.getValue(), SolrConstants.SORTNUM_,
-                                    configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizer(), ret);
+                                    configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizers(), ret);
                         }
                     }
                     // Add Solr field
@@ -369,7 +369,7 @@ public class MetadataHelper {
                     // Make sure non-sort characters are removed before adding _UNTOKENIZED and SORT_ fields
                     if (configurationItem.isAddSortField()) {
                         addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.SORT_, configurationItem.getNonSortConfigurations(),
-                                configurationItem.getValueNormalizer(), ret);
+                                configurationItem.getValueNormalizers(), ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
                         ret.add(new LuceneField(fieldName + SolrConstants._UNTOKENIZED, fieldValue));
@@ -619,8 +619,11 @@ public class MetadataHelper {
                 fieldValue = nonSortConfig.apply(fieldValue);
             }
         }
-        if (configurationItem.getValueNormalizer() != null) {
-            fieldValue = configurationItem.getValueNormalizer().normalize(fieldValue);
+        if (!configurationItem.getValueNormalizers().isEmpty()) {
+            for (ValueNormalizer normalizer : configurationItem.getValueNormalizers()) {
+                fieldValue = normalizer.normalize(fieldValue);
+                logger.info("normalized value: {}", fieldValue);
+            }
         }
 
         return fieldValue;
@@ -731,7 +734,7 @@ public class MetadataHelper {
      * @param valueNormalizer a {@link io.goobi.viewer.indexer.model.config.ValueNormalizer} object.
      */
     public static void addSortField(String fieldName, String fieldValue, String sortFieldPrefix, List<NonSortConfiguration> nonSortConfigurations,
-            ValueNormalizer valueNormalizer, List<LuceneField> retList) {
+            List<ValueNormalizer> valueNormalizers, List<LuceneField> retList) {
         if (fieldName == null) {
             throw new IllegalArgumentException("fieldName may not be null");
         }
@@ -755,8 +758,10 @@ public class MetadataHelper {
                 fieldValue = nonSortConfig.apply(fieldValue);
             }
         }
-        if (valueNormalizer != null) {
-            fieldValue = valueNormalizer.normalize(fieldValue);
+        if (valueNormalizers != null && !valueNormalizers.isEmpty()) {
+            for (ValueNormalizer normalizer : valueNormalizers) {
+                fieldValue = normalizer.normalize(fieldValue);
+            }
         }
         logger.debug("Adding sorting field {}: {}", sortFieldName, fieldValue);
         retList.add(new LuceneField(sortFieldName, fieldValue));

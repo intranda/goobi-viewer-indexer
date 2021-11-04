@@ -15,7 +15,8 @@
  */
 package io.goobi.viewer.indexer;
 
-import org.junit.AfterClass;
+import java.io.File;
+
 import org.junit.BeforeClass;
 
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -25,14 +26,12 @@ import io.goobi.viewer.indexer.helper.Configuration;
  */
 public abstract class AbstractTest {
 
+    public static final String TEST_CONFIG_PATH = new File("src/test/resources/indexerconfig_solr_test.xml").getAbsolutePath();
+    public static final String TEST_LOG_CONFIG_PATH = new File("src/test/resources/log4j2.test.xml").getAbsolutePath();
+
     @BeforeClass
     public static void setUpClass() throws Exception {
-        System.setProperty("log4j.configurationFile", "src/test/resources/log4j2.test.xml");
-        
-        Configuration.getInstance("src/test/resources/indexerconfig_solr_test.xml");
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+        System.setProperty("log4j.configurationFile", TEST_LOG_CONFIG_PATH);
+        Configuration.getInstance(TEST_CONFIG_PATH);
     }
 }

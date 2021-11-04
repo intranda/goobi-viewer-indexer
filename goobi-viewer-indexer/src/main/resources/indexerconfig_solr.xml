@@ -1968,18 +1968,6 @@
 			</list>
 		</MD_SHELFMARK>
 
-	        <SORT_TEST>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:location/mods:shelfLocator</xpath>
-					<addToDefault>true</addToDefault>
-					<replace string="/"></replace>
-					<normalizeValue length="12" filler="0" position="front" />
-				</item>
-			</list>
-	        </SORT_TEST>
-
-
 		<MD_OLDSHELFMARK>
 			<list>
 				<item>
@@ -3270,6 +3258,38 @@
             </list>
         </MD_SCOPECONTENT>
 
+        <MD_OBJECTNO>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type='PPNanalog']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_OBJECTNO>
+
+        <SORT_OBJECTNO>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type='PPNanalog']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                    <normalizeValue convertRoman="true" regex="BP ([C|I|M|V|X]+) f.[0-9]+$" />
+                    <normalizeValue length="8" filler="0" regex="BP ([0-9]+) f.([0-9]+)$" />
+                    <normalizeValue length="8" filler="0" regex="[a-zA-Z]+[\s]+([0-9]+)[.]([0-9]+).*$" />
+                </item>
+            </list>
+        </SORT_OBJECTNO>
 
 	</fields>
 </root>

@@ -195,7 +195,8 @@
 					<replace string="stringToReplace1 ">replace1 </replace>
 					<replace regex="[ ]*stringToReplace2[ ]*">replace2</replace>
 					<nonSortCharacters prefix="nonSortPrefix" suffix="nonSortSuffix" />
-					<normalizeValue length="5" filler="a" position="front" />
+                    <normalizeValue convertRoman="true" regex="foo ([C|I|M|V|X]+) .*$" />
+					<normalizeValue length="5" filler="a" position="front" regex="foo ([0-9]+) .*$" />
 					<allowDuplicateValues>true</allowDuplicateValues>
                     <geoJSONSource separator=" / ">mods:coordinates/point</geoJSONSource>
 				</item>

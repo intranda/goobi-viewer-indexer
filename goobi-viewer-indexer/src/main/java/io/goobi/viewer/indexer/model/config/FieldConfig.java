@@ -52,7 +52,7 @@ public class FieldConfig {
     private List<NonSortConfiguration> nonSortConfigurations;
     private boolean addToPages = false;
     private boolean allowDuplicateValues = false;
-    private ValueNormalizer valueNormalizer;
+    private final List<ValueNormalizer> valueNormalizers = new ArrayList<>();
     private String geoJSONSource;
     private String geoJSONSourceSeparator;
     private boolean geoJSONAddSearchField;
@@ -610,25 +610,10 @@ public class FieldConfig {
     }
 
     /**
-     * <p>
-     * Getter for the field <code>valueNormalizer</code>.
-     * </p>
-     *
-     * @return the valueNormalizer
+     * @return the valueNormalizers
      */
-    public ValueNormalizer getValueNormalizer() {
-        return valueNormalizer;
-    }
-
-    /**
-     * <p>
-     * Setter for the field <code>valueNormalizer</code>.
-     * </p>
-     *
-     * @param valueNormalizer the valueNormalizer to set
-     */
-    public void setValueNormalizer(ValueNormalizer valueNormalizer) {
-        this.valueNormalizer = valueNormalizer;
+    public List<ValueNormalizer> getValueNormalizers() {
+        return valueNormalizers;
     }
 
     /**

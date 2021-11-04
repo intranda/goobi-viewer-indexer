@@ -20,10 +20,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -50,18 +47,6 @@ public class ConfigurationTest extends AbstractTest {
         AbstractTest.setUpClass();
 
         hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null, null);
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     @Test
@@ -170,10 +155,17 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertEquals(1, configItem.getNonSortConfigurations().size());
         Assert.assertEquals("nonSortPrefix", configItem.getNonSortConfigurations().get(0).getPrefix());
         Assert.assertEquals("nonSortSuffix", configItem.getNonSortConfigurations().get(0).getSuffix());
-        Assert.assertNotNull(configItem.getValueNormalizer());
-        Assert.assertEquals(5, configItem.getValueNormalizer().getLength());
-        Assert.assertEquals('a', configItem.getValueNormalizer().getFiller());
-        Assert.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizer().getPosition());
+
+        // Value normalizers
+        Assert.assertNotNull(configItem.getValueNormalizers());
+        Assert.assertEquals(2, configItem.getValueNormalizers().size());
+        Assert.assertTrue(configItem.getValueNormalizers().get(0).isConvertRoman());
+        Assert.assertEquals("foo ([C|I|M|V|X]+) .*$", configItem.getValueNormalizers().get(0).getRegex());
+        Assert.assertEquals(5, configItem.getValueNormalizers().get(1).getTargetLength());
+        Assert.assertEquals('a', configItem.getValueNormalizers().get(1).getFiller());
+        Assert.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizers().get(1).getPosition());
+        Assert.assertEquals("foo ([0-9]+) .*$", configItem.getValueNormalizers().get(1).getRegex());
+
         Assert.assertEquals("mods:coordinates/point", configItem.getGeoJSONSource());
         Assert.assertEquals(" / ", configItem.getGeoJSONSourceSeparator());
     }
@@ -250,12 +242,12 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertEquals("test", Configuration.getInstance().getViewerAuthorizationToken());
     }
 
-	/**
-	 * @see Configuration#isCountHotfolderFiles()
-	 * @verifies return correct value
-	 */
-	@Test
-	public void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
-		 Assert.assertFalse(Configuration.getInstance().isCountHotfolderFiles());
-	}
+    /**
+     * @see Configuration#isCountHotfolderFiles()
+     * @verifies return correct value
+     */
+    @Test
+    public void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
+        Assert.assertFalse(Configuration.getInstance().isCountHotfolderFiles());
+    }
 }

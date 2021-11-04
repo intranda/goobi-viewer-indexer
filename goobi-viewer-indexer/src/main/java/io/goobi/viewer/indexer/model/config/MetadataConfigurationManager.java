@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.SubnodeConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
@@ -192,13 +191,20 @@ public final class MetadataConfigurationManager {
                 List<HierarchicalConfiguration<ImmutableNode>> normalizeValueList =
                         config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeValue");
                 if (normalizeValueList != null && !normalizeValueList.isEmpty()) {
-                    int length = normalizeValueList.get(0).getInt("[@length]");
-                    char filler = normalizeValueList.get(0).getString("[@filler]", "0").charAt(0);
-                    String position = normalizeValueList.get(0).getString("[@position]");
-                    String relevantPartRegex = normalizeValueList.get(0).getString("[@relevantPartRegex]");
-                    ValueNormalizer normalizer =
-                            new ValueNormalizer(length, filler, ValueNormalizerPosition.getByName(position), relevantPartRegex);
-                    fieldConfig.setValueNormalizer(normalizer);
+                    for (HierarchicalConfiguration<ImmutableNode> node : normalizeValueList) {
+                        int length = node.getInt("[@length]", 8);
+                        char filler = node.getString("[@filler]", "0").charAt(0);
+                        String position = node.getString("[@position]");
+                        String regex = node.getString("[@regex]");
+                        boolean convertRoman = node.getBoolean("[@convertRoman]", false);
+                        ValueNormalizer normalizer =
+                                new ValueNormalizer().setTargetLength(length)
+                                        .setFiller(filler)
+                                        .setPosition(ValueNormalizerPosition.getByName(position))
+                                        .setRegex(regex)
+                                        .setConvertRoman(convertRoman);
+                        fieldConfig.getValueNormalizers().add(normalizer);
+                    }
                 }
 
                 {
