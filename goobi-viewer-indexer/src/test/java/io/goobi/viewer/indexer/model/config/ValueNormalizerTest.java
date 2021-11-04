@@ -72,12 +72,12 @@ public class ValueNormalizerTest extends AbstractTest {
     @Test
     public void normalize_shouldNormalizeRegexGroupsCorrectly() throws Exception {
         {
-            ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("[a-zA-Z]+[\s]+([0-9]+)[.]([0-9]+).*$");
+            ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("[a-zA-Z]+[\\s]+([0-9]+)[.]([0-9]+).*$");
             Assert.assertEquals("foo 00004173.00000001 bar", vn.normalize("foo 4173.1 bar"));
             Assert.assertEquals("foo 00004173.00000010 bar", vn.normalize("foo 4173.10 bar"));
         }
         {
-            ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("[a-zA-Z]+[\s]+([0-9]+).*([0-9]+)$");
+            ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("[a-zA-Z]+[\\s]+([0-9]+).*([0-9]+)$");
             Assert.assertEquals("foo 00000001 bar 00000002", vn.normalize("foo 1 bar 2"));
         }
     }
