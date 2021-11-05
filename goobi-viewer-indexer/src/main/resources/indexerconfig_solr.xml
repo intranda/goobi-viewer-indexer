@@ -3284,9 +3284,11 @@
                     </xpath>
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
-                    <normalizeValue convertRoman="true" regex="BP ([C|I|M|V|X]+) f.[0-9]+$" />
-                    <normalizeValue length="8" filler="0" regex="BP ([0-9]+) f.([0-9]+)$" />
+                    <normalizeValue convertRoman="true" regex="BP ([C|I|M|V|X]+)$" />
+                    <normalizeValue convertRoman="true" regex="BP ([C|I|M|V|X]+)(?:.| f.| ff.| i.| ii.)[0-9]+.*$" />
+                    <normalizeValue length="8" filler="0" regex="BP ([0-9]+)(?:.| f.| ff.| i.| ii.)[0-9]+$" />
                     <normalizeValue length="8" filler="0" regex="[a-zA-Z]+[\s]+([0-9]+)[.]([0-9]+).*$" />
+
                 </item>
             </list>
         </SORT_OBJECTNO>
