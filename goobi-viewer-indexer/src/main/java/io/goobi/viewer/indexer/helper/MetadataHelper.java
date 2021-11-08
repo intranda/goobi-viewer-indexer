@@ -76,6 +76,8 @@ public class MetadataHelper {
     public static final String FIELD_WKT_COORDS = "WKT_COORDS";
     public static final String FIELD_HAS_WKT_COORDS = "BOOL_WKT_COORDS";
 
+    public static Map<String, Record> authorityDataCache = new HashMap<>();
+
     /** Constant <code>FORMAT_TWO_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
 
@@ -404,9 +406,10 @@ public class MetadataHelper {
      * @param replaceRules Optional metadata value replace rules
      * @param labelField Field name of the metadata group to which this authority data belongs
      * @return
+     * @throws FatalIndexerException
      */
     private static List<LuceneField> retrieveAuthorityData(String url, StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms,
-            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
+            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) throws FatalIndexerException {
         logger.info("retrieveAuthorityData: {}", url);
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
@@ -417,14 +420,28 @@ public class MetadataHelper {
             url = "https://d-nb.info/gnd/" + url;
         }
 
-        Record record = NormDataImporter.getSingleRecord(url.trim());
-        if (record == null) {
-            logger.warn("Authority dataset could not be retrieved: {}", url);
-            return Collections.emptyList();
-        }
-        if (record.getNormDataList().isEmpty()) {
-            logger.warn("No authority data fields found.");
-            return Collections.emptyList();
+        url = url.trim();
+        boolean authorityDataCacheEnabled = Configuration.getInstance().isAuthorityDataCacheEnabled();
+
+        Record record = authorityDataCache.get(url);
+        if (record != null) {
+            logger.info("Authority data retrieved from local cache: {}", url);
+        } else {
+            record = NormDataImporter.getSingleRecord(url);
+            if (record == null) {
+                logger.warn("Authority dataset could not be retrieved: {}", url);
+                return Collections.emptyList();
+            }
+            if (record.getNormDataList().isEmpty()) {
+                logger.warn("No authority data fields found.");
+                return Collections.emptyList();
+            }
+            if (authorityDataCacheEnabled) {
+                authorityDataCache.put(url.trim(), record);
+                if (authorityDataCache.size() > Configuration.getInstance().getAuthorityDataCacheSizeWarningThreshold()) {
+                    logger.warn("Authority data cache size: {}, please restart indexer to clear.", authorityDataCache.size());
+                }
+            }
         }
 
         return parseAuthorityMetadata(record.getNormDataList(), sbDefaultMetadataValues, sbNormDataTerms, addToDefaultFields,

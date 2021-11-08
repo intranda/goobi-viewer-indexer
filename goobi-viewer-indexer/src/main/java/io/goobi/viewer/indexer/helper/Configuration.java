@@ -412,6 +412,24 @@ public final class Configuration {
     public boolean isCountHotfolderFiles() {
         return getBoolean("performance.countHotfolderFiles", true);
     }
+    
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public boolean isAuthorityDataCacheEnabled() {
+        return getBoolean("performance.authorityDataCache[@enabled]", true);
+    }
+    
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public int getAuthorityDataCacheSizeWarningThreshold() {
+        return getInt("performance.authorityDataCache.sizeWarningThreshold", 10000);
+    }
 
     /**
      * <p>

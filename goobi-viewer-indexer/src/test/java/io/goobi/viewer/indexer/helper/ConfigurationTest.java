@@ -250,4 +250,22 @@ public class ConfigurationTest extends AbstractTest {
     public void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
         Assert.assertFalse(Configuration.getInstance().isCountHotfolderFiles());
     }
+
+    /**
+     * @see Configuration#isAuthorityDataCacheEnabled()
+     * @verifies return correct value
+     */
+    @Test
+    public void isAuthorityDataCacheEnabled_shouldReturnCorrectValue() throws Exception {
+        Assert.assertFalse(Configuration.getInstance().isAuthorityDataCacheEnabled());
+    }
+
+    /**
+     * @see Configuration#getAuthorityDataCacheSizeWarningThreshold()
+     * @verifies return correct value
+     */
+    @Test
+    public void getAuthorityDataCacheSizeWarningThreshold_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals(100, Configuration.getInstance().getAuthorityDataCacheSizeWarningThreshold());
+    }
 }

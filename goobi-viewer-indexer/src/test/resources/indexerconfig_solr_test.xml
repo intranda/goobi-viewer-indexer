@@ -130,6 +130,12 @@
 	    <!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
 	        Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
 	   <countHotfolderFiles>false</countHotfolderFiles>
+       
+        <!-- authorityDataCache/@enabled: If true, previously retrieved authority data records will be cached within the application
+            for the duration of its lifetime. Default is true. -->
+            <authorityDataCache enabled="false">
+                <sizeWarningThreshold>100</sizeWarningThreshold>
+            </authorityDataCache>
     </performance>
     
     <!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
