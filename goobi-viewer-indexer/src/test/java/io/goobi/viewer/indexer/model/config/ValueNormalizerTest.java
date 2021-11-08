@@ -125,9 +125,11 @@ public class ValueNormalizerTest extends AbstractTest {
      */
     @Test
     public void normalize_shouldConvertRomanNumeralsCorrectly() throws Exception {
-        ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("foo ([C|I|M|V|X]+)[ ].*$").setConvertRoman(true);
+        ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("foo ([C|I|M|V|X]+)(?:|.| f.| ff.| i.| ii.).*$").setConvertRoman(true);
         Assert.assertEquals("foo 1 f.17", vn.normalize("foo I f.17"));
+        Assert.assertEquals("foo 6 f.17.1", vn.normalize("foo VI f.17.1"));
         Assert.assertEquals("foo 8 f.1", vn.normalize("foo VIII f.1"));
+        Assert.assertEquals("foo 19", vn.normalize("foo XIX"));
     }
 
     /**
