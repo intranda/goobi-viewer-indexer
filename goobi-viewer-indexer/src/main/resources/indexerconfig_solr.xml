@@ -125,29 +125,33 @@
 
 
 	<!-- TODO add to manual -->
-	<performance>
-	        <!-- If the METS file size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 10485760 bytes) -->
-	        <metsFileSizeThreshold>10485760</metsFileSizeThreshold>
+    <performance>
+	    <!-- If the METS file size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 10485760 bytes) -->
+	    <metsFileSizeThreshold>10485760</metsFileSizeThreshold>
 
-	        <!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
-	        <dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
+        <!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
+        <dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
 
-	        <!-- If true, an optimize query will be sent to Solr after every indexed object. -->
-	        <autoOptimize>false</autoOptimize>
+        <!-- If true, an optimize query will be sent to Solr after every indexed object. -->
+        <autoOptimize>false</autoOptimize>
 
-	        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
-	        <threads>4</threads>
+        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
+        <threads>4</threads>
 	        
-	        <!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
-	            Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
-	        <countHotfolderFiles>true</countHotfolderFiles>
+        <!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
+            Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
+        <countHotfolderFiles>true</countHotfolderFiles>
             
-            <!-- authorityDataCache/@enabled: If true, previously retrieved authority data records will be cached within the application
-                for the duration of its lifetime. Default is true. -->
-            <authorityDataCache enabled="true">
-                <sizeWarningThreshold>1000</sizeWarningThreshold>
-            </authorityDataCache>
-	</performance>
+        <!-- authorityDataCache/@enabled: If true, previously retrieved authority data records will be cached within the application
+            for the duration of its lifetime. Default is true. -->
+        <authorityDataCache enabled="true">
+            <!-- Number of hours a record cached record can be used since its retrieval before expiring. Default is 24. -->
+            <recordTTL>24</recordTTL>
+            <!-- Maximum number of records a cache can hold. If the number is exceeded, new records can still be added, but a warning will be logged.
+                Default is 1000. -->
+            <sizeWarningThreshold>1000</sizeWarningThreshold>
+        </authorityDataCache>
+    </performance>
 
 
 

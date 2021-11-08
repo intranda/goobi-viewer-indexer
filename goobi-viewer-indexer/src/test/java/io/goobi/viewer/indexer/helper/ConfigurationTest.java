@@ -268,4 +268,13 @@ public class ConfigurationTest extends AbstractTest {
     public void getAuthorityDataCacheSizeWarningThreshold_shouldReturnCorrectValue() throws Exception {
         Assert.assertEquals(100, Configuration.getInstance().getAuthorityDataCacheSizeWarningThreshold());
     }
+
+    /**
+     * @see Configuration#getAuthorityDataCacheRecordTTL()
+     * @verifies return correct value
+     */
+    @Test
+    public void getAuthorityDataCacheRecordTTL_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals(12, Configuration.getInstance().getAuthorityDataCacheRecordTTL());
+    }
 }

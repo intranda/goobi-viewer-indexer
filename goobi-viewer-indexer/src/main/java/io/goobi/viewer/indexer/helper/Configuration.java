@@ -427,6 +427,15 @@ public final class Configuration {
      * @return
      * @should return correct value
      */
+    public int getAuthorityDataCacheRecordTTL() {
+        return getInt("performance.authorityDataCache.recordTTL", 24);
+    }
+    
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
     public int getAuthorityDataCacheSizeWarningThreshold() {
         return getInt("performance.authorityDataCache.sizeWarningThreshold", 10000);
     }
