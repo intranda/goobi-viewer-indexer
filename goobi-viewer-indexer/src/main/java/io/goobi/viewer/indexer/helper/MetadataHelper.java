@@ -1092,7 +1092,7 @@ public class MetadataHelper {
             }
         }
 
-        // Add SORT_DISPLAYFORM so that there is a single-valued field by which to group metadata search hits
+        // Add single-valued field by which to group metadata search hits
         if (mdValue != null) {
             addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValue).toString(), "", null, null,
                     ret.getFields());

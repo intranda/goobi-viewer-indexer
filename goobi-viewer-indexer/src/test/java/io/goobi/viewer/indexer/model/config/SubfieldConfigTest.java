@@ -26,10 +26,10 @@ public class SubfieldConfigTest {
      */
     @Test
     public void ingestXpaths_shouldCopyXpathExpressionsCorrectly() throws Exception {
-        SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true);
+        SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true, false);
         config1.getXpaths().add("foo:foo");
 
-        SubfieldConfig config2 = new SubfieldConfig("MD_FOO", true);
+        SubfieldConfig config2 = new SubfieldConfig("MD_FOO", true, false);
         config2.getXpaths().add("foo:bar");
 
         Assert.assertEquals(1, config1.getXpaths().size());
@@ -45,10 +45,10 @@ public class SubfieldConfigTest {
      */
     @Test
     public void ingestXpaths_shouldCopyDefaultValuesCorrectly() throws Exception {
-        SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true);
+        SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true, false);
         config1.getDefaultValues().put("foo:foo", "foo");
 
-        SubfieldConfig config2 = new SubfieldConfig("MD_FOO", true);
+        SubfieldConfig config2 = new SubfieldConfig("MD_FOO", true, false);
         config2.getDefaultValues().put("foo:bar", "bar");
 
         Assert.assertEquals(1, config1.getDefaultValues().size());

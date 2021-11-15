@@ -346,6 +346,7 @@ public final class MetadataConfigurationManager {
         String fieldName = sub.getString("[@name]", null);
         String defaultValue = sub.getString("[@defaultValue]", null);
         boolean multivalued = sub.getBoolean("[@multivalued]", true);
+        boolean addSortField = sub.getBoolean("[@addSortField]", false);
         String xpathExp = sub.getString("[@xpath]");
         if (xpathExp == null) {
             xpathExp = sub.getString("");
@@ -354,7 +355,7 @@ public final class MetadataConfigurationManager {
             return null;
         }
 
-        SubfieldConfig ret = new SubfieldConfig(fieldName, multivalued);
+        SubfieldConfig ret = new SubfieldConfig(fieldName, multivalued, addSortField);
         ret.getXpaths().add(xpathExp);
         ret.getDefaultValues().put(xpathExp, defaultValue);
         logger.debug("Loaded group entity field: {} - {}", fieldName, xpathExp);

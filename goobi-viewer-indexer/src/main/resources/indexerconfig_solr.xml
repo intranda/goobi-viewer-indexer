@@ -3080,7 +3080,7 @@
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
                     <groupEntity type="LOCATION" addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
-                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_VALUE" addSortField="true">text()</field>
                         <field name="MD_DISPLAYFORM">text()</field>
                         <field name="NORM_URI">@valueURI</field>
                         <field name="NORM_IDENTIFIER_GEONAMES">substring-after(@valueURI, 'http://www.geonames.org/')</field>
