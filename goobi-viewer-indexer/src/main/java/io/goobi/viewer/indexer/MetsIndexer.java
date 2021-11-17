@@ -787,6 +787,10 @@ public class MetsIndexer extends Indexer {
         // Get all physical elements
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
+        if (eleStructMapPhysicalList.isEmpty()) {
+            logger.info("No pages found.");
+            return;
+        }
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         if (Configuration.getInstance().getThreads() > 1) {
@@ -1096,7 +1100,9 @@ public class MetsIndexer extends Indexer {
                             && !filePath.startsWith(viewerUrl)) {
                         logger.info("Downloading file: {}", filePath);
                         try {
-                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName)).getFileName().toString();
+                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName))
+                                    .getFileName()
+                                    .toString();
                         } catch (IOException | URISyntaxException e) {
                             logger.warn("Could not download file: {}", filePath);
                         }
