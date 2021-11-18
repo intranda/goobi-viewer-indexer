@@ -1030,7 +1030,6 @@ public abstract class Indexer {
         int count = 0;
         List<LuceneField> fieldsToAdd = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
         fieldsToAdd.addAll(gmd.getFields());
-        logger.info("authority to docstrct:"  + gmd.isAddAuthorityDataToDocstruct());
         if (gmd.isAddAuthorityDataToDocstruct() || gmd.isAddCoordsToDocstruct()) {;
             // Add authority data to docstruct doc instead of grouped metadata
             for (LuceneField field : gmd.getAuthorityDataFields()) {
