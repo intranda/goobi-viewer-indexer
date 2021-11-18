@@ -288,8 +288,8 @@ public final class MetadataConfigurationManager {
         String name = config.getString("[@name]");
         String url = config.getString("[@url]");
         String xpath = config.getString("[@xpath]");
-        boolean addAuthorityDataToDocstruct = config.getBoolean("@addAuthorityDataToDocstruct", false);
-        boolean addCoordsToDocstruct = config.getBoolean("@addCoordsToDocstruct", false);
+        boolean addAuthorityDataToDocstruct = config.getBoolean("[@addAuthorityDataToDocstruct]", false);
+        boolean addCoordsToDocstruct = config.getBoolean("[@addCoordsToDocstruct]", false);
         GroupEntity ret = new GroupEntity(name, type)
                 .setUrl(url)
                 .setXpath(xpath)

@@ -62,7 +62,7 @@ public class ConfigurationTest extends AbstractTest {
     @Test
     public void configItemTest() throws Exception {
         List<String> fieldNames = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
-        Assert.assertEquals(121, fieldNames.size());
+        Assert.assertEquals(122, fieldNames.size());
         List<FieldConfig> fieldConfigList =
                 Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(fieldConfigList);
@@ -128,7 +128,7 @@ public class ConfigurationTest extends AbstractTest {
 
     @Test
     public void metadataConfigTest() throws Exception {
-        Assert.assertEquals(121, Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames().size());
+        Assert.assertEquals(122, Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames().size());
         List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(configItems);
         Assert.assertEquals(1, configItems.size());

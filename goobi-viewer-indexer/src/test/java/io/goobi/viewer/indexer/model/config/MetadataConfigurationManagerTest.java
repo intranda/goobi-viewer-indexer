@@ -80,4 +80,44 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
         Assert.assertEquals("intranda:actor[intranda:role='Künstler/-in']", child.getXpath());
         Assert.assertEquals(8, child.getSubfields().size());
     }
+
+    /**
+     * @see MetadataConfigurationManager#readGroupEntity(HierarchicalConfiguration)
+     * @verifies read group entity correctly
+     */
+    @Test
+    public void readGroupEntity_shouldReadGroupEntityCorrectly() throws Exception {
+        List<FieldConfig> configItems =
+                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_ACCESSLOCATIONS");
+        Assert.assertNotNull(configItems);
+        Assert.assertEquals(1, configItems.size());
+        FieldConfig fieldConfig = configItems.get(0);
+        Assert.assertTrue(fieldConfig.isGroupEntity());
+        Assert.assertEquals(4, fieldConfig.getGroupEntity().getSubfields().size());
+        Assert.assertTrue(fieldConfig.getGroupEntity().isAddAuthorityDataToDocstruct());
+        Assert.assertTrue(fieldConfig.getGroupEntity().isAddCoordsToDocstruct());
+    }
+
+    /**
+     * @see MetadataConfigurationManager#readGroupEntity(HierarchicalConfiguration)
+     * @verifies recursively read child group entities
+     */
+    @Test
+    public void readGroupEntity_shouldRecursivelyReadChildGroupEntities() throws Exception {
+        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
+        Assert.assertNotNull(configItems);
+        Assert.assertEquals(1, configItems.size());
+        FieldConfig fieldConfig = configItems.get(0);
+        Assert.assertTrue(fieldConfig.isGroupEntity());
+
+        Assert.assertNotNull(fieldConfig.getGroupEntity());
+        Assert.assertEquals(3, fieldConfig.getGroupEntity().getSubfields().size());
+
+        Assert.assertEquals(3, fieldConfig.getGroupEntity().getChildren().size());
+        GroupEntity child = fieldConfig.getGroupEntity().getChildren().get(0);
+        Assert.assertEquals("MD_ARTIST", child.getName());
+        Assert.assertEquals(MetadataGroupType.PERSON, child.getType());
+        Assert.assertEquals("intranda:actor[intranda:role='Künstler/-in']", child.getXpath());
+        Assert.assertEquals(8, child.getSubfields().size());
+    }
 }
