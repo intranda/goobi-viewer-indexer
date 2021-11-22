@@ -43,11 +43,11 @@ case $CONFIGSOURCE in
   *)
     echo "Keeping configuration"
     # set solrUrl and viewerUrl from environment variables (defaults are given in Dockerfile)
-    [ -w /opt/digiverso/indexer/solr_indexerconfig.xml ] && sed -e "s|<solrUrl>.*</solrUrl>|<solrUrl>${SOLR_URL}</solrUrl>|" -e "s|<viewerUrl>.*</viewerUrl>|<viewerUrl>${VIEWER_URL}</viewerUrl>|" -i /opt/digiverso/indexer/solr_indexerconfig.xml || echo "Did not modify indexer configuration from environment."
+    [ -w /opt/digiverso/indexer/config_indexer.xml ] && sed -e "s|<solrUrl>.*</solrUrl>|<solrUrl>${SOLR_URL}</solrUrl>|" -e "s|<viewerUrl>.*</viewerUrl>|<viewerUrl>${VIEWER_URL}</viewerUrl>|" -i /opt/digiverso/indexer/config_indexer.xml || echo "Did not modify indexer configuration from environment."
 
     ;;
 esac
 
 
 echo "Starting application"
-exec java -Dlog4j.configurationFile=/log4j2.xml -jar /usr/local/bin/solrIndexer.jar /opt/digiverso/indexer/solr_indexerconfig.xml
+exec java -Dlog4j.configurationFile=/log4j2.xml -jar /usr/local/bin/solrIndexer.jar /opt/digiverso/indexer/config_indexer.xml
