@@ -51,7 +51,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
         
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
 
         denkxwebFile = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(denkxwebFile.isFile());

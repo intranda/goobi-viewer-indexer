@@ -26,7 +26,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
  */
 public abstract class AbstractTest {
 
-    public static final String TEST_CONFIG_PATH = new File("src/test/resources/indexerconfig_solr_test.xml").getAbsolutePath();
+    public static final String TEST_CONFIG_PATH = new File("src/test/resources/config_indexer.test.xml").getAbsolutePath();
     public static final String TEST_LOG_CONFIG_PATH = new File("src/test/resources/log4j2.test.xml").getAbsolutePath();
 
     @BeforeClass

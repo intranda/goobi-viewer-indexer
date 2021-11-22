@@ -54,7 +54,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     @Before
     public void setUp() throws Exception {
-        String solrUrl = Configuration.getInstance("indexerconfig_solr_test.xml").getConfiguration("solrUrl");
+        String solrUrl = Configuration.getInstance("config_indexer.test.xml").getConfiguration("solrUrl");
 
         // Only allow localhost and default indexer test URL to avoid erasing production indexes
         Assert.assertTrue("Only default or localhost Solr URLs are allowed for testing.",

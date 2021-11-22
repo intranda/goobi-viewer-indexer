@@ -48,7 +48,7 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
     }
 
     /**
