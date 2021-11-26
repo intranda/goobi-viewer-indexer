@@ -311,8 +311,8 @@ public class DenkXwebIndexer extends Indexer {
         String filePathBanner = null;
         boolean thumbnailSet = false;
         for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
 
@@ -426,8 +426,8 @@ public class DenkXwebIndexer extends Indexer {
         if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pageDocs.isEmpty()) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
-            String pageFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String pageFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
             // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
@@ -440,8 +440,8 @@ public class DenkXwebIndexer extends Indexer {
 
         // Add thumbnail information from the first page
         if (StringUtils.isEmpty(filePathBanner)) {
-            String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
@@ -679,7 +679,7 @@ public class DenkXwebIndexer extends Indexer {
                     }
                 } else {
                     // Add external image URL
-                    doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", url);
+                    doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, url);
 
                     // Representative image (external)
                     if ("true".equals(eleImage.getAttributeValue("preferred"))) {

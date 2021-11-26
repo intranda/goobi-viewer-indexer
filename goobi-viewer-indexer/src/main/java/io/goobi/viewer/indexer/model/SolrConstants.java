@@ -226,6 +226,8 @@ public final class SolrConstants {
     public static final String SORT_ = "SORT_";
     /** Constant <code>SORTNUM_="SORTNUM_"</code> */
     public static final String SORTNUM_ = "SORTNUM_";
+    /** Constant <code>_HTML_SANDBOXED="_HTML-SANDBOXED"</code> */
+    public static final String _HTML_SANDBOXED = "_HTML-SANDBOXED";
     /** Constant <code>_LANG_="_LANG_"</code> */
     public static final String _LANG_ = "_LANG_";
     /** Constant <code>_NOESCAPE="_NOESCAPE"</code> */

@@ -392,8 +392,8 @@ public class DublinCoreIndexer extends Indexer {
 
         // If this is a top struct element, look for a representative image
         for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
 

@@ -149,8 +149,8 @@ public class DocUpdateIndexer extends Indexer {
                     groupIds.put(fieldName, (String) doc.getFieldValue(fieldName));
                 }
             }
-            String pageFileName = doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")
-                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) doc.getFieldValue(SolrConstants.FILENAME);
+            String pageFileName = doc.containsKey(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
+                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
                 ret[1] = "Document " + iddoc + " contains no " + SolrConstants.FILENAME + " field, please checks the index.";
                 return ret;

@@ -573,8 +573,6 @@ public class MetsIndexer extends Indexer {
         SolrInputDocument firstPageDoc = !pageDocs.isEmpty() ? pageDocs.get(0) : null;
         if (StringUtils.isEmpty(filePathBanner) && firstPageDoc != null) {
             // Add thumbnail information from the first page
-            //                String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) firstPageDoc
-            //                        .getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             if ("SHAPE".equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
@@ -587,8 +585,6 @@ public class MetsIndexer extends Indexer {
             thumbnailSet = true;
         }
         for (SolrInputDocument pageDoc : pageDocs) {
-            //                String pageFileName = pageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) pageDoc.getFieldValue(
-            //                        SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileName = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
             // Add thumbnail information from the representative page
@@ -1127,8 +1123,8 @@ public class MetsIndexer extends Indexer {
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
                     if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup)
-                            && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
-                        doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
+                            && !doc.containsKey(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)) {
+                        doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, filePath);
                     }
                 } else {
                     if (doc.containsKey(SolrConstants.FILENAME)) {
