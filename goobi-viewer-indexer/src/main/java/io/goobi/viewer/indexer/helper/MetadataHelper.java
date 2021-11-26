@@ -1112,12 +1112,11 @@ public class MetadataHelper {
                 String authorityURI = ele.getAttributeValue("authorityURI");
                 String valueURI = ele.getAttributeValue("valueURI");
                 switch (authority) {
-                    case "gnd":
+                    default:
                         // Skip missing GND identifiers
                         if ("https://d-nb.info/gnd/".equals(valueURI) || "http://d-nb.info/gnd/".equals(valueURI)) {
                             break;
                         }
-                    default:
                         if (StringUtils.isNotEmpty(valueURI)) {
                             valueURI = valueURI.trim();
                             if (StringUtils.isNotEmpty(authorityURI) && !valueURI.startsWith(authorityURI)) {
