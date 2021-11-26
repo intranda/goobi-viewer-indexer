@@ -753,7 +753,7 @@ public class Utils {
                 if ("SORT_".equals(prefix)) {
                     return "SORTNUM_" + fieldName;
                 }
-                return prefix + fieldName;
+                return fieldName;
             default:
                 if (StringUtils.isNotEmpty(prefix)) {
                     if (fieldName.startsWith("MD_")) {
