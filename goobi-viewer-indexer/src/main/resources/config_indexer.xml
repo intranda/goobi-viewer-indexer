@@ -463,7 +463,6 @@
 					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:titleInfo/mods:title</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
-					<sortFieldIgnoreLeadingChars>.[]</sortFieldIgnoreLeadingChars>
 				</item>
 			</list>
 	    </MD_TITLE_SERIES>
@@ -472,8 +471,8 @@
             <list>
                 <item>
                     <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:titleInfo/mods:title</xpath>
-                    <addToDefault>true</addToDefault>
-                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
                     <replace regex="[¬]\w+[ ]"></replace>
                     <replace regex="&lt;ns&gt;\w+&lt;/ns&gt;"></replace>
                 </item>
