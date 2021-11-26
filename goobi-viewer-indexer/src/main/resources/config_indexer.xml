@@ -467,6 +467,18 @@
 				</item>
 			</list>
 	    </MD_TITLE_SERIES>
+        
+        <SORT_TITLE_SERIES>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:titleInfo/mods:title</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                    <replace regex="[¬]\w+[ ]"></replace>
+                    <replace regex="&lt;ns&gt;\w+&lt;/ns&gt;"></replace>
+                </item>
+            </list>
+        </SORT_TITLE_SERIES>
 
 		<!-- This field is important, see chapter 3.13 of the manual -->
 		<MD_TITLE>
