@@ -383,8 +383,16 @@ public class RomanNumeral extends Number {
      * @return <code>true</code> if the parameter has a value equal to the RomanNumeral object, <code>false</code> if the values of the two
      *         RomanNumerals are not equal.
      **************************************************************************/
-    public boolean equals(RomanNumeral rn) {
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+        if (!(o instanceof RomanNumeral)) {
+            return false;
+        }
 
+        RomanNumeral rn = (RomanNumeral) o;
         if (rn.intValue() == this.intValue) {
             return true;
         }

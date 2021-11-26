@@ -787,7 +787,8 @@ public class MetsIndexer extends Indexer {
      * @should maintain page order after parallel processing
      */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
-            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages) throws FatalIndexerException {
+            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
+            throws InterruptedException, FatalIndexerException {
         // Get all physical elements
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
@@ -815,7 +816,7 @@ public class MetsIndexer extends Indexer {
                         logger.error("Should be exiting here now...");
                     }
                 })).get();
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (ExecutionException e) {
                 logger.error(e.getMessage(), e);
                 SolrIndexerDaemon.getInstance().stop();
             }
