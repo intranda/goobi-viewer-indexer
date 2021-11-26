@@ -1483,7 +1483,8 @@ public class MetsIndexer extends Indexer {
                 if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
                     try {
                         if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) instanceof Integer) {
-                            num = Long.valueOf((int) doc.getFieldValue(SolrConstants.CURRENTNOSORT));
+                            // Compatibility mode with old indexes
+                            num = (int) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
                         } else {
                             num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
                         }
