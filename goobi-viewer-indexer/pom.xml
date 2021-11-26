@@ -36,7 +36,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.5.5</alto.version>
 		<iiif-api-model.version>2.0.0</iiif-api-model.version>
-		<normdataimporter.version>1.8.0</normdataimporter.version>
+		<normdataimporter.version>1.9.0-SNAPSHOT</normdataimporter.version>
 
 		<!-- other libraries -->
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -61,7 +61,7 @@
 		<json.version>20210307</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.16.0</metadata-extractor.version>
-		<solr.version>8.10.1</solr.version>
+		<solr.version>8.11.0</solr.version>
 		<slf4j.version>1.7.32</slf4j.version>
 	</properties>
 

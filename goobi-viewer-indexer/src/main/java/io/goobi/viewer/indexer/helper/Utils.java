@@ -74,6 +74,7 @@ import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
+import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**
  * <p>
@@ -707,5 +708,73 @@ public class Utils {
         sbOrder.append(count);
 
         return Integer.valueOf(sbOrder.toString());
+    }
+    
+    /**
+     * <p>
+     * sortifyField.
+     * </p>
+     *
+     * @param fieldName a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     * @should sortify correctly
+     */
+    public static String sortifyField(String fieldName) {
+        return adaptField(fieldName, "SORT_");
+    }
+
+    /**
+     * 
+     * @param fieldName
+     * @param prefix
+     * @return modified field name
+     * @should apply prefix correctly
+     * @should not apply prefix to regular fields if empty
+     * @should not apply facet prefix to calendar fields
+     * @should remove untokenized correctly
+     */
+    static String adaptField(String fieldName, String prefix) {
+        if (fieldName == null) {
+            return null;
+        }
+        if (prefix == null) {
+            prefix = "";
+        }
+
+        switch (fieldName) {
+            case SolrConstants.DC:
+            case SolrConstants.DOCSTRCT:
+            case SolrConstants.DOCSTRCT_SUB:
+            case SolrConstants.DOCSTRCT_TOP:
+                return prefix + fieldName;
+            case SolrConstants.YEAR:
+            case SolrConstants.YEARMONTH:
+            case SolrConstants.YEARMONTHDAY:
+                if ("SORT_".equals(prefix)) {
+                    return "SORTNUM_" + fieldName;
+                }
+            default:
+                if (StringUtils.isNotEmpty(prefix)) {
+                    if (fieldName.startsWith("MD_")) {
+                        fieldName = fieldName.replace("MD_", prefix);
+                    } else if (fieldName.startsWith("MD2_")) {
+                        fieldName = fieldName.replace("MD2_", prefix);
+                    } else if (fieldName.startsWith("MDNUM_")) {
+                        if ("SORT_".equals(prefix)) {
+                            fieldName = fieldName.replace("MDNUM_", "SORTNUM_");
+                        } else {
+                            fieldName = fieldName.replace("MDNUM_", prefix);
+                        }
+                    } else if (fieldName.startsWith("NE_")) {
+                        fieldName = fieldName.replace("NE_", prefix);
+                    } else if (fieldName.startsWith("BOOL_")) {
+                        fieldName = fieldName.replace("BOOL_", prefix);
+                    } else if (fieldName.startsWith("SORT_")) {
+                        fieldName = fieldName.replace("SORT_", prefix);
+                    }
+                }
+                fieldName = fieldName.replace(SolrConstants._UNTOKENIZED, "");
+                return fieldName;
+        }
     }
 }

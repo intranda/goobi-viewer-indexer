@@ -27,6 +27,7 @@ public class SubfieldConfig {
 
     private final String fieldname;
     private final boolean multivalued;
+    private final boolean addSortField;
     private final List<String> xpaths = new ArrayList<>();
     private final Map<String, String> defaultValues = new HashMap<>();
 
@@ -37,9 +38,10 @@ public class SubfieldConfig {
      *
      * @return the xpaths
      */
-    public SubfieldConfig(String fieldname, boolean multivalued) {
+    public SubfieldConfig(String fieldname, boolean multivalued, boolean addSortField) {
         this.fieldname = fieldname;
         this.multivalued = multivalued;
+        this.addSortField = addSortField;
     }
 
     /**
@@ -80,6 +82,13 @@ public class SubfieldConfig {
      */
     public boolean isMultivalued() {
         return multivalued;
+    }
+
+    /**
+     * @return the addSortField
+     */
+    public boolean isAddSortField() {
+        return addSortField;
     }
 
     /**

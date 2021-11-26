@@ -287,11 +287,15 @@ public class DublinCoreIndexer extends Indexer {
                 String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
                 Map<String, String> moreMetadata = new HashMap<>();
                 String titleField = "MD_TITLE_" + groupSuffix;
+                String sortTitleField = "SORT_TITLE_" + groupSuffix;
                 for (LuceneField field : indexObj.getLuceneFields()) {
                     if (titleField.equals(field.getField())) {
                         // Add title/label
                         moreMetadata.put(SolrConstants.LABEL, field.getValue());
                         moreMetadata.put("MD_TITLE", field.getValue());
+                    } else if (sortTitleField.equals(field.getField())) {
+                        // Add title/label
+                        moreMetadata.put("SORT_TITLE", field.getValue());
                     } else if (field.getField().endsWith(groupSuffix)
                             && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
                         // Add any MD_*_GROUPSUFFIX field to the group doc

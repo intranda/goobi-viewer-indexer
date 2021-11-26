@@ -308,7 +308,7 @@ public class JDomXPTest extends AbstractTest {
      */
     @Test
     public void readXmlFile_shouldBuildDocumentCorrectly() throws Exception {
-        Document doc = JDomXP.readXmlFile("src/test/resources/indexerconfig_solr_test.xml");
+        Document doc = JDomXP.readXmlFile(TEST_CONFIG_PATH);
         Assert.assertNotNull(doc);
         Assert.assertNotNull(doc.getRootElement());
     }

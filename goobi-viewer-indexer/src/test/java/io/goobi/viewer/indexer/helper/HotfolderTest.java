@@ -32,7 +32,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void countRecordFiles_shouldCountFilesCorrectly() throws Exception {
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
         Configuration.getInstance().overrideValue("performance.countHotfolderFiles", true);
         Assert.assertTrue(Configuration.getInstance().isCountHotfolderFiles());
         

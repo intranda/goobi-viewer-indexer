@@ -590,7 +590,7 @@ public final class SolrSearchIndex {
             if (solrClient == null) {
                 return null;
             }
-            
+
             HttpClient client = solrClient.getHttpClient();
             HttpGet httpGet = new HttpGet(url);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -645,13 +645,11 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>
-     * checkAndCreateGroupDoc.
-     * </p>
+     * Creates a Solr document representing a record group (series/convolute/etc.).
      *
      * @param groupIdField Field name of the group identifier.
      * @param groupId Field value of the group identifier.
-     * @param metadata Map with additional metadat fields to add to the group document.
+     * @param metadata Map with additional metadata fields to add to the group document.
      * @param iddoc IDDOC for the new document.
      * @return Group SolrInputDocument, if created.
      * @should create new document with all values if none exists

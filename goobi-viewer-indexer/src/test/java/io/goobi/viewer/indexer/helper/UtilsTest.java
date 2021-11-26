@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.Indexer;
+import io.goobi.viewer.indexer.model.SolrConstants;
 
 public class UtilsTest extends AbstractTest {
 
@@ -127,5 +128,61 @@ public class UtilsTest extends AbstractTest {
         Assert.assertTrue(Utils.isFileNameMatchesRegex("foo/bar/default.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
         Assert.assertTrue(Utils.isFileNameMatchesRegex("foo/bar/color.png", Indexer.IIIF_IMAGE_FILE_NAMES));
         Assert.assertFalse(Utils.isFileNameMatchesRegex("foo/bar/other.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
+    }
+
+    /**
+     * @see Utils#adaptField(String,String)
+     * @verifies apply prefix correctly
+     */
+    @Test
+    public void adaptField_shouldApplyPrefixCorrectly() throws Exception {
+        Assert.assertEquals("SORT_DC", Utils.adaptField(SolrConstants.DC, "SORT_"));
+        Assert.assertEquals("SORT_FOO", Utils.adaptField("MD_FOO", "SORT_"));
+        Assert.assertEquals("SORT_FOO", Utils.adaptField("MD2_FOO", "SORT_"));
+        Assert.assertEquals("SORTNUM_FOO", Utils.adaptField("MDNUM_FOO", "SORT_"));
+        Assert.assertEquals("SORT_FOO", Utils.adaptField("NE_FOO", "SORT_"));
+        Assert.assertEquals("SORT_FOO", Utils.adaptField("BOOL_FOO", "SORT_"));
+    }
+
+    /**
+     * @see Utils#adaptField(String,String)
+     * @verifies not apply prefix to regular fields if empty
+     */
+    @Test
+    public void adaptField_shouldNotApplyPrefixToRegularFieldsIfEmpty() throws Exception {
+        Assert.assertEquals("MD_FOO", Utils.adaptField("MD_FOO", ""));
+    }
+
+    /**
+     * @see Utils#adaptField(String,String)
+     * @verifies remove untokenized correctly
+     */
+    @Test
+    public void adaptField_shouldRemoveUntokenizedCorrectly() throws Exception {
+        Assert.assertEquals("SORT_FOO", Utils.adaptField("MD_FOO_UNTOKENIZED", "SORT_"));
+    }
+
+    /**
+     * @see Utils#adaptField(String,String)
+     * @verifies not apply facet prefix to calendar fields
+     */
+    @Test
+    public void adaptField_shouldNotApplyFacetPrefixToCalendarFields() throws Exception {
+        Assert.assertEquals(SolrConstants.YEAR, Utils.adaptField(SolrConstants.YEAR, "FACET_"));
+        Assert.assertEquals(SolrConstants.YEARMONTH, Utils.adaptField(SolrConstants.YEARMONTH, "FACET_"));
+        Assert.assertEquals(SolrConstants.YEARMONTHDAY, Utils.adaptField(SolrConstants.YEARMONTHDAY, "FACET_"));
+    }
+
+    /**
+     * @see Utils#sortifyField(String)
+     * @verifies sortify correctly
+     */
+    @Test
+    public void sortifyField_shouldSortifyCorrectly() throws Exception {
+        Assert.assertEquals("SORT_DC", Utils.sortifyField(SolrConstants.DC));
+        Assert.assertEquals("SORT_DOCSTRCT", Utils.sortifyField(SolrConstants.DOCSTRCT));
+        Assert.assertEquals("SORT_TITLE", Utils.sortifyField("MD_TITLE_UNTOKENIZED"));
+        Assert.assertEquals("SORTNUM_YEAR", Utils.sortifyField(SolrConstants.YEAR));
+        Assert.assertEquals("SORTNUM_FOO", Utils.sortifyField("MDNUM_FOO"));
     }
 }

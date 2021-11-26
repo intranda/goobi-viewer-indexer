@@ -45,7 +45,7 @@ public final class SolrIndexerDaemon {
     private static final Object lock = new Object();
     private static volatile SolrIndexerDaemon instance = null;
 
-    private String confFilename = "indexerconfig_solr.xml";
+    private String confFilename = "config_indexer.xml";
     private int sleepInterval = 1000;
     private volatile boolean running = false;
 

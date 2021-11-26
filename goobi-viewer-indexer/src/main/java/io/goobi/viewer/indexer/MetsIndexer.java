@@ -413,11 +413,15 @@ public class MetsIndexer extends Indexer {
                 String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
                 Map<String, String> moreMetadata = new HashMap<>();
                 String titleField = "MD_TITLE_" + groupSuffix;
+                String sortTitleField = "SORT_TITLE_" + groupSuffix;
                 for (LuceneField field : indexObj.getLuceneFields()) {
                     if (titleField.equals(field.getField())) {
                         // Add title/label
                         moreMetadata.put(SolrConstants.LABEL, field.getValue());
                         moreMetadata.put("MD_TITLE", field.getValue());
+                    } else if (sortTitleField.equals(field.getField())) {
+                        // Add title/label
+                        moreMetadata.put("SORT_TITLE", field.getValue());
                     } else if (field.getField().endsWith(groupSuffix)
                             && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
                         // Add any MD_*_GROUPSUFFIX field to the group doc
@@ -787,6 +791,10 @@ public class MetsIndexer extends Indexer {
         // Get all physical elements
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
+        if (eleStructMapPhysicalList.isEmpty()) {
+            logger.info("No pages found.");
+            return;
+        }
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         if (Configuration.getInstance().getThreads() > 1) {
@@ -1096,7 +1104,9 @@ public class MetsIndexer extends Indexer {
                             && !filePath.startsWith(viewerUrl)) {
                         logger.info("Downloading file: {}", filePath);
                         try {
-                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName)).getFileName().toString();
+                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName))
+                                    .getFileName()
+                                    .toString();
                         } catch (IOException | URISyntaxException e) {
                             logger.warn("Could not download file: {}", filePath);
                         }

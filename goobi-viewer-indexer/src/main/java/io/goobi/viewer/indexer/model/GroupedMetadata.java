@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 
 /**
@@ -175,6 +176,11 @@ public class GroupedMetadata {
 
                     // Add value to this object
                     fields.add(new LuceneField(subfield.getFieldname(), fieldValue));
+
+                    // Add sorting field
+                    if (subfield.isAddSortField() && !subfield.getFieldname().startsWith(SolrConstants.SORT_) && values.indexOf(val) == 0) {
+                        fields.add(new LuceneField(Utils.sortifyField(subfield.getFieldname()), fieldValue));
+                    }
 
                     if (!collectedValues.containsKey(fieldValue)) {
                         collectedValues.put(subfield.getFieldname(), new ArrayList<>(values.size()));
