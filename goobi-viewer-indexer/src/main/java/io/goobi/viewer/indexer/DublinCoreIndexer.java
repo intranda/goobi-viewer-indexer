@@ -250,7 +250,7 @@ public class DublinCoreIndexer extends Indexer {
             generatePageUrns(indexObj);
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy, dataFolders);
+            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
@@ -358,12 +358,10 @@ public class DublinCoreIndexer extends Indexer {
      * 
      * @param indexObj
      * @param writeStrategy
-     * @param dataFolders
      * @return
      * @throws FatalIndexerException
      */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders) throws FatalIndexerException {
+    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
         List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             physIds.add(String.valueOf(i));
@@ -498,7 +496,6 @@ public class DublinCoreIndexer extends Indexer {
             if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
                 indexObj.setLastPageLabel(lastPageLabel);
             }
-            // logger.info(indexObj.getLogId() + ": " + indexObj.getFirstPageLabel() + " - " + indexObj.getLastPageLabel());
         }
 
         return ret;
@@ -593,7 +590,7 @@ public class DublinCoreIndexer extends Indexer {
                         mimetype = mimetype.substring(0, mimetype.indexOf("/"));
                     }
                 } catch (IOException e) {
-                    logger.warn("Cannot guess mime type from " + filename + ". using 'image'");
+                    logger.warn("Cannot determine mime type from '{}', using 'image'.", filename);
                 }
             }
 
@@ -630,8 +627,6 @@ public class DublinCoreIndexer extends Indexer {
         if (!doc.containsKey("MDNUM_FILESIZE")) {
             doc.addField("MDNUM_FILESIZE", -1);
         }
-
-        String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
 
         // Add image dimension values from EXIF
         if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
@@ -743,7 +738,6 @@ public class DublinCoreIndexer extends Indexer {
      */
     private static void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
         logger.trace("setSimpleData(IndexObject) - start");
-        Element structNode = indexObj.getRootStructNode();
 
         // LOGID
         indexObj.setLogId("LOD_0000");
@@ -783,7 +777,7 @@ public class DublinCoreIndexer extends Indexer {
         String query1 = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div/@CONTENTIDS";
         List<String> physUrnList = xp.evaluateToStringList(query1, null);
         if (physUrnList != null) {
-            StringBuffer sbPageUrns = new StringBuffer();
+            StringBuilder sbPageUrns = new StringBuilder();
             List<String> imageUrns = new ArrayList<>(physUrnList.size());
             for (String pageUrn : physUrnList) {
                 String urn = null;
@@ -793,11 +787,9 @@ public class DublinCoreIndexer extends Indexer {
                 if (StringUtils.isEmpty(urn)) {
                     urn = "NOURN";
                 }
-                //                indexObj.addToLucene(SolrConstants.IMAGEURN_OAI, urn);
                 sbPageUrns.append(urn).append(' ');
                 imageUrns.add(urn);
             }
-            //            indexObj.addToLucene(SolrConstants.PAGEURNS, sbPageUrns.toString());
             indexObj.setImageUrns(imageUrns);
         }
     }
@@ -830,7 +822,6 @@ public class DublinCoreIndexer extends Indexer {
     private boolean isAnchor() throws FatalIndexerException {
         String anchorQuery = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']";
         List<Element> anchorList = xp.evaluateToElements(anchorQuery, null);
-        // das habe ich selber hinzugefügt..
         if (anchorList == null || anchorList.isEmpty()) {
             return true;
         }

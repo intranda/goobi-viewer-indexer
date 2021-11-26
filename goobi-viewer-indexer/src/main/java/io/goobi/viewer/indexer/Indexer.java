@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
@@ -318,12 +319,9 @@ public abstract class Indexer {
             fields.add(new LuceneField(SolrConstants.URN, urn));
         }
         if (pageUrns != null) {
-            // StringBuilder sbPageUrns = new StringBuilder();
             for (String pageUrn : pageUrns) {
                 fields.add(new LuceneField(SolrConstants.IMAGEURN_OAI, pageUrn.replaceAll("[\\\\]", "")));
-                // sbPageUrns.append(imageUrn).append(' ');
             }
-            // fields.add(new LuceneField(SolrConstants.PAGEURNS, sbPageUrns.toString()));
         }
         fields.add(new LuceneField(SolrConstants.DATEDELETED, dateDeleted));
         fields.add(new LuceneField(SolrConstants.DATEUPDATED, dateUpdated));
@@ -437,23 +435,23 @@ public abstract class Indexer {
 
         Path file = Paths.get(dataFolder.toAbsolutePath().toString(), fileNameRoot + Indexer.XML_EXTENSION);
         if (!Files.isRegularFile(file)) {
-            logger.debug("'{}' does not exist or is not a file.", file.getFileName().toString());
+            logger.debug("'{}' does not exist or is not a file.", file.getFileName());
             return Collections.emptyList();
         }
 
         try (FileInputStream fis = new FileInputStream(file.toFile())) {
             Document xmlDoc = new SAXBuilder().build(fis);
             if (xmlDoc == null || xmlDoc.getRootElement() == null) {
-                logger.info("Invalid XML in file '{}'.", file.getFileName().toString());
+                logger.info("Invalid XML in file '{}'.", file.getFileName());
                 return Collections.emptyList();
             }
             List<SolrInputDocument> ret = new ArrayList<>();
             List<Element> eleContentList = xmlDoc.getRootElement().getChildren();
             if (eleContentList == null || eleContentList.isEmpty()) {
-                logger.info("No data found in file '{}'.", file.getFileName().toString());
+                logger.info("No data found in file '{}'.", file.getFileName());
                 return Collections.emptyList();
             }
-            logger.info("Found {} user generated contents in  file '{}'.", eleContentList.size(), file.getFileName().toString());
+            logger.info("Found {} user generated contents in  file '{}'.", eleContentList.size(), file.getFileName());
             for (Element eleContent : eleContentList) {
                 StringBuilder sbTerms = new StringBuilder();
                 SolrInputDocument doc = new SolrInputDocument();
@@ -475,8 +473,8 @@ public abstract class Indexer {
                 }
                 // Add GROUPID_* fields
                 if (groupIds != null && !groupIds.isEmpty()) {
-                    for (String fieldName : groupIds.keySet()) {
-                        doc.addField(fieldName, groupIds.get(fieldName));
+                    for (Entry<String, String> entry : groupIds.entrySet()) {
+                        doc.addField(entry.getKey(), entry.getValue());
                     }
                 }
                 List<Element> eleFieldList = eleContent.getChildren();
@@ -566,12 +564,6 @@ public abstract class Indexer {
                 }
                 ret.add(doc);
             }
-            // Add plaintext terms to a search field in the page doc
-            //                            if (StringUtils.isNotBlank(sbAllTerms.toString())) {
-            // pageDoc.addField(SolrConstants.UGCTERMS, sbAllTerms.toString());
-            // logger.info("Added search terms to page " + order + " :" + sbTerms.toString().trim());
-            //                            }
-
             return ret;
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
@@ -682,8 +674,8 @@ public abstract class Indexer {
             }
             // Add GROUPID_* fields
             if (groupIds != null && !groupIds.isEmpty()) {
-                for (String fieldName : groupIds.keySet()) {
-                    doc.addField(fieldName, groupIds.get(fieldName));
+                for (Entry<String, String> entry : groupIds.entrySet()) {
+                    doc.addField(entry.getKey(), entry.getValue());
                 }
             }
 
@@ -709,9 +701,9 @@ public abstract class Indexer {
                         //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
                 }
             } else if (annotation.getBody() != null) {
-                logger.warn("Cannot interpret annotation body of type " + annotation.getBody().getClass());
+                logger.warn("Cannot interpret annotation body of type '{}'.", annotation.getBody().getClass());
             } else {
-                logger.warn("Annotaton has no body:" + annotation.toString());
+                logger.warn("Annotaton has no body: {}", annotation.toString());
 
             }
             // Add annotation body as JSON, always!
@@ -742,6 +734,7 @@ public abstract class Indexer {
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
+
         return null;
     }
 
@@ -829,6 +822,15 @@ public abstract class Indexer {
             return Optional.empty();
         }
         logger.debug("Found image file {}", imageFile.getAbsolutePath());
+        return readDimension(imageFile);
+    }
+
+    /**
+     * 
+     * @param imageFile
+     * @return
+     */
+    static Optional<Dimension> readDimension(File imageFile) {
         Dimension imageSize = new Dimension(0, 0);
         try {
             Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
@@ -839,16 +841,19 @@ public abstract class Indexer {
                 imageSize.width = Integer.valueOf(pngDirectory.getDescription(1).replaceAll("\\D", ""));
                 imageSize.height = Integer.valueOf(pngDirectory.getDescription(2).replaceAll("\\D", ""));
             } catch (NullPointerException e) {
+                //
             }
             try {
                 imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
                 imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
             } catch (NullPointerException e) {
+                //
             }
             try {
                 imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
                 imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
             } catch (NullPointerException e) {
+                //
             }
 
             if (imageSize.getHeight() * imageSize.getHeight() > 0) {
@@ -866,10 +871,10 @@ public abstract class Indexer {
                         return Optional.of(new Dimension(image.getWidth(), image.getHeight()));
                     }
                 } catch (NullPointerException | IOException e1) {
-                    logger.error("Unable to read image size: {}: {}", e.getMessage(), filename);
+                    logger.error("Unable to read image size: {}: {}", e.getMessage(), imageFile.getName());
                 }
             } catch (UnsatisfiedLinkError e3) {
-                logger.error("Unable to load jpeg2000 ImageReader: " + e.toString());
+                logger.error("Unable to load jpeg2000 ImageReader: {}", e.toString());
             }
         }
 
@@ -902,10 +907,10 @@ public abstract class Indexer {
                         if (width * height > 0) {
                             return new Dimension(width, height);
                         }
-                        logger.error("Error reading image dimensions of " + image + " with image reader " + reader.getClass().getSimpleName());
+                        logger.error("Error reading image dimensions of {} with image reader {}", image, reader.getClass().getSimpleName());
                         continue;
                     } catch (IOException e) {
-                        logger.error("Error reading " + image + " with image reader " + reader.getClass().getSimpleName());
+                        logger.error("Error reading {} with image reader {}", image, reader.getClass().getSimpleName());
                         continue;
                     }
                 }
@@ -920,9 +925,9 @@ public abstract class Indexer {
                     if (width * height > 0) {
                         return new Dimension(width, height);
                     }
-                    logger.error("Error reading image dimensions of " + image + " with image reader " + reader.getClass().getSimpleName());
+                    logger.error("Error reading image dimensions of {} with image reader {}", image, reader.getClass().getSimpleName());
                 } catch (IOException e) {
-                    logger.error("Error reading " + image + " with image reader " + reader.getClass().getSimpleName());
+                    logger.error("Error reading {} with image reader {}", image, reader.getClass().getSimpleName());
                 }
             } else {
                 logger.debug("Not openjpeg image reader found");
@@ -1030,7 +1035,8 @@ public abstract class Indexer {
         int count = 0;
         List<LuceneField> fieldsToAdd = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
         fieldsToAdd.addAll(gmd.getFields());
-        if (gmd.isAddAuthorityDataToDocstruct() || gmd.isAddCoordsToDocstruct()) {;
+        if (gmd.isAddAuthorityDataToDocstruct() || gmd.isAddCoordsToDocstruct()) {
+            ;
             // Add authority data to docstruct doc instead of grouped metadata
             for (LuceneField field : gmd.getAuthorityDataFields()) {
                 if (gmd.isAddAuthorityDataToDocstruct() && (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_"))) {
@@ -1275,7 +1281,7 @@ public abstract class Indexer {
                             .toString() + '/' + pi
                             + '/' + baseFileName + XML_EXTENSION);
             ret = true;
-            logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName().toString(), order);
+            logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName(), order);
         }
         // FULLTEXT
         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))

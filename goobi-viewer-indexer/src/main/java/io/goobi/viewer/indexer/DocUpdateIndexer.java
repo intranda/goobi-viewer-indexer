@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -81,6 +82,7 @@ public class DocUpdateIndexer extends Indexer {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should update document correctly
      * @return an array of {@link java.lang.String} objects.
+     * @throws FatalIndexerException
      */
 
     @SuppressWarnings("unchecked")
@@ -150,7 +152,8 @@ public class DocUpdateIndexer extends Indexer {
                 }
             }
             String pageFileName = doc.containsKey(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
-                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) : (String) doc.getFieldValue(SolrConstants.FILENAME);
+                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
+                    : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
                 ret[1] = "Document " + iddoc + " contains no " + SolrConstants.FILENAME + " field, please checks the index.";
                 return ret;
@@ -204,8 +207,6 @@ public class DocUpdateIndexer extends Indexer {
                                 Map<String, Object> update = new HashMap<>();
                                 update.put("set", altoFileName);
                                 partialUpdates.put(SolrConstants.FILENAME_ALTO, update);
-                            } else {
-                                throw new RuntimeException(altoFileName);
                             }
 
                             Path altoFile = Paths.get(repositoryPath.toAbsolutePath().toString(), altoFileName);
@@ -290,12 +291,6 @@ public class DocUpdateIndexer extends Indexer {
                 } else {
                     logger.warn("No user generated content values found for page {}.", order);
                 }
-
-                //                SolrInputDocument dummyDoc = new SolrInputDocument();
-                //                generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC), pi, order, pageFileBaseName);
-                //                Map<String, Object> update = new HashMap<>();
-                //                update.put("set", dummyDoc.getFieldValue(SolrConstants.UGCTERMS));
-                //                partialUpdates.put(SolrConstants.UGCTERMS, update);
             }
 
             if (!partialUpdates.isEmpty()) {
@@ -333,27 +328,13 @@ public class DocUpdateIndexer extends Indexer {
         }
 
         List<Object> ret = new ArrayList<>();
-
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder)) {
             for (Path path : stream) {
                 Path recordFile = path;
-                try {
-                    logger.info("Found file: {}/{}", recordFile.getParent().getFileName(), recordFile.getFileName());
-                    if (recordFile.getFileName().toString().endsWith(".xml")) {
-                        Map<String, Object> altoData = TextHelper.readAltoFile(recordFile.toFile());
-                        if (altoData != null) {
-                            ret.add(altoData);
-                        }
-                    } else if (recordFile.getFileName().toString().endsWith(".txt")) {
-                        String value = FileTools.readFileToString(path.toFile(), null);
-                        ret.add(value);
-                    } else {
-                        logger.warn("Incompatible data file found: {}", recordFile.toAbsolutePath());
-                    }
-                } catch (JDOMException e) {
-                    if (!e.getMessage().contains("Premature end of file")) {
-                        logger.warn("Could not read ALTO file '{}': {}", recordFile.getFileName().toString(), e.getMessage());
-                    }
+                logger.info("Found file: {}/{}", recordFile.getParent().getFileName(), recordFile.getFileName());
+                Object o = readTextFile(recordFile);
+                if (o != null) {
+                    ret.add(o);
                 }
             }
         } catch (IOException e) {
@@ -361,5 +342,34 @@ public class DocUpdateIndexer extends Indexer {
         }
 
         return ret;
+    }
+
+    /**
+     * 
+     * @param recordFile
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    static Object readTextFile(Path recordFile) throws FileNotFoundException, IOException {
+        try {
+            if (recordFile.getFileName().toString().endsWith(".xml")) {
+                Map<String, Object> altoData = TextHelper.readAltoFile(recordFile.toFile());
+                if (altoData != null) {
+                    return altoData;
+                }
+            } else if (recordFile.getFileName().toString().endsWith(".txt")) {
+                String value = FileTools.readFileToString(recordFile.toFile(), null);
+                return value;
+            } else {
+                logger.warn("Incompatible data file found: {}", recordFile.toAbsolutePath());
+            }
+        } catch (JDOMException e) {
+            if (!e.getMessage().contains("Premature end of file")) {
+                logger.warn("Could not read ALTO file '{}': {}", recordFile.getFileName(), e.getMessage());
+            }
+        }
+
+        return null;
     }
 }

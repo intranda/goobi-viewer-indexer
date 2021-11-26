@@ -81,7 +81,7 @@ public class LidoIndexer extends Indexer {
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
      * thread-safe.
      */
-    private StringBuffer sbImgFileNames = new StringBuffer();
+    private StringBuilder sbImgFileNames = new StringBuilder();
 
     /**
      * Constructor.
