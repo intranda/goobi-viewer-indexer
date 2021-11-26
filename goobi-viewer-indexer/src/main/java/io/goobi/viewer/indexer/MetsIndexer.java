@@ -501,6 +501,12 @@ public class MetsIndexer extends Indexer {
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
+        } catch (InterruptedException e) {
+            logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
+            logger.error(e.getMessage(), e);
+            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            hotfolder.getSearchIndex().rollback();
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);

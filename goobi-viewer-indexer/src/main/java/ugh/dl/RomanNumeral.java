@@ -370,34 +370,32 @@ public class RomanNumeral extends Number {
         return this.num.toString();
     }
 
-    /***************************************************************************
-     * <p>
-     * Determines if two RomanNumerals have equal values.
-     * </p>
-     * 
-     * <p>
-     * The style of the RomanNumeral (modern or archaic) is irrelevant. Only the actual integer values of the objects are compared.
-     * </p>
-     * 
-     * @param rn a RomanNumeral
-     * @return <code>true</code> if the parameter has a value equal to the RomanNumeral object, <code>false</code> if the values of the two
-     *         RomanNumerals are not equal.
-     **************************************************************************/
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-        if (!(o instanceof RomanNumeral)) {
-            return false;
-        }
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + intValue;
+        return result;
+    }
 
-        RomanNumeral rn = (RomanNumeral) o;
-        if (rn.intValue() == this.intValue) {
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
             return true;
-        }
-
-        return false;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RomanNumeral other = (RomanNumeral) obj;
+        if (intValue != other.intValue)
+            return false;
+        return true;
     }
 
     /***************************************************************************

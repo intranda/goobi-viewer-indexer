@@ -709,7 +709,7 @@ public class Utils {
 
         return Integer.valueOf(sbOrder.toString());
     }
-    
+
     /**
      * <p>
      * sortifyField.
@@ -753,6 +753,7 @@ public class Utils {
                 if ("SORT_".equals(prefix)) {
                     return "SORTNUM_" + fieldName;
                 }
+                return prefix + fieldName;
             default:
                 if (StringUtils.isNotEmpty(prefix)) {
                     if (fieldName.startsWith("MD_")) {
