@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -220,5 +221,18 @@ public class TextHelperTest extends AbstractTest {
     public void cleanUpHtmlTags_shouldCleanUpStringCorrectly() throws Exception {
         Assert.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("<p><b>foo</b></p><br/>bar"));
         Assert.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("foo <bar"));
+    }
+
+    /**
+     * @see TextHelper#createSimpleNamedEntityTag(Element)
+     * @verifies uppercase type
+     */
+    @Test
+    public void createSimpleNamedEntityTag_shouldUppercaseType() throws Exception {
+        Element eleTag = new Element("NamedEntityTag");
+        eleTag.setAttribute("TYPE", "location");
+        eleTag.setAttribute("LABEL", "Göttingen");
+        String tag = TextHelper.createSimpleNamedEntityTag(eleTag);
+        Assert.assertEquals("LOCATION_Göttingen", tag);
     }
 }

@@ -37,6 +37,7 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -115,8 +116,6 @@ public final class TextHelper {
 
         return string;
     }
-
-
 
     /**
      * Reads the ALTO document in the file with the given file name, links hyphenated words and extracts plain text.
@@ -212,9 +211,12 @@ public final class TextHelper {
 
             //Get Named entities here
             if (doc.getRootElement().getChild("Tags", null) != null) {
-                for (Element tag : doc.getRootElement().getChild("Tags", null).getChildren("NamedEntityTag", null)) {
+                for (Element eleTag : doc.getRootElement().getChild("Tags", null).getChildren("NamedEntityTag", null)) {
                     //                    namedEntityFields.add(createJSONNamedEntityTag(tag));
-                    namedEntityFields.add(createSimpleNamedEntityTag(tag));
+                    String neTag = createSimpleNamedEntityTag(eleTag);
+                    if(StringUtils.isNotEmpty(neTag)) {
+                    namedEntityFields.add(neTag);
+                    }
                 }
             }
         } catch (NullPointerException e) {
@@ -258,19 +260,19 @@ public final class TextHelper {
     }
 
     /**
-     * @param tag
-     * @return
+     * @param eleTag JDOM2 element containing tag attributes
+     * @return String containing type and label
+     * @should uppercase type
      */
-    private static String createSimpleNamedEntityTag(Element tag) {
-        String neLabel = tag.getAttributeValue("LABEL");
-        String neType = tag.getAttributeValue("TYPE");
+    static String createSimpleNamedEntityTag(Element eleTag) {
+        String neLabel = eleTag.getAttributeValue("LABEL");
+        String neType = eleTag.getAttributeValue("TYPE");
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(neType);
-        sb.append('_');
-        sb.append(neLabel);
+        if (neType == null || neLabel == null) {
+            return null;
+        }
 
-        return sb.toString();
+        return neType.toUpperCase() + "_" + neLabel;
     }
 
     /**

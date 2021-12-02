@@ -375,16 +375,18 @@ public abstract class Indexer {
      */
     @SuppressWarnings("unchecked")
     protected void addNamedEntitiesFields(Map<String, Object> altoData, SolrInputDocument doc) {
-        List<String> neList = (List<String>) altoData.get("NAMEDENTITIES");
-        if (neList != null && !neList.isEmpty()) {
-            for (String ne : neList) {
-                String[] splitString = ne.split("_", 2);
-                if (splitString[1] != null) {
-                    splitString[1] = cleanUpNamedEntityValue(splitString[1]);
-                    String fieldName = new StringBuilder("NE_").append(splitString[0]).toString();
-                    doc.addField(fieldName, splitString[1]);
-                    doc.addField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(), splitString[1]);
-                }
+        List<String> neList = (List<String>) altoData.get(SolrConstants.NAMEDENTITIES);
+        if (neList == null || neList.isEmpty()) {
+            return;
+        }
+
+        for (String ne : neList) {
+            String[] splitString = ne.split("_", 2);
+            if (splitString[1] != null) {
+                splitString[1] = cleanUpNamedEntityValue(splitString[1]);
+                String fieldName = new StringBuilder("NE_").append(splitString[0]).toString();
+                doc.addField(fieldName, splitString[1]);
+                doc.addField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(), splitString[1]);
             }
         }
     }
