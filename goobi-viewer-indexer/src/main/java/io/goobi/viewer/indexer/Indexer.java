@@ -372,9 +372,11 @@ public abstract class Indexer {
      *
      * @param altoData a {@link java.util.Map} object.
      * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
+     * @should add field
+     * @should add untokenized field
      */
     @SuppressWarnings("unchecked")
-    protected void addNamedEntitiesFields(Map<String, Object> altoData, SolrInputDocument doc) {
+    protected static void addNamedEntitiesFields(Map<String, Object> altoData, SolrInputDocument doc) {
         List<String> neList = (List<String>) altoData.get(SolrConstants.NAMEDENTITIES);
         if (neList == null || neList.isEmpty()) {
             return;

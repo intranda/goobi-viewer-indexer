@@ -229,7 +229,7 @@ public final class TextHelper {
         ret.put(SolrConstants.FULLTEXT, sbFulltext.toString());
         ret.put(SolrConstants.WIDTH, width);
         ret.put(SolrConstants.HEIGHT, height);
-        ret.put("NAMEDENTITIES", namedEntityFields);
+        ret.put(SolrConstants.NAMEDENTITIES, namedEntityFields);
 
         return ret;
     }
