@@ -69,6 +69,7 @@ import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.jpeg.JpegDirectory;
 import com.drew.metadata.png.PngDirectory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import de.intranda.api.annotation.GeoLocation;
 import de.intranda.api.annotation.ISelector;
@@ -147,13 +148,17 @@ public abstract class Indexer {
     protected boolean recordHasFulltext = false;
 
     private final HttpConnector httpConnector;
+    
+    private final ObjectMapper mapper = new ObjectMapper();
 
     protected Indexer() {
         httpConnector = new HttpConnector(HTTP_CONNECTION_TIMEOUT);
+        mapper.registerModule(new JavaTimeModule());
     }
 
     protected Indexer(HttpConnector httpConnector) {
         this.httpConnector = httpConnector;
+        mapper.registerModule(new JavaTimeModule());
     }
 
     /**
@@ -627,7 +632,7 @@ public abstract class Indexer {
             Map<String, String> groupIds) {
         try (FileInputStream fis = new FileInputStream(path.toFile())) {
             String json = FileTools.readFileToString(path.toFile(), TextHelper.DEFAULT_CHARSET);
-            WebAnnotation annotation = new ObjectMapper().readValue(json, WebAnnotation.class);
+            WebAnnotation annotation = mapper.readValue(json, WebAnnotation.class);
             if (annotation == null) {
                 return null;
             }
