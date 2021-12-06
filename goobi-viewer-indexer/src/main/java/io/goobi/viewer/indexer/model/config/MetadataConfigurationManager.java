@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.SubnodeConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
@@ -192,13 +191,20 @@ public final class MetadataConfigurationManager {
                 List<HierarchicalConfiguration<ImmutableNode>> normalizeValueList =
                         config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeValue");
                 if (normalizeValueList != null && !normalizeValueList.isEmpty()) {
-                    int length = normalizeValueList.get(0).getInt("[@length]");
-                    char filler = normalizeValueList.get(0).getString("[@filler]", "0").charAt(0);
-                    String position = normalizeValueList.get(0).getString("[@position]");
-                    String relevantPartRegex = normalizeValueList.get(0).getString("[@relevantPartRegex]");
-                    ValueNormalizer normalizer =
-                            new ValueNormalizer(length, filler, ValueNormalizerPosition.getByName(position), relevantPartRegex);
-                    fieldConfig.setValueNormalizer(normalizer);
+                    for (HierarchicalConfiguration<ImmutableNode> node : normalizeValueList) {
+                        int length = node.getInt("[@length]", 8);
+                        char filler = node.getString("[@filler]", "0").charAt(0);
+                        String position = node.getString("[@position]");
+                        String regex = node.getString("[@regex]");
+                        boolean convertRoman = node.getBoolean("[@convertRoman]", false);
+                        ValueNormalizer normalizer =
+                                new ValueNormalizer().setTargetLength(length)
+                                        .setFiller(filler)
+                                        .setPosition(ValueNormalizerPosition.getByName(position))
+                                        .setRegex(regex)
+                                        .setConvertRoman(convertRoman);
+                        fieldConfig.getValueNormalizers().add(normalizer);
+                    }
                 }
 
                 {
@@ -271,19 +277,16 @@ public final class MetadataConfigurationManager {
         if (typeName != null) {
             type = MetadataGroupType.getByName(typeName);
             if (type == null) {
-                logger.warn("Unknown metadata group type: {}", typeName);
+                type = MetadataGroupType.OTHER;
+                logger.warn("Unknown metadata group type: {}, using {} instead.", typeName, type.name());
             }
-        }
-        if (type == null) {
-            type = MetadataGroupType.OTHER;
-            logger.warn("Using group type: {}", MetadataGroupType.OTHER.name());
         }
 
         String name = config.getString("[@name]");
         String url = config.getString("[@url]");
         String xpath = config.getString("[@xpath]");
-        boolean addAuthorityDataToDocstruct = config.getBoolean("@addAuthorityDataToDocstruct", false);
-        boolean addCoordsToDocstruct = config.getBoolean("@addCoordsToDocstruct", false);
+        boolean addAuthorityDataToDocstruct = config.getBoolean("[@addAuthorityDataToDocstruct]", false);
+        boolean addCoordsToDocstruct = config.getBoolean("[@addCoordsToDocstruct]", false);
         GroupEntity ret = new GroupEntity(name, type)
                 .setUrl(url)
                 .setXpath(xpath)
@@ -340,6 +343,7 @@ public final class MetadataConfigurationManager {
         String fieldName = sub.getString("[@name]", null);
         String defaultValue = sub.getString("[@defaultValue]", null);
         boolean multivalued = sub.getBoolean("[@multivalued]", true);
+        boolean addSortField = sub.getBoolean("[@addSortField]", false);
         String xpathExp = sub.getString("[@xpath]");
         if (xpathExp == null) {
             xpathExp = sub.getString("");
@@ -348,7 +352,7 @@ public final class MetadataConfigurationManager {
             return null;
         }
 
-        SubfieldConfig ret = new SubfieldConfig(fieldName, multivalued);
+        SubfieldConfig ret = new SubfieldConfig(fieldName, multivalued, addSortField);
         ret.getXpaths().add(xpathExp);
         ret.getDefaultValues().put(xpathExp, defaultValue);
         logger.debug("Loaded group entity field: {} - {}", fieldName, xpathExp);

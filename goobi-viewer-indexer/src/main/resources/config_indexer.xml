@@ -125,23 +125,33 @@
 
 
 	<!-- TODO add to manual -->
-	<performance>
-	        <!-- If the METS file size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 10485760 bytes) -->
-	        <metsFileSizeThreshold>10485760</metsFileSizeThreshold>
+    <performance>
+	    <!-- If the METS file size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 10485760 bytes) -->
+	    <metsFileSizeThreshold>10485760</metsFileSizeThreshold>
 
-	        <!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
-	        <dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
+        <!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
+        <dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
 
-	        <!-- If true, an optimize query will be sent to Solr after every indexed object. -->
-	        <autoOptimize>false</autoOptimize>
+        <!-- If true, an optimize query will be sent to Solr after every indexed object. -->
+        <autoOptimize>false</autoOptimize>
 
-	        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
-	        <threads>4</threads>
+        <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
+        <threads>4</threads>
 	        
-	        <!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
-	            Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
-	        <countHotfolderFiles>true</countHotfolderFiles>
-	</performance>
+        <!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
+            Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
+        <countHotfolderFiles>true</countHotfolderFiles>
+            
+        <!-- authorityDataCache/@enabled: If true, previously retrieved authority data records will be cached within the application
+            for the duration of its lifetime. Default is true. -->
+        <authorityDataCache enabled="true">
+            <!-- Number of hours a record cached record can be used since its retrieval before expiring. Default is 24. -->
+            <recordTTL>24</recordTTL>
+            <!-- Maximum number of records a cache can hold. If the number is exceeded, new records can still be added, but a warning will be logged.
+                Default is 1000. -->
+            <sizeWarningThreshold>1000</sizeWarningThreshold>
+        </authorityDataCache>
+    </performance>
 
 
 
@@ -453,10 +463,21 @@
 					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:titleInfo/mods:title</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>true</addUntokenizedVersion>
-					<sortFieldIgnoreLeadingChars>.[]</sortFieldIgnoreLeadingChars>
 				</item>
 			</list>
 	    </MD_TITLE_SERIES>
+        
+        <SORT_TITLE_SERIES>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type='series' and not(@otherType)]/mods:titleInfo/mods:title</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                    <replace regex="[¬]\w+[ ]"></replace>
+                    <replace regex="&lt;ns&gt;\w+&lt;/ns&gt;"></replace>
+                </item>
+            </list>
+        </SORT_TITLE_SERIES>
 
 		<!-- This field is important, see chapter 3.13 of the manual -->
 		<MD_TITLE>
@@ -1968,18 +1989,6 @@
 			</list>
 		</MD_SHELFMARK>
 
-	        <SORT_TEST>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:location/mods:shelfLocator</xpath>
-					<addToDefault>true</addToDefault>
-					<replace string="/"></replace>
-					<normalizeValue length="12" filler="0" position="front" />
-				</item>
-			</list>
-	        </SORT_TEST>
-
-
 		<MD_OLDSHELFMARK>
 			<list>
 				<item>
@@ -3082,7 +3091,7 @@
                     <addToDefault>true</addToDefault>
                     <onefield>false</onefield>
                     <groupEntity type="LOCATION" addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
-                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_VALUE" addSortField="true">text()</field>
                         <field name="MD_DISPLAYFORM">text()</field>
                         <field name="NORM_URI">@valueURI</field>
                         <field name="NORM_IDENTIFIER_GEONAMES">substring-after(@valueURI, 'http://www.geonames.org/')</field>
@@ -3270,6 +3279,51 @@
             </list>
         </MD_SCOPECONTENT>
 
+        <MD_OBJECTNO>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type='PPNanalog']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>false</addSortField>
+                </item>
+            </list>
+        </MD_OBJECTNO>
+
+        <SORT_OBJECTNO>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type='PPNanalog']
+                            </item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+					<!-- All regexes are needed in this exact order! -->
+					<normalizeValue convertRoman="true" regex="BP (X)001$" />
+					<normalizeValue convertRoman="true" regex="BP (XXI)a$" />
+					<normalizeValue convertRoman="true" regex="BP ([C|I|M|V|X]+) [i]+" />
+					<normalizeValue convertRoman="true" regex="BP ([C|I|M|V|X]+)$" />
+					<normalizeValue convertRoman="true" regex="BP ([C|I|M|V|X]+)(?:\.| f\.| ff\.| i\.| ii\.)[0-9]+.*$" />
+					<normalizeValue convertRoman="true" regex="[a-zA-Z]+[\s]+([C|I|M|V|X]+)[.][0-9]+$" />
+					<normalizeValue length="8" filler="0" regex="BP ([0-9]+) [i]+$" />
+					<normalizeValue length="8" filler="0" regex="BP ([0-9]+)a$" />
+					<normalizeValue length="8" filler="0" regex="BP ([0-9]+)$" />
+					<normalizeValue length="8" filler="0" regex="BP ([0-9]+)(?:\.| f\.| ff\.| i\.| ii\.)([0-9]+)[.|&amp;|-]([0-9]+)$" />
+					<normalizeValue length="8" filler="0" regex="BP ([0-9]+)(?:\.| f\.| ff\.| i\.| ii\.)([0-9]+)$" />
+					<normalizeValue length="8" filler="0" regex="[a-zA-Z]+[\s]+([0-9]+)[.]([0-9]+).*$" />
+					<normalizeValue length="8" filler="0" regex="[a-zA-Z]+[\s]+([0-9]+).*$" />
+					<normalizeValue length="8" filler="0" regex="[a-zA-Z]+ [a-zA-Z]+([0-9]+)$" />
+
+                </item>
+            </list>
+        </SORT_OBJECTNO>
 
 	</fields>
 </root>

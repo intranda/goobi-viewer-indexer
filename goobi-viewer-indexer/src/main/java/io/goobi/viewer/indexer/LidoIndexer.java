@@ -81,7 +81,7 @@ public class LidoIndexer extends Indexer {
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
      * thread-safe.
      */
-    private StringBuffer sbImgFileNames = new StringBuffer();
+    private StringBuilder sbImgFileNames = new StringBuilder();
 
     /**
      * Constructor.
@@ -328,8 +328,8 @@ public class LidoIndexer extends Indexer {
         String filePathBanner = null;
         boolean thumbnailSet = false;
         for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
 
@@ -439,8 +439,8 @@ public class LidoIndexer extends Indexer {
         if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pageDocs.isEmpty()) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
-            String pageFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String pageFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
             // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
@@ -453,8 +453,8 @@ public class LidoIndexer extends Indexer {
 
         // Add thumbnail information from the first page
         if (StringUtils.isEmpty(filePathBanner)) {
-            String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
@@ -616,7 +616,7 @@ public class LidoIndexer extends Indexer {
                     doc.addField(SolrConstants.FILENAME, fileName);
                 } else {
                     // Use external image
-                    doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
+                    doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, filePath);
                 }
             } else {
                 // For non-remote file, add the file name to the list
@@ -835,7 +835,7 @@ public class LidoIndexer extends Indexer {
                     if (fieldConfig.isAddSortFieldToTopstruct()) {
                         List<LuceneField> retList = new ArrayList<>(1);
                         MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.SORT_, fieldConfig.getNonSortConfigurations(),
-                                fieldConfig.getValueNormalizer(), retList);
+                                fieldConfig.getValueNormalizers(), retList);
                         if (!retList.isEmpty()) {
                             indexObj.addToLucene(retList.get(0), false);
                         }

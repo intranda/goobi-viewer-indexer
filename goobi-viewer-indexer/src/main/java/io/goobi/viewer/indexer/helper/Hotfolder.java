@@ -299,7 +299,7 @@ public class Hotfolder {
         metsFileSizeThreshold = Configuration.getInstance().getInt("performance.metsFileSizeThreshold", 10485760);
         dataFolderSizeThreshold = Configuration.getInstance().getInt("performance.dataFolderSizeThreshold", 157286400);
 
-        SolrSearchIndex.optimize = Boolean.valueOf(Configuration.getInstance().isAutoOptimize());
+        SolrSearchIndex.optimize = Configuration.getInstance().isAutoOptimize();
         logger.info("Auto-optimize: {}", SolrSearchIndex.optimize);
 
         try {
@@ -591,6 +591,8 @@ public class Hotfolder {
                     try {
                         Thread.sleep(WAIT_IF_FILE_EMPTY);
                     } catch (InterruptedException e) {
+                        logger.error(e.getMessage());
+                        Thread.currentThread().interrupt();
                     }
                     if (Files.size(sourceFile) == 0) {
                         logger.error("Empty data file '{}' found, deleting...", sourceFile.toAbsolutePath());
@@ -1827,6 +1829,7 @@ public class Hotfolder {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             logger.error("Error checking the hotfolder size.", e);
+            Thread.currentThread().interrupt();
             return false;
         }
         sc = new DataFolderSizeCounter(recordFile.getFileName().toString());

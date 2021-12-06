@@ -76,6 +76,8 @@ public class MetadataHelper {
     public static final String FIELD_WKT_COORDS = "WKT_COORDS";
     public static final String FIELD_HAS_WKT_COORDS = "BOOL_WKT_COORDS";
 
+    public static Map<String, Record> authorityDataCache = new HashMap<>();
+
     /** Constant <code>FORMAT_TWO_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
 
@@ -349,7 +351,7 @@ public class MetadataHelper {
                     // Add value to DEFAULT
                     if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
                         addValueToDefault(fieldValue, sbDefaultMetadataValues);
-                        logger.info("Added to DEFAULT: {}", fieldValue);
+                        logger.trace("Added to DEFAULT: {}", fieldValue);
                     }
                     // Add normalized year
                     if (configurationItem.isNormalizeYear()) {
@@ -359,7 +361,7 @@ public class MetadataHelper {
                         // Add sort fields for normalized years, centuries, etc.
                         for (LuceneField normalizedDateField : normalizedFields) {
                             addSortField(normalizedDateField.getField(), normalizedDateField.getValue(), SolrConstants.SORTNUM_,
-                                    configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizer(), ret);
+                                    configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizers(), ret);
                         }
                     }
                     // Add Solr field
@@ -369,7 +371,7 @@ public class MetadataHelper {
                     // Make sure non-sort characters are removed before adding _UNTOKENIZED and SORT_ fields
                     if (configurationItem.isAddSortField()) {
                         addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.SORT_, configurationItem.getNonSortConfigurations(),
-                                configurationItem.getValueNormalizer(), ret);
+                                configurationItem.getValueNormalizers(), ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
                         ret.add(new LuceneField(fieldName + SolrConstants._UNTOKENIZED, fieldValue));
@@ -404,9 +406,10 @@ public class MetadataHelper {
      * @param replaceRules Optional metadata value replace rules
      * @param labelField Field name of the metadata group to which this authority data belongs
      * @return
+     * @throws FatalIndexerException
      */
     private static List<LuceneField> retrieveAuthorityData(String url, StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms,
-            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
+            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) throws FatalIndexerException {
         logger.info("retrieveAuthorityData: {}", url);
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
@@ -417,14 +420,38 @@ public class MetadataHelper {
             url = "https://d-nb.info/gnd/" + url;
         }
 
-        Record record = NormDataImporter.getSingleRecord(url.trim());
-        if (record == null) {
-            logger.warn("Authority dataset could not be retrieved: {}", url);
-            return Collections.emptyList();
+        url = url.trim();
+        boolean authorityDataCacheEnabled = Configuration.getInstance().isAuthorityDataCacheEnabled();
+
+        Record record = authorityDataCache.get(url);
+        if (record != null) {
+            long cachedRecordAge = (System.currentTimeMillis() - record.getCreationTimestamp()) / 1000 / 60 / 60;
+            logger.debug("Cached record age: {}", cachedRecordAge);
+            if (cachedRecordAge < Configuration.getInstance().getAuthorityDataCacheRecordTTL()) {
+                logger.info("Authority data retrieved from local cache: {}", url);
+            } else {
+                // Do not use expired record and clear from cache;
+                record = null;
+                authorityDataCache.remove(url);
+            }
+
         }
-        if (record.getNormDataList().isEmpty()) {
-            logger.warn("No authority data fields found.");
-            return Collections.emptyList();
+        if (record == null) {
+            record = NormDataImporter.getSingleRecord(url);
+            if (record == null) {
+                logger.warn("Authority dataset could not be retrieved: {}", url);
+                return Collections.emptyList();
+            }
+            if (record.getNormDataList().isEmpty()) {
+                logger.warn("No authority data fields found.");
+                return Collections.emptyList();
+            }
+            if (authorityDataCacheEnabled) {
+                authorityDataCache.put(url.trim(), record);
+                if (authorityDataCache.size() > Configuration.getInstance().getAuthorityDataCacheSizeWarningThreshold()) {
+                    logger.warn("Authority data cache size: {}, please restart indexer to clear.", authorityDataCache.size());
+                }
+            }
         }
 
         return parseAuthorityMetadata(record.getNormDataList(), sbDefaultMetadataValues, sbNormDataTerms, addToDefaultFields,
@@ -619,8 +646,11 @@ public class MetadataHelper {
                 fieldValue = nonSortConfig.apply(fieldValue);
             }
         }
-        if (configurationItem.getValueNormalizer() != null) {
-            fieldValue = configurationItem.getValueNormalizer().normalize(fieldValue);
+        if (!configurationItem.getValueNormalizers().isEmpty()) {
+            for (ValueNormalizer normalizer : configurationItem.getValueNormalizers()) {
+                fieldValue = normalizer.normalize(fieldValue);
+                logger.info("normalized value: {}", fieldValue);
+            }
         }
 
         return fieldValue;
@@ -731,7 +761,7 @@ public class MetadataHelper {
      * @param valueNormalizer a {@link io.goobi.viewer.indexer.model.config.ValueNormalizer} object.
      */
     public static void addSortField(String fieldName, String fieldValue, String sortFieldPrefix, List<NonSortConfiguration> nonSortConfigurations,
-            ValueNormalizer valueNormalizer, List<LuceneField> retList) {
+            List<ValueNormalizer> valueNormalizers, List<LuceneField> retList) {
         if (fieldName == null) {
             throw new IllegalArgumentException("fieldName may not be null");
         }
@@ -755,8 +785,10 @@ public class MetadataHelper {
                 fieldValue = nonSortConfig.apply(fieldValue);
             }
         }
-        if (valueNormalizer != null) {
-            fieldValue = valueNormalizer.normalize(fieldValue);
+        if (valueNormalizers != null && !valueNormalizers.isEmpty()) {
+            for (ValueNormalizer normalizer : valueNormalizers) {
+                fieldValue = normalizer.normalize(fieldValue);
+            }
         }
         logger.debug("Adding sorting field {}: {}", sortFieldName, fieldValue);
         retList.add(new LuceneField(sortFieldName, fieldValue));
@@ -1060,7 +1092,7 @@ public class MetadataHelper {
             }
         }
 
-        // Add SORT_DISPLAYFORM so that there is a single-valued field by which to group metadata search hits
+        // Add single-valued field by which to group metadata search hits
         if (mdValue != null) {
             addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValue).toString(), "", null, null,
                     ret.getFields());
@@ -1080,12 +1112,11 @@ public class MetadataHelper {
                 String authorityURI = ele.getAttributeValue("authorityURI");
                 String valueURI = ele.getAttributeValue("valueURI");
                 switch (authority) {
-                    case "gnd":
+                    default:
                         // Skip missing GND identifiers
                         if ("https://d-nb.info/gnd/".equals(valueURI) || "http://d-nb.info/gnd/".equals(valueURI)) {
                             break;
                         }
-                    default:
                         if (StringUtils.isNotEmpty(valueURI)) {
                             valueURI = valueURI.trim();
                             if (StringUtils.isNotEmpty(authorityURI) && !valueURI.startsWith(authorityURI)) {

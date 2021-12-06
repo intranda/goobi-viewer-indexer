@@ -20,10 +20,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -49,19 +46,7 @@ public class ConfigurationTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null, null);
-    }
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, null, null);
     }
 
     @Test
@@ -77,7 +62,7 @@ public class ConfigurationTest extends AbstractTest {
     @Test
     public void configItemTest() throws Exception {
         List<String> fieldNames = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
-        Assert.assertEquals(121, fieldNames.size());
+        Assert.assertEquals(122, fieldNames.size());
         List<FieldConfig> fieldConfigList =
                 Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(fieldConfigList);
@@ -116,6 +101,7 @@ public class ConfigurationTest extends AbstractTest {
             Assert.assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
             Assert.assertEquals("xpath2", fieldSubconfig.getXpaths().get(1));
             Assert.assertTrue(fieldSubconfig.isMultivalued());
+            Assert.assertTrue(fieldSubconfig.isAddSortField());
             Assert.assertEquals("def", fieldSubconfig.getDefaultValues().get("xpath2"));
         }
         {
@@ -142,7 +128,7 @@ public class ConfigurationTest extends AbstractTest {
 
     @Test
     public void metadataConfigTest() throws Exception {
-        Assert.assertEquals(121, Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames().size());
+        Assert.assertEquals(122, Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames().size());
         List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(configItems);
         Assert.assertEquals(1, configItems.size());
@@ -170,10 +156,17 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertEquals(1, configItem.getNonSortConfigurations().size());
         Assert.assertEquals("nonSortPrefix", configItem.getNonSortConfigurations().get(0).getPrefix());
         Assert.assertEquals("nonSortSuffix", configItem.getNonSortConfigurations().get(0).getSuffix());
-        Assert.assertNotNull(configItem.getValueNormalizer());
-        Assert.assertEquals(5, configItem.getValueNormalizer().getLength());
-        Assert.assertEquals('a', configItem.getValueNormalizer().getFiller());
-        Assert.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizer().getPosition());
+
+        // Value normalizers
+        Assert.assertNotNull(configItem.getValueNormalizers());
+        Assert.assertEquals(2, configItem.getValueNormalizers().size());
+        Assert.assertTrue(configItem.getValueNormalizers().get(0).isConvertRoman());
+        Assert.assertEquals("foo ([C|I|M|V|X]+) .*$", configItem.getValueNormalizers().get(0).getRegex());
+        Assert.assertEquals(5, configItem.getValueNormalizers().get(1).getTargetLength());
+        Assert.assertEquals('a', configItem.getValueNormalizers().get(1).getFiller());
+        Assert.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizers().get(1).getPosition());
+        Assert.assertEquals("foo ([0-9]+) .*$", configItem.getValueNormalizers().get(1).getRegex());
+
         Assert.assertEquals("mods:coordinates/point", configItem.getGeoJSONSource());
         Assert.assertEquals(" / ", configItem.getGeoJSONSourceSeparator());
     }
@@ -193,7 +186,7 @@ public class ConfigurationTest extends AbstractTest {
      */
     @Test
     public void getPageCountStart_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals(0, Configuration.getInstance("src/test/resources/indexerconfig_solr_test.xml").getPageCountStart());
+        Assert.assertEquals(0, Configuration.getInstance("src/test/resources/config_indexer.test.xml").getPageCountStart());
     }
 
     /**
@@ -250,12 +243,39 @@ public class ConfigurationTest extends AbstractTest {
         Assert.assertEquals("test", Configuration.getInstance().getViewerAuthorizationToken());
     }
 
-	/**
-	 * @see Configuration#isCountHotfolderFiles()
-	 * @verifies return correct value
-	 */
-	@Test
-	public void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
-		 Assert.assertFalse(Configuration.getInstance().isCountHotfolderFiles());
-	}
+    /**
+     * @see Configuration#isCountHotfolderFiles()
+     * @verifies return correct value
+     */
+    @Test
+    public void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
+        Assert.assertFalse(Configuration.getInstance().isCountHotfolderFiles());
+    }
+
+    /**
+     * @see Configuration#isAuthorityDataCacheEnabled()
+     * @verifies return correct value
+     */
+    @Test
+    public void isAuthorityDataCacheEnabled_shouldReturnCorrectValue() throws Exception {
+        Assert.assertFalse(Configuration.getInstance().isAuthorityDataCacheEnabled());
+    }
+
+    /**
+     * @see Configuration#getAuthorityDataCacheSizeWarningThreshold()
+     * @verifies return correct value
+     */
+    @Test
+    public void getAuthorityDataCacheSizeWarningThreshold_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals(100, Configuration.getInstance().getAuthorityDataCacheSizeWarningThreshold());
+    }
+
+    /**
+     * @see Configuration#getAuthorityDataCacheRecordTTL()
+     * @verifies return correct value
+     */
+    @Test
+    public void getAuthorityDataCacheRecordTTL_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals(12, Configuration.getInstance().getAuthorityDataCacheRecordTTL());
+    }
 }

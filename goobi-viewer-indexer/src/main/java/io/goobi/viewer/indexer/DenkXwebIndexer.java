@@ -16,7 +16,6 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -76,7 +75,7 @@ public class DenkXwebIndexer extends Indexer {
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
      * thread-safe.
      */
-    private StringBuffer sbImgFileNames = new StringBuffer();
+    private StringBuilder sbImgFileNames = new StringBuilder();
 
     /**
      * Constructor.
@@ -216,7 +215,7 @@ public class DenkXwebIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy, dataFolders);
+            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
@@ -245,7 +244,6 @@ public class DenkXwebIndexer extends Indexer {
             // Add DEFAULT field
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
-                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue("");
             }
 
@@ -289,12 +287,10 @@ public class DenkXwebIndexer extends Indexer {
      * 
      * @param indexObj
      * @param writeStrategy
-     * @param dataFolders
      * @return
      * @throws FatalIndexerException
      */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders) throws FatalIndexerException {
+    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
         List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             physIds.add(String.valueOf(i));
@@ -311,8 +307,8 @@ public class DenkXwebIndexer extends Indexer {
         String filePathBanner = null;
         boolean thumbnailSet = false;
         for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
 
@@ -426,8 +422,8 @@ public class DenkXwebIndexer extends Indexer {
         if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pageDocs.isEmpty()) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
-            String pageFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String pageFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
             // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
@@ -435,19 +431,17 @@ public class DenkXwebIndexer extends Indexer {
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-            thumbnailSet = true;
         }
 
         // Add thumbnail information from the first page
         if (StringUtils.isEmpty(filePathBanner)) {
-            String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null
-                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED")
+            String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
+                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-            thumbnailSet = true;
         }
 
         // Add the number of assigned pages and the labels of the first and last page to this structure element
@@ -462,7 +456,6 @@ public class DenkXwebIndexer extends Indexer {
             if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
                 indexObj.setLastPageLabel(lastPageLabel);
             }
-            // logger.info(indexObj.getLogId() + ": " + indexObj.getFirstPageLabel() + " - " + indexObj.getLastPageLabel());
         }
 
         return ret;
@@ -655,7 +648,6 @@ public class DenkXwebIndexer extends Indexer {
             // External image
             if (url.startsWith("http")) {
                 // Download image, if so requested (and not a local resource)
-                // String baseFileName = FilenameUtils.getBaseName(fileName);
                 String viewerUrl = Configuration.getInstance().getViewerUrl();
                 if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                         && !url.startsWith(viewerUrl)) {
@@ -679,7 +671,7 @@ public class DenkXwebIndexer extends Indexer {
                     }
                 } else {
                     // Add external image URL
-                    doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", url);
+                    doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, url);
 
                     // Representative image (external)
                     if ("true".equals(eleImage.getAttributeValue("preferred"))) {
@@ -720,7 +712,7 @@ public class DenkXwebIndexer extends Indexer {
                             mimetype = mimetype.substring(0, mimetype.indexOf("/"));
                         }
                     } catch (IOException e) {
-                        logger.warn("Cannot guess mime type from " + filename + ". using 'image'");
+                        logger.warn("Cannot determine mime type from '{}', using 'image'.", filename);
                     }
                 }
             }
@@ -759,8 +751,6 @@ public class DenkXwebIndexer extends Indexer {
             doc.addField("MDNUM_FILESIZE", -1);
         }
 
-        // String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
-
         // Add image dimension values from EXIF
         if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
             getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
@@ -789,20 +779,4 @@ public class DenkXwebIndexer extends Indexer {
         writeStrategy.addPageDoc(doc);
         return true;
     }
-
-    /** Constant <code>txt</code> */
-    public static FilenameFilter txt = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".txt");
-        }
-    };
-
-    /** Constant <code>xml</code> */
-    public static FilenameFilter xml = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".xml");
-        }
-    };
 }

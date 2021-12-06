@@ -61,7 +61,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
         metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile));
         lidoFile = Paths.get("src/test/resources/LIDO/khm_lido_export.xml");
@@ -579,18 +579,18 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
         Assert.assertEquals(3, strategy.getDocsToAdd().size());
 
-        long iddocParent = (long) strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.IDDOC);
+        Long iddocParent = (Long) strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.IDDOC);
         Assert.assertNotNull(iddocParent);
         Assert.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
         Assert.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
 
-        long iddocChild = (long) strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC);
+        Long iddocChild = (Long) strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC);
         Assert.assertNotNull(iddocChild);
         Assert.assertEquals(iddocParent, strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC_OWNER));
         Assert.assertEquals("foo", strategy.getDocsToAdd().get(1).getFieldValue("MD_ONE"));
         Assert.assertEquals("bar", strategy.getDocsToAdd().get(1).getFieldValue("MD_TWO"));
 
-        long iddocGrandchild = (long) strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC);
+        Long iddocGrandchild = (Long) strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC);
         Assert.assertNotNull(iddocGrandchild);
         Assert.assertEquals(iddocChild, strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC_OWNER));
         Assert.assertEquals("foo", strategy.getDocsToAdd().get(2).getFieldValue("MD_ONE"));

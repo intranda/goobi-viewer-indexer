@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 
 /**
@@ -59,7 +60,7 @@ public class GroupedMetadata {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fields == null) ? 0 : fields.hashCode());
+        result = prime * result + (fields.hashCode());
         result = prime * result + ((label == null) ? 0 : label.hashCode());
         result = prime * result + ((mainValue == null) ? 0 : mainValue.hashCode());
         return result;
@@ -78,10 +79,7 @@ public class GroupedMetadata {
         if (getClass() != obj.getClass())
             return false;
         GroupedMetadata other = (GroupedMetadata) obj;
-        if (fields == null) {
-            if (other.fields != null)
-                return false;
-        } else if (!fields.equals(other.fields))
+        if (!fields.equals(other.fields))
             return false;
         if (label == null) {
             if (other.label != null)
@@ -178,6 +176,11 @@ public class GroupedMetadata {
 
                     // Add value to this object
                     fields.add(new LuceneField(subfield.getFieldname(), fieldValue));
+
+                    // Add sorting field
+                    if (subfield.isAddSortField() && !subfield.getFieldname().startsWith(SolrConstants.SORT_) && values.indexOf(val) == 0) {
+                        fields.add(new LuceneField(Utils.sortifyField(subfield.getFieldname()), fieldValue));
+                    }
 
                     if (!collectedValues.containsKey(fieldValue)) {
                         collectedValues.put(subfield.getFieldname(), new ArrayList<>(values.size()));

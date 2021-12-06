@@ -50,7 +50,7 @@ public class DataRepositoryTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", null);
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, null);
     }
 
     @Before

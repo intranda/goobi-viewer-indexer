@@ -15,12 +15,14 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ugh.dl.RomanNumeral;
 
 /**
  * Normalizes string values to the configured length, either by adding a filler character or by truncating.
@@ -49,28 +51,19 @@ public class ValueNormalizer {
         }
     }
 
-    /** Target string length */
-    private final int length;
-    /** Filler character */
-    private final char filler;
-    /** Position at which to fill/truncate the string */
-    private final ValueNormalizerPosition position;
-    private final String relevantPartRegex;
+    /** Logger for this class. */
+    private static final Logger logger = LoggerFactory.getLogger(ValueNormalizer.class);
 
-    /**
-     * Constructor.
-     *
-     * @param length Target string length
-     * @param filler Filler character
-     * @param position Position at which to fill/truncate the string
-     * @param relevantPartRegex a {@link java.lang.String} object.
-     */
-    public ValueNormalizer(int length, char filler, ValueNormalizerPosition position, String relevantPartRegex) {
-        this.length = length;
-        this.filler = filler;
-        this.position = position;
-        this.relevantPartRegex = relevantPartRegex;
-    }
+    /** Target total string length */
+    private int targetLength = 0;
+    /** Filler character */
+    private char filler = '0';
+    /** Position at which to fill/truncate the string */
+    private ValueNormalizerPosition position = ValueNormalizerPosition.FRONT;
+
+    private String regex = ".*";
+
+    private boolean convertRoman = false;
 
     /**
      * Fills up the given string value with instances of <code>filler</code> until the string reaches the size of <code>length</code>, either at the
@@ -81,88 +74,173 @@ public class ValueNormalizer {
      * @should do nothing if length ok
      * @should normalize too short strings correctly
      * @should normalize too long strings correctly
+     * @should normalize regex groups correctly
      * @should keep parts not matching regex unchanged
+     * @should convert roman numerals correctly
      */
     public String normalize(String s) {
-        if (s == null) {
-            return null;
-        }
-
-        String relevantPart = s;
-
-        // If a regex is provided, only normalize part matching it
-        String prefix = "";
-        String suffix = "";
-        if (StringUtils.isNotEmpty(relevantPartRegex)) {
-            Pattern p = Pattern.compile(relevantPartRegex);
-            Matcher m = p.matcher(relevantPart);
-            List<String> parts = new ArrayList<>();
-            while (m.find()) {
-                if (m.groupCount() > 0) {
-                    // With capture group
-                    relevantPart = m.group(1);
-                    if (m.start(1) > 0) {
-                        prefix = s.substring(0, m.start(1));
-                    }
-                    if (m.end(1) < s.length()) {
-                        suffix = s.substring(m.end(1));
-                    }
-                } else {
-                    // Without capture group
-                    relevantPart = m.group();
-                    if (m.start() > 0) {
-                        prefix = s.substring(0, m.start());
-                    }
-                    if (m.end() < s.length()) {
-                        suffix = s.substring(m.end());
-                    }
-                }
-            }
-        }
-
-        if (relevantPart.length() == length) {
+        if (s == null || StringUtils.isEmpty(regex)) {
             return s;
         }
 
-        if (relevantPart.length() < length) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(prefix);
-            for (int i = 0; i < length - relevantPart.length(); ++i) {
-                sb.append(filler);
+        // If a regex is provided, only normalize part matching it
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(s);
+        if (m.find()) {
+
+            // With capture group
+            if (m.groupCount() > 0) {
+                int[] groupStartIndices = new int[m.groupCount()];
+                int[] groupEndIndices = new int[m.groupCount()];
+
+                // Collect group indices first
+                for (int i = 1; i <= m.groupCount(); ++i) {
+                    groupStartIndices[i - 1] = m.start(i);
+                    groupEndIndices[i - 1] = m.end(i);
+                }
+
+                // Modify and reassemble
+                StringBuilder sb = new StringBuilder();
+                if (groupStartIndices[0] > 0) {
+                    sb.append(s.substring(0, groupStartIndices[0]));
+                }
+                for (int i = 0; i < groupStartIndices.length; ++i) {
+                    // Apply modifications to group part
+                    String groupPart = s.substring(groupStartIndices[i], groupEndIndices[i]);
+                    if (convertRoman) {
+                        // Roman numerals
+                        try {
+                            sb.append(convertRomanNumeral(groupPart));
+                        } catch (NumberFormatException e) {
+                            logger.warn("{}: {}", e.getMessage(), groupPart);
+                            sb.append(groupPart);
+                        }
+                    } else {
+                        // Filler
+                        sb.append(applyFiller(groupPart));
+                    }
+                    if (i + 1 < groupStartIndices.length) {
+                        // Append characters from the original string that are between this and the next group
+                        sb.append(s.substring(groupEndIndices[i], groupStartIndices[i + 1]));
+                    } else if (groupEndIndices[i] < s.length()) {
+                        // Append remainder of the original string
+                        sb.append(s.substring(groupEndIndices[i]));
+                    }
+                }
+
+                return sb.toString();
             }
+
+            // Without capture group
+            String prefix = "";
+            String suffix = "";
+            String relevantPart = m.group();
+            if (m.start() > 0) {
+                prefix = s.substring(0, m.start());
+            }
+            if (m.end() < s.length()) {
+                suffix = s.substring(m.end());
+            }
+
+            if (relevantPart.length() == targetLength) {
+                return s;
+            }
+
+            if (relevantPart.length() < targetLength) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(prefix);
+                if (convertRoman) {
+                    try {
+                        sb.append(convertRomanNumeral(relevantPart));
+                    } catch (NumberFormatException e) {
+                        logger.warn("{}: {}", e.getMessage(), s);
+                        sb.append(relevantPart);
+                    }
+                } else {
+                    sb.append(applyFiller(relevantPart));
+                }
+                sb.append(suffix);
+                return sb.toString();
+            }
+
+            // Shorten if original string than the target length
             switch (position) {
                 case FRONT:
-                    sb.append(relevantPart);
-                    break;
+                    return prefix + relevantPart.substring(relevantPart.length() - targetLength) + suffix;
                 case REAR:
-                    sb.insert(prefix.length(), relevantPart);
-                    break;
+                    return prefix + relevantPart.substring(0, targetLength) + suffix;
+                default:
+                    return prefix + relevantPart + suffix;
             }
-            sb.append(suffix);
-            return sb.toString();
+        }
+
+        return s;
+    }
+
+    /**
+     * 
+     * @param s
+     * @return
+     */
+    String applyFiller(String s) {
+        if (s == null || s.length() >= targetLength) {
+            return s;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < targetLength - s.length(); ++i) {
+            sb.append(filler);
         }
 
         switch (position) {
             case FRONT:
-                return prefix + relevantPart.substring(relevantPart.length() - length) + suffix;
+                return sb.toString() + s;
             case REAR:
-                return prefix + relevantPart.substring(0, length) + suffix;
-            default:
-                return prefix + relevantPart + suffix;
+                return s + sb.toString();
         }
+
+        return s;
     }
 
     /**
-     * <p>Getter for the field <code>length</code>.</p>
-     *
-     * @return the length
+     * 
+     * @param s Roman numeral to convert
+     * @return Same number in Arabic digits
+     * @should convert correctly
      */
-    public int getLength() {
-        return length;
+    static int convertRomanNumeral(String s) throws NumberFormatException {
+        if (StringUtils.isEmpty(s)) {
+            throw new IllegalArgumentException("s may not be empty");
+        }
+
+        RomanNumeral rn = new RomanNumeral(s);
+        return rn.intValue();
     }
 
     /**
-     * <p>Getter for the field <code>filler</code>.</p>
+     * <p>
+     * Getter for the field <code>targetLength</code>.
+     * </p>
+     *
+     * @return the targetLength
+     */
+    public int getTargetLength() {
+        return targetLength;
+    }
+
+    /**
+     * @param targetLength the targetLength to set
+     * @return this
+     */
+    public ValueNormalizer setTargetLength(int targetLength) {
+        this.targetLength = targetLength;
+        return this;
+    }
+
+    /**
+     * <p>
+     * Getter for the field <code>filler</code>.
+     * </p>
      *
      * @return the filler
      */
@@ -171,7 +249,18 @@ public class ValueNormalizer {
     }
 
     /**
-     * <p>Getter for the field <code>position</code>.</p>
+     * @param filler the filler to set
+     * @return this
+     */
+    public ValueNormalizer setFiller(char filler) {
+        this.filler = filler;
+        return this;
+    }
+
+    /**
+     * <p>
+     * Getter for the field <code>position</code>.
+     * </p>
      *
      * @return the position
      */
@@ -179,4 +268,44 @@ public class ValueNormalizer {
         return position;
     }
 
+    /**
+     * @param position the position to set
+     * @return this
+     */
+    public ValueNormalizer setPosition(ValueNormalizerPosition position) {
+        this.position = position;
+        return this;
+    }
+
+    /**
+     * @return the regex
+     */
+    public String getRegex() {
+        return regex;
+    }
+
+    /**
+     * @param regex the regex to set
+     * @return this
+     */
+    public ValueNormalizer setRegex(String regex) {
+        this.regex = regex;
+        return this;
+    }
+
+    /**
+     * @return the convertRoman
+     */
+    public boolean isConvertRoman() {
+        return convertRoman;
+    }
+
+    /**
+     * @param convertRoman the convertRoman to set
+     * @return this
+     */
+    public ValueNormalizer setConvertRoman(boolean convertRoman) {
+        this.convertRoman = convertRoman;
+        return this;
+    }
 }

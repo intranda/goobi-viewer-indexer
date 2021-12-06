@@ -234,15 +234,13 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
      * @throws IOException
      */
     long getRecordTotalSize(final Path dataFile, final Map<String, Path> dataFolders) throws IOException {
-        long ret = 0;
-
-        if (dataFile != null) {
-            ret += Files.size(dataFile);
-        } else {
+        if (dataFile == null) {
             logger.info("No data file passed, assuming an extra 1 MB.");
-            ret += 1048576;
+            return 1048576;
+
         }
 
+        long ret = Files.size(dataFile);
         if (dataFolders != null) {
             // Count data folders' size
             for (String key : dataFolders.keySet()) {

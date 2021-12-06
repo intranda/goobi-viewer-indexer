@@ -413,11 +413,15 @@ public class MetsIndexer extends Indexer {
                 String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
                 Map<String, String> moreMetadata = new HashMap<>();
                 String titleField = "MD_TITLE_" + groupSuffix;
+                String sortTitleField = "SORT_TITLE_" + groupSuffix;
                 for (LuceneField field : indexObj.getLuceneFields()) {
                     if (titleField.equals(field.getField())) {
                         // Add title/label
                         moreMetadata.put(SolrConstants.LABEL, field.getValue());
                         moreMetadata.put("MD_TITLE", field.getValue());
+                    } else if (sortTitleField.equals(field.getField())) {
+                        // Add title/label
+                        moreMetadata.put("SORT_TITLE", field.getValue());
                     } else if (field.getField().endsWith(groupSuffix)
                             && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
                         // Add any MD_*_GROUPSUFFIX field to the group doc
@@ -497,6 +501,12 @@ public class MetsIndexer extends Indexer {
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
+        } catch (InterruptedException e) {
+            logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
+            logger.error(e.getMessage(), e);
+            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            hotfolder.getSearchIndex().rollback();
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
@@ -563,8 +573,6 @@ public class MetsIndexer extends Indexer {
         SolrInputDocument firstPageDoc = !pageDocs.isEmpty() ? pageDocs.get(0) : null;
         if (StringUtils.isEmpty(filePathBanner) && firstPageDoc != null) {
             // Add thumbnail information from the first page
-            //                String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) firstPageDoc
-            //                        .getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             if ("SHAPE".equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
@@ -577,8 +585,6 @@ public class MetsIndexer extends Indexer {
             thumbnailSet = true;
         }
         for (SolrInputDocument pageDoc : pageDocs) {
-            //                String pageFileName = pageDoc.getField(SolrConstants.FILENAME + "_HTML-SANDBOXED") != null ? (String) pageDoc.getFieldValue(
-            //                        SolrConstants.FILENAME + "_HTML-SANDBOXED") : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileName = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
             // Add thumbnail information from the representative page
@@ -783,7 +789,8 @@ public class MetsIndexer extends Indexer {
      * @should maintain page order after parallel processing
      */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
-            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages) throws FatalIndexerException {
+            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
+            throws InterruptedException, FatalIndexerException {
         // Get all physical elements
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
@@ -811,7 +818,7 @@ public class MetsIndexer extends Indexer {
                         logger.error("Should be exiting here now...");
                     }
                 })).get();
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (ExecutionException e) {
                 logger.error(e.getMessage(), e);
                 SolrIndexerDaemon.getInstance().stop();
             }
@@ -1116,8 +1123,8 @@ public class MetsIndexer extends Indexer {
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
                     if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup)
-                            && !doc.containsKey(SolrConstants.FILENAME + "_HTML-SANDBOXED")) {
-                        doc.addField(SolrConstants.FILENAME + "_HTML-SANDBOXED", filePath);
+                            && !doc.containsKey(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)) {
+                        doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, filePath);
                     }
                 } else {
                     if (doc.containsKey(SolrConstants.FILENAME)) {
@@ -1479,7 +1486,8 @@ public class MetsIndexer extends Indexer {
                 if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
                     try {
                         if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) instanceof Integer) {
-                            num = Long.valueOf((int) doc.getFieldValue(SolrConstants.CURRENTNOSORT));
+                            // Compatibility mode with old indexes
+                            num = (int) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
                         } else {
                             num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
                         }

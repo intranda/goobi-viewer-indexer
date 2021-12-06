@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.goobi.viewer.indexer.model.GeoCoords;
 
@@ -38,7 +39,12 @@ public class GeoJSONTools {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(GeoJSONTools.class);
-
+    private static final ObjectMapper mapper = new ObjectMapper();
+    
+    static {
+        mapper.registerModule(new JavaTimeModule());
+    }
+    
     public static GeoCoords convert(String coords, String type, String separator) {
         FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
 
@@ -132,7 +138,7 @@ public class GeoJSONTools {
     public static String convertCoordinatesToGeoJSONString(String coords, String type, String separator) {
         FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
         try {
-            return new ObjectMapper().writeValueAsString(featureCollection);
+            return mapper.writeValueAsString(featureCollection);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }

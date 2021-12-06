@@ -69,7 +69,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder("src/test/resources/indexerconfig_solr_test.xml", client);
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
 
         metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile));
