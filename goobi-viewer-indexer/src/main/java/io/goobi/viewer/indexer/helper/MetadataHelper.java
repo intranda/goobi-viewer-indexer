@@ -649,7 +649,7 @@ public class MetadataHelper {
         if (!configurationItem.getValueNormalizers().isEmpty()) {
             for (ValueNormalizer normalizer : configurationItem.getValueNormalizers()) {
                 fieldValue = normalizer.normalize(fieldValue);
-                logger.info("normalized value: {}", fieldValue);
+                logger.debug("normalized value: {}", fieldValue);
             }
         }
 
