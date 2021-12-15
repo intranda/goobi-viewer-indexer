@@ -34,7 +34,7 @@
         <buildDate>${maven.build.timestamp}</buildDate>
 
 		<!-- intranda libraries -->
-		<alto.version>1.5.5</alto.version>
+		<alto.version>1.5.9</alto.version>
 		<iiif-api-model.version>2.1.0</iiif-api-model.version>
 		<normdataimporter.version>1.9.1</normdataimporter.version>
 
