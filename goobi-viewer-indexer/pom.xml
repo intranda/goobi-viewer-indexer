@@ -34,9 +34,9 @@
         <buildDate>${maven.build.timestamp}</buildDate>
 
 		<!-- intranda libraries -->
-		<alto.version>1.5.5</alto.version>
+		<alto.version>1.5.9</alto.version>
 		<iiif-api-model.version>2.1.0</iiif-api-model.version>
-		<normdataimporter.version>1.9.0-SNAPSHOT</normdataimporter.version>
+		<normdataimporter.version>1.9.1</normdataimporter.version>
 
 		<!-- other libraries -->
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -47,18 +47,18 @@
         <commons-text.version>1.9</commons-text.version>
 		<geojson-jackson.version>1.14</geojson-jackson.version>
 		<httpclient.version>4.5.13</httpclient.version>
-		<httpcore.version>4.4.14</httpcore.version>
+		<httpcore.version>4.4.15</httpcore.version>
 		<icu.version>70.1</icu.version>
 		<imageio-openjpeg.version>0.6.0</imageio-openjpeg.version>
-		<log4j.version>2.14.1</log4j.version>
+		<log4j.version>2.16.0</log4j.version>
         <!-- Do not update to version later than 2.11.4 because the geojson-jackson module is not compatible yet -->
 		<jackson.version>2.11.4</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
-		<jdom2.version>2.0.6</jdom2.version>
+		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.14.3</jsoup.version>
-		<json.version>20210307</json.version>
+		<json.version>20211205</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.16.0</metadata-extractor.version>
 		<solr.version>8.11.0</solr.version>
