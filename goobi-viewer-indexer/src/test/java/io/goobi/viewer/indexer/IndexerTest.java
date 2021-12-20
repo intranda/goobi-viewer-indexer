@@ -20,6 +20,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -693,5 +694,33 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
         Assert.assertEquals("2480", doc.getFieldValue(SolrConstants.WIDTH));
         Assert.assertEquals("3508", doc.getFieldValue(SolrConstants.HEIGHT));
+    }
+
+    /**
+     * @see Indexer#addNamedEntitiesFields(Map,SolrInputDocument)
+     * @verifies add field
+     */
+    @Test
+    public void addNamedEntitiesFields_shouldAddField() throws Exception {
+        Map<String, Object> altoData = new HashMap<>(1);
+        altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION_Göttingen"));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+
+        Indexer.addNamedEntitiesFields(altoData, doc);
+        Assert.assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION"));
+    }
+
+    /**
+     * @see Indexer#addNamedEntitiesFields(Map,SolrInputDocument)
+     * @verifies add untokenized field
+     */
+    @Test
+    public void addNamedEntitiesFields_shouldAddUntokenizedField() throws Exception {
+        Map<String, Object> altoData = new HashMap<>(1);
+        altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION_Göttingen"));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+
+        Indexer.addNamedEntitiesFields(altoData, doc);
+        Assert.assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION_UNTOKENIZED"));
     }
 }
