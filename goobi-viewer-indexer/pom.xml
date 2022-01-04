@@ -50,7 +50,7 @@
 		<httpcore.version>4.4.15</httpcore.version>
 		<icu.version>70.1</icu.version>
 		<imageio-openjpeg.version>0.6.0</imageio-openjpeg.version>
-		<log4j.version>2.17.0</log4j.version>
+		<log4j.version>2.17.1</log4j.version>
         <!-- Do not update to version later than 2.11.4 because the geojson-jackson module is not compatible yet -->
 		<jackson.version>2.11.4</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
