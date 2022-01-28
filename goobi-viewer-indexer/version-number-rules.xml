@@ -20,6 +20,7 @@
                 <ignoreVersion>2.12.4</ignoreVersion>
                 <ignoreVersion>2.12.5</ignoreVersion>
                 <ignoreVersion>2.13.0</ignoreVersion>
+                <ignoreVersion>2.13.1</ignoreVersion>
             </ignoreVersions>
         </rule>
     </rules>
