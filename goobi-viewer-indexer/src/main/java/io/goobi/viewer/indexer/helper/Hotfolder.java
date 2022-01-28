@@ -1880,12 +1880,16 @@ public class Hotfolder {
         @Override
         public boolean accept(File pathname) {
             if (pathname.getName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
-                if (pathname.isFile()) {
-                    //                    total += pathname.length();
-                    total += FileUtils.sizeOf(pathname);
-                } else {
-                    pathname.listFiles(this);
-                    total += FileUtils.sizeOfDirectory(pathname);
+                try {
+                    if (pathname.isFile()) {
+                        //                    total += pathname.length();
+                        total += FileUtils.sizeOf(pathname);
+                    } else {
+                        pathname.listFiles(this);
+                        total += FileUtils.sizeOfDirectory(pathname);
+                    }
+                } catch (IllegalArgumentException e) {
+                    logger.error(e.getMessage());
                 }
             }
 
