@@ -111,11 +111,11 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void generateLongOrderNumber_shouldConstructNumberCorrectly() throws Exception {
-        Assert.assertEquals(100000001, Utils.generateLongOrderNumber(1, 1));
-        Assert.assertEquals(110000010, Utils.generateLongOrderNumber(11, 10));
-        Assert.assertEquals(111000100, Utils.generateLongOrderNumber(111, 100));
-        Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
-        Assert.assertEquals(111101000, Utils.generateLongOrderNumber(1111, 1000));
+        Assert.assertEquals(10001, Utils.generateLongOrderNumber(1, 1));
+        Assert.assertEquals(100001, Utils.generateLongOrderNumber(10, 1));
+        Assert.assertEquals(110010, Utils.generateLongOrderNumber(11, 10));
+        Assert.assertEquals(1110100, Utils.generateLongOrderNumber(111, 100));
+        Assert.assertEquals(11111000, Utils.generateLongOrderNumber(1111, 1000));
         Assert.assertEquals(111111000, Utils.generateLongOrderNumber(11111, 1000));
     }
 
