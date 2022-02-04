@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>21.12</version>
+	<version>22.01-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -35,7 +35,7 @@
 
 		<!-- intranda libraries -->
 		<alto.version>1.5.9</alto.version>
-		<iiif-api-model.version>2.1.0</iiif-api-model.version>
+		<iiif-api-model.version>2.2.0</iiif-api-model.version>
 		<normdataimporter.version>1.9.1</normdataimporter.version>
 
 		<!-- other libraries -->
@@ -50,7 +50,7 @@
 		<httpcore.version>4.4.15</httpcore.version>
 		<icu.version>70.1</icu.version>
 		<imageio-openjpeg.version>0.6.0</imageio-openjpeg.version>
-		<log4j.version>2.17.0</log4j.version>
+		<log4j.version>2.17.1</log4j.version>
         <!-- Do not update to version later than 2.11.4 because the geojson-jackson module is not compatible yet -->
 		<jackson.version>2.11.4</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
@@ -62,7 +62,7 @@
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.16.0</metadata-extractor.version>
 		<solr.version>8.11.1</solr.version>
-		<slf4j.version>1.7.32</slf4j.version>
+		<slf4j.version>1.7.35</slf4j.version>
 	</properties>
 
 

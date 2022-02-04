@@ -733,7 +733,7 @@ public class MetsIndexer extends Indexer {
                 // Add main value, otherwise the document will be skipped
                 shapeGmd.setMainValue((String) pageDoc.getFieldValue("MD_COORDS"));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
-                logger.info("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
+                logger.debug("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
 
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
@@ -832,7 +832,7 @@ public class MetsIndexer extends Indexer {
                 }
             }
         }
-        logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
+        logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
     }
 
     /**
