@@ -88,6 +88,7 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -148,7 +149,7 @@ public abstract class Indexer {
     protected boolean recordHasFulltext = false;
 
     private final HttpConnector httpConnector;
-    
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     protected Indexer() {
@@ -166,7 +167,7 @@ public abstract class Indexer {
      *
      * @param pi {@link java.lang.String} Record identifier.
      * @param trace A Lucene document with DATEDELETED timestamp will be created if true.
-     * @param searchIndex
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @return {@link java.lang.Boolean}
      * @throws java.io.IOException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
@@ -174,7 +175,6 @@ public abstract class Indexer {
      * @should delete LIDO record from index completely
      * @should leave trace document for METS record if requested
      * @should leave trace document for LIDO record if requested
-     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      */
     public static boolean delete(String pi, boolean trace, SolrSearchIndex searchIndex) throws IOException, FatalIndexerException {
         if (StringUtils.isEmpty(pi)) {
@@ -205,6 +205,13 @@ public abstract class Indexer {
         try {
             if (deleteWithPI(pi, trace, searchIndex)) {
                 searchIndex.commit(SolrSearchIndex.optimize);
+
+                // Clear cache for record
+                String msg = Utils.removeRecordImagesFromCache(pi);
+                if (msg != null) {
+                    logger.info(msg);
+                }
+
                 return true;
             }
         } catch (SolrServerException e) {
