@@ -773,6 +773,50 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(Long.valueOf(1372770217000L), dateCreated);
         }
     }
+    
+
+    /**
+     * @see MetsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies not add dateupdated if value already exists
+     */
+    @Test
+    public void index_shouldNotAddDateupdatedIfValueAlreadyExists() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        String[] ret = new MetsIndexer(hotfolder).index(metsFile2, false, dataFolders, null, 1, false);
+        Assert.assertEquals(PI2 + ".xml", ret[0]);
+        Assert.assertNull(ret[1]);
+
+        Long timestamp = 1372770217000L;
+        
+        {
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
+            Assert.assertEquals(1, docList.size());
+            SolrDocument doc = docList.get(0);
+
+            Long dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
+            Assert.assertNotNull(dateCreated);
+            Assert.assertEquals(timestamp, dateCreated);
+            
+            Long dateUpdated = (Long) doc.getFieldValue(SolrConstants.DATEUPDATED);
+            Assert.assertNotNull(dateUpdated);
+            Assert.assertEquals(timestamp, dateUpdated);
+        }
+        // Second indexing
+        {
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
+            Assert.assertEquals(1, docList.size());
+            SolrDocument doc = docList.get(0);
+
+            Long dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
+            Assert.assertNotNull(dateCreated);
+            Assert.assertEquals(timestamp, dateCreated);
+            // DATEUPDATED is still the same
+            Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED));
+            Long dateUpdated = (Long) doc.getFieldValue(SolrConstants.DATEUPDATED);
+            Assert.assertNotNull(dateUpdated);
+            Assert.assertEquals(timestamp, dateUpdated);
+        }
+    }
 
     /**
      * @see MetsIndexer#generatePageDocuments(JDomXP)

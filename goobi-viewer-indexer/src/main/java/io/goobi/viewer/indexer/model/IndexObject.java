@@ -45,8 +45,12 @@ public class IndexObject {
     private String pi;
     private IndexObject parent = null;
     private boolean update = false;
+    /** Timestamp of initial import. Never altered once written. */
     private long dateCreated = -1;
+    /** Timestamps collected from the source document (e.g. METS). */
     private final List<Long> dateUpdated = new ArrayList<>();
+    /** Timestamps of each indexing of this record. */
+    private final List<Long> dateIndexed = new ArrayList<>();
 
     private String dmdId;
     private String logId;
@@ -200,27 +204,37 @@ public class IndexObject {
      * @should set DATEUPDATED if not set
      * @should not set DATEUPDATED if already set
      * @should set DATEUPDATED if update requested
+     * @should always set DATEINDEXED
      */
     public void writeDateModified(boolean updateDateUpdated) {
         long now = System.currentTimeMillis();
+        
+        // DATECREATED
         if (getDateCreated() == -1) {
             setDateCreated(now);
         }
+        addToLucene(SolrConstants.DATECREATED, String.valueOf(getDateCreated()));
+        
+        // DATEUPDATED
         if (updateDateUpdated || dateUpdated.isEmpty()) {
             dateUpdated.add(now);
         }
-
-        addToLucene(SolrConstants.DATECREATED, String.valueOf(getDateCreated()));
-        long latest = 0;
+        long latestDateUpdated = 0;
         for (Long date : getDateUpdated()) {
             addToLucene(SolrConstants.DATEUPDATED, String.valueOf(date));
-            if (date > latest) {
-                date = latest;
+            if (date > latestDateUpdated) {
+                date = latestDateUpdated;
             }
         }
         // Add latest DATEUPDATED value as SORT_DATEUPDATED
-        if (latest > 0) {
-            addToLucene(SolrConstants.SORT_ + SolrConstants.DATEUPDATED, String.valueOf(latest));
+        if (latestDateUpdated > 0) {
+            addToLucene(SolrConstants.SORT_ + SolrConstants.DATEUPDATED, String.valueOf(latestDateUpdated));
+        }
+
+        // DATEINDEXED
+        dateIndexed.add(now);
+        for (Long date : getDateIndexed()) {
+            addToLucene(SolrConstants.DATEINDEXED, String.valueOf(date));
         }
     }
 
@@ -818,6 +832,13 @@ public class IndexObject {
      */
     public List<Long> getDateUpdated() {
         return dateUpdated;
+    }
+
+    /**
+     * @return the dateIndexed
+     */
+    public List<Long> getDateIndexed() {
+        return dateIndexed;
     }
 
     /**

@@ -325,6 +325,28 @@ public class IndexObjectTest extends AbstractTest {
         Assert.assertEquals(2, fieldsDateUpdated.size());
         Assert.assertNotEquals(now, Long.parseLong(fieldsDateUpdated.get(1).getValue()));
     }
+    
+
+    /**
+     * @see IndexObject#writeDateModified(boolean)
+     * @verifies always set DATEINDEXED
+     */
+    @Test
+    public void writeDateModified_shouldAlwaysSetDATEINDEXED() throws Exception {
+        IndexObject io = new IndexObject(1);
+        long now = System.currentTimeMillis();
+        io.setDateCreated(now);
+        io.getDateIndexed().add(now);
+
+        Thread.sleep(1);
+        io.writeDateModified(true);
+
+        Assert.assertTrue(now == io.getDateIndexed().get(0));
+        List<LuceneField> fields = io.getLuceneFieldsWithName(SolrConstants.DATEINDEXED);
+        Assert.assertNotNull(fields);
+        Assert.assertEquals(2, fields.size());
+        Assert.assertNotEquals(now, Long.parseLong(fields.get(1).getValue()));
+    }
 
     /**
      * @see IndexObject#addToLucene(String,String)

@@ -152,6 +152,7 @@ public class MetsIndexer extends Indexer {
      * @should write shape metadata correctly
      * @should keep volume count up to date in anchor
      * @should read datecreated from mets with correct time zone
+     * @should not add dateupdated if value already exists
      * 
      */
     public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
@@ -338,14 +339,34 @@ public class MetsIndexer extends Indexer {
             // Set access conditions
             indexObj.writeAccessConditions(null);
 
-            // Read DATECREATED from METS
-            if (indexObj.getDateCreated() == -1) {
-                ZonedDateTime dateCreated = getMetsCreateDate();
-                if (dateCreated != null) {
-                    indexObj.setDateCreated(dateCreated.toInstant().toEpochMilli());
+            // Read DATECREATED/DATEUPDATED from METS
+            ZonedDateTime dateCreated = getMetsCreateDate();
+            if (dateCreated != null) {
+                Long millis = dateCreated.toInstant().toEpochMilli();
+                // Set DATECREATED, if new record
+                if (indexObj.getDateCreated() == -1) {
+                    indexObj.setDateCreated(millis);
                     logger.info("Using creation timestamp from METS: {}", indexObj.getDateCreated());
                 }
+                // Add new DATEUPDATED value
+                if (!indexObj.getDateUpdated().contains(millis)) {
+                    indexObj.getDateUpdated().add(millis);
+                }
+                // Remove any DATEUPDATED values that come after the one from METS
+                Collections.sort(indexObj.getDateUpdated());
+                List<Long> toRemove = new ArrayList<>();
+                for (long timestamp : indexObj.getDateUpdated()) {
+                    if (timestamp > millis) {
+                        toRemove.add(timestamp);
+                    }
+                }
+                for (long timestamp : toRemove) {
+                    indexObj.getDateUpdated().remove(timestamp);
+                    logger.info("Removed false DATEUPDATED value: {}", timestamp);
+                }
+
             }
+
             // Write created/updated timestamps
             indexObj.writeDateModified(!fromReindexQueue && !noTimestampUpdate);
 
@@ -662,6 +683,11 @@ public class MetsIndexer extends Indexer {
             if (pageDoc.getField(SolrConstants.DATEUPDATED) == null && !indexObj.getDateUpdated().isEmpty()) {
                 for (Long date : indexObj.getDateUpdated()) {
                     pageDoc.addField(SolrConstants.DATEUPDATED, date);
+                }
+            }
+            if (pageDoc.getField(SolrConstants.DATEINDEXED) == null && !indexObj.getDateIndexed().isEmpty()) {
+                for (Long date : indexObj.getDateIndexed()) {
+                    pageDoc.addField(SolrConstants.DATEINDEXED, date);
                 }
             }
 
@@ -1782,79 +1808,6 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
-     * is added, child docs are removed.
-     *
-     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
-     * @throws java.io.IOException
-     * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @should keep creation timestamp
-     * @should set update timestamp correctly
-     * @should keep representation thumbnail
-     * @should keep anchor IDDOC
-     * @should delete anchor secondary docs
-     */
-    protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
-        String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-        // Retrieve record from old index, if available
-        boolean fromOldIndex = false;
-        if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
-            hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-            if (hits.getNumFound() > 0) {
-                fromOldIndex = true;
-                logger.info("Retrieving data from old index for record '{}'.", pi);
-            }
-        }
-        if (hits.getNumFound() == 0) {
-            return;
-        }
-
-        logger.debug("This file has already been indexed, initiating an UPDATE instead...");
-        indexObj.setUpdate(true);
-        SolrDocument doc = hits.get(0);
-        // Set creation timestamp, if exists (should never be updated)
-        Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
-        if (dateCreated != null) {
-            // Set creation timestamp, if exists (should never be updated)
-            indexObj.setDateCreated((Long) dateCreated);
-        }
-        // Set update timestamp
-        Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
-        if (dateUpdatedValues != null) {
-            for (Object date : dateUpdatedValues) {
-                indexObj.getDateUpdated().add((Long) date);
-            }
-        }
-        // Set previous representation thumbnail, if available
-        Object thumbnail = doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT);
-        if (thumbnail != null) {
-            indexObj.setThumbnailRepresent((String) thumbnail);
-        }
-        if (isAnchor()) {
-            // Keep old IDDOC
-            indexObj.setIddoc(Long.valueOf(doc.getFieldValue(SolrConstants.IDDOC).toString()));
-            // Delete old doc
-            hotfolder.getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
-            // Delete secondary docs (aggregated metadata, events)
-            List<String> iddocsToDelete = new ArrayList<>();
-            hits = hotfolder.getSearchIndex()
-                    .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(SolrConstants.IDDOC));
-            for (SolrDocument doc2 : hits) {
-                iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
-            }
-            if (!iddocsToDelete.isEmpty()) {
-                logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
-                hotfolder.getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
-            }
-        } else if (!fromOldIndex) {
-            // Recursively delete all children, if not an anchor
-            deleteWithPI(pi, false, hotfolder.getSearchIndex());
-        }
-    }
-
-    /**
      * Recursively re-indexes the logical docstruct subtree of the node represented by the given IndexObject.
      * 
      * @param parentIndexObject {@link IndexObject}
@@ -2154,10 +2107,10 @@ public class MetsIndexer extends Indexer {
      * @return boolean
      * @throws FatalIndexerException
      */
-    private boolean isAnchor() throws FatalIndexerException {
+    @Override
+    boolean isAnchor() throws FatalIndexerException {
         String anchorQuery = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']";
         List<Element> anchorList = xp.evaluateToElements(anchorQuery, null);
-        // das habe ich selber hinzugefügt..
         if (anchorList == null || anchorList.isEmpty()) {
             return true;
         }

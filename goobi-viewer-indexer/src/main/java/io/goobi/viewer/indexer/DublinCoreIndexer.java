@@ -439,6 +439,11 @@ public class DublinCoreIndexer extends Indexer {
                     pageDoc.addField(SolrConstants.DATEUPDATED, date);
                 }
             }
+            if (pageDoc.getField(SolrConstants.DATEINDEXED) == null && !indexObj.getDateIndexed().isEmpty()) {
+                for (Long date : indexObj.getDateIndexed()) {
+                    pageDoc.addField(SolrConstants.DATEINDEXED, date);
+                }
+            }
 
             // Add of each docstruct access conditions (no duplicates)
             Set<String> existingAccessConditions = new HashSet<>();
@@ -658,79 +663,6 @@ public class DublinCoreIndexer extends Indexer {
     }
 
     /**
-     * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
-     * is added, child docs are removed.
-     *
-     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
-     * @throws java.io.IOException
-     * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @should keep creation timestamp
-     * @should set update timestamp correctly
-     * @should keep representation thumbnail
-     * @should keep anchor IDDOC
-     * @should delete anchor secondary docs
-     */
-    protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
-        String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-        // Retrieve record from old index, if available
-        boolean fromOldIndex = false;
-        if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
-            hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-            if (hits.getNumFound() > 0) {
-                fromOldIndex = true;
-                logger.info("Retrieving data from old index for record '{}'.", pi);
-            }
-        }
-        if (hits.getNumFound() == 0) {
-            return;
-        }
-
-        logger.debug("This file has already been indexed, initiating an UPDATE instead...");
-        indexObj.setUpdate(true);
-        SolrDocument doc = hits.get(0);
-        // Set creation timestamp, if exists (should never be updated)
-        Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
-        if (dateCreated != null) {
-            // Set creation timestamp, if exists (should never be updated)
-            indexObj.setDateCreated((Long) dateCreated);
-        }
-        // Set update timestamp
-        Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
-        if (dateUpdatedValues != null) {
-            for (Object date : dateUpdatedValues) {
-                indexObj.getDateUpdated().add((Long) date);
-            }
-        }
-        // Set previous representation thumbnail, if available
-        Object thumbnail = doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT);
-        if (thumbnail != null) {
-            indexObj.setThumbnailRepresent((String) thumbnail);
-        }
-        if (isAnchor()) {
-            // Keep old IDDOC
-            indexObj.setIddoc(Long.valueOf(doc.getFieldValue(SolrConstants.IDDOC).toString()));
-            // Delete old doc
-            hotfolder.getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
-            // Delete secondary docs (aggregated metadata, events)
-            List<String> iddocsToDelete = new ArrayList<>();
-            hits = hotfolder.getSearchIndex()
-                    .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(SolrConstants.IDDOC));
-            for (SolrDocument doc2 : hits) {
-                iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
-            }
-            if (!iddocsToDelete.isEmpty()) {
-                logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
-                hotfolder.getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
-            }
-        } else if (!fromOldIndex) {
-            // Recursively delete all children, if not an anchor
-            deleteWithPI(pi, false, hotfolder.getSearchIndex());
-        }
-    }
-
-    /**
      * Sets DMDID, ID, TYPE and LABEL from the METS document.
      * 
      * @param indexObj {@link IndexObject}
@@ -810,22 +742,6 @@ public class DublinCoreIndexer extends Indexer {
         }
 
         return urn;
-    }
-
-    /**
-     * Checks whether the METS document represents an anchor.
-     * 
-     * 
-     * @return boolean
-     * @throws FatalIndexerException
-     */
-    private boolean isAnchor() throws FatalIndexerException {
-        String anchorQuery = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']";
-        List<Element> anchorList = xp.evaluateToElements(anchorQuery, null);
-        if (anchorList == null || anchorList.isEmpty()) {
-            return true;
-        }
-        return false;
     }
 
     /**

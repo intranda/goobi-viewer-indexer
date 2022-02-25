@@ -532,6 +532,11 @@ public class WorldViewsIndexer extends Indexer {
                     pageDoc.addField(SolrConstants.DATEUPDATED, date);
                 }
             }
+            if (pageDoc.getField(SolrConstants.DATEINDEXED) == null && !rootIndexObj.getDateIndexed().isEmpty()) {
+                for (Long date : rootIndexObj.getDateIndexed()) {
+                    pageDoc.addField(SolrConstants.DATEINDEXED, date);
+                }
+            }
 
             // Add owner docstruct's metadata (tokenized only!) and SORT_* fields to the page
             Set<String> existingMetadataFieldNames = new HashSet<>();
@@ -1032,64 +1037,6 @@ public class WorldViewsIndexer extends Indexer {
             }
         } else {
             logger.warn("No anchor file has been indexed for this work yet.");
-        }
-    }
-
-    /**
-     * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
-     * is added, child docs are removed.
-     *
-     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
-     * @throws java.io.IOException
-     * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @should keep creation timestamp
-     * @should set update timestamp correctly
-     * @should keep representation thumbnail
-     * @should keep anchor IDDOC
-     * @should delete anchor secondary docs
-     */
-    protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
-        String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-        // Retrieve record from old index, if available
-        boolean fromOldIndex = false;
-        if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
-            hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-            if (hits.getNumFound() > 0) {
-                fromOldIndex = true;
-                logger.info("Retrieving data from old index for record '{}'.", pi);
-            }
-        }
-        if (hits.getNumFound() == 0) {
-            return;
-        }
-
-        logger.debug("This file has already been indexed, initiating an UPDATE instead...");
-        indexObj.setUpdate(true);
-        SolrDocument doc = hits.get(0);
-        // Set creation timestamp, if exists (should never be updated)
-        Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
-        if (dateCreated != null) {
-            // Set creation timestamp, if exists (should never be updated)
-            indexObj.setDateCreated((Long) dateCreated);
-        }
-        // Set update timestamp
-        Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
-        if (dateUpdatedValues != null) {
-            for (Object date : dateUpdatedValues) {
-                indexObj.getDateUpdated().add((Long) date);
-            }
-        }
-        // Set previous representation thumbnail, if available
-        Object thumbnail = doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT);
-        if (thumbnail != null) {
-            indexObj.setThumbnailRepresent((String) thumbnail);
-        }
-
-        // Recursively delete all children, if not an anchor
-        if (!fromOldIndex) {
-            deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
     }
 }
