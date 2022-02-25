@@ -39,6 +39,7 @@ import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -792,12 +793,9 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-
-            Long dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
-            Assert.assertNotNull(dateCreated);
-            Assert.assertEquals(timestamp, dateCreated);
             
-            Long dateUpdated = (Long) doc.getFieldValue(SolrConstants.DATEUPDATED);
+            Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            Long dateUpdated =  SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
             Assert.assertNotNull(dateUpdated);
             Assert.assertEquals(timestamp, dateUpdated);
         }
@@ -807,12 +805,9 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
 
-            Long dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
-            Assert.assertNotNull(dateCreated);
-            Assert.assertEquals(timestamp, dateCreated);
             // DATEUPDATED is still the same
-            Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED));
-            Long dateUpdated = (Long) doc.getFieldValue(SolrConstants.DATEUPDATED);
+            Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            Long dateUpdated =  SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
             Assert.assertNotNull(dateUpdated);
             Assert.assertEquals(timestamp, dateUpdated);
         }

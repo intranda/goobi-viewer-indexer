@@ -731,9 +731,26 @@ public final class SolrSearchIndex {
         return val != null ? String.valueOf(val) : null;
     }
 
+    /**
+     * 
+     * @param doc
+     * @param field
+     * @return
+     */
     public static Integer getSingleFieldIntegerValue(SolrDocument doc, String field) {
         Object val = getSingleFieldValue(doc, field);
         return getAsInt(val);
+    }
+    
+    /**
+     * 
+     * @param doc
+     * @param field
+     * @return
+     */
+    public static Long getSingleFieldLongValue(SolrDocument doc, String field) {
+        Object val = getSingleFieldValue(doc, field);
+        return getAsLong(val);
     }
 
     /**
@@ -750,6 +767,25 @@ public final class SolrSearchIndex {
         }
         try {
             return Integer.parseInt(fieldValue.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+    
+    /**
+     * 
+     * @param fieldValue
+     * @return
+     */
+    static Long getAsLong(Object fieldValue) {
+        if (fieldValue == null) {
+            return null;
+        }
+        if (fieldValue instanceof Long) {
+            return (Long) fieldValue;
+        }
+        try {
+            return Long.parseLong(fieldValue.toString());
         } catch (NumberFormatException e) {
             return null;
         }
