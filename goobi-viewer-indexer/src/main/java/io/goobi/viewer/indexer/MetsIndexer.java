@@ -340,32 +340,7 @@ public class MetsIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Read DATECREATED/DATEUPDATED from METS
-            ZonedDateTime dateCreated = getMetsCreateDate();
-            if (dateCreated != null) {
-                Long millis = dateCreated.toInstant().toEpochMilli();
-                // Set DATECREATED, if new record
-                if (indexObj.getDateCreated() == -1) {
-                    indexObj.setDateCreated(millis);
-                    logger.info("Using creation timestamp from METS: {}", indexObj.getDateCreated());
-                }
-                // Add new DATEUPDATED value
-                if (!indexObj.getDateUpdated().contains(millis)) {
-                    indexObj.getDateUpdated().add(millis);
-                }
-                // Remove any DATEUPDATED values that come after the one from METS
-                Collections.sort(indexObj.getDateUpdated());
-                List<Long> toRemove = new ArrayList<>();
-                for (long timestamp : indexObj.getDateUpdated()) {
-                    if (timestamp > millis) {
-                        toRemove.add(timestamp);
-                    }
-                }
-                for (long timestamp : toRemove) {
-                    indexObj.getDateUpdated().remove(timestamp);
-                    logger.info("Removed false DATEUPDATED value: {}", timestamp);
-                }
-
-            }
+            indexObj.populateDateCreatedUpdated(getMetsCreateDate());
 
             // Write created/updated timestamps
             indexObj.writeDateModified(false);

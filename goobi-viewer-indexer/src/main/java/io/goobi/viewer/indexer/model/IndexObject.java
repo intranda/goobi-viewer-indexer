@@ -15,7 +15,9 @@
  */
 package io.goobi.viewer.indexer.model;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -208,13 +210,13 @@ public class IndexObject {
      */
     public void writeDateModified(boolean updateDateUpdated) {
         long now = System.currentTimeMillis();
-        
+
         // DATECREATED
         if (getDateCreated() == -1) {
             setDateCreated(now);
         }
         addToLucene(SolrConstants.DATECREATED, String.valueOf(getDateCreated()));
-        
+
         // DATEUPDATED
         if (updateDateUpdated || dateUpdated.isEmpty()) {
             dateUpdated.add(now);
@@ -523,6 +525,47 @@ public class IndexObject {
                     alreadyFinishedFields.add(fieldName);
                 }
             }
+        }
+    }
+
+    /**
+     * Sets <code>dateCreated</code> and <code>dateUpdated</code> values appropriately. Use this when source document provides an export date/time. If not
+     * used, automatic values will be added later in the indexing process.
+     * 
+     * @param dateCreated Date to set
+     * @should set dateCreated only if not yet set
+     * @should add dateUpdated only if later
+     * @should remove dateUpdated values later than given
+     */
+    public void populateDateCreatedUpdated(ZonedDateTime dateCreated) {
+        if (dateCreated == null) {
+            return;
+        }
+
+        Long millis = dateCreated.toInstant().toEpochMilli();
+        
+        // Set DATECREATED, if new record
+        if (getDateCreated() == -1) {
+            setDateCreated(millis);
+            logger.info("Using creation timestamp from METS: {}", getDateCreated());
+        }
+        
+        // Add new DATEUPDATED value
+        if (!getDateUpdated().contains(millis)) {
+            getDateUpdated().add(millis);
+        }
+        
+        // Remove any DATEUPDATED values that come after the one from METS
+        Collections.sort(getDateUpdated());
+        List<Long> toRemove = new ArrayList<>();
+        for (long timestamp : getDateUpdated()) {
+            if (timestamp > millis) {
+                toRemove.add(timestamp);
+            }
+        }
+        for (long timestamp : toRemove) {
+            getDateUpdated().remove(timestamp);
+            logger.info("Removed false DATEUPDATED value: {}", timestamp);
         }
     }
 

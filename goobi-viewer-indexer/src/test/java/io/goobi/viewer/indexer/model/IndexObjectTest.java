@@ -15,6 +15,7 @@
  */
 package io.goobi.viewer.indexer.model;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -325,7 +326,6 @@ public class IndexObjectTest extends AbstractTest {
         Assert.assertEquals(2, fieldsDateUpdated.size());
         Assert.assertNotEquals(now, Long.parseLong(fieldsDateUpdated.get(1).getValue()));
     }
-    
 
     /**
      * @see IndexObject#writeDateModified(boolean)
@@ -661,4 +661,64 @@ public class IndexObjectTest extends AbstractTest {
             Assert.assertEquals("false", boolField.getValue());
         }
     }
+
+    /**
+     * @see IndexObject#populateDateCreatedUpdated(ZonedDateTime)
+     * @verifies set dateCreated only if not yet set
+     */
+    @Test
+    public void populateDateCreatedUpdated_shouldSetDateCreatedOnlyIfNotYetSet() throws Exception {
+        ZonedDateTime now = ZonedDateTime.now();
+        IndexObject obj = new IndexObject(1);
+
+        obj.populateDateCreatedUpdated(now);
+        Assert.assertEquals(now.toInstant().toEpochMilli(), obj.getDateCreated());
+
+        obj.populateDateCreatedUpdated(now.plusDays(1)); // populate again with a later date
+        Assert.assertEquals(now.toInstant().toEpochMilli(), obj.getDateCreated()); // dateCreated remains unchanged
+    }
+
+    /**
+     * @see IndexObject#populateDateCreatedUpdated(ZonedDateTime)
+     * @verifies add dateUpdated only if later
+     */
+    @Test
+    public void populateDateCreatedUpdated_shouldAddDateUpdatedOnlyIfLater() throws Exception {
+        ZonedDateTime now = ZonedDateTime.now();
+        IndexObject obj = new IndexObject(1);
+
+        obj.populateDateCreatedUpdated(now);
+        Assert.assertEquals(1, obj.getDateUpdated().size());
+        Assert.assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0));
+
+        obj.populateDateCreatedUpdated(now); // populate again with the same date
+        Assert.assertEquals(1, obj.getDateUpdated().size()); // no new value was added
+
+        obj.populateDateCreatedUpdated(now.plusDays(1)); // populate again with a later date
+        Assert.assertEquals(2, obj.getDateUpdated().size()); // no new value was added
+        Assert.assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0));
+        Assert.assertEquals(Long.valueOf(now.plusDays(1).toInstant().toEpochMilli()), obj.getDateUpdated().get(1));
+    }
+
+    /**
+     * @see IndexObject#populateDateCreatedUpdated(ZonedDateTime)
+     * @verifies remove dateUpdated values later than given
+     */
+    @Test
+    public void populateDateCreatedUpdated_shouldRemoveDateUpdatedValuesLaterThanGiven() throws Exception {
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime tomorrow = now.plusDays(1);
+        IndexObject obj = new IndexObject(1);
+        obj.getDateUpdated().add(now.toInstant().toEpochMilli());
+        obj.getDateUpdated().add(now.plusDays(2).toInstant().toEpochMilli());
+        obj.getDateUpdated().add(now.plusDays(3).toInstant().toEpochMilli());
+        Assert.assertEquals(3, obj.getDateUpdated().size());
+        
+        obj.populateDateCreatedUpdated(tomorrow); // populate with "tomorrow"
+        Assert.assertEquals(2, obj.getDateUpdated().size()); // only two values remain
+        Assert.assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0)); // now
+        Assert.assertEquals(Long.valueOf(tomorrow.toInstant().toEpochMilli()), obj.getDateUpdated().get(1)); // tomorrow
+        
+    }
+
 }
