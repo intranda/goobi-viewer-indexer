@@ -1409,8 +1409,8 @@ public abstract class Indexer {
         }
         // Collect index timestamps
         Collection<Object> dateIndexedValues = doc.getFieldValues(SolrConstants.DATEINDEXED);
-        if (dateUpdatedValues != null) {
-            for (Object date : dateUpdatedValues) {
+        if (dateIndexedValues != null) {
+            for (Object date : dateIndexedValues) {
                 indexObj.getDateIndexed().add((Long) date);
             }
         }

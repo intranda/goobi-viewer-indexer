@@ -198,7 +198,7 @@ public class IndexObject {
     }
 
     /**
-     * Writes created/updated timestamps.
+     * Writes created/updated/indexed timestamps into Solr fields.
      *
      * @param updateDateUpdated DATEINDEXED will be set to the current timestamp if true; old value will be used if false.
      * @should set DATECREATED if not set
@@ -212,7 +212,7 @@ public class IndexObject {
         long now = System.currentTimeMillis();
 
         // DATECREATED
-        if (getDateCreated() == -1) {
+        if (dateCreated == -1) {
             setDateCreated(now);
         }
         addToLucene(SolrConstants.DATECREATED, String.valueOf(getDateCreated()));
@@ -222,10 +222,10 @@ public class IndexObject {
             dateUpdated.add(now);
         }
         long latestDateUpdated = 0;
-        for (Long date : getDateUpdated()) {
+        for (Long date : dateUpdated) {
             addToLucene(SolrConstants.DATEUPDATED, String.valueOf(date));
             if (date > latestDateUpdated) {
-                date = latestDateUpdated;
+                latestDateUpdated = date;
             }
         }
         // Add latest DATEUPDATED value as SORT_DATEUPDATED
@@ -235,7 +235,7 @@ public class IndexObject {
 
         // DATEINDEXED
         dateIndexed.add(now);
-        for (Long date : getDateIndexed()) {
+        for (Long date : dateIndexed) {
             addToLucene(SolrConstants.DATEINDEXED, String.valueOf(date));
         }
     }
@@ -529,42 +529,42 @@ public class IndexObject {
     }
 
     /**
-     * Sets <code>dateCreated</code> and <code>dateUpdated</code> values appropriately. Use this when source document provides an export date/time. If not
-     * used, automatic values will be added later in the indexing process.
+     * Sets <code>dateCreated</code> and <code>dateUpdated</code> values appropriately. Use this when source document provides an export date/time. If
+     * not used, automatic values will be added later in the indexing process.
      * 
-     * @param dateCreated Date to set
+     * @param date Date to set
      * @should set dateCreated only if not yet set
      * @should add dateUpdated only if later
      * @should remove dateUpdated values later than given
      */
-    public void populateDateCreatedUpdated(ZonedDateTime dateCreated) {
-        if (dateCreated == null) {
+    public void populateDateCreatedUpdated(ZonedDateTime date) {
+        if (date == null) {
             return;
         }
 
-        Long millis = dateCreated.toInstant().toEpochMilli();
-        
+        Long millis = date.toInstant().toEpochMilli();
+
         // Set DATECREATED, if new record
-        if (getDateCreated() == -1) {
+        if (dateCreated == -1) {
             setDateCreated(millis);
             logger.info("Using creation timestamp from METS: {}", getDateCreated());
         }
-        
+
         // Add new DATEUPDATED value
-        if (!getDateUpdated().contains(millis)) {
-            getDateUpdated().add(millis);
+        if (!dateUpdated.contains(millis)) {
+            dateUpdated.add(millis);
         }
-        
+
         // Remove any DATEUPDATED values that come after the one from METS
-        Collections.sort(getDateUpdated());
+        Collections.sort(dateUpdated);
         List<Long> toRemove = new ArrayList<>();
-        for (long timestamp : getDateUpdated()) {
+        for (long timestamp : dateUpdated) {
             if (timestamp > millis) {
                 toRemove.add(timestamp);
             }
         }
         for (long timestamp : toRemove) {
-            getDateUpdated().remove(timestamp);
+            dateUpdated.remove(timestamp);
             logger.info("Removed false DATEUPDATED value: {}", timestamp);
         }
     }
