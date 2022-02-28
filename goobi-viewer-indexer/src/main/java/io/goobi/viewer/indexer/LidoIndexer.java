@@ -34,8 +34,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
@@ -242,7 +240,7 @@ public class LidoIndexer extends Indexer {
             }
 
             // Write created/updated timestamps
-            indexObj.writeDateModified(!noTimestampUpdate);
+            indexObj.writeDateModified(true);
 
             // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
             indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));

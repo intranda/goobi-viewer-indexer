@@ -578,7 +578,8 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
             Assert.assertEquals(dateCreated, doc.getFieldValue(SolrConstants.DATECREATED));
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
-            Assert.assertEquals(dateUpdated.size() + 1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            // No new DATEUPDATED value
+            Assert.assertEquals(dateUpdated.size(), doc.getFieldValues(SolrConstants.DATEUPDATED).size());
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(iddoc);
             Assert.assertNull(iddocMap.get(iddoc));

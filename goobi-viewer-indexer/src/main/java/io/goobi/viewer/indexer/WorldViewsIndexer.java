@@ -262,7 +262,7 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Write created/updated timestamps
-            indexObj.writeDateModified(!fromReindexQueue && !noTimestampUpdate);
+            indexObj.writeDateModified(!fromReindexQueue);
 
             // Generate docs for all pages and add to the write strategy
             generatePageDocuments(writeStrategy, dataFolders, pageCountStart);

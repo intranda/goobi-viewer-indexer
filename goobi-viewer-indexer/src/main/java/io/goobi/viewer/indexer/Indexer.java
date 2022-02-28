@@ -126,9 +126,6 @@ public abstract class Indexer {
             { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
                     ".*native.(jpg|png|tif|jp2)$" };
 
-    /** Constant <code>noTimestampUpdate=false</code> */
-    public static boolean noTimestampUpdate = false;
-
     private static long nextIddoc = -1;
 
     // TODO cyclic dependency; find a more elegant way to select a repository w/o passing the hotfolder instance to the indexer

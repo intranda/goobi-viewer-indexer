@@ -37,8 +37,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
@@ -235,7 +233,7 @@ public class DublinCoreIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Write created/updated timestamps
-            indexObj.writeDateModified(!noTimestampUpdate);
+            indexObj.writeDateModified(true);
 
             // Generate docs for all pages and add to the write strategy
             generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);

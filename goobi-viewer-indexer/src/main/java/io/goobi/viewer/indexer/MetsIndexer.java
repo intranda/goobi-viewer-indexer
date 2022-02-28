@@ -368,7 +368,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Write created/updated timestamps
-            indexObj.writeDateModified(!fromReindexQueue && !noTimestampUpdate);
+            indexObj.writeDateModified(false);
 
             if (indexObj.isAnchor()) {
                 // Anchors: add NUMVOLUMES

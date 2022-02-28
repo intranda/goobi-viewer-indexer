@@ -497,9 +497,6 @@ public class Hotfolder {
                         }
                         resetSecondaryLog();
                         logger.info("Found file '{}' (hotfolder).", recordFile.getFileName());
-                        if (MetsIndexer.noTimestampUpdate) {
-                            logger.warn("WARNING: No update mode - DATEUPDATED timestamps will not be updated.");
-                        }
                         checkFreeSpace();
                         Map<String, Boolean> reindexSettings = new HashMap<>();
                         reindexSettings.put(DataRepository.PARAM_FULLTEXT, false);

@@ -198,7 +198,7 @@ public class IndexObject {
     /**
      * Writes created/updated timestamps.
      *
-     * @param updateDateUpdated DATEUPDATED will be set to the current timestamp if true; old value will be used if false.
+     * @param updateDateUpdated DATEINDEXED will be set to the current timestamp if true; old value will be used if false.
      * @should set DATECREATED if not set
      * @should not set DATECREATED if already set
      * @should set DATEUPDATED if not set
