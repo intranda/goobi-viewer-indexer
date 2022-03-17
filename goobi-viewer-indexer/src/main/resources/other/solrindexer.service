@@ -1,7 +1,9 @@
 [Unit]
 Description=Goobi viewer - Indexer
 After=tomcat9.service
+After=solr.service
 Requires=tomcat9.service
+Requires=solr.service
 
 
 [Service]
