@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -124,9 +125,6 @@ public abstract class Indexer {
     public static final String[] IIIF_IMAGE_FILE_NAMES =
             { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
                     ".*native.(jpg|png|tif|jp2)$" };
-
-    /** Constant <code>noTimestampUpdate=false</code> */
-    public static boolean noTimestampUpdate = false;
 
     private static long nextIddoc = -1;
 
@@ -1352,4 +1350,94 @@ public abstract class Indexer {
         throw new IOException("Failed to write file '" + targetPath + "' from url '" + fileUrl + "'");
     }
 
+    /**
+     * Checks whether the document represents an anchor.
+     * 
+     * 
+     * @return Always false in the default implementation
+     * @throws FatalIndexerException
+     */
+    boolean isAnchor() throws FatalIndexerException {
+        return false;
+    }
+
+    /**
+     * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
+     * is added, child docs are removed.
+     *
+     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
+     * @throws java.io.IOException
+     * @throws org.apache.solr.client.solrj.SolrServerException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @should keep creation timestamp
+     * @should set update timestamp correctly
+     * @should keep representation thumbnail
+     * @should keep anchor IDDOC
+     * @should delete anchor secondary docs
+     */
+    protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
+        String pi = indexObj.getPi().trim();
+        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+        // Retrieve record from old index, if available
+        boolean fromOldIndex = false;
+        if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
+            hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            if (hits.getNumFound() > 0) {
+                fromOldIndex = true;
+                logger.info("Retrieving data from old index for record '{}'.", pi);
+            }
+        }
+        if (hits.getNumFound() == 0) {
+            return;
+        }
+
+        logger.debug("This file has already been indexed, initiating an UPDATE instead...");
+        indexObj.setUpdate(true);
+        SolrDocument doc = hits.get(0);
+        // Set creation timestamp, if exists (should never be updated)
+        Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
+        if (dateCreated != null) {
+            // Set creation timestamp, if exists (should never be updated)
+            indexObj.setDateCreated((Long) dateCreated);
+        }
+        // Collect update timestamps
+        Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
+        if (dateUpdatedValues != null) {
+            for (Object date : dateUpdatedValues) {
+                indexObj.getDateUpdated().add((Long) date);
+            }
+        }
+        // Collect index timestamps
+        Collection<Object> dateIndexedValues = doc.getFieldValues(SolrConstants.DATEINDEXED);
+        if (dateIndexedValues != null) {
+            for (Object date : dateIndexedValues) {
+                indexObj.getDateIndexed().add((Long) date);
+            }
+        }
+        // Set previous representation thumbnail, if available
+        Object thumbnail = doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT);
+        if (thumbnail != null) {
+            indexObj.setThumbnailRepresent((String) thumbnail);
+        }
+        if (isAnchor()) {
+            // Keep old IDDOC
+            indexObj.setIddoc(Long.valueOf(doc.getFieldValue(SolrConstants.IDDOC).toString()));
+            // Delete old doc
+            hotfolder.getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
+            // Delete secondary docs (aggregated metadata, events)
+            List<String> iddocsToDelete = new ArrayList<>();
+            hits = hotfolder.getSearchIndex()
+                    .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(SolrConstants.IDDOC));
+            for (SolrDocument doc2 : hits) {
+                iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
+            }
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
+                hotfolder.getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            }
+        } else if (!fromOldIndex) {
+            // Recursively delete all children, if not an anchor
+            deleteWithPI(pi, false, hotfolder.getSearchIndex());
+        }
+    }
 }

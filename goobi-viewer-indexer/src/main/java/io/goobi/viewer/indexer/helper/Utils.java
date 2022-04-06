@@ -687,7 +687,7 @@ public class Utils {
      * @should construct number correctly
      */
     public static int generateLongOrderNumber(int prefix, int count) {
-        logger.info("generateLongOrderNumber({}, {})", prefix, count);
+        logger.trace("generateLongOrderNumber({}, {})", prefix, count);
         if (prefix < 1) {
             throw new IllegalArgumentException("prefix must be greater than 0");
         }

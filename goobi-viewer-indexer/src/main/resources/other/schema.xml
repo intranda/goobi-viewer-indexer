@@ -30,7 +30,7 @@
 	in server mode, and use a higher logging level that avoids logging every 
 	request -->
 
-<schema name="goobi_viewer-20210125" version="1.6">
+<schema name="goobi_viewer-20220225" version="1.6">
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -124,6 +124,8 @@
 		stored="true" />
 	<field name="DATECREATED" type="tlong" indexed="true" stored="true" />
 	<field name="DATEDELETED" type="tlong" indexed="true" stored="true" />
+    <field name="DATEINDEXED" type="tlong" indexed="true" stored="true"
+        multiValued="true" />
 	<field name="DATEUPDATED" type="tlong" indexed="true" stored="true"
 		multiValued="true" />
 	<field name="DC" type="string" indexed="true" stored="true"

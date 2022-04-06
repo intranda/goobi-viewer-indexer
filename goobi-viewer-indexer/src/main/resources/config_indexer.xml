@@ -3325,5 +3325,38 @@
             </list>
         </SORT_OBJECTNO>
 
+
+                <MD_PI_DOI>
+                        <list>
+                                <item>
+                                        <xpath>mets:xmlData/mods:mods/mods:identifier[@type="doi"]</xpath>
+                                        <getnode>first</getnode>
+                                        <addToDefault>true</addToDefault>
+                                </item>
+                        </list>
+                </MD_PI_DOI>
+
+                <MD_PI_HANDLE>
+                        <list>
+                                <item>
+                                        <xpath>mets:xmlData/mods:mods/mods:identifier[@type="hdl"]</xpath>
+                                        <getnode>first</getnode>
+                                        <addToDefault>true</addToDefault>
+                                </item>
+                        </list>
+                </MD_PI_HANDLE>
+
+                <MD_PI_ARK>
+                        <list>
+                                <item>
+                                        <xpath>mets:xmlData/mods:mods/mods:identifier[@type="ark"]</xpath>
+                                        <getnode>first</getnode>
+                                        <addToDefault>true</addToDefault>
+                                </item>
+                        </list>
+                </MD_PI_ARK>
+
+
+
 	</fields>
 </root>

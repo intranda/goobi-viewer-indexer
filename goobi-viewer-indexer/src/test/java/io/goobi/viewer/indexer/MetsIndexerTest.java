@@ -39,6 +39,7 @@ import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -577,7 +578,8 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
             Assert.assertEquals(dateCreated, doc.getFieldValue(SolrConstants.DATECREATED));
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
-            Assert.assertEquals(dateUpdated.size() + 1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            // No new DATEUPDATED value
+            Assert.assertEquals(dateUpdated.size(), doc.getFieldValues(SolrConstants.DATEUPDATED).size());
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(iddoc);
             Assert.assertNull(iddocMap.get(iddoc));
@@ -771,6 +773,44 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Long dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
             Assert.assertNotNull(dateCreated);
             Assert.assertEquals(Long.valueOf(1372770217000L), dateCreated);
+        }
+    }
+    
+
+    /**
+     * @see MetsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies not add dateupdated if value already exists
+     */
+    @Test
+    public void index_shouldNotAddDateupdatedIfValueAlreadyExists() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        String[] ret = new MetsIndexer(hotfolder).index(metsFile2, false, dataFolders, null, 1, false);
+        Assert.assertEquals(PI2 + ".xml", ret[0]);
+        Assert.assertNull(ret[1]);
+
+        Long timestamp = 1372770217000L;
+        
+        {
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
+            Assert.assertEquals(1, docList.size());
+            SolrDocument doc = docList.get(0);
+            
+            Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            Long dateUpdated =  SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
+            Assert.assertNotNull(dateUpdated);
+            Assert.assertEquals(timestamp, dateUpdated);
+        }
+        // Second indexing
+        {
+            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
+            Assert.assertEquals(1, docList.size());
+            SolrDocument doc = docList.get(0);
+
+            // DATEUPDATED is still the same
+            Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            Long dateUpdated =  SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
+            Assert.assertNotNull(dateUpdated);
+            Assert.assertEquals(timestamp, dateUpdated);
         }
     }
 

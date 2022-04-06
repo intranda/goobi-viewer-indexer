@@ -38,7 +38,7 @@ public final class SolrIndexerDaemon {
     private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
 
     /** Constant <code>VERSION</code> */
-    private static final int MIN_SCHEMA_VERSION = 20201217;
+    private static final int MIN_SCHEMA_VERSION = 20220225;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
@@ -81,22 +81,19 @@ public final class SolrIndexerDaemon {
      */
     public static void main(String[] args) {
         String configFileName = null;
-        boolean noUpdate = false;
         boolean cleanupAnchors = false;
 
         if (args.length > 0) {
             configFileName = args[0];
             if (args.length > 1) {
-                if (args[1].equalsIgnoreCase("-noupdate")) {
-                    noUpdate = true;
-                } else if (args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
+                if (args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
                     cleanupAnchors = true;
                 }
             }
         }
 
         try {
-            SolrIndexerDaemon.getInstance().start(configFileName, noUpdate, cleanupAnchors);
+            SolrIndexerDaemon.getInstance().start(configFileName, cleanupAnchors);
         } catch (FatalIndexerException e) {
             logger.error(e.getMessage());
             System.exit(-1);
@@ -110,11 +107,10 @@ public final class SolrIndexerDaemon {
      * </p>
      * 
      * @param configFilePath a {@link java.lang.String} object.
-     * @param noUpdate a boolean.
      * @param cleanupAnchors a boolean.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public void start(String configFilePath, boolean noUpdate, boolean cleanupAnchors) throws FatalIndexerException {
+    public void start(String configFilePath, boolean cleanupAnchors) throws FatalIndexerException {
         if (running) {
             logger.warn("Indexer is already running");
             return;
@@ -132,13 +128,6 @@ public final class SolrIndexerDaemon {
         logger.info(Version.asString());
         if (StringUtils.isNotEmpty(configFilePath)) {
             confFilename = configFilePath;
-        }
-        if (noUpdate) {
-            MetsIndexer.noTimestampUpdate = true;
-            LidoIndexer.noTimestampUpdate = true;
-        }
-        if (MetsIndexer.noTimestampUpdate) {
-            logger.warn("WARNING: No update mode - DATEUPDATED timestamps will not be updated.");
         }
 
         if (!checkSolrSchemaName(

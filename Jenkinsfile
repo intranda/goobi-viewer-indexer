@@ -26,6 +26,7 @@ pipeline {
       steps {
               sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean install -U'
               recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
+              dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
       }
     }
     stage('sonarcloud') {

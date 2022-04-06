@@ -34,8 +34,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
@@ -242,7 +240,7 @@ public class LidoIndexer extends Indexer {
             }
 
             // Write created/updated timestamps
-            indexObj.writeDateModified(!noTimestampUpdate);
+            indexObj.writeDateModified(true);
 
             // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
             indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
@@ -388,6 +386,12 @@ public class LidoIndexer extends Indexer {
                     pageDoc.addField(SolrConstants.DATEUPDATED, date);
                 }
             }
+            if (pageDoc.getField(SolrConstants.DATEINDEXED) == null && !indexObj.getDateIndexed().isEmpty()) {
+                for (Long date : indexObj.getDateIndexed()) {
+                    pageDoc.addField(SolrConstants.DATEINDEXED, date);
+                }
+            }
+
 
             // Add of each docstruct access conditions (no duplicates)
             Set<String> existingAccessConditions = new HashSet<>();
@@ -855,52 +859,6 @@ public class LidoIndexer extends Indexer {
         }
 
         return ret;
-    }
-
-    /**
-     * Prepares the given record for an update. Creation timestamp is preserved. A new update timestamp is added, child docs are removed.
-     * 
-     * @param indexObj {@link IndexObject}
-     * @throws IOException -
-     * @throws SolrServerException
-     * @throws FatalIndexerException
-     */
-    private void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
-        String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-        // Retrieve record from old index, if available
-        boolean fromOldIndex = false;
-        if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
-            hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-            if (hits.getNumFound() > 0) {
-                fromOldIndex = true;
-                logger.info("Retrieving data from old index for record '{}'.", pi);
-            }
-        }
-        if (hits.getNumFound() == 0) {
-            return;
-        }
-
-        logger.debug("This file has already been indexed, initiating an UPDATE instead...");
-        indexObj.setUpdate(true);
-        SolrDocument doc = hits.get(0);
-        // Set creation timestamp, if exists (should never be updated)
-        Object dateCreated = doc.getFieldValue(SolrConstants.DATECREATED);
-        if (dateCreated != null) {
-            // Set creation timestamp, if exists (should never be updated)
-            indexObj.setDateCreated((Long) dateCreated);
-        }
-        // Set update timestamp
-        Collection<Object> dateUpdatedValues = doc.getFieldValues(SolrConstants.DATEUPDATED);
-        if (dateUpdatedValues != null) {
-            for (Object date : dateUpdatedValues) {
-                indexObj.getDateUpdated().add((Long) date);
-            }
-        }
-        // Recursively delete all children
-        if (!fromOldIndex) {
-            deleteWithPI(pi, false, hotfolder.getSearchIndex());
-        }
     }
 
     /**
