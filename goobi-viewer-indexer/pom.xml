@@ -415,7 +415,29 @@
 				<configuration>
 					<rulesUri>file://${basedir}/version-number-rules.xml</rulesUri>
 				</configuration>
-			</plugin>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>7.0.4</version>
+                <configuration>
+                    <!--failBuildOnCVSS>5.0</failBuildOnCVSS-->
+                    <skipProvidedScope>true</skipProvidedScope>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <skipTestScope>true</skipTestScope>
+                    <suppressionFiles>
+                        <suppressionFile>file://${basedir}/dependency-suppression.xml</suppressionFile>
+                    </suppressionFiles>
+                    <format>ALL</format>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 </project>
