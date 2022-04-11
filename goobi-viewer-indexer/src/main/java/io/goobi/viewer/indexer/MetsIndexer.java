@@ -45,6 +45,8 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +55,7 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.spi.LoggerRegistry;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -95,6 +98,11 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
  * Indexer implementation for METS documents.
  */
 public class MetsIndexer extends Indexer {
+
+    /**
+     * 
+     */
+    private static final int GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS = 6;
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(MetsIndexer.class);
@@ -818,10 +826,14 @@ public class MetsIndexer extends Indexer {
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
                     }
-                })).get();
+                })).get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
             } catch (ExecutionException e) {
                 logger.error(e.getMessage(), e);
                 SolrIndexerDaemon.getInstance().stop();
+            } catch(TimeoutException e) {
+                throw new InterruptedException("Generating page documents timed out for object " + pi);
+            } finally {
+                pool.shutdown();
             }
         } else {
             // Generate pages sequentially
