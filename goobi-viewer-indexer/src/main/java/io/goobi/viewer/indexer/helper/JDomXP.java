@@ -34,7 +34,6 @@ import org.jdom2.Namespace;
 import org.jdom2.Text;
 import org.jdom2.filter.Filter;
 import org.jdom2.filter.Filters;
-import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathBuilder;
 import org.jdom2.xpath.XPathExpression;
@@ -104,9 +103,8 @@ public class JDomXP {
      * @throws java.io.IOException in case of errors.
      */
     public JDomXP(File file) throws JDOMException, FileNotFoundException, IOException {
-        SAXBuilder builder = new SAXBuilder();
         try (FileInputStream fis = new FileInputStream(file)) {
-            doc = builder.build(fis);
+            doc = XmlTools.getSAXBuilder().build(fis);
         }
     }
 
@@ -543,7 +541,7 @@ public class JDomXP {
      */
     public static Document readXmlFile(String filePath) throws FileNotFoundException, IOException, JDOMException {
         try (FileInputStream fis = new FileInputStream(new File(filePath))) {
-            return new SAXBuilder().build(fis);
+            return XmlTools.getSAXBuilder().build(fis);
         }
     }
 

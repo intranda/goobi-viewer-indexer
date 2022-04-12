@@ -41,7 +41,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -214,8 +213,8 @@ public final class TextHelper {
                 for (Element eleTag : doc.getRootElement().getChild("Tags", null).getChildren("NamedEntityTag", null)) {
                     //                    namedEntityFields.add(createJSONNamedEntityTag(tag));
                     String neTag = createSimpleNamedEntityTag(eleTag);
-                    if(StringUtils.isNotEmpty(neTag)) {
-                    namedEntityFields.add(neTag);
+                    if (StringUtils.isNotEmpty(neTag)) {
+                        namedEntityFields.add(neTag);
                     }
                 }
             }
@@ -242,8 +241,6 @@ public final class TextHelper {
      * @param sbFulltext a {@link java.lang.StringBuilder} object.
      */
     public static void handleAltoComposedBlock(Element eleComposedBlock, StringBuilder sbFulltext) {
-        List<Element> words = new ArrayList<>();
-
         // Words from TextBlocks
         for (Element eleTextBlock : eleComposedBlock.getChildren("TextBlock", null)) {
             readAltoTextBlock(eleTextBlock, sbFulltext);
@@ -403,7 +400,7 @@ public final class TextHelper {
         Map<String, String> ret = new HashMap<>();
 
         try (FileInputStream fis = new FileInputStream(file)) {
-            Document doc = new SAXBuilder().build(fis);
+            Document doc = XmlTools.getSAXBuilder().build(fis);
             // Image width
             List<String> values =
                     JDomXP.evaluateToStringListStatic("mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageWidth", doc);

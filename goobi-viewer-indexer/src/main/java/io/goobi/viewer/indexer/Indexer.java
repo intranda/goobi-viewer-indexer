@@ -58,7 +58,6 @@ import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,6 +90,7 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
+import io.goobi.viewer.indexer.helper.XmlTools;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -454,7 +454,7 @@ public abstract class Indexer {
         }
 
         try (FileInputStream fis = new FileInputStream(file.toFile())) {
-            Document xmlDoc = new SAXBuilder().build(fis);
+            Document xmlDoc = XmlTools.getSAXBuilder().build(fis);
             if (xmlDoc == null || xmlDoc.getRootElement() == null) {
                 logger.info("Invalid XML in file '{}'.", file.getFileName());
                 return Collections.emptyList();

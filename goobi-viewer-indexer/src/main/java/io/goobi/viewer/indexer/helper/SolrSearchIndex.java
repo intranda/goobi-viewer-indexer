@@ -45,7 +45,6 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -596,7 +595,7 @@ public final class SolrSearchIndex {
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = client.execute(httpGet, responseHandler);
             try (StringReader sr = new StringReader(responseBody)) {
-                return new SAXBuilder().build(sr);
+                return XmlTools.getSAXBuilder().build(sr);
             }
         } catch (ClientProtocolException e) {
             logger.error(e.getMessage(), e);

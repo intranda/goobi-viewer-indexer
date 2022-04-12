@@ -60,6 +60,16 @@ import org.slf4j.LoggerFactory;
 public class XmlTools {
 
     private static final Logger logger = LoggerFactory.getLogger(XmlTools.class);
+    
+    public static SAXBuilder getSAXBuilder() {
+        SAXBuilder builder = new SAXBuilder();
+        // Disable access to external entities
+        builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+        return builder;
+    }
 
     /**
      * <p>readXmlFile.</p>
@@ -74,7 +84,7 @@ public class XmlTools {
      */
     public static Document readXmlFile(String filePath) throws FileNotFoundException, IOException, JDOMException {
         try (FileInputStream fis = new FileInputStream(new File(filePath))) {
-            return new SAXBuilder().build(fis);
+            return getSAXBuilder().build(fis);
         }
     }
 
@@ -90,7 +100,7 @@ public class XmlTools {
      */
     public static Document readXmlFile(URL url) throws FileNotFoundException, IOException, JDOMException {
         try (InputStream is = url.openStream()) {
-            return new SAXBuilder().build(is);
+            return getSAXBuilder().build(is);
         }
     }
 
@@ -107,7 +117,7 @@ public class XmlTools {
      */
     public static Document readXmlFile(Path path) throws FileNotFoundException, IOException, JDOMException {
         try (InputStream is = Files.newInputStream(path)) {
-            return new SAXBuilder().build(is);
+            return getSAXBuilder().build(is);
         }
     }
 
@@ -149,8 +159,7 @@ public class XmlTools {
         ByteArrayInputStream baos = new ByteArrayInputStream(byteArray);
 
         // Reader reader = new StringReader(hOCRText);
-        SAXBuilder builder = new SAXBuilder();
-        Document document = builder.build(baos);
+        Document document = getSAXBuilder().build(baos);
 
         return document;
     }
