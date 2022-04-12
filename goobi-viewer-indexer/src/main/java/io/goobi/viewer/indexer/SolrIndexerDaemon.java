@@ -85,10 +85,8 @@ public final class SolrIndexerDaemon {
 
         if (args.length > 0) {
             configFileName = args[0];
-            if (args.length > 1) {
-                if (args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
-                    cleanupAnchors = true;
-                }
+            if (args.length > 1 && args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
+                cleanupAnchors = true;
             }
         }
 

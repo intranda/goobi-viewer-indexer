@@ -156,7 +156,7 @@ public class GeoJSONToolsTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getFeatures().size());
         Geometry geometry = result.getFeatures().get(0).getGeometry();
-        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Point.class));
+        Assert.assertEquals(geometry.getClass().getName(), Point.class, geometry.getClass());
         Assert.assertEquals(Double.valueOf(51.8164115931853), ((Point) geometry).getPosition().getX());
         Assert.assertEquals(Double.valueOf(9.86927764300289), ((Point) geometry).getPosition().getY());
     }
@@ -172,7 +172,7 @@ public class GeoJSONToolsTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getFeatures().size());
         Geometry geometry = result.getFeatures().get(0).getGeometry();
-        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Point.class));
+        Assert.assertEquals(geometry.getClass().getName(), Point.class, geometry.getClass());
         Assert.assertEquals(Double.valueOf(51.8164115931853), ((Point) geometry).getPosition().getX());
         Assert.assertEquals(Double.valueOf(9.86927764300289), ((Point) geometry).getPosition().getY());
     }
@@ -189,7 +189,7 @@ public class GeoJSONToolsTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getFeatures().size());
         Geometry geometry = result.getFeatures().get(0).getGeometry();
-        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Polygon.class));
+        Assert.assertEquals(geometry.getClass().getName(), Polygon.class, geometry.getClass());
         Assert.assertEquals(Double.valueOf(51.8164115931853), ((Polygon) geometry).getCoordinates().get(0).get(0).getX());
         Assert.assertEquals(Double.valueOf(9.86927764300289), ((Polygon) geometry).getCoordinates().get(0).get(0).getY());
         Assert.assertEquals(Double.valueOf(51.8164107865348), ((Polygon) geometry).getCoordinates().get(0).get(1).getX());
@@ -208,7 +208,7 @@ public class GeoJSONToolsTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getFeatures().size());
         Geometry geometry = result.getFeatures().get(0).getGeometry();
-        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Polygon.class));
+        Assert.assertEquals(geometry.getClass().getName(), Polygon.class, geometry.getClass());
         Assert.assertEquals(Double.valueOf(51.8164115931853), ((Polygon) geometry).getCoordinates().get(0).get(0).getY());
         Assert.assertEquals(Double.valueOf(9.86927764300289), ((Polygon) geometry).getCoordinates().get(0).get(0).getX());
         Assert.assertEquals(Double.valueOf(51.8164107865348), ((Polygon) geometry).getCoordinates().get(0).get(1).getY());
@@ -227,7 +227,7 @@ public class GeoJSONToolsTest {
                     GeoJSONTools.convertCoordinatesToGeoJSONFeatureCollection("51.8164115931853 / 9.86927764300289", "mods:coordinates/point", " / ");
             Assert.assertEquals(1, result.getFeatures().size());
             Geometry geometry = result.getFeatures().get(0).getGeometry();
-            Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Point.class));
+            Assert.assertEquals(geometry.getClass().getName(), Point.class, geometry.getClass());
             Assert.assertEquals(Double.valueOf(51.8164115931853), ((Point) geometry).getPosition().getX());
             Assert.assertEquals(Double.valueOf(9.86927764300289), ((Point) geometry).getPosition().getY());
         }
@@ -237,7 +237,7 @@ public class GeoJSONToolsTest {
                     "51.8164115931853 / 9.86927764300289 / 123", "mods:coordinates/point", " / ");
             Assert.assertEquals(1, result.getFeatures().size());
             Geometry geometry = result.getFeatures().get(0).getGeometry();
-            Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Point.class));
+            Assert.assertEquals(geometry.getClass().getName(), Point.class, geometry.getClass());
             Assert.assertEquals(Double.valueOf(51.8164115931853), ((Point) geometry).getPosition().getX());
             Assert.assertEquals(Double.valueOf(9.86927764300289), ((Point) geometry).getPosition().getY());
             Assert.assertEquals(Double.valueOf(123), ((Point) geometry).getPosition().getZ());
@@ -255,7 +255,7 @@ public class GeoJSONToolsTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getFeatures().size());
         Geometry geometry = result.getFeatures().get(0).getGeometry();
-        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Polygon.class));
+        Assert.assertEquals(geometry.getClass().getName(), Polygon.class, geometry.getClass());
         Assert.assertEquals(Double.valueOf(8.132222222222223), ((Polygon) geometry).getCoordinates().get(0).get(0).getX());
         Assert.assertEquals(Double.valueOf(46.87444444444444), ((Polygon) geometry).getCoordinates().get(0).get(0).getY());
         Assert.assertEquals(Double.valueOf(8.506666666666666), ((Polygon) geometry).getCoordinates().get(0).get(1).getX());
@@ -272,7 +272,7 @@ public class GeoJSONToolsTest {
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.getFeatures().size());
         Geometry geometry = result.getFeatures().get(0).getGeometry();
-        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Point.class));
+        Assert.assertEquals(geometry.getClass().getName(), Point.class, geometry.getClass());
         Assert.assertEquals(Double.valueOf(8.132222222222223), ((Point) geometry).getPosition().getX());
         Assert.assertEquals(Double.valueOf(46.87444444444444), ((Point) geometry).getPosition().getY());
 

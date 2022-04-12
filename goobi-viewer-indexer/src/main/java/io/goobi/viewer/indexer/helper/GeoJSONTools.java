@@ -200,7 +200,7 @@ public class GeoJSONTools {
             case "gml:polygon:4326": {
                 List<Position> polygon = convertPoints(coords, separator, 2, true);
                 if (!polygon.isEmpty()) {
-                    geometry = Polygon.fromCoordinates(Collections.singletonList(polygon));;
+                    geometry = Polygon.fromCoordinates(Collections.singletonList(polygon));
                 }
             }
                 break;
