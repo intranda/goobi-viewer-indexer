@@ -7,6 +7,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import mil.nga.sf.geojson.FeatureCollection;
+import mil.nga.sf.geojson.Geometry;
+import mil.nga.sf.geojson.Point;
+import mil.nga.sf.geojson.Polygon;
 import mil.nga.sf.geojson.Position;
 
 public class GeoJSONToolsTest {
@@ -140,5 +144,95 @@ public class GeoJSONToolsTest {
     @Test
     public void convertSexagesimalCoordinateToDecimal_shouldConvertSouthernCoordinateCorrectly() throws Exception {
         Assert.assertEquals(-8.13222222, GeoJSONTools.convertSexagesimalCoordinateToDecimal("S0080756"), 1e-8);
+    }
+
+    /**
+     * @see GeoJSONTools#convertCoordinatesToGeoJSONFeatureCollection(String,String,String)
+     * @verifies convert gml point correctly
+     */
+    @Test
+    public void convertCoordinatesToGeoJSONFeatureCollection_shouldConvertGmlPointCorrectly() throws Exception {
+        //TODO auto-generated
+        FeatureCollection result = GeoJSONTools.convertCoordinatesToGeoJSONFeatureCollection("51.8164115931853 9.86927764300289 ", "gml:point", " ");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.getFeatures().size());
+        Geometry geometry = result.getFeatures().get(0).getGeometry();
+        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Point.class));
+    }
+
+    /**
+     * @see GeoJSONTools#convertCoordinatesToGeoJSONFeatureCollection(String,String,String)
+     * @verifies convert gml point 4326 correctly
+     */
+    @Test
+    public void convertCoordinatesToGeoJSONFeatureCollection_shouldConvertGmlPoint4326Correctly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see GeoJSONTools#convertCoordinatesToGeoJSONFeatureCollection(String,String,String)
+     * @verifies convert gml polygon correctly
+     */
+    @Test
+    public void convertCoordinatesToGeoJSONFeatureCollection_shouldConvertGmlPolygonCorrectly() throws Exception {
+        //TODO auto-generated
+        FeatureCollection result = GeoJSONTools.convertCoordinatesToGeoJSONFeatureCollection(
+                "51.8164115931853 9.86927764300289 51.8164107865348 9.86927733742467 51.81640215001 9.86936345721908 51.8162882108512 9.86933544862899 51.8163013830216 9.86921939760192 51.8164140490608 9.86924941164474 51.8164115931853 9.86927764300289",
+                "gml:polygon", " ");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.getFeatures().size());
+        Geometry geometry = result.getFeatures().get(0).getGeometry();
+        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Polygon.class));
+    }
+
+    /**
+     * @see GeoJSONTools#convertCoordinatesToGeoJSONFeatureCollection(String,String,String)
+     * @verifies convert gml polygon 4326 correctly
+     */
+    @Test
+    public void convertCoordinatesToGeoJSONFeatureCollection_shouldConvertGmlPolygon4326Correctly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see GeoJSONTools#convertCoordinatesToGeoJSONFeatureCollection(String,String,String)
+     * @verifies convert mods point correctly
+     */
+    @Test
+    public void convertCoordinatesToGeoJSONFeatureCollection_shouldConvertModsPointCorrectly() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see GeoJSONTools#convertCoordinatesToGeoJSONFeatureCollection(String,String,String)
+     * @verifies convert sexagesimal point correctly
+     */
+    @Test
+    public void convertCoordinatesToGeoJSONFeatureCollection_shouldConvertSexagesimalPointCorrectly() throws Exception {
+        //TODO auto-generated
+        FeatureCollection result =
+                GeoJSONTools.convertCoordinatesToGeoJSONFeatureCollection("E0080756 E0083024 N0465228 N0465228", "sexagesimal:polygon", " ");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.getFeatures().size());
+        Geometry geometry = result.getFeatures().get(0).getGeometry();
+        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Polygon.class));
+    }
+
+    /**
+     * @see GeoJSONTools#convertCoordinatesToGeoJSONFeatureCollection(String,String,String)
+     * @verifies convert sexagesimal polygon correctly
+     */
+    @Test
+    public void convertCoordinatesToGeoJSONFeatureCollection_shouldConvertSexagesimalPolygonCorrectly() throws Exception {
+        //TODO auto-generated
+        FeatureCollection result = GeoJSONTools.convertCoordinatesToGeoJSONFeatureCollection("E0080756 N0465228", "sexagesimal:point", " ");
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.getFeatures().size());
+        Geometry geometry = result.getFeatures().get(0).getGeometry();
+        Assert.assertTrue(geometry.getClass().getName(), geometry.getClass().equals(Point.class));
+
     }
 }

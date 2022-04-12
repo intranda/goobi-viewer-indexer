@@ -153,6 +153,13 @@ public class GeoJSONTools {
      * @param type
      * @param separator
      * @return
+     * @should convert gml point correctly
+     * @should convert gml point 4326 correctly
+     * @should convert gml polygon correctly
+     * @should convert gml polygon 4326 correctly
+     * @should convert mods point correctly
+     * @should convert sexagesimal point correctly
+     * @should convert sexagesimal polygon correctly
      */
     public static FeatureCollection convertCoordinatesToGeoJSONFeatureCollection(String coords, String type, String separator) {
         if (coords == null) {
@@ -205,7 +212,6 @@ public class GeoJSONTools {
             }
                 break;
             case "sexagesimal:point": {
-                // TODO untested due to lack of examples
                 List<Position> polygon = convertSexagesimalToDecimalPoints(coords, separator);
                 if (!polygon.isEmpty()) {
                     geometry = Point.fromCoordinates(polygon.get(0));
