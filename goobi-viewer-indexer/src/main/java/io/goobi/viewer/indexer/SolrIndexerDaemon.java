@@ -43,7 +43,7 @@ public final class SolrIndexerDaemon {
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
     private static final Object lock = new Object();
-    private static volatile SolrIndexerDaemon instance = null;
+    private static SolrIndexerDaemon instance = null;
 
     private String confFilename = "config_indexer.xml";
     private int sleepInterval = 1000;
@@ -180,6 +180,7 @@ public final class SolrIndexerDaemon {
                 Thread.sleep(sleepInterval);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
+                Thread.currentThread().interrupt();
             }
         }
     }

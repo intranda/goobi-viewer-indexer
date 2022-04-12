@@ -158,10 +158,7 @@ public class XmlTools {
         }
         ByteArrayInputStream baos = new ByteArrayInputStream(byteArray);
 
-        // Reader reader = new StringReader(hOCRText);
-        Document document = getSAXBuilder().build(baos);
-
-        return document;
+        return getSAXBuilder().build(baos);
     }
 
     /**
