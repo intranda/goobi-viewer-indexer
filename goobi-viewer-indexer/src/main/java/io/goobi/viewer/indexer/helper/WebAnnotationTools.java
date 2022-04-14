@@ -29,10 +29,10 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class WebAnnotationTools {
 
-    private static final String TARGET_REGEX = ".*/iiif/manifests/(.+?)/(?:canvas|manifest)?(?:/(\\d+))?/?$";
-    private static final String TARGET_REGEX_CANVAS = ".*/records/(.+?)/pages/(\\d+)/canvas/?$";
-    private static final String TARGET_REGEX_MANIFEST = ".*/records/(.+?)/manifest/?$";
-    private static final String TARGET_REGEX_SECTION = ".*/records/(.+?)/sections/(.+?)/range/?$";
+    static final String TARGET_REGEX = ".+?/iiif/manifests/(.+?)/(?:canvas|manifest)?(?:/(\\d+))?/?$";
+    static final String TARGET_REGEX_CANVAS = ".+?/records/(.+?)/pages/(\\d+)/canvas/?$";
+    static final String TARGET_REGEX_MANIFEST = ".+?/records/(.+?)/manifest/?$";
+    static final String TARGET_REGEX_SECTION = ".+?/records/(.+?)/sections/(.+?)/range/?$";
 
     /**
      * Extract the page order from a canvas url. If the url points to a manifest, return null
@@ -79,6 +79,7 @@ public class WebAnnotationTools {
     /**
      * @param uri
      * @return appropriate matcher; null if none found
+     * @should pick correct matcher
      */
     public static Matcher getMatchingMatcher(URI uri) {
         Matcher matcher = null;
