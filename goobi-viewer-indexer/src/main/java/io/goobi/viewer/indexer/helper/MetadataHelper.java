@@ -478,6 +478,7 @@ public class MetadataHelper {
         List<LuceneField> ret = new ArrayList<>(authorityDataList.size());
         Set<String> nameSearchFieldValues = new HashSet<>();
         Set<String> placeSearchFieldValues = new HashSet<>();
+        boolean hasWktCoords = false;
         for (NormData authorityDataField : authorityDataList) {
             if (!authorityDataField.getKey().startsWith("NORM_")) {
                 continue;
@@ -556,7 +557,7 @@ public class MetadataHelper {
                     // Add searchable WKT lon-lat coordinates
                     //                        String coords = textValueSplit[0] + " " + textValueSplit[1];
                     ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
-                    ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
+                    hasWktCoords = true;
 
                     // Add geoJSON
                     String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSONString(textValue, type, " ");
@@ -567,6 +568,8 @@ public class MetadataHelper {
 
             }
         }
+
+        ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, String.valueOf(hasWktCoords)));
 
         return ret;
     }
@@ -1170,6 +1173,7 @@ public class MetadataHelper {
             }
         }
 
+        boolean hasWktCoords = false;
         for (LuceneField field : ret.getFields()) {
             // Apply modifications configured for the main field to all the group field values
             String moddedValue = applyAllModifications(configurationItem, field.getValue());
@@ -1185,7 +1189,7 @@ public class MetadataHelper {
                     // Add WKT search field
                     if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
                         luceneFields.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
-                        luceneFields.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
+                        hasWktCoords = true;
                     }
                 } catch (NumberFormatException e) {
                     logger.error("Cannot convert to geoJSON: {}", e.getMessage());
@@ -1212,6 +1216,7 @@ public class MetadataHelper {
                 }
             }
         }
+        luceneFields.add(new LuceneField(FIELD_HAS_WKT_COORDS, String.valueOf(hasWktCoords)));
 
         // If there was no existing GROUPFIELD in the group metadata, add one now using the norm identifier
         if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(authorityIdentifier)) {
