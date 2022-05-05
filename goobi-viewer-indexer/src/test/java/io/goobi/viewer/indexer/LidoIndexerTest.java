@@ -33,6 +33,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -334,6 +335,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             iddocMap.put(iddoc, true);
             Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
             Assert.assertFalse((boolean) doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
+            Assert.assertEquals(Boolean.FALSE, doc.getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
         }
 
         // Pages
@@ -341,11 +343,6 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = hotfolder.getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE, null);
             Assert.assertEquals(1, docList.size());
-
-            Map<String, Boolean> filenameMap = new HashMap<>();
-            Map<Integer, Boolean> orderMap = new HashMap<>();
-            Map<String, Boolean> physIdMap = new HashMap<>();
-
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
@@ -392,6 +389,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             newIddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(newIddoc);
             Assert.assertNull(iddocMap.get(newIddoc));
+            Assert.assertEquals(Boolean.FALSE, doc.getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
             iddocMap.put(newIddoc, true);
         }
 
@@ -400,10 +398,6 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = hotfolder.getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE, null);
             Assert.assertEquals(1, docList.size());
-
-            Map<String, Boolean> filenameMap = new HashMap<>();
-            Map<Integer, Boolean> orderMap = new HashMap<>();
-            Map<String, Boolean> physIdMap = new HashMap<>();
 
             for (SolrDocument doc : docList) {
                 {
