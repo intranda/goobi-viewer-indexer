@@ -1,0 +1,22 @@
+{
+	"id": "http://localhost:8080/viewer/api/v1/annotations/comment_14/",
+	"type": "Annotation",
+	"motivation": "commenting",
+	"body": {
+		"type": "TextualBody",
+		"format": "text/plain",
+		"value": "another comment"
+	},
+	"target": {
+		"type": "TextualBody",
+		"format": "text/plain",
+		"value": "http://localhost:8080/viewer/api/v1/records/PPN123/pages/1/canvas/"
+	},
+	"rights": "OPENACCESS",
+	"creator": {
+		"id": "http://localhost:8080/viewer/api/v1/users/1",
+		"type": "Person",
+		"name": "Bob"
+	},
+	"created": "2022-05-11T10:47:23Z"
+}

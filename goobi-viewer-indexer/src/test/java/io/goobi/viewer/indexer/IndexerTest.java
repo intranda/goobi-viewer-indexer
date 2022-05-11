@@ -723,4 +723,35 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Indexer.addNamedEntitiesFields(altoData, doc);
         Assert.assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION_UNTOKENIZED"));
     }
+
+    /**
+     * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
+     * @verifies construct doc correctly
+     */
+    @Test
+    public void generateUserCommentDocsForPage_shouldConstructDocCorrectly() throws Exception {
+        Path dataFolder = Paths.get("src/test/resources/ugc");
+        Assert.assertTrue(Files.isDirectory(dataFolder));
+
+        DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
+        List<SolrInputDocument> docs =
+                indexer.generateUserCommentDocsForPage(new SolrInputDocument(), dataFolder, "PPN123", null, null, 1);
+        Assert.assertNotNull(docs);
+        Assert.assertEquals(2, docs.size());
+
+        {
+            SolrInputDocument doc = docs.get(0);
+            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.ORDER));
+            Assert.assertEquals("a comment", doc.getFieldValue("MD_TEXT"));
+            Assert.assertEquals("COMMENT  a comment", doc.getFieldValue(SolrConstants.UGCTERMS));
+            Assert.assertEquals("http://localhost:8080/viewer/api/v1/annotations/comment_13/", doc.getFieldValue("MD_ANNOTATION_ID"));
+        }
+        {
+            SolrInputDocument doc = docs.get(1);
+            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.ORDER));
+            Assert.assertEquals("another comment", doc.getFieldValue("MD_TEXT"));
+            Assert.assertEquals("COMMENT  another comment", doc.getFieldValue(SolrConstants.UGCTERMS));
+            Assert.assertEquals("http://localhost:8080/viewer/api/v1/annotations/comment_14/", doc.getFieldValue("MD_ANNOTATION_ID"));
+        }
+    }
 }

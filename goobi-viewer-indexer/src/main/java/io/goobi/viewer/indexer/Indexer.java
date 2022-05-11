@@ -115,10 +115,10 @@ public abstract class Indexer {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(Indexer.class);
 
-    /** Constant <code>XML_EXTENSION=".xml"</code> */
-    public static final String XML_EXTENSION = ".xml";
     /** Constant <code>TXT_EXTENSION=".txt"</code> */
     public static final String TXT_EXTENSION = ".txt";
+    /** Constant <code>XML_EXTENSION=".xml"</code> */
+    public static final String XML_EXTENSION = ".xml";
 
     public static final String FIELD_IMAGEAVAILABLE = "BOOL_IMAGEAVAILABLE";
 
@@ -471,12 +471,14 @@ public abstract class Indexer {
                 SolrInputDocument doc = new SolrInputDocument();
                 long iddoc = getNextIddoc(hotfolder.getSearchIndex());
                 doc.addField(SolrConstants.IDDOC, iddoc);
-                if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
-                    doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER));
-                }
-                // Add topstruct type
-                if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
-                    doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                if (pageDoc != null) {
+                    if (pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
+                        doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                    }
+                    // Add topstruct type
+                    if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
+                        doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                    }
                 }
                 doc.addField(SolrConstants.GROUPFIELD, iddoc);
                 doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
@@ -588,6 +590,93 @@ public abstract class Indexer {
         }
 
         return Collections.emptyList();
+    }
+
+    /**
+     * Parses the comment annotation JSON file for the given page and creates a Solr doc. In addition, all content strings are written into the UGC
+     * doc's own search field. To make sure the IDDOC_OWNER value is matches the one in the corresponding page, make sure this method is called after
+     * all docstruct to page mapping is finished.
+     * 
+     * @param pageDoc
+     * @param dataFolder
+     * @param pi
+     * @param anchorPi
+     * @param order
+     * @return List of Solr input documents for the comment annotations
+     * @throws FatalIndexerException
+     * @should construct doc correctly
+     */
+    List<SolrInputDocument> generateUserCommentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
+            Map<String, String> groupIds, int order) throws FatalIndexerException {
+        if (dataFolder == null || !Files.isDirectory(dataFolder)) {
+            logger.info("UGC folder not found.");
+            return Collections.emptyList();
+        }
+
+        List<SolrInputDocument> ret = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolder, "*.{json}")) {
+            for (Path file : stream) {
+                if (!Files.isRegularFile(file)) {
+                    logger.debug("'{}' is not a file.", file.getFileName());
+                    continue;
+                }
+
+                try (FileInputStream fis = new FileInputStream(file.toFile())) {
+                    WebAnnotation anno = new ObjectMapper().registerModule(new JavaTimeModule()).readValue(fis, WebAnnotation.class);
+                    if (anno == null) {
+                        logger.warn("Invalid JSON in file '{}'.", file.getFileName());
+                        return Collections.emptyList();
+                    }
+                    if (anno.getBody() == null || !anno.getBody().getClass().equals(TextualResource.class)) {
+                        logger.warn("Missing or invalid body in JSON '{}'.", file.getFileName());
+                        return Collections.emptyList();
+                    }
+
+                    SolrInputDocument doc = new SolrInputDocument();
+                    long iddoc = getNextIddoc(hotfolder.getSearchIndex());
+                    doc.addField(SolrConstants.IDDOC, iddoc);
+
+                    if (pageDoc != null) {
+                        if (pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
+                            doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                        }
+                        // Add topstruct type
+                        if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
+                            doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                        }
+                    }
+                    doc.addField(SolrConstants.GROUPFIELD, iddoc);
+                    doc.addField(SolrConstants.DOCTYPE, DocType.UGC.name());
+                    doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
+                    doc.addField(SolrConstants.ORDER, order);
+                    if (StringUtils.isNotEmpty(anchorPi)) {
+                        doc.addField(SolrConstants.PI_ANCHOR, anchorPi);
+                    }
+                    // Add GROUPID_* fields
+                    if (groupIds != null && !groupIds.isEmpty()) {
+                        for (Entry<String, String> entry : groupIds.entrySet()) {
+                            doc.addField(entry.getKey(), entry.getValue());
+                        }
+                    }
+                    doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+
+                    TextualResource body = (TextualResource) anno.getBody();
+                    if (StringUtils.isNotEmpty(body.getText())) {
+                        doc.addField("MD_TEXT", body.getText());
+                        doc.addField(SolrConstants.UGCTERMS, "COMMENT  " + body.getText());
+                    }
+
+                    doc.addField("MD_ANNOTATION_ID", anno.getId().toString());
+
+                    ret.add(doc);
+                }
+            }
+
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return ret;
     }
 
     /**
