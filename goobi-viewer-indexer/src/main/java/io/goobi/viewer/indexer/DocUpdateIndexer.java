@@ -283,9 +283,12 @@ public class DocUpdateIndexer extends Indexer {
             }
 
             if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
-                // Add new UGC docs
+                // Create a dummy input doc with relevant field values from the page doc
                 SolrInputDocument dummyDoc = new SolrInputDocument();
+                dummyDoc.setField(SolrConstants.IDDOC_OWNER, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                dummyDoc.setField(SolrConstants.DOCSTRCT_TOP, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
                 {
+                    // Add new UGC docs
                     List<SolrInputDocument> newUgcDocList =
                             generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
                                     pi, anchorPi, groupIds, order, pageFileBaseName);
@@ -295,8 +298,8 @@ public class DocUpdateIndexer extends Indexer {
                         logger.warn("No user generated content values found for page {}.", order);
                     }
                 }
-                // Add comments
                 {
+                    // Add comments
                     List<SolrInputDocument> newCommentDocList = generateUserCommentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
                             pi, anchorPi, groupIds, order);
                     if (!newCommentDocList.isEmpty()) {

@@ -734,8 +734,13 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(Files.isDirectory(dataFolder));
 
         DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
+        
+        String docstrct = "monograph";
+        SolrInputDocument ownerDoc = new SolrInputDocument();
+        ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
+        ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
         List<SolrInputDocument> docs =
-                indexer.generateUserCommentDocsForPage(new SolrInputDocument(), dataFolder, "PPN123", null, null, 1);
+                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", null, null, 1);
         Assert.assertNotNull(docs);
         Assert.assertEquals(2, docs.size());
 
@@ -745,6 +750,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("a comment", doc.getFieldValue("MD_TEXT"));
             Assert.assertEquals("COMMENT  a comment", doc.getFieldValue(SolrConstants.UGCTERMS));
             Assert.assertEquals("http://localhost:8080/viewer/api/v1/annotations/comment_13/", doc.getFieldValue("MD_ANNOTATION_ID"));
+            Assert.assertEquals(123L, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            Assert.assertEquals(docstrct, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
         }
         {
             SolrInputDocument doc = docs.get(1);
@@ -752,6 +759,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("another comment", doc.getFieldValue("MD_TEXT"));
             Assert.assertEquals("COMMENT  another comment", doc.getFieldValue(SolrConstants.UGCTERMS));
             Assert.assertEquals("http://localhost:8080/viewer/api/v1/annotations/comment_14/", doc.getFieldValue("MD_ANNOTATION_ID"));
+            Assert.assertEquals(123L, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            Assert.assertEquals(docstrct, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
         }
     }
 }

@@ -864,8 +864,12 @@ public abstract class Indexer {
             int order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
             String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
             if (dataFolders.get(DataRepository.PARAM_UGC) != null && !ugcAddedChecklist.contains(order)) {
+                // UGC
                 writeStrategy.addDocs(generateUserGeneratedContentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
                         indexObj.getTopstructPI(), indexObj.getAnchorPI(), indexObj.getGroupIds(), order, pageFileBaseName));
+                // Comment annotations
+                writeStrategy.addDocs(generateUserCommentDocsForPage(pageDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                        indexObj.getTopstructPI(), indexObj.getAnchorPI(), indexObj.getGroupIds(), order));
                 ugcAddedChecklist.add(order);
             }
 
