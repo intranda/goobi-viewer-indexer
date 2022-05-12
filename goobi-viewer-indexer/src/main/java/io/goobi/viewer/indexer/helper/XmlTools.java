@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -60,6 +61,16 @@ import org.slf4j.LoggerFactory;
 public class XmlTools {
 
     private static final Logger logger = LoggerFactory.getLogger(XmlTools.class);
+    
+    public static SAXBuilder getSAXBuilder() {
+        SAXBuilder builder = new SAXBuilder();
+        // Disable access to external entities
+        builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+        return builder;
+    }
 
     /**
      * <p>readXmlFile.</p>
@@ -74,7 +85,7 @@ public class XmlTools {
      */
     public static Document readXmlFile(String filePath) throws FileNotFoundException, IOException, JDOMException {
         try (FileInputStream fis = new FileInputStream(new File(filePath))) {
-            return new SAXBuilder().build(fis);
+            return getSAXBuilder().build(fis);
         }
     }
 
@@ -90,7 +101,7 @@ public class XmlTools {
      */
     public static Document readXmlFile(URL url) throws FileNotFoundException, IOException, JDOMException {
         try (InputStream is = url.openStream()) {
-            return new SAXBuilder().build(is);
+            return getSAXBuilder().build(is);
         }
     }
 
@@ -107,7 +118,7 @@ public class XmlTools {
      */
     public static Document readXmlFile(Path path) throws FileNotFoundException, IOException, JDOMException {
         try (InputStream is = Files.newInputStream(path)) {
-            return new SAXBuilder().build(is);
+            return getSAXBuilder().build(is);
         }
     }
 
@@ -148,11 +159,7 @@ public class XmlTools {
         }
         ByteArrayInputStream baos = new ByteArrayInputStream(byteArray);
 
-        // Reader reader = new StringReader(hOCRText);
-        SAXBuilder builder = new SAXBuilder();
-        Document document = builder.build(baos);
-
-        return document;
+        return getSAXBuilder().build(baos);
     }
 
     /**
@@ -279,45 +286,6 @@ public class XmlTools {
         }
         if (doc.getRootElement().getName().equals("TEI") || doc.getRootElement().getName().equals("TEI.2")) {
             return "TEI";
-        }
-
-        return null;
-    }
-
-    /**
-     * Transforms the given JDOM document via the given XSLT stylesheet.
-     *
-     * @param doc JDOM document to transform
-     * @param stylesheetPath Absolute path to the XSLT stylesheet file
-     * @param params Optional transformer parameters
-     * @return Transformed document; null in case of errors
-     */
-    public static Document transformViaXSLT(Document doc, String stylesheetPath, Map<String, String> params) {
-        if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
-        }
-        if (stylesheetPath == null) {
-            throw new IllegalArgumentException("stylesheetPath may not be null");
-        }
-
-        try {
-            JDOMSource docFrom = new JDOMSource(doc);
-            JDOMResult docTo = new JDOMResult();
-
-            Transformer transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(stylesheetPath));
-            if (params != null && !params.isEmpty()) {
-                for (String param : params.keySet()) {
-                    transformer.setParameter(param, params.get(param));
-                }
-            }
-            transformer.transform(docFrom, docTo);
-            return docTo.getDocument();
-        } catch (TransformerConfigurationException e) {
-            logger.error(e.getMessage(), e);
-        } catch (TransformerFactoryConfigurationError e) {
-            logger.error(e.getMessage(), e);
-        } catch (TransformerException e) {
-            logger.error(e.getMessage(), e);
         }
 
         return null;

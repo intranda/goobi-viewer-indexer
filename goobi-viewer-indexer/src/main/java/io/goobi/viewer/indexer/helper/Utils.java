@@ -695,22 +695,6 @@ public class Utils {
             throw new IllegalArgumentException("count must be greater than 0");
         }
 
-//        int prefixLength = (int) (Math.log10(prefix) + 1);
-//        int countLength = (int) (Math.log10(count) + 1);
-//        int zeroes = 9 - (prefixLength + countLength);
-//        if (zeroes < 0) {
-//            zeroes = 0;
-//        }
-//        StringBuilder sbOrder = new StringBuilder();
-//        sbOrder.append(prefix);
-//        for (int i = 0; i < zeroes; ++i) {
-//            sbOrder.append('0');
-//        }
-//        sbOrder.append(count);
-//        logger.info("shape order generated: {}", sbOrder.toString());
-//
-//        return Integer.valueOf(sbOrder.toString());
-
         return (int) (prefix * Math.pow(10, 4) + count);
     }
 

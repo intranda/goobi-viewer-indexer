@@ -393,8 +393,24 @@ public class MetadataHelper {
         }
         ret.addAll(completeCenturies(ret));
 
-        return ret;
+        // Add BOOL_WKT_COORDS field once
+        boolean wktCoordsFound = false;
+        boolean wktCoordsBoolFound = false;
+        for (LuceneField field : ret) {
+            switch (field.getField()) {
+                case FIELD_WKT_COORDS:
+                    wktCoordsFound = true;
+                    break;
+                case FIELD_HAS_WKT_COORDS:
+                    wktCoordsBoolFound = true;
+                    break;
+            }
+        }
+        if (!wktCoordsBoolFound) {
+            ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, String.valueOf(wktCoordsFound)));
+        }
 
+        return ret;
     }
 
     /**
@@ -478,6 +494,7 @@ public class MetadataHelper {
         List<LuceneField> ret = new ArrayList<>(authorityDataList.size());
         Set<String> nameSearchFieldValues = new HashSet<>();
         Set<String> placeSearchFieldValues = new HashSet<>();
+        boolean hasWktCoords = false;
         for (NormData authorityDataField : authorityDataList) {
             if (!authorityDataField.getKey().startsWith("NORM_")) {
                 continue;
@@ -556,7 +573,7 @@ public class MetadataHelper {
                     // Add searchable WKT lon-lat coordinates
                     //                        String coords = textValueSplit[0] + " " + textValueSplit[1];
                     ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
-                    ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
+                    hasWktCoords = true;
 
                     // Add geoJSON
                     String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSONString(textValue, type, " ");
@@ -567,6 +584,8 @@ public class MetadataHelper {
 
             }
         }
+
+        ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, String.valueOf(hasWktCoords)));
 
         return ret;
     }
@@ -1020,9 +1039,8 @@ public class MetadataHelper {
      * @should group correctly
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
-            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields)
-            throws FatalIndexerException {
-        logger.trace("getGroupedMetadata: {}", groupLabel);
+            StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields) throws FatalIndexerException {
+        logger.info("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
@@ -1185,7 +1203,6 @@ public class MetadataHelper {
                     // Add WKT search field
                     if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
                         luceneFields.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
-                        luceneFields.add(new LuceneField(FIELD_HAS_WKT_COORDS, "true"));
                     }
                 } catch (NumberFormatException e) {
                     logger.error("Cannot convert to geoJSON: {}", e.getMessage());

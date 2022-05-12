@@ -43,7 +43,7 @@ public final class SolrIndexerDaemon {
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
     private static final Object lock = new Object();
-    private static volatile SolrIndexerDaemon instance = null;
+    private static SolrIndexerDaemon instance = null;
 
     private String confFilename = "config_indexer.xml";
     private int sleepInterval = 1000;
@@ -85,10 +85,8 @@ public final class SolrIndexerDaemon {
 
         if (args.length > 0) {
             configFileName = args[0];
-            if (args.length > 1) {
-                if (args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
-                    cleanupAnchors = true;
-                }
+            if (args.length > 1 && args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
+                cleanupAnchors = true;
             }
         }
 
@@ -182,6 +180,7 @@ public final class SolrIndexerDaemon {
                 Thread.sleep(sleepInterval);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
+                Thread.currentThread().interrupt();
             }
         }
     }

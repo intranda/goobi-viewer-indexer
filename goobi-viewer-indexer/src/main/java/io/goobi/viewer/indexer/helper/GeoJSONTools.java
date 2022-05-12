@@ -20,12 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.geojson.Feature;
-import org.geojson.FeatureCollection;
-import org.geojson.GeoJsonObject;
-import org.geojson.LngLatAlt;
-import org.geojson.Point;
-import org.geojson.Polygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,17 +28,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.goobi.viewer.indexer.model.GeoCoords;
+import mil.nga.sf.geojson.Feature;
+import mil.nga.sf.geojson.FeatureCollection;
+import mil.nga.sf.geojson.GeoJsonObject;
+import mil.nga.sf.geojson.Geometry;
+import mil.nga.sf.geojson.Point;
+import mil.nga.sf.geojson.Polygon;
+import mil.nga.sf.geojson.Position;
 
 public class GeoJSONTools {
 
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(GeoJSONTools.class);
     private static final ObjectMapper mapper = new ObjectMapper();
-    
+
     static {
         mapper.registerModule(new JavaTimeModule());
     }
-    
+
     public static GeoCoords convert(String coords, String type, String separator) {
         FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
 
@@ -77,7 +78,7 @@ public class GeoJSONTools {
         if (geometry instanceof Point) {
             // Point
             Point point = (Point) geometry;
-            return convertToWKT(Collections.singletonList(point.getCoordinates()));
+            return convertToWKT(Collections.singletonList(point.getPosition()));
         }
         if (geometry instanceof Polygon) {
             // Polygon
@@ -96,29 +97,29 @@ public class GeoJSONTools {
     /**
      * Converts the given coordinates to their WKT representation (via converting them to geoJSON first).
      * 
-     * @param points List of <code>LngLatAlt</code>
+     * @param positions List of <code>LngLatAlt</code>
      * @return WKT representation of the given coordinates
      * @should convert points correctly
      * @should convert polygons correctly
      */
-    static String convertToWKT(List<LngLatAlt> points) {
-        if (points == null || points.isEmpty()) {
+    static String convertToWKT(List<Position> positions) {
+        if (positions == null || positions.isEmpty()) {
             return null;
         }
 
-        if (points.size() == 1) {
+        if (positions.size() == 1) {
             // Point
-            return points.get(0).getLongitude() + " " + points.get(0).getLatitude();
+            return positions.get(0).getX() + " " + positions.get(0).getY();
         }
 
         // Polygon
         StringBuilder sb = new StringBuilder("POLYGON((");
         int count = 0;
-        for (LngLatAlt point : points) {
+        for (Position position : positions) {
             if (count > 0) {
                 sb.append(", ");
             }
-            sb.append(point.getLongitude()).append(' ').append(point.getLatitude());
+            sb.append(position.getX()).append(' ').append(position.getY());
             count++;
         }
         sb.append("))");
@@ -152,6 +153,13 @@ public class GeoJSONTools {
      * @param type
      * @param separator
      * @return
+     * @should convert gml point correctly
+     * @should convert gml point 4326 correctly
+     * @should convert gml polygon correctly
+     * @should convert gml polygon 4326 correctly
+     * @should convert mods point correctly
+     * @should convert sexagesimal point correctly
+     * @should convert sexagesimal polygon correctly
      */
     public static FeatureCollection convertCoordinatesToGeoJSONFeatureCollection(String coords, String type, String separator) {
         if (coords == null) {
@@ -164,60 +172,59 @@ public class GeoJSONTools {
 
         FeatureCollection featureCollection = new FeatureCollection();
         Feature feature = new Feature();
-        featureCollection.add(feature);
+        featureCollection.addFeature(feature);
 
-        GeoJsonObject geometry = null;
+        Geometry geometry = null;
         switch (type.toLowerCase()) {
             case "gml:point": {
-                List<LngLatAlt> polygon = convertPoints(coords, separator, 2, false);
+                List<Position> polygon = convertPoints(coords, separator, 2, false);
                 if (!polygon.isEmpty()) {
-                    geometry = new Point(polygon.get(0));
+                    geometry = Point.fromCoordinates(polygon.get(0));
                 }
             }
                 break;
             case "gml:point:4326": {
-                List<LngLatAlt> polygon = convertPoints(coords, separator, 2, true);
+                List<Position> polygon = convertPoints(coords, separator, 2, true);
                 if (!polygon.isEmpty()) {
-                    geometry = new Point(polygon.get(0));
+                    geometry = Point.fromCoordinates(polygon.get(0));
                 }
             }
                 break;
             case "gml:polygon": {
-                List<LngLatAlt> polygon = convertPoints(coords, separator, 2, false);
+                List<Position> polygon = convertPoints(coords, separator, 2, false);
                 if (!polygon.isEmpty()) {
-                    geometry = new Polygon(polygon);
+                    geometry = Polygon.fromCoordinates(Collections.singletonList(polygon));
                 }
             }
                 break;
             case "gml:polygon:4326": {
-                List<LngLatAlt> polygon = convertPoints(coords, separator, 2, true);
+                List<Position> polygon = convertPoints(coords, separator, 2, true);
                 if (!polygon.isEmpty()) {
-                    geometry = new Polygon(polygon);
+                    geometry = Polygon.fromCoordinates(Collections.singletonList(polygon));
                 }
             }
                 break;
             case "mods:coordinates/point": {
-                List<LngLatAlt> polygon = convertPoints(coords, separator, coords.split(separator).length, false);
+                List<Position> polygon = convertPoints(coords, separator, coords.split(separator).length, false);
                 if (!polygon.isEmpty()) {
-                    geometry = new Point(polygon.get(0));
+                    geometry = Point.fromCoordinates(polygon.get(0));
                 }
             }
                 break;
             case "sexagesimal:point": {
-                // TODO untested due to lack of examples
-                List<LngLatAlt> polygon = convertSexagesimalToDecimalPoints(coords, separator);
+                List<Position> polygon = convertSexagesimalToDecimalPoints(coords, separator);
                 if (!polygon.isEmpty()) {
-                    geometry = new Point(polygon.get(0));
+                    geometry = Point.fromCoordinates(polygon.get(0));
                 }
             }
                 break;
             case "sexagesimal:polygon": {
-                List<LngLatAlt> polygon = convertSexagesimalToDecimalPoints(coords, separator);
+                List<Position> polygon = convertSexagesimalToDecimalPoints(coords, separator);
                 if (!polygon.isEmpty()) {
                     if (polygon.size() == 1) {
-                        geometry = new Point(polygon.get(0));
+                        geometry = Point.fromCoordinates(polygon.get(0));
                     } else {
-                        geometry = new Polygon(polygon);
+                        geometry = Polygon.fromCoordinates(Collections.singletonList(polygon));
                     }
                 }
             }
@@ -242,7 +249,7 @@ public class GeoJSONTools {
      * @param revert If true, it will be assumed the format is lat-long instead of long-lat
      * @return List of LngLatAlt points
      */
-    static List<LngLatAlt> convertPoints(String coords, String separator, int dimensions, boolean revert) {
+    static List<Position> convertPoints(String coords, String separator, int dimensions, boolean revert) {
         if (StringUtils.isEmpty(coords)) {
             return Collections.emptyList();
         }
@@ -251,7 +258,7 @@ public class GeoJSONTools {
         }
 
         String[] coordsSplit = coords.split(separator);
-        List<LngLatAlt> ret = new ArrayList<>(coordsSplit.length / 2);
+        List<Position> ret = new ArrayList<>(coordsSplit.length / 2);
         double[] point = { -1, -1, -1 };
         int count = 0;
         for (String coord : coordsSplit) {
@@ -261,15 +268,15 @@ public class GeoJSONTools {
                 if (point[2] != -1) {
                     if (revert) {
                         // Not sure this can ever be the case
-                        ret.add(new LngLatAlt(point[1], point[0], point[2]));
+                        ret.add(new Position(point[1], point[0], point[2]));
                     } else {
-                        ret.add(new LngLatAlt(point[0], point[1], point[2]));
+                        ret.add(new Position(point[0], point[1], point[2]));
                     }
                 } else {
                     if (revert) {
-                        ret.add(new LngLatAlt(point[1], point[0]));
+                        ret.add(new Position(point[1], point[0]));
                     } else {
-                        ret.add(new LngLatAlt(point[0], point[1]));
+                        ret.add(new Position(point[0], point[1]));
                     }
                 }
                 count = 0;
@@ -289,7 +296,7 @@ public class GeoJSONTools {
      * @should convert polygons correctly
      * @should return single point if coordinates duplicate
      */
-    static List<LngLatAlt> convertSexagesimalToDecimalPoints(String coords, String separator) {
+    static List<Position> convertSexagesimalToDecimalPoints(String coords, String separator) {
         if (StringUtils.isEmpty(coords)) {
             return Collections.emptyList();
         }
@@ -298,26 +305,26 @@ public class GeoJSONTools {
         }
 
         String[] coordsSplit = coords.split(separator);
-        List<LngLatAlt> ret = new ArrayList<>();
+        List<Position> ret = new ArrayList<>();
         double[] decimalValues = new double[coordsSplit.length];
         for (int i = 0; i < coordsSplit.length; ++i) {
             decimalValues[i] = convertSexagesimalCoordinateToDecimal(coordsSplit[i]);
         }
         switch (decimalValues.length) {
             case 2:
-                ret.add(new LngLatAlt(decimalValues[0], decimalValues[1]));
+                ret.add(new Position(decimalValues[0], decimalValues[1]));
                 break;
             case 4:
                 if (decimalValues[0] == decimalValues[1] && decimalValues[2] == decimalValues[3]) {
                     // A single point in four duplicate coords
-                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
+                    ret.add(new Position(decimalValues[0], decimalValues[2]));
                 } else {
                     // Proper polygon
-                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
-                    ret.add(new LngLatAlt(decimalValues[1], decimalValues[2]));
-                    ret.add(new LngLatAlt(decimalValues[1], decimalValues[3]));
-                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[3]));
-                    ret.add(new LngLatAlt(decimalValues[0], decimalValues[2]));
+                    ret.add(new Position(decimalValues[0], decimalValues[2]));
+                    ret.add(new Position(decimalValues[1], decimalValues[2]));
+                    ret.add(new Position(decimalValues[1], decimalValues[3]));
+                    ret.add(new Position(decimalValues[0], decimalValues[3]));
+                    ret.add(new Position(decimalValues[0], decimalValues[2]));
                 }
                 break;
             default:
