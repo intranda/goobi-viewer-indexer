@@ -734,7 +734,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(Files.isDirectory(dataFolder));
 
         DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
-        
+
         String docstrct = "monograph";
         SolrInputDocument ownerDoc = new SolrInputDocument();
         ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
@@ -744,23 +744,16 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertNotNull(docs);
         Assert.assertEquals(2, docs.size());
 
-        {
-            SolrInputDocument doc = docs.get(0);
+        // Cannot guarantee reading order from file system, so check for either/or values
+        for (SolrInputDocument doc : docs) {
             Assert.assertEquals(1, doc.getFieldValue(SolrConstants.ORDER));
-            Assert.assertEquals("a comment", doc.getFieldValue("MD_TEXT"));
-            Assert.assertEquals("COMMENT  a comment", doc.getFieldValue(SolrConstants.UGCTERMS));
-            Assert.assertEquals("http://localhost:8080/viewer/api/v1/annotations/comment_13/", doc.getFieldValue("MD_ANNOTATION_ID"));
             Assert.assertEquals(123L, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertEquals(docstrct, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-        }
-        {
-            SolrInputDocument doc = docs.get(1);
-            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.ORDER));
-            Assert.assertEquals("another comment", doc.getFieldValue("MD_TEXT"));
-            Assert.assertEquals("COMMENT  another comment", doc.getFieldValue(SolrConstants.UGCTERMS));
-            Assert.assertEquals("http://localhost:8080/viewer/api/v1/annotations/comment_14/", doc.getFieldValue("MD_ANNOTATION_ID"));
-            Assert.assertEquals(123L, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-            Assert.assertEquals(docstrct, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            Assert.assertTrue("a comment".equals(doc.getFieldValue("MD_TEXT")) || "another comment".equals(doc.getFieldValue("MD_TEXT")));
+            Assert.assertTrue("COMMENT  a comment".equals(doc.getFieldValue(SolrConstants.UGCTERMS))
+                    || "COMMENT  another comment".equals(doc.getFieldValue(SolrConstants.UGCTERMS)));
+            Assert.assertTrue("http://localhost:8080/viewer/api/v1/annotations/comment_13/".equals(doc.getFieldValue("MD_ANNOTATION_ID"))
+                    || "http://localhost:8080/viewer/api/v1/annotations/comment_14/".equals(doc.getFieldValue("MD_ANNOTATION_ID")));
         }
     }
 }
