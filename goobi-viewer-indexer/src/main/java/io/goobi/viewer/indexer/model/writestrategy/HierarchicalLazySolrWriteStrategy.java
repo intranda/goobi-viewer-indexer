@@ -48,6 +48,8 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
         if (rootDoc == null) {
             throw new IndexerException("rootDoc may not be null");
         }
+        
+        sanitizeDoc(rootDoc);
 
         for (int order : pageOrderMap.keySet()) {
             SolrInputDocument pageDoc = pageOrderMap.get(order);
@@ -59,6 +61,7 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
             if (doc.getFieldValue("GROUPFIELD") == null) {
                 logger.error("Field has no GROUPFIELD: {}", doc.toString());
             }
+            sanitizeDoc(doc);
             rootDoc.addChildDocument(doc);
             if (aggregateRecords) {
                 // Add SUPER* fields to root doc

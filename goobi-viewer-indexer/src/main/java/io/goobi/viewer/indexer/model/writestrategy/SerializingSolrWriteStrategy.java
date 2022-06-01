@@ -239,6 +239,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             throw new IndexerException("rootDoc may not be null");
         }
 
+        sanitizeDoc(rootDoc);
         logger.info("Writing {} structure/content documents to the index...", docIddocs.size());
         for (String iddoc : docIddocs) {
             SolrInputDocument doc = load(iddoc);
@@ -256,6 +257,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                         rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
                     }
                 }
+                sanitizeDoc(doc);
                 try {
                     searchIndex.writeToIndex(doc);
                 } catch (RemoteSolrException e) {

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
+import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
@@ -212,6 +213,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
                     rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
                 }
             }
+            sanitizeDoc(doc);
         }
 
         if (!docsToAdd.isEmpty()) {
