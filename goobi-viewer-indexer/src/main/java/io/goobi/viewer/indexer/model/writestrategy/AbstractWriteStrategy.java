@@ -18,6 +18,8 @@ package io.goobi.viewer.indexer.model.writestrategy;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -97,5 +99,38 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
         if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
             doc.addField(SolrConstants.ACCESSCONDITION, SolrConstants.OPEN_ACCESS_VALUE);
         }
+    }
+
+    /**
+     * Removes multiple values from fields that are not multivalued.
+     * 
+     * @param doc
+     * @should trim to single value correctly
+     */
+    public static void sanitizeDoc(SolrInputDocument doc) {
+        if (doc == null) {
+            return;
+        }
+
+        Map<String, Object> fieldsToTrim = new HashMap<>();
+        for (String field : doc.getFieldNames()) {
+            if (SolrConstants.DATECREATED.equals(field) || field.startsWith("BOOL_")) {
+                if (doc.getFieldValues(field) != null && doc.getFieldValues(field).size() > 1) {
+                    logger.warn("Multiple values found on single-valued field: {}", field);
+                    Object firstValue = doc.getFieldValues(field).iterator().next();
+                    if (firstValue != null) {
+                        fieldsToTrim.put(field, firstValue);
+                    }
+                }
+            }
+        }
+        if (fieldsToTrim.isEmpty()) {
+            return;
+        }
+        for (String field : fieldsToTrim.keySet()) {
+            doc.removeField(field);
+            doc.addField(field, fieldsToTrim.get(field));
+        }
+
     }
 }
