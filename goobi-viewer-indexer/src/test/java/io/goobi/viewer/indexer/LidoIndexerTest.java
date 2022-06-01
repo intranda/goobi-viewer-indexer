@@ -213,7 +213,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     iddocMap.put(value, true);
                 }
                 Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-                Assert.assertEquals("image", doc.getFieldValue(SolrConstants.MIMETYPE));
+                Assert.assertEquals("image/jpeg", doc.getFieldValue(SolrConstants.MIMETYPE));
                 Assert.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }
         }
