@@ -281,15 +281,32 @@ public class DocUpdateIndexer extends Indexer {
                     logger.error("No IDDOC values found in docs matching query: {}", query);
                 }
             }
-            // Add new UGC docs
+
             if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
+                // Create a dummy input doc with relevant field values from the page doc
                 SolrInputDocument dummyDoc = new SolrInputDocument();
-                List<SolrInputDocument> newUgcDocList = generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                        pi, anchorPi, groupIds, order, pageFileBaseName);
-                if (!newUgcDocList.isEmpty()) {
-                    hotfolder.getSearchIndex().writeToIndex(newUgcDocList);
-                } else {
-                    logger.warn("No user generated content values found for page {}.", order);
+                dummyDoc.setField(SolrConstants.IDDOC_OWNER, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                dummyDoc.setField(SolrConstants.DOCSTRCT_TOP, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                {
+                    // Add new UGC docs
+                    List<SolrInputDocument> newUgcDocList =
+                            generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                                    pi, anchorPi, groupIds, order, pageFileBaseName);
+                    if (!newUgcDocList.isEmpty()) {
+                        hotfolder.getSearchIndex().writeToIndex(newUgcDocList);
+                    } else {
+                        logger.warn("No user generated content values found for page {}.", order);
+                    }
+                }
+                {
+                    // Add comments
+                    List<SolrInputDocument> newCommentDocList = generateUserCommentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                            pi, anchorPi, groupIds, order);
+                    if (!newCommentDocList.isEmpty()) {
+                        hotfolder.getSearchIndex().writeToIndex(newCommentDocList);
+                    } else {
+                        logger.warn("No user comments found for page {}.", order);
+                    }
                 }
             }
 

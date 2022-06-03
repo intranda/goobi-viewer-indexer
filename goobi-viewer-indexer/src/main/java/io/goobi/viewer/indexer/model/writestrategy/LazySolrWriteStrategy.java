@@ -212,6 +212,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
                     rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
                 }
             }
+            sanitizeDoc(doc);
         }
 
         if (!docsToAdd.isEmpty()) {

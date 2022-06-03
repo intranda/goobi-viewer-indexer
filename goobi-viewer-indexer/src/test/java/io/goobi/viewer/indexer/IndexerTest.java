@@ -723,4 +723,37 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Indexer.addNamedEntitiesFields(altoData, doc);
         Assert.assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION_UNTOKENIZED"));
     }
+
+    /**
+     * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
+     * @verifies construct doc correctly
+     */
+    @Test
+    public void generateUserCommentDocsForPage_shouldConstructDocCorrectly() throws Exception {
+        Path dataFolder = Paths.get("src/test/resources/ugc");
+        Assert.assertTrue(Files.isDirectory(dataFolder));
+
+        DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
+
+        String docstrct = "monograph";
+        SolrInputDocument ownerDoc = new SolrInputDocument();
+        ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
+        ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
+        List<SolrInputDocument> docs =
+                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", null, null, 1);
+        Assert.assertNotNull(docs);
+        Assert.assertEquals(2, docs.size());
+
+        // Cannot guarantee reading order from file system, so check for either/or values
+        for (SolrInputDocument doc : docs) {
+            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.ORDER));
+            Assert.assertEquals(123L, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            Assert.assertEquals(docstrct, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            Assert.assertTrue("a comment".equals(doc.getFieldValue("MD_TEXT")) || "another comment".equals(doc.getFieldValue("MD_TEXT")));
+            Assert.assertTrue("COMMENT  a comment".equals(doc.getFieldValue(SolrConstants.UGCTERMS))
+                    || "COMMENT  another comment".equals(doc.getFieldValue(SolrConstants.UGCTERMS)));
+            Assert.assertTrue("http://localhost:8080/viewer/api/v1/annotations/comment_13/".equals(doc.getFieldValue("MD_ANNOTATION_ID"))
+                    || "http://localhost:8080/viewer/api/v1/annotations/comment_14/".equals(doc.getFieldValue("MD_ANNOTATION_ID")));
+        }
+    }
 }
