@@ -1040,7 +1040,7 @@ public class MetadataHelper {
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
             StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields) throws FatalIndexerException {
-        logger.info("getGroupedMetadata: {}", groupLabel);
+        logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));
