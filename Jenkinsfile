@@ -60,8 +60,8 @@ pipeline {
       }
       when {
         anyOf {
-        branch 'master'
-        branch 'develop'
+          tag "v*"
+          branch 'develop'
         }
       }
       steps {
