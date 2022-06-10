@@ -829,7 +829,7 @@ public class MetsIndexer extends Indexer {
             } catch (ExecutionException e) {
                 logger.error(e.getMessage(), e);
                 SolrIndexerDaemon.getInstance().stop();
-            } catch(TimeoutException e) {
+            } catch (TimeoutException e) {
                 throw new InterruptedException("Generating page documents timed out for object " + pi);
             } finally {
                 pool.shutdown();
@@ -1930,15 +1930,23 @@ public class MetsIndexer extends Indexer {
             // Add fields configured to be inherited up to the return list (after adding child metadata first!)
             for (LuceneField field : indexObj.getLuceneFields()) {
                 if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getField())) {
+                    // Add only to topstruct
                     indexObj.getFieldsToInheritToParents().add(field.getField());
                     field.setSkip(true);
+                } else if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains("!" + field.getField())) {
+                    // Add to entire hierarchy
+                    indexObj.getFieldsToInheritToParents().add(field.getField());
                 }
             }
             // Add grouped fields configured to be inherited up to the return list (after adding child metadata first!)
             for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
                 if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains(field.getLabel())) {
+                    // Add only to topstruct
                     indexObj.getFieldsToInheritToParents().add(field.getLabel());
                     field.setSkip(true);
+                } else if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains("!" + field.getLabel())) {
+                    // Add to entire hierarchy
+                    indexObj.getFieldsToInheritToParents().add(field.getLabel());
                 }
             }
 

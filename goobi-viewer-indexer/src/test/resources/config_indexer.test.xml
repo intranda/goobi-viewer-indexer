@@ -191,6 +191,7 @@
 					<addSortField>true</addSortField>
 					<addSortFieldToTopstruct>true</addSortFieldToTopstruct>
 					<addExistenceBoolean>true</addExistenceBoolean>
+                    <addToParents keepOnChildren="true">true</addToParents>
 					<normalizeYear minYearDigits="2">true</normalizeYear>
 					<interpolateYears>true</interpolateYears>
 					<groupEntity type="OTHER" url="https://example.com?param1=value1&amp;param2=value2">
