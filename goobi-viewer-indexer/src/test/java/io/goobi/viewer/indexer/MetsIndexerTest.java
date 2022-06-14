@@ -198,6 +198,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals(Long.valueOf(19800710), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEARMONTHDAY));
             }
             {
+                List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.MONTHDAY);
+                Assert.assertNotNull(mdList);
+                Assert.assertEquals(1, mdList.size());
+                Assert.assertEquals(Long.valueOf(0710), mdList.get(0));
+                Assert.assertEquals(Long.valueOf(0710), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.MONTHDAY));
+            }
+            {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.CENTURY);
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());

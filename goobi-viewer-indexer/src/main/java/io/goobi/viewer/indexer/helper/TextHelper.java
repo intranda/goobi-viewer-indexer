@@ -465,7 +465,7 @@ public final class TextHelper {
                 logger.error("{}: {}", e.getMessage(), txt.toAbsolutePath());
             }
         } else if (warnIfMissing) {
-            logger.warn("File not found : {}", txt.toAbsolutePath());
+            logger.warn("File not found: {}", txt.toAbsolutePath());
         }
 
         return text;

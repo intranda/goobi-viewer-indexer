@@ -156,6 +156,8 @@ public final class SolrConstants {
     public static final String METADATATYPE = "METADATATYPE";
     /** Constant <code>MIMETYPE="MIMETYPE"</code> */
     public static final String MIMETYPE = "MIMETYPE";
+    /** Constant <code>MONTHDAY="MONTHDAY"</code> */
+    public static final String MONTHDAY = "MONTHDAY";
     /** Constant <code>NORMDATATERMS="NORMDATATERMS"</code> */
     public static final String NORMDATATERMS = "NORMDATATERMS";
     /** Constant <code>NUMPAGES="NUMPAGES"</code> */

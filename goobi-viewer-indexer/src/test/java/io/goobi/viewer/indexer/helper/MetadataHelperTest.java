@@ -421,15 +421,17 @@ public class MetadataHelperTest extends AbstractTest {
         String date = "2019-03-18";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4);
-        Assert.assertEquals(4, result.size());
+        Assert.assertEquals(5, result.size());
         result.get(0).getField().equals(SolrConstants.YEAR);
         result.get(0).getValue().equals("2019");
         result.get(1).getField().equals(SolrConstants.YEARMONTH);
         result.get(1).getValue().equals("201903");
         result.get(2).getField().equals(SolrConstants.YEARMONTHDAY);
         result.get(2).getValue().equals("20190318");
-        result.get(3).getField().equals(SolrConstants.CENTURY);
-        result.get(3).getValue().equals("21");
+        result.get(3).getField().equals(SolrConstants.MONTHDAY);
+        result.get(3).getValue().equals("0318");
+        result.get(4).getField().equals(SolrConstants.CENTURY);
+        result.get(4).getValue().equals("21");
         Assert.assertTrue(centuries.contains(21));
     }
 
@@ -442,13 +444,15 @@ public class MetadataHelperTest extends AbstractTest {
         String date = "0190-03-18";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4);
-        Assert.assertEquals(4, result.size());
+        Assert.assertEquals(5, result.size());
         result.get(0).getField().equals(SolrConstants.YEAR);
         result.get(0).getValue().equals("0190");
         result.get(1).getField().equals(SolrConstants.YEARMONTH);
         result.get(1).getValue().equals("019003");
         result.get(2).getField().equals(SolrConstants.YEARMONTHDAY);
         result.get(2).getValue().equals("01900318");
+        result.get(3).getField().equals(SolrConstants.MONTHDAY);
+        result.get(3).getValue().equals("0318");
     }
 
     /**

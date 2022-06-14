@@ -36,7 +36,7 @@
 
 <!-- PLEASE ADD A CHECKBOX IN THE TICKET TO REMEMBER TO UPDATE THIS FILE IN THE
      GOOBI-VIEWER-DOCKER-SOLR REPOSITORY AS WELL -->
-<schema name="goobi_viewer-20220225" version="1.6">
+<schema name="goobi_viewer-20220614" version="1.6">
 
 
 
@@ -187,6 +187,7 @@
 	<field name="LOGID" type="string" indexed="true" stored="true" />
 	<field name="METADATATYPE" type="string" indexed="true" stored="true" />
 	<field name="MIMETYPE" type="string" indexed="true" stored="true" />
+    <field name="MONTHDAY" type="tlong" indexed="true" stored="true" multiValued="true" />
 	<field name="NORMDATATERMS" type="search_field_rev" indexed="true"
 		stored="true" />
 	<field name="NUMPAGES" type="tint" indexed="true" stored="true" />

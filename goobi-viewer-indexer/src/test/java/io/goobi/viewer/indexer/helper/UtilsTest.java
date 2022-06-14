@@ -171,6 +171,7 @@ public class UtilsTest extends AbstractTest {
         Assert.assertEquals(SolrConstants.YEAR, Utils.adaptField(SolrConstants.YEAR, "FACET_"));
         Assert.assertEquals(SolrConstants.YEARMONTH, Utils.adaptField(SolrConstants.YEARMONTH, "FACET_"));
         Assert.assertEquals(SolrConstants.YEARMONTHDAY, Utils.adaptField(SolrConstants.YEARMONTHDAY, "FACET_"));
+        Assert.assertEquals(SolrConstants.MONTHDAY, Utils.adaptField(SolrConstants.MONTHDAY, "FACET_"));
     }
 
     /**
