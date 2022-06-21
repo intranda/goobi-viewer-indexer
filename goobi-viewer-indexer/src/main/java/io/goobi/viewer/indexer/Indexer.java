@@ -1533,4 +1533,51 @@ public abstract class Indexer {
             deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
     }
+
+    /**
+     * 
+     * @param doc {@link SolrInputDocument}
+     * @param filePath
+     * @should parse mime type from mp4 file correctly
+     */
+    static void parseMimeType(SolrInputDocument doc, String filePath) {
+        if (doc == null) {
+            throw new IllegalArgumentException("doc may not be null");
+        }
+        if (StringUtils.isEmpty(filePath)) {
+            return;
+        }
+        // Add full path if this is a local file or download has failed or is disabled
+        if (!doc.containsKey(SolrConstants.FILENAME)) {
+            doc.addField(SolrConstants.FILENAME, filePath);
+        }
+
+        // fileName: base name without path if file; full if URL
+        String fileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
+        if (!fileName.startsWith("http")) {
+            fileName = FilenameUtils.getName(fileName);
+        }
+        String mimetype = "image";
+        String subMimetype = "";
+        if (doc.containsKey(SolrConstants.FILENAME)) {
+            // Determine mime type from file content
+            try {
+                mimetype = Files.probeContentType(Paths.get(filePath));
+                if (StringUtils.isBlank(mimetype)) {
+                    mimetype = "image";
+                } else if (mimetype.contains("/")) {
+                    subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
+                }
+            } catch (IOException e) {
+                logger.warn("Cannot determine mime type from '{}', using 'image'.", filePath);
+            }
+        }
+
+        if (StringUtils.isNotBlank(mimetype)) {
+            doc.addField(SolrConstants.MIMETYPE, mimetype);
+            if (StringUtils.isNotBlank(subMimetype)) {
+                doc.addField(SolrConstants.FILENAME + "_" + subMimetype.toUpperCase(), fileName);
+            }
+        }
+    }
 }

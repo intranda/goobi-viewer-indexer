@@ -1152,10 +1152,10 @@ public class MetsIndexer extends Indexer {
                 }
 
                 // Add mime type
-                doc.addField(SolrConstants.MIMETYPE, mimetypeSplit[0]);
+                doc.addField(SolrConstants.MIMETYPE, mimetype);
                 if (!shapePageDocs.isEmpty()) {
                     for (SolrInputDocument shapePageDoc : shapePageDocs) {
-                        shapePageDoc.addField(SolrConstants.MIMETYPE, mimetypeSplit[0]);
+                        shapePageDoc.addField(SolrConstants.MIMETYPE, mimetypeSplit[0]); // TODO full mime type?
                     }
                 }
                 // Add file size

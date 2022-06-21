@@ -25,11 +25,12 @@ public final class SolrConstants {
 
     public enum DocType {
         DOCSTRCT,
-        PAGE,
+        FILE,
+        GROUP,
         METADATA,
         EVENT,
-        UGC,
-        GROUP;
+        PAGE,
+        UGC;
     }
 
     public enum MetadataGroupType {

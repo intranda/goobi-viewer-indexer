@@ -33,8 +33,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
@@ -647,50 +645,8 @@ public class DenkXwebIndexer extends Indexer {
                 }
             }
 
-            // Add full path if this is a local file or download has failed or is disabled
-            if (!doc.containsKey(SolrConstants.FILENAME)) {
-                doc.addField(SolrConstants.FILENAME, fileName);
-            }
-
-            String mimetype = eleImage.getAttributeValue("type");
-            String subMimetype = "";
-            if (mimetype != null && mimetype.contains("/")) {
-                subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
-                mimetype = mimetype.substring(0, mimetype.indexOf("/"));
-            } else {
-                mimetype = "image";
-                if (doc.containsKey(SolrConstants.FILENAME)) {
-                    // Determine mime type from file content
-                    String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
-                    try {
-                        mimetype = Files.probeContentType(Paths.get(filename));
-                        if (StringUtils.isBlank(mimetype)) {
-                            mimetype = "image";
-                        } else if (mimetype.contains("/")) {
-                            subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
-                            mimetype = mimetype.substring(0, mimetype.indexOf("/"));
-                        }
-                    } catch (IOException e) {
-                        logger.warn("Cannot determine mime type from '{}', using 'image'.", filename);
-                    }
-                }
-            }
-
-            if (StringUtils.isNotBlank(subMimetype)) {
-                switch (mimetype.toLowerCase()) {
-                    case "video":
-                    case "audio":
-                    case "html-sandboxed":
-                        doc.addField(SolrConstants.MIMETYPE, mimetype);
-                        doc.addField(SolrConstants.FILENAME + "_" + subMimetype.toUpperCase(), fileName);
-                        break;
-                    case "object":
-                        doc.addField(SolrConstants.MIMETYPE, subMimetype);
-                        break;
-                    default:
-                        doc.addField(SolrConstants.MIMETYPE, mimetype);
-                }
-            }
+            // Mime type
+            parseMimeType(doc, fileName);
         }
 
         // Add file size
