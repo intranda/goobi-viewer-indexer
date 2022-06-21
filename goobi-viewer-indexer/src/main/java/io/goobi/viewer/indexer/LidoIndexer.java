@@ -392,7 +392,6 @@ public class LidoIndexer extends Indexer {
                 }
             }
 
-
             // Add of each docstruct access conditions (no duplicates)
             Set<String> existingAccessConditions = new HashSet<>();
             if (pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
@@ -627,42 +626,8 @@ public class LidoIndexer extends Indexer {
                 sbImgFileNames.append(';').append(fileName);
             }
 
-            // Add full path if this is a local file or download has failed or is disabled
-            if (!doc.containsKey(SolrConstants.FILENAME)) {
-                doc.addField(SolrConstants.FILENAME, fileName);
-            }
-
-            String mimetype = "image";
-            String subMimetype = "";
-            if (doc.containsKey(SolrConstants.FILENAME)) {
-                String filename = (String) doc.getFieldValue(SolrConstants.FILENAME);
-                try {
-                    mimetype = Files.probeContentType(Paths.get(filename));
-                    if (StringUtils.isBlank(mimetype)) {
-                        mimetype = "image";
-                    } else if (mimetype.contains("/")) {
-                        subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
-                        mimetype = mimetype.substring(0, mimetype.indexOf("/"));
-                    }
-                } catch (IOException e) {
-                    logger.warn("Cannot guess MimeType from " + filename + ". using 'image'");
-                }
-                if (StringUtils.isNotBlank(subMimetype)) {
-                    switch (mimetype.toLowerCase()) {
-                        case "video":
-                        case "audio":
-                        case "html-sandboxed":
-                            doc.addField(SolrConstants.MIMETYPE, mimetype);
-                            doc.addField(SolrConstants.FILENAME + "_" + subMimetype.toUpperCase(), filename);
-                            break;
-                        case "object":
-                            doc.addField(SolrConstants.MIMETYPE, subMimetype);
-                            break;
-                        default:
-                            doc.addField(SolrConstants.MIMETYPE, mimetype);
-                    }
-                }
-            }
+            // Mime type
+            parseMimeType(doc, fileName);
         }
 
         // Add file size

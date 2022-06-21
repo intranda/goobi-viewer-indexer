@@ -96,7 +96,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                 docList.size());
         doc = docList.get(0);
 
-        Assert.assertEquals("video", doc.getFieldValue(SolrConstants.MIMETYPE));
+        Assert.assertEquals("video/mp4", doc.getFieldValue(SolrConstants.MIMETYPE));
         Assert.assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
     }
 
@@ -213,7 +213,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     iddocMap.put(value, true);
                 }
                 Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-                Assert.assertEquals("image", doc.getFieldValue(SolrConstants.MIMETYPE));
+                Assert.assertEquals("image/jpeg", doc.getFieldValue(SolrConstants.MIMETYPE));
                 Assert.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }
         }

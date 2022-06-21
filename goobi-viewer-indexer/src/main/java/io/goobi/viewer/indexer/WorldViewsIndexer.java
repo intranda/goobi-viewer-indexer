@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,9 +38,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -759,11 +755,12 @@ public class WorldViewsIndexer extends Indexer {
             if (representative) {
                 doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
             }
+            
+            parseMimeType(doc, fileName);
         } else {
             // TODO placeholder
             String placeholder = eleImage.getChildText("placeholder");
         }
-        doc.addField(SolrConstants.MIMETYPE, "image");
 
         // FIELD_IMAGEAVAILABLE indicates whether this page has an image
         if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)

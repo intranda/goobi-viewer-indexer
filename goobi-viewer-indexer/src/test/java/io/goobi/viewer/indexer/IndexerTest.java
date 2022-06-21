@@ -756,4 +756,17 @@ public class IndexerTest extends AbstractSolrEnabledTest {
                     || "http://localhost:8080/viewer/api/v1/annotations/comment_14/".equals(doc.getFieldValue("MD_ANNOTATION_ID")));
         }
     }
+
+    /**
+     * @see Indexer#parseMimeType(SolrInputDocument,String)
+     * @verifies parse mime type from mp4 file correctly
+     */
+    @Test
+    public void parseMimeType_shouldParseMimeTypeFromMp4FileCorrectly() throws Exception {
+        SolrInputDocument doc = new SolrInputDocument();
+        Indexer.parseMimeType(doc, "src/text/resouces/LIDO/1292624_media/Film77.mp4");
+        
+        Assert.assertEquals("video/mp4", doc.getFieldValue(SolrConstants.MIMETYPE));
+        Assert.assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
+    }
 }

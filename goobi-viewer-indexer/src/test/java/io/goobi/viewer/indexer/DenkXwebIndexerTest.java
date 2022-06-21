@@ -140,7 +140,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals("OPENACCESS", values.iterator().next());
             }
             Assert.assertEquals("https://example.com/10973880_1.jpg", doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED"));
-            Assert.assertEquals("image", doc.getFieldValue(SolrConstants.MIMETYPE));
+            Assert.assertEquals("image/jpeg", doc.getFieldValue(SolrConstants.MIMETYPE));
             Assert.assertEquals("foo bar", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_DESCRIPTION"));
             Assert.assertEquals(topDoc.getFieldValue(SolrConstants.IDDOC), doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertEquals("Flächendenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));

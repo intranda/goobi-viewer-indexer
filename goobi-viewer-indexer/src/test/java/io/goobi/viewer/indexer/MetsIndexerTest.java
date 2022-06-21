@@ -1009,7 +1009,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC));
         Assert.assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
         Assert.assertNotNull(DocType.PAGE.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
-        Assert.assertNotNull("image", doc.getFieldValue(SolrConstants.MIMETYPE));
+        Assert.assertEquals("image/tiff", doc.getFieldValue(SolrConstants.MIMETYPE));
         Assert.assertEquals("PHYS_0003", doc.getFieldValue(SolrConstants.PHYSID));
         Assert.assertEquals(3, doc.getFieldValue(SolrConstants.ORDER));
         Assert.assertEquals("1", doc.getFieldValue(SolrConstants.ORDERLABEL));
