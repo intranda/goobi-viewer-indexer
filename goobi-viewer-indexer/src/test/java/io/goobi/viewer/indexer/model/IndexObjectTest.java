@@ -720,5 +720,32 @@ public class IndexObjectTest extends AbstractTest {
         Assert.assertEquals(Long.valueOf(tomorrow.toInstant().toEpochMilli()), obj.getDateUpdated().get(1)); // tomorrow
         
     }
+    
 
+    /**
+     * @see IndexObject#addToLucene(LuceneField,boolean)
+     * @verifies add fields correctly
+     */
+    @Test
+    public void addToLucene_shouldAddFieldsCorrectly() throws Exception {
+        IndexObject o = new IndexObject(1L);
+        o.addToLucene(new LuceneField("title", "once upon..."), false);
+        o.addToLucene(new LuceneField("foo", "bar"), false);
+        Assert.assertEquals(2, o.getLuceneFields().size());
+        o.addToLucene(new LuceneField("foo", "bar"), false);
+        Assert.assertEquals(3, o.getLuceneFields().size());
+    }
+
+    /**
+     * @see IndexObject#addToLucene(LuceneField,boolean)
+     * @verifies skip duplicates correctly
+     */
+    @Test
+    public void addToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
+        IndexObject o = new IndexObject(1L);
+        o.addToLucene(new LuceneField("foo", "bar"), true);
+        Assert.assertEquals(1, o.getLuceneFields().size());
+        o.addToLucene(new LuceneField("foo", "bar"), true);
+        Assert.assertEquals(1, o.getLuceneFields().size());
+    }
 }

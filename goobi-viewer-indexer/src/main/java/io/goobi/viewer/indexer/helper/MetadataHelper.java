@@ -444,7 +444,7 @@ public class MetadataHelper {
             long cachedRecordAge = (System.currentTimeMillis() - record.getCreationTimestamp()) / 1000 / 60 / 60;
             logger.debug("Cached record age: {}", cachedRecordAge);
             if (cachedRecordAge < Configuration.getInstance().getAuthorityDataCacheRecordTTL()) {
-                logger.info("Authority data retrieved from local cache: {}", url);
+                logger.debug("Authority data retrieved from local cache: {}", url);
             } else {
                 // Do not use expired record and clear from cache;
                 record = null;

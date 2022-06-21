@@ -327,6 +327,8 @@ public class IndexObject {
      * @param luceneField a {@link io.goobi.viewer.indexer.model.LuceneField} object.
      * @param skipDuplicates if true; fields with the same name and value as existing fields will not be added
      * @return true if field was added; false otherwise
+     * @should add fields correctly
+     * @should skip duplicates correctly
      */
     public boolean addToLucene(LuceneField luceneField, boolean skipDuplicates) {
         if (luceneField == null) {
@@ -467,7 +469,7 @@ public class IndexObject {
                     addToLucene(field.clone(), true);
                     // Pass the info about inheritance up the hierarchy
                     fieldsToInheritToParents.add(field.getField());
-                    logger.debug("Added field: {}", field.toString());
+                    logger.info("Added field: {}", field.toString());
                 }
             }
             // Add child element's grouped metadata fields
