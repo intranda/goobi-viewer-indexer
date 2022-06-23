@@ -469,7 +469,7 @@ public class IndexObject {
                     addToLucene(field.clone(), true);
                     // Pass the info about inheritance up the hierarchy
                     fieldsToInheritToParents.add(field.getField());
-                    logger.info("Added field: {}", field.toString());
+                    logger.debug("Added field: {}", field.toString());
                 }
             }
             // Add child element's grouped metadata fields
