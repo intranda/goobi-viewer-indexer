@@ -23,7 +23,7 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.model.PrimitiveDate;
 
 public class DateToolsTest {
-    
+
     /**
      * @see DateTools#convertDateStringForSolrField(String,boolean)
      * @verifies convert date correctly
@@ -151,5 +151,32 @@ public class DateToolsTest {
     @Test(expected = IllegalArgumentException.class)
     public void normalizeDate_shouldThrowIllegalArgumentExceptionIfNormalizeYearMinDigitsLessThan1() throws Exception {
         DateTools.normalizeDate("05.08.2014", 0);
+    }
+
+    /**
+     * @see DateTools#normalizeDateFieldValue(String)
+     * @verifies format years correctly
+     */
+    @Test
+    public void normalizeDateFieldValue_shouldFormatYearsCorrectly() throws Exception {
+        Assert.assertEquals("2022-01-01T00:00:00Z", DateTools.normalizeDateFieldValue("2022"));
+    }
+
+    /**
+     * @see DateTools#normalizeDateFieldValue(String)
+     * @verifies format iso instant correctly
+     */
+    @Test
+    public void normalizeDateFieldValue_shouldFormatIsoInstantCorrectly() throws Exception {
+        Assert.assertEquals("2022-01-01T00:01:02Z", DateTools.normalizeDateFieldValue("2022-01-01T00:01:02Z"));
+    }
+
+    /**
+     * @see DateTools#normalizeDateFieldValue(String)
+     * @verifies format iso local time correctly
+     */
+    @Test
+    public void normalizeDateFieldValue_shouldFormatIsoLocalTimeCorrectly() throws Exception {
+        Assert.assertEquals("2022-01-01T00:02:03Z", DateTools.normalizeDateFieldValue("2022-01-01T00:02:03"));
     }
 }

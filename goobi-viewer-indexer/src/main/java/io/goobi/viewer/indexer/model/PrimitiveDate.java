@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class PrimitiveDate {
 
@@ -42,6 +43,13 @@ public class PrimitiveDate {
         this.day = date.getDayOfMonth();
     }
 
+    /**
+     * 
+     * @return LocalDateTime based off of this date
+     */
+    public LocalDateTime toLocalDateTime() {
+        return LocalDateTime.of(year != null ? year : 1970, month != null ? month : 1, day != null ? day : 1, 0, 0);
+    }
 
     /**
      * @return the year
@@ -63,7 +71,7 @@ public class PrimitiveDate {
     public Integer getDay() {
         return day;
     }
-    
+
     @Override
     public String toString() {
         return year + "-" + month + "-" + day;

@@ -366,12 +366,9 @@ public class MetadataHelper {
                     }
                     // Normalize public release date
                     if (SolrConstants.DATE_PUBLICRELEASEDATE.equals(fieldName)) {
-                        List<PrimitiveDate> dates = DateTools.normalizeDate(fieldValue, 4);
-                        if (dates != null && !dates.isEmpty()) {
-                            fieldValue = new StringBuilder().append(dates.get(0).getYear())
-                                    .append(dates.get(0).getMonth())
-                                    .append(dates.get(0).getDay())
-                                    .toString();
+                        String normValue = DateTools.normalizeDateFieldValue(fieldValue);
+                        if (StringUtils.isNotEmpty(normValue)) {
+                            fieldValue = normValue;
                         }
                     }
                     // Add Solr field

@@ -864,7 +864,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile2);
         ZonedDateTime dateCreated = indexer.getMetsCreateDate();
         Assert.assertNotNull(dateCreated);
-        Assert.assertEquals("2013-07-02T13:03:37", dateCreated.format(DateTools.formatterISO8601Full));
+        Assert.assertEquals("2013-07-02T13:03:37", dateCreated.format(DateTools.formatterISO8601LocalDateTime));
 
     }
 

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public class DateTools {
     private static final Logger logger = LoggerFactory.getLogger(DateTools.class);
 
     /** Constant <code>formatterISO8601Full</code> */
-    public static DateTimeFormatter formatterISO8601Full = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
+    public static DateTimeFormatter formatterISO8601LocalDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
     /** Constant <code>formatterISO8601DateTimeInstant</code> */
     public static DateTimeFormatter formatterISO8601DateTimeInstant = DateTimeFormatter.ISO_INSTANT; // yyyy-MM-dd'T'HH:mm:ssZ
     /** Constant <code>formatterISO8601DateTimeWithOffset</code> */
@@ -91,7 +92,13 @@ public class DateTools {
 
         // Try known date formats first
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterISO8601Full);
+            LocalDate date = LocalDate.parse(dateString, formatterISO8601LocalDateTime);
+            ret.add(new PrimitiveDate(date));
+            return ret;
+        } catch (DateTimeParseException e) {
+        }
+        try {
+            LocalDate date = LocalDate.parse(dateString, formatterISO8601DateTimeInstant);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
@@ -190,5 +197,40 @@ public class DateTools {
 
         logger.warn("Could not parse date from value: {}", value);
         return null;
+    }
+
+    /**
+     * 
+     * @param value Raw value
+     * @return ISO instant date string
+     * @should format years correctly
+     * @should format iso instant correctly
+     * @should format iso local time correctly
+     */
+    public static String normalizeDateFieldValue(String value) {
+        if (StringUtils.isEmpty(value)) {
+            return "";
+        }
+
+        // UTC instant - no need to adapt
+        try {
+            LocalDateTime.parse(value, formatterISO8601DateTimeInstant.withZone(ZoneOffset.UTC));
+             return value;
+        } catch (DateTimeParseException e) {
+            logger.trace(e.getMessage());
+        }
+        // Local datetime
+        try {
+            return LocalDateTime.parse(value, formatterISO8601LocalDateTime).atZone(ZoneOffset.UTC).format(formatterISO8601DateTimeInstant);
+       } catch (DateTimeParseException e) {
+           logger.trace(e.getMessage());
+       }
+
+        List<PrimitiveDate> dates = DateTools.normalizeDate(value, 4);
+        if (dates == null || dates.isEmpty()) {
+            return "";
+        }
+
+        return dates.get(0).toLocalDateTime().atZone(ZoneOffset.UTC).format(formatterISO8601DateTimeInstant);
     }
 }
