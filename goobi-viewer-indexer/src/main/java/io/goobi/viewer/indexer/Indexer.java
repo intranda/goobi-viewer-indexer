@@ -1116,6 +1116,7 @@ public abstract class Indexer {
      * @param dcFields
      * @return Number of added Solr docs
      * @throws FatalIndexerException
+     * @should add BOOL_WKT_COORDINATES true to docstruct if WKT_COORDS found
      */
     int addGroupedMetadataDocs(GroupedMetadata gmd, ISolrWriteStrategy writeStrategy, IndexObject indexObj, long ownerIddoc, Set<String> skipFields,
             List<LuceneField> dcFields) throws FatalIndexerException {
@@ -1140,10 +1141,9 @@ public abstract class Indexer {
         }
 
         int count = 0;
-        List<LuceneField> fieldsToAdd = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
-        fieldsToAdd.addAll(gmd.getFields());
+        List<LuceneField> fieldsToAddToGroupDoc = new ArrayList<>(gmd.getFields().size() + gmd.getAuthorityDataFields().size());
+        fieldsToAddToGroupDoc.addAll(gmd.getFields());
         if (gmd.isAddAuthorityDataToDocstruct() || gmd.isAddCoordsToDocstruct()) {
-            ;
             // Add authority data to docstruct doc instead of grouped metadata
             for (LuceneField field : gmd.getAuthorityDataFields()) {
                 if (gmd.isAddAuthorityDataToDocstruct() && (field.getField().startsWith("BOOL_") || field.getField().startsWith("SORT_"))) {
@@ -1151,7 +1151,7 @@ public abstract class Indexer {
 
                     // Skip BOOL_WKT_COORDS, if not explicitly configured to add coordinate fields
                     if (field.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS) && !gmd.isAddCoordsToDocstruct()) {
-                        fieldsToAdd.add(field);
+                        fieldsToAddToGroupDoc.add(field);
                         continue;
                     }
 
@@ -1162,7 +1162,7 @@ public abstract class Indexer {
                 } else if ((field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
                         || field.getField().startsWith("NORM_COORDS_")) && !gmd.isAddCoordsToDocstruct()) {
                     // Do not add coordinates to docstruct field, unless explicitly configured
-                    fieldsToAdd.add(field);
+                    fieldsToAddToGroupDoc.add(field);
                     continue;
                 } else {
                     // Avoid field+value duplicates for all other fields
@@ -1171,12 +1171,33 @@ public abstract class Indexer {
                     }
                     skipFields.add(field.getField() + field.getValue());
                 }
+                switch (field.getField()) {
+                    case MetadataHelper.FIELD_HAS_WKT_COORDS:
+                        // Skip BOOL_WKT_COORDS
+                        continue;
+                    case MetadataHelper.FIELD_WKT_COORDS:
+                        // Add BOOL_WKT_COORDS=true manually, instead
+                        boolean boolAlreadySet = false;
+                        for (LuceneField f : indexObj.getLuceneFields()) {
+                            if (f.getField().equals(MetadataHelper.FIELD_HAS_WKT_COORDS)) {
+                                f.setValue("true");
+                                boolAlreadySet = true;
+                                break;
+                                // Just make sure the first instance of this field is "true", the rest will be sanitized eventually
+                            }
+                        }
+                        if (!boolAlreadySet) {
+                            indexObj.getLuceneFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
+                        }
+                        break;
+                }
                 indexObj.getLuceneFields().add(field);
+                logger.info("added field: {}:{}", field.getField(), field.getValue());
             }
         } else {
-            fieldsToAdd.addAll(gmd.getAuthorityDataFields());
+            fieldsToAddToGroupDoc.addAll(gmd.getAuthorityDataFields());
         }
-        SolrInputDocument doc = SolrSearchIndex.createDocument(fieldsToAdd);
+        SolrInputDocument doc = SolrSearchIndex.createDocument(fieldsToAddToGroupDoc);
         long iddoc = getNextIddoc(hotfolder.getSearchIndex());
         doc.addField(SolrConstants.IDDOC, iddoc);
         if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {

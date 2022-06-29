@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -116,11 +115,11 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
         for (String field : doc.getFieldNames()) {
             if (SolrConstants.DATECREATED.equals(field) || field.startsWith("BOOL_")) {
                 if (doc.getFieldValues(field) != null && doc.getFieldValues(field).size() > 1) {
-                    logger.warn("Multiple values found on single-valued field: {}", field);
                     Object firstValue = doc.getFieldValues(field).iterator().next();
                     if (firstValue != null) {
                         fieldsToTrim.put(field, firstValue);
                     }
+                    logger.info("Sanitized multiple values found on single-valued field: {}", field);
                 }
             }
         }
