@@ -826,18 +826,6 @@
 		</MD_PUBLICATIONRUN>
 
         <!--
-		<MDNUM_PUBLICRELEASEYEAR>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</xpath>
-					<addToDefault>false</addToDefault>
-					<addUntokenizedVersion>false</addUntokenizedVersion>
-					<addToChildren>true</addToChildren>
-					<addToPages>true</addToPages>
-				</item>
-			</list>
-		</MDNUM_PUBLICRELEASEYEAR>
-
         <DATE_PUBLICRELEASEDATE>
             <list>
                 <item>
