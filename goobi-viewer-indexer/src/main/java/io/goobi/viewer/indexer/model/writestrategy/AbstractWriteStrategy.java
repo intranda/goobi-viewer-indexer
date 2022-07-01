@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -113,22 +114,21 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
 
         Map<String, Object> fieldsToTrim = new HashMap<>();
         for (String field : doc.getFieldNames()) {
-            if (SolrConstants.DATECREATED.equals(field) || field.startsWith("BOOL_")) {
-                if (doc.getFieldValues(field) != null && doc.getFieldValues(field).size() > 1) {
-                    Object firstValue = doc.getFieldValues(field).iterator().next();
-                    if (firstValue != null) {
-                        fieldsToTrim.put(field, firstValue);
-                    }
-                    logger.info("Sanitized multiple values found on single-valued field: {}", field);
+            if ((SolrConstants.DATECREATED.equals(field) || field.startsWith("BOOL_")) && doc.getFieldValues(field) != null
+                    && doc.getFieldValues(field).size() > 1) {
+                Object firstValue = doc.getFieldValues(field).iterator().next();
+                if (firstValue != null) {
+                    fieldsToTrim.put(field, firstValue);
                 }
+                logger.info("Sanitized multiple values found on single-valued field: {}", field);
             }
         }
         if (fieldsToTrim.isEmpty()) {
             return;
         }
-        for (String field : fieldsToTrim.keySet()) {
-            doc.removeField(field);
-            doc.addField(field, fieldsToTrim.get(field));
+        for (Entry<String, Object> entry : fieldsToTrim.entrySet()) {
+            doc.removeField(entry.getKey());
+            doc.addField(entry.getKey(), fieldsToTrim.get(entry.getKey()));
         }
 
     }

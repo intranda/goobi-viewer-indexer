@@ -215,19 +215,19 @@ public class DateTools {
         // UTC instant - no need to adapt
         try {
             LocalDateTime.parse(value, formatterISO8601DateTimeInstant.withZone(ZoneOffset.UTC));
-             return value;
+            return value;
         } catch (DateTimeParseException e) {
             logger.trace(e.getMessage());
         }
         // Local datetime
         try {
             return LocalDateTime.parse(value, formatterISO8601LocalDateTime).atZone(ZoneOffset.UTC).format(formatterISO8601DateTimeInstant);
-       } catch (DateTimeParseException e) {
-           logger.trace(e.getMessage());
-       }
+        } catch (DateTimeParseException e) {
+            logger.trace(e.getMessage());
+        }
 
         List<PrimitiveDate> dates = DateTools.normalizeDate(value, 4);
-        if (dates == null || dates.isEmpty()) {
+        if (dates.isEmpty()) {
             return "";
         }
 

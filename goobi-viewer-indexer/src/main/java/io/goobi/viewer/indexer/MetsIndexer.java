@@ -28,7 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -2161,7 +2161,7 @@ public class MetsIndexer extends Indexer {
             return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeInstant);
         } catch (DateTimeParseException e) {
             try {
-                return LocalDateTime.parse(dateString, DateTools.formatterISO8601LocalDateTime).atZone(ZoneOffset.systemDefault());
+                return LocalDateTime.parse(dateString, DateTools.formatterISO8601LocalDateTime).atZone(ZoneId.systemDefault());
             } catch (DateTimeParseException e1) {
                 try {
                     return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeWithOffset);

@@ -1190,6 +1190,8 @@ public abstract class Indexer {
                             indexObj.getLuceneFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
                         }
                         break;
+                    default:
+                        break;
                 }
                 indexObj.getLuceneFields().add(field);
                 logger.info("added field: {}:{}", field.getField(), field.getValue());
