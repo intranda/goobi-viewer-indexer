@@ -36,9 +36,22 @@ public class LuceneField {
      * @should set attributes correctly
      */
     public LuceneField(String field, String value) {
-        super();
         this.field = field;
         this.value = value;
+    }
+
+    /**
+     * Cloning constructor.
+     * 
+     * @param orig {@link LuceneField} to clone
+     */
+    public LuceneField(LuceneField orig) {
+        if (orig == null) {
+            throw new IllegalArgumentException("orig may not be null");
+        }
+
+        this.field = orig.getField();
+        this.value = orig.getValue();
     }
 
     /** {@inheritDoc} */
@@ -79,11 +92,6 @@ public class LuceneField {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public LuceneField clone() {
-        return new LuceneField(field, value);
     }
 
     /**
