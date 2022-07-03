@@ -49,7 +49,7 @@
 		<httpcore.version>4.4.15</httpcore.version>
 		<icu.version>71.1</icu.version>
 		<imageio-openjpeg.version>0.6.2</imageio-openjpeg.version>
-		<log4j.version>2.17.2</log4j.version>
+		<log4j.version>2.18.0</log4j.version>
 		<jackson.version>2.13.3</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
