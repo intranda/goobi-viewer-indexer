@@ -30,7 +30,18 @@
 	in server mode, and use a higher logging level that avoids logging every 
 	request -->
 
-<schema name="goobi_viewer-20220225" version="1.6">
+
+
+
+
+<!-- PLEASE ADD A CHECKBOX IN THE TICKET TO REMEMBER TO UPDATE THIS FILE IN THE
+     GOOBI-VIEWER-DOCKER-SOLR REPOSITORY AS WELL -->
+<schema name="goobi_viewer-20220614" version="1.6">
+
+
+
+
+
     <!-- attribute "name" is the name of this schema and is only used for display purposes.
        version="x.y" is Solr's version number for the schema syntax and 
        semantics.  It should not normally be changed by applications.
@@ -176,6 +187,7 @@
 	<field name="LOGID" type="string" indexed="true" stored="true" />
 	<field name="METADATATYPE" type="string" indexed="true" stored="true" />
 	<field name="MIMETYPE" type="string" indexed="true" stored="true" />
+    <field name="MONTHDAY" type="tlong" indexed="true" stored="true" multiValued="true" />
 	<field name="NORMDATATERMS" type="search_field_rev" indexed="true"
 		stored="true" />
 	<field name="NUMPAGES" type="tint" indexed="true" stored="true" />

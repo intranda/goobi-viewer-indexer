@@ -22,9 +22,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -756,4 +758,40 @@ public class IndexerTest extends AbstractSolrEnabledTest {
                     || "http://localhost:8080/viewer/api/v1/annotations/comment_14/".equals(doc.getFieldValue("MD_ANNOTATION_ID")));
         }
     }
+
+    /**
+     * @see Indexer#parseMimeType(SolrInputDocument,String)
+     * @verifies parse mime type from mp4 file correctly
+     */
+    @Test
+    public void parseMimeType_shouldParseMimeTypeFromMp4FileCorrectly() throws Exception {
+        SolrInputDocument doc = new SolrInputDocument();
+        Indexer.parseMimeType(doc, "src/text/resouces/LIDO/1292624_media/Film77.mp4");
+
+        Assert.assertEquals("video/mp4", doc.getFieldValue(SolrConstants.MIMETYPE));
+        Assert.assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(GroupedMetadata,ISolrWriteStrategy,IndexObject,long,Set,List)
+     * @verifies add BOOL_WKT_COORDINATES true to docstruct if WKT_COORDS found
+     */
+    @Test
+    public void addGroupedMetadataDocs_shouldAddBOOL_WKT_COORDINATESTrueToDocstructIfWKT_COORDSFound() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.setDataRepository(new DataRepository("src/test/resources", true));
+
+        IndexObject indexObj = new IndexObject(2L);
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.setMainValue("foo");
+        gmd.setAddCoordsToDocstruct(true);
+        gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_WKT_COORDS, "1.0, 2.0, 3.0, 4.0"));
+        gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "false"));
+        indexer.addGroupedMetadataDocs(gmd, AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder), indexObj, 1L, new HashSet<>(),
+                Collections.emptyList());
+        Assert.assertEquals(2, indexObj.getLuceneFields().size());
+        Assert.assertEquals(MetadataHelper.FIELD_HAS_WKT_COORDS, indexObj.getLuceneFields().get(0).getField());
+        Assert.assertEquals("true", indexObj.getLuceneFields().get(0).getValue());
+    }
+    
 }

@@ -735,6 +735,7 @@ public class Utils {
             case SolrConstants.DOCSTRCT_SUB:
             case SolrConstants.DOCSTRCT_TOP:
                 return prefix + fieldName;
+            case SolrConstants.MONTHDAY:    
             case SolrConstants.YEAR:
             case SolrConstants.YEARMONTH:
             case SolrConstants.YEARMONTHDAY:

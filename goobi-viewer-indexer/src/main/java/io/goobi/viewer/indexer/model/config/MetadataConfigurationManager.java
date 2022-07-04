@@ -140,7 +140,11 @@ public final class MetadataConfigurationManager {
                 fieldConfig.setAddExistenceBoolean(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addExistenceBoolean", false));
 
                 if (config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addToParents", false)) {
-                    fieldsToAddToParents.add(fieldname);
+                    if (config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addToParents[@keepOnChildren]", false)) {
+                        fieldsToAddToParents.add("!" + fieldname);
+                    } else {
+                        fieldsToAddToParents.add(fieldname);
+                    }
                 }
                 if (config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addToChildren", false)) {
                     fieldsToAddToChildren.add(fieldname);

@@ -57,6 +57,19 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
         Assert.assertEquals(1, result.size());
         Assert.assertEquals("MD_TESTFIELD", result.get(0).getFieldname());
     }
+    
+    /**
+     * @see MetadataConfigurationManager#loadFieldConfiguration(XMLConfiguration)
+     * @verifies load all field configs correctly
+     */
+    @Test
+    public void loadFieldConfiguration_shouldLoadAllFieldConfigsCorrectly() throws Exception {
+        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
+        Assert.assertNotNull(configItems);
+        Assert.assertEquals(1, configItems.size());
+
+        Assert.assertTrue(Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains("!MD_TESTFIELD"));
+    }
 
     /**
      * @see MetadataConfigurationManager#loadFieldConfiguration(XMLConfiguration)

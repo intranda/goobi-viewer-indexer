@@ -25,11 +25,12 @@ public final class SolrConstants {
 
     public enum DocType {
         DOCSTRCT,
-        PAGE,
+        FILE,
+        GROUP,
         METADATA,
         EVENT,
-        UGC,
-        GROUP;
+        PAGE,
+        UGC;
     }
 
     public enum MetadataGroupType {
@@ -78,6 +79,8 @@ public final class SolrConstants {
     public static final String CURRENTNOSORT = "CURRENTNOSORT";
     /** Constant <code>DATAREPOSITORY="DATAREPOSITORY"</code> */
     public static final String DATAREPOSITORY = "DATAREPOSITORY";
+    /** Moving wall public release date. */
+    public static final String DATE_PUBLICRELEASEDATE = "DATE_PUBLICRELEASEDATE";
     /** Constant <code>DATECREATED="DATECREATED"</code> */
     public static final String DATECREATED = "DATECREATED";
     /** Constant <code>DATEDELETED="DATEDELETED"</code> */
@@ -156,6 +159,8 @@ public final class SolrConstants {
     public static final String METADATATYPE = "METADATATYPE";
     /** Constant <code>MIMETYPE="MIMETYPE"</code> */
     public static final String MIMETYPE = "MIMETYPE";
+    /** Constant <code>MONTHDAY="MONTHDAY"</code> */
+    public static final String MONTHDAY = "MONTHDAY";
     /** Constant <code>NORMDATATERMS="NORMDATATERMS"</code> */
     public static final String NORMDATATERMS = "NORMDATATERMS";
     /** Constant <code>NUMPAGES="NUMPAGES"</code> */

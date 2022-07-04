@@ -364,6 +364,13 @@ public class MetadataHelper {
                                     configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizers(), ret);
                         }
                     }
+                    // Normalize public release date
+                    if (SolrConstants.DATE_PUBLICRELEASEDATE.equals(fieldName)) {
+                        String normValue = DateTools.normalizeDateFieldValue(fieldValue);
+                        if (StringUtils.isNotEmpty(normValue)) {
+                            fieldValue = normValue;
+                        }
+                    }
                     // Add Solr field
                     LuceneField luceneField = new LuceneField(fieldName, fieldValue);
                     ret.add(luceneField);
@@ -444,7 +451,7 @@ public class MetadataHelper {
             long cachedRecordAge = (System.currentTimeMillis() - record.getCreationTimestamp()) / 1000 / 60 / 60;
             logger.debug("Cached record age: {}", cachedRecordAge);
             if (cachedRecordAge < Configuration.getInstance().getAuthorityDataCacheRecordTTL()) {
-                logger.info("Authority data retrieved from local cache: {}", url);
+                logger.debug("Authority data retrieved from local cache: {}", url);
             } else {
                 // Do not use expired record and clear from cache;
                 record = null;
@@ -922,6 +929,8 @@ public class MetadataHelper {
                             year + FORMAT_TWO_DIGITS.get().format(date.getMonth()) + FORMAT_TWO_DIGITS.get().format(date.getDay())));
                     logger.trace("added YEARMONTHDAY: {}", new LuceneField(SolrConstants.YEARMONTHDAY,
                             year + FORMAT_TWO_DIGITS.get().format(date.getMonth()) + FORMAT_TWO_DIGITS.get().format(date.getDay())).getValue());
+                    ret.add(new LuceneField(SolrConstants.MONTHDAY,
+                            FORMAT_TWO_DIGITS.get().format(date.getMonth()) + FORMAT_TWO_DIGITS.get().format(date.getDay())));
                 }
             }
 
@@ -1040,7 +1049,7 @@ public class MetadataHelper {
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
             StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields) throws FatalIndexerException {
-        logger.info("getGroupedMetadata: {}", groupLabel);
+        logger.trace("getGroupedMetadata: {}", groupLabel);
         GroupedMetadata ret = new GroupedMetadata();
         ret.setLabel(groupLabel);
         ret.getFields().add(new LuceneField(SolrConstants.LABEL, groupLabel));

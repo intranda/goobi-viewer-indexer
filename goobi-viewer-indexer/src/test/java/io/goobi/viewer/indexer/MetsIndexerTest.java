@@ -198,6 +198,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals(Long.valueOf(19800710), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEARMONTHDAY));
             }
             {
+                List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.MONTHDAY);
+                Assert.assertNotNull(mdList);
+                Assert.assertEquals(1, mdList.size());
+                Assert.assertEquals(Long.valueOf(710), mdList.get(0));
+                Assert.assertEquals(Long.valueOf(710), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.MONTHDAY));
+            }
+            {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.CENTURY);
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());
@@ -857,7 +864,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile2);
         ZonedDateTime dateCreated = indexer.getMetsCreateDate();
         Assert.assertNotNull(dateCreated);
-        Assert.assertEquals("2013-07-02T13:03:37", dateCreated.format(DateTools.formatterISO8601Full));
+        Assert.assertEquals("2013-07-02T13:03:37", dateCreated.format(DateTools.formatterISO8601LocalDateTime));
 
     }
 
@@ -1009,7 +1016,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC));
         Assert.assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
         Assert.assertNotNull(DocType.PAGE.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
-        Assert.assertNotNull("image", doc.getFieldValue(SolrConstants.MIMETYPE));
+        Assert.assertEquals("image/tiff", doc.getFieldValue(SolrConstants.MIMETYPE));
         Assert.assertEquals("PHYS_0003", doc.getFieldValue(SolrConstants.PHYSID));
         Assert.assertEquals(3, doc.getFieldValue(SolrConstants.ORDER));
         Assert.assertEquals("1", doc.getFieldValue(SolrConstants.ORDERLABEL));

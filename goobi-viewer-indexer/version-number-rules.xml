@@ -9,21 +9,4 @@
 		<ignoreVersion type="regex">.*[-_\.](alpha|Alpha|ALPHA|beta|Beta|BETA|rc|RC|M|EA|java7)[-_\.]?[0-9]?.*</ignoreVersion>
     </ignoreVersions>
 
-    <rules>
-        <!-- Do not update to version later than 2.11.4 because the geojson-jackson module is not compatible yet -->
-        <rule groupId="com.fasterxml.jackson.*" artifactId="*">
-            <ignoreVersions>
-                <ignoreVersion>2.12.0</ignoreVersion>
-                <ignoreVersion>2.12.1</ignoreVersion>
-                <ignoreVersion>2.12.2</ignoreVersion>
-                <ignoreVersion>2.12.3</ignoreVersion>
-                <ignoreVersion>2.12.4</ignoreVersion>
-                <ignoreVersion>2.12.5</ignoreVersion>
-                <ignoreVersion>2.12.6</ignoreVersion>
-                <ignoreVersion>2.13.0</ignoreVersion>
-                <ignoreVersion>2.13.1</ignoreVersion>
-                <ignoreVersion>2.13.2</ignoreVersion>
-            </ignoreVersions>
-        </rule>
-    </rules>
 </ruleset>
