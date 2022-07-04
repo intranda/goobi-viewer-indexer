@@ -118,8 +118,7 @@ public class MetsIndexer extends Indexer {
     public static final String FULLTEXT_FILEGROUP = "FULLTEXT";
     /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
-    /** Constant <code>DEFAULT_FULLTEXT_CHARSET="UTF-8"</code> */
-    public static final String DEFAULT_FULLTEXT_CHARSET = "UTF-8";
+
     /** */
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
@@ -1394,7 +1393,7 @@ public class MetsIndexer extends Indexer {
                                                     + fileName);
                                     // Write ALTO file
                                     File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
-                                    FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+                                    FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
                                     altoWritten = true;
                                     logger.debug("Added ALTO from downloaded ALTO for page {}", order);
                                 } else {

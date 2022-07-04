@@ -82,8 +82,6 @@ public class DublinCoreIndexer extends Indexer {
     public static final String FULLTEXT_FILEGROUP = "FULLTEXT";
     /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
-    /** Constant <code>DEFAULT_FULLTEXT_CHARSET="UTF-8"</code> */
-    public static final String DEFAULT_FULLTEXT_CHARSET = "UTF-8";
 
     /**
      * Constructor.

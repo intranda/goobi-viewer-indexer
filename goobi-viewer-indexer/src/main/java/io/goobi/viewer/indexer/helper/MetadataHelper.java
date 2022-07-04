@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
-import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import de.intranda.digiverso.normdataimporter.model.Record;

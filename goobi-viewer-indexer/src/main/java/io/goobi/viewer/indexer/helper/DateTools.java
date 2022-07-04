@@ -17,6 +17,7 @@ package io.goobi.viewer.indexer.helper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -190,7 +191,7 @@ public class DateTools {
             if (date.getYear() != null) {
                 ZonedDateTime ld =
                         LocalDateTime.of(date.getYear(), date.getMonth() != null ? date.getMonth() : 1, date.getDay() != null ? date.getDay() : 1, 0,
-                                0, 0, 0).atZone(useUTC ? ZoneOffset.UTC : ZoneOffset.systemDefault());
+                                0, 0, 0).atZone(useUTC ? ZoneOffset.UTC : ZoneId.systemDefault());
                 return ld.format(formatterISO8601DateTimeInstant);
             }
         }

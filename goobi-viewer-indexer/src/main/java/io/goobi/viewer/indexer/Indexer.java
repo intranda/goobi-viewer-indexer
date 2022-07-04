@@ -77,9 +77,8 @@ import de.intranda.api.annotation.ISelector;
 import de.intranda.api.annotation.wa.FragmentSelector;
 import de.intranda.api.annotation.wa.SpecificResource;
 import de.intranda.api.annotation.wa.TextualResource;
-import de.intranda.api.annotation.wa.TypedResource;
 import de.intranda.api.annotation.wa.WebAnnotation;
-import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
+import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.FileTools;
@@ -802,17 +801,19 @@ public abstract class Indexer {
                         doc.addField(FIELD_COORDS, coords[0] + " " + coords[1]);
                     }
                 }
-            } else if (annotation.getBody() instanceof TypedResource) {
-                //any other resource with a "type" property
-                String type = ((TypedResource) annotation.getBody()).getType();
-                switch (type) {
-                    case "AuthorityResource":
-                        //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
-                        break;
-                    default:
-                        break;
-                }
-            } else if (annotation.getBody() != null) {
+            }
+            //            else if (annotation.getBody() instanceof TypedResource) {
+            //                //any other resource with a "type" property
+            //                String type = ((TypedResource) annotation.getBody()).getType();
+            //                switch (type) {
+            //                    case "AuthorityResource":
+            //                        //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
+            //                        break;
+            //                    default:
+            //                        break;
+            //                }
+            //            }
+            else if (annotation.getBody() != null) {
                 logger.warn("Cannot interpret annotation body of type '{}'.", annotation.getBody().getClass());
             } else {
                 logger.warn("Annotaton has no body: {}", annotation.toString());
@@ -1169,7 +1170,7 @@ public abstract class Indexer {
                         continue;
                     }
                     skipFields.add(field.getField());
-                } else if ((field.getField().startsWith("WKT_") || field.getField().startsWith(GeoNamesRecord.AUTOCOORDS_FIELD)
+                } else if ((field.getField().startsWith("WKT_") || field.getField().startsWith(Record.AUTOCOORDS_FIELD)
                         || field.getField().startsWith("NORM_COORDS_")) && !gmd.isAddCoordsToDocstruct()) {
                     // Do not add coordinates to docstruct field, unless explicitly configured
                     fieldsToAddToGroupDoc.add(field);
@@ -1405,7 +1406,7 @@ public abstract class Indexer {
             if (dataFolders.get(altoParamName) != null) {
                 FileUtils.writeStringToFile(
                         new File(dataFolders.get(altoParamName).toFile(), baseFileName + XML_EXTENSION),
-                        (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+                        (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
                 ret = true;
             } else {
                 logger.error("Data folder not defined: {}", dataFolders.get(altoParamName));

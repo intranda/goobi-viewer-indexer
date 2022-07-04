@@ -65,7 +65,6 @@ public class FileTools {
         }
     };
 
-
     /**
      * Reads a String from a byte array
      *
@@ -80,21 +79,17 @@ public class FileTools {
             encoding = TextHelper.DEFAULT_CHARSET;
         }
 
-        Scanner scanner = null;
         StringBuilder text = new StringBuilder();
         String NL = System.getProperty("line.separator");
-        try {
-            scanner = new Scanner(new ByteArrayInputStream(bytes), encoding);
+        try (Scanner scanner = new Scanner(new ByteArrayInputStream(bytes), encoding);) {
             while (scanner.hasNextLine()) {
                 text.append(scanner.nextLine()).append(NL);
             }
-        } finally {
-            scanner.close();
         }
         result = text.toString();
         return result.trim();
     }
-    
+
     /**
      * <p>
      * readFileToString.
@@ -142,7 +137,7 @@ public class FileTools {
 
         return sb.toString();
     }
-    
+
     /**
      * Uses ICU4J to determine the charset of the given InputStream.
      *
@@ -193,7 +188,9 @@ public class FileTools {
     }
 
     /**
-     * <p>decompressGzipFile.</p>
+     * <p>
+     * decompressGzipFile.
+     * </p>
      *
      * @param gzipFile a {@link java.io.File} object.
      * @param newFile a {@link java.io.File} object.
@@ -213,7 +210,9 @@ public class FileTools {
     }
 
     /**
-     * <p>compressGzipFile.</p>
+     * <p>
+     * compressGzipFile.
+     * </p>
      *
      * @param file a {@link java.io.File} object.
      * @param gzipFile a {@link java.io.File} object.
@@ -233,7 +232,9 @@ public class FileTools {
     }
 
     /**
-     * <p>compressZipFile.</p>
+     * <p>
+     * compressZipFile.
+     * </p>
      *
      * @param files a {@link java.util.List} object.
      * @param zipFile a {@link java.io.File} object.
@@ -268,7 +269,9 @@ public class FileTools {
     }
 
     /**
-     * <p>compressZipFile.</p>
+     * <p>
+     * compressZipFile.
+     * </p>
      *
      * @param zipFile a {@link java.io.File} object.
      * @param level a {@link java.lang.Integer} object.
@@ -303,7 +306,9 @@ public class FileTools {
     }
 
     /**
-     * <p>checkPathExistance.</p>
+     * <p>
+     * checkPathExistance.
+     * </p>
      *
      * @param path a {@link java.nio.file.Path} object.
      * @param create a boolean.
@@ -328,7 +333,9 @@ public class FileTools {
     }
 
     /**
-     * <p>copyStream.</p>
+     * <p>
+     * copyStream.
+     * </p>
      *
      * @param output a {@link java.io.OutputStream} object.
      * @param input a {@link java.io.InputStream} object.
@@ -343,7 +350,9 @@ public class FileTools {
     }
 
     /**
-     * <p>isFolderEmpty.</p>
+     * <p>
+     * isFolderEmpty.
+     * </p>
      *
      * @param folder a {@link java.nio.file.Path} object.
      * @return true if folder empty; false otherwise

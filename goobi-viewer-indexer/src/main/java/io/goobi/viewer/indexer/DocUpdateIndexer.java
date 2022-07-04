@@ -211,7 +211,7 @@ public class DocUpdateIndexer extends Indexer {
 
                             Path altoFile = Paths.get(repositoryPath.toAbsolutePath().toString(), altoFileName);
                             Utils.checkAndCreateDirectory(altoFile.getParent());
-                            FileUtils.writeStringToFile(altoFile.toFile(), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+                            FileUtils.writeStringToFile(altoFile.toFile(), (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
                             String fulltext = ((String) altoData.get(SolrConstants.FULLTEXT)).trim();
@@ -259,7 +259,7 @@ public class DocUpdateIndexer extends Indexer {
                         }
                         Path fulltextFile = Paths.get(repositoryPath.toAbsolutePath().toString(), fulltextFileName);
                         Utils.checkAndCreateDirectory(fulltextFile.getParent());
-                        FileUtils.writeStringToFile(fulltextFile.toFile(), fulltext, "UTF-8");
+                        FileUtils.writeStringToFile(fulltextFile.toFile(), fulltext, TextHelper.DEFAULT_CHARSET);
                     }
                 }
             }
