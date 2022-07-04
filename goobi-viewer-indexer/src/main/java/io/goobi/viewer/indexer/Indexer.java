@@ -121,7 +121,12 @@ public abstract class Indexer {
     /** Constant <code>XML_EXTENSION=".xml"</code> */
     public static final String XML_EXTENSION = ".xml";
 
-    public static final String FIELD_IMAGEAVAILABLE = "BOOL_IMAGEAVAILABLE";
+    protected static final String FIELD_COORDS = "MD_COORDS";
+    protected static final String FIELD_IMAGEAVAILABLE = "BOOL_IMAGEAVAILABLE";
+    protected static final String FIELD_FILESIZE = "MDNUM_FILESIZE";
+    protected static final String FIELD_OWNERDEPTH = "MDNUM_OWNERDEPTH";
+    protected static final String FIELD_SHAPE = "MD_SHAPE";
+    protected static final String FIELD_TEXT = "MD_TEXT";
 
     public static final String[] IIIF_IMAGE_FILE_NAMES =
             { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
@@ -560,7 +565,7 @@ public abstract class Indexer {
                                 doc.addField("MD_COORDY", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                 break;
                             case "text":
-                                doc.addField("MD_TEXT", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                                doc.addField(FIELD_TEXT, MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                                 break;
                             default:
                                 // nothing
@@ -663,7 +668,7 @@ public abstract class Indexer {
 
                     TextualResource body = (TextualResource) anno.getBody();
                     if (StringUtils.isNotEmpty(body.getText())) {
-                        doc.addField("MD_TEXT", body.getText());
+                        doc.addField(FIELD_TEXT, body.getText());
                         doc.addField(SolrConstants.UGCTERMS, "COMMENT  " + body.getText());
                     }
 
@@ -786,7 +791,7 @@ public abstract class Indexer {
             // Value
             if (annotation.getBody() instanceof TextualResource) {
                 doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
-                doc.addField("MD_TEXT", ((TextualResource) annotation.getBody()).getText());
+                doc.addField(FIELD_TEXT, ((TextualResource) annotation.getBody()).getText());
             } else if (annotation.getBody() instanceof GeoLocation) {
                 doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
                 // Add searchable coordinates
@@ -794,7 +799,7 @@ public abstract class Indexer {
                 if (geoLocation.getGeometry() != null) {
                     double[] coords = geoLocation.getGeometry().getCoordinates();
                     if (coords.length == 2) {
-                        doc.addField("MD_COORDS", coords[0] + " " + coords[1]);
+                        doc.addField(FIELD_COORDS, coords[0] + " " + coords[1]);
                     }
                 }
             } else if (annotation.getBody() instanceof TypedResource) {
@@ -803,6 +808,9 @@ public abstract class Indexer {
                 switch (type) {
                     case "AuthorityResource":
                         //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
+                        break;
+                    default:
+                        break;
                 }
             } else if (annotation.getBody() != null) {
                 logger.warn("Cannot interpret annotation body of type '{}'.", annotation.getBody().getClass());
@@ -826,7 +834,7 @@ public abstract class Indexer {
             }
 
             sbTerms.append(doc.getFieldValue(SolrConstants.UGCTYPE)).append(" ");
-            sbTerms.append(doc.getFieldValue("MD_TEXT")).append(" ");
+            sbTerms.append(doc.getFieldValue(FIELD_TEXT)).append(" ");
 
             if (StringUtils.isNotBlank(sbTerms.toString())) {
                 doc.setField(SolrConstants.UGCTERMS, sbTerms.toString().trim());

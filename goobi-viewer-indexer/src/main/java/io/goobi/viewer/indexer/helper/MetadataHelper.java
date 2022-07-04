@@ -560,7 +560,7 @@ public class MetadataHelper {
                             ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
                         }
                     }
-                } else if (authorityDataField.getKey().equals(GeoNamesRecord.AUTOCOORDS_FIELD)) {
+                } else if (authorityDataField.getKey().equals(Record.AUTOCOORDS_FIELD)) {
                     String[] textValueSplit = textValue.split(" ");
 
                     String type = "mods:coordinates/point";

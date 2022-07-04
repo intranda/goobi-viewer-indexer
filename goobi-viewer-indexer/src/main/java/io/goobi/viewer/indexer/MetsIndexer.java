@@ -602,14 +602,14 @@ public class MetsIndexer extends Indexer {
             }
 
             int currentDepth = -1;
-            if (pageDoc.getField("MDNUM_OWNERDEPTH") != null) {
-                currentDepth = (int) pageDoc.getField("MDNUM_OWNERDEPTH").getValue();
+            if (pageDoc.getField(FIELD_OWNERDEPTH) != null) {
+                currentDepth = (int) pageDoc.getField(FIELD_OWNERDEPTH).getValue();
             }
 
             // Make sure IDDOC_OWNER of a page contains the IDDOC of the lowest possible mapped docstruct
             if (depth > currentDepth) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                pageDoc.setField("MDNUM_OWNERDEPTH", depth);
+                pageDoc.setField(FIELD_OWNERDEPTH, depth);
 
                 // Add the parent document's LOGID value to the page
                 pageDoc.setField(SolrConstants.LOGID, indexObj.getLogId());
@@ -733,13 +733,13 @@ public class MetsIndexer extends Indexer {
                 GroupedMetadata shapeGmd = new GroupedMetadata();
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.METADATATYPE, MetadataGroupType.SHAPE.name()));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, String.valueOf(pageDoc.getFieldValue(SolrConstants.IDDOC))));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) pageDoc.getFieldValue("MD_COORDS")));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) pageDoc.getFieldValue(FIELD_COORDS)));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.LOGID, indexObj.getLogId()));
-                shapeGmd.getFields().add(new LuceneField("MD_COORDS", (String) pageDoc.getFieldValue("MD_COORDS")));
-                shapeGmd.getFields().add(new LuceneField("MD_SHAPE", (String) pageDoc.getFieldValue("MD_SHAPE")));
-                shapeGmd.getFields().add(new LuceneField("MD_VALUE", (String) pageDoc.getFieldValue("MD_COORDS")));
+                shapeGmd.getFields().add(new LuceneField(FIELD_COORDS, (String) pageDoc.getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(FIELD_SHAPE, (String) pageDoc.getFieldValue(FIELD_SHAPE)));
+                shapeGmd.getFields().add(new LuceneField("MD_VALUE", (String) pageDoc.getFieldValue(FIELD_COORDS)));
                 // Add main value, otherwise the document will be skipped
-                shapeGmd.setMainValue((String) pageDoc.getFieldValue("MD_COORDS"));
+                shapeGmd.setMainValue((String) pageDoc.getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
                 logger.debug("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
@@ -947,8 +947,8 @@ public class MetsIndexer extends Indexer {
                         shapePageDoc.setField(SolrConstants.DOCTYPE, "SHAPE");
                         shapePageDoc.addField(SolrConstants.ORDER, Utils.generateLongOrderNumber(order, count));
                         shapePageDoc.addField(SolrConstants.PHYSID, physId);
-                        shapePageDoc.addField("MD_COORDS", coords);
-                        shapePageDoc.addField("MD_SHAPE", shape);
+                        shapePageDoc.addField(FIELD_COORDS, coords);
+                        shapePageDoc.addField(FIELD_SHAPE, shape);
                         shapePageDoc.addField("ORDER_PARENT", order);
                         shapePageDocs.add(shapePageDoc);
                         count++;
@@ -1164,19 +1164,19 @@ public class MetsIndexer extends Indexer {
                         Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
                         if (dataFolder != null) {
                             Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                            doc.addField("MDNUM_FILESIZE", Files.size(path));
+                            doc.addField(FIELD_FILESIZE, Files.size(path));
                         } else {
-                            doc.addField("MDNUM_FILESIZE", -1);
+                            doc.addField(FIELD_FILESIZE, -1);
                         }
                     } catch (FileNotFoundException | NoSuchFileException e) {
                         logger.warn("File not found: {}", e.getMessage());
-                        doc.addField("MDNUM_FILESIZE", -1);
+                        doc.addField(FIELD_FILESIZE, -1);
                     } catch (IOException e) {
                         logger.error(e.getMessage(), e);
-                        doc.addField("MDNUM_FILESIZE", -1);
+                        doc.addField(FIELD_FILESIZE, -1);
                     } catch (IllegalArgumentException e) {
                         logger.error(e.getMessage(), e);
-                        doc.addField("MDNUM_FILESIZE", -1);
+                        doc.addField(FIELD_FILESIZE, -1);
                     }
                 }
 

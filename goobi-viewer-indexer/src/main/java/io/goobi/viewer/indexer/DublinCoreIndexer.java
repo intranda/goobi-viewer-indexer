@@ -394,9 +394,9 @@ public class DublinCoreIndexer extends Indexer {
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
 
             // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-            if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || 0 > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
+            if (pageDoc.getField(FIELD_OWNERDEPTH) == null || 0 > (Integer) pageDoc.getFieldValue(FIELD_OWNERDEPTH)) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                pageDoc.setField("MDNUM_OWNERDEPTH", 0);
+                pageDoc.setField(FIELD_OWNERDEPTH, 0);
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
@@ -583,14 +583,14 @@ public class DublinCoreIndexer extends Indexer {
             if (dataFolder != null) {
                 Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
                 if (Files.isRegularFile(path)) {
-                    doc.addField("MDNUM_FILESIZE", Files.size(path));
+                    doc.addField(FIELD_FILESIZE, Files.size(path));
                 }
             }
         } catch (IllegalArgumentException | IOException e) {
             logger.warn(e.getMessage());
         }
-        if (!doc.containsKey("MDNUM_FILESIZE")) {
-            doc.addField("MDNUM_FILESIZE", -1);
+        if (!doc.containsKey(FIELD_FILESIZE)) {
+            doc.addField(FIELD_FILESIZE, -1);
         }
 
         // Add image dimension values from EXIF
