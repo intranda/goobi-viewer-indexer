@@ -375,7 +375,7 @@ public class DublinCoreIndexer extends Indexer {
             // Add thumbnail information from the first page
             String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
-            if ("SHAPE".equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+            if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue("ORDER_PARENT"))));
             } else {
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));

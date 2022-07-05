@@ -30,6 +30,7 @@ public final class SolrConstants {
         METADATA,
         EVENT,
         PAGE,
+        SHAPE,
         UGC;
     }
 
@@ -41,7 +42,6 @@ public final class SolrConstants {
         SUBJECT,
         ORIGININFO,
         RECORD,
-        SHAPE,
         CITATION,
         EVENT,
         OTHER;

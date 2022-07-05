@@ -25,6 +25,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,7 +67,7 @@ public final class TextHelper {
     private static final Logger logger = LoggerFactory.getLogger(TextHelper.class);
 
     /** Constant <code>DEFAULT_ENCODING="UTF-8"</code> */
-    public static final String DEFAULT_CHARSET = "UTF-8";
+    public static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
 
     private static final String ALTO_WIDTH = "WIDTH";
     private static final String ALTO_HEIGHT = "HEIGHT";

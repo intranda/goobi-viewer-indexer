@@ -86,7 +86,6 @@ import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
-import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -577,7 +576,7 @@ public class MetsIndexer extends Indexer {
             // Add thumbnail information from the first page
             String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
-            if ("SHAPE".equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+            if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue("ORDER_PARENT"))));
             } else {
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
@@ -728,9 +727,9 @@ public class MetsIndexer extends Indexer {
             }
 
             // For shape page docs, create grouped metadata docs for their mapped docstruct
-            if ("SHAPE".equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+            if (DocType.SHAPE.name().equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 GroupedMetadata shapeGmd = new GroupedMetadata();
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.METADATATYPE, MetadataGroupType.SHAPE.name()));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.METADATATYPE, DocType.SHAPE.name()));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, String.valueOf(pageDoc.getFieldValue(SolrConstants.IDDOC))));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) pageDoc.getFieldValue(FIELD_COORDS)));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.LOGID, indexObj.getLogId()));
@@ -939,11 +938,10 @@ public class MetsIndexer extends Indexer {
                     for (Element eleArea : eleListArea) {
                         String coords = eleArea.getAttributeValue("COORDS");
                         String physId = eleArea.getAttributeValue("ID");
-                        String shape = eleArea.getAttributeValue("SHAPE");
+                        String shape = eleArea.getAttributeValue(DocType.SHAPE.name());
                         SolrInputDocument shapePageDoc = new SolrInputDocument();
                         shapePageDoc.addField(SolrConstants.IDDOC, getNextIddoc(hotfolder.getSearchIndex()));
-                        shapePageDoc.setField(SolrConstants.DOCTYPE, "SHAPE");
-                        shapePageDoc.setField(SolrConstants.DOCTYPE, "SHAPE");
+                        shapePageDoc.setField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
                         shapePageDoc.addField(SolrConstants.ORDER, Utils.generateLongOrderNumber(order, count));
                         shapePageDoc.addField(SolrConstants.PHYSID, physId);
                         shapePageDoc.addField(FIELD_COORDS, coords);

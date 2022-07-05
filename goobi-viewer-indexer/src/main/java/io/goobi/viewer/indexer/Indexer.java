@@ -761,19 +761,22 @@ public abstract class Indexer {
 
                 // Look up owner page doc
                 SolrInputDocument pageDoc = pageDocs.get(pageOrder);
-                if (pageDoc != null && pageDoc.containsKey(SolrConstants.IDDOC)) {
-                    doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
-                }
-
-                // Add topstruct type
-                if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
-                    doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                if (pageDoc != null) {
+                    if (pageDoc.containsKey(SolrConstants.IDDOC)) {
+                        doc.addField(SolrConstants.IDDOC_OWNER, pageDoc.getFieldValue(SolrConstants.IDDOC));
+                    }
+                    // Add topstruct type
+                    if (!doc.containsKey(SolrConstants.DOCSTRCT_TOP) && pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP)) {
+                        doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                    }
                 }
             } else {
                 //TODO: add doc directly to work
                 if (pageDocs != null && !pageDocs.isEmpty()) {
                     SolrInputDocument pageDoc = pageDocs.values().iterator().next();
-                    doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                    if (pageDoc != null) {
+                        doc.setField(SolrConstants.DOCSTRCT_TOP, pageDoc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                    }
                 }
             }
 
