@@ -599,8 +599,10 @@ public class DenkXwebIndexer extends Indexer {
             fileName = url;
         }
 
+        // Handle external/internal file URL
         if (StringUtils.isNotEmpty(url)) {
-            handleUrl(url, doc, eleImage, fileName, dataFolders.get(DataRepository.PARAM_MEDIA), downloadExternalImages);
+            handleImageUrl(url, doc, fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages, false,
+                    "true".equals(eleImage.getAttributeValue("preferred")));
         }
 
         // Add file size
@@ -647,77 +649,5 @@ public class DenkXwebIndexer extends Indexer {
 
         writeStrategy.addPageDoc(doc);
         return true;
-    }
-
-    /**
-     * Handles remove and local image file URLs (including optional download).
-     * 
-     * @param url
-     * @param doc
-     * @param eleImage
-     * @param fileName
-     * @param dataFolders
-     * @param downloadExternalImages
-     * @throws FatalIndexerException
-     */
-    public void handleUrl(String url, SolrInputDocument doc, Element eleImage, String fileName, Path mediaTargetPath,
-            boolean downloadExternalImages) throws FatalIndexerException {
-        if (StringUtils.isEmpty(url)) {
-            return;
-        }
-        if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
-        }
-        if (eleImage == null) {
-            throw new IllegalArgumentException("eleImage may not be null");
-        }
-        if (fileName == null) {
-            throw new IllegalArgumentException("fileName may not be null");
-        }
-
-        // External image
-        if (url.startsWith("http")) {
-            // Download image, if so requested (and not a local resource)
-            String viewerUrl = Configuration.getInstance().getViewerUrl();
-            if (downloadExternalImages && mediaTargetPath != null && viewerUrl != null && !url.startsWith(viewerUrl)) {
-                // Download image and use locally
-                try {
-                    File file = new File(downloadExternalImage(url, mediaTargetPath, fileName));
-                    if (file.isFile()) {
-                        logger.info("Downloaded {}", file);
-                        sbImgFileNames.append(';').append(fileName);
-                        doc.addField(SolrConstants.FILENAME, fileName);
-
-                        // Representative image (local)
-                        if ("true".equals(eleImage.getAttributeValue("preferred"))) {
-                            doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
-                        }
-                    } else {
-                        logger.warn("Could not download file: {}", url);
-                    }
-                } catch (IOException | URISyntaxException e) {
-                    logger.error(e.getMessage());
-                }
-            } else {
-                // Add external image URL
-                doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, url);
-
-                // Representative image (external)
-                if ("true".equals(eleImage.getAttributeValue("preferred"))) {
-                    doc.addField(SolrConstants.THUMBNAILREPRESENT, url);
-                }
-            }
-        } else {
-            // For non-remote file, add the file name to the list
-            sbImgFileNames.append(';').append(fileName);
-
-            // Representative image (local)
-            if ("true".equals(eleImage.getAttributeValue("preferred"))) {
-                doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
-            }
-        }
-
-        // Mime type
-        parseMimeType(doc, fileName);
     }
 }

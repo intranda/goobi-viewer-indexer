@@ -81,6 +81,7 @@ import de.intranda.api.annotation.wa.WebAnnotation;
 import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
+import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
@@ -1569,6 +1570,83 @@ public abstract class Indexer {
             // Recursively delete all children, if not an anchor
             deleteWithPI(pi, false, hotfolder.getSearchIndex());
         }
+    }
+
+    /**
+     * Handles remote and local image file URLs (including optional download).
+     * 
+     * @param url
+     * @param doc
+     * @param fileName
+     * @param mediaTargetPath
+     * @param sbImgFileNames
+     * @param downloadExternalImages
+     * @param useOldImageFolderIfAvailable
+     * @param representative
+     * @throws FatalIndexerException
+     */
+    protected void handleImageUrl(String url, SolrInputDocument doc, String fileName, Path mediaTargetPath, StringBuilder sbImgFileNames,
+            boolean downloadExternalImages, boolean useOldImageFolderIfAvailable, boolean representative) throws FatalIndexerException {
+        if (StringUtils.isEmpty(url)) {
+            return;
+        }
+        if (doc == null) {
+            throw new IllegalArgumentException("doc may not be null");
+        }
+        if (fileName == null) {
+            throw new IllegalArgumentException("fileName may not be null");
+        }
+
+        // External image
+        if (url.startsWith("http")) {
+            // Download image, if so requested (and not a local resource)
+            String viewerUrl = Configuration.getInstance().getViewerUrl();
+            logger.debug("media folder: {}", mediaTargetPath);
+            if (downloadExternalImages && mediaTargetPath != null && viewerUrl != null && !url.startsWith(viewerUrl)) {
+                // Download image and use locally
+                try {
+                    File file = new File(downloadExternalImage(url, mediaTargetPath, fileName));
+                    if (file.isFile()) {
+                        logger.info("Downloaded {}", file);
+                        sbImgFileNames.append(';').append(fileName);
+                        doc.addField(SolrConstants.FILENAME, fileName);
+
+                        // Representative image (local)
+                        if (representative) {
+                            doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
+                        }
+                    } else {
+                        logger.warn("Could not download file: {}", url);
+                    }
+                } catch (IOException | URISyntaxException e) {
+                    logger.error("Could not download image: {}: {}", url, e.getMessage());
+                }
+            } else if (mediaTargetPath != null && useOldImageFolderIfAvailable) {
+                // If image previously downloaded, use local version, when re-indexing
+                doc.addField(SolrConstants.FILENAME, fileName);
+                // Representative image (local)
+                if (representative) {
+                    doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
+                }
+            } else {
+                // Add external image URL
+                doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, url);
+                // Representative image (external)
+                if (representative) {
+                    doc.addField(SolrConstants.THUMBNAILREPRESENT, url);
+                }
+            }
+        } else {
+            // For non-remote file, add the file name to the list
+            sbImgFileNames.append(';').append(fileName);
+            // Representative image (local)
+            if (representative) {
+                doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
+            }
+        }
+
+        // Mime type
+        parseMimeType(doc, fileName);
     }
 
     /**

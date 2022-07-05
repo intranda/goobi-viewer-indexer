@@ -593,47 +593,14 @@ public class LidoIndexer extends Indexer {
             fileName = filePath;
         }
 
+        // Handle external/internal file URL
         if (StringUtils.isNotEmpty(filePath)) {
-            // External image
-            if (filePath.startsWith("http")) {
-                // Download image, if so requested (and not a local resource)
-                // String baseFileName = FilenameUtils.getBaseName(fileName);
-                String viewerUrl = Configuration.getInstance().getViewerUrl();
-                logger.debug("media folder: {}", dataFolders.get(DataRepository.PARAM_MEDIA));
-                if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
-                        && !filePath.startsWith(viewerUrl)) {
-                    try {
-                        File file = new File(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName));
-                        if (file.isFile()) {
-                            logger.info("Downloaded {}", file);
-                            sbImgFileNames.append(';').append(fileName);
-                            doc.addField(SolrConstants.FILENAME, fileName);
-                        } else {
-                            logger.warn("Could not download file: {}", filePath);
-                        }
-                    } catch (IOException | URISyntaxException e) {
-                        logger.error("Could not download image: {}", filePath);
-                    }
-                } else if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && useOldImageFolderIfAvailable) {
-                    // If image previously downloaded, use local version, when re-indexing
-                    doc.addField(SolrConstants.FILENAME, fileName);
-                } else {
-                    // Use external image
-                    doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, filePath);
-                }
-            } else {
-                // For non-remote file, add the file name to the list
-                sbImgFileNames.append(';').append(fileName);
-            }
-
-            // Mime type
-            parseMimeType(doc, fileName);
+            handleImageUrl(filePath, doc, fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages,
+                    useOldImageFolderIfAvailable, false);
         }
 
         // Add file size
-        if (dataFolders != null)
-
-        {
+        if (dataFolders != null) {
             try {
                 Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
                 // TODO other mime types/folders

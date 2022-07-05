@@ -1111,6 +1111,7 @@ public class MetsIndexer extends Indexer {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath,
                                 fileGrpUse);
                     }
+                    
                     String viewerUrl = Configuration.getInstance().getViewerUrl();
                     if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                             && !filePath.startsWith(viewerUrl)) {
@@ -1152,7 +1153,7 @@ public class MetsIndexer extends Indexer {
                 doc.addField(SolrConstants.MIMETYPE, mimetype);
                 if (!shapePageDocs.isEmpty()) {
                     for (SolrInputDocument shapePageDoc : shapePageDocs) {
-                        shapePageDoc.addField(SolrConstants.MIMETYPE, mimetypeSplit[0]); // TODO full mime type?
+                        shapePageDoc.addField(SolrConstants.MIMETYPE, mimetype);
                     }
                 }
                 // Add file size
