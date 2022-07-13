@@ -364,7 +364,7 @@ public class Hotfolder {
                 .build();
         secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", true, true);
         secondaryAppender.start();
-        config.addAppender(secondaryAppender);
+        config.addAppender(secondaryAppender);  //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
         context.getRootLogger().addAppender(secondaryAppender);
         context.updateLoggers();
     }
