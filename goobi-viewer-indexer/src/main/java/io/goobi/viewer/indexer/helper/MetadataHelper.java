@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
-import de.intranda.digiverso.normdataimporter.model.GeoNamesRecord;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import de.intranda.digiverso.normdataimporter.model.Record;
@@ -560,7 +559,7 @@ public class MetadataHelper {
                             ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
                         }
                     }
-                } else if (authorityDataField.getKey().equals(GeoNamesRecord.AUTOCOORDS_FIELD)) {
+                } else if (authorityDataField.getKey().equals(Record.AUTOCOORDS_FIELD)) {
                     String[] textValueSplit = textValue.split(" ");
 
                     String type = "mods:coordinates/point";

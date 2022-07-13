@@ -15,9 +15,7 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -326,9 +324,9 @@ public class DenkXwebIndexer extends Indexer {
             }
 
             // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-            if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || 0 > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
+            if (pageDoc.getField(FIELD_OWNERDEPTH) == null || 0 > (Integer) pageDoc.getFieldValue(FIELD_OWNERDEPTH)) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                pageDoc.setField("MDNUM_OWNERDEPTH", 0);
+                pageDoc.setField(FIELD_OWNERDEPTH, 0);
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
@@ -574,18 +572,15 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         // Description
-        {
-            String desc = eleImage.getChildText("description", Configuration.getInstance().getNamespaces().get("denkxweb"));
-            if (StringUtils.isNotEmpty(desc)) {
-                doc.addField("MD_DESCRIPTION", desc);
-            }
+        String desc = eleImage.getChildText("description", Configuration.getInstance().getNamespaces().get("denkxweb"));
+        if (StringUtils.isNotEmpty(desc)) {
+            doc.addField("MD_DESCRIPTION", desc);
         }
+
         // Copyright
-        {
-            String copyright = eleStandard.getAttributeValue("right");
-            if (StringUtils.isNotEmpty(copyright)) {
-                doc.addField("MD_COPYRIGHT", copyright);
-            }
+        String copyright = eleStandard.getAttributeValue("right");
+        if (StringUtils.isNotEmpty(copyright)) {
+            doc.addField("MD_COPYRIGHT", copyright);
         }
 
         // URL
@@ -601,52 +596,11 @@ public class DenkXwebIndexer extends Indexer {
         } else {
             fileName = url;
         }
+
+        // Handle external/internal file URL
         if (StringUtils.isNotEmpty(url)) {
-            // External image
-            if (url.startsWith("http")) {
-                // Download image, if so requested (and not a local resource)
-                String viewerUrl = Configuration.getInstance().getViewerUrl();
-                if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
-                        && !url.startsWith(viewerUrl)) {
-                    // Download image and use locally
-                    try {
-                        File file = new File(downloadExternalImage(url, dataFolders.get(DataRepository.PARAM_MEDIA), fileName));
-                        if (file.isFile()) {
-                            logger.info("Downloaded {}", file);
-                            sbImgFileNames.append(';').append(fileName);
-                            doc.addField(SolrConstants.FILENAME, fileName);
-
-                            // Representative image (local)
-                            if ("true".equals(eleImage.getAttributeValue("preferred"))) {
-                                doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
-                            }
-                        } else {
-                            logger.warn("Could not download file: {}", url);
-                        }
-                    } catch (IOException | URISyntaxException e) {
-                        logger.error(e.getMessage());
-                    }
-                } else {
-                    // Add external image URL
-                    doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, url);
-
-                    // Representative image (external)
-                    if ("true".equals(eleImage.getAttributeValue("preferred"))) {
-                        doc.addField(SolrConstants.THUMBNAILREPRESENT, url);
-                    }
-                }
-            } else {
-                // For non-remote file, add the file name to the list
-                sbImgFileNames.append(';').append(fileName);
-
-                // Representative image (local)
-                if ("true".equals(eleImage.getAttributeValue("preferred"))) {
-                    doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
-                }
-            }
-
-            // Mime type
-            parseMimeType(doc, fileName);
+            handleImageUrl(url, doc, fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages, false,
+                    "true".equals(eleImage.getAttributeValue("preferred")));
         }
 
         // Add file size
@@ -656,14 +610,14 @@ public class DenkXwebIndexer extends Indexer {
             if (dataFolder != null) {
                 Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
                 if (Files.isRegularFile(path)) {
-                    doc.addField("MDNUM_FILESIZE", Files.size(path));
+                    doc.addField(FIELD_FILESIZE, Files.size(path));
                 }
             }
         } catch (IllegalArgumentException | IOException e) {
             logger.warn(e.getMessage());
         }
-        if (!doc.containsKey("MDNUM_FILESIZE")) {
-            doc.addField("MDNUM_FILESIZE", -1);
+        if (!doc.containsKey(FIELD_FILESIZE)) {
+            doc.addField(FIELD_FILESIZE, -1);
         }
 
         // Add image dimension values from EXIF

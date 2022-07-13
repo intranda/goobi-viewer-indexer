@@ -343,9 +343,9 @@ public class LidoIndexer extends Indexer {
             }
 
             // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-            if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || depth > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
+            if (pageDoc.getField(FIELD_OWNERDEPTH) == null || depth > (Integer) pageDoc.getFieldValue(FIELD_OWNERDEPTH)) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                pageDoc.setField("MDNUM_OWNERDEPTH", depth);
+                pageDoc.setField(FIELD_OWNERDEPTH, depth);
 
                 // Add the parent document's structure element to the page
                 pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
@@ -593,61 +593,28 @@ public class LidoIndexer extends Indexer {
             fileName = filePath;
         }
 
+        // Handle external/internal file URL
         if (StringUtils.isNotEmpty(filePath)) {
-            // External image
-            if (filePath.startsWith("http")) {
-                // Download image, if so requested (and not a local resource)
-                // String baseFileName = FilenameUtils.getBaseName(fileName);
-                String viewerUrl = Configuration.getInstance().getViewerUrl();
-                logger.debug("media folder: {}", dataFolders.get(DataRepository.PARAM_MEDIA));
-                if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
-                        && !filePath.startsWith(viewerUrl)) {
-                    try {
-                        File file = new File(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName));
-                        if (file.isFile()) {
-                            logger.info("Downloaded {}", file);
-                            sbImgFileNames.append(';').append(fileName);
-                            doc.addField(SolrConstants.FILENAME, fileName);
-                        } else {
-                            logger.warn("Could not download file: {}", filePath);
-                        }
-                    } catch (IOException | URISyntaxException e) {
-                        logger.error("Could not download image: {}", filePath);
-                    }
-                } else if (dataFolders.get(DataRepository.PARAM_MEDIA) != null && useOldImageFolderIfAvailable) {
-                    // If image previously downloaded, use local version, when re-indexing
-                    doc.addField(SolrConstants.FILENAME, fileName);
-                } else {
-                    // Use external image
-                    doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, filePath);
-                }
-            } else {
-                // For non-remote file, add the file name to the list
-                sbImgFileNames.append(';').append(fileName);
-            }
-
-            // Mime type
-            parseMimeType(doc, fileName);
+            handleImageUrl(filePath, doc, fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages,
+                    useOldImageFolderIfAvailable, false);
         }
 
         // Add file size
-        if (dataFolders != null)
-
-        {
+        if (dataFolders != null) {
             try {
                 Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
                 // TODO other mime types/folders
                 if (dataFolder != null) {
                     Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
                     if (Files.isRegularFile(path)) {
-                        doc.addField("MDNUM_FILESIZE", Files.size(path));
+                        doc.addField(FIELD_FILESIZE, Files.size(path));
                     }
                 }
             } catch (IllegalArgumentException | IOException e) {
                 logger.warn(e.getMessage());
             }
-            if (!doc.containsKey("MDNUM_FILESIZE")) {
-                doc.addField("MDNUM_FILESIZE", -1);
+            if (!doc.containsKey(FIELD_FILESIZE)) {
+                doc.addField(FIELD_FILESIZE, -1);
             }
         }
 

@@ -52,6 +52,34 @@ public class GroupedMetadata {
     private boolean allowDuplicateValues = false;
     private List<GroupedMetadata> children = new ArrayList<>();
 
+    /**
+     * Empty constructor.
+     */
+    public GroupedMetadata() {
+    }
+
+    /**
+     * Cloning constructor.
+     * 
+     * @param orig {@link GroupedMetadata} to clone
+     * @should clone child metadata
+     */
+    public GroupedMetadata(GroupedMetadata orig) {
+        if (orig == null) {
+            throw new IllegalArgumentException("orig may not be null");
+        }
+
+        setLabel(orig.getLabel());
+        setMainValue(orig.getMainValue());
+        setAuthorityURI(orig.getAuthorityURI());
+        for (LuceneField field : orig.getFields()) {
+            fields.add(new LuceneField(field));
+        }
+        for (GroupedMetadata gmd : orig.getChildren()) {
+            getChildren().add(new GroupedMetadata(gmd));
+        }
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
@@ -92,23 +120,6 @@ public class GroupedMetadata {
         } else if (!mainValue.equals(other.mainValue))
             return false;
         return true;
-    }
-
-    /**
-     * @should clone child metadata
-     */
-    @Override
-    public GroupedMetadata clone() {
-        GroupedMetadata ret = new GroupedMetadata();
-        ret.setLabel(label);
-        ret.setMainValue(mainValue);
-        ret.setAuthorityURI(authorityURI);
-        ret.getFields().addAll(fields);
-        for (GroupedMetadata gmd : getChildren()) {
-            ret.getChildren().add(gmd.clone());
-        }
-
-        return ret;
     }
 
     /**

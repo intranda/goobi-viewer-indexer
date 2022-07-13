@@ -466,7 +466,7 @@ public class IndexObject {
                     if (!childObj.getFieldsToInheritToParents().contains(field.getField())) {
                         continue;
                     }
-                    addToLucene(field.clone(), true);
+                    addToLucene(new LuceneField(field), true);
                     // Pass the info about inheritance up the hierarchy
                     fieldsToInheritToParents.add(field.getField());
                     logger.debug("Added field: {}", field.toString());
@@ -481,7 +481,7 @@ public class IndexObject {
                     }
                     // Only add new instance if not a duplicate
                     if (!groupedMetadataFields.contains(field)) {
-                        groupedMetadataFields.add(field.clone());
+                        groupedMetadataFields.add(new GroupedMetadata(field));
                         count++;
                     }
                     // Pass the info about inheritance up the hierarchy

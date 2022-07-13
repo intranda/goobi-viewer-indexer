@@ -29,10 +29,10 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class WebAnnotationTools {
 
-    static final String TARGET_REGEX = ".+?/iiif/manifests/(.+?)/(?:canvas|manifest)?(?:/(\\d+))?/?$";
-    static final String TARGET_REGEX_CANVAS = ".+?/records/(.+?)/pages/(\\d+)/canvas/?$";
-    static final String TARGET_REGEX_MANIFEST = ".+?/records/(.+?)/manifest/?$";
-    static final String TARGET_REGEX_SECTION = ".+?/records/(.+?)/sections/(.+?)/range/?$";
+    static final String TARGET_REGEX = "/iiif/manifests/([^?/]+)";
+    static final String TARGET_REGEX_CANVAS = "/records/([^/]+)/pages/(\\d+)/canvas";
+    static final String TARGET_REGEX_MANIFEST = "/records/([^/]+)/manifest";
+    static final String TARGET_REGEX_SECTION = "/records/([^/]+)/sections/([^/]+)/range/";
 
     /**
      * Extract the page order from a canvas url. If the url points to a manifest, return null
@@ -83,18 +83,18 @@ public class WebAnnotationTools {
      */
     public static Matcher getMatchingMatcher(URI uri) {
         Matcher matcher = null;
-        Matcher matcherOld = Pattern.compile(TARGET_REGEX).matcher(uri.toString());
-        Matcher matcherCanvas = Pattern.compile(TARGET_REGEX_CANVAS).matcher(uri.toString());
-        Matcher matcherManifest = Pattern.compile(TARGET_REGEX_MANIFEST).matcher(uri.toString());
-        Matcher matcherSection = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString());
+        Matcher matcherOld = Pattern.compile(TARGET_REGEX).matcher(uri.toString());                 //NOSONAR   regex save and input controlled
+        Matcher matcherCanvas = Pattern.compile(TARGET_REGEX_CANVAS).matcher(uri.toString());       //NOSONAR   regex save and input controlled
+        Matcher matcherManifest = Pattern.compile(TARGET_REGEX_MANIFEST).matcher(uri.toString());   //NOSONAR   regex save and input controlled
+        Matcher matcherSection = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString());     //NOSONAR   regex save and input controlled
 
-        if (matcherOld.matches()) {
+        if (matcherOld.find()) {
             matcher = matcherOld;
-        } else if (matcherCanvas.matches()) {
+        } else if (matcherCanvas.find()) {
             matcher = matcherCanvas;
-        } else if (matcherManifest.matches()) {
+        } else if (matcherManifest.find()) {
             matcher = matcherManifest;
-        } else if (matcherSection.matches()) {
+        } else if (matcherSection.find()) {
             matcher = matcherSection;
         }
         return matcher;

@@ -48,6 +48,7 @@ import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
 /**
  * <p>
@@ -331,7 +332,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             return;
         }
         // Do not add shape docs
-        if ("SHAPE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))) {
+        if (DocType.SHAPE.name().equals(doc.getFieldValue(SolrConstants.DOCTYPE))) {
             return;
         }
 

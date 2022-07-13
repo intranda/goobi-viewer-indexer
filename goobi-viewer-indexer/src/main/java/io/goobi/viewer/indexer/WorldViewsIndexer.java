@@ -559,9 +559,9 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-            if (pageDoc.getField("MDNUM_OWNERDEPTH") == null || depth > (Integer) pageDoc.getFieldValue("MDNUM_OWNERDEPTH")) {
+            if (pageDoc.getField(FIELD_OWNERDEPTH) == null || depth > (Integer) pageDoc.getFieldValue(FIELD_OWNERDEPTH)) {
                 pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(currentIndexObj.getIddoc()));
-                pageDoc.setField("MDNUM_OWNERDEPTH", depth);
+                pageDoc.setField(FIELD_OWNERDEPTH, depth);
 
                 // Remove SORT_ fields from a previous, higher up docstruct
                 Set<String> fieldsToRemove = new HashSet<>();
@@ -734,19 +734,19 @@ public class WorldViewsIndexer extends Indexer {
                     // TODO other mime types/folders
                     if (dataFolder != null) {
                         Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                        doc.addField("MDNUM_FILESIZE", Files.size(path));
+                        doc.addField(FIELD_FILESIZE, Files.size(path));
                     } else {
-                        doc.addField("MDNUM_FILESIZE", -1);
+                        doc.addField(FIELD_FILESIZE, -1);
                     }
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage());
-                    doc.addField("MDNUM_FILESIZE", -1);
+                    doc.addField(FIELD_FILESIZE, -1);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
-                    doc.addField("MDNUM_FILESIZE", -1);
+                    doc.addField(FIELD_FILESIZE, -1);
                 } catch (IllegalArgumentException e) {
                     logger.error(e.getMessage(), e);
-                    doc.addField("MDNUM_FILESIZE", -1);
+                    doc.addField(FIELD_FILESIZE, -1);
                 }
             }
 
