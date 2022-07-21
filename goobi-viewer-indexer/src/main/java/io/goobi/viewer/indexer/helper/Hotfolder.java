@@ -66,6 +66,7 @@ import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.UsageStatisticsIndexer;
 import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
@@ -647,6 +648,10 @@ public class Hotfolder {
                         return false;
                 }
                 Utils.submitDataToViewer(countRecordFiles());
+            } else if(filename.endsWith(".json")) {
+                if(filename.startsWith("statistics-usage-")) {
+                    addUsageStatisticsToIndex(sourceFile);
+                }
             } else if (filename.endsWith(".delete")) {
                 // DELETE
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
@@ -679,6 +684,8 @@ public class Hotfolder {
 
         return true;
     }
+
+
 
     /**
      * Removes the document and its data folders represented by the file name.
@@ -1193,6 +1200,26 @@ public class Hotfolder {
         DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
     }
 
+    /**
+     * @param sourceFile
+     */
+    private void addUsageStatisticsToIndex(Path sourceFile) {
+        if(sourceFile == null) {
+            throw new IllegalArgumentException("usage statistics file may not be null");
+        } else if(!Files.isRegularFile(sourceFile)) {
+            throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
+        }
+        try {            
+            this.currentIndexer = new UsageStatisticsIndexer(this);
+            ((UsageStatisticsIndexer)this.currentIndexer).index(sourceFile);
+        } catch (IOException | IllegalArgumentException | FatalIndexerException e) {
+            logger.error("Error indexing file {}. Reason: {}", sourceFile, e.toString());
+        } finally {
+            this.currentIndexer = null;
+        }
+        
+    }
+    
     /**
      * Indexes the given DenkXweb file.
      * 
