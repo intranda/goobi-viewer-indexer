@@ -15,19 +15,28 @@
  */
 package io.goobi.viewer.indexer.model.statistics.usage;
 
+import java.time.format.DateTimeFormatter;
+
 /**
  * @author florian
  *
  */
-public class StatisticsUsageLuceneFields {
+public class StatisticsLuceneFields {
 
-    public static final String USAGE_STATISTICS_DOCTYPE = "USAGE_STATISTICS";
-    public static final String VIEWER_NAME = "statistics_usage_viewername";
-    public static final String DATE = "statistics_usage_date";
-    public static final String RECORD_STATISTICS_PREFIX = "statistics_usage_record_";
+    public static final DateTimeFormatter solrDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+    
+    public static final String USAGE_STATISTICS_DOCTYPE = "STATISTICS_USAGE";
+    public static final String VIEWER_NAME = "STATISTICS_VIEWERNAME";
+    public static final String DATE = "STATISTICS_DATE";
+    public static final String RECORD_STATISTICS_PREFIX = "STATISTICS_RECORD_";
     
     public static String getFieldName(String pi) {
         return RECORD_STATISTICS_PREFIX + pi;
+    }
+    
+    private StatisticsLuceneFields() {
+        //hide default constructor
     }
     
 }

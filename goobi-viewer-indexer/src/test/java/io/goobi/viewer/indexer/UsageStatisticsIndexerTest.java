@@ -17,6 +17,7 @@ package io.goobi.viewer.indexer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,7 +35,7 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Hotfolder;
-import io.goobi.viewer.indexer.model.statistics.usage.StatisticsUsageLuceneFields;
+import io.goobi.viewer.indexer.model.statistics.usage.StatisticsLuceneFields;
 
 /**
  * @author florian
@@ -42,7 +43,10 @@ import io.goobi.viewer.indexer.model.statistics.usage.StatisticsUsageLuceneField
  */
 public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
 
-    private Path statisticsFile;
+    private Path statisticsFile1;
+    private Path statisticsFile2;
+    private Path deleteFile1;
+
     
     @Override
     @Before
@@ -51,22 +55,48 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
 
         hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
 
-        statisticsFile = Paths.get("src/test/resources/usage-statistics/statistics-usage-2022-07-04.json");
-        Assert.assertTrue(Files.isRegularFile(statisticsFile));
+        statisticsFile1 = Paths.get("src/test/resources/usage-statistics/statistics-usage-2022-07-04.json");
+        Assert.assertTrue(Files.isRegularFile(statisticsFile1));
+        statisticsFile2 = Paths.get("src/test/resources/usage-statistics/statistics-usage-2022-07-05.json");
+        Assert.assertTrue(Files.isRegularFile(statisticsFile2));
+        deleteFile1 = Paths.get("src/test/resources/usage-statistics/statistics-usage-2022-07-04.purge");
+        Assert.assertTrue(Files.isRegularFile(deleteFile1));
     }
     
     @Test
     public void test_index() throws IOException, FatalIndexerException, SolrServerException {
-        SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile);
+        SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile1);
         assertNotNull(doc);
-        SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsUsageLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
+        SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
         assertEquals(1, docList.size());
+    }
+    
+    @Test
+    public void test_delete() throws IOException, FatalIndexerException, SolrServerException, InterruptedException {
+        {
+            SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile1);
+            assertNotNull(doc);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
+            assertEquals(1, docList.size());
+        }
+        {
+            SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile2);
+            assertNotNull(doc);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
+            assertEquals(2, docList.size());
+        }
+        {            
+            boolean deleted = new UsageStatisticsIndexer(hotfolder).removeFromIndex(deleteFile1);
+            assertTrue(deleted);
+            SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
+            assertEquals(1, docList.size());
+        }
     }
     
     @Test
     public void test_date() {
         LocalDate date = LocalDate.of(2022, Month.JULY, 19);
-        String dateString = UsageStatisticsIndexer.solrDateFormatter.format(date.atStartOfDay());
+        String dateString = StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
         assertEquals("2022-07-19T00:00:00Z", dateString);
     }
 

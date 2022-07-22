@@ -18,11 +18,18 @@ package io.goobi.viewer.indexer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +46,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.statistics.usage.DailyRequestCounts;
 import io.goobi.viewer.indexer.model.statistics.usage.DailyUsageStatistics;
 import io.goobi.viewer.indexer.model.statistics.usage.RequestType;
-import io.goobi.viewer.indexer.model.statistics.usage.StatisticsUsageLuceneFields;
+import io.goobi.viewer.indexer.model.statistics.usage.StatisticsLuceneFields;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
@@ -50,59 +57,57 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 public class UsageStatisticsIndexer extends Indexer {
 
     private static final Logger logger = LoggerFactory.getLogger(UsageStatisticsIndexer.class);
-    
-    static final DateTimeFormatter solrDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    
+
     private final Hotfolder hotfolder;
-    
+
     public UsageStatisticsIndexer(Hotfolder hotfolder) {
         this.hotfolder = hotfolder;
     }
-    
+
     /**
      * @param sourceFile
-     * @throws IOException 
-     * @throws FatalIndexerException 
+     * @throws IOException
+     * @throws FatalIndexerException
      */
     public SolrInputDocument index(Path sourceFile) throws IOException, FatalIndexerException {
         String jsonString = Files.readString(sourceFile);
-        if(StringUtils.isBlank(jsonString)) {
+        if (StringUtils.isBlank(jsonString)) {
             throw new IllegalArgumentException("Usage statistics file {} is empty".replace("{}", sourceFile.toString()));
         }
-        try {            
+        try {
             JSONObject json = new JSONObject(jsonString);
             DailyUsageStatistics stats = new DailyUsageStatistics(json);
             IndexObject indexObject = createIndexObject(stats);
-            
+
             logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObject.getLuceneFields());
             ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(sourceFile, Collections.emptyMap(), this.hotfolder);
             writeStrategy.setRootDoc(rootDoc);
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
             return rootDoc;
-        } catch(JSONException | IndexerException e) {
+        } catch (JSONException | IndexerException e) {
             throw new IllegalArgumentException("Usage statistics file {} contains invalid json".replace("{}", sourceFile.toString()));
         }
-        
+
     }
 
     /**
      * @param stats
      * @return
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
     private IndexObject createIndexObject(DailyUsageStatistics stats) throws FatalIndexerException {
         IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
         indexObj.addToLucene(SolrConstants.IDDOC, Long.toString(indexObj.getIddoc()));
-        indexObj.addToLucene(SolrConstants.DOCTYPE, StatisticsUsageLuceneFields.USAGE_STATISTICS_DOCTYPE);
-        indexObj.addToLucene(StatisticsUsageLuceneFields.VIEWER_NAME, stats.getViewerName());
-        indexObj.addToLucene(StatisticsUsageLuceneFields.DATE, solrDateFormatter.format(stats.getDate().atStartOfDay()));
+        indexObj.addToLucene(SolrConstants.DOCTYPE, StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE);
+        indexObj.addToLucene(StatisticsLuceneFields.VIEWER_NAME, stats.getViewerName());
+        indexObj.addToLucene(StatisticsLuceneFields.DATE, StatisticsLuceneFields.solrDateFormatter.format(stats.getDate().atStartOfDay()));
         for (Entry<String, DailyRequestCounts> entry : stats.getRequestCounts().entrySet()) {
             String pi = entry.getKey();
             DailyRequestCounts counts = entry.getValue();
-            String fieldName = StatisticsUsageLuceneFields.getFieldName(pi);
+            String fieldName = StatisticsLuceneFields.getFieldName(pi);
             for (int i = 0; i < 6; i++) {
-                if(i%2==0) {
+                if (i % 2 == 0) {
                     RequestType type = RequestType.getTypeForTotalCountIndex(i);
                     long count = counts.getTotalCount(type);
                     indexObj.addToLucene(fieldName, Long.toString(count));
@@ -115,7 +120,25 @@ public class UsageStatisticsIndexer extends Indexer {
         }
         return indexObj;
     }
-    
-    
+
+    /**
+     * @param sourceFile
+     * @param searchIndex
+     * @return
+     * @throws FatalIndexerException 
+     */
+    public boolean removeFromIndex(Path sourceFile) throws FatalIndexerException {
+        String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
+        LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
+        String solrDateString = StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
+
+        try {            
+            String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
+            return hotfolder.getSearchIndex().deleteByQuery(query);
+        } finally {
+            hotfolder.getSearchIndex().commit(false);            
+        }
+
+    }
 
 }

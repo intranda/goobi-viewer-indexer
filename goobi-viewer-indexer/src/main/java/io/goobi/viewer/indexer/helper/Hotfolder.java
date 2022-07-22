@@ -365,7 +365,7 @@ public class Hotfolder {
                 .build();
         secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", true, true);
         secondaryAppender.start();
-        config.addAppender(secondaryAppender);  //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
+        config.addAppender(secondaryAppender); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
         context.getRootLogger().addAppender(secondaryAppender);
         context.updateLoggers();
     }
@@ -648,20 +648,28 @@ public class Hotfolder {
                         return false;
                 }
                 Utils.submitDataToViewer(countRecordFiles());
-            } else if(filename.endsWith(".json")) {
-                if(filename.startsWith("statistics-usage-")) {
+            } else if (filename.endsWith(".json")) {
+                if (filename.startsWith("statistics-usage-")) {
                     addUsageStatisticsToIndex(sourceFile);
                 }
             } else if (filename.endsWith(".delete")) {
-                // DELETE
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
-                removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], true);
-                Utils.submitDataToViewer(countRecordFiles());
+                if (filename.startsWith("statistics-usage-")) {
+                    removeUsageStatisticsFromIndex(sourceFile);
+                } else {
+                    // DELETE
+                    DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
+                    removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], true);
+                    Utils.submitDataToViewer(countRecordFiles());
+                }
             } else if (filename.endsWith(".purge")) {
-                // PURGE (delete with no "deleted" doc)
-                DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
-                removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], false);
-                Utils.submitDataToViewer(countRecordFiles());
+                if (filename.startsWith("statistics-usage-")) {
+                    removeUsageStatisticsFromIndex(sourceFile);
+                } else {
+                    // PURGE (delete with no "deleted" doc)
+                    DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
+                    removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], false);
+                    Utils.submitDataToViewer(countRecordFiles());
+                }
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
@@ -1204,22 +1212,35 @@ public class Hotfolder {
      * @param sourceFile
      */
     private void addUsageStatisticsToIndex(Path sourceFile) {
-        if(sourceFile == null) {
+        if (sourceFile == null) {
             throw new IllegalArgumentException("usage statistics file may not be null");
-        } else if(!Files.isRegularFile(sourceFile)) {
+        } else if (!Files.isRegularFile(sourceFile)) {
             throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
         }
-        try {            
+        try {
             this.currentIndexer = new UsageStatisticsIndexer(this);
-            ((UsageStatisticsIndexer)this.currentIndexer).index(sourceFile);
+            ((UsageStatisticsIndexer) this.currentIndexer).index(sourceFile);
         } catch (IOException | IllegalArgumentException | FatalIndexerException e) {
             logger.error("Error indexing file {}. Reason: {}", sourceFile, e.toString());
         } finally {
             this.currentIndexer = null;
         }
-        
+
     }
     
+    /**
+     * @param sourceFile
+     * @throws FatalIndexerException 
+     */
+    private boolean removeUsageStatisticsFromIndex(Path sourceFile) throws FatalIndexerException {
+        if (sourceFile == null) {
+            throw new IllegalArgumentException("usage statistics file may not be null");
+        } else if (!Files.isRegularFile(sourceFile)) {
+            throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
+        }
+        return new UsageStatisticsIndexer(this).removeFromIndex(sourceFile);
+    }
+
     /**
      * Indexes the given DenkXweb file.
      * 
