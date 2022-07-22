@@ -1073,5 +1073,12 @@
        <str name="paramkey">param value</str>
      </similarity>
     -->
+    
+	<!-- fields for usage-statistics docs  -->
+	<field name="STATISTICS_VIEWERNAME" type="string" indexed="true" stored="true" multiValued="false" />
+	<field name="STATISTICS_DATE" type="date" indexed="true" stored="true" multiValued="false" />
+	<dynamicField name="STATISTICS_RECORD_*" type="long" indexed="true" stored="true" multiValued="true" />
+
+    
 
 </schema>
