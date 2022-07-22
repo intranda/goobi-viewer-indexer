@@ -298,6 +298,13 @@
 		<fieldType name="preanalyzed" class="solr.PreAnalyzedField"
 			parserImpl="org.apache.solr.schema.JsonPreAnalyzedParser" />
 
+
+	<!-- fields for usage-statistics docs  -->
+	<field name="STATISTICS_VIEWERNAME" type="string" indexed="true" stored="true" multiValued="false" />
+	<field name="STATISTICS_DATE" type="date" indexed="true" stored="true" multiValued="false" />
+    <dynamicField name="STATISTICS_RECORD_*" type="long" indexed="true" stored="true" multiValued="true" />
+
+
     <!-- Add fieldTypes needed by Solr 8 -->
     <fieldType name="pint" class="solr.IntPointField" docValues="true"/>
     <fieldType name="pfloat" class="solr.FloatPointField" docValues="true"/>
@@ -1074,10 +1081,6 @@
      </similarity>
     -->
     
-	<!-- fields for usage-statistics docs  -->
-	<field name="STATISTICS_VIEWERNAME" type="string" indexed="true" stored="true" multiValued="false" />
-	<field name="STATISTICS_DATE" type="date" indexed="true" stored="true" multiValued="false" />
-	<dynamicField name="STATISTICS_RECORD_*" type="long" indexed="true" stored="true" multiValued="true" />
 
     
 
