@@ -19,17 +19,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,8 +50,6 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 public class UsageStatisticsIndexer extends Indexer {
 
     private static final Logger logger = LoggerFactory.getLogger(UsageStatisticsIndexer.class);
-
-    private final Hotfolder hotfolder;
 
     public UsageStatisticsIndexer(Hotfolder hotfolder) {
         this.hotfolder = hotfolder;
