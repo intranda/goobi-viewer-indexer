@@ -242,9 +242,6 @@ public class DublinCoreIndexer extends Indexer {
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
-            // write all page URNs sequentially into one field
-            generatePageUrns(indexObj);
-
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
             List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
             if (thumbnailFields != null) {
@@ -654,34 +651,6 @@ public class DublinCoreIndexer extends Indexer {
             }
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
-    }
-
-    /**
-     * Finds all physical page URNs for the given IndexObject and adds them to its metadata sequentially as one string. Should only be used with the
-     * top docstruct (ISWORK). TODO get from generated pages instead of METS.
-     * 
-     * @param indexObj The IndexObject to find URNs for.
-     * @throws FatalIndexerException
-     */
-    private void generatePageUrns(IndexObject indexObj) throws FatalIndexerException {
-        String query1 = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div/@CONTENTIDS";
-        List<String> physUrnList = xp.evaluateToStringList(query1, null);
-        if (physUrnList != null) {
-            StringBuilder sbPageUrns = new StringBuilder();
-            List<String> imageUrns = new ArrayList<>(physUrnList.size());
-            for (String pageUrn : physUrnList) {
-                String urn = null;
-                if (Utils.isUrn(pageUrn)) {
-                    urn = pageUrn.replaceAll("[\\\\]", "");
-                }
-                if (StringUtils.isEmpty(urn)) {
-                    urn = "NOURN";
-                }
-                sbPageUrns.append(urn).append(' ');
-                imageUrns.add(urn);
-            }
-            indexObj.setImageUrns(imageUrns);
-        }
     }
 
     /**

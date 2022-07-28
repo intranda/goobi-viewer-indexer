@@ -122,11 +122,12 @@ public class MetsIndexer extends Indexer {
     private static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
 
     private static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='";
+    private static final String XPATH_FILE = "mets:file";
 
     /** */
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private volatile String useFileGroup = null;
+    private volatile String useFileGroupGlobal = null;
 
     /**
      * Constructor.
@@ -381,7 +382,7 @@ public class MetsIndexer extends Indexer {
                 generatePageUrns(indexObj);
 
                 // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, dataFolders, hierarchyLevel);
+                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, hierarchyLevel);
                 if (thumbnailFields != null) {
                     indexObj.getLuceneFields().addAll(thumbnailFields);
                 }
@@ -460,7 +461,7 @@ public class MetsIndexer extends Indexer {
                 updateAnchorChildrenParentIddoc(indexObj);
             } else {
                 // Index all child elements recursively
-                List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy, dataFolders);
+                List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
                 indexObj.addChildMetadata(childObjectList);
 
                 // Remove this record from re-index list
@@ -534,15 +535,13 @@ public class MetsIndexer extends Indexer {
      * @param indexObj {@link IndexObject}
      * @param isWork
      * @param writeStrategy
-     * @param dataFolders
      * @param depth Depth of the current docstruct in the docstruct hierarchy.
      * @return {@link LuceneField}
      * @throws IndexerException -
-     * @throws IOException
      * @throws FatalIndexerException
      */
-    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders, int depth) throws IndexerException, IOException, FatalIndexerException {
+    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy, int depth)
+            throws IndexerException, FatalIndexerException {
         if (StringUtils.isEmpty(indexObj.getLogId())) {
             throw new IndexerException("Object has no LOG_ID.");
         }
@@ -552,7 +551,7 @@ public class MetsIndexer extends Indexer {
         List<String> physIdList = xp.evaluateToStringList(xpath, null);
         if (physIdList == null || physIdList.isEmpty()) {
             logger.warn("No pages mapped to '{}'.", indexObj.getLogId());
-            return null;
+            return Collections.emptyList();
         }
 
         List<SolrInputDocument> pageDocs = writeStrategy.getPageDocsForPhysIdList(physIdList);
@@ -563,7 +562,7 @@ public class MetsIndexer extends Indexer {
         // If this is a top struct element, look for a representative image
         String filePathBanner = null;
         if (isWork) {
-            xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + useFileGroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
+            xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + useFileGroupGlobal + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
             filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
             if (StringUtils.isNotEmpty(filePathBanner)) {
                 // Add thumbnail information from the representative page
@@ -762,7 +761,6 @@ public class MetsIndexer extends Indexer {
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-            thumbnailSet = true;
         }
 
         // Add the number of assigned pages and the labels of the first and last page to this structure element
@@ -777,7 +775,6 @@ public class MetsIndexer extends Indexer {
             if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
                 indexObj.setLastPageLabel(lastPageLabel);
             }
-            // logger.info(indexObj.getLogId() + ": " + indexObj.getFirstPageLabel() + " - " + indexObj.getLastPageLabel());
         }
 
         return ret;
@@ -1063,7 +1060,7 @@ public class MetsIndexer extends Indexer {
             int attrListIndex = fileId != null ? 0 : order - 1;
 
             // Check whether the fileId_fileGroup pattern applies for this file group, otherwise just use the fileId
-            xpath = "mets:file" + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
+            xpath = XPATH_FILE + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
             logger.debug(xpath);
             List<Attribute> filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
             logger.trace(xpath);
@@ -1077,7 +1074,6 @@ public class MetsIndexer extends Indexer {
             logger.trace("filePath: {}", filePath);
             if (StringUtils.isEmpty(filePath)) {
                 logger.warn("{}: file path not found in file group '{}'.", fileId, fileGrpUse);
-                //                break;
             }
 
             String fileName;
@@ -1089,7 +1085,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Mime type
-            xpath = "mets:file" + fileIdXPathCondition + "/@MIMETYPE";
+            xpath = XPATH_FILE + fileIdXPathCondition + "/@MIMETYPE";
             List<Attribute> mimetypeAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
             if (mimetypeAttrList == null || mimetypeAttrList.isEmpty()) {
                 logger.error("{}: mime type not found in file group '{}'.", fileId, fileGrpUse);
@@ -1206,7 +1202,7 @@ public class MetsIndexer extends Indexer {
 
             if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
                 // Width + height (invalid)
-                xpath = "mets:file" + fileIdXPathCondition + "/@WIDTH";
+                xpath = XPATH_FILE + fileIdXPathCondition + "/@WIDTH";
                 List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
                 Integer width = null;
                 Integer height = null;
@@ -1214,7 +1210,7 @@ public class MetsIndexer extends Indexer {
                     width = Integer.valueOf(widthAttrList.get(0).getValue());
                     logger.warn("mets:file[@ID='{}'] contains illegal WIDTH attribute. It will still be used, though.", fileId);
                 }
-                xpath = "mets:file" + fileIdXPathCondition + "/@HEIGHT";
+                xpath = XPATH_FILE + fileIdXPathCondition + "/@HEIGHT";
                 List<Attribute> heightAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
                 if (heightAttrList != null && !heightAttrList.isEmpty() && StringUtils.isNotBlank(heightAttrList.get(0).getValue())) {
                     height = Integer.valueOf(heightAttrList.get(0).getValue());
@@ -1226,7 +1222,7 @@ public class MetsIndexer extends Indexer {
                 }
 
                 // Width + height (from techMD)
-                xpath = "mets:file" + fileIdXPathCondition + "/@ADMID";
+                xpath = XPATH_FILE + fileIdXPathCondition + "/@ADMID";
                 List<Attribute> amdIdAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
                 if (amdIdAttrList != null && !amdIdAttrList.isEmpty() && StringUtils.isNotBlank(amdIdAttrList.get(0).getValue())) {
                     String amdId = amdIdAttrList.get(0).getValue();
@@ -1396,7 +1392,6 @@ public class MetsIndexer extends Indexer {
                                     // Write ALTO file
                                     File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
                                     FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
-                                    altoWritten = true;
                                     logger.debug("Added ALTO from downloaded ALTO for page {}", order);
                                 } else {
                                     logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
@@ -1456,8 +1451,8 @@ public class MetsIndexer extends Indexer {
             }
         }
         // Set global useFileGroup value (used for mapping later), if not yet set
-        if (this.useFileGroup == null) {
-            this.useFileGroup = useFileGroup;
+        if (this.useFileGroupGlobal == null) {
+            this.useFileGroupGlobal = useFileGroup;
         }
         return true;
     }
@@ -1506,7 +1501,7 @@ public class MetsIndexer extends Indexer {
                         }
                         orderInfo.put(pi, num);
                     } catch (ClassCastException e) {
-                        logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT).toString());
+                        logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT));
                     }
                 } else {
                     childrenInfoUnsorted.add(pi);
@@ -1569,7 +1564,7 @@ public class MetsIndexer extends Indexer {
             }
         }
 
-        if (indexObj.getRootStructNode().getChildren().size() <= 0) {
+        if (indexObj.getRootStructNode().getChildren().isEmpty()) {
             logger.error("Anchor file contains no child elements!");
             return;
         }
@@ -1701,7 +1696,6 @@ public class MetsIndexer extends Indexer {
 
         // Remove old children
         indexObj.getRootStructNode().removeContent();
-        // Element edebug = indexObj.getRootStructNode();
         for (Element element : childrenE) {
             indexObj.getRootStructNode().addContent(element);
         }
@@ -1797,13 +1791,11 @@ public class MetsIndexer extends Indexer {
      * @param parentIndexObject {@link IndexObject}
      * @param depth OBSOLETE
      * @param writeStrategy
-     * @param dataFolders
      * @return List of <code>LuceneField</code>s to inherit up the hierarchy.
      * @throws IOException
      * @throws FatalIndexerException
      */
-    private List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders)
+    private List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy)
             throws IOException, FatalIndexerException {
         logger.trace("indexAllChildren");
         List<IndexObject> ret = new ArrayList<>();
@@ -1866,7 +1858,7 @@ public class MetsIndexer extends Indexer {
             // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
             if (StringUtils.isNotEmpty(indexObj.getLogId())) {
                 try {
-                    List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, false, writeStrategy, dataFolders, depth);
+                    List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, false, writeStrategy, depth);
                     if (thumbnailFields != null) {
                         indexObj.getLuceneFields().addAll(thumbnailFields);
                     }
@@ -1895,14 +1887,12 @@ public class MetsIndexer extends Indexer {
             sbDefaultValue.append(indexObj.getDefaultValue());
             String labelWithSpaces = new StringBuilder(" ").append(indexObj.getLabel()).append(' ').toString();
             if (StringUtils.isNotEmpty(indexObj.getLabel()) && !sbDefaultValue.toString().contains(labelWithSpaces)) {
-                // logger.info("Adding own LABEL to DEFAULT: " + indexObj.getLabel());
                 sbDefaultValue.append(labelWithSpaces);
             }
             if (Configuration.getInstance().isAddLabelToChildren()) {
                 for (String label : indexObj.getParentLabels()) {
                     String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
                     if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
-                        // logger.info("Adding ancestor LABEL to DEFAULT: " + label);
                         sbDefaultValue.append(parentLabelWithSpaces);
                     }
                 }
@@ -1918,7 +1908,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Recursively index child elements 
-            List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy, dataFolders);
+            List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy);
 
             // METADATA UPWARD INHERITANCE
 
@@ -2032,7 +2022,7 @@ public class MetsIndexer extends Indexer {
         String query1 = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div/@CONTENTIDS";
         List<String> physUrnList = xp.evaluateToStringList(query1, null);
         if (physUrnList != null) {
-            StringBuffer sbPageUrns = new StringBuffer();
+            StringBuilder sbPageUrns = new StringBuilder();
             List<String> imageUrns = new ArrayList<>(physUrnList.size());
             for (String pageUrn : physUrnList) {
                 String urn = null;
@@ -2042,11 +2032,9 @@ public class MetsIndexer extends Indexer {
                 if (StringUtils.isEmpty(urn)) {
                     urn = "NOURN";
                 }
-                //                indexObj.addToLucene(SolrConstants.IMAGEURN_OAI, urn);
                 sbPageUrns.append(urn).append(' ');
                 imageUrns.add(urn);
             }
-            //            indexObj.addToLucene(SolrConstants.PAGEURNS, sbPageUrns.toString());
             indexObj.setImageUrns(imageUrns);
         }
     }

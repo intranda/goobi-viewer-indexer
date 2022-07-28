@@ -837,7 +837,7 @@ public abstract class Indexer {
             } else if (annotation.getBody() != null) {
                 logger.warn("Cannot interpret annotation body of type '{}'.", annotation.getBody().getClass());
             } else {
-                logger.warn("Annotaton has no body: {}", annotation.toString());
+                logger.warn("Annotaton has no body: {}", annotation);
 
             }
             // Add annotation body as JSON, always!
@@ -1029,14 +1029,13 @@ public abstract class Indexer {
      * @throws java.io.IOException if any.
      */
     public static Dimension getSizeForJp2(Path image) throws IOException {
-
         if (image.getFileName().toString().matches("(?i).*\\.jp(2|x|2000)")) {
             logger.debug("Reading with jpeg2000 ImageReader");
             Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpeg2000");
 
             while (readers.hasNext()) {
                 ImageReader reader = readers.next();
-                logger.trace("Found reader " + reader);
+                logger.trace("Found reader: {}", reader);
                 if (reader != null) {
                     try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
                         reader.setInput(iis);
@@ -1046,10 +1045,8 @@ public abstract class Indexer {
                             return new Dimension(width, height);
                         }
                         logger.error("Error reading image dimensions of {} with image reader {}", image, reader.getClass().getSimpleName());
-                        continue;
                     } catch (IOException e) {
                         logger.error("Error reading {} with image reader {}", image, reader.getClass().getSimpleName());
-                        continue;
                     }
                 }
             }

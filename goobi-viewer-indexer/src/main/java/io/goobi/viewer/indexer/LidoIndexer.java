@@ -220,7 +220,7 @@ public class LidoIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, dataFolders, 0);
+            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy, 0);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
@@ -298,15 +298,13 @@ public class LidoIndexer extends Indexer {
     /**
      * 
      * @param indexObj
-     * @param isWork
      * @param writeStrategy
-     * @param dataFolders
      * @param depth
      * @return
      * @throws FatalIndexerException
      */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders, int depth) throws FatalIndexerException {
+    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy, int depth)
+            throws FatalIndexerException {
         List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             physIds.add(String.valueOf(i));
@@ -764,7 +762,8 @@ public class LidoIndexer extends Indexer {
                     FieldConfig fieldConfig = fieldConfigList.get(0);
                     if (fieldConfig.isAddSortFieldToTopstruct()) {
                         List<LuceneField> retList = new ArrayList<>(1);
-                        MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.PREFIX_SORT, fieldConfig.getNonSortConfigurations(),
+                        MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.PREFIX_SORT,
+                                fieldConfig.getNonSortConfigurations(),
                                 fieldConfig.getValueNormalizers(), retList);
                         if (!retList.isEmpty()) {
                             indexObj.addToLucene(retList.get(0), false);
@@ -776,12 +775,10 @@ public class LidoIndexer extends Indexer {
             // Use the main IndexObject's default value field to collect default values for the events, then restore the original value
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 eventDoc.addField(SolrConstants.DEFAULT, indexObj.getDefaultValue());
-                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue(defaultFieldBackup);
             }
 
             ret.add(eventDoc);
-            logger.debug(eventDoc.getFieldNames().toString());
         }
 
         return ret;

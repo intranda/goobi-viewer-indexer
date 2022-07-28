@@ -284,7 +284,7 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            generateChildDocstructDocuments(indexObj, true, writeStrategy, dataFolders, workDepth);
+            generateChildDocstructDocuments(indexObj, writeStrategy, dataFolders, workDepth);
 
             // ISWORK only for non-anchors
             indexObj.addToLucene(SolrConstants.ISWORK, "true");
@@ -383,21 +383,17 @@ public class WorldViewsIndexer extends Indexer {
      * must be set before calling this method.
      * 
      * @param indexObj {@link IndexObject}
-     * @param isWork
      * @param writeStrategy
      * @param dataFolders
      * @param depth Depth of the current docstruct in the docstruct hierarchy.
      * @return {@link LuceneField}
-     * @throws IndexerException -
-     * @throws IOException
      * @throws FatalIndexerException
      */
-    private void generateChildDocstructDocuments(IndexObject rootIndexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders, int depth) throws IndexerException, IOException, FatalIndexerException {
+    private void generateChildDocstructDocuments(IndexObject rootIndexObj, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders, int depth) throws FatalIndexerException {
         IndexObject currentIndexObj = null;
         String currentDocstructLabel = null;
 
-        String firstPageFile = null;
         String thumbnailFile = null;
         int thumbnailOrder = 1;
         int docstructCount = 0;
@@ -416,7 +412,6 @@ public class WorldViewsIndexer extends Indexer {
 
             String pageDocstructLabel = (String) pageDoc.getFieldValue(SolrConstants.LABEL);
             String orderLabel = (String) pageDoc.getFieldValue(SolrConstants.ORDERLABEL);
-            String pageFileBaseName = FilenameUtils.getBaseName((String) pageDoc.getFieldValue(SolrConstants.FILENAME));
 
             // New docstruct
             if (pageDocstructLabel != null && !pageDocstructLabel.equals(currentDocstructLabel)) {
