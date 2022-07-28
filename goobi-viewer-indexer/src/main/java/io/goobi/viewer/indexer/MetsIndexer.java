@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -257,7 +258,7 @@ public class MetsIndexer extends Indexer {
                 hierarchyLevel = 1;
                 StringBuilder sbXpath = new StringBuilder(170);
                 sbXpath.append("/mets:mets/mets:dmdSec[@ID='")
-                        .append(structNode.getAttributeValue("DMDID"))
+                        .append(structNode.getAttributeValue(SolrConstants.DMDID))
                         .append("']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier");
                 List<Element> piList = xp.evaluateToElements(sbXpath.toString(), null);
                 if (!piList.isEmpty()) {
@@ -1003,7 +1004,7 @@ public class MetsIndexer extends Indexer {
         if (Utils.isUrn(contentIDs)) {
             doc.addField(SolrConstants.IMAGEURN, contentIDs);
         }
-        String dmdId = eleStructMapPhysical.getAttributeValue("DMDID");
+        String dmdId = eleStructMapPhysical.getAttributeValue(SolrConstants.DMDID);
         if (StringUtils.isNotEmpty(dmdId)) {
             // TODO page PURL
             IndexObject pageObj = new IndexObject(0);
@@ -1111,7 +1112,7 @@ public class MetsIndexer extends Indexer {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath,
                                 fileGrpUse);
                     }
-                    
+
                     String viewerUrl = Configuration.getInstance().getViewerUrl();
                     if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                             && !filePath.startsWith(viewerUrl)) {
@@ -1344,8 +1345,6 @@ public class MetsIndexer extends Indexer {
                             new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
                     altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName, order,
                             true);
-                } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
                 } catch (IOException e) {
                     logger.warn(e.getMessage());
                 }
@@ -1355,10 +1354,10 @@ public class MetsIndexer extends Indexer {
                 try {
                     Map<String, String> mixData = TextHelper
                             .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
-                    for (String key : mixData.keySet()) {
-                        if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
-                                && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
-                            doc.addField(key, mixData.get(key));
+                    for (Entry<String, String> entry : mixData.entrySet()) {
+                        if (!(entry.getKey().equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
+                                && !(entry.getKey().equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
+                            doc.addField(entry.getKey(), entry.getValue());
                         }
                     }
                 } catch (JDOMException e) {
@@ -1417,12 +1416,10 @@ public class MetsIndexer extends Indexer {
                             }
                         }
                     }
-                } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
-                } catch (IOException e) {
+                } catch (JDOMException | IOException e) {
                     logger.error(e.getMessage(), e);
                 } catch (HTTPException e) {
-                    logger.warn(e.getMessage() + ": " + altoURL);
+                    logger.warn("{}: {}", e.getMessage(), altoURL);
                 }
 
             }
@@ -1981,7 +1978,7 @@ public class MetsIndexer extends Indexer {
 
         // DMDID
         {
-            indexObj.setDmdid(TextHelper.normalizeSequence(structNode.getAttributeValue("DMDID")));
+            indexObj.setDmdid(TextHelper.normalizeSequence(structNode.getAttributeValue(SolrConstants.DMDID)));
             logger.trace("DMDID: {}", indexObj.getDmdid());
         }
 

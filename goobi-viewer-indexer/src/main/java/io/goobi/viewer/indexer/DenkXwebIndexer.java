@@ -98,7 +98,7 @@ public class DenkXwebIndexer extends Indexer {
      */
     public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
             boolean downloadExternalImages) {
-        String[] ret = { "ERROR", null };
+        String[] ret = { STATUS_ERROR, null };
         String pi = null;
         try {
             this.xp = new JDomXP(doc);
@@ -267,7 +267,7 @@ public class DenkXwebIndexer extends Indexer {
                 logger.error("Indexing of '{}' could not be finished due to an error.", pi);
                 logger.error(e.getMessage(), e);
             }
-            ret[0] = "ERROR";
+            ret[0] = STATUS_ERROR;
             ret[1] = e.getMessage();
             hotfolder.getSearchIndex().rollback();
         } finally {

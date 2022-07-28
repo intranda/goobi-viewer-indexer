@@ -16,7 +16,6 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -61,7 +60,7 @@ public class DocUpdateIndexer extends Indexer {
     private static final Logger logger = LoggerFactory.getLogger(DocUpdateIndexer.class);
 
     /** Constant <code>FILE_EXTENSION=".docupdate"</code> */
-    public static String FILE_EXTENSION = ".docupdate";
+    public static final String FILE_EXTENSION = ".docupdate";
 
     /**
      * Constructor.
@@ -87,7 +86,7 @@ public class DocUpdateIndexer extends Indexer {
 
     @SuppressWarnings("unchecked")
     public String[] index(Path dataFile, Map<String, Path> dataFolders) throws FatalIndexerException {
-        String[] ret = { "ERROR", null };
+        String[] ret = { STATUS_ERROR, null };
         String baseFileName = FilenameUtils.getBaseName(dataFile.getFileName().toString());
         String[] fileNameSplit = baseFileName.split("#");
         if (fileNameSplit.length < 2) {
@@ -215,11 +214,9 @@ public class DocUpdateIndexer extends Indexer {
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
                             String fulltext = ((String) altoData.get(SolrConstants.FULLTEXT)).trim();
-                            {
-                                Map<String, Object> update = new HashMap<>();
-                                update.put("set", Jsoup.parse(fulltext).text());
-                                partialUpdates.put(SolrConstants.FULLTEXT, update);
-                            }
+                            Map<String, Object> update = new HashMap<>();
+                            update.put("set", Jsoup.parse(fulltext).text());
+                            partialUpdates.put(SolrConstants.FULLTEXT, update);
                         }
 
                     }
@@ -326,7 +323,7 @@ public class DocUpdateIndexer extends Indexer {
         } catch (IOException | SolrServerException e) {
             logger.error("Indexing of IDDOC={} could not be finished due to an error.", iddoc);
             logger.error(e.getMessage(), e);
-            ret[0] = "ERROR";
+            ret[0] = STATUS_ERROR;
             ret[1] = e.getMessage();
             hotfolder.getSearchIndex().rollback();
         }
@@ -365,10 +362,9 @@ public class DocUpdateIndexer extends Indexer {
      * 
      * @param recordFile
      * @return
-     * @throws FileNotFoundException
      * @throws IOException
      */
-    static Object readTextFile(Path recordFile) throws FileNotFoundException, IOException {
+    static Object readTextFile(Path recordFile) throws IOException {
         try {
             if (recordFile.getFileName().toString().endsWith(".xml")) {
                 Map<String, Object> altoData = TextHelper.readAltoFile(recordFile.toFile());
@@ -376,8 +372,7 @@ public class DocUpdateIndexer extends Indexer {
                     return altoData;
                 }
             } else if (recordFile.getFileName().toString().endsWith(".txt")) {
-                String value = FileTools.readFileToString(recordFile.toFile(), null);
-                return value;
+                return FileTools.readFileToString(recordFile.toFile(), null);
             } else {
                 logger.warn("Incompatible data file found: {}", recordFile.toAbsolutePath());
             }

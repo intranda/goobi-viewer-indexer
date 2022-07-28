@@ -91,6 +91,9 @@ public class Hotfolder {
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
     private static final int WAIT_IF_FILE_EMPTY = 5000;
 
+    private static final String EXTENSION_DELETE = ".delete";
+    private static final String EXTENSION_PURGE = ".purge";
+
     /** Constant <code>metsEnabled=true</code> */
     public static boolean metsEnabled = true;
     /** Constant <code>lidoEnabled=true</code> */
@@ -132,8 +135,8 @@ public class Hotfolder {
     public static FilenameFilter filterDataFile = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
-            return (name.toLowerCase().endsWith(Indexer.XML_EXTENSION) || name.toLowerCase().endsWith(".delete")
-                    || name.toLowerCase().endsWith(".purge") || name.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION));
+            return (name.toLowerCase().endsWith(Indexer.XML_EXTENSION) || name.toLowerCase().endsWith(EXTENSION_DELETE)
+                    || name.toLowerCase().endsWith(EXTENSION_PURGE) || name.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION));
         }
     };
 
@@ -403,7 +406,7 @@ public class Hotfolder {
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
         logger.debug("body:\n{}", body);
         // Send report e-mail if the text body contains at least one ERROR level log message
-        if (!body.contains("ERROR")) {
+        if (!body.contains(Indexer.STATUS_ERROR)) {
             return;
         }
 
@@ -538,7 +541,8 @@ public class Hotfolder {
         try (Stream<Path> files = Files.list(hotfolderPath)) {
             long ret = files.filter(p -> !Files.isDirectory(p))
                     .map(p -> p.toString())
-                    .filter(f -> (f.toLowerCase().endsWith(".xml") || f.endsWith(".delete") || f.endsWith(".purge") || f.endsWith(".docupdate")
+                    .filter(f -> (f.toLowerCase().endsWith(".xml") || f.endsWith(EXTENSION_DELETE) || f.endsWith(EXTENSION_PURGE)
+                            || f.endsWith(".docupdate")
                             || f.endsWith(".UPDATED")))
                     .count();
             logger.trace("{} files in hotfolder", ret);
@@ -652,7 +656,7 @@ public class Hotfolder {
                 if (filename.startsWith("statistics-usage-")) {
                     addUsageStatisticsToIndex(sourceFile);
                 }
-            } else if (filename.endsWith(".delete")) {
+            } else if (filename.endsWith(EXTENSION_DELETE)) {
                 if (filename.startsWith("statistics-usage-")) {
                     removeUsageStatisticsFromIndex(sourceFile);
                 } else {
@@ -661,7 +665,7 @@ public class Hotfolder {
                     removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], true);
                     Utils.submitDataToViewer(countRecordFiles());
                 }
-            } else if (filename.endsWith(".purge")) {
+            } else if (filename.endsWith(EXTENSION_PURGE)) {
                 if (filename.startsWith("statistics-usage-")) {
                     removeUsageStatisticsFromIndex(sourceFile);
                 } else {
@@ -692,8 +696,6 @@ public class Hotfolder {
 
         return true;
     }
-
-
 
     /**
      * Removes the document and its data folders represented by the file name.
@@ -1124,7 +1126,7 @@ public class Hotfolder {
                     previousDataRepository = currentIndexer.getPreviousDataRepository();
                     currentIndexer = null;
                 }
-                if (!"ERROR".equals(resp[0])) {
+                if (!Indexer.STATUS_ERROR.equals(resp[0])) {
                     // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
                     String identifier = resp[0];
                     String newLidoFileName = identifier + ".xml";
@@ -1227,10 +1229,10 @@ public class Hotfolder {
         }
 
     }
-    
+
     /**
      * @param sourceFile
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
     private boolean removeUsageStatisticsFromIndex(Path sourceFile) throws FatalIndexerException {
         if (sourceFile == null) {
@@ -1311,7 +1313,7 @@ public class Hotfolder {
                     previousDataRepository = currentIndexer.getPreviousDataRepository();
                     currentIndexer = null;
                 }
-                if (!"ERROR".equals(resp[0])) {
+                if (!Indexer.STATUS_ERROR.equals(resp[0])) {
                     String identifier = resp[0];
                     String newDenkXwebFileName = identifier + ".xml";
 
@@ -2083,14 +2085,13 @@ public class Hotfolder {
      * @return a {@link java.io.FilenameFilter} object.
      */
     public static FilenameFilter getDataFolderFilter(final String prefix) {
-        FilenameFilter filter = new FilenameFilter() {
+        return new FilenameFilter() {
+
             @Override
             public boolean accept(File dir, String name) {
                 return (name.startsWith(prefix) && new File(dir, name).isDirectory());
             }
         };
-
-        return filter;
     }
 
     /**
@@ -2098,8 +2099,8 @@ public class Hotfolder {
      * @return
      */
     public static FilenameFilter getRecordFileFilter() {
-        FilenameFilter filter = new FilenameFilter() {
-            private final List<String> extensions = Arrays.asList(new String[] { ".xml", ".delete", ".purge", ".docupdate", ".UPDATED" });
+        return new FilenameFilter() {
+            private final List<String> extensions = Arrays.asList(".xml", EXTENSION_DELETE, EXTENSION_PURGE, ".docupdate", ".UPDATED");
 
             @Override
             public boolean accept(File dir, String name) {
@@ -2113,7 +2114,5 @@ public class Hotfolder {
                 return false;
             }
         };
-
-        return filter;
     }
 }

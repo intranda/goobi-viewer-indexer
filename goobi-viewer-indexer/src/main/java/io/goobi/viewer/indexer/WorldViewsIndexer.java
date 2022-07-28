@@ -755,7 +755,7 @@ public class WorldViewsIndexer extends Indexer {
             if (representative) {
                 doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
             }
-            
+
             parseMimeType(doc, fileName);
         } else {
             // TODO placeholder
@@ -866,17 +866,9 @@ public class WorldViewsIndexer extends Indexer {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                         doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                         // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
-                        logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
+                        logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
                     }
-                    //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
-                    //                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                    //                        doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                    //                        logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                    //                    }
-                    //                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                    //                        doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                    //                        logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                    //                    }
+
                     if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                         addNamedEntitiesFields(altoData, doc);
                     }
@@ -911,17 +903,8 @@ public class WorldViewsIndexer extends Indexer {
                                     && doc.getField(SolrConstants.FULLTEXT) == null) {
                                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
                                 doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
-                                logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
+                                logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
                             }
-                            //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
-                            //                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                            //                                doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                            //                                logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                            //                            }
-                            //                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                            //                                doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                            //                                logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                            //                            }
                             if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                                 addNamedEntitiesFields(altoData, doc);
                             }
@@ -949,25 +932,13 @@ public class WorldViewsIndexer extends Indexer {
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                             doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                            // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
-                            logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
+                            logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
 
                         }
-                        //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
-                        //                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                        //                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                        //                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                        //                        }
-                        //                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                        //                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                        //                            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-                        //                        }
                         if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                             addNamedEntitiesFields(altoData, doc);
                         }
                     }
-                } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
                 } catch (IOException e) {
                     logger.warn(e.getMessage());
                 }

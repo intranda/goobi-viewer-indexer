@@ -16,9 +16,7 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +26,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,7 +73,6 @@ public class LidoIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(LidoIndexer.class);
 
-    private List<SolrInputDocument> events = new ArrayList<>();
     /**
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
      * thread-safe.
@@ -108,7 +106,7 @@ public class LidoIndexer extends Indexer {
      */
     public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
             List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
-        String[] ret = { "ERROR", null };
+        String[] ret = { STATUS_ERROR, null };
         String pi = null;
         try {
             this.xp = new JDomXP(doc);
@@ -249,13 +247,12 @@ public class LidoIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Generate event documents (must happen before writing the DEFAULT field!)
-            this.events = generateEvents(indexObj);
+            List<SolrInputDocument> events = generateEvents(indexObj);
             logger.debug("Generated {} event docs.", events.size());
 
             // Add DEFAULT field
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
-                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue("");
             }
 
@@ -286,7 +283,7 @@ public class LidoIndexer extends Indexer {
                 logger.error("Indexing of '{}' could not be finished due to an error.", pi);
                 logger.error(e.getMessage(), e);
             }
-            ret[0] = "ERROR";
+            ret[0] = STATUS_ERROR;
             ret[1] = e.getMessage();
             hotfolder.getSearchIndex().rollback();
         } finally {
@@ -451,7 +448,6 @@ public class LidoIndexer extends Indexer {
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-            thumbnailSet = true;
         }
 
         // Add thumbnail information from the first page
@@ -463,7 +459,6 @@ public class LidoIndexer extends Indexer {
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-            thumbnailSet = true;
         }
 
         // Add the number of assigned pages and the labels of the first and last page to this structure element
@@ -478,7 +473,6 @@ public class LidoIndexer extends Indexer {
             if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
                 indexObj.setLastPageLabel(lastPageLabel);
             }
-            // logger.info(indexObj.getLogId() + ": " + indexObj.getFirstPageLabel() + " - " + indexObj.getLastPageLabel());
         }
 
         return ret;
@@ -624,10 +618,10 @@ public class LidoIndexer extends Indexer {
             try {
                 Map<String, String> mixData = TextHelper.readMix(
                         new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + Indexer.XML_EXTENSION));
-                for (String key : mixData.keySet()) {
-                    if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
-                            && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
-                        doc.addField(key, mixData.get(key));
+                for (Entry<String, String> entry : mixData.entrySet()) {
+                    if (!(entry.getKey().equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
+                            && !(entry.getKey().equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
+                        doc.addField(entry.getKey(), entry.getValue());
                     }
                 }
             } catch (JDOMException e) {
@@ -755,7 +749,7 @@ public class LidoIndexer extends Indexer {
                     ret.add(doc);
                 }
 
-                // Grouped metadata fields are written directly into the IndexObject, which is not desired. Replace the metadata from the backup.{
+                // Grouped metadata fields are written directly into the IndexObject, which is not desired. Replace the metadata from the backup.
                 indexObj.setGroupedMetadataFields(groupedFieldsBackup);
             }
 
@@ -811,28 +805,10 @@ public class LidoIndexer extends Indexer {
         logger.trace("TYPE: {}", indexObj.getType());
 
         // Set label
-        {
-            String value = structNode.getAttributeValue("LABEL");
-            if (value != null) {
-                indexObj.setLabel(value);
-            }
+        String value = structNode.getAttributeValue("LABEL");
+        if (value != null) {
+            indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
-
-    /** Constant <code>txt</code> */
-    public static FilenameFilter txt = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".txt");
-        }
-    };
-
-    /** Constant <code>xml</code> */
-    public static FilenameFilter xml = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".xml");
-        }
-    };
 }

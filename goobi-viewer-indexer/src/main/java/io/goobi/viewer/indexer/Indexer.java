@@ -88,6 +88,7 @@ import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.helper.StringConstants;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
@@ -127,6 +128,9 @@ public abstract class Indexer {
     protected static final String FIELD_OWNERDEPTH = "MDNUM_OWNERDEPTH";
     protected static final String FIELD_SHAPE = "MD_SHAPE";
     protected static final String FIELD_TEXT = "MD_TEXT";
+    protected static final String LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO = "Added FULLTEXT from regular ALTO for page {}";
+
+    public static final String STATUS_ERROR = "ERROR";
 
     public static final String[] IIIF_IMAGE_FILE_NAMES =
             { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
@@ -1376,7 +1380,7 @@ public abstract class Indexer {
     }
 
     /** Constant <code>txt</code> */
-    public static FilenameFilter txt = new FilenameFilter() {
+    public static final FilenameFilter txt = new FilenameFilter() {
 
         @Override
         public boolean accept(File dir, String name) {
@@ -1385,7 +1389,7 @@ public abstract class Indexer {
     };
 
     /** Constant <code>xml</code> */
-    public static FilenameFilter xml = new FilenameFilter() {
+    public static final FilenameFilter xml = new FilenameFilter() {
 
         @Override
         public boolean accept(File dir, String name) {
@@ -1417,7 +1421,7 @@ public abstract class Indexer {
             return false;
         }
         if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_DOC_MAY_NOT_BE_NULL);
         }
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
@@ -1457,7 +1461,7 @@ public abstract class Indexer {
         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
                 && doc.getField(SolrConstants.FULLTEXT) == null) {
             doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-            logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
+            logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
         }
         // WIDTH
         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1616,7 +1620,7 @@ public abstract class Indexer {
             return;
         }
         if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_DOC_MAY_NOT_BE_NULL);
         }
         if (fileName == null) {
             throw new IllegalArgumentException("fileName may not be null");
@@ -1682,7 +1686,7 @@ public abstract class Indexer {
      */
     static void parseMimeType(SolrInputDocument doc, String filePath) {
         if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_DOC_MAY_NOT_BE_NULL);
         }
         if (StringUtils.isEmpty(filePath)) {
             return;
