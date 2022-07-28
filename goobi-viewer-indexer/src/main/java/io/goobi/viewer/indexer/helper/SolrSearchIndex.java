@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,9 @@ public final class SolrSearchIndex {
     public static final int TIMEOUT_CONNECTION = 300000;
     private static final int RETRY_ATTEMPTS = 20;
 
+    private static final String ERROR_SOLR_CONNECTION = "Solr connection error";
+    private static final String ERROR_UPDATE_STATUS = "Update status: {}";
+
     /** Constant <code>optimize=false</code> */
     public static boolean optimize = false;
     private static Map<Long, Boolean> usedIddocs = new ConcurrentHashMap<>();
@@ -81,11 +85,9 @@ public final class SolrSearchIndex {
      * @param timeoutConnection
      * @param allowCompression
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      * @should return null if solrUrl is empty
      */
-    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, int timeoutSocket, int timeoutConnection, boolean allowCompression)
-            throws FatalIndexerException {
+    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, int timeoutSocket, int timeoutConnection, boolean allowCompression) {
         if (StringUtils.isEmpty(solrUrl)) {
             return null;
         }
@@ -141,24 +143,20 @@ public final class SolrSearchIndex {
             tries--;
             try {
                 QueryResponse resp = server.query(query);
-                if (resp.getResults().size() > 0) {
+                if (!resp.getResults().isEmpty()) {
                     usedIddocs.put(iddoc, true);
                     return false;
                 }
                 usedIddocs.put(iddoc, true);
                 success = true;
-            } catch (SolrServerException e) {
-                logger.error(e.getMessage(), e);
-            } catch (NumberFormatException e) {
-                logger.error(e.getMessage(), e);
-            } catch (IOException e) {
+            } catch (SolrServerException | NumberFormatException | IOException e) {
                 logger.error(e.getMessage(), e);
             }
         }
         if (!success) {
             logger.error("Could not veryify the next available IDDOC after {} attempts. Check the Solr server connection. Exiting...",
                     RETRY_ATTEMPTS);
-            throw new FatalIndexerException("Solr connection error");
+            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
         }
 
         return true;
@@ -207,15 +205,14 @@ public final class SolrSearchIndex {
      */
     public SolrDocumentList search(String query, List<String> fields, int rows) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery(query);
-        solrQuery.setRows(MAX_HITS);
+        solrQuery.setRows(rows);
         if (fields != null) {
             for (String field : fields) {
                 solrQuery.addField(field);
             }
         }
-        QueryResponse resp = server.query(solrQuery);
 
-        return resp.getResults();
+        return server.query(solrQuery).getResults();
     }
 
     /**
@@ -280,9 +277,8 @@ public final class SolrSearchIndex {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should update doc correctly
      * @should add GROUPFIELD if original doc doesn't have it
-     * @return a boolean.
      */
-    public boolean updateDoc(SolrDocument doc, Map<String, Map<String, Object>> partialUpdates) throws FatalIndexerException {
+    public void updateDoc(SolrDocument doc, Map<String, Map<String, Object>> partialUpdates) throws FatalIndexerException {
         String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
         SolrInputDocument newDoc = new SolrInputDocument();
         newDoc.addField(SolrConstants.IDDOC, iddoc);
@@ -292,15 +288,11 @@ public final class SolrSearchIndex {
             update.put("set", iddoc);
             newDoc.addField(SolrConstants.GROUPFIELD, update);
         }
-        for (String field : partialUpdates.keySet()) {
-            newDoc.addField(field, partialUpdates.get(field));
+        for (Entry<String, Map<String, Object>> entry : partialUpdates.entrySet()) {
+            newDoc.addField(entry.getKey(), entry.getValue());
         }
-        if (writeToIndex(newDoc)) {
-            commit(false);
-            return true;
-        }
-
-        return false;
+        writeToIndex(newDoc);
+        commit(false);
     }
 
     /**
@@ -309,11 +301,10 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
-     * @return Error message, if occurred; null otherwise.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should write doc correctly
      */
-    public boolean writeToIndex(SolrInputDocument doc) throws FatalIndexerException {
+    public void writeToIndex(SolrInputDocument doc) throws FatalIndexerException {
         boolean success = false;
         int tries = RETRY_ATTEMPTS;
 
@@ -321,14 +312,11 @@ public final class SolrSearchIndex {
             tries--;
             try {
                 UpdateResponse ur = server.add(doc);
-                switch (ur.getStatus()) {
-                    case 0:
-                        success = true;
-                        break;
-                    default:
-                        logger.error("Update status: {}", ur.getStatus());
+                if (ur.getStatus() == 0) {
+                    success = true;
+                } else {
+                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
                 }
-                return true;
             } catch (SolrServerException | IOException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -337,10 +325,8 @@ public final class SolrSearchIndex {
         if (!success) {
             logger.error("Could not write document after {} attempts. Check the Solr server connection. Exiting...", RETRY_ATTEMPTS);
             rollback();
-            throw new FatalIndexerException("Solr connection error");
+            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
         }
-
-        return false;
     }
 
     /**
@@ -349,11 +335,10 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param docs a {@link java.util.List} object.
-     * @return Error message, if occurred; null otherwise.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should write all docs correctly
      */
-    public boolean writeToIndex(List<SolrInputDocument> docs) throws FatalIndexerException {
+    public void writeToIndex(List<SolrInputDocument> docs) throws FatalIndexerException {
         boolean success = false;
         int tries = RETRY_ATTEMPTS;
 
@@ -361,14 +346,11 @@ public final class SolrSearchIndex {
             tries--;
             try {
                 UpdateResponse ur = server.add(docs);
-                switch (ur.getStatus()) {
-                    case 0:
-                        success = true;
-                        break;
-                    default:
-                        logger.error("Update status: {}", ur.getStatus());
+                if (ur.getStatus() == 0) {
+                    success = true;
+                } else {
+                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
                 }
-                return true;
             } catch (SolrServerException | IOException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -377,10 +359,8 @@ public final class SolrSearchIndex {
         if (!success) {
             logger.error("Could not write {} documents after {} attempts. Check the Solr server connection. Exiting...", docs.size(), RETRY_ATTEMPTS);
             rollback();
-            throw new FatalIndexerException("Solr connection error");
+            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
         }
-
-        return false;
     }
 
     /**
@@ -399,12 +379,10 @@ public final class SolrSearchIndex {
             tries--;
             try {
                 UpdateResponse ur = server.deleteById(id);
-                switch (ur.getStatus()) {
-                    case 0:
-                        success = true;
-                        break;
-                    default:
-                        logger.error("Update status: {}", ur.getStatus());
+                if (ur.getStatus() == 0) {
+                    success = true;
+                } else {
+                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
                 }
             } catch (SolrServerException e) {
                 logger.error(e.getMessage());
@@ -415,7 +393,7 @@ public final class SolrSearchIndex {
         if (!success) {
             logger.error("Could not delete '{}' after {} attempts. Check the Solr server connection. Exiting...", id, RETRY_ATTEMPTS);
             rollback();
-            throw new FatalIndexerException("Solr connection error");
+            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
         }
     }
 
@@ -442,12 +420,10 @@ public final class SolrSearchIndex {
             tries--;
             try {
                 UpdateResponse ur = server.deleteById(ids);
-                switch (ur.getStatus()) {
-                    case 0:
-                        success = true;
-                        break;
-                    default:
-                        logger.error("Update status: {}", ur.getStatus());
+                if (ur.getStatus() == 0) {
+                    success = true;
+                } else {
+                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
                 }
             } catch (SolrServerException e) {
                 logger.error(e.getMessage());
@@ -458,7 +434,7 @@ public final class SolrSearchIndex {
         if (!success) {
             logger.error("Could not delete {} docs after {} attempts. Check the Solr server connection. Exiting...", ids.size(), RETRY_ATTEMPTS);
             rollback();
-            throw new FatalIndexerException("Solr connection error");
+            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
         }
 
         return success;
@@ -481,12 +457,10 @@ public final class SolrSearchIndex {
             tries--;
             try {
                 UpdateResponse ur = server.deleteByQuery(query);
-                switch (ur.getStatus()) {
-                    case 0:
-                        success = true;
-                        break;
-                    default:
-                        logger.error("Update status: {}", ur.getStatus());
+                if (ur.getStatus() == 0) {
+                    success = true;
+                } else {
+                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
                 }
             } catch (SolrServerException e) {
                 logger.error(e.getMessage());
@@ -518,15 +492,11 @@ public final class SolrSearchIndex {
         while (!success && tries > 0) {
             tries--;
             try {
-                //                server.commit();
-                //                success = true;
                 UpdateResponse ur = server.commit();
-                switch (ur.getStatus()) {
-                    case 0:
-                        success = true;
-                        break;
-                    default:
-                        logger.error("Update status: {}", ur.getStatus());
+                if (ur.getStatus() == 0) {
+                    success = true;
+                } else {
+                    logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
                 }
             } catch (SolrServerException e) {
                 logger.error(e.getMessage());
@@ -534,10 +504,12 @@ public final class SolrSearchIndex {
                 logger.error(e.getMessage(), e);
             }
         }
-        if (!success) {
+        if (!success)
+
+        {
             logger.error("Could not commit after {} attempts. Check the Solr server connection. Exiting...", RETRY_ATTEMPTS);
             rollback();
-            throw new FatalIndexerException("Solr connection error");
+            throw new FatalIndexerException(ERROR_SOLR_CONNECTION);
         }
 
         if (optimize) {
@@ -564,9 +536,7 @@ public final class SolrSearchIndex {
         logger.info("Rolling back...");
         try {
             server.rollback();
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         } catch (RemoteSolrException e) {
             logger.error(e.getMessage());
@@ -597,12 +567,10 @@ public final class SolrSearchIndex {
             try (StringReader sr = new StringReader(responseBody)) {
                 return XmlTools.getSAXBuilder().build(sr);
             }
-        } catch (ClientProtocolException e) {
+        } catch (ClientProtocolException | JDOMException e) {
             logger.error(e.getMessage(), e);
         } catch (IOException e) {
             logger.error(e.getMessage() + "; URL: " + url, e);
-        } catch (JDOMException e) {
-            logger.error(e.getMessage(), e);
         }
 
         return null;
@@ -620,7 +588,7 @@ public final class SolrSearchIndex {
         String[] fields = { SolrConstants.IDDOC, SolrConstants.PI };
         try {
             List<String> toDelete = new ArrayList<>();
-            SolrDocumentList anchors = search(SolrConstants.ISANCHOR + ":true", Arrays.asList(fields));
+            SolrDocumentList anchors = search(SolrConstants.ISANCHOR + SolrConstants.SOLR_QUERY_TRUE, Arrays.asList(fields));
             for (SolrDocument anchor : anchors) {
                 String iddoc = (String) anchor.getFirstValue(SolrConstants.IDDOC);
                 String pi = (String) anchor.getFirstValue(SolrConstants.PI);
@@ -634,9 +602,7 @@ public final class SolrSearchIndex {
                 commit(false);
                 return toDelete.size();
             }
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         }
 
@@ -685,17 +651,14 @@ public final class SolrSearchIndex {
             StringBuilder sbDefault = new StringBuilder();
             sbDefault.append(groupId).append(' ');
             if (metadata != null) {
-                for (String fieldName : metadata.keySet()) {
-                    String fieldValue = metadata.get(fieldName);
-                    doc.setField(fieldName, fieldValue);
-                    sbDefault.append(fieldValue).append(' ');
+                for (Entry<String, String> entry : metadata.entrySet()) {
+                    doc.setField(entry.getKey(), entry.getValue());
+                    sbDefault.append(entry.getValue()).append(' ');
                 }
             }
             doc.setField(SolrConstants.DEFAULT, sbDefault.toString().trim());
             return doc;
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         }
 
@@ -740,7 +703,7 @@ public final class SolrSearchIndex {
         Object val = getSingleFieldValue(doc, field);
         return getAsInt(val);
     }
-    
+
     /**
      * 
      * @param doc
@@ -770,7 +733,7 @@ public final class SolrSearchIndex {
             return null;
         }
     }
-    
+
     /**
      * 
      * @param fieldValue

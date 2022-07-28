@@ -323,9 +323,9 @@ public class MetadataHelperTest extends AbstractTest {
     @Test
     public void addSortField_shouldAddRegularSortFieldsCorrectly() throws Exception {
         List<LuceneField> result = new ArrayList<>(1);
-        MetadataHelper.addSortField("MD_TITLE", "Title", SolrConstants.SORT_, null, null, result);
+        MetadataHelper.addSortField("MD_TITLE", "Title", SolrConstants.PREFIX_SORT, null, null, result);
         Assert.assertEquals(1, result.size());
-        Assert.assertEquals(SolrConstants.SORT_ + "TITLE", result.get(0).getField());
+        Assert.assertEquals(SolrConstants.PREFIX_SORT + "TITLE", result.get(0).getField());
         Assert.assertEquals("Title", result.get(0).getValue());
     }
 
@@ -336,9 +336,9 @@ public class MetadataHelperTest extends AbstractTest {
     @Test
     public void addSortField_shouldAddNumericalSortFieldsCorrectly() throws Exception {
         List<LuceneField> result = new ArrayList<>(1);
-        MetadataHelper.addSortField(SolrConstants.YEAR, "-100", SolrConstants.SORTNUM_, null, null, result);
+        MetadataHelper.addSortField(SolrConstants.YEAR, "-100", SolrConstants.PREFIX_SORTNUM, null, null, result);
         Assert.assertEquals(1, result.size());
-        Assert.assertEquals(SolrConstants.SORTNUM_ + SolrConstants.YEAR, result.get(0).getField());
+        Assert.assertEquals(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR, result.get(0).getField());
         Assert.assertEquals("-100", result.get(0).getValue());
     }
 
@@ -349,10 +349,10 @@ public class MetadataHelperTest extends AbstractTest {
     @Test
     public void addSortField_shouldNotAddExistingFields() throws Exception {
         List<LuceneField> result = new ArrayList<>(1);
-        result.add(new LuceneField(SolrConstants.SORT_ + "TITLE", "other title"));
-        MetadataHelper.addSortField("MD_TITLE", "Title", SolrConstants.SORT_, null, null, result);
+        result.add(new LuceneField(SolrConstants.PREFIX_SORT + "TITLE", "other title"));
+        MetadataHelper.addSortField("MD_TITLE", "Title", SolrConstants.PREFIX_SORT, null, null, result);
         Assert.assertEquals(1, result.size());
-        Assert.assertEquals(SolrConstants.SORT_ + "TITLE", result.get(0).getField());
+        Assert.assertEquals(SolrConstants.PREFIX_SORT + "TITLE", result.get(0).getField());
         Assert.assertEquals("other title", result.get(0).getValue());
     }
 

@@ -306,7 +306,7 @@ public class WorldViewsIndexer extends Indexer {
                             String field = FilenameUtils.getBaseName(file.getFileName().toString()).toUpperCase();
                             String content = FileTools.readFileToString(file.toFile(), null);
                             String value = TextHelper.cleanUpHtmlTags(content);
-                            indexObj.addToLucene(SolrConstants.CMS_TEXT_ + field, value);
+                            indexObj.addToLucene(SolrConstants.PREFIX_CMS_TEXT + field, value);
                             indexObj.addToLucene(SolrConstants.CMS_TEXT_ALL, value);
                         }
                     }
@@ -315,7 +315,7 @@ public class WorldViewsIndexer extends Indexer {
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
-                String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
+                String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
                 Map<String, String> moreMetadata = new HashMap<>();
                 String titleField = "MD_TITLE_" + groupSuffix;
                 for (LuceneField field : indexObj.getLuceneFields()) {
@@ -324,7 +324,8 @@ public class WorldViewsIndexer extends Indexer {
                         moreMetadata.put(SolrConstants.LABEL, field.getValue());
                         moreMetadata.put("MD_TITLE", field.getValue());
                     } else if (field.getField().endsWith(groupSuffix)
-                            && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
+                            && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_")
+                                    || field.getField().startsWith(SolrConstants.PREFIX_MDNUM))) {
                         // Add any MD_*_GROUPSUFFIX field to the group doc
                         moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                     }
@@ -464,7 +465,7 @@ public class WorldViewsIndexer extends Indexer {
                 for (LuceneField field : currentIndexObj.getLuceneFields()) {
                     if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())) {
                         existingMetadataFields.add(new StringBuilder(field.getField()).append(field.getValue()).toString());
-                    } else if (field.getField().startsWith(SolrConstants.SORT_)) {
+                    } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                         existingSortFieldNames.add(field.getField());
                     }
                 }
@@ -474,7 +475,7 @@ public class WorldViewsIndexer extends Indexer {
                         // Avoid duplicates (same field name + value)
                         currentIndexObj.addToLucene(field.getField(), field.getValue());
                         logger.debug("Added {}:{} to child element {}", field.getField(), field.getValue(), currentIndexObj.getLogId());
-                    } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
+                    } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !existingSortFieldNames.contains(field.getField())) {
                         // Only one instance of each SORT_ field may exist
                         currentIndexObj.addToLucene(field.getField(), field.getValue());
                     }
@@ -542,7 +543,7 @@ public class WorldViewsIndexer extends Indexer {
                     for (Object value : pageDoc.getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
-                } else if (fieldName.startsWith(SolrConstants.SORT_)) {
+                } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                     existingSortFieldNames.add(fieldName);
                 }
             }
@@ -552,7 +553,7 @@ public class WorldViewsIndexer extends Indexer {
                     // Avoid duplicates (same field name + value)
                     pageDoc.addField(field.getField(), field.getValue());
                     logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), pageDoc.getFieldValue(SolrConstants.ORDER));
-                } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
+                } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !existingSortFieldNames.contains(field.getField())) {
                     // Only one instance of each SORT_ field may exist
                     pageDoc.addField(field.getField(), field.getValue());
                 }
@@ -566,7 +567,7 @@ public class WorldViewsIndexer extends Indexer {
                 // Remove SORT_ fields from a previous, higher up docstruct
                 Set<String> fieldsToRemove = new HashSet<>();
                 for (String fieldName : pageDoc.getFieldNames()) {
-                    if (fieldName.startsWith(SolrConstants.SORT_)) {
+                    if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                         fieldsToRemove.add(fieldName);
                     }
                 }
@@ -576,7 +577,7 @@ public class WorldViewsIndexer extends Indexer {
                 //  Add this docstruct's SORT_* fields to page
                 if (currentIndexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : currentIndexObj.getLuceneFields()) {
-                        if (field.getField().startsWith(SolrConstants.SORT_)) {
+                        if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             pageDoc.addField(field.getField(), field.getValue());
                         }
                     }
@@ -811,22 +812,11 @@ public class WorldViewsIndexer extends Indexer {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
                         doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
                         doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
-                        logger.debug("Added ALTO from crowdsourcing ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
                         doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                        // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
                     }
-                    //Getting width/height from ALTO is unreliable. Rather get them from the image itself (see below)
-                    //                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                    //                        doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                    //                        logger.debug("Added WIDTH from crowdsourcing ALTO for page {}", order);
-                    //                    }
-                    //                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                    //                        doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                    //                        logger.debug("Added WIDTH from crowdsourcing ALTO for page {}", order);
-                    //                    }
                     if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                         addNamedEntitiesFields(altoData, doc);
                     }
@@ -841,7 +831,6 @@ public class WorldViewsIndexer extends Indexer {
                 if (fulltext != null) {
                     foundCrowdsourcingData = true;
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
-                    // doc.addField("MD_FULLTEXT", fulltext);
                     doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
                 }
@@ -861,11 +850,9 @@ public class WorldViewsIndexer extends Indexer {
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
                         doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
                         doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
-                        logger.debug("Added ALTO from regular ALTO for page {}", order);
                     }
                     if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
                         doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                        // doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
                         logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
                     }
 
@@ -882,7 +869,6 @@ public class WorldViewsIndexer extends Indexer {
                         Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
                 if (fulltext != null) {
                     doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
-                    // doc.addField("MD_FULLTEXT", fulltext);
                     doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
                     logger.debug("Added FULLTEXT from regular plain text for page {}", order);
                 }

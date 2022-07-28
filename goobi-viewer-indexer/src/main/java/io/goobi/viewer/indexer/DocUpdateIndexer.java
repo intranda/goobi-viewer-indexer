@@ -146,12 +146,12 @@ public class DocUpdateIndexer extends Indexer {
             order = (int) doc.getFieldValue(SolrConstants.ORDER);
             anchorPi = (String) doc.getFieldValue(SolrConstants.PI_ANCHOR);
             for (String fieldName : doc.getFieldNames()) {
-                if (fieldName.startsWith(SolrConstants.GROUPID_)) {
+                if (fieldName.startsWith(SolrConstants.PREFIX_GROUPID)) {
                     groupIds.put(fieldName, (String) doc.getFieldValue(fieldName));
                 }
             }
-            String pageFileName = doc.containsKey(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
-                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
+            String pageFileName = doc.containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
+                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
                 ret[1] = "Document " + iddoc + " contains no " + SolrConstants.FILENAME + " field, please checks the index.";
@@ -173,7 +173,7 @@ public class DocUpdateIndexer extends Indexer {
                             String content = FileTools.readFileToString(file, null);
                             Map<String, Object> update = new HashMap<>();
                             update.put("set", TextHelper.cleanUpHtmlTags(content));
-                            partialUpdates.put(SolrConstants.CMS_TEXT_ + field, update);
+                            partialUpdates.put(SolrConstants.PREFIX_CMS_TEXT + field, update);
                             partialUpdates.put(SolrConstants.CMS_TEXT_ALL, update);
 
                         }
@@ -262,9 +262,11 @@ public class DocUpdateIndexer extends Indexer {
             }
 
             // Remove old UGC
-            query = SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
+            query = SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + SolrConstants.SOLR_QUERY_AND + SolrConstants.ORDER
+                    + ":" + order;
             SolrDocumentList ugcDocList = hotfolder.getSearchIndex()
-                    .search(SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
+                    .search(SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + SolrConstants.SOLR_QUERY_AND
+                            + SolrConstants.ORDER + ":" + order,
                             Collections.singletonList(SolrConstants.IDDOC));
             if (ugcDocList != null && !ugcDocList.isEmpty()) {
                 // Collect delete old UGC docs for deletion
@@ -309,10 +311,7 @@ public class DocUpdateIndexer extends Indexer {
 
             if (!partialUpdates.isEmpty()) {
                 // Update doc (only if partialUpdates is not empty, otherwise all fields but IDDOC will be deleted!)
-                if (!hotfolder.getSearchIndex().updateDoc(doc, partialUpdates)) {
-                    ret[1] = "Could not update document for IDDOC=" + iddoc;
-                    return ret;
-                }
+                hotfolder.getSearchIndex().updateDoc(doc, partialUpdates);
             } else {
                 // Otherwise just commit the new UGC docs
                 hotfolder.getSearchIndex().commit(false);

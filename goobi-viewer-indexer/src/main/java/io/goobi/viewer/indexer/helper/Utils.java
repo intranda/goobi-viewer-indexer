@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -89,6 +90,21 @@ public class Utils {
 
     private static final int HTTP_TIMEOUT = 30000;
 
+    private static final String HTTP_HEADER_CONTENT_TYPE = "Content-Type";
+
+    private static final String HTTP_METHOD_DELETE = "DELETE";
+
+    private static final String MAIL_PROPERTY_PROTOCOL = "mail.transport.protocol";
+    private static final String MAIL_PROPERTY_SMTP_HOST = "mail.smtp.host";
+    private static final String MAIL_PROPERTY_SMTP_PORT = "mail.smtp.port";
+
+    /**
+     * Private constructor.
+     */
+    private Utils() {
+        //
+    }
+
     /**
      * <p>
      * checkAndCreateDirectory.
@@ -141,17 +157,26 @@ public class Utils {
      * @param dataRepositoryName
      * @throws FatalIndexerException
      * @throws IOException
-     * @throws ClientProtocolException
      * @throws HTTPException
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
-            throws FatalIndexerException, ClientProtocolException, IOException, HTTPException {
+            throws FatalIndexerException, IOException, HTTPException {
         updateDataRepositoryCache(pi, dataRepositoryName, Configuration.getInstance().getViewerUrl(),
                 Configuration.getInstance().getViewerAuthorizationToken());
     }
 
+    /**
+     * 
+     * @param pi
+     * @param dataRepositoryName
+     * @param viewerUrl
+     * @param token
+     * @throws FatalIndexerException
+     * @throws IOException
+     * @throws HTTPException
+     */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
-            throws FatalIndexerException, ClientProtocolException, IOException, HTTPException {
+            throws FatalIndexerException, IOException, HTTPException {
         if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
             return;
         }
@@ -171,7 +196,7 @@ public class Utils {
 
         String url = viewerUrl + "/api/v1/tasks/";
         Map<String, String> headerParams = new HashMap<>(2);
-        headerParams.put("Content-Type", ContentType.APPLICATION_JSON.getMimeType());
+        headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
         getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
     }
@@ -196,7 +221,7 @@ public class Utils {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
             getWebContentPUT(url, new HashMap<>(0), null, json.toString(),
-                    Collections.singletonMap("Content-Type", ContentType.APPLICATION_JSON.getMimeType()));
+                    Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
         } catch (IOException | HTTPException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }
@@ -209,11 +234,10 @@ public class Utils {
      *
      * @param urlString a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
-     * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
-    public static String getWebContentGET(String urlString) throws ClientProtocolException, IOException, HTTPException {
+    public static String getWebContentGET(String urlString) throws IOException, HTTPException {
         RequestConfig defaultRequestConfig = RequestConfig.custom()
                 .setSocketTimeout(HTTP_TIMEOUT)
                 .setConnectTimeout(HTTP_TIMEOUT)
@@ -225,8 +249,6 @@ public class Utils {
                 int code = response.getStatusLine().getStatusCode();
                 if (code == HttpStatus.SC_OK) {
                     return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
-                    // IOUtils.copy(response.getEntity().getContent(), writer);
-                    // return writer.toString();
                 }
                 logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
                 throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
@@ -245,12 +267,11 @@ public class Utils {
      * @param body Optional entity content.
      * @param contentType Optional mime type.
      * @return a {@link java.lang.String} object.
-     * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
     public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies, String body,
-            Map<String, String> headerParams) throws ClientProtocolException, IOException, HTTPException {
+            Map<String, String> headerParams) throws IOException, HTTPException {
         return getWebContent("POST", url, params, cookies, body, headerParams);
     }
 
@@ -270,7 +291,7 @@ public class Utils {
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
     public static String getWebContentPUT(String url, Map<String, String> params, Map<String, String> cookies, String body,
-            Map<String, String> headerParams) throws ClientProtocolException, IOException, HTTPException {
+            Map<String, String> headerParams) throws IOException, HTTPException {
         return getWebContent("PUT", url, params, cookies, body, headerParams);
     }
 
@@ -290,8 +311,8 @@ public class Utils {
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
     public static String getWebContentDELETE(String url, Map<String, String> params, Map<String, String> cookies, String body,
-            Map<String, String> headerParams) throws ClientProtocolException, IOException, HTTPException {
-        return getWebContent("DELETE", url, params, cookies, body, headerParams);
+            Map<String, String> headerParams) throws IOException, HTTPException {
+        return getWebContent(HTTP_METHOD_DELETE, url, params, cookies, body, headerParams);
     }
 
     /**
@@ -306,14 +327,12 @@ public class Utils {
      * @param body Optional entity content.
      * @param headerParams Header parameters
      * @return a {@link java.lang.String} object.
-     * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
      */
     static String getWebContent(String method, String url, Map<String, String> params, Map<String, String> cookies, String body,
-            Map<String, String> headerParams) throws ClientProtocolException, IOException, HTTPException {
-        if (method == null
-                || !("POST".equals(method.toUpperCase()) || "PUT".equals(method.toUpperCase()) || "DELETE".equals(method.toUpperCase()))) {
+            Map<String, String> headerParams) throws IOException, HTTPException {
+        if (method == null || !("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method) || HTTP_METHOD_DELETE.equalsIgnoreCase(method))) {
             throw new IllegalArgumentException("Illegal method: " + method);
         }
         if (url == null) {
@@ -326,16 +345,16 @@ public class Utils {
             nameValuePairs = new ArrayList<>(0);
         } else {
             nameValuePairs = new ArrayList<>(params.size());
-            for (String key : params.keySet()) {
-                nameValuePairs.add(new BasicNameValuePair(key, params.get(key)));
+            for (Entry<String, String> entry : params.entrySet()) {
+                nameValuePairs.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
             }
         }
         HttpClientContext context = null;
         CookieStore cookieStore = new BasicCookieStore();
         if (cookies != null && !cookies.isEmpty()) {
             context = HttpClientContext.create();
-            for (String key : cookies.keySet()) {
-                BasicClientCookie cookie = new BasicClientCookie(key, cookies.get(key));
+            for (Entry<String, String> entry : cookies.entrySet()) {
+                BasicClientCookie cookie = new BasicClientCookie(entry.getKey(), entry.getValue());
                 cookie.setPath("/");
                 cookie.setDomain("0.0.0.0");
                 cookieStore.addCookie(cookie);
@@ -349,10 +368,9 @@ public class Utils {
                 .setConnectionRequestTimeout(HTTP_TIMEOUT)
                 .build();
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-
             HttpRequestBase requestBase;
             switch (method.toUpperCase()) {
-                case "DELETE":
+                case HTTP_METHOD_DELETE:
                     requestBase = new HttpDelete(url);
                     break;
                 case "POST":
@@ -364,12 +382,9 @@ public class Utils {
                 default:
                     return "";
             }
-            //            if (StringUtils.isNotEmpty(contentType)) {
-            //                requestBase.setHeader("Content-Type", contentType);
-            //            }
             if (headerParams != null) {
-                for (String key : headerParams.keySet()) {
-                    requestBase.setHeader(key, headerParams.get(key));
+                for (Entry<String, String> entry : headerParams.entrySet()) {
+                    requestBase.setHeader(entry.getKey(), entry.getValue());
                 }
             }
             Charset.forName(TextHelper.DEFAULT_CHARSET);
@@ -447,31 +462,30 @@ public class Utils {
         switch (smtpSecurity.toUpperCase()) {
             case "STARTTLS":
                 logger.debug("Using STARTTLS");
-                props.setProperty("mail.transport.protocol", "smtp");
-                props.setProperty("mail.smtp.port", "25");
-                props.setProperty("mail.smtp.host", smtpServer);
+                props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, "25");
+                props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
                 props.setProperty("mail.smtp.ssl.trust", "*");
                 props.setProperty("mail.smtp.starttls.enable", "true");
                 props.setProperty("mail.smtp.starttls.required", "true");
                 break;
             case "SSL":
                 logger.debug("Using SSL");
-                props.setProperty("mail.transport.protocol", "smtp");
-                props.setProperty("mail.smtp.host", smtpServer);
-                props.setProperty("mail.smtp.port", "465");
+                props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
+                props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, "465");
                 props.setProperty("mail.smtp.ssl.enable", "true");
                 props.setProperty("mail.smtp.ssl.trust", "*");
                 break;
             default:
                 logger.debug("Using no SMTP security");
-                props.setProperty("mail.transport.protocol", "smtp");
-                props.setProperty("mail.smtp.port", "25");
-                props.setProperty("mail.smtp.host", smtpServer);
+                props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, "25");
+                props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
         }
         props.setProperty("mail.smtp.connectiontimeout", "15000");
         props.setProperty("mail.smtp.timeout", "15000");
         props.setProperty("mail.smtp.auth", String.valueOf(auth));
-        // logger.trace(props.toString());
 
         Session session;
         if (auth) {
@@ -498,15 +512,12 @@ public class Utils {
             i++;
         }
         msg.setRecipients(Message.RecipientType.TO, addressTo);
-        // Optional : You can also set your custom headers in the Email if you
-        // Want
-        // msg.addHeader("MyHeaderName", "myHeaderValue");
         msg.setSubject(subject);
         {
             // Message body
             MimeBodyPart messagePart = new MimeBodyPart();
             messagePart.setText(body, "utf-8");
-            messagePart.setHeader("Content-Type", "text/plain; charset=\"utf-8\"");
+            messagePart.setHeader(HTTP_HEADER_CONTENT_TYPE, "text/plain; charset=\"utf-8\"");
             MimeMultipart multipart = new MimeMultipart();
             multipart.addBodyPart(messagePart);
             msg.setContent(multipart);
@@ -542,7 +553,7 @@ public class Utils {
 
         try {
             String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), new HashMap<>(0), null, null,
-                    Collections.singletonMap("Content-Type", ContentType.APPLICATION_JSON.getMimeType()));
+                    Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
             if (StringUtils.isNotEmpty(jsonString)) {
                 return (String) new JSONObject(jsonString).get("message");
             }
@@ -590,7 +601,7 @@ public class Utils {
         if (Files.exists(path)) {
             // If an updated anchor file already exists, use a different file name
             int iteration = 0;
-            while (Files.exists(path = Paths.get(destFolderPath, baseName + "#" + iteration + extension))) {
+            while (Files.exists(Paths.get(destFolderPath, baseName + "#" + iteration + extension))) {
                 iteration++;
             }
             if (StringUtils.isNotEmpty(separator)) {
@@ -613,8 +624,9 @@ public class Utils {
      * @return a {@link java.lang.String} object.
      */
     public static String extractPiFromFileName(Path file) {
-        String fileExtension = FilenameUtils.getExtension(file.getFileName().toString());
-        if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals("." + fileExtension) || "delete".equals(fileExtension) || "purge".equals(fileExtension)) {
+        String fileExtension = "." + FilenameUtils.getExtension(file.getFileName().toString());
+        if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals(fileExtension) || Hotfolder.FILENAME_EXTENSION_DELETE.equals(fileExtension)
+                || Hotfolder.FILENAME_EXTENSION_PURGE.equals(fileExtension)) {
             String pi = FilenameUtils.getBaseName(file.getFileName().toString());
             if (pi.contains("#")) {
                 pi = pi.substring(0, pi.indexOf("#"));
@@ -708,7 +720,7 @@ public class Utils {
      * @should sortify correctly
      */
     public static String sortifyField(String fieldName) {
-        return adaptField(fieldName, "SORT_");
+        return adaptField(fieldName, SolrConstants.PREFIX_SORT);
     }
 
     /**
@@ -735,12 +747,12 @@ public class Utils {
             case SolrConstants.DOCSTRCT_SUB:
             case SolrConstants.DOCSTRCT_TOP:
                 return prefix + fieldName;
-            case SolrConstants.MONTHDAY:    
+            case SolrConstants.MONTHDAY:
             case SolrConstants.YEAR:
             case SolrConstants.YEARMONTH:
             case SolrConstants.YEARMONTHDAY:
-                if ("SORT_".equals(prefix)) {
-                    return "SORTNUM_" + fieldName;
+                if (SolrConstants.PREFIX_SORT.equals(prefix)) {
+                    return SolrConstants.PREFIX_SORTNUM + fieldName;
                 }
                 return fieldName;
             default:
@@ -749,21 +761,21 @@ public class Utils {
                         fieldName = fieldName.replace("MD_", prefix);
                     } else if (fieldName.startsWith("MD2_")) {
                         fieldName = fieldName.replace("MD2_", prefix);
-                    } else if (fieldName.startsWith("MDNUM_")) {
-                        if ("SORT_".equals(prefix)) {
-                            fieldName = fieldName.replace("MDNUM_", "SORTNUM_");
+                    } else if (fieldName.startsWith(SolrConstants.PREFIX_MDNUM)) {
+                        if (SolrConstants.PREFIX_SORT.equals(prefix)) {
+                            fieldName = fieldName.replace(SolrConstants.PREFIX_MDNUM, SolrConstants.PREFIX_SORTNUM);
                         } else {
-                            fieldName = fieldName.replace("MDNUM_", prefix);
+                            fieldName = fieldName.replace(SolrConstants.PREFIX_MDNUM, prefix);
                         }
                     } else if (fieldName.startsWith("NE_")) {
                         fieldName = fieldName.replace("NE_", prefix);
                     } else if (fieldName.startsWith("BOOL_")) {
                         fieldName = fieldName.replace("BOOL_", prefix);
-                    } else if (fieldName.startsWith("SORT_")) {
-                        fieldName = fieldName.replace("SORT_", prefix);
+                    } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
+                        fieldName = fieldName.replace(SolrConstants.PREFIX_SORT, prefix);
                     }
                 }
-                fieldName = fieldName.replace(SolrConstants._UNTOKENIZED, "");
+                fieldName = fieldName.replace(SolrConstants.SUFFIX_UNTOKENIZED, "");
                 return fieldName;
         }
     }

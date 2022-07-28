@@ -37,6 +37,7 @@ import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.helper.StringConstants;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
@@ -68,11 +69,11 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
             viewerHomePath = Paths.get(config.getConfiguration("viewerHome"));
             if (!Files.isDirectory(viewerHomePath)) {
                 logger.error("Path defined in <viewerHome> does not exist, exiting...");
-                throw new FatalIndexerException("Configuration error, see log for details.");
+                throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
             }
         } catch (Exception e) {
             logger.error("<viewerHome> not defined, exiting...");
-            throw new FatalIndexerException("Configuration error, see log for details.");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
     }
 

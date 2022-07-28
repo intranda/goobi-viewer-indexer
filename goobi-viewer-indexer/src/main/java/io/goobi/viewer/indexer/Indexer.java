@@ -262,7 +262,7 @@ public abstract class Indexer {
         }
         String queryPageUrns = new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
                 .append(pi)
-                .append(" AND ")
+                .append(SolrConstants.SOLR_QUERY_AND)
                 .append(SolrConstants.DOCTYPE)
                 .append(":PAGE")
                 .toString();
@@ -408,7 +408,7 @@ public abstract class Indexer {
                 splitString[1] = cleanUpNamedEntityValue(splitString[1]);
                 String fieldName = new StringBuilder("NE_").append(splitString[0]).toString();
                 doc.addField(fieldName, splitString[1]);
-                doc.addField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(), splitString[1]);
+                doc.addField(new StringBuilder(fieldName).append(SolrConstants.SUFFIX_UNTOKENIZED).toString(), splitString[1]);
             }
         }
     }
@@ -541,16 +541,16 @@ public abstract class Indexer {
         List<Element> eleFieldList = eleContent.getChildren();
         switch (eleContent.getName()) {
             case "UserGeneratedPerson":
-                doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_PERSON);
+                doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_PERSON);
                 break;
             case "UserGeneratedCorporation":
-                doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_CORPORATION);
+                doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_CORPORATION);
                 break;
             case "UserGeneratedAddress":
-                doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 break;
             case "UserGeneratedComment":
-                doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_COMMENT);
                 break;
             default:
                 // nothing
@@ -562,10 +562,10 @@ public abstract class Indexer {
                         doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                         break;
                     case "firstname":
-                        doc.addField("MD_FIRSTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                        doc.addField(SolrConstants.MD_FIRSTNAME, MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                         break;
                     case "lastname":
-                        doc.addField("MD_LASTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                        doc.addField(SolrConstants.MD_LASTNAME, MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                         break;
                     case "personIdentifier":
                         doc.addField("MD_PERSONIDENTIFIER", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
@@ -693,7 +693,7 @@ public abstract class Indexer {
                             doc.addField(entry.getKey(), entry.getValue());
                         }
                     }
-                    doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                    doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_COMMENT);
 
                     TextualResource body = (TextualResource) anno.getBody();
                     if (StringUtils.isNotEmpty(body.getText())) {
@@ -822,10 +822,10 @@ public abstract class Indexer {
 
             // Value
             if (annotation.getBody() instanceof TextualResource) {
-                doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_COMMENT);
                 doc.addField(FIELD_TEXT, ((TextualResource) annotation.getBody()).getText());
             } else if (annotation.getBody() instanceof GeoLocation) {
-                doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 // Add searchable coordinates
                 GeoLocation geoLocation = (GeoLocation) annotation.getBody();
                 if (geoLocation.getGeometry() != null) {
@@ -834,19 +834,7 @@ public abstract class Indexer {
                         doc.addField(FIELD_COORDS, coords[0] + " " + coords[1]);
                     }
                 }
-            }
-            //            else if (annotation.getBody() instanceof TypedResource) {
-            //                //any other resource with a "type" property
-            //                String type = ((TypedResource) annotation.getBody()).getType();
-            //                switch (type) {
-            //                    case "AuthorityResource":
-            //                        //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
-            //                        break;
-            //                    default:
-            //                        break;
-            //                }
-            //            }
-            else if (annotation.getBody() != null) {
+            } else if (annotation.getBody() != null) {
                 logger.warn("Cannot interpret annotation body of type '{}'.", annotation.getBody().getClass());
             } else {
                 logger.warn("Annotaton has no body: {}", annotation.toString());
@@ -863,7 +851,7 @@ public abstract class Indexer {
                 if (selector instanceof FragmentSelector) {
                     String coords = ((FragmentSelector) selector).getValue();
                     doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
-                    doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                    doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 }
             }
 
@@ -1659,7 +1647,7 @@ public abstract class Indexer {
                 }
             } else {
                 // Add external image URL
-                doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, url);
+                doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, url);
                 // Representative image (external)
                 if (representative) {
                     doc.addField(SolrConstants.THUMBNAILREPRESENT, url);

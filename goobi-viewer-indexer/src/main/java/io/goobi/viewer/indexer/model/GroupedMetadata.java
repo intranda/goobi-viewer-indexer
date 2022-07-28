@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -136,11 +137,12 @@ public class GroupedMetadata {
         }
 
         logger.debug("element: {}", ele.getName());
-        for (Object field : groupEntityFields.keySet()) {
-            if (field == null || "type".equals(field) || "url".equals(field) || groupEntityFields.get(field) == null) {
+        for (Entry<String, SubfieldConfig> entry : groupEntityFields.entrySet()) {
+            if (entry.getKey() == null || "type".equals(entry.getKey()) || "url".equals(entry.getKey())
+                    || groupEntityFields.get(entry.getKey()) == null) {
                 continue;
             }
-            SubfieldConfig subfield = groupEntityFields.get(field);
+            SubfieldConfig subfield = entry.getValue();
 
             for (String xpath : subfield.getXpaths()) {
                 logger.debug("XPath: {}", xpath);
@@ -189,7 +191,7 @@ public class GroupedMetadata {
                     fields.add(new LuceneField(subfield.getFieldname(), fieldValue));
 
                     // Add sorting field
-                    if (subfield.isAddSortField() && !subfield.getFieldname().startsWith(SolrConstants.SORT_) && values.indexOf(val) == 0) {
+                    if (subfield.isAddSortField() && !subfield.getFieldname().startsWith(SolrConstants.PREFIX_SORT) && values.indexOf(val) == 0) {
                         fields.add(new LuceneField(Utils.sortifyField(subfield.getFieldname()), fieldValue));
                     }
 

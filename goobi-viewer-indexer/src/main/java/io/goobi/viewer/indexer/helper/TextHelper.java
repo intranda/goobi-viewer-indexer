@@ -71,6 +71,7 @@ public final class TextHelper {
 
     private static final String ALTO_WIDTH = "WIDTH";
     private static final String ALTO_HEIGHT = "HEIGHT";
+    private static final String ALTO_COMPOSEDBLOCK = "ComposedBlock";
     private static final String ALTO_CONTENT = "CONTENT";
     private static final String ALTO_SUBS_CONTENT = "SUBS_CONTENT";
     private static final String ALTO_SUBS_TYPE = "SUBS_TYPE";
@@ -205,7 +206,7 @@ public final class TextHelper {
                             case "TextBlock":
                                 readAltoTextBlock(eleBlock, sbFulltext);
                                 break;
-                            case "ComposedBlock":
+                            case ALTO_COMPOSEDBLOCK:
                                 handleAltoComposedBlock(eleBlock, sbFulltext);
                                 break;
                             default:
@@ -254,9 +255,9 @@ public final class TextHelper {
         }
 
         // Nested ComposedBlocks
-        List<Element> eleListNextedComposedBlocks = eleComposedBlock.getChildren("ComposedBlock", null);
+        List<Element> eleListNextedComposedBlocks = eleComposedBlock.getChildren(ALTO_COMPOSEDBLOCK, null);
         if (eleListNextedComposedBlocks != null) {
-            for (Element eleNestedComposedBlock : eleComposedBlock.getChildren("ComposedBlock", null)) {
+            for (Element eleNestedComposedBlock : eleComposedBlock.getChildren(ALTO_COMPOSEDBLOCK, null)) {
                 handleAltoComposedBlock(eleNestedComposedBlock, sbFulltext);
             }
         }
@@ -325,12 +326,11 @@ public final class TextHelper {
      *
      * @param file a {@link java.io.File} object.
      * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
      * @return a {@link java.util.Map} object.
      */
-    public static Map<String, Object> readTeiToAlto(File file) throws IOException, FatalIndexerException {
+    public static Map<String, Object> readTeiToAlto(File file) throws IOException {
         logger.info("readTei: {}", file.getAbsolutePath());
         if (!file.exists()) {
             throw new FileNotFoundException("File not found: " + file.getAbsolutePath());
@@ -364,12 +364,11 @@ public final class TextHelper {
      * @param file a {@link java.io.File} object.
      * @throws java.io.IOException
      * @throws javax.xml.stream.XMLStreamException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
      * @return a {@link java.util.Map} object.
      */
-    public static Map<String, Object> readAbbyyToAlto(File file) throws IOException, XMLStreamException, FatalIndexerException {
+    public static Map<String, Object> readAbbyyToAlto(File file) throws IOException, XMLStreamException {
         logger.trace("readAbbyy: {}", file.getAbsolutePath());
         if (!FileFormat.ABBYYXML.equals(JDomXP.determineFileFormat(file))) {
             throw new IOException(file.getAbsolutePath() + " is not a valid ABBYY XML document.");

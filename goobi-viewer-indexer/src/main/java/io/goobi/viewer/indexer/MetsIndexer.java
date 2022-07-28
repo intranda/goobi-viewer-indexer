@@ -119,6 +119,10 @@ public class MetsIndexer extends Indexer {
     /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
 
+    private static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
+
+    private static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='";
+
     /** */
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
@@ -193,7 +197,7 @@ public class MetsIndexer extends Indexer {
 
             // Set PI
             {
-                String preQuery = "/mets:mets/mets:dmdSec[@ID='" + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']/";
+                String preQuery = XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']/";
                 logger.debug("preQuery: {}", preQuery);
                 String pi = MetadataHelper.getPIFromXML(preQuery, xp);
                 if (StringUtils.isNotBlank(pi)) {
@@ -257,7 +261,7 @@ public class MetsIndexer extends Indexer {
                 // Find anchor document for this volume
                 hierarchyLevel = 1;
                 StringBuilder sbXpath = new StringBuilder(170);
-                sbXpath.append("/mets:mets/mets:dmdSec[@ID='")
+                sbXpath.append(XPATH_DMDSEC)
                         .append(structNode.getAttributeValue(SolrConstants.DMDID))
                         .append("']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier");
                 List<Element> piList = xp.evaluateToElements(sbXpath.toString(), null);
@@ -357,9 +361,9 @@ public class MetsIndexer extends Indexer {
                 long numVolumes = hotfolder.getSearchIndex()
                         .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":")
                                 .append(indexObj.getPi())
-                                .append(" AND ")
+                                .append(SolrConstants.SOLR_QUERY_AND)
                                 .append(SolrConstants.ISWORK)
-                                .append(":true")
+                                .append(SolrConstants.SOLR_QUERY_TRUE)
                                 .toString());
                 indexObj.addToLucene(SolrConstants.NUMVOLUMES, String.valueOf(numVolumes));
                 logger.info("Added number of volumes: {}", numVolumes);
@@ -403,7 +407,7 @@ public class MetsIndexer extends Indexer {
                             String field = FilenameUtils.getBaseName(file.getFileName().toString()).toUpperCase();
                             String content = FileTools.readFileToString(file.toFile(), null);
                             String value = TextHelper.cleanUpHtmlTags(content);
-                            indexObj.addToLucene(SolrConstants.CMS_TEXT_ + field, value);
+                            indexObj.addToLucene(SolrConstants.PREFIX_CMS_TEXT + field, value);
                             indexObj.addToLucene(SolrConstants.CMS_TEXT_ALL, value);
                         }
                     }
@@ -412,7 +416,7 @@ public class MetsIndexer extends Indexer {
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
-                String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
+                String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
                 Map<String, String> moreMetadata = new HashMap<>();
                 String titleField = "MD_TITLE_" + groupSuffix;
                 String sortTitleField = "SORT_TITLE_" + groupSuffix;
@@ -624,7 +628,7 @@ public class MetsIndexer extends Indexer {
                 // Remove SORT_ fields from a previous, higher up docstruct
                 Set<String> fieldsToRemove = new HashSet<>();
                 for (String fieldName : pageDoc.getFieldNames()) {
-                    if (fieldName.startsWith(SolrConstants.SORT_)) {
+                    if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                         fieldsToRemove.add(fieldName);
                     }
                 }
@@ -634,7 +638,7 @@ public class MetsIndexer extends Indexer {
                 //  Add this docstruct's SORT_* fields to page
                 if (indexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
-                        if (field.getField().startsWith(SolrConstants.SORT_)) {
+                        if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             pageDoc.addField(field.getField(), field.getValue());
                         }
                     }
@@ -711,7 +715,7 @@ public class MetsIndexer extends Indexer {
                     for (Object value : pageDoc.getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
-                } else if (fieldName.startsWith(SolrConstants.SORT_)) {
+                } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                     existingSortFieldNames.add(fieldName);
                 }
             }
@@ -721,7 +725,7 @@ public class MetsIndexer extends Indexer {
                     // Avoid duplicates (same field name + value)
                     pageDoc.addField(field.getField(), field.getValue());
                     logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), pageDoc.getFieldValue(SolrConstants.ORDER));
-                } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
+                } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !existingSortFieldNames.contains(field.getField())) {
                     // Only one instance of each SORT_ field may exist
                     pageDoc.addField(field.getField(), field.getValue());
                 }
@@ -736,7 +740,7 @@ public class MetsIndexer extends Indexer {
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.LOGID, indexObj.getLogId()));
                 shapeGmd.getFields().add(new LuceneField(FIELD_COORDS, (String) pageDoc.getFieldValue(FIELD_COORDS)));
                 shapeGmd.getFields().add(new LuceneField(FIELD_SHAPE, (String) pageDoc.getFieldValue(FIELD_SHAPE)));
-                shapeGmd.getFields().add(new LuceneField("MD_VALUE", (String) pageDoc.getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, (String) pageDoc.getFieldValue(FIELD_COORDS)));
                 // Add main value, otherwise the document will be skipped
                 shapeGmd.setMainValue((String) pageDoc.getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
@@ -1000,7 +1004,7 @@ public class MetsIndexer extends Indexer {
             doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
         }
 
-        String contentIDs = eleStructMapPhysical.getAttributeValue("CONTENTIDS");
+        String contentIDs = eleStructMapPhysical.getAttributeValue(ATTRIBUTE_CONTENTIDS);
         if (Utils.isUrn(contentIDs)) {
             doc.addField(SolrConstants.IMAGEURN, contentIDs);
         }
@@ -1134,8 +1138,8 @@ public class MetsIndexer extends Indexer {
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
                     if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup)
-                            && !doc.containsKey(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)) {
-                        doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, filePath);
+                            && !doc.containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
+                        doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
                     }
                 } else {
                     if (doc.containsKey(SolrConstants.FILENAME)) {
@@ -1471,7 +1475,9 @@ public class MetsIndexer extends Indexer {
     private void anchorMerge(IndexObject indexObj) throws IndexerException, IOException, SolrServerException, FatalIndexerException {
         logger.debug("anchorMerge: {}", indexObj.getPi());
         SolrDocumentList hits =
-                hotfolder.getSearchIndex().search(SolrConstants.PI_PARENT + ":" + indexObj.getPi() + " AND " + SolrConstants.ISWORK + ":true", null);
+                hotfolder.getSearchIndex()
+                        .search(SolrConstants.PI_PARENT + ":" + indexObj.getPi() + SolrConstants.SOLR_QUERY_AND + SolrConstants.ISWORK
+                                + SolrConstants.SOLR_QUERY_TRUE, null);
         if (hits.isEmpty()) {
             logger.warn("Anchor '{}' has no volumes, no merge needed.", indexObj.getPi());
             return;
@@ -1572,7 +1578,7 @@ public class MetsIndexer extends Indexer {
         boolean newAnchorCollections = false;
         if (hotfolder.isAddVolumeCollectionsToAnchor()) {
             List<Element> eleDmdSecList =
-                    xp.evaluateToElements("/mets:mets/mets:dmdSec[@ID='" + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']", null);
+                    xp.evaluateToElements(XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']", null);
             if (eleDmdSecList != null && !eleDmdSecList.isEmpty()) {
                 Element eleDmdSec = eleDmdSecList.get(0);
                 List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec);
@@ -1640,9 +1646,9 @@ public class MetsIndexer extends Indexer {
 
             // Set URN
             if (urnInfo.get(pi) != null) {
-                child.setAttribute("CONTENTIDS", urnInfo.get(pi));
+                child.setAttribute(ATTRIBUTE_CONTENTIDS, urnInfo.get(pi));
             } else {
-                child.removeAttribute("CONTENTIDS");
+                child.removeAttribute(ATTRIBUTE_CONTENTIDS);
             }
 
             // Normalize LOGID
@@ -1711,13 +1717,10 @@ public class MetsIndexer extends Indexer {
 
         Path updatedAnchorFile =
                 Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolder().toAbsolutePath().toString(), indexObj.getPi(), "#", extension);
-        try {
-            xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
-            if (Files.exists(updatedAnchorFile)) {
-                hotfolder.getReindexQueue().add(updatedAnchorFile);
-            }
-        } catch (IOException e) {
-            logger.error("Error while merging the anchor.", e);
+
+        xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
+        if (Files.exists(updatedAnchorFile)) {
+            hotfolder.getReindexQueue().add(updatedAnchorFile);
         }
     }
 
@@ -1761,9 +1764,9 @@ public class MetsIndexer extends Indexer {
         SolrDocumentList hits = hotfolder.getSearchIndex()
                 .search(new StringBuilder(SolrConstants.PI_PARENT).append(":")
                         .append(indexObj.getPi())
-                        .append(" AND ")
+                        .append(SolrConstants.SOLR_QUERY_AND)
                         .append(SolrConstants.ISWORK)
-                        .append(":true")
+                        .append(SolrConstants.SOLR_QUERY_TRUE)
                         .toString(), null);
         if (hits.isEmpty()) {
             logger.debug("No volume METS files found for this anchor.");
@@ -1852,7 +1855,7 @@ public class MetsIndexer extends Indexer {
                     indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
 
                     logger.debug("Added {}:{} to child element {}", field.getField(), field.getValue(), indexObj.getLogId());
-                } else if (field.getField().startsWith(SolrConstants.SORT_)) {
+                } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                     // Only one instance of each SORT_ field may exist
                     indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
                 }
