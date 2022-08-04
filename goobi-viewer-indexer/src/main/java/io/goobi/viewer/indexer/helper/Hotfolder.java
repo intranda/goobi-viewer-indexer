@@ -104,19 +104,18 @@ public class Hotfolder {
     private static final String FOLDER_SUFFIX_TXTCROWD = "_txtcrowd";
 
     private static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted! Please delete it manually!";
-    private static final String LOG_DELETED_UNSUPPORTED_FOLDER = "Deleted unsupported folder '{}'.";
     private static final String LOG_FOUND_DATA_FOLDER = "Found data folder: {}";
 
     /** Constant <code>metsEnabled=true</code> */
-    public static boolean metsEnabled = true;
+    private boolean metsEnabled = true;
     /** Constant <code>lidoEnabled=true</code> */
-    public static boolean lidoEnabled = true;
+    private boolean lidoEnabled = true;
     /** Constant <code>denkxwebEnabled=true</code> */
-    public static boolean denkxwebEnabled = true;
+    private boolean denkxwebEnabled = true;
     /** If no indexedDC folder is configured, Dublin Core indexing will be automatically disabled via this flag. */
-    public static boolean dcEnabled = true;
+    private boolean dcEnabled = true;
     /** Constant <code>worldviewsEnabled=true</code> */
-    public static boolean worldviewsEnabled = true;
+    private boolean worldviewsEnabled = true;
 
     private StringWriter swSecondaryLog;
     private WriterAppender secondaryAppender;
@@ -127,8 +126,8 @@ public class Hotfolder {
     private final Queue<Path> reindexQueue = new LinkedList<>();
 
     private int minStorageSpace = 2048;
-    public long metsFileSizeThreshold = 10485760;
-    public long dataFolderSizeThreshold = 157286400;
+    private long metsFileSizeThreshold = 10485760;
+    private long dataFolderSizeThreshold = 157286400;
 
     private Path hotfolderPath;
     private Path tempFolderPath;
@@ -143,23 +142,6 @@ public class Hotfolder {
     private boolean addVolumeCollectionsToAnchor = false;
     private boolean deleteContentFilesOnFailure = true;
     private boolean emailConfigurationComplete = false;
-
-    /** Constant <code>filterDataFile</code> */
-    public static FilenameFilter filterDataFile = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return (name.toLowerCase().endsWith(Indexer.XML_EXTENSION) || name.toLowerCase().endsWith(FILENAME_EXTENSION_DELETE)
-                    || name.toLowerCase().endsWith(FILENAME_EXTENSION_PURGE) || name.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION));
-        }
-    };
-
-    /** Constant <code>filterMediaFolder</code> */
-    public static FilenameFilter filterMediaFolder = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return (new File(dir, name).isDirectory() && (name.endsWith("_tif") || name.endsWith(FOLDER_SUFFIX_MEDIA)));
-        }
-    };
 
     /**
      * <p>
@@ -521,7 +503,6 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_MIX, false);
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleSourceFile(recordFile, false, reindexSettings);
-                        // logger.error("for the lulz");
                         checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                                 swSecondaryLog.toString());
                     } else {
@@ -962,7 +943,6 @@ public class Hotfolder {
         }
 
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
             String newMetsFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newMetsFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
@@ -997,17 +977,7 @@ public class Hotfolder {
             dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings, dataRepositoryStrategy.getAllDataRepositories());
 
             // Delete unsupported data folders
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-                for (Path path : stream) {
-                    if (path.getFileName().toString().startsWith(fileNameRoot) && Files.isDirectory(path)) {
-                        if (Utils.deleteDirectory(path)) {
-                            logger.info(LOG_DELETED_UNSUPPORTED_FOLDER, path.getFileName());
-                        } else {
-                            logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, path.toAbsolutePath());
-                        }
-                    }
-                }
-            }
+            FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
 
             // success for goobi
             Path successFile = Paths.get(success.toAbsolutePath().toString(), metsFile.getFileName().toString());
@@ -1092,7 +1062,7 @@ public class Hotfolder {
                         dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
                         break;
                     default:
-                        // nothing;
+                        // nothing
                 }
             }
         }
@@ -1103,7 +1073,7 @@ public class Hotfolder {
             dataFolders.put(DataRepository.PARAM_MEDIA, newMediaFolder);
             if (!Files.exists(newMediaFolder)) {
                 Files.createDirectory(newMediaFolder);
-                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath().toString());
+                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath());
             }
         }
 
@@ -1121,7 +1091,6 @@ public class Hotfolder {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         logger.info("File contains {} LIDO documents.", lidoDocs.size());
         XMLOutputter outputter = new XMLOutputter();
-        boolean errors = false;
         try {
             for (Document doc : lidoDocs) {
                 DataRepository dataRepository;
@@ -1138,7 +1107,6 @@ public class Hotfolder {
                     currentIndexer = null;
                 }
                 if (!Indexer.STATUS_ERROR.equals(resp[0])) {
-                    // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
                     String identifier = resp[0];
                     String newLidoFileName = identifier + ".xml";
 
@@ -1189,7 +1157,6 @@ public class Hotfolder {
                             }
                         }
                     } else {
-                        errors = true;
                         handleError(lidoFile, resp[1]);
                     }
 
@@ -1234,7 +1201,7 @@ public class Hotfolder {
             this.currentIndexer = new UsageStatisticsIndexer(this);
             ((UsageStatisticsIndexer) this.currentIndexer).index(sourceFile);
         } catch (IOException | IllegalArgumentException | FatalIndexerException e) {
-            logger.error("Error indexing file {}. Reason: {}", sourceFile, e.toString());
+            logger.error("Error indexing file {}. Reason: {}", sourceFile, e.getMessage());
         } finally {
             this.currentIndexer = null;
         }
@@ -1287,7 +1254,7 @@ public class Hotfolder {
                         dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
                         break;
                     default:
-                        // nothing;
+                        // nothing
                 }
             }
         }
@@ -1298,7 +1265,7 @@ public class Hotfolder {
             dataFolders.put(DataRepository.PARAM_MEDIA, newMediaFolder);
             if (!Files.exists(newMediaFolder)) {
                 Files.createDirectory(newMediaFolder);
-                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath().toString());
+                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath());
             }
         }
 
@@ -1310,7 +1277,6 @@ public class Hotfolder {
         List<Document> denkxwebDocs = JDomXP.splitDenkXwebFile(denkxwebFile.toFile());
         logger.info("File contains {} DenkXweb documents.", denkxwebDocs.size());
         XMLOutputter outputter = new XMLOutputter();
-        boolean errors = false;
         try {
             for (Document doc : denkxwebDocs) {
                 DataRepository dataRepository;
@@ -1535,17 +1501,7 @@ public class Hotfolder {
             dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings, dataRepositoryStrategy.getAllDataRepositories());
 
             // Delete unsupported data folders
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-                for (Path path : stream) {
-                    if (path.getFileName().toString().startsWith(fileNameRoot) && Files.isDirectory(path)) {
-                        if (Utils.deleteDirectory(path)) {
-                            logger.info(LOG_DELETED_UNSUPPORTED_FOLDER, path.getFileName());
-                        } else {
-                            logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, path.toAbsolutePath());
-                        }
-                    }
-                }
-            }
+            FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
 
             try {
                 Files.delete(dcFile);
@@ -1590,8 +1546,6 @@ public class Hotfolder {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
         String[] resp = { null, null };
         Map<String, Path> dataFolders = new HashMap<>();
-        boolean useOldPyramidTiffs = false;
-
         String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -1611,7 +1565,7 @@ public class Hotfolder {
                         dataFolders.put(DataRepository.PARAM_CMDI, path);
                         break;
                     default:
-                        // nothing;
+                        // nothing
                 }
             }
         }
@@ -1640,7 +1594,6 @@ public class Hotfolder {
         }
 
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            // String newMetsFileName = URLEncoder.encode(resp[0], "utf-8");
             String newMetsFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newMetsFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
@@ -1675,17 +1628,7 @@ public class Hotfolder {
             dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings, dataRepositoryStrategy.getAllDataRepositories());
 
             // Delete unsupported data folders
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-                for (Path path : stream) {
-                    if (path.getFileName().toString().startsWith(fileNameRoot) && Files.isDirectory(path)) {
-                        if (Utils.deleteDirectory(path)) {
-                            logger.info(LOG_DELETED_UNSUPPORTED_FOLDER, path.getFileName());
-                        } else {
-                            logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, path.toAbsolutePath());
-                        }
-                    }
-                }
-            }
+            FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
 
             // Create success file for Goobi workflow
             Path successFile = Paths.get(success.toAbsolutePath().toString(), mainFile.getFileName().toString());
@@ -1768,7 +1711,7 @@ public class Hotfolder {
         }
 
         if (dataFolders.isEmpty()) {
-            logger.info("No data folders found for '{}', file won't be processed.", dataFile.getFileName().toString());
+            logger.info("No data folders found for '{}', file won't be processed.", dataFile.getFileName());
             try {
                 Files.delete(dataFile);
             } catch (IOException e) {
@@ -1792,17 +1735,7 @@ public class Hotfolder {
             dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, new HashMap<>(), dataRepositoryStrategy.getAllDataRepositories());
 
             // Delete unsupported data folders
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-                for (Path path : stream) {
-                    if (path.getFileName().toString().startsWith(fileNameRoot) && Files.isDirectory(path)) {
-                        if (Utils.deleteDirectory(path)) {
-                            logger.info(LOG_DELETED_UNSUPPORTED_FOLDER, path.getFileName());
-                        } else {
-                            logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, path.toAbsolutePath());
-                        }
-                    }
-                }
-            }
+            FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
 
             try {
                 Files.delete(dataFile);
@@ -1875,9 +1808,6 @@ public class Hotfolder {
      * @return a boolean.
      */
     protected boolean isDataFolderExportDone(Path recordFile) {
-        //        if (logger.isDebugEnabled()) {
-        //            logger.debug("Hotfolder: Checking for ongoing export for '" + recordFile.getName() + "'...");
-        //        }
         DataFolderSizeCounter sc = new DataFolderSizeCounter(recordFile.getFileName().toString());
         hotfolderPath.toFile().listFiles(sc);
         long total1 = sc.getTotal();
@@ -1915,8 +1845,6 @@ public class Hotfolder {
 
         int count = sourceLocation.listFiles().length;
         if (count > 0) {
-            File[] currentTargetFiles = targetLocation.listFiles();
-            int origCount = currentTargetFiles != null ? currentTargetFiles.length : 0;
             FileUtils.copyDirectory(sourceLocation, targetLocation);
         }
 
@@ -1938,7 +1866,6 @@ public class Hotfolder {
             if (pathname.getName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
                 try {
                     if (pathname.isFile()) {
-                        //                    total += pathname.length();
                         total += FileUtils.sizeOf(pathname);
                     } else {
                         pathname.listFiles(this);
@@ -2083,6 +2010,20 @@ public class Hotfolder {
      */
     public SolrSearchIndex getOldSearchIndex() {
         return oldSearchIndex;
+    }
+
+    /**
+     * @return the metsFileSizeThreshold
+     */
+    public long getMetsFileSizeThreshold() {
+        return metsFileSizeThreshold;
+    }
+
+    /**
+     * @return the dataFolderSizeThreshold
+     */
+    public long getDataFolderSizeThreshold() {
+        return dataFolderSizeThreshold;
     }
 
     /**

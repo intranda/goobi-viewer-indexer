@@ -235,7 +235,7 @@ public final class SolrConstants {
     public static final String PREFIX_CMS_TEXT = "CMS_TEXT_";
     /** Constant <code>PREFIX_GROUPID="GROUPID_"</code> */
     public static final String PREFIX_GROUPID = "GROUPID_";
-    /** Constant <code>PREFIX_="MDNUM_"</code> */
+    /** Constant <code>PREFIX_="MDNUM"</code> */
     public static final String PREFIX_MDNUM = "MDNUM_";
     /** Constant <code>PREFIX_SORT_="SORT_"</code> */
     public static final String PREFIX_SORT = "SORT_";
