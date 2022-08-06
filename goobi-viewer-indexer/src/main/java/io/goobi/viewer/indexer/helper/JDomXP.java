@@ -17,7 +17,6 @@ package io.goobi.viewer.indexer.helper;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,6 +91,8 @@ public class JDomXP {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(JDomXP.class);
 
+    private static final String XPATH_TEXT = "/text()";
+
     private Document doc;
 
     /**
@@ -99,10 +100,9 @@ public class JDomXP {
      *
      * @param file a {@link java.io.File} object.
      * @throws org.jdom2.JDOMException in case of errors.
-     * @throws java.io.FileNotFoundException in case of errors.
      * @throws java.io.IOException in case of errors.
      */
-    public JDomXP(File file) throws JDOMException, FileNotFoundException, IOException {
+    public JDomXP(File file) throws JDOMException, IOException {
         try (FileInputStream fis = new FileInputStream(file)) {
             doc = XmlTools.getSAXBuilder().build(fis);
         }
@@ -147,7 +147,7 @@ public class JDomXP {
         if (expr == null) {
             throw new IllegalArgumentException("expr may not be null");
         }
-        
+
         XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
         // Add all namespaces
         for (String key : Configuration.getInstance().getNamespaces().keySet()) {
@@ -189,7 +189,7 @@ public class JDomXP {
 
         List<Object> list = evaluate(expr, parent, Filters.element());
         if (list == null) {
-            return null;
+            return Collections.emptyList();
         }
         for (Object object : list) {
             if (object instanceof Element) {
@@ -197,6 +197,7 @@ public class JDomXP {
                 retList.add(element);
             }
         }
+
         return retList;
     }
 
@@ -216,7 +217,7 @@ public class JDomXP {
         }
         List<Object> list = evaluate(expr, parent, Filters.attribute());
         if (list == null) {
-            return null;
+            return Collections.emptyList();
         }
         for (Object object : list) {
             if (object instanceof Attribute) {
@@ -224,6 +225,7 @@ public class JDomXP {
                 retList.add(attr);
             }
         }
+
         return retList;
     }
 
@@ -269,8 +271,8 @@ public class JDomXP {
             return "";
         }
         // JDOM2 requires '/text()' for string evaluation
-        if (!expr.endsWith("/text()")) {
-            expr += "/text()";
+        if (!expr.endsWith(XPATH_TEXT)) {
+            expr += XPATH_TEXT;
         }
         List<Object> list = evaluate(expr, parent, Filters.text());
         if (list == null || list.isEmpty()) {
@@ -311,13 +313,14 @@ public class JDomXP {
     public static List<String> evaluateToStringListStatic(String expr, Object parent) throws FatalIndexerException {
         List<Object> list = evaluate(expr, parent, Filters.fpassthrough());
         if (list == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<String> retList = new ArrayList<>();
         for (Object object : list) {
             retList.add(objectToString(object));
         }
+
         return retList;
     }
 
@@ -338,8 +341,8 @@ public class JDomXP {
             return "";
         }
         // JDOM2 requires '/text()' for string evaluation
-        if (!expr.endsWith("/text()")) {
-            expr += "/text()";
+        if (!expr.endsWith(XPATH_TEXT)) {
+            expr += XPATH_TEXT;
         }
         List<Object> list = evaluate(expr, parent, Filters.cdata());
         if (list == null || list.isEmpty()) {
@@ -388,9 +391,8 @@ public class JDomXP {
      * Outputs the XML document contained in this object to a file.
      *
      * @param filename a {@link java.lang.String} object.
-     * @throws java.io.IOException
      */
-    public void writeDocumentToFile(String filename) throws IOException {
+    public void writeDocumentToFile(String filename) {
         writeXmlFile(doc, filename);
     }
 
@@ -468,9 +470,7 @@ public class JDomXP {
             } else {
                 logger.warn("Unknown root element: {}", xp.doc.getRootElement().getName());
             }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        } catch (JDOMException e) {
+        } catch (IOException | JDOMException e) {
             logger.error(e.getMessage());
         }
 
@@ -498,7 +498,6 @@ public class JDomXP {
             JDomXP xp = new JDomXP(file);
             if (xp.doc.getRootElement().getName().equals("monuments")) {
                 // Multiple DenkXweb document file
-                //                Namespace nsXsi = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
                 List<Element> eleListRecord =
                         xp.doc.getRootElement().getChildren("monument", Configuration.getInstance().getNamespaces().get("denkxweb"));
                 if (eleListRecord != null) {
@@ -506,7 +505,6 @@ public class JDomXP {
                     for (Element eleDoc : eleListRecord) {
                         Document doc = new Document();
                         doc.setRootElement(eleDoc.clone());
-                        //                        doc.getRootElement().addNamespaceDeclaration(nsXsi);
                         ret.add(doc);
                     }
                     return ret;
@@ -517,9 +515,7 @@ public class JDomXP {
             } else {
                 logger.warn("Unknown root element: {}", xp.doc.getRootElement().getName());
             }
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        } catch (JDOMException e) {
+        } catch (IOException | JDOMException e) {
             logger.error(e.getMessage());
         }
 
@@ -536,10 +532,9 @@ public class JDomXP {
      * @throws java.io.IOException in case of errors
      * @throws org.jdom2.JDOMException
      * @should build document correctly
-     * @should throw FileNotFoundException if file not found
      * @return a {@link org.jdom2.Document} object.
      */
-    public static Document readXmlFile(String filePath) throws FileNotFoundException, IOException, JDOMException {
+    public static Document readXmlFile(String filePath) throws IOException, JDOMException {
         try (FileInputStream fis = new FileInputStream(new File(filePath))) {
             return XmlTools.getSAXBuilder().build(fis);
         }
@@ -558,8 +553,6 @@ public class JDomXP {
             try (FileWriterWithEncoding writer = new FileWriterWithEncoding(filePath, "UTF8")) {
                 new XMLOutputter().output(doc, writer);
                 return true;
-            } catch (FileNotFoundException e) {
-                logger.error(e.getMessage());
             } catch (IOException e) {
                 logger.error(e.getMessage());
             }
@@ -573,7 +566,6 @@ public class JDomXP {
      *
      * @param file a {@link java.io.File} object.
      * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should detect mets files correctly
      * @should detect lido files correctly
      * @should detect denkxweb files correctly
@@ -583,7 +575,7 @@ public class JDomXP {
      * @should detect tei files correctly
      * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object.
      */
-    public static FileFormat determineFileFormat(File file) throws IOException, FatalIndexerException {
+    public static FileFormat determineFileFormat(File file) throws IOException {
         try {
             JDomXP xp = new JDomXP(file);
             if (xp.doc.getRootElement() == null) {
@@ -597,7 +589,7 @@ public class JDomXP {
                 return FileFormat.LIDO;
             }
             if (xp.doc.getRootElement().getNamespace() != null
-                    && xp.doc.getRootElement().getNamespace().getURI().toString().equals("http://denkxweb.de/")) {
+                    && xp.doc.getRootElement().getNamespace().getURI().equals("http://denkxweb.de/")) {
                 return FileFormat.DENKXWEB;
             }
             if (xp.doc.getRootElement().getNamespace("dc") != null) {

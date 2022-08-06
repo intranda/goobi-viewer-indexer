@@ -38,7 +38,7 @@ public class PrimoDocument {
     
     private static final Logger logger = LoggerFactory.getLogger(PrimoDocument.class);
 
-    private static final String REGEX = "\\$\\{(.*)\\}.*$";
+    private static final String REGEX = "\\$\\{([^{}]+)\\}";
 
     private String url;
     private String identifier;
@@ -74,7 +74,7 @@ public class PrimoDocument {
             return this;
         }
 
-        Pattern p = Pattern.compile(REGEX);
+        Pattern p = Pattern.compile(REGEX);     //NOSONAR   regex save and input controlled
         Matcher m = p.matcher(url);
 
         if (!m.find()) {

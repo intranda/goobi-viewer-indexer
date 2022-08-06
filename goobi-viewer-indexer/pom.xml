@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>22.06</version>
+	<version>22.07-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -55,12 +55,12 @@
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
-		<jsoup.version>1.15.1</jsoup.version>
+		<jsoup.version>1.15.2</jsoup.version>
 		<json.version>20220320</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.18.0</metadata-extractor.version>
 		<solr.version>8.11.1</solr.version>
-		<sf-geojson.version>3.0.2</sf-geojson.version>
+		<sf-geojson.version>3.1.0</sf-geojson.version>
 		<slf4j.version>1.7.36</slf4j.version>
 	</properties>
 

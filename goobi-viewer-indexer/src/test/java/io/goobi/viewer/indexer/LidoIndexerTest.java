@@ -161,7 +161,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", mdList.get(0));
             }
             {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_TITLE" + SolrConstants._UNTOKENIZED);
+                List<String> mdList = (List<String>) doc.getFieldValue("MD_TITLE" + SolrConstants.SUFFIX_UNTOKENIZED);
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", mdList.get(0));
@@ -265,7 +265,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     Assert.assertEquals("Herstellung", mdList.get(0));
                 }
                 {
-                    List<String> mdList = (List<String>) doc.getFieldValue("MD_EVENTNAME" + SolrConstants._UNTOKENIZED);
+                    List<String> mdList = (List<String>) doc.getFieldValue("MD_EVENTNAME" + SolrConstants.SUFFIX_UNTOKENIZED);
                     Assert.assertNotNull(mdList);
                     Assert.assertEquals(1, mdList.size());
                     Assert.assertEquals("Herstellung", mdList.get(0));
@@ -277,7 +277,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     Assert.assertEquals("Papier, schwarz-weiß", mdList.get(0));
                 }
                 {
-                    List<String> mdList = (List<String>) doc.getFieldValue("MD_MATERIAL" + SolrConstants._UNTOKENIZED);
+                    List<String> mdList = (List<String>) doc.getFieldValue("MD_MATERIAL" + SolrConstants.SUFFIX_UNTOKENIZED);
                     Assert.assertNotNull(mdList);
                     Assert.assertEquals(1, mdList.size());
                     Assert.assertEquals("Papier, schwarz-weiß", mdList.get(0));
@@ -286,7 +286,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEAR);
                     Assert.assertNotNull(mdList);
                     Assert.assertEquals(3, mdList.size());
-                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEAR));
+                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR));
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);

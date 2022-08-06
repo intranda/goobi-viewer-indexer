@@ -50,6 +50,10 @@ public class Version {
     public final static String BUILDVERSION;
     /** Constant <code>BUILDDATE</code> */
     public final static String BUILDDATE;
+    
+    private Version() {
+        //
+    }
 
     static {
         String manifest = getManifestStringFromJar();

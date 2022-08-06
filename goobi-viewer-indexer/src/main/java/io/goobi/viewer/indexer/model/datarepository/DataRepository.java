@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.StringConstants;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 
@@ -94,8 +95,6 @@ public class DataRepository {
     public static final String PARAM_MIX = "mixFolder";
     /** Constant <code>PARAM_ANNOTATIONS="annotationFolder"</code> */
     public static final String PARAM_ANNOTATIONS = "annotationFolder";
-
-    //    public static int dataRepositoriesMaxRecords = 10000;
 
     private boolean valid = false;
     private String path;
@@ -459,15 +458,15 @@ public class DataRepository {
                     logger.info("Copied {} files to repository directory: {}", copied, newDataDir.toAbsolutePath());
                 }
                 if (Utils.deleteDirectory(oldDataFolder)) {
-                    logger.info("Old repository directory deleted: {}", oldDataFolder.toString());
+                    logger.info("Old repository directory deleted: {}", oldDataFolder);
                 } else {
-                    logger.warn("Could not delete old repository directory: {}", oldDataFolder.toString());
+                    logger.warn("Could not delete old repository directory: {}", oldDataFolder);
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
         } else {
-            logger.debug("{} does not exist.", oldDataFolder.toAbsolutePath().toString());
+            logger.debug("{} does not exist.", oldDataFolder.toAbsolutePath());
         }
     }
 
@@ -538,7 +537,7 @@ public class DataRepository {
         }
 
         if ((reindexSettings == null || reindexSettings.get(param) == null || !reindexSettings.get(param)) && dataFolders.get(param) != null) {
-            logger.info("Deleting data folder: {}", dataFolders.get(param).toAbsolutePath().toString());
+            logger.info("Deleting data folder: {}", dataFolders.get(param).toAbsolutePath());
             Utils.deleteDirectory(dataFolders.get(param));
         }
     }
@@ -551,10 +550,9 @@ public class DataRepository {
      * @param reindexSettings Boolean map for data folders which are mapped for re-indexing (i.e. no new data folder in the hotfolder)
      * @param dataRepositories a {@link java.util.List} object.
      * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void copyAndDeleteAllDataFolders(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings,
-            List<DataRepository> dataRepositories) throws IOException, FatalIndexerException {
+            List<DataRepository> dataRepositories) throws IOException {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
@@ -605,10 +603,9 @@ public class DataRepository {
      * @param dataRepositories a {@link java.util.List} object.
      * @return Number of copied files
      * @throws java.io.IOException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public int checkCopyAndDeleteDataFolder(String pi, Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings, String param,
-            List<DataRepository> dataRepositories) throws IOException, FatalIndexerException {
+            List<DataRepository> dataRepositories) throws IOException {
         if (param == null) {
             throw new IllegalArgumentException("param may not be null");
         }
@@ -622,7 +619,7 @@ public class DataRepository {
                     Path misplacedDataDir = Paths.get(repo.getDir(param).toAbsolutePath().toString(), pi);
                     if (Files.isDirectory(misplacedDataDir)) {
                         logger.warn("Found data folder for this record in different data repository: {}",
-                                misplacedDataDir.toAbsolutePath().toString());
+                                misplacedDataDir.toAbsolutePath());
                         logger.warn("Moving data folder to new repository...");
                         repo.moveDataFolderToRepository(this, pi, param);
                     }
@@ -657,12 +654,12 @@ public class DataRepository {
 
         int counter = 0;
         if (!DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER.equals(paramName)) {
-            logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath().toString());
+            logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath());
             counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
             logger.info("{} {} files copied.", counter, paramName);
         }
         if (!Utils.deleteDirectory(srcFolder)) {
-            logger.warn("'{}' could not be deleted.", srcFolder.toAbsolutePath());
+            logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, srcFolder.toAbsolutePath());
         }
 
         return counter;
@@ -721,7 +718,7 @@ public class DataRepository {
                                 Paths.get(repo.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), identifier);
                         if (Files.isDirectory(misplacedDataDir)) {
                             logger.warn("Found data folder for this record in different data repository: {}",
-                                    misplacedDataDir.toAbsolutePath().toString());
+                                    misplacedDataDir.toAbsolutePath());
                             logger.warn("Moving data folder to new repository...");
                             repo.moveDataFolderToRepository(this, identifier, DataRepository.PARAM_MEDIA);
                         }
@@ -773,7 +770,7 @@ public class DataRepository {
         if (dataRepository != null && !Paths.get(dataRepository).isAbsolute()) {
             logger.warn("Data repository value type is deprecated: {}", dataRepository);
             dataRepository = Configuration.getInstance().getViewerHome() + "/data/" + dataRepository;
-            dataRepository = dataRepository.replaceAll("//", "/");
+            dataRepository = dataRepository.replace("//", "/");
             logger.warn("Assuming absolute path to be: {}", dataRepository);
         }
 

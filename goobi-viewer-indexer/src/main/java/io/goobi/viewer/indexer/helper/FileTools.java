@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -29,12 +28,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -57,14 +60,18 @@ public class FileTools {
 
     private static final Logger logger = LoggerFactory.getLogger(FileTools.class);
 
+    /** Private constructor. */
+    private FileTools() {
+        //
+    }
+
     /** Constant <code>filenameFilterXML</code> */
-    public static FilenameFilter filenameFilterXML = new FilenameFilter() {
+    public static final FilenameFilter filenameFilterXML = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
             return "xml".equals(FilenameUtils.getExtension(name.toLowerCase()));
         }
     };
-
 
     /**
      * Reads a String from a byte array
@@ -80,21 +87,17 @@ public class FileTools {
             encoding = TextHelper.DEFAULT_CHARSET;
         }
 
-        Scanner scanner = null;
         StringBuilder text = new StringBuilder();
-        String NL = System.getProperty("line.separator");
-        try {
-            scanner = new Scanner(new ByteArrayInputStream(bytes), encoding);
+        String nl = System.getProperty("line.separator");
+        try (Scanner scanner = new Scanner(new ByteArrayInputStream(bytes), encoding);) {
             while (scanner.hasNextLine()) {
-                text.append(scanner.nextLine()).append(NL);
+                text.append(scanner.nextLine()).append(nl);
             }
-        } finally {
-            scanner.close();
         }
         result = text.toString();
         return result.trim();
     }
-    
+
     /**
      * <p>
      * readFileToString.
@@ -102,13 +105,12 @@ public class FileTools {
      *
      * @param file a {@link java.io.File} object.
      * @param convertFileToCharset a {@link java.lang.String} object.
-     * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @should read file correctly
      * @should throw IOException if file not found
      * @return a {@link java.lang.String} object.
      */
-    public static String readFileToString(File file, String convertFileToCharset) throws FileNotFoundException, IOException {
+    public static String readFileToString(File file, String convertFileToCharset) throws IOException {
         StringBuilder sb = new StringBuilder();
         logger.trace("readFileToString: {}", file.getAbsolutePath());
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -142,7 +144,7 @@ public class FileTools {
 
         return sb.toString();
     }
-    
+
     /**
      * Uses ICU4J to determine the charset of the given InputStream.
      *
@@ -193,15 +195,16 @@ public class FileTools {
     }
 
     /**
-     * <p>decompressGzipFile.</p>
+     * <p>
+     * decompressGzipFile.
+     * </p>
      *
      * @param gzipFile a {@link java.io.File} object.
      * @param newFile a {@link java.io.File} object.
-     * @throws java.io.FileNotFoundException
      * @throws java.io.IOException if file not found
      * @should throw FileNotFoundException if file not found
      */
-    public static void decompressGzipFile(File gzipFile, File newFile) throws FileNotFoundException, IOException {
+    public static void decompressGzipFile(File gzipFile, File newFile) throws IOException {
         try (FileInputStream fis = new FileInputStream(gzipFile); GZIPInputStream gis = new GZIPInputStream(fis);
                 FileOutputStream fos = new FileOutputStream(newFile)) {
             byte[] buffer = new byte[1024];
@@ -213,15 +216,16 @@ public class FileTools {
     }
 
     /**
-     * <p>compressGzipFile.</p>
+     * <p>
+     * compressGzipFile.
+     * </p>
      *
      * @param file a {@link java.io.File} object.
      * @param gzipFile a {@link java.io.File} object.
-     * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @should throw FileNotFoundException if file not found
      */
-    public static void compressGzipFile(File file, File gzipFile) throws FileNotFoundException, IOException {
+    public static void compressGzipFile(File file, File gzipFile) throws IOException {
         try (FileInputStream fis = new FileInputStream(file); FileOutputStream fos = new FileOutputStream(gzipFile);
                 GZIPOutputStream gzipOS = new GZIPOutputStream(fos)) {
             byte[] buffer = new byte[1024];
@@ -233,16 +237,17 @@ public class FileTools {
     }
 
     /**
-     * <p>compressZipFile.</p>
+     * <p>
+     * compressZipFile.
+     * </p>
      *
      * @param files a {@link java.util.List} object.
      * @param zipFile a {@link java.io.File} object.
      * @param level a {@link java.lang.Integer} object.
-     * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @should throw FileNotFoundException if file not found
      */
-    public static void compressZipFile(List<File> files, File zipFile, Integer level) throws FileNotFoundException, IOException {
+    public static void compressZipFile(List<File> files, File zipFile, Integer level) throws IOException {
         if (files == null || files.isEmpty()) {
             throw new IllegalArgumentException("files may not be empty or null");
         }
@@ -268,16 +273,17 @@ public class FileTools {
     }
 
     /**
-     * <p>compressZipFile.</p>
+     * <p>
+     * compressZipFile.
+     * </p>
      *
+     * @param contentMap a {@link java.util.Map} object.
      * @param zipFile a {@link java.io.File} object.
      * @param level a {@link java.lang.Integer} object.
-     * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @should throw FileNotFoundException if file not found
-     * @param contentMap a {@link java.util.Map} object.
      */
-    public static void compressZipFile(Map<Path, String> contentMap, File zipFile, Integer level) throws FileNotFoundException, IOException {
+    public static void compressZipFile(Map<Path, String> contentMap, File zipFile, Integer level) throws IOException {
         if (contentMap == null || contentMap.isEmpty()) {
             throw new IllegalArgumentException("texts may not be empty or null");
         }
@@ -289,9 +295,9 @@ public class FileTools {
             if (level != null) {
                 zos.setLevel(level);
             }
-            for (Path path : contentMap.keySet()) {
-                try (InputStream in = IOUtils.toInputStream(contentMap.get(path))) {
-                    zos.putNextEntry(new ZipEntry(path.getFileName().toString()));
+            for (Entry<Path, String> entry : contentMap.entrySet()) {
+                try (InputStream in = IOUtils.toInputStream(entry.getValue(), StandardCharsets.UTF_8)) {
+                    zos.putNextEntry(new ZipEntry(entry.getKey().getFileName().toString()));
                     byte[] buffer = new byte[1024];
                     int len;
                     while ((len = in.read(buffer)) != -1) {
@@ -303,12 +309,14 @@ public class FileTools {
     }
 
     /**
-     * <p>checkPathExistance.</p>
+     * <p>
+     * checkPathExistance.
+     * </p>
      *
      * @param path a {@link java.nio.file.Path} object.
      * @param create a boolean.
+     * @return true if folder found or created; false if not found
      * @throws java.io.IOException
-     * @return a boolean.
      */
     public static boolean checkPathExistance(Path path, boolean create) throws IOException {
         if (path == null) {
@@ -320,15 +328,17 @@ public class FileTools {
         }
         if (create) {
             Files.createDirectory(path);
-            logger.info("Created folder: {}", path.toAbsolutePath().toString());
+            logger.info("Created folder: {}", path.toAbsolutePath());
             return true;
         }
-        logger.error("Folder not found: {}", path.toAbsolutePath().toString());
+        logger.error("Folder not found: {}", path.toAbsolutePath());
         return false;
     }
 
     /**
-     * <p>copyStream.</p>
+     * <p>
+     * copyStream.
+     * </p>
      *
      * @param output a {@link java.io.OutputStream} object.
      * @param input a {@link java.io.InputStream} object.
@@ -343,7 +353,9 @@ public class FileTools {
     }
 
     /**
-     * <p>isFolderEmpty.</p>
+     * <p>
+     * isFolderEmpty.
+     * </p>
      *
      * @param folder a {@link java.nio.file.Path} object.
      * @return true if folder empty; false otherwise
@@ -355,4 +367,31 @@ public class FileTools {
         }
     }
 
+    /**
+     * 
+     * @param hotfolderPath
+     * @param fileNameRoot
+     * @throws IOException
+     * @should only delete folders that match fileNameRoot
+     */
+    public static void deleteUnsupportedDataFolders(Path hotfolderPath, String fileNameRoot) throws IOException {
+        Pattern p = Pattern.compile(fileNameRoot + "_[a-z]+");
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                Matcher m = p.matcher(entry.getFileName().toString());
+                return m.matches();
+            }
+        })) {
+            for (Path path : stream) {
+                if (Files.isDirectory(path)) {
+                    if (Utils.deleteDirectory(path)) {
+                        logger.info("Deleted unsupported folder '{}'.", path.getFileName());
+                    } else {
+                        logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, path.toAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
 }

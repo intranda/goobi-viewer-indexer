@@ -106,7 +106,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
         Assert.assertNotNull(doc);
         Assert.assertEquals("123456", doc.getFieldValue(SolrConstants.IDDOC));
         Long timestamp = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
@@ -114,7 +114,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(timestamp, doc.getFieldValue(SolrConstants.DATEUPDATED));
         Assert.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
         Assert.assertEquals("id10T", doc.getFieldValue(SolrConstants.PI));
-        Assert.assertEquals(SolrConstants.GROUPID_ + "TEST", doc.getFieldValue(SolrConstants.GROUPTYPE));
+        Assert.assertEquals(SolrConstants.PREFIX_GROUPID + "TEST", doc.getFieldValue(SolrConstants.GROUPTYPE));
         Assert.assertEquals("shelfmark", doc.getFieldValue("MD_SHELFMARK"));
         Assert.assertEquals("title", doc.getFieldValue("MD_TITLE"));
     }
@@ -128,7 +128,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "old_shelfmark");
         moreMetadata.put("MD_TITLE", "old_title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
         Assert.assertNotNull(doc);
         searchIndex.writeToIndex(doc);
         searchIndex.commit(false);
@@ -136,14 +136,14 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "new_shelfmark");
         moreMetadata.put("MD_TITLE", "new_title");
-        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
         Assert.assertNotNull(doc2);
         Assert.assertEquals(doc.getFieldValue(SolrConstants.IDDOC), doc2.getFieldValue(SolrConstants.IDDOC));
         Assert.assertEquals(doc.getFieldValue(SolrConstants.DATECREATED), doc2.getFieldValue(SolrConstants.DATECREATED));
         Assert.assertNotEquals(doc.getFieldValue(SolrConstants.DATEUPDATED), doc2.getFieldValue(SolrConstants.DATEUPDATED));
         Assert.assertEquals(DocType.GROUP.name(), doc2.getFieldValue(SolrConstants.DOCTYPE));
         Assert.assertEquals("id10T", doc2.getFieldValue(SolrConstants.PI));
-        Assert.assertEquals(SolrConstants.GROUPID_ + "TEST", doc2.getFieldValue(SolrConstants.GROUPTYPE));
+        Assert.assertEquals(SolrConstants.PREFIX_GROUPID + "TEST", doc2.getFieldValue(SolrConstants.GROUPTYPE));
         Assert.assertEquals("new_shelfmark", doc2.getFieldValue("MD_SHELFMARK"));
         Assert.assertEquals("new_title", doc2.getFieldValue("MD_TITLE"));
     }
@@ -157,7 +157,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
         Assert.assertNotNull(doc);
         Assert.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
         String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
@@ -173,7 +173,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void checkAndCreateGroupDoc_shouldAddAccessConditions() throws Exception {
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.GROUPID_ + "TEST", "id10T", null, 123456L);
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, 123456L);
         Assert.assertNotNull(doc);
         Assert.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
     }
@@ -195,7 +195,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
             doc.addField("MD_FULLTEXT", "fulltext");
             doc.addField(SolrConstants.DATEUPDATED, System.currentTimeMillis());
             doc.addField(SolrConstants.PI_TOPSTRUCT, "PPN123");
-            Assert.assertTrue(searchIndex.writeToIndex(doc));
+            searchIndex.writeToIndex(doc);
             searchIndex.commit(false);
         }
         {
@@ -219,7 +219,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
                 update.put("add", System.currentTimeMillis());
                 partialUpdates.put(SolrConstants.DATEUPDATED, update);
             }
-            Assert.assertTrue(searchIndex.updateDoc(doc, partialUpdates));
+            searchIndex.updateDoc(doc, partialUpdates);
         }
         {
             // Fetch and check updated doc

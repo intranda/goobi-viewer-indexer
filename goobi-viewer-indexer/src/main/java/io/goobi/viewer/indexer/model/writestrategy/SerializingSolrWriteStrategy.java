@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -48,6 +50,7 @@ import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
 /**
  * <p>
@@ -58,8 +61,6 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final Logger logger = LoggerFactory.getLogger(SerializingSolrWriteStrategy.class);
-
-    private static final String ENCODING_UTF8 = "UTF8";
 
     private SolrSearchIndex searchIndex;
     private Path tempFolder;
@@ -134,7 +135,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         if (doc.getField(SolrConstants.FULLTEXT) != null) {
             String text = (String) doc.getFieldValue(SolrConstants.FULLTEXT);
             try {
-                FileUtils.writeStringToFile(new File(tempFolder.toFile(), iddoc + "_" + SolrConstants.FULLTEXT), text, ENCODING_UTF8);
+                FileUtils.writeStringToFile(new File(tempFolder.toFile(), iddoc + "_" + SolrConstants.FULLTEXT), text, StandardCharsets.UTF_8.name());
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
@@ -199,8 +200,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         if (order > 0) {
             String iddoc = pageDocOrderIddocMap.get(order);
             if (iddoc != null) {
-                SolrInputDocument doc = load(iddoc);
-                return doc;
+                return load(iddoc);
             }
         }
 
@@ -287,7 +287,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                             writePageDoc(order, rootDoc, aggregateRecords);
                         } catch (FatalIndexerException e) {
                             logger.error(e.getMessage());
-                        } finally {
                         }
                     }
                 };
@@ -295,9 +294,9 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             }
             executor.shutdown();
             while (!executor.isTerminated()) {
+                //
             }
         } else {
-            int newOrder = 1;
             for (final int order : orderList) {
                 writePageDoc(order, rootDoc, aggregateRecords);
             }
@@ -331,7 +330,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             return;
         }
         // Do not add shape docs
-        if ("SHAPE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))) {
+        if (DocType.SHAPE.name().equals(doc.getFieldValue(SolrConstants.DOCTYPE))) {
             return;
         }
 
@@ -339,7 +338,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                 new StringBuilder().append(iddoc).append("_").append(SolrConstants.FULLTEXT).toString());
         if (Files.isRegularFile(xmlFile)) {
             try {
-                String xml = FileUtils.readFileToString(xmlFile.toFile(), "UTF8");
+                String xml = FileUtils.readFileToString(xmlFile.toFile(), StandardCharsets.UTF_8.name());
                 doc.addField(SolrConstants.FULLTEXT, xml);
 
                 // Add the child doc's FULLTEXT values to the SUPERFULLTEXT value of the root doc
@@ -353,9 +352,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
 
         checkAndAddAccessCondition(doc);
-        if (!searchIndex.writeToIndex(doc)) {
-            logger.error(doc.toString());
-        }
+        searchIndex.writeToIndex(doc);
     }
 
     /* (non-Javadoc)
@@ -366,12 +363,11 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     public void cleanup() {
         List<String> allIddocs = new ArrayList<>(docIddocs.size() + pageDocPhysIdIddocMap.size());
         allIddocs.addAll(docIddocs);
-        for (int order : pageDocOrderIddocMap.keySet()) {
-            allIddocs.add(pageDocOrderIddocMap.get(order));
+        for (Entry<Integer, String> entry : pageDocOrderIddocMap.entrySet()) {
+            allIddocs.add(entry.getValue());
         }
 
         logger.info("Removing temp files...");
-        //        allIddocs.parallelStream().forEach(iddoc -> removeTempFilesForIddoc(iddoc));
         for (String iddoc : allIddocs) {
             removeTempFilesForIddoc(iddoc);
         }
@@ -407,13 +403,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                     deleteTempFile(tempXmlFile);
                 }
             }
-            //            {
-            //                Path tempXmlFile = Paths.get(tempFolder.toAbsolutePath().toString(), new StringBuilder().append(iddoc).append("_").append(
-            //                        SolrConstants.PAGEURNS).toString());
-            //                if (Files.isRegularFile(tempXmlFile)) {
-            //                    deleteTempFile(tempXmlFile);
-            //                }
-            //            }
         }
     }
 
@@ -435,8 +424,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         logger.debug("Loading '{}'...", fileName);
         Path file = Paths.get(tempFolder.toAbsolutePath().toString(), fileName);
         try (FileInputStream fis = new FileInputStream(file.toFile()); ObjectInputStream ois = new ObjectInputStream(fis)) {
-            SolrInputDocument doc = (SolrInputDocument) ois.readObject();
-            return doc;
+            return (SolrInputDocument) ois.readObject();
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getMessage(), e);
         } catch (FileNotFoundException e) {

@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
-import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
 /**
  * <p>
@@ -182,7 +182,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         for (int order : pageOrderMap.keySet()) {
             SolrInputDocument pageDoc = pageOrderMap.get(order);
             // Do not add shape docs
-            if ("SHAPE".equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+            if (DocType.SHAPE.name().equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 continue;
             }
             checkAndAddAccessCondition(pageDoc);

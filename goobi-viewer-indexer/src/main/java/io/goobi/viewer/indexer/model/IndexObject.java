@@ -192,7 +192,6 @@ public class IndexObject {
 
         // Add index fields
         for (String s : getAccessConditions()) {
-            // logger.debug("Writing access condition '" + s + "' to " + getIddoc());
             addToLucene(SolrConstants.ACCESSCONDITION, s);
         }
     }
@@ -230,7 +229,7 @@ public class IndexObject {
         }
         // Add latest DATEUPDATED value as SORT_DATEUPDATED
         if (latestDateUpdated > 0) {
-            addToLucene(SolrConstants.SORT_ + SolrConstants.DATEUPDATED, String.valueOf(latestDateUpdated));
+            addToLucene(SolrConstants.PREFIX_SORT + SolrConstants.DATEUPDATED, String.valueOf(latestDateUpdated));
         }
 
         // DATEINDEXED
@@ -251,9 +250,9 @@ public class IndexObject {
         if (languages.isEmpty()) {
             Set<String> languageSet = new HashSet<>();
             for (LuceneField field : luceneFields) {
-                if (field.getField().contains(SolrConstants._LANG_)) {
+                if (field.getField().contains(SolrConstants.MIXFIX_LANG)) {
                     String lang = field.getField()
-                            .substring(field.getField().lastIndexOf(SolrConstants._LANG_) + SolrConstants._LANG_.length())
+                            .substring(field.getField().lastIndexOf(SolrConstants.MIXFIX_LANG) + SolrConstants.MIXFIX_LANG.length())
                             .toLowerCase();
                     languageSet.add(lang);
                 }
@@ -401,7 +400,7 @@ public class IndexObject {
      * @should collect group id fields correctly
      */
     protected void addToGroupIds(String field, String value) {
-        if (field == null || value == null || !field.startsWith(SolrConstants.GROUPID_)) {
+        if (field == null || value == null || !field.startsWith(SolrConstants.PREFIX_GROUPID)) {
             return;
         }
         if (groupIds.get(field) == null) {
@@ -442,13 +441,12 @@ public class IndexObject {
      * Adds regular and grouped metadata fields from the given list of <code>IndexObject</code>s to this object.
      * 
      * @param childObjectList
-     * @throws FatalIndexerException
      * @should add regular metadata correctly
      * @should add grouped metadata correctly
      * @should avoid regular metadata duplicates
      * @should avoid grouped metadata duplicates
      */
-    public void addChildMetadata(List<IndexObject> childObjectList) throws FatalIndexerException {
+    public void addChildMetadata(List<IndexObject> childObjectList) {
         if (childObjectList == null || childObjectList.isEmpty()) {
             return;
         }
@@ -466,10 +464,10 @@ public class IndexObject {
                     if (!childObj.getFieldsToInheritToParents().contains(field.getField())) {
                         continue;
                     }
-                    addToLucene(field.clone(), true);
+                    addToLucene(new LuceneField(field), true);
                     // Pass the info about inheritance up the hierarchy
                     fieldsToInheritToParents.add(field.getField());
-                    logger.debug("Added field: {}", field.toString());
+                    logger.debug("Added field: {}", field);
                 }
             }
             // Add child element's grouped metadata fields
@@ -481,7 +479,7 @@ public class IndexObject {
                     }
                     // Only add new instance if not a duplicate
                     if (!groupedMetadataFields.contains(field)) {
-                        groupedMetadataFields.add(field.clone());
+                        groupedMetadataFields.add(new GroupedMetadata(field));
                         count++;
                     }
                     // Pass the info about inheritance up the hierarchy

@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -51,27 +52,27 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
     public static ISolrWriteStrategy create(Path sourceFile, Map<String, Path> dataFolders, Hotfolder hotfolder) throws IOException {
         boolean useSerializingStrategy = false;
         long size = sourceFile != null ? Files.size(sourceFile) : 0;
-        if (size >= hotfolder.metsFileSizeThreshold) {
+        if (size >= hotfolder.getMetsFileSizeThreshold()) {
             useSerializingStrategy = true;
             logger.info("Source file '{}' is {} bytes, using a slower Solr write strategy to avoid memory overflows.", sourceFile.getFileName(),
                     size);
         } else {
-            for (String key : dataFolders.keySet()) {
-                switch (key) {
+            for (Entry<String, Path> entry : dataFolders.entrySet()) {
+                switch (entry.getKey()) {
                     case DataRepository.PARAM_ALTO:
                     case DataRepository.PARAM_ALTOCROWD:
                     case DataRepository.PARAM_FULLTEXT:
                     case DataRepository.PARAM_FULLTEXTCROWD:
                     case DataRepository.PARAM_ABBYY:
                     case DataRepository.PARAM_TEIWC:
-                        Path dataFolder = dataFolders.get(key);
+                        Path dataFolder = entry.getValue();
                         if (dataFolder != null) {
                             // Files.size() does not work with directories, so use FileUtils
                             long dataFolderSize = FileUtils.sizeOfDirectory(dataFolder.toFile());
-                            if (dataFolderSize >= hotfolder.dataFolderSizeThreshold) {
+                            if (dataFolderSize >= hotfolder.getDataFolderSizeThreshold()) {
                                 useSerializingStrategy = true;
                                 logger.info("Data folder '{}' is {} bytes, using a slower Solr write strategy to avoid memory overflows.",
-                                        dataFolder.toAbsolutePath().toString(), dataFolderSize);
+                                        dataFolder.toAbsolutePath(), dataFolderSize);
                                 break;
                             }
                         }
@@ -113,22 +114,21 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
 
         Map<String, Object> fieldsToTrim = new HashMap<>();
         for (String field : doc.getFieldNames()) {
-            if (SolrConstants.DATECREATED.equals(field) || field.startsWith("BOOL_")) {
-                if (doc.getFieldValues(field) != null && doc.getFieldValues(field).size() > 1) {
-                    Object firstValue = doc.getFieldValues(field).iterator().next();
-                    if (firstValue != null) {
-                        fieldsToTrim.put(field, firstValue);
-                    }
-                    logger.info("Sanitized multiple values found on single-valued field: {}", field);
+            if ((SolrConstants.DATECREATED.equals(field) || field.startsWith("BOOL_")) && doc.getFieldValues(field) != null
+                    && doc.getFieldValues(field).size() > 1) {
+                Object firstValue = doc.getFieldValues(field).iterator().next();
+                if (firstValue != null) {
+                    fieldsToTrim.put(field, firstValue);
                 }
+                logger.info("Sanitized multiple values found on single-valued field: {}", field);
             }
         }
         if (fieldsToTrim.isEmpty()) {
             return;
         }
-        for (String field : fieldsToTrim.keySet()) {
-            doc.removeField(field);
-            doc.addField(field, fieldsToTrim.get(field));
+        for (Entry<String, Object> entry : fieldsToTrim.entrySet()) {
+            doc.removeField(entry.getKey());
+            doc.addField(entry.getKey(), fieldsToTrim.get(entry.getKey()));
         }
 
     }

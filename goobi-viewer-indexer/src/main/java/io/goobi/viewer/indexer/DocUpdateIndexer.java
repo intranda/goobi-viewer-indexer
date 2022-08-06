@@ -16,7 +16,6 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -61,7 +60,7 @@ public class DocUpdateIndexer extends Indexer {
     private static final Logger logger = LoggerFactory.getLogger(DocUpdateIndexer.class);
 
     /** Constant <code>FILE_EXTENSION=".docupdate"</code> */
-    public static String FILE_EXTENSION = ".docupdate";
+    public static final String FILE_EXTENSION = ".docupdate";
 
     /**
      * Constructor.
@@ -87,7 +86,7 @@ public class DocUpdateIndexer extends Indexer {
 
     @SuppressWarnings("unchecked")
     public String[] index(Path dataFile, Map<String, Path> dataFolders) throws FatalIndexerException {
-        String[] ret = { "ERROR", null };
+        String[] ret = { STATUS_ERROR, null };
         String baseFileName = FilenameUtils.getBaseName(dataFile.getFileName().toString());
         String[] fileNameSplit = baseFileName.split("#");
         if (fileNameSplit.length < 2) {
@@ -147,12 +146,12 @@ public class DocUpdateIndexer extends Indexer {
             order = (int) doc.getFieldValue(SolrConstants.ORDER);
             anchorPi = (String) doc.getFieldValue(SolrConstants.PI_ANCHOR);
             for (String fieldName : doc.getFieldNames()) {
-                if (fieldName.startsWith(SolrConstants.GROUPID_)) {
+                if (fieldName.startsWith(SolrConstants.PREFIX_GROUPID)) {
                     groupIds.put(fieldName, (String) doc.getFieldValue(fieldName));
                 }
             }
-            String pageFileName = doc.containsKey(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
-                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
+            String pageFileName = doc.containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
+                    ? (String) doc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
                 ret[1] = "Document " + iddoc + " contains no " + SolrConstants.FILENAME + " field, please checks the index.";
@@ -174,7 +173,7 @@ public class DocUpdateIndexer extends Indexer {
                             String content = FileTools.readFileToString(file, null);
                             Map<String, Object> update = new HashMap<>();
                             update.put("set", TextHelper.cleanUpHtmlTags(content));
-                            partialUpdates.put(SolrConstants.CMS_TEXT_ + field, update);
+                            partialUpdates.put(SolrConstants.PREFIX_CMS_TEXT + field, update);
                             partialUpdates.put(SolrConstants.CMS_TEXT_ALL, update);
 
                         }
@@ -211,15 +210,13 @@ public class DocUpdateIndexer extends Indexer {
 
                             Path altoFile = Paths.get(repositoryPath.toAbsolutePath().toString(), altoFileName);
                             Utils.checkAndCreateDirectory(altoFile.getParent());
-                            FileUtils.writeStringToFile(altoFile.toFile(), (String) altoData.get(SolrConstants.ALTO), "UTF-8");
+                            FileUtils.writeStringToFile(altoFile.toFile(), (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
                             String fulltext = ((String) altoData.get(SolrConstants.FULLTEXT)).trim();
-                            {
-                                Map<String, Object> update = new HashMap<>();
-                                update.put("set", Jsoup.parse(fulltext).text());
-                                partialUpdates.put(SolrConstants.FULLTEXT, update);
-                            }
+                            Map<String, Object> update = new HashMap<>();
+                            update.put("set", Jsoup.parse(fulltext).text());
+                            partialUpdates.put(SolrConstants.FULLTEXT, update);
                         }
 
                     }
@@ -259,15 +256,17 @@ public class DocUpdateIndexer extends Indexer {
                         }
                         Path fulltextFile = Paths.get(repositoryPath.toAbsolutePath().toString(), fulltextFileName);
                         Utils.checkAndCreateDirectory(fulltextFile.getParent());
-                        FileUtils.writeStringToFile(fulltextFile.toFile(), fulltext, "UTF-8");
+                        FileUtils.writeStringToFile(fulltextFile.toFile(), fulltext, TextHelper.DEFAULT_CHARSET);
                     }
                 }
             }
 
             // Remove old UGC
-            query = SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order;
+            query = SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + SolrConstants.SOLR_QUERY_AND + SolrConstants.ORDER
+                    + ":" + order;
             SolrDocumentList ugcDocList = hotfolder.getSearchIndex()
-                    .search(SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + " AND " + SolrConstants.ORDER + ":" + order,
+                    .search(SolrConstants.DOCTYPE + ":UGC AND " + SolrConstants.PI_TOPSTRUCT + ":" + pi + SolrConstants.SOLR_QUERY_AND
+                            + SolrConstants.ORDER + ":" + order,
                             Collections.singletonList(SolrConstants.IDDOC));
             if (ugcDocList != null && !ugcDocList.isEmpty()) {
                 // Collect delete old UGC docs for deletion
@@ -312,10 +311,7 @@ public class DocUpdateIndexer extends Indexer {
 
             if (!partialUpdates.isEmpty()) {
                 // Update doc (only if partialUpdates is not empty, otherwise all fields but IDDOC will be deleted!)
-                if (!hotfolder.getSearchIndex().updateDoc(doc, partialUpdates)) {
-                    ret[1] = "Could not update document for IDDOC=" + iddoc;
-                    return ret;
-                }
+                hotfolder.getSearchIndex().updateDoc(doc, partialUpdates);
             } else {
                 // Otherwise just commit the new UGC docs
                 hotfolder.getSearchIndex().commit(false);
@@ -326,7 +322,7 @@ public class DocUpdateIndexer extends Indexer {
         } catch (IOException | SolrServerException e) {
             logger.error("Indexing of IDDOC={} could not be finished due to an error.", iddoc);
             logger.error(e.getMessage(), e);
-            ret[0] = "ERROR";
+            ret[0] = STATUS_ERROR;
             ret[1] = e.getMessage();
             hotfolder.getSearchIndex().rollback();
         }
@@ -365,10 +361,9 @@ public class DocUpdateIndexer extends Indexer {
      * 
      * @param recordFile
      * @return
-     * @throws FileNotFoundException
      * @throws IOException
      */
-    static Object readTextFile(Path recordFile) throws FileNotFoundException, IOException {
+    static Object readTextFile(Path recordFile) throws IOException {
         try {
             if (recordFile.getFileName().toString().endsWith(".xml")) {
                 Map<String, Object> altoData = TextHelper.readAltoFile(recordFile.toFile());
@@ -376,8 +371,7 @@ public class DocUpdateIndexer extends Indexer {
                     return altoData;
                 }
             } else if (recordFile.getFileName().toString().endsWith(".txt")) {
-                String value = FileTools.readFileToString(recordFile.toFile(), null);
-                return value;
+                return FileTools.readFileToString(recordFile.toFile(), null);
             } else {
                 logger.warn("Incompatible data file found: {}", recordFile.toAbsolutePath());
             }
