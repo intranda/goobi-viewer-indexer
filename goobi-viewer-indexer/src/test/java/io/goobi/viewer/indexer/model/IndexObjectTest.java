@@ -458,8 +458,8 @@ public class IndexObjectTest extends AbstractTest {
     public void addToGroupIds_shouldCollectGroupIdFieldsCorrectly() throws Exception {
         IndexObject io = new IndexObject(1);
         Assert.assertTrue(io.getGroupIds().isEmpty());
-        io.addToGroupIds(SolrConstants.GROUPID_ + "FIELD", "VALUE");
-        Assert.assertEquals("VALUE", io.getGroupIds().get(SolrConstants.GROUPID_ + "FIELD"));
+        io.addToGroupIds(SolrConstants.PREFIX_GROUPID + "FIELD", "VALUE");
+        Assert.assertEquals("VALUE", io.getGroupIds().get(SolrConstants.PREFIX_GROUPID + "FIELD"));
     }
 
     /**
@@ -472,13 +472,13 @@ public class IndexObjectTest extends AbstractTest {
         {
             GroupedMetadata gmd = new GroupedMetadata();
             gmd.getFields().add(new LuceneField(SolrConstants.LABEL, "label"));
-            gmd.getFields().add(new LuceneField("MD_VALUE", "value"));
+            gmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, "value"));
             indexObj.getGroupedMetadataFields().add(gmd);
         }
         {
             GroupedMetadata gmd = new GroupedMetadata();
             gmd.getFields().add(new LuceneField(SolrConstants.LABEL, "label"));
-            gmd.getFields().add(new LuceneField("MD_VALUE", "value"));
+            gmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, "value"));
             indexObj.getGroupedMetadataFields().add(gmd);
         }
         Assert.assertEquals(2, indexObj.getGroupedMetadataFields().size());
@@ -713,14 +713,13 @@ public class IndexObjectTest extends AbstractTest {
         obj.getDateUpdated().add(now.plusDays(2).toInstant().toEpochMilli());
         obj.getDateUpdated().add(now.plusDays(3).toInstant().toEpochMilli());
         Assert.assertEquals(3, obj.getDateUpdated().size());
-        
+
         obj.populateDateCreatedUpdated(tomorrow); // populate with "tomorrow"
         Assert.assertEquals(2, obj.getDateUpdated().size()); // only two values remain
         Assert.assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0)); // now
         Assert.assertEquals(Long.valueOf(tomorrow.toInstant().toEpochMilli()), obj.getDateUpdated().get(1)); // tomorrow
-        
+
     }
-    
 
     /**
      * @see IndexObject#addToLucene(LuceneField,boolean)

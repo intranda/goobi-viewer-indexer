@@ -48,6 +48,8 @@ public class RomanNumeral extends Number {
 
     private static final long serialVersionUID = -245445201389499368L;
 
+    private static final String ERROR_INVALID_ROMAN_NUMERAL = "Not a valid Roman numeral";
+
     /***************************************************************************
      * <p>
      * Divisors used in converting an integer to a Roman numeral.
@@ -175,13 +177,13 @@ public class RomanNumeral extends Number {
             curr = getIntValue(romanNum.charAt(i));
             if (prev < curr) {
                 if (digitCount > 0) {
-                    throw new NumberFormatException("Not a valid Roman numeral");
+                    throw new NumberFormatException(ERROR_INVALID_ROMAN_NUMERAL);
                 }
                 if (prev * 5 == curr || prev * 10 == curr) {
                     sum -= prev;
                     sum += curr - prev;
                 } else {
-                    throw new NumberFormatException("Not a valid Roman numeral");
+                    throw new NumberFormatException(ERROR_INVALID_ROMAN_NUMERAL);
                 }
             } else {
                 if (curr == prev) {
@@ -190,7 +192,7 @@ public class RomanNumeral extends Number {
                     digitCount = 0;
                 }
                 if (digitCount >= 4) {
-                    throw new NumberFormatException("Not a valid Roman numeral");
+                    throw new NumberFormatException(ERROR_INVALID_ROMAN_NUMERAL);
                 }
                 sum += curr;
             }

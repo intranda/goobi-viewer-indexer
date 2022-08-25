@@ -169,7 +169,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertEquals("Klein, Felix", mdList.get(0));
             }
             {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR" + SolrConstants._UNTOKENIZED);
+                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR" + SolrConstants.SUFFIX_UNTOKENIZED);
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals("Klein, Felix", mdList.get(0));
@@ -181,35 +181,35 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals(Long.valueOf(1980), mdList.get(0));
-                Assert.assertEquals(Long.valueOf(1980), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEAR));
+                Assert.assertEquals(Long.valueOf(1980), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEARMONTH);
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals(Long.valueOf(198007), mdList.get(0));
-                Assert.assertEquals(Long.valueOf(198007), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEARMONTH));
+                Assert.assertEquals(Long.valueOf(198007), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEARMONTH));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEARMONTHDAY);
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals(Long.valueOf(19800710), mdList.get(0));
-                Assert.assertEquals(Long.valueOf(19800710), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.YEARMONTHDAY));
+                Assert.assertEquals(Long.valueOf(19800710), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEARMONTHDAY));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.MONTHDAY);
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals(Long.valueOf(710), mdList.get(0));
-                Assert.assertEquals(Long.valueOf(710), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.MONTHDAY));
+                Assert.assertEquals(Long.valueOf(710), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.MONTHDAY));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.CENTURY);
                 Assert.assertNotNull(mdList);
                 Assert.assertEquals(1, mdList.size());
                 Assert.assertEquals(Long.valueOf(20), mdList.get(0));
-                Assert.assertEquals(Long.valueOf(20), doc.getFieldValue(SolrConstants.SORTNUM_ + SolrConstants.CENTURY));
+                Assert.assertEquals(Long.valueOf(20), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.CENTURY));
             }
         }
 
@@ -699,13 +699,13 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         {
             // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
             SolrDocumentList docList =
-                    hotfolder.getSearchIndex().search("+" + SolrConstants.CMS_TEXT_ + "DESCRIPTION" + ":\"test description\"", null);
+                    hotfolder.getSearchIndex().search("+" + SolrConstants.PREFIX_CMS_TEXT + "DESCRIPTION" + ":\"test description\"", null);
             Assert.assertEquals(1, docList.size());
         }
         {
             // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
             SolrDocumentList docList =
-                    hotfolder.getSearchIndex().search("+" + SolrConstants.CMS_TEXT_ + "PUBLICATIONTEXT" + ":\"test publication text\"", null);
+                    hotfolder.getSearchIndex().search("+" + SolrConstants.PREFIX_CMS_TEXT + "PUBLICATIONTEXT" + ":\"test publication text\"", null);
             Assert.assertEquals(1, docList.size());
         }
         {
@@ -782,7 +782,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(Long.valueOf(1372770217000L), dateCreated);
         }
     }
-    
 
     /**
      * @see MetsIndexer#index(Path,boolean,Map,ISolrWriteStrategy,int,boolean)
@@ -796,14 +795,14 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertNull(ret[1]);
 
         Long timestamp = 1372770217000L;
-        
+
         {
             SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            
+
             Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
-            Long dateUpdated =  SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
+            Long dateUpdated = SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
             Assert.assertNotNull(dateUpdated);
             Assert.assertEquals(timestamp, dateUpdated);
         }
@@ -815,7 +814,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
             // DATEUPDATED is still the same
             Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
-            Long dateUpdated =  SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
+            Long dateUpdated = SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
             Assert.assertNotNull(dateUpdated);
             Assert.assertEquals(timestamp, dateUpdated);
         }

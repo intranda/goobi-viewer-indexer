@@ -242,9 +242,6 @@ public class DublinCoreIndexer extends Indexer {
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
-            // write all page URNs sequentially into one field
-            generatePageUrns(indexObj);
-
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
             List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
             if (thumbnailFields != null) {
@@ -271,7 +268,7 @@ public class DublinCoreIndexer extends Indexer {
                             String field = FilenameUtils.getBaseName(file.getFileName().toString()).toUpperCase();
                             String content = FileTools.readFileToString(file.toFile(), null);
                             String value = TextHelper.cleanUpHtmlTags(content);
-                            indexObj.addToLucene(SolrConstants.CMS_TEXT_ + field, value);
+                            indexObj.addToLucene(SolrConstants.PREFIX_CMS_TEXT + field, value);
                             indexObj.addToLucene(SolrConstants.CMS_TEXT_ALL, value);
                         }
                     }
@@ -280,7 +277,7 @@ public class DublinCoreIndexer extends Indexer {
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
-                String groupSuffix = groupIdField.replace(SolrConstants.GROUPID_, "");
+                String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
                 Map<String, String> moreMetadata = new HashMap<>();
                 String titleField = "MD_TITLE_" + groupSuffix;
                 String sortTitleField = "SORT_TITLE_" + groupSuffix;
@@ -386,8 +383,8 @@ public class DublinCoreIndexer extends Indexer {
 
         // If this is a top struct element, look for a representative image
         for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
-                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
+            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
+                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
 
@@ -407,7 +404,7 @@ public class DublinCoreIndexer extends Indexer {
                 // Remove SORT_ fields from a previous, higher up docstruct
                 Set<String> fieldsToRemove = new HashSet<>();
                 for (String fieldName : pageDoc.getFieldNames()) {
-                    if (fieldName.startsWith(SolrConstants.SORT_)) {
+                    if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                         fieldsToRemove.add(fieldName);
                     }
                 }
@@ -417,7 +414,7 @@ public class DublinCoreIndexer extends Indexer {
                 //  Add this docstruct's SORT_* fields to page
                 if (indexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
-                        if (field.getField().startsWith(SolrConstants.SORT_)) {
+                        if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             pageDoc.addField(field.getField(), field.getValue());
                         }
                     }
@@ -465,7 +462,7 @@ public class DublinCoreIndexer extends Indexer {
                     for (Object value : pageDoc.getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
-                } else if (fieldName.startsWith(SolrConstants.SORT_)) {
+                } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                     existingSortFieldNames.add(fieldName);
                 }
             }
@@ -475,7 +472,7 @@ public class DublinCoreIndexer extends Indexer {
                     // Avoid duplicates (same field name + value)
                     pageDoc.addField(field.getField(), field.getValue());
                     logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), pageDoc.getFieldValue(SolrConstants.ORDER));
-                } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
+                } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !existingSortFieldNames.contains(field.getField())) {
                     // Only one instance of each SORT_ field may exist
                     pageDoc.addField(field.getField(), field.getValue());
                 }
@@ -654,34 +651,6 @@ public class DublinCoreIndexer extends Indexer {
             }
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
-    }
-
-    /**
-     * Finds all physical page URNs for the given IndexObject and adds them to its metadata sequentially as one string. Should only be used with the
-     * top docstruct (ISWORK). TODO get from generated pages instead of METS.
-     * 
-     * @param indexObj The IndexObject to find URNs for.
-     * @throws FatalIndexerException
-     */
-    private void generatePageUrns(IndexObject indexObj) throws FatalIndexerException {
-        String query1 = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div/@CONTENTIDS";
-        List<String> physUrnList = xp.evaluateToStringList(query1, null);
-        if (physUrnList != null) {
-            StringBuilder sbPageUrns = new StringBuilder();
-            List<String> imageUrns = new ArrayList<>(physUrnList.size());
-            for (String pageUrn : physUrnList) {
-                String urn = null;
-                if (Utils.isUrn(pageUrn)) {
-                    urn = pageUrn.replaceAll("[\\\\]", "");
-                }
-                if (StringUtils.isEmpty(urn)) {
-                    urn = "NOURN";
-                }
-                sbPageUrns.append(urn).append(' ');
-                imageUrns.add(urn);
-            }
-            indexObj.setImageUrns(imageUrns);
-        }
     }
 
     /**

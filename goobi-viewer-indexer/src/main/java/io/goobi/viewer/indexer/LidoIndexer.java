@@ -16,9 +16,7 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +26,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,7 +73,6 @@ public class LidoIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(LidoIndexer.class);
 
-    private List<SolrInputDocument> events = new ArrayList<>();
     /**
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
      * thread-safe.
@@ -108,7 +106,7 @@ public class LidoIndexer extends Indexer {
      */
     public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
             List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
-        String[] ret = { "ERROR", null };
+        String[] ret = { STATUS_ERROR, null };
         String pi = null;
         try {
             this.xp = new JDomXP(doc);
@@ -222,7 +220,7 @@ public class LidoIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, dataFolders, 0);
+            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy, 0);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
@@ -249,13 +247,12 @@ public class LidoIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Generate event documents (must happen before writing the DEFAULT field!)
-            this.events = generateEvents(indexObj);
+            List<SolrInputDocument> events = generateEvents(indexObj);
             logger.debug("Generated {} event docs.", events.size());
 
             // Add DEFAULT field
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
-                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue("");
             }
 
@@ -286,7 +283,7 @@ public class LidoIndexer extends Indexer {
                 logger.error("Indexing of '{}' could not be finished due to an error.", pi);
                 logger.error(e.getMessage(), e);
             }
-            ret[0] = "ERROR";
+            ret[0] = STATUS_ERROR;
             ret[1] = e.getMessage();
             hotfolder.getSearchIndex().rollback();
         } finally {
@@ -301,15 +298,13 @@ public class LidoIndexer extends Indexer {
     /**
      * 
      * @param indexObj
-     * @param isWork
      * @param writeStrategy
-     * @param dataFolders
      * @param depth
      * @return
      * @throws FatalIndexerException
      */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders, int depth) throws FatalIndexerException {
+    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy, int depth)
+            throws FatalIndexerException {
         List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
             physIds.add(String.valueOf(i));
@@ -326,8 +321,8 @@ public class LidoIndexer extends Indexer {
         String filePathBanner = null;
         boolean thumbnailSet = false;
         for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
-                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
+            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
+                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
 
@@ -358,7 +353,7 @@ public class LidoIndexer extends Indexer {
                 // Remove SORT_ fields from a previous, higher up docstruct
                 Set<String> fieldsToRemove = new HashSet<>();
                 for (String fieldName : pageDoc.getFieldNames()) {
-                    if (fieldName.startsWith(SolrConstants.SORT_)) {
+                    if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                         fieldsToRemove.add(fieldName);
                     }
                 }
@@ -368,7 +363,7 @@ public class LidoIndexer extends Indexer {
                 //  Add this docstruct's SORT_* fields to page
                 if (indexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
-                        if (field.getField().startsWith(SolrConstants.SORT_)) {
+                        if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             pageDoc.addField(field.getField(), field.getValue());
                         }
                     }
@@ -416,7 +411,7 @@ public class LidoIndexer extends Indexer {
                     for (Object value : pageDoc.getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
-                } else if (fieldName.startsWith(SolrConstants.SORT_)) {
+                } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                     existingSortFieldNames.add(fieldName);
                 }
             }
@@ -426,7 +421,7 @@ public class LidoIndexer extends Indexer {
                     // Avoid duplicates (same field name + value)
                     pageDoc.addField(field.getField(), field.getValue());
                     logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), pageDoc.getFieldValue(SolrConstants.ORDER));
-                } else if (field.getField().startsWith(SolrConstants.SORT_) && !existingSortFieldNames.contains(field.getField())) {
+                } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !existingSortFieldNames.contains(field.getField())) {
                     // Only one instance of each SORT_ field may exist
                     pageDoc.addField(field.getField(), field.getValue());
                 }
@@ -442,8 +437,8 @@ public class LidoIndexer extends Indexer {
         if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pageDocs.isEmpty()) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
-            String pageFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
-                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
+            String pageFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
+                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
             // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
@@ -451,19 +446,17 @@ public class LidoIndexer extends Indexer {
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-            thumbnailSet = true;
         }
 
         // Add thumbnail information from the first page
         if (StringUtils.isEmpty(filePathBanner)) {
-            String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED) != null
-                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED)
+            String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
+                    ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-            thumbnailSet = true;
         }
 
         // Add the number of assigned pages and the labels of the first and last page to this structure element
@@ -478,7 +471,6 @@ public class LidoIndexer extends Indexer {
             if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
                 indexObj.setLastPageLabel(lastPageLabel);
             }
-            // logger.info(indexObj.getLogId() + ": " + indexObj.getFirstPageLabel() + " - " + indexObj.getLastPageLabel());
         }
 
         return ret;
@@ -624,10 +616,10 @@ public class LidoIndexer extends Indexer {
             try {
                 Map<String, String> mixData = TextHelper.readMix(
                         new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + Indexer.XML_EXTENSION));
-                for (String key : mixData.keySet()) {
-                    if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
-                            && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
-                        doc.addField(key, mixData.get(key));
+                for (Entry<String, String> entry : mixData.entrySet()) {
+                    if (!(entry.getKey().equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
+                            && !(entry.getKey().equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
+                        doc.addField(entry.getKey(), entry.getValue());
                     }
                 }
             } catch (JDOMException e) {
@@ -755,7 +747,7 @@ public class LidoIndexer extends Indexer {
                     ret.add(doc);
                 }
 
-                // Grouped metadata fields are written directly into the IndexObject, which is not desired. Replace the metadata from the backup.{
+                // Grouped metadata fields are written directly into the IndexObject, which is not desired. Replace the metadata from the backup.
                 indexObj.setGroupedMetadataFields(groupedFieldsBackup);
             }
 
@@ -770,7 +762,8 @@ public class LidoIndexer extends Indexer {
                     FieldConfig fieldConfig = fieldConfigList.get(0);
                     if (fieldConfig.isAddSortFieldToTopstruct()) {
                         List<LuceneField> retList = new ArrayList<>(1);
-                        MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.SORT_, fieldConfig.getNonSortConfigurations(),
+                        MetadataHelper.addSortField(field.getField(), field.getValue(), SolrConstants.PREFIX_SORT,
+                                fieldConfig.getNonSortConfigurations(),
                                 fieldConfig.getValueNormalizers(), retList);
                         if (!retList.isEmpty()) {
                             indexObj.addToLucene(retList.get(0), false);
@@ -782,12 +775,10 @@ public class LidoIndexer extends Indexer {
             // Use the main IndexObject's default value field to collect default values for the events, then restore the original value
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 eventDoc.addField(SolrConstants.DEFAULT, indexObj.getDefaultValue());
-                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue(defaultFieldBackup);
             }
 
             ret.add(eventDoc);
-            logger.debug(eventDoc.getFieldNames().toString());
         }
 
         return ret;
@@ -811,28 +802,10 @@ public class LidoIndexer extends Indexer {
         logger.trace("TYPE: {}", indexObj.getType());
 
         // Set label
-        {
-            String value = structNode.getAttributeValue("LABEL");
-            if (value != null) {
-                indexObj.setLabel(value);
-            }
+        String value = structNode.getAttributeValue("LABEL");
+        if (value != null) {
+            indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
-
-    /** Constant <code>txt</code> */
-    public static FilenameFilter txt = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".txt");
-        }
-    };
-
-    /** Constant <code>xml</code> */
-    public static FilenameFilter xml = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".xml");
-        }
-    };
 }

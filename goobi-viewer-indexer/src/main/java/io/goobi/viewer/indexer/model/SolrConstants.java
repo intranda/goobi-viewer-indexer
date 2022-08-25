@@ -155,12 +155,20 @@ public final class SolrConstants {
     public static final String LANGUAGE = "LANGUAGE";
     /** Constant <code>LOGID="LOGID"</code> */
     public static final String LOGID = "LOGID";
+    /** Constant <code>MD_FIRSTNAME="MD_FIRSTNAME"</code> */
+    public static final String MD_FIRSTNAME ="MD_FIRSTNAME";
+    /** Constant <code>MD_LASTNAME="MD_LASTNAME"</code> */
+    public static final String MD_LASTNAME = "MD_LASTNAME";
+    /** Constant <code>MD_VALUE="MD_VALUE"</code> */
+    public static final String MD_VALUE = "MD_VALUE";
     /** Constant <code>METADATATYPE="METADATATYPE"</code> */
     public static final String METADATATYPE = "METADATATYPE";
     /** Constant <code>MIMETYPE="MIMETYPE"</code> */
     public static final String MIMETYPE = "MIMETYPE";
     /** Constant <code>MONTHDAY="MONTHDAY"</code> */
     public static final String MONTHDAY = "MONTHDAY";
+    /** Constant <code>NAMEDENTITIES="NAMEDENTITIES"</code> */
+    public static final String NAMEDENTITIES = "NAMEDENTITIES";
     /** Constant <code>NORMDATATERMS="NORMDATATERMS"</code> */
     public static final String NORMDATATERMS = "NORMDATATERMS";
     /** Constant <code>NUMPAGES="NUMPAGES"</code> */
@@ -223,38 +231,40 @@ public final class SolrConstants {
     /** Constant <code>OPEN_ACCESS_VALUE="OPENACCESS"</code> */
     public static final String OPEN_ACCESS_VALUE = "OPENACCESS";
 
-    /** Constant <code>CMS_TEXT_="CMS_TEXT_"</code> */
-    public static final String CMS_TEXT_ = "CMS_TEXT_";
-    /** Constant <code>GROUPID_="GROUPID_"</code> */
-    public static final String GROUPID_ = "GROUPID_";
-    /** Constant <code>GROUPORDER_="GROUPORDER_"</code> */
-    public static final String GROUPORDER_ = "GROUPORDER_";
-    /** Constant <code>SORT_="SORT_"</code> */
-    public static final String SORT_ = "SORT_";
-    /** Constant <code>SORTNUM_="SORTNUM_"</code> */
-    public static final String SORTNUM_ = "SORTNUM_";
-    /** Constant <code>_HTML_SANDBOXED="_HTML-SANDBOXED"</code> */
-    public static final String _HTML_SANDBOXED = "_HTML-SANDBOXED";
-    /** Constant <code>_LANG_="_LANG_"</code> */
-    public static final String _LANG_ = "_LANG_";
-    /** Constant <code>_NOESCAPE="_NOESCAPE"</code> */
-    public static final String _NOESCAPE = "_NOESCAPE";
-    /** Constant <code>_UNTOKENIZED="_UNTOKENIZED"</code> */
-    public static final String _UNTOKENIZED = "_UNTOKENIZED";
-    /** Constant <code>_UGC_TYPE_PERSON="PERSON"</code> */
-    public static final String _UGC_TYPE_PERSON = "PERSON";
-    /** Constant <code>_UGC_TYPE_CORPORATION="CORPORATION"</code> */
-    public static final String _UGC_TYPE_CORPORATION = "CORPORATION";
-    /** Constant <code>_UGC_TYPE_ADDRESS="ADDRESS"</code> */
-    public static final String _UGC_TYPE_ADDRESS = "ADDRESS";
-    /** Constant <code>_UGC_TYPE_COMMENT="COMMENT"</code> */
-    public static final String _UGC_TYPE_COMMENT = "COMMENT";
-    /** Constant <code>NAMEDENTITIES="NAMEDENTITIES"</code> */
-    public static final String NAMEDENTITIES = "NAMEDENTITIES";
+    /** Constant <code>PREFIX_CMS_TEXT="CMS_TEXT_"</code> */
+    public static final String PREFIX_CMS_TEXT = "CMS_TEXT_";
+    /** Constant <code>PREFIX_GROUPID="GROUPID_"</code> */
+    public static final String PREFIX_GROUPID = "GROUPID_";
+    /** Constant <code>PREFIX_="MDNUM"</code> */
+    public static final String PREFIX_MDNUM = "MDNUM_";
+    /** Constant <code>PREFIX_SORT_="SORT_"</code> */
+    public static final String PREFIX_SORT = "SORT_";
+    /** Constant <code>PREFIX_SORTNUM="SORTNUM_"</code> */
+    public static final String PREFIX_SORTNUM = "SORTNUM_";
+    
+    /** Constant <code>MIXFIX_LANG="_LANG_"</code> */
+    public static final String MIXFIX_LANG = "_LANG_";
+    
+    /** Constant <code>SUFFIX_HTML_SANDBOXED="_HTML-SANDBOXED"</code> */
+    public static final String SUFFIX_HTML_SANDBOXED = "_HTML-SANDBOXED";
+    /** Constant <code>SUFFIX_UNTOKENIZED="_UNTOKENIZED"</code> */
+    public static final String SUFFIX_UNTOKENIZED = "_UNTOKENIZED";
+    
+    /** Constant <code>UGC_TYPE_PERSON="PERSON"</code> */
+    public static final String UGC_TYPE_PERSON = "PERSON";
+    /** Constant <code>UGC_TYPE_CORPORATION="CORPORATION"</code> */
+    public static final String UGC_TYPE_CORPORATION = "CORPORATION";
+    /** Constant <code>UGC_TYPE_ADDRESS="ADDRESS"</code> */
+    public static final String UGC_TYPE_ADDRESS = "ADDRESS";
+    /** Constant <code>UGC_TYPE_COMMENT="COMMENT"</code> */
+    public static final String UGC_TYPE_COMMENT = "COMMENT";
 
     /** Field containing true if a page contains a double image. */
     public static final String BOOL_DOUBLE_IMAGE = "BOOL_DOUBLE_IMAGE";
     /** Constant <code>MD_ANNOTATION_ID="MD_ANNOTATION_ID"</code> */
     public static final String MD_ANNOTATION_ID = "MD_ANNOTATION_ID";
+
+    public static final String SOLR_QUERY_AND = " AND ";
+    public static final String SOLR_QUERY_TRUE = ":true";
 
 }

@@ -71,11 +71,19 @@ public final class TextHelper {
 
     private static final String ALTO_WIDTH = "WIDTH";
     private static final String ALTO_HEIGHT = "HEIGHT";
+    private static final String ALTO_COMPOSEDBLOCK = "ComposedBlock";
     private static final String ALTO_CONTENT = "CONTENT";
     private static final String ALTO_SUBS_CONTENT = "SUBS_CONTENT";
     private static final String ALTO_SUBS_TYPE = "SUBS_TYPE";
     private static final String ALTO_SUBS_TYPE_FIRST_WORD = "HypPart1";
     private static final String ALTO_SUBS_TYPE_SECOND_WORD = "HypPart2";
+
+    /**
+     * 
+     */
+    private TextHelper() {
+        //
+    }
 
     /**
      * <p>
@@ -130,7 +138,7 @@ public final class TextHelper {
      * @should throw FileNotFoundException if file not found
      * @param file a {@link java.io.File} object.
      */
-    public static Map<String, Object> readAltoFile(File file) throws FileNotFoundException, IOException, JDOMException {
+    public static Map<String, Object> readAltoFile(File file) throws IOException, JDOMException {
         AltoDocument altoDoc = AltoDocument.getDocumentFromFile(file);
         HyphenationLinker linker = new HyphenationLinker();
         linker.linkWords(altoDoc);
@@ -146,7 +154,7 @@ public final class TextHelper {
      */
     public static Map<String, Object> readAltoDoc(Document doc) {
         if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null.");
+            throw new IllegalArgumentException(StringConstants.ERROR_DOC_MAY_NOT_BE_NULL);
         }
         Map<String, Object> ret = new HashMap<>();
         List<String> namedEntityFields = new ArrayList<>();
@@ -159,12 +167,12 @@ public final class TextHelper {
             // Extract page dimensions
             if (elePage.getAttribute(ALTO_WIDTH) != null) {
                 try {
-                    int w = Integer.valueOf(elePage.getAttributeValue(ALTO_WIDTH));
+                    int w = Integer.parseInt(elePage.getAttributeValue(ALTO_WIDTH));
                     width = String.valueOf(w);
                 } catch (NumberFormatException e) {
                     // Float value (since ALTO 2.1)
                     try {
-                        float w = Float.valueOf(elePage.getAttributeValue(ALTO_WIDTH));
+                        float w = Float.parseFloat(elePage.getAttributeValue(ALTO_WIDTH));
                         width = String.valueOf((int) w);
                     } catch (NumberFormatException e1) {
                         logger.error("WIDTH not a number: {}", elePage.getAttributeValue(ALTO_WIDTH));
@@ -173,12 +181,12 @@ public final class TextHelper {
             }
             if (elePage.getAttribute(ALTO_HEIGHT) != null) {
                 try {
-                    int h = Integer.valueOf(elePage.getAttributeValue(ALTO_HEIGHT));
+                    int h = Integer.parseInt(elePage.getAttributeValue(ALTO_HEIGHT));
                     height = String.valueOf(h);
                 } catch (NumberFormatException e) {
                     // Float value (since ALTO 2.1)
                     try {
-                        float h = Float.valueOf(elePage.getAttributeValue(ALTO_HEIGHT));
+                        float h = Float.parseFloat(elePage.getAttributeValue(ALTO_HEIGHT));
                         height = String.valueOf((int) h);
                     } catch (NumberFormatException e1) {
                         logger.error("HEIGHT not a number: {}", elePage.getAttributeValue(ALTO_HEIGHT));
@@ -193,13 +201,12 @@ public final class TextHelper {
                     if (blocks == null) {
                         continue;
                     }
-                    //                    WordWrapper wordWrapper = new WordWrapper();
                     for (Element eleBlock : blocks) {
                         switch (eleBlock.getName()) {
                             case "TextBlock":
                                 readAltoTextBlock(eleBlock, sbFulltext);
                                 break;
-                            case "ComposedBlock":
+                            case ALTO_COMPOSEDBLOCK:
                                 handleAltoComposedBlock(eleBlock, sbFulltext);
                                 break;
                             default:
@@ -209,10 +216,9 @@ public final class TextHelper {
                 }
             }
 
-            //Get Named entities here
+            // Get Named entities here
             if (doc.getRootElement().getChild("Tags", null) != null) {
                 for (Element eleTag : doc.getRootElement().getChild("Tags", null).getChildren("NamedEntityTag", null)) {
-                    //                    namedEntityFields.add(createJSONNamedEntityTag(tag));
                     String neTag = createSimpleNamedEntityTag(eleTag);
                     if (StringUtils.isNotEmpty(neTag)) {
                         namedEntityFields.add(neTag);
@@ -249,9 +255,9 @@ public final class TextHelper {
         }
 
         // Nested ComposedBlocks
-        List<Element> eleListNextedComposedBlocks = eleComposedBlock.getChildren("ComposedBlock", null);
+        List<Element> eleListNextedComposedBlocks = eleComposedBlock.getChildren(ALTO_COMPOSEDBLOCK, null);
         if (eleListNextedComposedBlocks != null) {
-            for (Element eleNestedComposedBlock : eleComposedBlock.getChildren("ComposedBlock", null)) {
+            for (Element eleNestedComposedBlock : eleComposedBlock.getChildren(ALTO_COMPOSEDBLOCK, null)) {
                 handleAltoComposedBlock(eleNestedComposedBlock, sbFulltext);
             }
         }
@@ -293,8 +299,9 @@ public final class TextHelper {
                 sbFulltext.append('\n');
             }
             // Add unaltered words to the full-text
+            int count = 0;
             for (Element eleWord : eleWordList) {
-                if (eleWordList.indexOf(eleWord) > 0) {
+                if (count > 0) {
                     sbFulltext.append(' ');
                 }
                 /* for hyphenated words, only add the SUBS_CONTENT (content of complete word) 
@@ -305,6 +312,7 @@ public final class TextHelper {
                 } else if (!ALTO_SUBS_TYPE_SECOND_WORD.equals(eleWord.getAttributeValue(ALTO_SUBS_TYPE))) {
                     sbFulltext.append(eleWord.getAttributeValue(ALTO_CONTENT));
                 }
+                count++;
             }
         }
         if (sbFulltext.length() > 0) {
@@ -317,15 +325,12 @@ public final class TextHelper {
      * Converts the document from the given TEI file to ALTO.
      *
      * @param file a {@link java.io.File} object.
-     * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
-     * @throws org.jdom2.JDOMException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
      * @return a {@link java.util.Map} object.
      */
-    public static Map<String, Object> readTeiToAlto(File file) throws FileNotFoundException, IOException, JDOMException, FatalIndexerException {
+    public static Map<String, Object> readTeiToAlto(File file) throws IOException {
         logger.info("readTei: {}", file.getAbsolutePath());
         if (!file.exists()) {
             throw new FileNotFoundException("File not found: " + file.getAbsolutePath());
@@ -357,16 +362,13 @@ public final class TextHelper {
      * Extracts page width and height attributes from the given ABBYY XML file and converts the document to ALTO.
      *
      * @param file a {@link java.io.File} object.
-     * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @throws javax.xml.stream.XMLStreamException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should convert to ALTO correctly
      * @should throw IOException given wrong document format
      * @return a {@link java.util.Map} object.
      */
-    public static Map<String, Object> readAbbyyToAlto(File file)
-            throws FileNotFoundException, IOException, XMLStreamException, FatalIndexerException {
+    public static Map<String, Object> readAbbyyToAlto(File file) throws IOException, XMLStreamException {
         logger.trace("readAbbyy: {}", file.getAbsolutePath());
         if (!FileFormat.ABBYYXML.equals(JDomXP.determineFileFormat(file))) {
             throw new IOException(file.getAbsolutePath() + " is not a valid ABBYY XML document.");
@@ -389,7 +391,6 @@ public final class TextHelper {
      * Extracts image width, height and color space attributes from the given MIX file.
      *
      * @param file a {@link java.io.File} object.
-     * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
@@ -397,7 +398,7 @@ public final class TextHelper {
      * @should throw FileNotFoundException if file not found
      * @return a {@link java.util.Map} object.
      */
-    public static Map<String, String> readMix(File file) throws FileNotFoundException, IOException, JDOMException, FatalIndexerException {
+    public static Map<String, String> readMix(File file) throws IOException, JDOMException, FatalIndexerException {
         Map<String, String> ret = new HashMap<>();
 
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -410,7 +411,6 @@ public final class TextHelper {
                     String str = values.get(0);
                     Integer.parseInt(str);
                     ret.put(SolrConstants.WIDTH, str);
-                    // logger.info(SolrConstants.WIDTH + ":" + str);
                 } catch (NumberFormatException e) {
                 }
             }
@@ -421,7 +421,6 @@ public final class TextHelper {
                     String str = values.get(0);
                     Integer.parseInt(str);
                     ret.put(SolrConstants.HEIGHT, str);
-                    // logger.info(SolrConstants.HEIGHT + ":" + str);
                 } catch (NumberFormatException e) {
                 }
             }
@@ -432,7 +431,6 @@ public final class TextHelper {
                 String str = values.get(0);
                 ret.put(SolrConstants.COLORSPACE, str);
             }
-            // logger.info(SolrConstants.COLORSPACE + ":" + str);
         }
 
         return ret;

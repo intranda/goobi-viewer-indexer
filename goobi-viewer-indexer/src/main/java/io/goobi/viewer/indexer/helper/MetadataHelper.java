@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -74,8 +75,11 @@ public class MetadataHelper {
     private static final String XPATH_ROOT_PLACEHOLDER = "{{{ROOT}}}";
     public static final String FIELD_WKT_COORDS = "WKT_COORDS";
     public static final String FIELD_HAS_WKT_COORDS = "BOOL_WKT_COORDS";
+    private static final String FIELD_NORM_NAME = "NORM_NAME";
 
-    public static Map<String, Record> authorityDataCache = new HashMap<>();
+    private static final String LOG_DMDID_NOT_FOUND = "DMDID for Parent element '{}' not found.";
+
+    protected static Map<String, Record> authorityDataCache = new HashMap<>();
 
     /** Constant <code>FORMAT_TWO_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
@@ -176,21 +180,21 @@ public class MetadataHelper {
                             if (parent.getDmdid() != null) {
                                 childrenAndAncestors.add(parent.getDmdid());
                             } else {
-                                logger.warn("DMDID for Parent element '{}' not found.", parent.getLogId());
+                                logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
                             }
                             break;
                         case "all":
                             if (parent.getDmdid() != null) {
                                 childrenAndAncestors.add(parent.getDmdid());
                             } else {
-                                logger.warn("DMDID for Parent element '{}' not found.", parent.getLogId());
+                                logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
                             }
                             while (parent.getParent() != null && !parent.getParent().isAnchor()) {
                                 parent = parent.getParent();
                                 if (parent.getDmdid() != null) {
                                     childrenAndAncestors.add(parent.getDmdid());
                                 } else {
-                                    logger.warn("DMDID for Parent element '{}' not found.", parent.getLogId());
+                                    logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
                                 }
                             }
                             break;
@@ -359,7 +363,7 @@ public class MetadataHelper {
                         ret.addAll(normalizedFields);
                         // Add sort fields for normalized years, centuries, etc.
                         for (LuceneField normalizedDateField : normalizedFields) {
-                            addSortField(normalizedDateField.getField(), normalizedDateField.getValue(), SolrConstants.SORTNUM_,
+                            addSortField(normalizedDateField.getField(), normalizedDateField.getValue(), SolrConstants.PREFIX_SORTNUM,
                                     configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizers(), ret);
                         }
                     }
@@ -376,11 +380,11 @@ public class MetadataHelper {
 
                     // Make sure non-sort characters are removed before adding _UNTOKENIZED and SORT_ fields
                     if (configurationItem.isAddSortField()) {
-                        addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.SORT_, configurationItem.getNonSortConfigurations(),
+                        addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.PREFIX_SORT, configurationItem.getNonSortConfigurations(),
                                 configurationItem.getValueNormalizers(), ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
-                        ret.add(new LuceneField(fieldName + SolrConstants._UNTOKENIZED, fieldValue));
+                        ret.add(new LuceneField(fieldName + SolrConstants.SUFFIX_UNTOKENIZED, fieldValue));
                     }
 
                     // Abort after first value, if so configured
@@ -409,6 +413,8 @@ public class MetadataHelper {
                     break;
                 case FIELD_HAS_WKT_COORDS:
                     wktCoordsBoolFound = true;
+                    break;
+                default:
                     break;
             }
         }
@@ -445,38 +451,38 @@ public class MetadataHelper {
         url = url.trim();
         boolean authorityDataCacheEnabled = Configuration.getInstance().isAuthorityDataCacheEnabled();
 
-        Record record = authorityDataCache.get(url);
-        if (record != null) {
-            long cachedRecordAge = (System.currentTimeMillis() - record.getCreationTimestamp()) / 1000 / 60 / 60;
+        Record rec = authorityDataCache.get(url);
+        if (rec != null) {
+            long cachedRecordAge = (System.currentTimeMillis() - rec.getCreationTimestamp()) / 1000 / 60 / 60;
             logger.debug("Cached record age: {}", cachedRecordAge);
             if (cachedRecordAge < Configuration.getInstance().getAuthorityDataCacheRecordTTL()) {
                 logger.debug("Authority data retrieved from local cache: {}", url);
             } else {
-                // Do not use expired record and clear from cache;
-                record = null;
+                // Do not use expired record and clear from cache
+                rec = null;
                 authorityDataCache.remove(url);
             }
 
         }
-        if (record == null) {
-            record = NormDataImporter.getSingleRecord(url);
-            if (record == null) {
+        if (rec == null) {
+            rec = NormDataImporter.getSingleRecord(url);
+            if (rec == null) {
                 logger.warn("Authority dataset could not be retrieved: {}", url);
                 return Collections.emptyList();
             }
-            if (record.getNormDataList().isEmpty()) {
+            if (rec.getNormDataList().isEmpty()) {
                 logger.warn("No authority data fields found.");
                 return Collections.emptyList();
             }
             if (authorityDataCacheEnabled) {
-                authorityDataCache.put(url.trim(), record);
+                authorityDataCache.put(url.trim(), rec);
                 if (authorityDataCache.size() > Configuration.getInstance().getAuthorityDataCacheSizeWarningThreshold()) {
                     logger.warn("Authority data cache size: {}, please restart indexer to clear.", authorityDataCache.size());
                 }
             }
         }
 
-        return parseAuthorityMetadata(record.getNormDataList(), sbDefaultMetadataValues, sbNormDataTerms, addToDefaultFields,
+        return parseAuthorityMetadata(rec.getNormDataList(), sbDefaultMetadataValues, sbNormDataTerms, addToDefaultFields,
                 replaceRules, labelField);
     }
 
@@ -516,7 +522,7 @@ public class MetadataHelper {
                 }
 
                 ret.add(new LuceneField(authorityDataField.getKey(), textValue));
-                ret.add(new LuceneField(authorityDataField.getKey() + SolrConstants._UNTOKENIZED, textValue));
+                ret.add(new LuceneField(authorityDataField.getKey() + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
                 String valWithSpaces = new StringBuilder(" ").append(textValue).append(' ').toString();
 
                 // Add to DEFAULT
@@ -535,19 +541,19 @@ public class MetadataHelper {
                 }
 
                 // Aggregate place fields into the same untokenized field for term browsing
-                if (authorityDataField.getKey().equals("NORM_NAME")
+                if (authorityDataField.getKey().equals(FIELD_NORM_NAME)
                         || (authorityDataField.getKey().equals("NORM_ALTNAME") || authorityDataField.getKey().equals("NORM_OFFICIALNAME"))
                                 && !nameSearchFieldValues.contains(textValue)) {
                     if (StringUtils.isNotEmpty(labelField)) {
                         ret.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
                     }
-                    ret.add(new LuceneField("NORM_NAME" + SolrConstants._UNTOKENIZED, textValue));
+                    ret.add(new LuceneField(FIELD_NORM_NAME + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
                     nameSearchFieldValues.add(textValue);
                 } else if (authorityDataField.getKey().startsWith("NORM_PLACE") && !placeSearchFieldValues.contains(textValue)) {
                     if (StringUtils.isNotEmpty(labelField)) {
                         ret.add(new LuceneField(labelField + "_PLACE_SEARCH", textValue));
                     }
-                    ret.add(new LuceneField("NORM_PLACE" + SolrConstants._UNTOKENIZED, textValue));
+                    ret.add(new LuceneField("NORM_PLACE" + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
                     placeSearchFieldValues.add(textValue);
                 } else if (authorityDataField.getKey().equals("NORM_LIFEPERIOD")) {
                     String[] valueSplit = textValue.split("-");
@@ -556,7 +562,7 @@ public class MetadataHelper {
                             if (StringUtils.isNotEmpty(labelField)) {
                                 ret.add(new LuceneField(labelField + "_DATE_SEARCH", date.trim()));
                             }
-                            ret.add(new LuceneField("NORM_DATE" + SolrConstants._UNTOKENIZED, date.trim()));
+                            ret.add(new LuceneField("NORM_DATE" + SolrConstants.SUFFIX_UNTOKENIZED, date.trim()));
                         }
                     }
                 } else if (authorityDataField.getKey().equals(Record.AUTOCOORDS_FIELD)) {
@@ -571,13 +577,14 @@ public class MetadataHelper {
                             case 4:
                                 type = "sexagesimal:polygon";
                                 break;
+                            default:
+                                break;
                         }
                     }
 
                     GeoCoords coords = GeoJSONTools.convert(textValue, type, " ");
 
                     // Add searchable WKT lon-lat coordinates
-                    //                        String coords = textValueSplit[0] + " " + textValueSplit[1];
                     ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
                     hasWktCoords = true;
 
@@ -615,7 +622,7 @@ public class MetadataHelper {
                 // Do not write duplicate fields (same name + value)
                 for (LuceneField f : indexObj.getLuceneFields()) {
                     if (f.getField().equals(field.getField()) && (((f.getValue() != null) && f.getValue().equals(field.getValue()))
-                            || field.getField().startsWith(SolrConstants.SORT_))) {
+                            || field.getField().startsWith(SolrConstants.PREFIX_SORT))) {
                         duplicate = true;
                         break;
                     }
@@ -688,10 +695,10 @@ public class MetadataHelper {
      *
      * @param value a {@link java.lang.String} object.
      * @param replaceRules a {@link java.util.Map} object.
+     * @return a {@link java.lang.String} object.
      * @should apply rules correctly
      * @should throw IllegalArgumentException if value is null
      * @should return unmodified value if replaceRules is null
-     * @return a {@link java.lang.String} object.
      */
     public static String applyReplaceRules(String value, Map<Object, String> replaceRules) {
         if (value == null) {
@@ -701,20 +708,20 @@ public class MetadataHelper {
             return value;
         }
         String ret = value;
-        for (Object key : replaceRules.keySet()) {
-            if (key instanceof Character) {
-                StringBuffer sb = new StringBuffer();
-                sb.append(key);
-                ret = ret.replace(sb.toString(), replaceRules.get(key));
-            } else if (key instanceof String) {
-                logger.debug("replace rule: {} -> {}", key, replaceRules.get(key));
-                if (((String) key).startsWith("REGEX:")) {
-                    ret = ret.replaceAll(((String) key).substring(6), replaceRules.get(key));
+        for (Entry<Object, String> entry : replaceRules.entrySet()) {
+            if (entry.getKey() instanceof Character) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(entry.getKey());
+                ret = ret.replace(sb.toString(), entry.getValue());
+            } else if (entry.getKey() instanceof String) {
+                logger.debug("replace rule: {} -> {}", entry.getKey(), entry.getValue());
+                if (((String) entry.getKey()).startsWith("REGEX:")) {
+                    ret = ret.replaceAll(((String) entry.getKey()).substring(6), entry.getValue());
                 } else {
-                    ret = ret.replace((String) key, replaceRules.get(key));
+                    ret = ret.replace((String) entry.getKey(), entry.getValue());
                 }
             } else {
-                logger.error("Unknown replacement key type of '{}: {}", key.toString(), key.getClass().getName());
+                logger.error("Unknown replacement key type of '{}: {}", entry.getKey(), entry.getKey().getClass().getName());
             }
         }
 
@@ -825,23 +832,18 @@ public class MetadataHelper {
      * @param inValue String
      * @param splittingChar
      * @return String
-     **/
+     */
     private static String toOneToken(String inValue, String splittingChar) {
         String value = inValue;
         if (StringUtils.isNotEmpty(splittingChar)) {
-            value = value.replaceAll(" ", "");
+            value = value.replace(" ", "");
             value = value.replaceAll("[^\\w|" + splittingChar + "]", "");
             value = value.replace("_", "");
             value = value.replace(splittingChar, ".");
-            // logger.info(value);
         } else {
             value = value.replaceAll("[\\W]", "");
         }
 
-        // while (value.contains(replacementChar + replacementChar)) {
-        // value = value.replace(replacementChar + replacementChar, replacementChar);
-        // // do not do replaceAll() here, it will reduce the string to a single "."
-        // }
         return value;
     }
 
@@ -1066,7 +1068,7 @@ public class MetadataHelper {
 
         String mdValue = null;
         for (LuceneField field : ret.getFields()) {
-            if (field.getField().equals("MD_VALUE")
+            if (field.getField().equals(SolrConstants.MD_VALUE)
                     || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(groupEntity.getType()))
                     || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(groupEntity.getType()))) {
                 mdValue = cleanUpName(field.getValue());
@@ -1078,14 +1080,14 @@ public class MetadataHelper {
             StringBuilder sbValue = new StringBuilder();
             switch (groupEntity.getType()) {
                 case PERSON:
-                    if (collectedValues.containsKey("MD_LASTNAME") && !collectedValues.get("MD_LASTNAME").isEmpty()) {
-                        sbValue.append(collectedValues.get("MD_LASTNAME").get(0));
+                    if (collectedValues.containsKey(SolrConstants.MD_LASTNAME) && !collectedValues.get(SolrConstants.MD_LASTNAME).isEmpty()) {
+                        sbValue.append(collectedValues.get(SolrConstants.MD_LASTNAME).get(0));
                     }
-                    if (collectedValues.containsKey("MD_FIRSTNAME") && !collectedValues.get("MD_FIRSTNAME").isEmpty()) {
+                    if (collectedValues.containsKey(SolrConstants.MD_FIRSTNAME) && !collectedValues.get(SolrConstants.MD_FIRSTNAME).isEmpty()) {
                         if (sbValue.length() > 0) {
                             sbValue.append(", ");
                         }
-                        sbValue.append(collectedValues.get("MD_FIRSTNAME").get(0));
+                        sbValue.append(collectedValues.get(SolrConstants.MD_FIRSTNAME).get(0));
                     }
                     break;
                 default:
@@ -1093,7 +1095,7 @@ public class MetadataHelper {
             }
             if (sbValue.length() > 0) {
                 mdValue = sbValue.toString();
-                ret.getFields().add(new LuceneField("MD_VALUE", mdValue));
+                ret.getFields().add(new LuceneField(SolrConstants.MD_VALUE, mdValue));
             }
         }
         if (mdValue != null) {
@@ -1165,7 +1167,7 @@ public class MetadataHelper {
             // Add default authority data name to the docstruct doc so that it can be searched
             for (LuceneField authorityField : authorityData) {
                 switch (authorityField.getField()) {
-                    case "NORM_NAME":
+                    case FIELD_NORM_NAME:
                         // Add NORM_NAME as MD_*_UNTOKENIZED and to DEFAULT to the docstruct
                         if (StringUtils.isNotBlank(authorityField.getValue())) {
                             // fieldValues.add(normField.getValue());
@@ -1175,7 +1177,7 @@ public class MetadataHelper {
                             }
                             if (configurationItem.isAddUntokenizedVersion() || groupLabel.startsWith("MD_")) {
                                 luceneFields.add(new LuceneField(
-                                        new StringBuilder(groupLabel).append(SolrConstants._UNTOKENIZED).toString(),
+                                        new StringBuilder(groupLabel).append(SolrConstants.SUFFIX_UNTOKENIZED).toString(),
                                         authorityField.getValue()));
                             }
                         }
@@ -1201,7 +1203,7 @@ public class MetadataHelper {
             String moddedValue = applyAllModifications(configurationItem, field.getValue());
 
             // Convert to geoJSON
-            if (configurationItem.getGeoJSONSource() != null && field.getField().equals("MD_VALUE")) {
+            if (configurationItem.getGeoJSONSource() != null && field.getField().equals(SolrConstants.MD_VALUE)) {
                 try {
                     GeoCoords coords = GeoJSONTools.convert(moddedValue, configurationItem.getGeoJSONSource(),
                             configurationItem.getGeoJSONSourceSeparator());
@@ -1392,8 +1394,8 @@ public class MetadataHelper {
             throw new IllegalArgumentException("fieldName may not be null");
         }
 
-        if (fieldName.contains(SolrConstants._LANG_)) {
-            int index = fieldName.indexOf(SolrConstants._LANG_) + SolrConstants._LANG_.length();
+        if (fieldName.contains(SolrConstants.MIXFIX_LANG)) {
+            int index = fieldName.indexOf(SolrConstants.MIXFIX_LANG) + SolrConstants.MIXFIX_LANG.length();
             if (fieldName.length() == index + 2) {
                 return fieldName.substring(index).toLowerCase();
             }
@@ -1436,7 +1438,7 @@ public class MetadataHelper {
                         //                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
                         String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();
                         if (isoCode != null) {
-                            fileFieldName += SolrConstants._LANG_ + isoCode.toUpperCase();
+                            fileFieldName += SolrConstants.MIXFIX_LANG + isoCode.toUpperCase();
                         }
                         indexObj.getLanguages().add(isoCode);
                     }

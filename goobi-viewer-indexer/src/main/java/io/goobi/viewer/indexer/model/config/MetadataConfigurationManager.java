@@ -46,6 +46,11 @@ public final class MetadataConfigurationManager {
     private static final Logger logger = LoggerFactory.getLogger(MetadataConfigurationManager.class);
 
     private static final String SPACE_PLACEHOLDER = "#SPACE#";
+    
+    private static final String XML_PATH_ATTRIBUTE_PREFIX = "[@prefix]";
+    private static final String XML_PATH_ATTRIBUTE_SUFFIX = "[@suffix]";
+    private static final String XML_PATH_FIELDS = "fields.";
+    private static final String XML_PATH_LIST_ITEM = ".list.item(";
 
     private Map<String, List<FieldConfig>> fieldConfigurations = new HashMap<>();
     private Set<String> fieldsToAddToParents = new HashSet<>();
@@ -87,92 +92,90 @@ public final class MetadataConfigurationManager {
         }
         for (String fieldname : newFields) {
 
-            int count = config.getMaxIndex("fields." + fieldname + ".list.item");
-            //            List<Map<String, Object>> fieldInformation = new ArrayList<>();
+            int count = config.getMaxIndex(XML_PATH_FIELDS + fieldname + ".list.item");
             for (int i = 0; i <= count; i++) {
-                //                Map<String, Object> fieldValues = new HashMap<>();
                 FieldConfig fieldConfig = new FieldConfig(fieldname);
 
-                int items = config.getMaxIndex("fields." + fieldname + ".list.item(" + i + ").xpath.list.item");
+                int items = config.getMaxIndex(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath.list.item");
                 if (items > -1) {
                     // Multiple XPath items
                     for (int j = 0; j <= items; j++) {
                         HierarchicalConfiguration<ImmutableNode> xpathNode =
-                                config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath.list.item(" + j + ")");
+                                config.configurationAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath.list.item(" + j + ")");
                         String xpath = xpathNode.getString(".");
                         if (StringUtils.isEmpty(xpath)) {
                             logger.error("Found empty XPath configuration for field: {}", fieldname);
                             continue;
                         }
-                        String prefix = xpathNode.getString("[@prefix]");
-                        String suffix = xpathNode.getString("[@suffix]");
+                        String prefix = xpathNode.getString(XML_PATH_ATTRIBUTE_PREFIX);
+                        String suffix = xpathNode.getString(XML_PATH_ATTRIBUTE_SUFFIX);
                         fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix));
                     }
-                } else if (config.getMaxIndex("fields." + fieldname + ".list.item(" + i + ").xpath") > -1) {
+                } else if (config.getMaxIndex(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath") > -1) {
                     // Single XPath item
                     HierarchicalConfiguration<ImmutableNode> xpathNode =
-                            config.configurationAt("fields." + fieldname + ".list.item(" + i + ").xpath");
+                            config.configurationAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath");
                     String xpath = xpathNode.getString(".");
                     if (StringUtils.isEmpty(xpath)) {
                         logger.error("Found empty XPath configuration for field: {}", fieldname);
                     } else {
-                        String prefix = xpathNode.getString("[@prefix]");
-                        String suffix = xpathNode.getString("[@suffix]");
+                        String prefix = xpathNode.getString(XML_PATH_ATTRIBUTE_PREFIX);
+                        String suffix = xpathNode.getString(XML_PATH_ATTRIBUTE_SUFFIX);
                         fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix));
                     }
                 }
 
-                fieldConfig.setParents(config.getString("fields." + fieldname + ".list.item(" + i + ").getparents", null));
-                fieldConfig.setChild(config.getString("fields." + fieldname + ".list.item(" + i + ").getchildren", null));
-                fieldConfig.setOneToken(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").onetoken", false));
-                fieldConfig.setOneField(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").onefield", false));
-                fieldConfig.setOneFieldSeparator(config.getString("fields." + fieldname + ".list.item(" + i + ").onefield[@separator]",
+                fieldConfig.setParents(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").getparents", null));
+                fieldConfig.setChild(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").getchildren", null));
+                fieldConfig.setOneToken(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").onetoken", false));
+                fieldConfig.setOneField(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").onefield", false));
+                fieldConfig.setOneFieldSeparator(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").onefield[@separator]",
                         FieldConfig.DEFAULT_MULTIVALUE_SEPARATOR).replace(SPACE_PLACEHOLDER, " "));
-                fieldConfig.setConstantValue(config.getString("fields." + fieldname + ".list.item(" + i + ").constantValue", null));
-                fieldConfig.setSplittingCharacter(config.getString("fields." + fieldname + ".list.item(" + i + ").splittingCharacter", null));
-                fieldConfig.setNode(config.getString("fields." + fieldname + ".list.item(" + i + ").getnode", null));
-                fieldConfig.setAddToDefault(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addToDefault", false));
-                fieldConfig.setAddUntokenizedVersion(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addUntokenizedVersion", true));
-                fieldConfig.setLowercase(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").lowercase", false));
-                fieldConfig.setAddSortField(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addSortField", false));
+                fieldConfig.setConstantValue(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").constantValue", null));
+                fieldConfig.setSplittingCharacter(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").splittingCharacter", null));
+                fieldConfig.setNode(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").getnode", null));
+                fieldConfig.setAddToDefault(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addToDefault", false));
+                fieldConfig.setAddUntokenizedVersion(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addUntokenizedVersion", true));
+                fieldConfig.setLowercase(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").lowercase", false));
+                fieldConfig.setAddSortField(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addSortField", false));
                 fieldConfig.setAddSortFieldToTopstruct(
-                        config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addSortFieldToTopstruct", false));
-                fieldConfig.setAddExistenceBoolean(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addExistenceBoolean", false));
+                        config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addSortFieldToTopstruct", false));
+                fieldConfig.setAddExistenceBoolean(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addExistenceBoolean", false));
 
-                if (config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addToParents", false)) {
-                    if (config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addToParents[@keepOnChildren]", false)) {
+                if (config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addToParents", false)) {
+                    if (config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addToParents[@keepOnChildren]", false)) {
                         fieldsToAddToParents.add("!" + fieldname);
                     } else {
                         fieldsToAddToParents.add(fieldname);
                     }
                 }
-                if (config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addToChildren", false)) {
+                if (config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addToChildren", false)) {
                     fieldsToAddToChildren.add(fieldname);
                 }
-                if (config.getBoolean("fields." + fieldname + ".list.item(" + i + ").addToPages", false)) {
+                if (config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addToPages", false)) {
                     fieldsToAddToPages.add(fieldname);
                 }
 
-                fieldConfig.setAllowDuplicateValues(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").allowDuplicateValues", false));
-                fieldConfig.setGeoJSONSource(config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource", null));
+                fieldConfig.setAllowDuplicateValues(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").allowDuplicateValues", false));
+                fieldConfig.setGeoJSONSource(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").geoJSONSource", null));
                 fieldConfig
-                        .setGeoJSONSourceSeparator(config.getString("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@separator]", " ")
+                        .setGeoJSONSourceSeparator(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").geoJSONSource[@separator]", " ")
                                 .replace(SPACE_PLACEHOLDER, " "));
                 fieldConfig.setGeoJSONAddSearchField(
-                        config.getBoolean("fields." + fieldname + ".list.item(" + i + ").geoJSONSource[@addSearchField]", false));
+                        config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").geoJSONSource[@addSearchField]", false));
 
                 // Normalize and interpolate years
-                List eleNormalizeYearList = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeYear");
+                List eleNormalizeYearList = config.configurationsAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").normalizeYear");
                 if (eleNormalizeYearList != null && !eleNormalizeYearList.isEmpty()) {
                     BaseHierarchicalConfiguration eleNormalizeYear = (BaseHierarchicalConfiguration) eleNormalizeYearList.get(0);
                     fieldConfig.setNormalizeYear(eleNormalizeYear.getBoolean("", false));
                     fieldConfig.setNormalizeYearMinDigits(eleNormalizeYear.getInt("[@minYearDigits]", 3));
-                    fieldConfig.setInterpolateYears(config.getBoolean("fields." + fieldname + ".list.item(" + i + ").interpolateYears", false));
+                    fieldConfig.setInterpolateYears(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").interpolateYears", false));
                 }
 
                 // Group entity config
                 List<HierarchicalConfiguration<ImmutableNode>> groupEntityList =
-                        config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").groupEntity");
+                        config.configurationsAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").groupEntity");
                 if (groupEntityList != null && !groupEntityList.isEmpty()) {
                     GroupEntity groupEntity = readGroupEntity(groupEntityList.get(0));
                     fieldConfig.setGroupEntity(groupEntity);
@@ -180,12 +183,12 @@ public final class MetadataConfigurationManager {
 
                 // Non-sort configurations
                 List<NonSortConfiguration> nonSortConfigurations = new ArrayList<>();
-                List nonSortList = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").nonSortCharacters");
+                List nonSortList = config.configurationsAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").nonSortCharacters");
                 if (nonSortList != null) {
                     for (Iterator it = nonSortList.iterator(); it.hasNext();) {
                         HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
-                        String prefix = sub.getString("[@prefix]");
-                        String suffix = sub.getString("[@suffix]");
+                        String prefix = sub.getString(XML_PATH_ATTRIBUTE_PREFIX);
+                        String suffix = sub.getString(XML_PATH_ATTRIBUTE_SUFFIX);
                         nonSortConfigurations.add(new NonSortConfiguration(prefix, suffix));
                     }
                     fieldConfig.setNonSortConfigurations(nonSortConfigurations);
@@ -193,7 +196,7 @@ public final class MetadataConfigurationManager {
 
                 // Normalize value
                 List<HierarchicalConfiguration<ImmutableNode>> normalizeValueList =
-                        config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").normalizeValue");
+                        config.configurationsAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").normalizeValue");
                 if (normalizeValueList != null && !normalizeValueList.isEmpty()) {
                     for (HierarchicalConfiguration<ImmutableNode> node : normalizeValueList) {
                         int length = node.getInt("[@length]", 8);
@@ -214,7 +217,7 @@ public final class MetadataConfigurationManager {
                 {
                     // A field can only be configured with chars or strings to be replaced, not both!
                     Map<Object, String> replaceRules = new LinkedHashMap<>();
-                    List elements = config.configurationsAt("fields." + fieldname + ".list.item(" + i + ").replace");
+                    List elements = config.configurationsAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").replace");
                     if (elements != null) {
                         for (Iterator it = elements.iterator(); it.hasNext();) {
                             HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
@@ -418,7 +421,7 @@ public final class MetadataConfigurationManager {
         Map<String, String> docStructMap = Configuration.getInstance().getListConfiguration("docstructmapping");
         if (docStructMap.containsKey(ret)) {
             return docStructMap.get(ret);
-        } else if (Boolean.valueOf(Configuration.getInstance().getConfiguration("docstructmapping.useDefaultDocstruct"))) {
+        } else if (Boolean.TRUE.equals(Boolean.valueOf(Configuration.getInstance().getConfiguration("docstructmapping.useDefaultDocstruct")))) {
             return docStructMap.get("_default");
         } else {
             return ret;

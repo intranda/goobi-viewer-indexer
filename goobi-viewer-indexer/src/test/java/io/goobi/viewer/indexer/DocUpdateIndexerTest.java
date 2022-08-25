@@ -70,7 +70,6 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void index_shouldUpdateDocumentCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        String iddoc = null;
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(Configuration.getInstance());
         DataRepository dataRepository = dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, hotfolder.getSearchIndex(), null)[0];
 
@@ -158,7 +157,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                 {
                     SolrDocument doc = docList.get(0);
                     Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
-                    Assert.assertEquals(SolrConstants._UGC_TYPE_PERSON, doc.getFieldValue(SolrConstants.UGCTYPE));
+                    Assert.assertEquals(SolrConstants.UGC_TYPE_PERSON, doc.getFieldValue(SolrConstants.UGCTYPE));
                     Assert.assertEquals("1290.0, 1384.0, 1930.0, 1523.0", doc.getFieldValue(SolrConstants.UGCCOORDS));
                     Assert.assertEquals("Felix", doc.getFirstValue("MD_FIRSTNAME"));
                     Assert.assertEquals("Klein", doc.getFirstValue("MD_LASTNAME"));
@@ -167,7 +166,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                 {
                     SolrDocument doc = docList.get(1);
                     Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
-                    Assert.assertEquals(SolrConstants._UGC_TYPE_COMMENT, doc.getFieldValue(SolrConstants.UGCTYPE));
+                    Assert.assertEquals(SolrConstants.UGC_TYPE_COMMENT, doc.getFieldValue(SolrConstants.UGCTYPE));
                     Assert.assertEquals("new comment text", doc.getFirstValue("MD_TEXT"));
                 }
             }

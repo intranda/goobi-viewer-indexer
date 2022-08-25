@@ -19,6 +19,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -107,6 +111,30 @@ public class FileToolsTest extends AbstractTest {
         File file = new File("src/test/resources/filenotfound.txt");
         Assert.assertFalse(file.isFile());
         FileTools.readFileToString(file, null);
+    }
+
+    /**
+     * @see FileTools#deleteUnsupportedDataFolders(Path,String)
+     * @verifies only delete folders that match fileNameRoot
+     */
+    @Test
+    public void deleteUnsupportedDataFolders_shouldOnlyDeleteFoldersThatMatchFileNameRoot() throws Exception {
+        Assert.assertTrue(tempDir.mkdirs());
+        Path yes1 = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_foo"));
+        Assert.assertTrue(Files.isDirectory(yes1));
+        Path yes2 = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_foobar"));
+        Assert.assertTrue(Files.isDirectory(yes2));
+        Path no1 = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_0001_foo"));
+        Assert.assertTrue(Files.isDirectory(no1));
+        Path no2 = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN456_foo"));
+        Assert.assertTrue(Files.isDirectory(no2));
+
+        FileTools.deleteUnsupportedDataFolders(tempDir.toPath(), "PPN123");
+
+        Assert.assertFalse(Files.exists(yes1));
+        Assert.assertFalse(Files.exists(yes2));
+        Assert.assertTrue(Files.exists(no1));
+        Assert.assertTrue(Files.exists(no2));
     }
 
 }

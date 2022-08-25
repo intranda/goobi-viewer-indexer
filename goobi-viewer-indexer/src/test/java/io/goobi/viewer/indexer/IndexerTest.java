@@ -314,7 +314,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertNull(doc.getFieldValue(SolrConstants.ORDER));
             Assert.assertNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertEquals("9.967025 51.521737", doc.getFieldValue("MD_COORDS"));
-            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
+            Assert.assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
             Assert.assertNotNull(doc.getFieldValue("MD_BODY"));
             //            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", docs.get(0).getFieldValue(SolrConstants.UGCTERMS));
         }
@@ -330,8 +330,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("Leipzig", doc.getFieldValue("MD_TEXT"));
             Assert.assertEquals("xywh=1378,3795,486,113", doc.getFieldValue(SolrConstants.UGCCOORDS));
             Assert.assertNotNull(doc.getFieldValue("MD_BODY"));
-            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
-            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", doc.getFieldValue(SolrConstants.UGCTERMS));
+            Assert.assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
+            Assert.assertEquals(SolrConstants.UGC_TYPE_ADDRESS + " Leipzig", doc.getFieldValue(SolrConstants.UGCTERMS));
         }
         {
             SolrInputDocument doc = docs.stream()
@@ -344,7 +344,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(133, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             Assert.assertNotNull(doc.getFieldValue("MD_BODY"));
             Assert.assertEquals("Spaß in AC02949962", doc.getFieldValue(SolrConstants.ACCESSCONDITION));
-            Assert.assertEquals(SolrConstants._UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
+            Assert.assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
         }
     }
 

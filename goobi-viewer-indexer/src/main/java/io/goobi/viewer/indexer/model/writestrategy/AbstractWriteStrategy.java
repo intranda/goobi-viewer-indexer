@@ -52,27 +52,27 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
     public static ISolrWriteStrategy create(Path sourceFile, Map<String, Path> dataFolders, Hotfolder hotfolder) throws IOException {
         boolean useSerializingStrategy = false;
         long size = sourceFile != null ? Files.size(sourceFile) : 0;
-        if (size >= hotfolder.metsFileSizeThreshold) {
+        if (size >= hotfolder.getMetsFileSizeThreshold()) {
             useSerializingStrategy = true;
             logger.info("Source file '{}' is {} bytes, using a slower Solr write strategy to avoid memory overflows.", sourceFile.getFileName(),
                     size);
         } else {
-            for (String key : dataFolders.keySet()) {
-                switch (key) {
+            for (Entry<String, Path> entry : dataFolders.entrySet()) {
+                switch (entry.getKey()) {
                     case DataRepository.PARAM_ALTO:
                     case DataRepository.PARAM_ALTOCROWD:
                     case DataRepository.PARAM_FULLTEXT:
                     case DataRepository.PARAM_FULLTEXTCROWD:
                     case DataRepository.PARAM_ABBYY:
                     case DataRepository.PARAM_TEIWC:
-                        Path dataFolder = dataFolders.get(key);
+                        Path dataFolder = entry.getValue();
                         if (dataFolder != null) {
                             // Files.size() does not work with directories, so use FileUtils
                             long dataFolderSize = FileUtils.sizeOfDirectory(dataFolder.toFile());
-                            if (dataFolderSize >= hotfolder.dataFolderSizeThreshold) {
+                            if (dataFolderSize >= hotfolder.getDataFolderSizeThreshold()) {
                                 useSerializingStrategy = true;
                                 logger.info("Data folder '{}' is {} bytes, using a slower Solr write strategy to avoid memory overflows.",
-                                        dataFolder.toAbsolutePath().toString(), dataFolderSize);
+                                        dataFolder.toAbsolutePath(), dataFolderSize);
                                 break;
                             }
                         }

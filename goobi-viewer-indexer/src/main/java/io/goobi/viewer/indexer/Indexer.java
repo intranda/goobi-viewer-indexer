@@ -88,6 +88,7 @@ import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.helper.StringConstants;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
@@ -127,6 +128,9 @@ public abstract class Indexer {
     protected static final String FIELD_OWNERDEPTH = "MDNUM_OWNERDEPTH";
     protected static final String FIELD_SHAPE = "MD_SHAPE";
     protected static final String FIELD_TEXT = "MD_TEXT";
+    protected static final String LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO = "Added FULLTEXT from regular ALTO for page {}";
+
+    public static final String STATUS_ERROR = "ERROR";
 
     public static final String[] IIIF_IMAGE_FILE_NAMES =
             { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
@@ -258,7 +262,7 @@ public abstract class Indexer {
         }
         String queryPageUrns = new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
                 .append(pi)
-                .append(" AND ")
+                .append(SolrConstants.SOLR_QUERY_AND)
                 .append(SolrConstants.DOCTYPE)
                 .append(":PAGE")
                 .toString();
@@ -404,7 +408,7 @@ public abstract class Indexer {
                 splitString[1] = cleanUpNamedEntityValue(splitString[1]);
                 String fieldName = new StringBuilder("NE_").append(splitString[0]).toString();
                 doc.addField(fieldName, splitString[1]);
-                doc.addField(new StringBuilder(fieldName).append(SolrConstants._UNTOKENIZED).toString(), splitString[1]);
+                doc.addField(new StringBuilder(fieldName).append(SolrConstants.SUFFIX_UNTOKENIZED).toString(), splitString[1]);
             }
         }
     }
@@ -537,16 +541,16 @@ public abstract class Indexer {
         List<Element> eleFieldList = eleContent.getChildren();
         switch (eleContent.getName()) {
             case "UserGeneratedPerson":
-                doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_PERSON);
+                doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_PERSON);
                 break;
             case "UserGeneratedCorporation":
-                doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_CORPORATION);
+                doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_CORPORATION);
                 break;
             case "UserGeneratedAddress":
-                doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 break;
             case "UserGeneratedComment":
-                doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_COMMENT);
                 break;
             default:
                 // nothing
@@ -558,10 +562,10 @@ public abstract class Indexer {
                         doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                         break;
                     case "firstname":
-                        doc.addField("MD_FIRSTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                        doc.addField(SolrConstants.MD_FIRSTNAME, MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                         break;
                     case "lastname":
-                        doc.addField("MD_LASTNAME", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
+                        doc.addField(SolrConstants.MD_LASTNAME, MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
                         break;
                     case "personIdentifier":
                         doc.addField("MD_PERSONIDENTIFIER", MetadataHelper.applyValueDefaultModifications(eleField.getValue()));
@@ -689,7 +693,7 @@ public abstract class Indexer {
                             doc.addField(entry.getKey(), entry.getValue());
                         }
                     }
-                    doc.addField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                    doc.addField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_COMMENT);
 
                     TextualResource body = (TextualResource) anno.getBody();
                     if (StringUtils.isNotEmpty(body.getText())) {
@@ -818,10 +822,10 @@ public abstract class Indexer {
 
             // Value
             if (annotation.getBody() instanceof TextualResource) {
-                doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_COMMENT);
+                doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_COMMENT);
                 doc.addField(FIELD_TEXT, ((TextualResource) annotation.getBody()).getText());
             } else if (annotation.getBody() instanceof GeoLocation) {
-                doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 // Add searchable coordinates
                 GeoLocation geoLocation = (GeoLocation) annotation.getBody();
                 if (geoLocation.getGeometry() != null) {
@@ -830,22 +834,10 @@ public abstract class Indexer {
                         doc.addField(FIELD_COORDS, coords[0] + " " + coords[1]);
                     }
                 }
-            }
-            //            else if (annotation.getBody() instanceof TypedResource) {
-            //                //any other resource with a "type" property
-            //                String type = ((TypedResource) annotation.getBody()).getType();
-            //                switch (type) {
-            //                    case "AuthorityResource":
-            //                        //maybe call MetadataHelper#retrieveAuthorityData and write additional fields in UGC Doc?
-            //                        break;
-            //                    default:
-            //                        break;
-            //                }
-            //            }
-            else if (annotation.getBody() != null) {
+            } else if (annotation.getBody() != null) {
                 logger.warn("Cannot interpret annotation body of type '{}'.", annotation.getBody().getClass());
             } else {
-                logger.warn("Annotaton has no body: {}", annotation.toString());
+                logger.warn("Annotaton has no body: {}", annotation);
 
             }
             // Add annotation body as JSON, always!
@@ -859,7 +851,7 @@ public abstract class Indexer {
                 if (selector instanceof FragmentSelector) {
                     String coords = ((FragmentSelector) selector).getValue();
                     doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
-                    doc.setField(SolrConstants.UGCTYPE, SolrConstants._UGC_TYPE_ADDRESS);
+                    doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 }
             }
 
@@ -1037,14 +1029,13 @@ public abstract class Indexer {
      * @throws java.io.IOException if any.
      */
     public static Dimension getSizeForJp2(Path image) throws IOException {
-
         if (image.getFileName().toString().matches("(?i).*\\.jp(2|x|2000)")) {
             logger.debug("Reading with jpeg2000 ImageReader");
             Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpeg2000");
 
             while (readers.hasNext()) {
                 ImageReader reader = readers.next();
-                logger.trace("Found reader " + reader);
+                logger.trace("Found reader: {}", reader);
                 if (reader != null) {
                     try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
                         reader.setInput(iis);
@@ -1054,10 +1045,8 @@ public abstract class Indexer {
                             return new Dimension(width, height);
                         }
                         logger.error("Error reading image dimensions of {} with image reader {}", image, reader.getClass().getSimpleName());
-                        continue;
                     } catch (IOException e) {
                         logger.error("Error reading {} with image reader {}", image, reader.getClass().getSimpleName());
-                        continue;
                     }
                 }
             }
@@ -1376,7 +1365,7 @@ public abstract class Indexer {
     }
 
     /** Constant <code>txt</code> */
-    public static FilenameFilter txt = new FilenameFilter() {
+    public static final FilenameFilter txt = new FilenameFilter() {
 
         @Override
         public boolean accept(File dir, String name) {
@@ -1385,7 +1374,7 @@ public abstract class Indexer {
     };
 
     /** Constant <code>xml</code> */
-    public static FilenameFilter xml = new FilenameFilter() {
+    public static final FilenameFilter xml = new FilenameFilter() {
 
         @Override
         public boolean accept(File dir, String name) {
@@ -1417,7 +1406,7 @@ public abstract class Indexer {
             return false;
         }
         if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_DOC_MAY_NOT_BE_NULL);
         }
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
@@ -1457,7 +1446,7 @@ public abstract class Indexer {
         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
                 && doc.getField(SolrConstants.FULLTEXT) == null) {
             doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-            logger.debug("Added FULLTEXT from regular ALTO for page {}", order);
+            logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
         }
         // WIDTH
         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
@@ -1616,7 +1605,7 @@ public abstract class Indexer {
             return;
         }
         if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_DOC_MAY_NOT_BE_NULL);
         }
         if (fileName == null) {
             throw new IllegalArgumentException("fileName may not be null");
@@ -1655,7 +1644,7 @@ public abstract class Indexer {
                 }
             } else {
                 // Add external image URL
-                doc.addField(SolrConstants.FILENAME + SolrConstants._HTML_SANDBOXED, url);
+                doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, url);
                 // Representative image (external)
                 if (representative) {
                     doc.addField(SolrConstants.THUMBNAILREPRESENT, url);
@@ -1682,7 +1671,7 @@ public abstract class Indexer {
      */
     static void parseMimeType(SolrInputDocument doc, String filePath) {
         if (doc == null) {
-            throw new IllegalArgumentException("doc may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_DOC_MAY_NOT_BE_NULL);
         }
         if (StringUtils.isEmpty(filePath)) {
             return;
