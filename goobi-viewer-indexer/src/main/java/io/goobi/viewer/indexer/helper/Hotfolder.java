@@ -483,7 +483,7 @@ public class Hotfolder {
                 return true;
             }
             logger.trace("Hotfolder: Listing files...");
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,delete,purge,docupdate,UPDATED}")) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
                     // Only one file at a time right now
                     if (currentIndexer != null) {
