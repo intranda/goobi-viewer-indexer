@@ -90,6 +90,7 @@ public class UsageStatisticsIndexer extends Indexer {
     private IndexObject createIndexObject(DailyUsageStatistics stats) throws FatalIndexerException {
         IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
         indexObj.addToLucene(SolrConstants.IDDOC, Long.toString(indexObj.getIddoc()));
+        indexObj.addToLucene(SolrConstants.GROUPFIELD, Long.toString(indexObj.getIddoc()));
         indexObj.addToLucene(SolrConstants.DOCTYPE, StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE);
         indexObj.addToLucene(StatisticsLuceneFields.VIEWER_NAME, stats.getViewerName());
         indexObj.addToLucene(StatisticsLuceneFields.DATE, StatisticsLuceneFields.solrDateFormatter.format(stats.getDate().atStartOfDay()));
