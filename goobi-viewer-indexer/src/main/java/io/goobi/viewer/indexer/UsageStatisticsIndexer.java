@@ -75,6 +75,7 @@ public class UsageStatisticsIndexer extends Indexer {
             ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(sourceFile, Collections.emptyMap(), this.hotfolder);
             writeStrategy.setRootDoc(rootDoc);
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
+            logger.info("Written usage statistics from " + sourceFile.toString() + " to index with IDDOC " + rootDoc.getFieldValue("IDDOC"));
             return rootDoc;
         } catch (JSONException | IndexerException e) {
             throw new IllegalArgumentException("Usage statistics file {} contains invalid json".replace("{}", sourceFile.toString()));
@@ -123,9 +124,10 @@ public class UsageStatisticsIndexer extends Indexer {
         String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
         LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
         String solrDateString = StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
-
+        
         try {            
             String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
+            logger.info("Deleting usage statistics for " + StatisticsLuceneFields.DATE + ":" + solrDateString);
             return hotfolder.getSearchIndex().deleteByQuery(query);
         } finally {
             hotfolder.getSearchIndex().commit(false);            
