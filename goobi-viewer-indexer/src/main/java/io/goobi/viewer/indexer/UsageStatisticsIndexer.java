@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,8 +60,16 @@ public class UsageStatisticsIndexer extends Indexer {
      * @param sourceFile
      * @throws IOException
      * @throws FatalIndexerException
+     * @throws SolrServerException 
      */
-    public SolrInputDocument index(Path sourceFile) throws IOException, FatalIndexerException {
+    public SolrInputDocument index(Path sourceFile) throws IOException, FatalIndexerException, SolrServerException {
+        String solrDateString = getStatisticsDate(sourceFile);
+        if(statisticsExists(solrDateString)) {
+            logger.info("Don't index usage statistics for " + solrDateString + ": Statistics already exist for that date");
+            return null;
+        }
+        
+        
         String jsonString = Files.readString(sourceFile);
         if (StringUtils.isBlank(jsonString)) {
             throw new IllegalArgumentException("Usage statistics file {} is empty".replace("{}", sourceFile.toString()));
@@ -81,6 +90,17 @@ public class UsageStatisticsIndexer extends Indexer {
             throw new IllegalArgumentException("Usage statistics file {} contains invalid json".replace("{}", sourceFile.toString()));
         }
 
+    }
+
+    /**
+     * @param solrDateString
+     * @return
+     * @throws IOException 
+     * @throws SolrServerException 
+     */
+    private boolean statisticsExists(String solrDateString) throws SolrServerException, IOException {
+        String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
+        return hotfolder.getSearchIndex().getNumHits(query) > 0;
     }
 
     /**
@@ -121,9 +141,7 @@ public class UsageStatisticsIndexer extends Indexer {
      * @throws FatalIndexerException 
      */
     public boolean removeFromIndex(Path sourceFile) throws FatalIndexerException {
-        String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
-        LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
-        String solrDateString = StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
+        String solrDateString = getStatisticsDate(sourceFile);
         
         try {            
             String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
@@ -133,6 +151,13 @@ public class UsageStatisticsIndexer extends Indexer {
             hotfolder.getSearchIndex().commit(false);            
         }
 
+    }
+
+    private String getStatisticsDate(Path sourceFile) {
+        String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
+        LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
+        String solrDateString = StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
+        return solrDateString;
     }
 
 }

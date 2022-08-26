@@ -1203,7 +1203,7 @@ public class Hotfolder {
         try {
             this.currentIndexer = new UsageStatisticsIndexer(this);
             ((UsageStatisticsIndexer) this.currentIndexer).index(sourceFile);
-        } catch (IOException | IllegalArgumentException | FatalIndexerException e) {
+        } catch (IOException | IllegalArgumentException | FatalIndexerException | SolrServerException e) {
             logger.error("Error indexing file {}. Reason: {}", sourceFile, e.getMessage());
         } finally {
             this.currentIndexer = null;
