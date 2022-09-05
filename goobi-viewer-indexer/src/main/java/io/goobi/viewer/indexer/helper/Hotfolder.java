@@ -480,7 +480,7 @@ public class Hotfolder {
                 return true;
             }
             logger.trace("Hotfolder: Listing files...");
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,delete,purge,docupdate,UPDATED}")) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
                     // Only one file at a time right now
                     if (currentIndexer != null) {
@@ -648,10 +648,12 @@ public class Hotfolder {
             } else if (filename.endsWith(".json")) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
                     addUsageStatisticsToIndex(sourceFile);
+                    Files.delete(sourceFile);
                 }
             } else if (filename.endsWith(FILENAME_EXTENSION_DELETE)) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
                     removeUsageStatisticsFromIndex(sourceFile);
+                    Files.delete(sourceFile);
                 } else {
                     // DELETE
                     DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
@@ -661,6 +663,7 @@ public class Hotfolder {
             } else if (filename.endsWith(FILENAME_EXTENSION_PURGE)) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
                     removeUsageStatisticsFromIndex(sourceFile);
+                    Files.delete(sourceFile);
                 } else {
                     // PURGE (delete with no "deleted" doc)
                     DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null, searchIndex, oldSearchIndex);
@@ -1200,7 +1203,7 @@ public class Hotfolder {
         try {
             this.currentIndexer = new UsageStatisticsIndexer(this);
             ((UsageStatisticsIndexer) this.currentIndexer).index(sourceFile);
-        } catch (IOException | IllegalArgumentException | FatalIndexerException e) {
+        } catch (IOException | IllegalArgumentException | FatalIndexerException | SolrServerException e) {
             logger.error("Error indexing file {}. Reason: {}", sourceFile, e.getMessage());
         } finally {
             this.currentIndexer = null;

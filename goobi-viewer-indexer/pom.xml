@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>22.07</version>
+	<version>22.08-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -50,12 +50,12 @@
 		<icu.version>71.1</icu.version>
 		<imageio-openjpeg.version>0.6.2</imageio-openjpeg.version>
 		<log4j.version>2.18.0</log4j.version>
-		<jackson.version>2.13.3</jackson.version>
+		<jackson.version>2.13.4</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
-		<jsoup.version>1.15.2</jsoup.version>
+		<jsoup.version>1.15.3</jsoup.version>
 		<json.version>20220320</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.18.0</metadata-extractor.version>

@@ -3420,7 +3420,20 @@
                         </list>
                 </MD_PI_ARK>
 
-
-
+                <MD_USEANDREPRODUCTIONLICENSE>
+                        <list>
+                                <item>
+                                        <xpath>
+                                                <list>
+                                                        <item>mets:xmlData/mods:mods/mods:accessCondition[@type="use and reproduction"]</item>
+                                                        <item>dc:rights[contains(text(),'http')]</item>
+                                                        <item>mets:xmlData/mods:mods/mods:accessCondition[@lang="eng"][@type='work-license']</item>
+                                                </list>
+                                        </xpath>
+                                        <addToDefault>true</addToDefault>
+                                        <addUntokenizedVersion>false</addUntokenizedVersion>
+                                </item>
+                        </list>
+                </MD_USEANDREPRODUCTIONLICENSE>
 	</fields>
 </root>
