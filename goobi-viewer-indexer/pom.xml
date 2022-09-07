@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>22.08</version>
+	<version>22.08.1</version>
 
 
 	<name>Goobi viewer - Indexer</name>
