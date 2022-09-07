@@ -24,14 +24,15 @@ public class DailyRequestCounts {
     }
     
     public DailyRequestCounts(JSONArray array) {
-        if(array.length() != 6) {
-            throw new JSONException("Expected json array of size 6, but got " + array.length());
-        }
         for (RequestType type : RequestType.values()) {
-            Long totalCount = array.getLong(type.getTotalCountIndex());
-            Long uniqueCount = array.getLong(type.getUniqueCountIndex());
-            totalCounts.put(type, totalCount);
-            uniqueCounts.put(type, uniqueCount);
+            if(type.getTotalCountIndex() < array.length()) {                
+                Long totalCount = array.getLong(type.getTotalCountIndex());
+                totalCounts.put(type, totalCount);
+            }
+            if(type.getUniqueCountIndex() < array.length()) {                
+                Long uniqueCount = array.getLong(type.getUniqueCountIndex());
+                uniqueCounts.put(type, uniqueCount);
+            }
         }
     }
     
