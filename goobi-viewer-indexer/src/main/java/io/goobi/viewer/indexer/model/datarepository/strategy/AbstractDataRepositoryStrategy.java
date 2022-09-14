@@ -17,8 +17,8 @@ package io.goobi.viewer.indexer.model.datarepository.strategy;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -26,7 +26,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public abstract class AbstractDataRepositoryStrategy implements IDataRepositoryStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(RemainingSpaceStrategy.class);
+    private static final Logger logger = LogManager.getLogger(RemainingSpaceStrategy.class);
 
     protected List<DataRepository> dataRepositories;
 

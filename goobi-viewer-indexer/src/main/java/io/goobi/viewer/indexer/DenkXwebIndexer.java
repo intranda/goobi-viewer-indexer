@@ -35,8 +35,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -65,7 +65,7 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 public class DenkXwebIndexer extends Indexer {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(DenkXwebIndexer.class);
+    private static final Logger logger = LogManager.getLogger(DenkXwebIndexer.class);
 
     /**
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is

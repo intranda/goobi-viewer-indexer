@@ -25,8 +25,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -38,7 +38,7 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     /** Logger for this class. */
-    private static Logger logger = LoggerFactory.getLogger(AbstractSolrEnabledTest.class);
+    private static Logger logger = LogManager.getLogger(AbstractSolrEnabledTest.class);
 
     protected static Hotfolder hotfolder;
 
@@ -49,7 +49,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
-        logger = LoggerFactory.getLogger(AbstractSolrEnabledTest.class);
+        logger = LogManager.getLogger(AbstractSolrEnabledTest.class);
     }
 
     @Before

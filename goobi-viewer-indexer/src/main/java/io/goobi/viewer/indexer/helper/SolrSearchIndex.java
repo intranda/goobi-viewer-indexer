@@ -46,8 +46,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -59,7 +59,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
  */
 public final class SolrSearchIndex {
 
-    private static final Logger logger = LoggerFactory.getLogger(SolrSearchIndex.class);
+    private static final Logger logger = LogManager.getLogger(SolrSearchIndex.class);
 
     private static final int MAX_HITS = Integer.MAX_VALUE;
     public static final int TIMEOUT_SO = 300000;

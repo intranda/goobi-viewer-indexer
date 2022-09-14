@@ -27,8 +27,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -50,7 +50,7 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
  */
 public class UsageStatisticsIndexer extends Indexer {
 
-    private static final Logger logger = LoggerFactory.getLogger(UsageStatisticsIndexer.class);
+    private static final Logger logger = LogManager.getLogger(UsageStatisticsIndexer.class);
 
     public UsageStatisticsIndexer(Hotfolder hotfolder) {
         this.hotfolder = hotfolder;

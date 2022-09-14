@@ -24,8 +24,8 @@ import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
@@ -39,7 +39,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
  */
 public class MaxRecordNumberStrategy extends AbstractDataRepositoryStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(MaxRecordNumberStrategy.class);
+    private static final Logger logger = LogManager.getLogger(MaxRecordNumberStrategy.class);
 
     private final int dataRepositoriesMaxRecords;
 

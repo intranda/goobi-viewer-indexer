@@ -23,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.solr.common.SolrInputDocument;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -40,7 +40,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
  */
 public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(LazySolrWriteStrategy.class);
+    private static final Logger logger = LogManager.getLogger(LazySolrWriteStrategy.class);
 
     protected SolrSearchIndex searchIndex;
     protected SolrInputDocument rootDoc;

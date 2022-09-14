@@ -61,7 +61,6 @@
 		<metadata-extractor.version>2.18.0</metadata-extractor.version>
 		<solr.version>8.11.1</solr.version>
 		<sf-geojson.version>3.1.0</sf-geojson.version>
-		<slf4j.version>1.7.36</slf4j.version>
 	</properties>
 
 
@@ -156,11 +155,6 @@
 			<version>${javax.mail.version}</version>
         </dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom2</artifactId>
 			<version>${jdom2.version}</version>
@@ -189,11 +183,6 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>${log4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>
@@ -314,9 +303,6 @@
 
                                 <!-- imageio is used to read image dimensions during indexing -->
                                 <ignoredUnusedDeclaredDependency>com.github.jai-imageio:jai-imageio-core</ignoredUnusedDeclaredDependency>
-
-                                <!-- this is needed during runtime, otherwise we have no logfiles -->
-                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

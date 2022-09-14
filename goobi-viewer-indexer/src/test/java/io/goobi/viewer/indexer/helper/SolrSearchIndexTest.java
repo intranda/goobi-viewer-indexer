@@ -32,8 +32,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -43,7 +43,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(SolrSearchIndexTest.class);
+    private static final Logger logger = LogManager.getLogger(SolrSearchIndexTest.class);
 
     private SolrSearchIndex searchIndex;
 

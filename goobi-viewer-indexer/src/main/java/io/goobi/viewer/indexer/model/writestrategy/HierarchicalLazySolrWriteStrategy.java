@@ -16,8 +16,8 @@
 package io.goobi.viewer.indexer.model.writestrategy;
 
 import org.apache.solr.common.SolrInputDocument;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -30,7 +30,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
  */
 public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(HierarchicalLazySolrWriteStrategy.class);
+    private static final Logger logger = LogManager.getLogger(HierarchicalLazySolrWriteStrategy.class);
 
     /**
      * Constructor.

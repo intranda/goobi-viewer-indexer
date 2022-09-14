@@ -42,8 +42,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -60,7 +60,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
  */
 public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(SerializingSolrWriteStrategy.class);
+    private static final Logger logger = LogManager.getLogger(SerializingSolrWriteStrategy.class);
 
     private SolrSearchIndex searchIndex;
     private Path tempFolder;

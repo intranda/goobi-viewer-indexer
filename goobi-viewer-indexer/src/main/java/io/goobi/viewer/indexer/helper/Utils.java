@@ -68,8 +68,8 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.Version;
@@ -86,7 +86,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 public class Utils {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static final Logger logger = LogManager.getLogger(Utils.class);
 
     private static final int HTTP_TIMEOUT = 30000;
 

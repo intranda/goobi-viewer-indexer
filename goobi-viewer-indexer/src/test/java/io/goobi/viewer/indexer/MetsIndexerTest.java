@@ -52,7 +52,7 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    //    private static final Logger logger = LoggerFactory.getLogger(MetsIndexerTest.class);
+    //    private static final Logger logger = LogManager.getLogger(MetsIndexerTest.class);
 
     private static final String PI = "PPN517154005";
     private static final String PI2 = "H030001";

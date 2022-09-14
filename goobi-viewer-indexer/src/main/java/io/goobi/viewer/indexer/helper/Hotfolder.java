@@ -56,8 +56,8 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.jdom2.Document;
 import org.jdom2.output.XMLOutputter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
@@ -86,7 +86,7 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStra
  */
 public class Hotfolder {
 
-    private static final Logger logger = LoggerFactory.getLogger(Hotfolder.class);
+    private static final Logger logger = LogManager.getLogger(Hotfolder.class);
 
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
     private static final int WAIT_IF_FILE_EMPTY = 5000;

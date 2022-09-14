@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
@@ -39,7 +39,7 @@ import io.goobi.viewer.indexer.model.config.SubfieldConfig;
  */
 public class GroupedMetadata {
 
-    private static final Logger logger = LoggerFactory.getLogger(GroupedMetadata.class);
+    private static final Logger logger = LogManager.getLogger(GroupedMetadata.class);
 
     private String label;
     private String mainValue;

@@ -41,8 +41,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -67,7 +67,7 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 public class WorldViewsIndexer extends Indexer {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(WorldViewsIndexer.class);
+    private static final Logger logger = LogManager.getLogger(WorldViewsIndexer.class);
 
     /** Constant <code>DEFAULT_FILEGROUP_1="PRESENTATION"</code> */
     public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";

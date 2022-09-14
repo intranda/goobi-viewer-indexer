@@ -44,8 +44,8 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.output.XMLOutputter;
 import org.jsoup.Jsoup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
 import de.intranda.digiverso.ocr.alto.utils.HyphenationLinker;
@@ -64,7 +64,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 public final class TextHelper {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(TextHelper.class);
+    private static final Logger logger = LogManager.getLogger(TextHelper.class);
 
     /** Constant <code>DEFAULT_ENCODING="UTF-8"</code> */
     public static final String DEFAULT_CHARSET = StandardCharsets.UTF_8.name();
