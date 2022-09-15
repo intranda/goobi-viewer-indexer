@@ -116,6 +116,7 @@
 			<smtpSenderAddress></smtpSenderAddress>
 			<smtpSenderName>Goobi viewer - Indexer</smtpSenderName>
 			<smtpSecurity>SSL</smtpSecurity>
+			<smtpPort>465</smtpPort>
 		</email>
 
 		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
