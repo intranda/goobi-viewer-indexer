@@ -20,8 +20,8 @@ import java.nio.file.Files;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -35,7 +35,7 @@ import io.goobi.viewer.indexer.helper.Utils;
 public final class SolrIndexerDaemon {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(SolrIndexerDaemon.class);
+    private static final Logger logger = LogManager.getLogger(SolrIndexerDaemon.class);
 
     /** Constant <code>VERSION</code> */
     private static final int MIN_SCHEMA_VERSION = 20220614;

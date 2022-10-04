@@ -25,8 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -36,7 +36,7 @@ import io.goobi.viewer.indexer.helper.XmlTools;
 
 public class PrimoDocument {
     
-    private static final Logger logger = LoggerFactory.getLogger(PrimoDocument.class);
+    private static final Logger logger = LogManager.getLogger(PrimoDocument.class);
 
     private static final String REGEX = "\\$\\{([^{}]+)\\}";
 

@@ -116,6 +116,7 @@
 			<smtpSenderAddress></smtpSenderAddress>
 			<smtpSenderName>Goobi viewer - Indexer</smtpSenderName>
 			<smtpSecurity>SSL</smtpSecurity>
+			<smtpPort>465</smtpPort>
 		</email>
 
 		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
@@ -331,8 +332,8 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:accessCondition[not(@type) or @type='status']</item>
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</item>
+                            <item>mets:xmlData/mods:mods/mods:accessCondition[@type='moving wall']/@type</item>
 							<item>dc:rights[not(contains(text(),'http'))]</item>
 						</list>
 					</xpath>
@@ -825,16 +826,10 @@
 			</list>
 		</MD_PUBLICATIONRUN>
 
-        <!--
         <DATE_PUBLICRELEASEDATE>
             <list>
                 <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']
-                            </item>
-                        </list>
-                    </xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:accessCondition[@type='moving wall']</xpath>
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                     <addToChildren>true</addToChildren>
@@ -842,7 +837,6 @@
                 </item>
             </list>
         </DATE_PUBLICRELEASEDATE>
-        -->
 
 		<MD_PHYSICALCOPY>
 			<list>

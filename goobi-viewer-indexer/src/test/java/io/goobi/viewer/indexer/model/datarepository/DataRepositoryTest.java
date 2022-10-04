@@ -29,8 +29,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -39,7 +39,7 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 public class DataRepositoryTest extends AbstractTest {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(DataRepositoryTest.class);
+    private static final Logger logger = LogManager.getLogger(DataRepositoryTest.class);
 
     private static final String BASE_FILE_NAME = "12345";
 

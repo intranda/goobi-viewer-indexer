@@ -39,7 +39,7 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    //    private static final Logger logger = LoggerFactory.getLogger(DenkXwebIndexerTest.class);
+    //    private static final Logger logger = LogManager.getLogger(DenkXwebIndexerTest.class);
 
     private static final String PI = "30596824";
     private static final String PI2 = "10973880";

@@ -30,8 +30,8 @@ import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -43,7 +43,7 @@ import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosit
  */
 public final class MetadataConfigurationManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(MetadataConfigurationManager.class);
+    private static final Logger logger = LogManager.getLogger(MetadataConfigurationManager.class);
 
     private static final String SPACE_PLACEHOLDER = "#SPACE#";
     

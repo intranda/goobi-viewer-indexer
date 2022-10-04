@@ -68,8 +68,8 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.Version;
@@ -86,7 +86,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 public class Utils {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static final Logger logger = LogManager.getLogger(Utils.class);
 
     private static final int HTTP_TIMEOUT = 30000;
 
@@ -424,11 +424,12 @@ public class Utils {
      * @param smtpSenderAddress a {@link java.lang.String} object.
      * @param smtpSenderName a {@link java.lang.String} object.
      * @param smtpSecurity a {@link java.lang.String} object.
+     * @param smtpPort
      * @throws javax.mail.MessagingException
      * @throws java.io.UnsupportedEncodingException
      */
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
-            final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity)
+            final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity, Integer smtpPort)
             throws MessagingException, UnsupportedEncodingException {
         if (recipients == null) {
             throw new IllegalArgumentException("recipients may not be null");
@@ -462,8 +463,11 @@ public class Utils {
         switch (smtpSecurity.toUpperCase()) {
             case "STARTTLS":
                 logger.debug("Using STARTTLS");
+                if (smtpPort == null || smtpPort == -1) {
+                    smtpPort = 25;
+                }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, "25");
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
                 props.setProperty("mail.smtp.ssl.trust", "*");
                 props.setProperty("mail.smtp.starttls.enable", "true");
@@ -471,16 +475,22 @@ public class Utils {
                 break;
             case "SSL":
                 logger.debug("Using SSL");
+                if (smtpPort == null || smtpPort == -1) {
+                    smtpPort = 465;
+                }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, "465");
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
                 props.setProperty("mail.smtp.ssl.enable", "true");
                 props.setProperty("mail.smtp.ssl.trust", "*");
                 break;
             default:
                 logger.debug("Using no SMTP security");
+                if (smtpPort == null || smtpPort == -1) {
+                    smtpPort = 25;
+                }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, "25");
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
         }
         props.setProperty("mail.smtp.connectiontimeout", "15000");

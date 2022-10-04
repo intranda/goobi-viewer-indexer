@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.helper.DateTools;
 
@@ -40,7 +40,7 @@ import io.goobi.viewer.indexer.helper.DateTools;
  */
 public class Version {
 
-    private static final Logger logger = LoggerFactory.getLogger(Version.class);
+    private static final Logger logger = LogManager.getLogger(Version.class);
 
     /** Constant <code>APPLICATION_NAME</code> */
     public static final String APPLICATION_NAME;

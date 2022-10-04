@@ -33,8 +33,8 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -51,7 +51,7 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStra
  */
 public class DataRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataRepository.class);
+    private static final Logger logger = LogManager.getLogger(DataRepository.class);
 
     /** Constant <code>PARAM_INDEXED_METS="indexedMets"</code> */
     public static final String PARAM_INDEXED_METS = "indexedMets";

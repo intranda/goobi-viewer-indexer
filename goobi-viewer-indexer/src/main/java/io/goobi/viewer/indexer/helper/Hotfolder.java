@@ -47,6 +47,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.WriterAppender;
 import org.apache.logging.log4j.core.layout.PatternLayout;
@@ -56,8 +57,6 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.jdom2.Document;
 import org.jdom2.output.XMLOutputter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
@@ -86,7 +85,7 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStra
  */
 public class Hotfolder {
 
-    private static final Logger logger = LoggerFactory.getLogger(Hotfolder.class);
+    private static final Logger logger = LogManager.getLogger(Hotfolder.class);
 
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
     private static final int WAIT_IF_FILE_EMPTY = 5000;
@@ -426,11 +425,12 @@ public class Hotfolder {
         if (StringUtils.isEmpty(smtpSecurity)) {
             return;
         }
+        int smtpPort = Configuration.getInstance().getInt("init.email.smtpPort", -1);
         String[] recipientsSplit = recipients.split(";");
 
         try {
             Utils.postMail(Arrays.asList(recipientsSplit), subject, body, smtpServer, smtpUser, smtpPassword, smtpSenderAddress, smtpSenderName,
-                    smtpSecurity);
+                    smtpSecurity, smtpPort);
         } catch (UnsupportedEncodingException | MessagingException e) {
             logger.error(e.getMessage(), e);
         }

@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -50,12 +51,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -65,8 +69,6 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -76,6 +78,7 @@ import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
+import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
@@ -104,7 +107,7 @@ public class MetsIndexer extends Indexer {
     private static final int GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS = 6;
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(MetsIndexer.class);
+    private static final Logger logger = LogManager.getLogger(MetsIndexer.class);
 
     /** Constant <code>DEFAULT_FILEGROUP_1="PRESENTATION"</code> */
     public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
@@ -528,6 +531,33 @@ public class MetsIndexer extends Indexer {
         return ret;
     }
 
+    private String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) throws FatalIndexerException {
+        String filePathBanner = "";
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
+        filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
+        if (StringUtils.isNotEmpty(filePathBanner)) {
+            // Add thumbnail information from the representative page
+            filePathBanner = FilenameUtils.getName(filePathBanner);
+            return filePathBanner;
+        }
+        return "";
+    }
+    
+    private String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) throws FatalIndexerException {
+        String filePathBanner = "";
+                
+        String xpathFilePtr = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID";
+        List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).collect(Collectors.toList());
+        for (String fileId : fileIds) {
+            String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@ID='"+ fileId +"']/mets:FLocat/@xlink:href";
+            filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
+            if(StringUtils.isNotBlank(filePathBanner)) {
+                return filePathBanner;
+            }
+        }
+        return filePathBanner;
+    }
+    
     /**
      * Generates thumbnail info fields for the given docstruct. Also generates page docs mapped to this docstruct. <code>IndexObj.topstructPi</code>
      * must be set before calling this method.
@@ -562,15 +592,17 @@ public class MetsIndexer extends Indexer {
         // If this is a top struct element, look for a representative image
         String filePathBanner = null;
         if (isWork) {
-            xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + useFileGroupGlobal + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
-            filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
-            if (StringUtils.isNotEmpty(filePathBanner)) {
-                // Add thumbnail information from the representative page
-                filePathBanner = FilenameUtils.getName(filePathBanner);
-                logger.debug("Found representation thumbnail for {} in METS: {}", indexObj.getLogId(), filePathBanner);
-            } else if (StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
-                filePathBanner = indexObj.getThumbnailRepresent();
-                logger.debug("No representation thumbnail for {} found in METS, using previous file: {}", indexObj.getLogId(), filePathBanner);
+            filePathBanner = getFilePathBannerFromFileSec(xp, useFileGroupGlobal);
+            if(StringUtils.isNotBlank(filePathBanner)) {
+                logger.debug("Found representation thumbnail for {} in METS filesec: {}", indexObj.getLogId(), filePathBanner);
+            } else {
+                filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroupGlobal);
+                if(StringUtils.isNotBlank(filePathBanner)) {
+                    logger.debug("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
+                } else if (StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
+                    filePathBanner = indexObj.getThumbnailRepresent();
+                    logger.debug("No representation thumbnail for {} found in METS, using previous file: {}", indexObj.getLogId(), filePathBanner);
+                }
             }
         }
         boolean thumbnailSet = false;

@@ -37,8 +37,8 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import de.intranda.digiverso.normdataimporter.model.NormData;
@@ -70,7 +70,7 @@ import io.goobi.viewer.indexer.model.config.XPathConfig;
 public class MetadataHelper {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(MetadataHelper.class);
+    private static final Logger logger = LogManager.getLogger(MetadataHelper.class);
 
     private static final String XPATH_ROOT_PLACEHOLDER = "{{{ROOT}}}";
     public static final String FIELD_WKT_COORDS = "WKT_COORDS";

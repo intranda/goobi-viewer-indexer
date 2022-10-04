@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 public class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    //    private static final Logger logger = LoggerFactory.getLogger(MetsIndexerTest.class);
+    //    private static final Logger logger = LogManager.getLogger(MetsIndexerTest.class);
 
     private static final String PI = "PPN517154005";
     private static final String PI2 = "H030001";
@@ -758,6 +759,36 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0012 +" + SolrConstants.METADATATYPE + ":SHAPE",
                         null)
                 .size());
+    }
+    
+    @Test
+    public void index_shouldWriteThumbnailCorrectly() throws Exception {
+        // WRITE THUMBNAIL FROM use="banner"
+        {            
+            Map<String, Path> dataFolders = new HashMap<>();
+            Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
+            new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
+            
+            SolrDocumentList docs = hotfolder.getSearchIndex()
+                    .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +ISWORK:true", Collections.singletonList(SolrConstants.THUMBNAIL));
+            Assert.assertEquals(1, docs.size());
+            String thumbnail = docs.get(0).getFirstValue(SolrConstants.THUMBNAIL).toString();
+            Assert.assertEquals("flb000645_0007.jpg", thumbnail);
+        }
+        // WRITE THUMBNAIL FROM xlink:label="START_PAGE"
+        {            
+            Map<String, Path> dataFolders = new HashMap<>();
+            Path metsFile = Paths.get("src/test/resources/METS/rosdok_ppn1011383616.dv.mets.xml");
+            String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
+            Assert.assertEquals("PPN1011383616.xml", ret[0]);
+            
+            SolrDocumentList docs = hotfolder.getSearchIndex()
+                    .search("+" + SolrConstants.PI_TOPSTRUCT + ":PPN1011383616 +ISWORK:true", Collections.singletonList(SolrConstants.THUMBNAIL));
+            Assert.assertEquals(1, docs.size());
+            String thumbnail = docs.get(0).getFirstValue(SolrConstants.THUMBNAIL).toString();
+            Assert.assertEquals("https://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn1011383616%252Fphys_0005/full/full/0/native.jpg", thumbnail);
+            
+        }
     }
 
     /**

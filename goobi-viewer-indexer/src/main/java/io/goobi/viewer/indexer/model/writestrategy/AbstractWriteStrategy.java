@@ -24,8 +24,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrInputDocument;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -39,7 +39,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
  */
 public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractWriteStrategy.class);
+    private static final Logger logger = LogManager.getLogger(AbstractWriteStrategy.class);
 
     /**
      * 

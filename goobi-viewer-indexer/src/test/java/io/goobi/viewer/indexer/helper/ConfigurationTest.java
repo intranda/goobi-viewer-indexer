@@ -23,8 +23,8 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
@@ -38,7 +38,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 public class ConfigurationTest extends AbstractTest {
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationTest.class);
+    private static final Logger logger = LogManager.getLogger(ConfigurationTest.class);
 
     private static Hotfolder hotfolder;
 

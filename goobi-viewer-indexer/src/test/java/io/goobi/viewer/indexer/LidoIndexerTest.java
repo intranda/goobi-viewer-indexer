@@ -41,7 +41,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
-    //    private static final Logger logger = LoggerFactory.getLogger(LidoIndexerTest.class);
+    //    private static final Logger logger = LogManager.getLogger(LidoIndexerTest.class);
 
     private static final String PI = "V0011127";
 

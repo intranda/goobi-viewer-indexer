@@ -37,8 +37,8 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 
@@ -89,7 +89,7 @@ public class JDomXP {
     }
 
     /** Logger for this class. */
-    private static final Logger logger = LoggerFactory.getLogger(JDomXP.class);
+    private static final Logger logger = LogManager.getLogger(JDomXP.class);
 
     private static final String XPATH_TEXT = "/text()";
 
