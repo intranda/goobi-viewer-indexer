@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -202,11 +203,9 @@ public final class Configuration {
         namespaces.put("pnx", Namespace.getNamespace("pnx", "http://www.exlibrisgroup.com/xsd/primo/primo_nm_bib"));
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
-        if (additionalNamespaces != null) {
-            for (String key : additionalNamespaces.keySet()) {
-                namespaces.put(key, Namespace.getNamespace(key, additionalNamespaces.get(key)));
-                logger.info("Added custom namespace '{}'.", key);
-            }
+        for (Entry<String, String> entry : additionalNamespaces.entrySet()) {
+            namespaces.put(entry.getKey(), Namespace.getNamespace(entry.getKey(), entry.getValue()));
+            logger.info("Added custom namespace '{}'.", entry.getKey());
         }
     }
 
@@ -412,7 +411,7 @@ public final class Configuration {
     public boolean isCountHotfolderFiles() {
         return getBoolean("performance.countHotfolderFiles", true);
     }
-    
+
     /**
      * 
      * @return
@@ -421,7 +420,7 @@ public final class Configuration {
     public boolean isAuthorityDataCacheEnabled() {
         return getBoolean("performance.authorityDataCache[@enabled]", true);
     }
-    
+
     /**
      * 
      * @return
@@ -430,7 +429,7 @@ public final class Configuration {
     public int getAuthorityDataCacheRecordTTL() {
         return getInt("performance.authorityDataCache.recordTTL", 24);
     }
-    
+
     /**
      * 
      * @return

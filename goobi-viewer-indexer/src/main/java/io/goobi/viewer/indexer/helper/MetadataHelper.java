@@ -380,7 +380,8 @@ public class MetadataHelper {
 
                     // Make sure non-sort characters are removed before adding _UNTOKENIZED and SORT_ fields
                     if (configurationItem.isAddSortField()) {
-                        addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.PREFIX_SORT, configurationItem.getNonSortConfigurations(),
+                        addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.PREFIX_SORT,
+                                configurationItem.getNonSortConfigurations(),
                                 configurationItem.getValueNormalizers(), ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
@@ -1047,6 +1048,7 @@ public class MetadataHelper {
      * @return Generated {@link GroupedMetadata}
      * @throws FatalIndexerException
      * @should group correctly
+     * @should not lowercase certain fields
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
             StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields) throws FatalIndexerException {
@@ -1078,20 +1080,16 @@ public class MetadataHelper {
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
             StringBuilder sbValue = new StringBuilder();
-            switch (groupEntity.getType()) {
-                case PERSON:
-                    if (collectedValues.containsKey(SolrConstants.MD_LASTNAME) && !collectedValues.get(SolrConstants.MD_LASTNAME).isEmpty()) {
-                        sbValue.append(collectedValues.get(SolrConstants.MD_LASTNAME).get(0));
+            if (MetadataGroupType.PERSON.equals(groupEntity.getType())) {
+                if (collectedValues.containsKey(SolrConstants.MD_LASTNAME) && !collectedValues.get(SolrConstants.MD_LASTNAME).isEmpty()) {
+                    sbValue.append(collectedValues.get(SolrConstants.MD_LASTNAME).get(0));
+                }
+                if (collectedValues.containsKey(SolrConstants.MD_FIRSTNAME) && !collectedValues.get(SolrConstants.MD_FIRSTNAME).isEmpty()) {
+                    if (sbValue.length() > 0) {
+                        sbValue.append(", ");
                     }
-                    if (collectedValues.containsKey(SolrConstants.MD_FIRSTNAME) && !collectedValues.get(SolrConstants.MD_FIRSTNAME).isEmpty()) {
-                        if (sbValue.length() > 0) {
-                            sbValue.append(", ");
-                        }
-                        sbValue.append(collectedValues.get(SolrConstants.MD_FIRSTNAME).get(0));
-                    }
-                    break;
-                default:
-                    break;
+                    sbValue.append(collectedValues.get(SolrConstants.MD_FIRSTNAME).get(0));
+                }
             }
             if (sbValue.length() > 0) {
                 mdValue = sbValue.toString();
@@ -1099,7 +1097,7 @@ public class MetadataHelper {
             }
         }
         if (mdValue != null) {
-            ret.setMainValue(mdValue);
+            ret.setMainValue(applyAllModifications(configurationItem, mdValue));
         }
 
         // Query citation resource
@@ -1139,23 +1137,17 @@ public class MetadataHelper {
             } else {
                 String authorityURI = ele.getAttributeValue("authorityURI");
                 String valueURI = ele.getAttributeValue("valueURI");
-                switch (authority) {
-                    default:
-                        // Skip missing GND identifiers
-                        if ("https://d-nb.info/gnd/".equals(valueURI) || "http://d-nb.info/gnd/".equals(valueURI)) {
-                            break;
-                        }
-                        if (StringUtils.isNotEmpty(valueURI)) {
-                            valueURI = valueURI.trim();
-                            if (StringUtils.isNotEmpty(authorityURI) && !valueURI.startsWith(authorityURI)) {
-                                ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, authorityURI + valueURI));
-                            } else {
-                                ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
-                            }
-                            ret.setAuthorityURI(valueURI);
-                        }
-                        break;
+                // Skip missing GND identifiers
+                if (StringUtils.isNotEmpty(valueURI) && !"https://d-nb.info/gnd/".equals(valueURI) && !"http://d-nb.info/gnd/".equals(valueURI)) {
+                    valueURI = valueURI.trim();
+                    if (StringUtils.isNotEmpty(authorityURI) && !valueURI.startsWith(authorityURI)) {
+                        ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, authorityURI + valueURI));
+                    } else {
+                        ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
+                    }
+                    ret.setAuthorityURI(valueURI);
                 }
+
             }
         }
 
@@ -1199,8 +1191,19 @@ public class MetadataHelper {
         }
 
         for (LuceneField field : ret.getFields()) {
-            // Apply modifications configured for the main field to all the group field values
-            String moddedValue = applyAllModifications(configurationItem, field.getValue());
+            String moddedValue;
+            switch (field.getField()) {
+                // Leave certain fields untouched
+                case SolrConstants.GROUPFIELD:
+                case SolrConstants.LABEL:
+                case SolrConstants.METADATATYPE:
+                    moddedValue = field.getValue();
+                    break;
+                default:
+                    // Apply modifications configured for the main field to all the group field values
+                    moddedValue = applyAllModifications(configurationItem, field.getValue());
+                    break;
+            }
 
             // Convert to geoJSON
             if (configurationItem.getGeoJSONSource() != null && field.getField().equals(SolrConstants.MD_VALUE)) {

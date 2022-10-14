@@ -705,6 +705,7 @@
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
+                    <lowercase>true</lowercase>
 					<replace string="&lt;&lt;"></replace>
 					<replace string="&gt;&gt;"></replace>
 					<replace char="152"></replace>
