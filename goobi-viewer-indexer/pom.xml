@@ -47,7 +47,7 @@
         <commons-text.version>1.10.0</commons-text.version>
 		<httpclient.version>4.5.13</httpclient.version>
 		<httpcore.version>4.4.15</httpcore.version>
-		<icu.version>71.1</icu.version>
+		<icu.version>72.1</icu.version>
 		<imageio-openjpeg.version>0.6.2</imageio-openjpeg.version>
 		<log4j.version>2.19.0</log4j.version>
 		<jackson.version>2.13.4</jackson.version>
