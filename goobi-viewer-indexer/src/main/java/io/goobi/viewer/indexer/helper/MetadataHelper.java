@@ -106,6 +106,8 @@ public class MetadataHelper {
         }
     };
 
+    public static boolean authorityDataEnabled = true;
+
     /** Constant <code>addNormDataFieldsToDefault</code> */
     public static List<String> addAuthorityDataFieldsToDefault;
 
@@ -1152,7 +1154,7 @@ public class MetadataHelper {
         }
 
         // Retrieve authority data
-        if (ret.getAuthorityURI() != null) {
+        if (authorityDataEnabled && ret.getAuthorityURI() != null) {
             authorityData.addAll(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
                     sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
                     configurationItem.getFieldname()));
@@ -1162,7 +1164,6 @@ public class MetadataHelper {
                     case FIELD_NORM_NAME:
                         // Add NORM_NAME as MD_*_UNTOKENIZED and to DEFAULT to the docstruct
                         if (StringUtils.isNotBlank(authorityField.getValue())) {
-                            // fieldValues.add(normField.getValue());
                             if (configurationItem.isAddToDefault()) {
                                 // Add norm value to DEFAULT
                                 addValueToDefault(authorityField.getValue(), sbDefaultMetadataValues);
