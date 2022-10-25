@@ -1068,7 +1068,7 @@ public class MetadataHelper {
         StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled);
 
         String mdValue = null;
         for (LuceneField field : ret.getFields()) {
@@ -1111,7 +1111,7 @@ public class MetadataHelper {
                             .fetch()
                             .build();
                     ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
-                            primo.getXp().getRootElement());
+                            primo.getXp().getRootElement(), authorityDataEnabled);
                 } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
                     logger.error(e.getMessage());
                 }
@@ -1127,7 +1127,7 @@ public class MetadataHelper {
         }
 
         // Add authority data URI, if available (GND only)
-        if (ret.getAuthorityURI() == null) {
+        if (authorityDataEnabled && ret.getAuthorityURI() == null) {
             String authority = ele.getAttributeValue("authority");
             if (authority == null) {
                 // Add valueURI without any other specifications

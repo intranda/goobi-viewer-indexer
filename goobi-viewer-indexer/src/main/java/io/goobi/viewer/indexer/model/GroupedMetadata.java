@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import org.jdom2.Element;
 import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
@@ -128,9 +129,11 @@ public class GroupedMetadata {
      * @param collectedValues Collected field values for special purposes
      * @param groupEntityFields
      * @param ele Root of the XML (sub)tree
+     * @param authorityDataEnabled
      * @throws FatalIndexerException
      */
-    public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, SubfieldConfig> groupEntityFields, Element ele)
+    public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, SubfieldConfig> groupEntityFields, Element ele,
+            boolean authorityDataEnabled)
             throws FatalIndexerException {
         if (ele == null) {
             throw new IllegalArgumentException("element may not be null");
@@ -142,8 +145,8 @@ public class GroupedMetadata {
                     || groupEntityFields.get(entry.getKey()) == null) {
                 continue;
             }
-            SubfieldConfig subfield = entry.getValue();
 
+            SubfieldConfig subfield = entry.getValue();
             for (String xpath : subfield.getXpaths()) {
                 logger.debug("XPath: {}", xpath);
                 List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
@@ -164,26 +167,19 @@ public class GroupedMetadata {
                 for (Object val : values) {
                     String fieldValue = JDomXP.objectToString(val);
                     logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
-                    if (fieldValue == null) {
+                    if (StringUtils.isBlank(fieldValue)) {
                         continue;
                     }
                     fieldValue = fieldValue.trim();
-                    if (fieldValue.isEmpty()) {
-                        continue;
-                    }
 
-                    if (subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI)) {
+                    if (authorityDataEnabled && subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI) && fieldValue.length() > 1) {
                         // Skip values that probably aren't real identifiers or URIs
-                        if (fieldValue.length() < 2) {
-                            logger.trace("Authority URI too short: {}", fieldValue);
-                            continue;
-                        }
                         if (NormDataImporter.FIELD_URI.equals(subfield.getFieldname())) {
                             setAuthorityURI(fieldValue);
                         }
                         // Add GND URL part, if the value is not a URL
                         if (!fieldValue.startsWith("http")) {
-                            fieldValue = "http://d-nb.info/gnd/" + fieldValue;
+                            fieldValue = "https://d-nb.info/gnd/" + fieldValue;
                         }
                     }
 
@@ -200,9 +196,7 @@ public class GroupedMetadata {
                     }
                     collectedValues.get(subfield.getFieldname()).add(fieldValue);
                 }
-
             }
-
         }
     }
 
