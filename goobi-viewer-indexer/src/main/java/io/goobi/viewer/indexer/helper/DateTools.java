@@ -184,29 +184,6 @@ public class DateTools {
 
     /**
      * 
-     * @param value
-     * @param useUTC If true, UTC time zone will be used; default time zone otherwise
-     * @return Converted datetime string
-     * @should convert date correctly
-     */
-    public static String convertDateStringForSolrField(String value, boolean useUTC) {
-        List<PrimitiveDate> dates = normalizeDate(value, 4);
-        if (!dates.isEmpty()) {
-            PrimitiveDate date = dates.get(0);
-            if (date.getYear() != null) {
-                ZonedDateTime ld =
-                        LocalDateTime.of(date.getYear(), date.getMonth() != null ? date.getMonth() : 1, date.getDay() != null ? date.getDay() : 1, 0,
-                                0, 0, 0).atZone(useUTC ? ZoneOffset.UTC : ZoneId.systemDefault());
-                return ld.format(formatterISO8601DateTimeInstant);
-            }
-        }
-
-        logger.warn("Could not parse date from value: {}", value);
-        return null;
-    }
-
-    /**
-     * 
      * @param value Raw value
      * @return ISO instant date string
      * @should format years correctly
@@ -214,7 +191,7 @@ public class DateTools {
      * @should format iso local time correctly
      */
     public static String normalizeDateFieldValue(String value) {
-        logger.info("normalizeDateFieldValue: {}", value);
+        logger.trace("normalizeDateFieldValue: {}", value);
         if (StringUtils.isEmpty(value)) {
             return "";
         }
@@ -233,12 +210,31 @@ public class DateTools {
             logger.trace(e.getMessage());
         }
 
-        List<PrimitiveDate> dates = DateTools.normalizeDate(value, 4);
-        if (dates.isEmpty()) {
-            return "";
+        return convertDateStringForSolrField(value, true);
+    }
+
+    /**
+     * Converts non-ISO date/time strings to ISO instant (at UTC or system time zone).
+     * 
+     * @param value
+     * @param useUTC If true, UTC time zone will be used; default time zone otherwise
+     * @return Converted ISO instant
+     * @should convert date correctly
+     */
+    static String convertDateStringForSolrField(String value, boolean useUTC) {
+        List<PrimitiveDate> dates = normalizeDate(value, 4);
+        if (!dates.isEmpty()) {
+            PrimitiveDate date = dates.get(0);
+            if (date.getYear() != null) {
+                ZonedDateTime ld =
+                        LocalDateTime.of(date.getYear(), date.getMonth() != null ? date.getMonth() : 1, date.getDay() != null ? date.getDay() : 1, 0,
+                                0, 0, 0).atZone(useUTC ? ZoneOffset.UTC : ZoneId.systemDefault());
+                return ld.format(formatterISO8601DateTimeInstant);
+            }
         }
 
-        logger.info("date: {}", dates.get(0));
-        return dates.get(0).toLocalDateTime().atZone(ZoneOffset.UTC).format(formatterISO8601DateTimeInstant);
+        logger.warn("Could not parse date from value: {}", value);
+        return "";
     }
+
 }

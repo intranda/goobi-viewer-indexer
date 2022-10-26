@@ -656,17 +656,10 @@ public class MetadataHelper {
         fieldValue = applyValueDefaultModifications(fieldValue);
 
         if (configurationItem.getFieldname().startsWith("DATE_")) {
-            // Date type modifications
-            String convertedDate = DateTools.convertDateStringForSolrField(fieldValue, true);
-            if (convertedDate != null) {
-                fieldValue = convertedDate;
-            }
-            if (configurationItem.getFieldname().equals(SolrConstants.DATE_PUBLICRELEASEDATE)) {
-                // Normalize public release date
-                String normValue = DateTools.normalizeDateFieldValue(fieldValue);
-                if (StringUtils.isNotEmpty(normValue)) {
-                    fieldValue = normValue;
-                }
+            // Normalize public release date
+            String normValue = DateTools.normalizeDateFieldValue(fieldValue);
+            if (StringUtils.isNotEmpty(normValue)) {
+                fieldValue = normValue;
             }
         } else if (configurationItem.getFieldname().equals(SolrConstants.PI)) {
             // PI modifications
