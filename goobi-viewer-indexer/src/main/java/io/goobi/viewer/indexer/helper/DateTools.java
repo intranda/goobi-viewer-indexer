@@ -214,6 +214,7 @@ public class DateTools {
      * @should format iso local time correctly
      */
     public static String normalizeDateFieldValue(String value) {
+        logger.info("normalizeDateFieldValue: {}", value);
         if (StringUtils.isEmpty(value)) {
             return "";
         }
@@ -237,6 +238,7 @@ public class DateTools {
             return "";
         }
 
+        logger.info("date: {}", dates.get(0));
         return dates.get(0).toLocalDateTime().atZone(ZoneOffset.UTC).format(formatterISO8601DateTimeInstant);
     }
 }

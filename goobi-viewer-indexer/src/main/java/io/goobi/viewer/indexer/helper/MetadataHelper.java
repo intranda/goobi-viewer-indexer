@@ -292,11 +292,6 @@ public class MetadataHelper {
                                     if (configurationItem.isOneToken()) {
                                         fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
                                     }
-                                    if (fieldName.startsWith("DATE_")) {
-                                        if ((fieldValue = DateTools.convertDateStringForSolrField(fieldValue, false)) == null) {
-                                            continue;
-                                        }
-                                    }
                                     // Apply XPath prefix
                                     if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
                                         fieldValue = xpathConfig.getPrefix() + fieldValue;
@@ -367,13 +362,6 @@ public class MetadataHelper {
                         for (LuceneField normalizedDateField : normalizedFields) {
                             addSortField(normalizedDateField.getField(), normalizedDateField.getValue(), SolrConstants.PREFIX_SORTNUM,
                                     configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizers(), ret);
-                        }
-                    }
-                    // Normalize public release date
-                    if (SolrConstants.DATE_PUBLICRELEASEDATE.equals(fieldName)) {
-                        String normValue = DateTools.normalizeDateFieldValue(fieldValue);
-                        if (StringUtils.isNotEmpty(normValue)) {
-                            fieldValue = normValue;
                         }
                     }
                     // Add Solr field
@@ -667,7 +655,21 @@ public class MetadataHelper {
         fieldValue = applyReplaceRules(fieldValue, configurationItem.getReplaceRules());
         fieldValue = applyValueDefaultModifications(fieldValue);
 
-        if (configurationItem.getFieldname().equals(SolrConstants.PI)) {
+        if (configurationItem.getFieldname().startsWith("DATE_")) {
+            // Date type modifications
+            String convertedDate = DateTools.convertDateStringForSolrField(fieldValue, true);
+            if (convertedDate != null) {
+                fieldValue = convertedDate;
+            }
+            if (configurationItem.getFieldname().equals(SolrConstants.DATE_PUBLICRELEASEDATE)) {
+                // Normalize public release date
+                String normValue = DateTools.normalizeDateFieldValue(fieldValue);
+                if (StringUtils.isNotEmpty(normValue)) {
+                    fieldValue = normValue;
+                }
+            }
+        } else if (configurationItem.getFieldname().equals(SolrConstants.PI)) {
+            // PI modifications
             fieldValue = applyIdentifierModifications(fieldValue);
         }
 
