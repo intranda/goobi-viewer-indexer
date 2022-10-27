@@ -73,7 +73,7 @@ pipeline {
       }
     }
     stage('build, test and publish docker image') {
-      agent {label: 'controller'}
+      agent {label 'controller'}
       steps {
         script{
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
@@ -95,7 +95,7 @@ pipeline {
       }
     }
     stage('publish docker production image to internal repository'){
-      agent {label: 'controller'}
+      agent {label 'controller'}
       when { 
         tag "v*" 
       }
@@ -110,7 +110,7 @@ pipeline {
       }
     }
     stage('publish develop image to Docker Hub'){
-      agent {label: 'controller'}
+      agent {label 'controller'}
       when {
         branch 'develop'
       }
