@@ -139,7 +139,7 @@ pipeline {
   }
   post {
     always {
-      agent(label 'controller') {
+      node('controller') {
         junit "**/target/surefire-reports/*.xml"
         step([
           $class           : 'JacocoPublisher',
@@ -151,7 +151,7 @@ pipeline {
       }
     }
     success {
-      agent(label 'controller') {
+      node('controller') {
         archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/indexerconfig_solr.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
       }
     }
