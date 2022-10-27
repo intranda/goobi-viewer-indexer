@@ -123,7 +123,7 @@ pipeline {
       }
     }
     stage('publish production image to Docker Hub'){
-      agent any
+      agent {label 'controller'}
       when {
         tag "v*"
       }
@@ -139,7 +139,7 @@ pipeline {
   }
   post {
     always {
-      node(null) {
+      agent(label 'controller') {
         junit "**/target/surefire-reports/*.xml"
         step([
           $class           : 'JacocoPublisher',
@@ -151,7 +151,7 @@ pipeline {
       }
     }
     success {
-      node(null){
+      agent(label 'controller') {
         archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/indexerconfig_solr.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
       }
     }
