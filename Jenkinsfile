@@ -17,6 +17,7 @@ pipeline {
     stage('build') {
       agent {
         docker {
+          label 'controller'
           image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
           args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
           registryUrl 'https://nexus.intranda.com:4443/'
@@ -38,6 +39,7 @@ pipeline {
       }
       agent {
         docker {
+          label 'controller'
           image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
           args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
           registryUrl 'https://nexus.intranda.com:4443/'
@@ -53,6 +55,7 @@ pipeline {
     stage('deployment to maven repository') {
       agent {
         docker {
+          label 'controller'
           image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
           args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
           registryUrl 'https://nexus.intranda.com:4443/'
@@ -69,8 +72,8 @@ pipeline {
         sh 'mvn -f goobi-viewer-indexer/pom.xml deploy'
       }
     }
-    stage('build docker image') {
-      agent any
+    stage('build, test and publish docker image') {
+      agent {label 'controller'}
       steps {
         script{
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
@@ -78,21 +81,11 @@ pipeline {
             dockerimage_public = docker.build("intranda/goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
           }
         }
-      }
-    }
-    stage('basic tests'){
-      agent any
-      steps{
         script {
           dockerimage.inside {
             sh 'test -f  /opt/digiverso/indexer/solrIndexer.jar || echo "/opt/digiverso/indexer/solrIndexer.jar missing"'
           }
         }
-      }
-    }
-    stage('publish docker devel image to internal repository'){
-      agent any
-      steps{
         script {
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
             dockerimage.push("${env.BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
@@ -102,7 +95,7 @@ pipeline {
       }
     }
     stage('publish docker production image to internal repository'){
-      agent any
+      agent {label 'controller'}
       when { 
         tag "v*" 
       }
@@ -117,7 +110,7 @@ pipeline {
       }
     }
     stage('publish develop image to Docker Hub'){
-      agent any
+      agent {label 'controller'}
       when {
         branch 'develop'
       }
@@ -130,7 +123,7 @@ pipeline {
       }
     }
     stage('publish production image to Docker Hub'){
-      agent any
+      agent {label 'controller'}
       when {
         tag "v*"
       }
@@ -146,7 +139,7 @@ pipeline {
   }
   post {
     always {
-      node(null) {
+      node('controller') {
         junit "**/target/surefire-reports/*.xml"
         step([
           $class           : 'JacocoPublisher',
@@ -158,7 +151,7 @@ pipeline {
       }
     }
     success {
-      node(null){
+      node('controller') {
         archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/indexerconfig_solr.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
       }
     }
