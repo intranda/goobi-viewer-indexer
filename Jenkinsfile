@@ -23,6 +23,7 @@ pipeline {
         sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean verify -U'
         recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
         dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
+        stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml' name:  'app'
       }
     }
     stage('sonarcloud') {
@@ -70,10 +71,12 @@ pipeline {
     stage('build, test and publish docker image') {
       agent {label 'controller'}
       steps {
+        unstash 'app'
+
         script{
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
-            dockerimage = docker.build("goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
-            dockerimage_public = docker.build("intranda/goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            dockerimage = docker.build("goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}", "--no-cache --build-arg build=false .")
+            dockerimage_public = docker.build("intranda/goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}",  "--build-arg build=false .")
           }
         }
         script {
