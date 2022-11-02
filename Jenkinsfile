@@ -8,12 +8,6 @@ pipeline {
   }
 
   stages {
-    stage('prepare') {
-      agent any
-      steps {
-        sh 'git clean -fdx'
-      }
-    }
     stage('build') {
       agent {
         docker {
@@ -25,9 +19,10 @@ pipeline {
         }
       }
       steps {
-              sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean verify -U'
-              recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
-              dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
+        sh 'git clean -fdx'
+        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean verify -U'
+        recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
+        dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
       }
     }
     stage('sonarcloud') {
