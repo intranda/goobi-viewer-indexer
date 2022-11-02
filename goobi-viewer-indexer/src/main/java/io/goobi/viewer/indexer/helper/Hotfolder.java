@@ -320,12 +320,17 @@ public class Hotfolder {
             logger.info("Content files will be PRESERVED in the hotfolder in case of indexing errors.");
         }
 
-        // Norm data fields to be added to DEFAULT
-        MetadataHelper.addAuthorityDataFieldsToDefault = config.getList("init.addNormDataFieldsToDefault.field");
-        if (MetadataHelper.addAuthorityDataFieldsToDefault != null) {
-            for (String field : MetadataHelper.addAuthorityDataFieldsToDefault) {
-                logger.info("{} values will be added to DEFAULT", field);
+        MetadataHelper.authorityDataEnabled = config.getBoolean("init.authorityData[@enabled]", true);
+        if (MetadataHelper.authorityDataEnabled) {
+            // Authority data fields to be added to DEFAULT
+            MetadataHelper.addAuthorityDataFieldsToDefault = config.getList("init.authorityData.addFieldsToDefault.field");
+            if (MetadataHelper.addAuthorityDataFieldsToDefault != null) {
+                for (String field : MetadataHelper.addAuthorityDataFieldsToDefault) {
+                    logger.info("{} values will be added to DEFAULT", field);
+                }
             }
+        } else {
+            logger.info("Authority data retrieval is disabled.");
         }
 
         // E-mail configuration

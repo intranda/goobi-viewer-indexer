@@ -106,6 +106,8 @@ public class MetadataHelper {
         }
     };
 
+    public static boolean authorityDataEnabled = true;
+
     /** Constant <code>addNormDataFieldsToDefault</code> */
     public static List<String> addAuthorityDataFieldsToDefault;
 
@@ -290,11 +292,6 @@ public class MetadataHelper {
                                     if (configurationItem.isOneToken()) {
                                         fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
                                     }
-                                    if (fieldName.startsWith("DATE_")) {
-                                        if ((fieldValue = DateTools.convertDateStringForSolrField(fieldValue, false)) == null) {
-                                            continue;
-                                        }
-                                    }
                                     // Apply XPath prefix
                                     if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
                                         fieldValue = xpathConfig.getPrefix() + fieldValue;
@@ -367,20 +364,14 @@ public class MetadataHelper {
                                     configurationItem.getNonSortConfigurations(), configurationItem.getValueNormalizers(), ret);
                         }
                     }
-                    // Normalize public release date
-                    if (SolrConstants.DATE_PUBLICRELEASEDATE.equals(fieldName)) {
-                        String normValue = DateTools.normalizeDateFieldValue(fieldValue);
-                        if (StringUtils.isNotEmpty(normValue)) {
-                            fieldValue = normValue;
-                        }
-                    }
                     // Add Solr field
                     LuceneField luceneField = new LuceneField(fieldName, fieldValue);
                     ret.add(luceneField);
 
                     // Make sure non-sort characters are removed before adding _UNTOKENIZED and SORT_ fields
                     if (configurationItem.isAddSortField()) {
-                        addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.PREFIX_SORT, configurationItem.getNonSortConfigurations(),
+                        addSortField(configurationItem.getFieldname(), fieldValue, SolrConstants.PREFIX_SORT,
+                                configurationItem.getNonSortConfigurations(),
                                 configurationItem.getValueNormalizers(), ret);
                     }
                     if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
@@ -664,7 +655,14 @@ public class MetadataHelper {
         fieldValue = applyReplaceRules(fieldValue, configurationItem.getReplaceRules());
         fieldValue = applyValueDefaultModifications(fieldValue);
 
-        if (configurationItem.getFieldname().equals(SolrConstants.PI)) {
+        if (configurationItem.getFieldname().startsWith("DATE_")) {
+            // Normalize public release date
+            String normValue = DateTools.normalizeDateFieldValue(fieldValue);
+            if (StringUtils.isNotEmpty(normValue)) {
+                fieldValue = normValue;
+            }
+        } else if (configurationItem.getFieldname().equals(SolrConstants.PI)) {
+            // PI modifications
             fieldValue = applyIdentifierModifications(fieldValue);
         }
 
@@ -1047,6 +1045,7 @@ public class MetadataHelper {
      * @return Generated {@link GroupedMetadata}
      * @throws FatalIndexerException
      * @should group correctly
+     * @should not lowercase certain fields
      */
     static GroupedMetadata getGroupedMetadata(Element ele, GroupEntity groupEntity, FieldConfig configurationItem, String groupLabel,
             StringBuilder sbDefaultMetadataValues, List<LuceneField> luceneFields) throws FatalIndexerException {
@@ -1064,7 +1063,7 @@ public class MetadataHelper {
         StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled);
 
         String mdValue = null;
         for (LuceneField field : ret.getFields()) {
@@ -1078,20 +1077,16 @@ public class MetadataHelper {
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
             StringBuilder sbValue = new StringBuilder();
-            switch (groupEntity.getType()) {
-                case PERSON:
-                    if (collectedValues.containsKey(SolrConstants.MD_LASTNAME) && !collectedValues.get(SolrConstants.MD_LASTNAME).isEmpty()) {
-                        sbValue.append(collectedValues.get(SolrConstants.MD_LASTNAME).get(0));
+            if (MetadataGroupType.PERSON.equals(groupEntity.getType())) {
+                if (collectedValues.containsKey(SolrConstants.MD_LASTNAME) && !collectedValues.get(SolrConstants.MD_LASTNAME).isEmpty()) {
+                    sbValue.append(collectedValues.get(SolrConstants.MD_LASTNAME).get(0));
+                }
+                if (collectedValues.containsKey(SolrConstants.MD_FIRSTNAME) && !collectedValues.get(SolrConstants.MD_FIRSTNAME).isEmpty()) {
+                    if (sbValue.length() > 0) {
+                        sbValue.append(", ");
                     }
-                    if (collectedValues.containsKey(SolrConstants.MD_FIRSTNAME) && !collectedValues.get(SolrConstants.MD_FIRSTNAME).isEmpty()) {
-                        if (sbValue.length() > 0) {
-                            sbValue.append(", ");
-                        }
-                        sbValue.append(collectedValues.get(SolrConstants.MD_FIRSTNAME).get(0));
-                    }
-                    break;
-                default:
-                    break;
+                    sbValue.append(collectedValues.get(SolrConstants.MD_FIRSTNAME).get(0));
+                }
             }
             if (sbValue.length() > 0) {
                 mdValue = sbValue.toString();
@@ -1099,7 +1094,7 @@ public class MetadataHelper {
             }
         }
         if (mdValue != null) {
-            ret.setMainValue(mdValue);
+            ret.setMainValue(applyAllModifications(configurationItem, mdValue));
         }
 
         // Query citation resource
@@ -1111,7 +1106,7 @@ public class MetadataHelper {
                             .fetch()
                             .build();
                     ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
-                            primo.getXp().getRootElement());
+                            primo.getXp().getRootElement(), authorityDataEnabled);
                 } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
                     logger.error(e.getMessage());
                 }
@@ -1127,7 +1122,7 @@ public class MetadataHelper {
         }
 
         // Add authority data URI, if available (GND only)
-        if (ret.getAuthorityURI() == null) {
+        if (authorityDataEnabled && ret.getAuthorityURI() == null) {
             String authority = ele.getAttributeValue("authority");
             if (authority == null) {
                 // Add valueURI without any other specifications
@@ -1139,28 +1134,22 @@ public class MetadataHelper {
             } else {
                 String authorityURI = ele.getAttributeValue("authorityURI");
                 String valueURI = ele.getAttributeValue("valueURI");
-                switch (authority) {
-                    default:
-                        // Skip missing GND identifiers
-                        if ("https://d-nb.info/gnd/".equals(valueURI) || "http://d-nb.info/gnd/".equals(valueURI)) {
-                            break;
-                        }
-                        if (StringUtils.isNotEmpty(valueURI)) {
-                            valueURI = valueURI.trim();
-                            if (StringUtils.isNotEmpty(authorityURI) && !valueURI.startsWith(authorityURI)) {
-                                ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, authorityURI + valueURI));
-                            } else {
-                                ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
-                            }
-                            ret.setAuthorityURI(valueURI);
-                        }
-                        break;
+                // Skip missing GND identifiers
+                if (StringUtils.isNotEmpty(valueURI) && !"https://d-nb.info/gnd/".equals(valueURI) && !"http://d-nb.info/gnd/".equals(valueURI)) {
+                    valueURI = valueURI.trim();
+                    if (StringUtils.isNotEmpty(authorityURI) && !valueURI.startsWith(authorityURI)) {
+                        ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, authorityURI + valueURI));
+                    } else {
+                        ret.getFields().add(new LuceneField(NormDataImporter.FIELD_URI, valueURI));
+                    }
+                    ret.setAuthorityURI(valueURI);
                 }
+
             }
         }
 
         // Retrieve authority data
-        if (ret.getAuthorityURI() != null) {
+        if (authorityDataEnabled && ret.getAuthorityURI() != null) {
             authorityData.addAll(retrieveAuthorityData(ret.getAuthorityURI(), sbDefaultMetadataValues,
                     sbAuthorityDataTerms, addAuthorityDataFieldsToDefault, configurationItem.getReplaceRules(),
                     configurationItem.getFieldname()));
@@ -1170,7 +1159,6 @@ public class MetadataHelper {
                     case FIELD_NORM_NAME:
                         // Add NORM_NAME as MD_*_UNTOKENIZED and to DEFAULT to the docstruct
                         if (StringUtils.isNotBlank(authorityField.getValue())) {
-                            // fieldValues.add(normField.getValue());
                             if (configurationItem.isAddToDefault()) {
                                 // Add norm value to DEFAULT
                                 addValueToDefault(authorityField.getValue(), sbDefaultMetadataValues);
@@ -1199,8 +1187,19 @@ public class MetadataHelper {
         }
 
         for (LuceneField field : ret.getFields()) {
-            // Apply modifications configured for the main field to all the group field values
-            String moddedValue = applyAllModifications(configurationItem, field.getValue());
+            String moddedValue;
+            switch (field.getField()) {
+                // Leave certain fields untouched
+                case SolrConstants.GROUPFIELD:
+                case SolrConstants.LABEL:
+                case SolrConstants.METADATATYPE:
+                    moddedValue = field.getValue();
+                    break;
+                default:
+                    // Apply modifications configured for the main field to all the group field values
+                    moddedValue = applyAllModifications(configurationItem, field.getValue());
+                    break;
+            }
 
             // Convert to geoJSON
             if (configurationItem.getGeoJSONSource() != null && field.getField().equals(SolrConstants.MD_VALUE)) {

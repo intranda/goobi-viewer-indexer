@@ -86,12 +86,15 @@
 		<!-- emptyOrderLabelReplacement: String that will be put into the field ORDERLABEL if no value is found. Default is " - ". -->
 		<emptyOrderLabelReplacement> - </emptyOrderLabelReplacement>
 
-		<!-- addNormDataFieldsToDefault: Norm data fields whose values should be added to DEFAULT (e.g. alternative person names). -->
-		<addNormDataFieldsToDefault>
-			<field>NORM_IDENTIFIER</field>
-			<field>NORM_NAME</field>
-			<field>NORM_ALTNAME</field>
-		</addNormDataFieldsToDefault>
+         <!-- authorityData/@enabled: Authority data retrieval can be disabled completely if attribute is set to false. Default is true. -->
+        <authorityData enabled="true">
+            <!-- addFieldsToDefault: Authority data fields whose values should be added to DEFAULT (e.g. alternative person names). -->
+            <addFieldsToDefault>
+                <field>NORM_IDENTIFIER</field>
+                <field>NORM_NAME</field>
+                <field>NORM_ALTNAME</field>
+            </addFieldsToDefault>
+        </authorityData>
 
 		<aggregateRecords>true</aggregateRecords>
 		
@@ -705,6 +708,7 @@
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
+                    <lowercase>true</lowercase>
 					<replace string="&lt;&lt;"></replace>
 					<replace string="&gt;&gt;"></replace>
 					<replace char="152"></replace>

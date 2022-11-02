@@ -7,19 +7,19 @@
 		<mods:role>
 			<mods:roleTerm authority="marcrelator" type="code">oth</mods:roleTerm>
 		</mods:role>
-		<mods:namePart>corporate_name</mods:namePart>
-		<mods:namePart type="family">last</mods:namePart>
-		<mods:namePart type="given">first</mods:namePart>
-		<mods:namePart type="given">second</mods:namePart>
-		<mods:namePart type="date">date</mods:namePart>
-		<mods:namePart type="termsOfAddress">terms_of_address</mods:namePart>
-		<mods:displayForm>display_form</mods:displayForm>
+		<mods:namePart>Corporate_Name</mods:namePart>
+		<mods:namePart type="family">Last</mods:namePart>
+		<mods:namePart type="given">First</mods:namePart>
+		<mods:namePart type="given">Second</mods:namePart>
+		<mods:namePart type="date">DATE</mods:namePart>
+		<mods:namePart type="termsOfAddress">Terms_Of_Address</mods:namePart>
+		<mods:displayForm>Display_Form</mods:displayForm>
 	</mods:name>
 	<mods:originInfo authority="gnd" valueURI="http://d-nb.info/gnd/67890">
 		<mods:place>
-			<mods:placeTerm type="text">placepublish_value</mods:placeTerm>
+			<mods:placeTerm type="text">Placepublish_Value</mods:placeTerm>
 		</mods:place>
-		<mods:publisher>publisher_value</mods:publisher>
+		<mods:publisher>Publisher_Value</mods:publisher>
 		<mods:dateIssued encoding="w3cdtf" keyDate="yes">yearpublish_value</mods:dateIssued>
 	</mods:originInfo>
 </mods:mods>

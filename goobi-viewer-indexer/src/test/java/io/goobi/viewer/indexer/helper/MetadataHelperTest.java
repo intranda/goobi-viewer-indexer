@@ -38,6 +38,7 @@ import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
@@ -139,10 +140,91 @@ public class MetadataHelperTest extends AbstractTest {
 
         Element eleName = docMods.getRootElement().getChild("name", Configuration.getInstance().getNamespaces().get("mods"));
         Assert.assertNotNull(eleName);
-        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "label", new StringBuilder(),
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
                 new ArrayList<>());
         Assert.assertFalse(gmd.getFields().isEmpty());
-        Assert.assertEquals("label", gmd.getLabel());
+        Assert.assertEquals("Display_Form", gmd.getMainValue());
+        String label = null;
+        String metadataType = null;
+        String corporation = null;
+        String lastName = null;
+        List<String> givenNameList = new ArrayList<>(2);
+        String displayForm = null;
+        String groupField = null;
+        String date = null;
+        String termsOfAddress = null;
+        String link = null;
+        for (LuceneField field : gmd.getFields()) {
+            switch (field.getField()) {
+                case SolrConstants.METADATATYPE:
+                    metadataType = field.getValue();
+                    break;
+                case SolrConstants.LABEL:
+                    label = field.getValue();
+                    break;
+                case "MD_CORPORATION":
+                    corporation = field.getValue();
+                    break;
+                case "MD_LASTNAME":
+                    lastName = field.getValue();
+                    break;
+                case "MD_FIRSTNAME":
+                    givenNameList.add(field.getValue());
+                    break;
+                case "MD_DISPLAYFORM":
+                    displayForm = field.getValue();
+                    break;
+                case SolrConstants.GROUPFIELD:
+                    groupField = field.getValue();
+                    break;
+                case "MD_LIFEPERIOD":
+                    date = field.getValue();
+                    break;
+                case "MD_TERMSOFADDRESS":
+                    termsOfAddress = field.getValue();
+                    break;
+                case "MD_LINK":
+                    link = field.getValue();
+                    break;
+            }
+        }
+        Assert.assertEquals("MD_AUTHOR", label);
+        Assert.assertEquals(MetadataGroupType.PERSON.name(), metadataType);
+        Assert.assertEquals("Corporate_Name", corporation);
+        Assert.assertEquals("Last", lastName);
+        Assert.assertEquals(2, givenNameList.size());
+        Assert.assertEquals("First", givenNameList.get(0));
+        Assert.assertEquals("Second", givenNameList.get(1));
+        Assert.assertEquals("Display_Form", displayForm);
+        Assert.assertEquals("DATE", date);
+        Assert.assertEquals("Terms_Of_Address", termsOfAddress);
+        Assert.assertEquals("xlink", link);
+        Assert.assertEquals("MD_AUTHOR_Display_Form", groupField);
+    }
+
+    /**
+     * @see MetadataHelper#getGroupedMetadata(Element,GroupEntity,FieldConfig,String,StringBuilder,List)
+     * @verifies not lowercase certain fields
+     */
+    @Test
+    public void getGroupedMetadata_shouldNotLowercaseCertainFields() throws Exception {
+        List<FieldConfig> fieldConfigurations =
+                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
+        Assert.assertNotNull(fieldConfigurations);
+        Assert.assertEquals(1, fieldConfigurations.size());
+        FieldConfig fieldConfig = fieldConfigurations.get(0);
+        Assert.assertNotNull(fieldConfig.getGroupEntity());
+        fieldConfig.setLowercase(true);
+
+        Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
+        Assert.assertNotNull(docMods);
+        Assert.assertNotNull(docMods.getRootElement());
+
+        Element eleName = docMods.getRootElement().getChild("name", Configuration.getInstance().getNamespaces().get("mods"));
+        Assert.assertNotNull(eleName);
+        GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
+                new ArrayList<>());
+        Assert.assertFalse(gmd.getFields().isEmpty());
         Assert.assertEquals("display_form", gmd.getMainValue());
         String label = null;
         String metadataType = null;
@@ -188,6 +270,7 @@ public class MetadataHelperTest extends AbstractTest {
                     break;
             }
         }
+        Assert.assertEquals("MD_AUTHOR", label);
         Assert.assertEquals(MetadataGroupType.PERSON.name(), metadataType);
         Assert.assertEquals("corporate_name", corporation);
         Assert.assertEquals("last", lastName);
@@ -198,7 +281,7 @@ public class MetadataHelperTest extends AbstractTest {
         Assert.assertEquals("date", date);
         Assert.assertEquals("terms_of_address", termsOfAddress);
         Assert.assertEquals("xlink", link);
-        Assert.assertEquals("label_display_form", groupField);
+        Assert.assertEquals("MD_AUTHOR_Display_Form", groupField);
     }
 
     /**
