@@ -81,7 +81,7 @@ pipeline {
         }
         script {
           dockerimage.inside {
-            sh 'test -f  /opt/digiverso/indexer/solrIndexer.jar || echo "/opt/digiverso/indexer/solrIndexer.jar missing"'
+            sh 'test -f /usr/local/bin/solrIndexer.jar || ( echo "/usr/local/bin/solrIndexer.jar missing"; exit 1 )'
           }
         }
         script {
