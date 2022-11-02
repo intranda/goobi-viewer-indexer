@@ -147,7 +147,7 @@ pipeline {
     }
     success {
       node('controller') {
-        archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/indexerconfig_solr.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
+        archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
       }
     }
     changed {
