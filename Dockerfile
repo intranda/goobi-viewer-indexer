@@ -1,9 +1,10 @@
 FROM maven:3.6-jdk-11 AS BUILD
-# build indexer jar
+# you can use --build-arg build=false to skip viewer.war compilation, a viewer.war file needs to be available in target/viewer.war then
+ARG build=true
 
 COPY ./ /indexer
 WORKDIR /indexer
-RUN mvn -f goobi-viewer-indexer clean package
+RUN echo $build; if [ "$build" = "true" ]; then mvn -f goobi-viewer-indexer clean package; elif [ -f "/indexer/goobi-viewer-indexer/target/solr-Indexer.jar" ]; then echo "using existing indexer jar"; else echo "not supposed to build, but no indexer jar found either"; exit 1; fi 
 
 
 # start assembling the final image
