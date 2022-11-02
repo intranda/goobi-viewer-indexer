@@ -23,7 +23,7 @@ pipeline {
         sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean verify -U'
         recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
         dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
-        stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml' name:  'app'
+        stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
       }
     }
     stage('sonarcloud') {
