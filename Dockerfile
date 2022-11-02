@@ -14,6 +14,11 @@ LABEL org.opencontainers.image.authors="Matthias Geerdsen <matthias.geerdsen@int
 ENV SOLR_URL http://solr:8983/solr/collection1
 ENV VIEWER_URL http://viewer:8080/viewer
 
+RUN apt-get update && \
+	apt-get -y install libopenjp2-7 && \
+	apt-get -y clean && \
+	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 RUN mkdir -p /opt/digiverso/indexer
 
 COPY --from=BUILD  /indexer/goobi-viewer-indexer/target/solr-Indexer.jar /usr/local/bin/solrIndexer.jar
