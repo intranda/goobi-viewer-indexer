@@ -371,7 +371,7 @@ public class MetadataHelper {
                                 configurationItem.getNonSortConfigurations(),
                                 configurationItem.getValueNormalizers(), ret);
                     }
-                    if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
+                    if (configurationItem.isAddUntokenizedVersion()) {
                         ret.add(new LuceneField(fieldName + SolrConstants.SUFFIX_UNTOKENIZED, fieldValue));
                     }
 
@@ -1165,7 +1165,7 @@ public class MetadataHelper {
                                 // Add norm value to DEFAULT
                                 addValueToDefault(authorityField.getValue(), sbDefaultMetadataValues);
                             }
-                            if (configurationItem.isAddUntokenizedVersion() || groupLabel.startsWith("MD_")) {
+                            if (configurationItem.isAddUntokenizedVersion()) {
                                 luceneFields.add(new LuceneField(
                                         new StringBuilder(groupLabel).append(SolrConstants.SUFFIX_UNTOKENIZED).toString(),
                                         authorityField.getValue()));
