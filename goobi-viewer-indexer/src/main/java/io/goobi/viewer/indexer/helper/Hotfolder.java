@@ -333,6 +333,11 @@ public class Hotfolder {
             logger.info("Authority data retrieval is disabled.");
         }
 
+        // REST API token configuration
+        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+            logger.warn("Goobi viewer REST API token not found, communications disabled.");
+        }
+
         // E-mail configuration
         emailConfigurationComplete = checkEmailConfiguration();
         if (emailConfigurationComplete) {
