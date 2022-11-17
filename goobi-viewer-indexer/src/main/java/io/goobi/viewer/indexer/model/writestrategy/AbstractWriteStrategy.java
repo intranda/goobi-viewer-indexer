@@ -156,17 +156,37 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
             return;
         }
 
-        try {
-            Set<String> result = searchIndex.checkDuplicateFieldValues(Collections.singletonList(field), collectedValues.get(field), skipPi);
-            if (!result.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                for (String pi : result) {
-                    sb.append(' ').append(pi);
+        logger.info("Checking for duplicate {} values...", field);
+        int batch = 50;
+        List<String> allValues = collectedValues.get(field);
+        int start = 0;
+        int end = allValues.size();
+        logger.debug("values size: {}", allValues.size());
+        if (allValues.size() > batch) {
+            end = batch;
+        }
+        while (end <= allValues.size()) {
+            logger.debug("Checking {} values {}-{}", field, start, end - 1);
+            try {
+                Set<String> result = searchIndex.checkDuplicateFieldValues(Collections.singletonList(field), allValues.subList(start, end), skipPi);
+                if (!result.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (String pi : result) {
+                        sb.append(' ').append(pi);
+                    }
+                    throw new IndexerException(field + " values used in this record already exists on the following records: " + sb.toString());
                 }
-                throw new IndexerException(field + " values used in this record already exists on the following records: " + sb.toString());
+            } catch (SolrServerException | IOException e) {
+                throw new IndexerException(e.getMessage());
             }
-        } catch (SolrServerException | IOException e) {
-            throw new IndexerException(e.getMessage());
+            if (end == allValues.size()) {
+                break;
+            }
+            start += batch;
+            end += batch;
+            if (end > allValues.size()) {
+                end = allValues.size();
+            }
         }
     }
 }
