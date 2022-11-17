@@ -40,10 +40,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -62,7 +63,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final Logger logger = LogManager.getLogger(SerializingSolrWriteStrategy.class);
 
-    private SolrSearchIndex searchIndex;
     private Path tempFolder;
     private String rootDocIddoc;
     private List<String> docIddocs = new CopyOnWriteArrayList<>();
@@ -96,6 +96,15 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         if (save(doc, rootDocIddoc)) {
             docIddocs.add(rootDocIddoc);
             docsCounter.incrementAndGet();
+
+            // Add URN to set to check for duplicates later
+            if (doc.getField(SolrConstants.URN) != null) {
+                String urn = (String) doc.getFieldValue(SolrConstants.URN);
+                if (StringUtils.isNotEmpty(urn)) {
+                    List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
+                    urns.add(urn);
+                }
+            }
         }
     }
 
@@ -106,7 +115,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     @Override
     public void addDoc(SolrInputDocument doc) {
         addDocs(Collections.singletonList(doc));
-
     }
 
     /* (non-Javadoc)
@@ -120,6 +128,15 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             if (save(doc, iddoc)) {
                 docIddocs.add(iddoc);
                 docsCounter.incrementAndGet();
+
+                // Add URN to set to check for duplicates later
+                if (doc.getField(SolrConstants.URN) != null) {
+                    String urn = (String) doc.getFieldValue(SolrConstants.URN);
+                    if (StringUtils.isNotEmpty(urn)) {
+                        List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
+                        urns.add(urn);
+                    }
+                }
             }
         }
         logger.debug("Docs added: {}", docsCounter);
@@ -153,6 +170,16 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             pageDocFileNameIddocMap.put((String) doc.getFieldValue(SolrConstants.FILENAME), iddoc);
             pageDocPhysIdIddocMap.put((String) doc.getFieldValue(SolrConstants.PHYSID), iddoc);
             pageDocsCounter.incrementAndGet();
+
+            // Add URN to set to check for duplicates later
+            if (doc.getField(SolrConstants.IMAGEURN) != null) {
+                String urn = (String) doc.getFieldValue(SolrConstants.IMAGEURN);
+                if (StringUtils.isNotEmpty(urn)) {
+                    List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
+                    urns.add(urn);
+                }
+            }
+
             logger.debug("Page docs added: {}", pageDocsCounter);
         }
     }
@@ -240,6 +267,10 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
 
         sanitizeDoc(rootDoc);
+        
+        // Check for duplicate URNs
+        checkForValueCollisions(SolrConstants.URN, (String) rootDoc.getFieldValue(SolrConstants.PI));
+        
         logger.info("Writing {} structure/content documents to the index...", docIddocs.size());
         for (String iddoc : docIddocs) {
             SolrInputDocument doc = load(iddoc);

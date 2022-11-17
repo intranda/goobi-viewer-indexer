@@ -327,10 +327,11 @@ public class DublinCoreIndexer extends Indexer {
                 writeUserGeneratedContents(writeStrategy, dataFolders, indexObj);
             }
 
-            // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
-            logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
+
+            // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            logger.debug("Writing document to index...");
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
             logger.info("Successfully finished indexing '{}'.", dcFile.getFileName());
         } catch (Exception e) {
