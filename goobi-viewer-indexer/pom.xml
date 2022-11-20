@@ -50,7 +50,7 @@
 		<icu.version>72.1</icu.version>
 		<imageio-openjpeg.version>0.6.2</imageio-openjpeg.version>
 		<log4j.version>2.19.0</log4j.version>
-		<jackson.version>2.13.4</jackson.version>
+		<jackson.version>2.14.0</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
@@ -218,7 +218,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.13.4.2</version>
+			<version>${jackson.version}</version>
         </dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
