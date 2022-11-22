@@ -35,7 +35,7 @@
 
 		<!-- intranda libraries -->
 		<alto.version>1.5.9</alto.version>
-		<iiif-api-model.version>2.2.2</iiif-api-model.version>
+		<iiif-api-model.version>2.3.0</iiif-api-model.version>
 		<normdataimporter.version>1.9.4</normdataimporter.version>
 
 		<!-- other libraries -->
@@ -50,7 +50,7 @@
 		<icu.version>72.1</icu.version>
 		<imageio-openjpeg.version>0.6.2</imageio-openjpeg.version>
 		<log4j.version>2.19.0</log4j.version>
-		<jackson.version>2.14.0</jackson.version>
+		<jackson.version>2.14.1</jackson.version>
 		<jaxen.version>1.2.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
@@ -96,12 +96,6 @@
 			<groupId>de.intranda.api.iiif</groupId>
 			<artifactId>iiif-api-model</artifactId>
 			<version>${iiif-api-model.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>de.intranda.goobi</groupId>
