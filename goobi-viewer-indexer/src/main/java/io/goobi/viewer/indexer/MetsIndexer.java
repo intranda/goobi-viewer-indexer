@@ -40,7 +40,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -505,6 +504,7 @@ public class MetsIndexer extends Indexer {
             logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
+
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
             if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
                 logger.info("Re-indexing anchor...");
@@ -531,7 +531,7 @@ public class MetsIndexer extends Indexer {
         return ret;
     }
 
-    private String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) throws FatalIndexerException {
+    private static String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) throws FatalIndexerException {
         String filePathBanner = "";
         String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
         filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
@@ -542,22 +542,23 @@ public class MetsIndexer extends Indexer {
         }
         return "";
     }
-    
-    private String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) throws FatalIndexerException {
+
+    private static String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) throws FatalIndexerException {
         String filePathBanner = "";
-                
-        String xpathFilePtr = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID";
+
+        String xpathFilePtr =
+                "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID";
         List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).collect(Collectors.toList());
         for (String fileId : fileIds) {
-            String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@ID='"+ fileId +"']/mets:FLocat/@xlink:href";
+            String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@ID='" + fileId + "']/mets:FLocat/@xlink:href";
             filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
-            if(StringUtils.isNotBlank(filePathBanner)) {
+            if (StringUtils.isNotBlank(filePathBanner)) {
                 return filePathBanner;
             }
         }
         return filePathBanner;
     }
-    
+
     /**
      * Generates thumbnail info fields for the given docstruct. Also generates page docs mapped to this docstruct. <code>IndexObj.topstructPi</code>
      * must be set before calling this method.
@@ -593,11 +594,11 @@ public class MetsIndexer extends Indexer {
         String filePathBanner = null;
         if (isWork) {
             filePathBanner = getFilePathBannerFromFileSec(xp, useFileGroupGlobal);
-            if(StringUtils.isNotBlank(filePathBanner)) {
+            if (StringUtils.isNotBlank(filePathBanner)) {
                 logger.debug("Found representation thumbnail for {} in METS filesec: {}", indexObj.getLogId(), filePathBanner);
             } else {
                 filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroupGlobal);
-                if(StringUtils.isNotBlank(filePathBanner)) {
+                if (StringUtils.isNotBlank(filePathBanner)) {
                     logger.debug("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
                 } else if (StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
                     filePathBanner = indexObj.getThumbnailRepresent();

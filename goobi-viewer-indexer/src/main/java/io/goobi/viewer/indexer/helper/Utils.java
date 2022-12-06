@@ -176,8 +176,8 @@ public class Utils {
      * @throws HTTPException
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
-            throws FatalIndexerException, IOException, HTTPException {
-        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+            throws IOException, HTTPException {
+        if (StringUtils.isEmpty(token)) {
             return;
         }
 
@@ -208,15 +208,13 @@ public class Utils {
      * @throws ClientProtocolException
      * @throws IOException
      */
-    public static void submitDataToViewer(long fileCount)
-            throws FatalIndexerException {
+    public static void submitDataToViewer(long fileCount) throws FatalIndexerException {
         if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
             return;
         }
 
         String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version?token="
                 + Configuration.getInstance().getViewerAuthorizationToken();
-
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
@@ -546,6 +544,10 @@ public class Utils {
      * @return a {@link java.lang.String} object.
      */
     public static String removeRecordImagesFromCache(String pi) throws FatalIndexerException {
+        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+            return null;
+        }
+
         String viewerUrl = Configuration.getInstance().getViewerUrl();
         if (StringUtils.isEmpty(viewerUrl)) {
             return "<viewerUrl> is not configured.";

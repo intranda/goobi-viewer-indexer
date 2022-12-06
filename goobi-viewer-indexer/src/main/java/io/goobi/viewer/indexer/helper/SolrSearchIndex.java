@@ -22,9 +22,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +35,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -46,8 +50,6 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -769,5 +771,53 @@ public final class SolrSearchIndex {
         }
 
         return "BOOL_" + field;
+    }
+
+    /**
+     * 
+     * @param fields Field names to check
+     * @param values Values to check
+     * @param skipPi Record identifier to skip (typically the currently indexed record)
+     * @return Set of PI_TOPSTRUCT values that already possess given field values
+     * @throws SolrServerException
+     * @throws IOException
+     * @should return correct identifiers
+     * @should ignore records that match skipPi
+     */
+    public Set<String> checkDuplicateFieldValues(List<String> fields, List<String> values, String skipPi) throws SolrServerException, IOException {
+        if (fields == null || fields.isEmpty() || values == null || values.isEmpty()) {
+            return Collections.emptySet();
+        }
+        StringBuilder sbQuery = new StringBuilder("+(");
+        for (String field : fields) {
+            sbQuery.append(field).append(":(");
+            for (String value : values) {
+                sbQuery.append('"').append(value).append("\" ");
+            }
+            sbQuery.append(") ");
+        }
+
+        sbQuery.append(')');
+
+        if (StringUtils.isNotEmpty(skipPi)) {
+            sbQuery.append(" -").append(SolrConstants.PI_TOPSTRUCT).append(":\"").append(skipPi).append('"');
+        }
+
+        SolrDocumentList found = search(sbQuery.toString(), Collections.singletonList(SolrConstants.PI_TOPSTRUCT));
+        if (found.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<String> ret = new HashSet<>(found.size());
+        for (SolrDocument doc : found) {
+            if (doc.containsKey(SolrConstants.PI_TOPSTRUCT)) {
+                ret.add((String) doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            } else {
+                logger.error("Solr document {} contains a duplicate value but no {} field.", doc, SolrConstants.PI_TOPSTRUCT);
+                ret.add("PI NOT FOUND");
+            }
+        }
+
+        return ret;
     }
 }

@@ -18,16 +18,23 @@ package io.goobi.viewer.indexer.model.writestrategy;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrInputDocument;
 
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
@@ -40,6 +47,11 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
 
     private static final Logger logger = LogManager.getLogger(AbstractWriteStrategy.class);
+
+    protected SolrSearchIndex searchIndex;
+
+    /** Collected field values for further checks, etc. */
+    protected Map<String, List<String>> collectedValues = new HashMap<>();
 
     /**
      * 
@@ -130,6 +142,51 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
             doc.removeField(entry.getKey());
             doc.addField(entry.getKey(), fieldsToTrim.get(entry.getKey()));
         }
+    }
 
+    /**
+     * Checks whether values of the given field in the input docs already exist in the index. If so, throws an exception to let indexing fail.
+     * 
+     * @param field Field whose values to check
+     * @param skipPi Record identifier to skip (typically the currently indexed record)
+     * @throws IndexerException If duplicates are found
+     */
+    protected void checkForValueCollisions(String field, String skipPi) throws IndexerException {
+        if (StringUtils.isEmpty(field) || !collectedValues.containsKey(field)) {
+            return;
+        }
+
+        logger.info("Checking for duplicate {} values...", field);
+        int batch = 50;
+        List<String> allValues = collectedValues.get(field);
+        int start = 0;
+        int end = allValues.size();
+        logger.debug("values size: {}", allValues.size());
+        if (allValues.size() > batch) {
+            end = batch;
+        }
+        while (end <= allValues.size()) {
+            logger.debug("Checking {} values {}-{}", field, start, end - 1);
+            try {
+                Set<String> result = searchIndex.checkDuplicateFieldValues(Collections.singletonList(field), allValues.subList(start, end), skipPi);
+                if (!result.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (String pi : result) {
+                        sb.append(' ').append(pi);
+                    }
+                    throw new IndexerException(field + " values used in this record already exists on the following records: " + sb.toString());
+                }
+            } catch (SolrServerException | IOException e) {
+                throw new IndexerException(e.getMessage());
+            }
+            if (end == allValues.size()) {
+                break;
+            }
+            start += batch;
+            end += batch;
+            if (end > allValues.size()) {
+                end = allValues.size();
+            }
+        }
     }
 }

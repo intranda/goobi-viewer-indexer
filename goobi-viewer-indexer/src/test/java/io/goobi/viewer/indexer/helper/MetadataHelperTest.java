@@ -38,7 +38,6 @@ import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
-import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
@@ -571,5 +570,23 @@ public class MetadataHelperTest extends AbstractTest {
         Assert.assertEquals("three", result.get(10).getValue());
         Assert.assertEquals(MetadataHelper.FIELD_HAS_WKT_COORDS, result.get(12).getField());
         Assert.assertEquals("false", result.get(12).getValue());
+    }
+
+    /**
+     * @see MetadataHelper#toOneToken(String,String)
+     * @verifies remove non-alphanumerical characters
+     */
+    @Test
+    public void toOneToken_shouldRemoveNonalphanumericalCharacters() throws Exception {
+        Assert.assertEquals("LoremIpsum", MetadataHelper.toOneToken("Lorem Ipsum!", null));
+    }
+
+    /**
+     * @see MetadataHelper#toOneToken(String,String)
+     * @verifies replace splitting char
+     */
+    @Test
+    public void toOneToken_shouldReplaceSplittingChar() throws Exception {
+        Assert.assertEquals("foo.bar", MetadataHelper.toOneToken("foo#bar", "#"));
     }
 }

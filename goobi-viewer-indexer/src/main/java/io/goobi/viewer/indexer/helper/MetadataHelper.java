@@ -289,9 +289,6 @@ public class MetadataHelper {
                                             fieldValue = fieldValue.substring(0, fieldValue.length() - 1);
                                         }
                                     }
-                                    if (configurationItem.isOneToken()) {
-                                        fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
-                                    }
                                     // Apply XPath prefix
                                     if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
                                         fieldValue = xpathConfig.getPrefix() + fieldValue;
@@ -374,7 +371,7 @@ public class MetadataHelper {
                                 configurationItem.getNonSortConfigurations(),
                                 configurationItem.getValueNormalizers(), ret);
                     }
-                    if (configurationItem.isAddUntokenizedVersion() || fieldName.startsWith("MD_")) {
+                    if (configurationItem.isAddUntokenizedVersion()) {
                         ret.add(new LuceneField(fieldName + SolrConstants.SUFFIX_UNTOKENIZED, fieldValue));
                     }
 
@@ -643,7 +640,6 @@ public class MetadataHelper {
      * 
      * @param configurationItem
      * @param fieldValue
-     * @param sbDefaultMetadataValues
      * @return
      * @throws FatalIndexerException
      */
@@ -664,6 +660,10 @@ public class MetadataHelper {
         } else if (configurationItem.getFieldname().equals(SolrConstants.PI)) {
             // PI modifications
             fieldValue = applyIdentifierModifications(fieldValue);
+        }
+        
+        if (configurationItem.isOneToken()) {
+            fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
         }
 
         if (configurationItem.isLowercase()) {
@@ -712,7 +712,7 @@ public class MetadataHelper {
                 sb.append(entry.getKey());
                 ret = ret.replace(sb.toString(), entry.getValue());
             } else if (entry.getKey() instanceof String) {
-                logger.debug("replace rule: {} -> {}", entry.getKey(), entry.getValue());
+                logger.trace("replace rule: {} -> {}", entry.getKey(), entry.getValue());
                 if (((String) entry.getKey()).startsWith("REGEX:")) {
                     ret = ret.replaceAll(((String) entry.getKey()).substring(6), entry.getValue());
                 } else {
@@ -830,8 +830,10 @@ public class MetadataHelper {
      * @param inValue String
      * @param splittingChar
      * @return String
+     * @should remove non-alphanumerical characters
+     * @should replace splitting char
      */
-    private static String toOneToken(String inValue, String splittingChar) {
+    static String toOneToken(String inValue, String splittingChar) {
         String value = inValue;
         if (StringUtils.isNotEmpty(splittingChar)) {
             value = value.replace(" ", "");
@@ -1163,7 +1165,7 @@ public class MetadataHelper {
                                 // Add norm value to DEFAULT
                                 addValueToDefault(authorityField.getValue(), sbDefaultMetadataValues);
                             }
-                            if (configurationItem.isAddUntokenizedVersion() || groupLabel.startsWith("MD_")) {
+                            if (configurationItem.isAddUntokenizedVersion()) {
                                 luceneFields.add(new LuceneField(
                                         new StringBuilder(groupLabel).append(SolrConstants.SUFFIX_UNTOKENIZED).toString(),
                                         authorityField.getValue()));
