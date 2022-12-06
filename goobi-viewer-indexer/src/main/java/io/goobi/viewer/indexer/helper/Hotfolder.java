@@ -333,6 +333,11 @@ public class Hotfolder {
             logger.info("Authority data retrieval is disabled.");
         }
 
+        // REST API token configuration
+        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+            logger.warn("Goobi viewer REST API token not found, communications disabled.");
+        }
+
         // E-mail configuration
         emailConfigurationComplete = checkEmailConfiguration();
         if (emailConfigurationComplete) {
@@ -1018,7 +1023,7 @@ public class Hotfolder {
                 // Delete all data folders for this record from the hotfolder
                 DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
-            handleError(metsFile, resp[1]);
+            handleError(metsFile, resp[1], FileFormat.METS);
             try {
                 Files.delete(metsFile);
             } catch (IOException e) {
@@ -1164,8 +1169,6 @@ public class Hotfolder {
                                 logger.info("{} MIX file(s) copied.", counter);
                             }
                         }
-                    } else {
-                        handleError(lidoFile, resp[1]);
                     }
 
                     // Update data repository cache map in the Goobi viewer
@@ -1176,6 +1179,8 @@ public class Hotfolder {
                             logger.error(e.getMessage(), e);
                         }
                     }
+                } else {
+                    handleError(lidoFile, resp[1], FileFormat.LIDO);
                 }
             }
         } finally {
@@ -1333,6 +1338,8 @@ public class Hotfolder {
                             logger.error(e.getMessage(), e);
                         }
                     }
+                } else {
+                    handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
                 }
             }
         } finally {
@@ -1531,6 +1538,7 @@ public class Hotfolder {
                 // Delete all data folders for this record from the hotfolder
                 DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
+            handleError(dcFile, resp[1], FileFormat.DUBLINCORE);
             try {
                 Files.delete(dcFile);
             } catch (IOException e) {
@@ -1669,7 +1677,7 @@ public class Hotfolder {
                 // Delete all data folders for this record from the hotfolder
                 DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
-            handleError(mainFile, resp[1]);
+            handleError(mainFile, resp[1], FileFormat.WORLDVIEWS);
             try {
                 Files.delete(mainFile);
             } catch (IOException e) {
@@ -1780,7 +1788,7 @@ public class Hotfolder {
                     Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_UGC));
                 }
             }
-            handleError(dataFile, resp[1]);
+            handleError(dataFile, resp[1], FileFormat.UNKNOWN);
             try {
                 Files.delete(dataFile);
             } catch (IOException e) {
@@ -1794,18 +1802,22 @@ public class Hotfolder {
      * 
      * @param dataFile {@link File}
      * @param error
+     * @param format
      */
-    private void handleError(Path dataFile, String error) {
+    private void handleError(Path dataFile, String error, FileFormat format) {
+        logger.error("Failed to process '{}'.", dataFile.getFileName());
         // Error log file
-        File logFile = new File(errorMets.toFile(), FilenameUtils.getBaseName(dataFile.getFileName().toString()) + ".log");
-        try (FileWriter fw = new FileWriter(logFile); BufferedWriter out = new BufferedWriter(fw)) {
-            Files.copy(dataFile, Paths.get(errorMets.toAbsolutePath().toString(), dataFile.getFileName().toString()),
-                    StandardCopyOption.REPLACE_EXISTING);
-            if (error != null) {
-                out.write(error);
+        if (FileFormat.METS.equals(format)) {
+            File logFile = new File(errorMets.toFile(), FilenameUtils.getBaseName(dataFile.getFileName().toString()) + ".log");
+            try (FileWriter fw = new FileWriter(logFile); BufferedWriter out = new BufferedWriter(fw)) {
+                Files.copy(dataFile, Paths.get(errorMets.toAbsolutePath().toString(), dataFile.getFileName().toString()),
+                        StandardCopyOption.REPLACE_EXISTING);
+                if (error != null) {
+                    out.write(error);
+                }
+            } catch (IOException e) {
+                logger.error("Data file could not be moved to errorMets!", e);
             }
-        } catch (IOException e) {
-            logger.error("Data file could not be moved to errorMets!", e);
         }
     }
 
@@ -1870,14 +1882,14 @@ public class Hotfolder {
         }
 
         @Override
-        public boolean accept(File pathname) {
-            if (pathname.getName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
+        public boolean accept(File pathName) {
+            if (pathName != null && pathName.getName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
                 try {
-                    if (pathname.isFile()) {
-                        total += FileUtils.sizeOf(pathname);
-                    } else {
-                        pathname.listFiles(this);
-                        total += FileUtils.sizeOfDirectory(pathname);
+                    if (pathName.isFile()) {
+                        total += FileUtils.sizeOf(pathName);
+                    } else if (pathName.isDirectory()) {
+                        pathName.listFiles(this);
+                        total += FileUtils.sizeOfDirectory(pathName);
                     }
                 } catch (IllegalArgumentException e) {
                     logger.error(e.getMessage());

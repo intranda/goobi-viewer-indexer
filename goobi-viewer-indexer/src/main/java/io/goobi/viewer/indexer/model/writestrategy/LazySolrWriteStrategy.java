@@ -19,12 +19,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.solr.common.SolrInputDocument;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -42,7 +44,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     private static final Logger logger = LogManager.getLogger(LazySolrWriteStrategy.class);
 
-    protected SolrSearchIndex searchIndex;
     protected SolrInputDocument rootDoc;
     protected List<SolrInputDocument> docsToAdd = new CopyOnWriteArrayList<>();
     protected Map<Integer, SolrInputDocument> pageOrderMap = new ConcurrentHashMap<>();
@@ -67,6 +68,14 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     public void setRootDoc(SolrInputDocument doc) {
         this.rootDoc = doc;
 
+        // Add URN to set to check for duplicates later
+        if (doc != null && doc.getField(SolrConstants.URN) != null) {
+            String urn = (String) doc.getFieldValue(SolrConstants.URN);
+            if (StringUtils.isNotEmpty(urn)) {
+                List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
+                urns.add(urn);
+            }
+        }
     }
 
     /**
@@ -94,6 +103,17 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     public void addDocs(List<SolrInputDocument> docs) {
         docsToAdd.addAll(docs);
         logger.debug("Docs to add: {}", docsToAdd.size());
+
+        for (SolrInputDocument doc : docs) {
+            // Add URN to set to check for duplicates later
+            if (doc.getField(SolrConstants.URN) != null) {
+                String urn = (String) doc.getFieldValue(SolrConstants.URN);
+                if (StringUtils.isNotEmpty(urn)) {
+                    List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
+                    urns.add(urn);
+                }
+            }
+        }
     }
 
     /* (non-Javadoc)
@@ -109,6 +129,15 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         pageOrderMap.put(order, doc);
         String key = (String) doc.getFieldValue(SolrConstants.PHYSID);
         physIdPageMap.put(key, doc);
+
+        // Add URN to set to check for duplicates later
+        if (doc.getField(SolrConstants.IMAGEURN) != null) {
+            String urn = (String) doc.getFieldValue(SolrConstants.IMAGEURN);
+            if (StringUtils.isNotEmpty(urn)) {
+                List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
+                urns.add(urn);
+            }
+        }
     }
 
     /* (non-Javadoc)
@@ -179,8 +208,12 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         }
         docsToAdd.add(rootDoc);
         String pi = (String) rootDoc.getFieldValue(SolrConstants.PI);
-        for (int order : pageOrderMap.keySet()) {
-            SolrInputDocument pageDoc = pageOrderMap.get(order);
+
+        // Check for duplicate URNs
+        checkForValueCollisions(SolrConstants.URN, pi);
+
+        for (Entry<Integer, SolrInputDocument> entry : pageOrderMap.entrySet()) {
+            SolrInputDocument pageDoc = entry.getValue();
             // Do not add shape docs
             if (DocType.SHAPE.name().equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 continue;
@@ -199,7 +232,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
         for (SolrInputDocument doc : docsToAdd) {
             if (doc.getFieldValue("GROUPFIELD") == null) {
-                logger.error("Field has no GROUPFIELD: {}", doc.toString());
+                logger.error("Field has no GROUPFIELD: {}", doc);
             }
             if (aggregateRecords) {
                 // Add SUPER* fields to root doc

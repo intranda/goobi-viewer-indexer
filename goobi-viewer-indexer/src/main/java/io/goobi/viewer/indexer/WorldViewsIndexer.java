@@ -354,10 +354,11 @@ public class WorldViewsIndexer extends Indexer {
                 indexedChildrenFileList = true;
             }
 
-            // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
-            logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
+
+            // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            logger.debug("Writing document to index...");
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
             if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
                 logger.info("Re-indexing anchor...");
@@ -382,7 +383,7 @@ public class WorldViewsIndexer extends Indexer {
      * Generates thumbnail info fields for the given docstruct. Also generates page docs mapped to this docstruct. <code>IndexObj.topstructPi</code>
      * must be set before calling this method.
      * 
-     * @param indexObj {@link IndexObject}
+     * @param rootIndexObj {@link IndexObject}
      * @param writeStrategy
      * @param dataFolders
      * @param depth Depth of the current docstruct in the docstruct hierarchy.

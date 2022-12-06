@@ -19,12 +19,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -32,10 +36,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
+import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -261,5 +264,47 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MD_FOO"));
         Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MDNUM_FOO"));
         Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("SORT_FOO"));
+    }
+
+    /**
+     * @see SolrSearchIndex#checkDuplicateFieldValues(List,List)
+     * @verifies return correct identifiers
+     */
+    @Test
+    public void checkDuplicateFieldValues_shouldReturnCorrectIdentifiers() throws Exception {
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+
+        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
+                new HashMap<>(), null, 1, false);
+        Assert.assertNull(ret[1]);
+        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
+                new HashMap<>(), null, 1, false);
+        Assert.assertNull(ret[1]);
+        Set<String> result = hotfolder.getSearchIndex()
+                .checkDuplicateFieldValues(Collections.singletonList(SolrConstants.PI_TOPSTRUCT), Arrays.asList("AC06736966", "H030001"), null);
+        Assert.assertEquals(2, result.size());
+        Assert.assertTrue(result.contains("H030001"));
+        Assert.assertTrue(result.contains("AC06736966"));
+    }
+
+    /**
+     * @see SolrSearchIndex#checkDuplicateFieldValues(List,List,String)
+     * @verifies ignore records that match skipPi
+     */
+    @Test
+    public void checkDuplicateFieldValues_shouldIgnoreRecordsThatMatchSkipPi() throws Exception {
+        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+
+        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
+                new HashMap<>(), null, 1, false);
+        Assert.assertNull(ret[1]);
+        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
+                new HashMap<>(), null, 1, false);
+        Assert.assertNull(ret[1]);
+        Set<String> result = hotfolder.getSearchIndex()
+                .checkDuplicateFieldValues(Collections.singletonList(SolrConstants.PI_TOPSTRUCT), Arrays.asList("AC06736966", "H030001"),
+                        "AC06736966");
+        Assert.assertEquals(1, result.size());
+        Assert.assertTrue(result.contains("H030001"));
     }
 }

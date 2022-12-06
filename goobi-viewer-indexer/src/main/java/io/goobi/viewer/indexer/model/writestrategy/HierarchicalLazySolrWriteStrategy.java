@@ -17,6 +17,9 @@ package io.goobi.viewer.indexer.model.writestrategy;
 
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Map.Entry;
+
 import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
@@ -25,7 +28,9 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**
- * <p>HierarchicalLazySolrWriteStrategy class.</p>
+ * <p>
+ * HierarchicalLazySolrWriteStrategy class.
+ * </p>
  *
  */
 public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
@@ -48,18 +53,23 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
         if (rootDoc == null) {
             throw new IndexerException("rootDoc may not be null");
         }
-        
-        sanitizeDoc(rootDoc);
 
-        for (int order : pageOrderMap.keySet()) {
-            SolrInputDocument pageDoc = pageOrderMap.get(order);
+        sanitizeDoc(rootDoc);
+        
+        String pi = (String) rootDoc.getFieldValue(SolrConstants.PI);
+        
+        // Check for duplicate URNs
+        checkForValueCollisions(SolrConstants.URN, pi);
+
+        for (Entry<Integer, SolrInputDocument> entry : pageOrderMap.entrySet()) {
+            SolrInputDocument pageDoc = entry.getValue();
             checkAndAddAccessCondition(pageDoc);
             docsToAdd.add(pageDoc);
         }
 
         for (SolrInputDocument doc : docsToAdd) {
             if (doc.getFieldValue("GROUPFIELD") == null) {
-                logger.error("Field has no GROUPFIELD: {}", doc.toString());
+                logger.error("Field has no GROUPFIELD: {}", doc);
             }
             sanitizeDoc(doc);
             rootDoc.addChildDocument(doc);

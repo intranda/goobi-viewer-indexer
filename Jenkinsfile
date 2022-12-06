@@ -8,12 +8,6 @@ pipeline {
   }
 
   stages {
-    stage('prepare') {
-      agent any
-      steps {
-        sh 'git clean -fdx'
-      }
-    }
     stage('build') {
       agent {
         docker {
@@ -25,9 +19,11 @@ pipeline {
         }
       }
       steps {
-              sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean verify -U'
-              recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
-              dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
+        sh 'git clean -fdx'
+        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean verify -U'
+        recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
+        dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
+        stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
       }
     }
     stage('sonarcloud') {
@@ -75,15 +71,17 @@ pipeline {
     stage('build, test and publish docker image') {
       agent {label 'controller'}
       steps {
+        unstash 'app'
+
         script{
           docker.withRegistry('https://nexus.intranda.com:4443','jenkins-docker'){
-            dockerimage = docker.build("goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
-            dockerimage_public = docker.build("intranda/goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}")
+            dockerimage = docker.build("goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}", "--no-cache --build-arg build=false .")
+            dockerimage_public = docker.build("intranda/goobi-viewer-indexer:${BRANCH_NAME}-${env.BUILD_ID}_${env.GIT_COMMIT}",  "--build-arg build=false .")
           }
         }
         script {
           dockerimage.inside {
-            sh 'test -f  /opt/digiverso/indexer/solrIndexer.jar || echo "/opt/digiverso/indexer/solrIndexer.jar missing"'
+            sh 'test -f /usr/local/bin/solrIndexer.jar || ( echo "/usr/local/bin/solrIndexer.jar missing"; exit 1 )'
           }
         }
         script {
@@ -152,7 +150,7 @@ pipeline {
     }
     success {
       node('controller') {
-        archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/indexerconfig_solr.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
+        archiveArtifacts artifacts: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml, */src/main/resources/other/solrindexer.service', fingerprint: true
       }
     }
     changed {
