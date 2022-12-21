@@ -53,6 +53,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -60,8 +62,6 @@ import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -1716,13 +1716,14 @@ public abstract class Indexer {
      * 
      * @param doc Page Solr input document
      * @param dataFolders Folder paths containing full-text files
+     * @param dataRepo
      * @param pi Record identifier
      * @param order Page number
      * @param altoURL Optional URL for ALTO download
      * @throws FatalIndexerException
      */
-    protected void addFullTextToPageDoc(SolrInputDocument doc, Map<String, Path> dataFolders, String pi, int order, String altoURL)
-            throws FatalIndexerException {
+    protected void addFullTextToPageDoc(SolrInputDocument doc, Map<String, Path> dataFolders, DataRepository dataRepo, String pi, int order,
+            String altoURL) throws FatalIndexerException {
         if (doc == null || dataFolders == null) {
             return;
         }
@@ -1759,7 +1760,7 @@ public abstract class Indexer {
             if (fulltext != null) {
                 foundCrowdsourcingData = true;
                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
-                doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName().toString()
+                doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepo.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName().toString()
                         + '/' + pi + '/' + baseFileName + TXT_EXTENSION);
                 logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
             }
@@ -1787,7 +1788,10 @@ public abstract class Indexer {
                     Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
             if (fulltext != null) {
                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
-                doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepository.getDir(DataRepository.PARAM_FULLTEXT).getFileName().toString() + '/'
+                doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepo
+                        .getDir(DataRepository.PARAM_FULLTEXT)
+                        .getFileName()
+                        .toString() + '/'
                         + pi + '/' + baseFileName + TXT_EXTENSION);
                 logger.debug("Added FULLTEXT from regular plain text for page {}", order);
             }
@@ -1854,7 +1858,7 @@ public abstract class Indexer {
                             // Create PARAM_ALTO_CONVERTED dir in hotfolder for download, if it doesn't yet exist
                             if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) == null) {
                                 dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
-                                        Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
+                                        Paths.get(dataRepo.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
                                 Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
                             }
                             if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {

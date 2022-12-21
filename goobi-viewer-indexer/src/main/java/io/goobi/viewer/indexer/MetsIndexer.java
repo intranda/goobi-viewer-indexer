@@ -1277,7 +1277,7 @@ public class MetsIndexer extends Indexer {
         }
 
         if (dataFolders != null) {
-            addFullTextToPageDoc(doc, dataFolders, pi, order, altoURL);
+            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, altoURL);
         }
 
         writeStrategy.addPageDoc(doc);

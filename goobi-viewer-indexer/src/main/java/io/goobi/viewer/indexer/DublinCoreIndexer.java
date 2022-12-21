@@ -609,7 +609,7 @@ public class DublinCoreIndexer extends Indexer {
         }
 
         if (dataFolders != null) {
-            addFullTextToPageDoc(doc, dataFolders, pi, order, null);
+            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, null);
         }
 
         writeStrategy.addPageDoc(doc);
