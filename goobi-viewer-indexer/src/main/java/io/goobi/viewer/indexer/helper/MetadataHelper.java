@@ -661,7 +661,7 @@ public class MetadataHelper {
             // PI modifications
             fieldValue = applyIdentifierModifications(fieldValue);
         }
-        
+
         if (configurationItem.isOneToken()) {
             fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
         }
@@ -962,16 +962,14 @@ public class MetadataHelper {
             // First century years are <= 2
             yearString = "0";
         }
-        int century = Integer.valueOf(yearString);
+        int century = Integer.parseInt(yearString);
         if (bc) {
             century *= -1;
             century -= 1;
         } else {
             century++;
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("year: " + year + ", century: " + century);
-        }
+        logger.debug("year: {}, century: {}", year, century);
 
         return century;
     }
