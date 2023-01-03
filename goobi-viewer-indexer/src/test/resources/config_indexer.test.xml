@@ -109,6 +109,17 @@
         <!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
         <viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>
+    
+    <proxy>
+        <!-- proxyUrl: Proxy URL -->
+        <proxyUrl>my.proxy</proxyUrl>
+        <!-- proxyUrl: Proxy port -->
+        <proxyPort>9999</proxyPort>
+        <!-- whitelist: List of hosts not to be accessed via proxy -->
+        <whitelist>
+            <host>localhost</host>
+        </whitelist>
+    </proxy>
 	
     <performance>
 	    <!-- If the METS file size exceeds the given number (in bytes), an alternate 

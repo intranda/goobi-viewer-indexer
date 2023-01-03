@@ -126,7 +126,16 @@
 		<viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>
 
-
+    <proxy>
+        <!-- proxyUrl: Proxy URL -->
+        <proxyUrl></proxyUrl>
+        <!-- proxyUrl: Proxy port -->
+        <proxyPort></proxyPort>
+        <!-- whitelist: List of hosts not to be accessed via proxy -->
+        <whitelist>
+            <!-- <host></host> -->
+        </whitelist>
+    </proxy>
 
 	<!-- TODO add to manual -->
     <performance>

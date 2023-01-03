@@ -15,7 +15,10 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -273,16 +276,17 @@ public final class Configuration {
     }
 
     /**
-     * <p>
-     * getList.
-     * </p>
-     *
-     * @param inPath a {@link java.lang.String} object.
-     * @return a {@link java.util.List} object.
+     * 
+     * @param inPath
+     * @return
      */
-    @SuppressWarnings({ "rawtypes" })
-    public List getList(String inPath) {
-        return getConfig().getList(inPath, getConfig().getList(inPath));
+    public List<String> getStringList(String inPath) {
+        String[] arr = getConfig().getStringArray(inPath);
+        if (arr != null && arr.length > 0) {
+            return Arrays.asList(arr);
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -552,6 +556,44 @@ public final class Configuration {
      */
     public Map<String, Namespace> getNamespaces() {
         return namespaces;
+    }
+
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public String getProxyUrl() {
+        return getString("proxy.proxyUrl");
+    }
+
+    /**
+     * 
+     * @return Configured port number; 0 if none found
+     * @should return correct value
+     */
+    public int getProxyPort() {
+        return getInt("proxy.proxyPort", 0);
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public List<String> getProxyWhitelist() {
+        return getStringList("proxy.whitelist.host");
+    }
+
+    /**
+     * 
+     * @param url
+     * @return
+     * @throws MalformedURLException
+     * @should return true if host whitelisted
+     */
+    public boolean isProxyWhitelisted(String url) throws MalformedURLException {
+        URL urlAsURL = new URL(url);
+        return getProxyWhitelist().contains(urlAsURL.getHost());
     }
 
     /**

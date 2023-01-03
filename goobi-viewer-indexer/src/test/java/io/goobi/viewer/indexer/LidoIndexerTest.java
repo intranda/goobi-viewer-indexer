@@ -68,7 +68,6 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(hotfolder, indexer.hotfolder);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testIndexMimeType() throws Exception {
         File lidoVideoFile = new File("src/test/resources/LIDO/1292624.xml");
@@ -81,7 +80,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_MEDIA, lidoVideoMediaFolder.getAbsoluteFile().toPath());
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
+                    Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -113,7 +112,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
+                    Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -179,7 +178,6 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
             Map<String, Boolean> filenameMap = new HashMap<>();
             Map<Integer, Boolean> orderMap = new HashMap<>();
-            Map<String, Boolean> physIdMap = new HashMap<>();
 
             for (SolrDocument doc : docList) {
                 {
@@ -310,9 +308,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
-            @SuppressWarnings("unchecked")
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
+                    Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -370,9 +367,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         }
 
         // Re-index
-        @SuppressWarnings("unchecked")
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
-                Configuration.getInstance().getList("init.lido.imageXPath"), false, false);
+                Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
         Assert.assertNotEquals("ERROR", ret[0]);
 
         String newIddoc;

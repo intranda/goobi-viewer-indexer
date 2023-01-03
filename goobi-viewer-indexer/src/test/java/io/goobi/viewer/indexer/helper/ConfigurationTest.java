@@ -278,4 +278,31 @@ public class ConfigurationTest extends AbstractTest {
     public void getAuthorityDataCacheRecordTTL_shouldReturnCorrectValue() throws Exception {
         Assert.assertEquals(12, Configuration.getInstance().getAuthorityDataCacheRecordTTL());
     }
+
+    /**
+     * @see Configuration#getProxyUrl()
+     * @verifies return correct value
+     */
+    @Test
+    public void getProxyUrl_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals("my.proxy", Configuration.getInstance().getProxyUrl());
+    }
+
+    /**
+     * @see Configuration#getProxyPort()
+     * @verifies return correct value
+     */
+    @Test
+    public void getProxyPort_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals(9999, Configuration.getInstance().getProxyPort());
+    }
+
+    /**
+     * @see Configuration#isProxyWhitelisted(String)
+     * @verifies return true if host whitelisted
+     */
+    @Test
+    public void isProxyWhitelisted_shouldReturnTrueIfHostWhitelisted() throws Exception {
+        Assert.assertTrue(Configuration.getInstance().isProxyWhitelisted("http://localhost:1234"));
+    }
 }
