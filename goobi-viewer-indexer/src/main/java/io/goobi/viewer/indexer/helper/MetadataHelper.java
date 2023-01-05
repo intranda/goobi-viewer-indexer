@@ -17,8 +17,6 @@ package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -441,14 +439,14 @@ public class MetadataHelper {
             String proxyUrl = null;
             int proxyPort = 0;
             try {
-                if (!Configuration.getInstance().isProxyWhitelisted(url)) {
+                if (Configuration.getInstance().isProxyEnabled() && !Configuration.getInstance().isHostProxyWhitelisted(url)) {
                     proxyUrl = Configuration.getInstance().getProxyUrl();
                     proxyPort = Configuration.getInstance().getProxyPort();
                 }
             } catch (MalformedURLException e) {
                 logger.error(e.getMessage());
             }
-            
+
             rec = NormDataImporter.getSingleRecord(url, proxyUrl, proxyPort);
             if (rec == null) {
                 logger.warn("Authority dataset could not be retrieved: {}", url);

@@ -280,6 +280,15 @@ public class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#isProxyEnabled()
+     * @verifies return correct value
+     */
+    @Test
+    public void isProxyEnabled_shouldReturnCorrectValue() throws Exception {
+        Assert.assertTrue(Configuration.getInstance().isProxyEnabled());
+    }
+
+    /**
      * @see Configuration#getProxyUrl()
      * @verifies return correct value
      */
@@ -298,11 +307,11 @@ public class ConfigurationTest extends AbstractTest {
     }
 
     /**
-     * @see Configuration#isProxyWhitelisted(String)
+     * @see Configuration#isHostProxyWhitelisted(String)
      * @verifies return true if host whitelisted
      */
     @Test
-    public void isProxyWhitelisted_shouldReturnTrueIfHostWhitelisted() throws Exception {
-        Assert.assertTrue(Configuration.getInstance().isProxyWhitelisted("http://localhost:1234"));
+    public void isHostProxyWhitelistedd_shouldReturnTrueIfHostWhitelisted() throws Exception {
+        Assert.assertTrue(Configuration.getInstance().isHostProxyWhitelisted("http://localhost:1234"));
     }
 }

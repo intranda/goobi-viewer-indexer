@@ -560,6 +560,15 @@ public final class Configuration {
 
     /**
      * 
+     * @return true if enabled; false otherwise
+     * @should return correct value
+     */
+    public boolean isProxyEnabled() {
+        return getBoolean("proxy[@enabled]", false);
+    }
+
+    /**
+     * 
      * @return
      * @should return correct value
      */
@@ -591,7 +600,7 @@ public final class Configuration {
      * @throws MalformedURLException
      * @should return true if host whitelisted
      */
-    public boolean isProxyWhitelisted(String url) throws MalformedURLException {
+    public boolean isHostProxyWhitelisted(String url) throws MalformedURLException {
         URL urlAsURL = new URL(url);
         return getProxyWhitelist().contains(urlAsURL.getHost());
     }

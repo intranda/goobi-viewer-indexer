@@ -126,7 +126,8 @@
 		<viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>
 
-    <proxy>
+    <!-- proxy/@enabled: If false, the proxy configuration will be ignored; default is false. -->
+    <proxy enabled="false">
         <!-- proxyUrl: Proxy URL -->
         <proxyUrl></proxyUrl>
         <!-- proxyUrl: Proxy port -->
