@@ -526,7 +526,7 @@ public class DublinCoreIndexer extends Indexer {
         // Generate pages sequentially
         int order = pageCountStart;
         for (final Element eleImage : eleImageList) {
-            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), order, writeStrategy,
+            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, order, writeStrategy,
                     dataFolders)) {
                 order++;
             }
@@ -538,13 +538,15 @@ public class DublinCoreIndexer extends Indexer {
      * 
      * @param eleImage
      * @param iddoc
+     * @param pi
      * @param order
      * @param writeStrategy
      * @param dataFolders
      * @return
      * @throws FatalIndexerException
      */
-    boolean generatePageDocument(Element eleImage, String iddoc, Integer order, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders)
+    boolean generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders)
             throws FatalIndexerException {
         if (eleImage == null) {
             throw new IllegalArgumentException("eleImage may not be null");
@@ -606,12 +608,8 @@ public class DublinCoreIndexer extends Indexer {
             doc.addField(FIELD_IMAGEAVAILABLE, false);
         }
 
-        // FULLTEXTAVAILABLE indicates whether this page has full-text
-        if (doc.getField(SolrConstants.FULLTEXT) != null) {
-            doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
-            recordHasFulltext = true;
-        } else {
-            doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
+        if (dataFolders != null) {
+            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, null);
         }
 
         writeStrategy.addPageDoc(doc);

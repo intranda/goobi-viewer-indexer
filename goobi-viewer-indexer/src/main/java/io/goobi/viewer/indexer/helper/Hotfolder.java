@@ -165,7 +165,6 @@ public class Hotfolder {
      * @param oldSolrClient Optional old SolrClient for data migration
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
-    @SuppressWarnings("unchecked")
     public Hotfolder(String confFilename, SolrClient solrClient, SolrClient oldSolrClient) throws FatalIndexerException {
         logger.debug("Config file: {}", confFilename);
         Configuration config = Configuration.getInstance(confFilename);
@@ -323,7 +322,7 @@ public class Hotfolder {
         MetadataHelper.authorityDataEnabled = config.getBoolean("init.authorityData[@enabled]", true);
         if (MetadataHelper.authorityDataEnabled) {
             // Authority data fields to be added to DEFAULT
-            MetadataHelper.addAuthorityDataFieldsToDefault = config.getList("init.authorityData.addFieldsToDefault.field");
+            MetadataHelper.addAuthorityDataFieldsToDefault = config.getStringList("init.authorityData.addFieldsToDefault.field");
             if (MetadataHelper.addAuthorityDataFieldsToDefault != null) {
                 for (String field : MetadataHelper.addAuthorityDataFieldsToDefault) {
                     logger.info("{} values will be added to DEFAULT", field);
@@ -1048,7 +1047,6 @@ public class Hotfolder {
      * @throws FatalIndexerException
      * 
      */
-    @SuppressWarnings("unchecked")
     private void addLidoToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String[] resp = { null, null };
@@ -1111,7 +1109,7 @@ public class Hotfolder {
                 try {
                     currentIndexer = new LidoIndexer(this);
                     resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
-                            Configuration.getInstance().getList("init.lido.imageXPath"),
+                            Configuration.getInstance().getStringList("init.lido.imageXPath"),
                             dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
                             reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
                 } finally {
