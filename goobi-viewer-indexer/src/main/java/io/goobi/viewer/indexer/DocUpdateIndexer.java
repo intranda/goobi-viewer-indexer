@@ -30,14 +30,14 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.JDOMException;
 import org.jsoup.Jsoup;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.FileTools;
@@ -78,10 +78,9 @@ public class DocUpdateIndexer extends Indexer {
      *
      * @param dataFile a {@link java.nio.file.Path} object.
      * @param dataFolders a {@link java.util.Map} object.
+     * @return an array of {@link java.lang.String} objects.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should update document correctly
-     * @return an array of {@link java.lang.String} objects.
-     * @throws FatalIndexerException
      */
 
     @SuppressWarnings("unchecked")
@@ -166,7 +165,7 @@ public class DocUpdateIndexer extends Indexer {
             if (dataFolders.get(DataRepository.PARAM_CMS) != null) {
                 Path staticPageFolder = dataFolders.get(DataRepository.PARAM_CMS);
                 if (Files.isDirectory(staticPageFolder)) {
-                    File[] files = staticPageFolder.toFile().listFiles(xml);
+                    File[] files = staticPageFolder.toFile().listFiles(FileTools.FILENAME_FILTER_XML);
                     if (files.length > 0) {
                         for (File file : files) {
                             String field = FilenameUtils.getBaseName(file.getName()).toUpperCase();
@@ -201,7 +200,7 @@ public class DocUpdateIndexer extends Indexer {
                                                 .append(pi)
                                                 .append('/')
                                                 .append(FilenameUtils.getBaseName(altoFileName))
-                                                .append(XML_EXTENSION)
+                                                .append(FileTools.XML_EXTENSION)
                                                 .toString();
                                 Map<String, Object> update = new HashMap<>();
                                 update.put("set", altoFileName);
@@ -247,7 +246,7 @@ public class DocUpdateIndexer extends Indexer {
                                                 .append(pi)
                                                 .append('/')
                                                 .append(FilenameUtils.getBaseName(fulltextFileName))
-                                                .append(TXT_EXTENSION)
+                                                .append(FileTools.TXT_EXTENSION)
                                                 .toString();
                                 Map<String, Object> update = new HashMap<>();
                                 update.put("set", fulltextFileName);

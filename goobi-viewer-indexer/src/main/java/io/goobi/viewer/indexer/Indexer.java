@@ -20,7 +20,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -82,7 +81,6 @@ import de.intranda.api.annotation.wa.WebAnnotation;
 import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
-import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -118,11 +116,6 @@ public abstract class Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(Indexer.class);
-
-    /** Constant <code>TXT_EXTENSION=".txt"</code> */
-    public static final String TXT_EXTENSION = ".txt";
-    /** Constant <code>XML_EXTENSION=".xml"</code> */
-    public static final String XML_EXTENSION = ".xml";
 
     protected static final String FIELD_COORDS = "MD_COORDS";
     protected static final String FIELD_IMAGEAVAILABLE = "BOOL_IMAGEAVAILABLE";
@@ -323,12 +316,11 @@ public abstract class Indexer {
      * @param pageUrns
      * @param dateDeleted
      * @param dateCreated
-     * @throws IOException
      * @throws NumberFormatException
      * @throws FatalIndexerException
      */
     private static void createDeletedDoc(String pi, String urn, List<String> pageUrns, String dateDeleted, String dateUpdated,
-            SolrSearchIndex searchIndex) throws NumberFormatException, IOException, FatalIndexerException {
+            SolrSearchIndex searchIndex) throws NumberFormatException, FatalIndexerException {
         // Build replacement document that is marked as deleted
         logger.info("Creating 'DELETED' document for {}...", pi);
         List<LuceneField> fields = new ArrayList<>();
@@ -459,7 +451,7 @@ public abstract class Indexer {
             return Collections.emptyList();
         }
 
-        Path file = Paths.get(dataFolder.toAbsolutePath().toString(), fileNameRoot + Indexer.XML_EXTENSION);
+        Path file = Paths.get(dataFolder.toAbsolutePath().toString(), fileNameRoot + FileTools.XML_EXTENSION);
         if (!Files.isRegularFile(file)) {
             logger.debug("'{}' does not exist or is not a file.", file.getFileName());
             return Collections.emptyList();
@@ -487,9 +479,7 @@ public abstract class Indexer {
             return ret;
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
-        } catch (JDOMException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (IOException | JDOMException e) {
             logger.error(e.getMessage(), e);
         }
 
@@ -922,10 +912,8 @@ public abstract class Indexer {
      * @param xmlFile a {@link java.nio.file.Path} object.
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
-     * @throws io.goobi.viewer.indexer.exceptions.IndexerException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public void initJDomXP(Path xmlFile) throws IOException, JDOMException, IndexerException, FatalIndexerException {
+    public void initJDomXP(Path xmlFile) throws IOException, JDOMException {
         xp = new JDomXP(xmlFile.toFile());
     }
 
@@ -1366,24 +1354,6 @@ public abstract class Indexer {
         this.previousDataRepository = previousDataRepository;
     }
 
-    /** Constant <code>txt</code> */
-    public static final FilenameFilter txt = new FilenameFilter() {
-
-        @Override
-        public boolean accept(File dir, String name) {
-            return (name.endsWith(".txt"));
-        }
-    };
-
-    /** Constant <code>xml</code> */
-    public static final FilenameFilter xml = new FilenameFilter() {
-
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.endsWith(Indexer.XML_EXTENSION);
-        }
-    };
-
     /**
      * 
      * @param doc Solr input document
@@ -1425,7 +1395,7 @@ public abstract class Indexer {
         if (converted) {
             if (dataFolders.get(altoParamName) != null) {
                 FileUtils.writeStringToFile(
-                        new File(dataFolders.get(altoParamName).toFile(), baseFileName + XML_EXTENSION),
+                        new File(dataFolders.get(altoParamName).toFile(), baseFileName + FileTools.XML_EXTENSION),
                         (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
                 ret = true;
             } else {
@@ -1440,7 +1410,7 @@ public abstract class Indexer {
                     dataRepository.getDir(altoParamName)
                             .getFileName()
                             .toString() + '/' + pi
-                            + '/' + baseFileName + XML_EXTENSION);
+                            + '/' + baseFileName + FileTools.XML_EXTENSION);
             ret = true;
             logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName(), order);
         }
@@ -1735,7 +1705,8 @@ public abstract class Indexer {
         boolean foundCrowdsourcingData = false;
         boolean altoWritten = false;
         if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
-            File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
+            File altoFile =
+                    new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION);
             try {
                 altoData = TextHelper.readAltoFile(altoFile);
                 altoWritten =
@@ -1755,13 +1726,13 @@ public abstract class Indexer {
         // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
         if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
             String fulltext =
-                    TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
+                    TextHelper.generateFulltext(baseFileName + FileTools.TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
                             false, Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
             if (fulltext != null) {
                 foundCrowdsourcingData = true;
                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                 doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepo.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName().toString()
-                        + '/' + pi + '/' + baseFileName + TXT_EXTENSION);
+                        + '/' + pi + '/' + baseFileName + FileTools.TXT_EXTENSION);
                 logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
             }
         }
@@ -1769,7 +1740,7 @@ public abstract class Indexer {
         // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
         if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
                 && dataFolders.get(DataRepository.PARAM_ALTO) != null && !"info".equals(baseFileName) && !"native".equals(baseFileName)) {
-            File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
+            File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION);
             try {
                 altoData = TextHelper.readAltoFile(altoFile);
                 altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, pi, baseFileName, order, false);
@@ -1783,7 +1754,7 @@ public abstract class Indexer {
         // If FULLTEXT is still empty, look for a plain full-text
         if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null
                 && !"info".equals(baseFileName)) {
-            String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION,
+            String fulltext = TextHelper.generateFulltext(baseFileName + FileTools.TXT_EXTENSION,
                     dataFolders.get(DataRepository.PARAM_FULLTEXT), true,
                     Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
             if (fulltext != null) {
@@ -1792,7 +1763,7 @@ public abstract class Indexer {
                         .getDir(DataRepository.PARAM_FULLTEXT)
                         .getFileName()
                         .toString() + '/'
-                        + pi + '/' + baseFileName + TXT_EXTENSION);
+                        + pi + '/' + baseFileName + FileTools.TXT_EXTENSION);
                 logger.debug("Added FULLTEXT from regular plain text for page {}", order);
             }
         }
@@ -1802,7 +1773,8 @@ public abstract class Indexer {
             try {
                 try {
                     altoData = TextHelper.readAbbyyToAlto(
-                            new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
+                            new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
+                                    baseFileName + FileTools.XML_EXTENSION));
                     altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName,
                             order, true);
                 } catch (FileNotFoundException e) {
@@ -1819,7 +1791,7 @@ public abstract class Indexer {
         if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null && !"info".equals(baseFileName)) {
             try {
                 altoData = TextHelper.readTeiToAlto(
-                        new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
+                        new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION));
                 altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName, order,
                         true);
             } catch (IOException e) {
@@ -1830,7 +1802,8 @@ public abstract class Indexer {
         if (dataFolders.get(DataRepository.PARAM_MIX) != null && !"info".equals(baseFileName)) {
             try {
                 Map<String, String> mixData = TextHelper
-                        .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
+                        .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
+                                baseFileName + FileTools.XML_EXTENSION));
                 for (Entry<String, String> entry : mixData.entrySet()) {
                     if (!(entry.getKey().equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
                             && !(entry.getKey().equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
@@ -1862,7 +1835,7 @@ public abstract class Indexer {
                                 Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
                             }
                             if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + XML_EXTENSION;
+                                String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + FileTools.XML_EXTENSION;
                                 doc.addField(SolrConstants.FILENAME_ALTO,
                                         dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent().getFileName().toString() + '/' + pi + '/'
                                                 + fileName);

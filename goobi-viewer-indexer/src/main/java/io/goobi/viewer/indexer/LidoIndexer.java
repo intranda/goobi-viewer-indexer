@@ -44,6 +44,7 @@ import org.apache.logging.log4j.LogManager;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -615,7 +616,7 @@ public class LidoIndexer extends Indexer {
         if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
             try {
                 Map<String, String> mixData = TextHelper.readMix(
-                        new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + Indexer.XML_EXTENSION));
+                        new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION));
                 for (Entry<String, String> entry : mixData.entrySet()) {
                     if (!(entry.getKey().equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
                             && !(entry.getKey().equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {

@@ -60,18 +60,18 @@ public class FileTools {
 
     private static final Logger logger = LogManager.getLogger(FileTools.class);
 
+    /** Constant <code>TXT_EXTENSION=".txt"</code> */
+    public static final String TXT_EXTENSION = ".txt";
+    /** Constant <code>XML_EXTENSION=".xml"</code> */
+    public static final String XML_EXTENSION = ".xml";
+
     /** Private constructor. */
     private FileTools() {
         //
     }
 
-    /** Constant <code>filenameFilterXML</code> */
-    public static final FilenameFilter filenameFilterXML = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return "xml".equals(FilenameUtils.getExtension(name.toLowerCase()));
-        }
-    };
+    /** Constant <code>FILENAME_FILTER_XML</code> */
+    public static final FilenameFilter FILENAME_FILTER_XML = (dir, name) -> XML_EXTENSION.equals("." + FilenameUtils.getExtension(name.toLowerCase()));
 
     /**
      * Reads a String from a byte array

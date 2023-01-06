@@ -159,7 +159,7 @@ public class DublinCoreIndexer extends Indexer {
                         indexObj.setDataRepository(dataRepository.getPath());
                     }
 
-                    ret[0] = new StringBuilder(indexObj.getPi()).append(Indexer.XML_EXTENSION).toString();
+                    ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
                     // Check and use old data folders, if no new ones found
                     checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);

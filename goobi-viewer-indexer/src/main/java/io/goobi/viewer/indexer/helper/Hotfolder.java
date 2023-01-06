@@ -542,7 +542,7 @@ public class Hotfolder {
 
         try (Stream<Path> files = Files.list(hotfolderPath)) {
             long ret = files.filter(p -> !Files.isDirectory(p))
-                    .map(p -> p.toString())
+                    .map(Path::toString)
                     .filter(f -> (f.toLowerCase().endsWith(".xml") || f.endsWith(FILENAME_EXTENSION_DELETE) || f.endsWith(FILENAME_EXTENSION_PURGE)
                             || f.endsWith(".docupdate")
                             || f.endsWith(".UPDATED")))
@@ -2042,46 +2042,5 @@ public class Hotfolder {
      */
     public long getDataFolderSizeThreshold() {
         return dataFolderSizeThreshold;
-    }
-
-    /**
-     * <p>
-     * getDataFolderFilter.
-     * </p>
-     *
-     * @param prefix a {@link java.lang.String} object.
-     * @return a {@link java.io.FilenameFilter} object.
-     */
-    public static FilenameFilter getDataFolderFilter(final String prefix) {
-        return new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return (name.startsWith(prefix) && new File(dir, name).isDirectory());
-            }
-        };
-    }
-
-    /**
-     * 
-     * @return
-     */
-    public static FilenameFilter getRecordFileFilter() {
-        return new FilenameFilter() {
-            private final List<String> extensions =
-                    Arrays.asList(".xml", FILENAME_EXTENSION_DELETE, FILENAME_EXTENSION_PURGE, ".docupdate", ".UPDATED");
-
-            @Override
-            public boolean accept(File dir, String name) {
-                if (new File(dir, name).isDirectory()) {
-                    return false;
-                }
-                String extension = FilenameUtils.getExtension(name);
-                if (extension != null) {
-                    return extensions.contains(extension.toLowerCase());
-                }
-                return false;
-            }
-        };
     }
 }

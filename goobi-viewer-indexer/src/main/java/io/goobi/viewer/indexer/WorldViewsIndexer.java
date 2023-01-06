@@ -150,7 +150,7 @@ public class WorldViewsIndexer extends Indexer {
                 indexObj.setDataRepository(dataRepository.getPath());
             }
 
-            ret[0] = new StringBuilder(indexObj.getPi()).append(Indexer.XML_EXTENSION).toString();
+            ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
             checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
@@ -802,7 +802,7 @@ public class WorldViewsIndexer extends Indexer {
             String indexedAnchorFilePath =
                     new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
                             .append(piParent)
-                            .append(Indexer.XML_EXTENSION)
+                            .append(FileTools.XML_EXTENSION)
                             .toString();
             Path indexedAnchor = Paths.get(indexedAnchorFilePath);
             if (Files.exists(indexedAnchor)) {

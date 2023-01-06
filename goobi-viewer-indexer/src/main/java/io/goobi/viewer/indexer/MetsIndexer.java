@@ -222,7 +222,7 @@ public class MetsIndexer extends Indexer {
                 indexObj.setDataRepository(dataRepository.getPath());
             }
 
-            ret[0] = new StringBuilder(indexObj.getPi()).append(Indexer.XML_EXTENSION).toString();
+            ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
             checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
@@ -1539,7 +1539,7 @@ public class MetsIndexer extends Indexer {
         // Write XML file
         String extension;
         if (newAnchorCollections) {
-            extension = Indexer.XML_EXTENSION;
+            extension = FileTools.XML_EXTENSION;
             logger.info("Anchor document '{}' has received new collection entries and will be reindexed immediately.", indexObj.getPi());
         } else {
             extension = ANCHOR_UPDATE_EXTENSION;
@@ -1573,7 +1573,7 @@ public class MetsIndexer extends Indexer {
         String indexedAnchorFilePath =
                 new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
                         .append(piParent)
-                        .append(Indexer.XML_EXTENSION)
+                        .append(FileTools.XML_EXTENSION)
                         .toString();
         Path indexedAnchor = Paths.get(indexedAnchorFilePath);
         if (Files.exists(indexedAnchor)) {
@@ -1611,7 +1611,7 @@ public class MetsIndexer extends Indexer {
                 continue;
             }
             // String indexedMetsFilePath = URLEncoder.encode(Hotfolder.getIndexedMets() + File.separator + pi + AbstractIndexer.XML_EXTENSION, "utf-8");
-            String indexedMetsFilePath = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + Indexer.XML_EXTENSION;
+            String indexedMetsFilePath = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + FileTools.XML_EXTENSION;
             Path indexedMets = Paths.get(indexedMetsFilePath);
             if (Files.exists(indexedMets)) {
                 hotfolder.getReindexQueue().add(indexedMets);
