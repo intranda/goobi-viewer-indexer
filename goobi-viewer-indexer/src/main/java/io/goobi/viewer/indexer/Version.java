@@ -18,17 +18,17 @@ package io.goobi.viewer.indexer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 import io.goobi.viewer.indexer.helper.DateTools;
 
@@ -45,12 +45,12 @@ public class Version {
     /** Constant <code>APPLICATION_NAME</code> */
     public static final String APPLICATION_NAME;
     /** Constant <code>VERSION</code> */
-    public final static String VERSION;
+    public static final String VERSION;
     /** Constant <code>BUILDVERSION</code> */
-    public final static String BUILDVERSION;
+    public static final String BUILDVERSION;
     /** Constant <code>BUILDDATE</code> */
-    public final static String BUILDDATE;
-    
+    public static final String BUILDDATE;
+
     private Version() {
         //
     }
@@ -70,6 +70,10 @@ public class Version {
         }
     }
 
+    /**
+     * 
+     * @return
+     */
     private static String getManifestStringFromJar() {
         Class clazz = Version.class;
         String className = clazz.getSimpleName() + ".class";
@@ -81,17 +85,22 @@ public class Version {
 
         try (InputStream inputStream = new URL(manifestPath).openStream()) {
             StringWriter writer = new StringWriter();
-            IOUtils.copy(inputStream, writer, "utf-8");
+            IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
             String manifestString = writer.toString();
             value = manifestString;
-        } catch (MalformedURLException e) {
-            return null;
         } catch (IOException e) {
             return null;
         }
+
         return value;
     }
 
+    /**
+     * 
+     * @param label
+     * @param infoText
+     * @return
+     */
     private static String getInfo(String label, String infoText) {
         String regex = label + ": (.*)";
         Matcher matcher = Pattern.compile(regex).matcher(infoText);

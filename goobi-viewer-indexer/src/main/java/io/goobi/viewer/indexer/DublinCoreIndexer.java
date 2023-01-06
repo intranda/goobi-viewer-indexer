@@ -132,52 +132,50 @@ public class DublinCoreIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-            {
-                String pi = MetadataHelper.getPIFromXML("/record/", xp);
-                if (StringUtils.isNotBlank(pi)) {
-                    pi = MetadataHelper.applyIdentifierModifications(pi);
-                    logger.info("Record PI: {}", pi);
+            String pi = MetadataHelper.getPIFromXML("/record/", xp);
+            if (StringUtils.isNotBlank(pi)) {
+                pi = MetadataHelper.applyIdentifierModifications(pi);
+                logger.info("Record PI: {}", pi);
 
-                    // Do not allow identifiers with characters that cannot be used in file names
-                    Pattern p = Pattern.compile("[^\\w|-]");
-                    Matcher m = p.matcher(pi);
-                    if (m.find()) {
-                        ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                        throw new IndexerException(ret[1]);
-                    }
-                    indexObj.setPi(pi);
-                    indexObj.setTopstructPI(pi);
-                    logger.debug("PI: {}", indexObj.getPi());
-
-                    // Determine the data repository to use
-                    DataRepository[] repositories =
-                            hotfolder.getDataRepositoryStrategy()
-                                    .selectDataRepository(pi, dcFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
-                    dataRepository = repositories[0];
-                    previousDataRepository = repositories[1];
-                    if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                        indexObj.setDataRepository(dataRepository.getPath());
-                    }
-
-                    ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
-
-                    // Check and use old data folders, if no new ones found
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
-                } else {
-                    ret[1] = "PI not found.";
+                // Do not allow identifiers with characters that cannot be used in file names
+                Pattern p = Pattern.compile("[^\\w|-]");
+                Matcher m = p.matcher(pi);
+                if (m.find()) {
+                    ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
                     throw new IndexerException(ret[1]);
                 }
+                indexObj.setPi(pi);
+                indexObj.setTopstructPI(pi);
+                logger.debug("PI: {}", indexObj.getPi());
+
+                // Determine the data repository to use
+                DataRepository[] repositories =
+                        hotfolder.getDataRepositoryStrategy()
+                                .selectDataRepository(pi, dcFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
+                dataRepository = repositories[0];
+                previousDataRepository = repositories[1];
+                if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+                    indexObj.setDataRepository(dataRepository.getPath());
+                }
+
+                ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
+
+                // Check and use old data folders, if no new ones found
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
+                checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            } else {
+                ret[1] = "PI not found.";
+                throw new IndexerException(ret[1]);
             }
 
             if (writeStrategy == null) {
@@ -608,10 +606,7 @@ public class DublinCoreIndexer extends Indexer {
             doc.addField(FIELD_IMAGEAVAILABLE, false);
         }
 
-        if (dataFolders != null) {
-            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, null);
-        }
-
+        addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, null);
         writeStrategy.addPageDoc(doc);
         return true;
     }
@@ -634,20 +629,18 @@ public class DublinCoreIndexer extends Indexer {
         logger.trace("TYPE: {}", indexObj.getType());
 
         // LABEL
-        {
-            String value = TextHelper
-                    .normalizeSequence(indexObj.getRootStructNode().getChildText("title", Configuration.getInstance().getNamespaces().get("dc")));
-            if (value != null) {
-                // Remove non-sort characters from LABEL, if configured to do so
-                if (Configuration.getInstance().isLabelCleanup()) {
-                    value = value.replace("<ns>", "");
-                    value = value.replace("</ns>", "");
-                    value = value.replace("<<", "");
-                    value = value.replace(">>", "");
-                    value = value.replace("¬", "");
-                }
-                indexObj.setLabel(value);
+        String value = TextHelper
+                .normalizeSequence(indexObj.getRootStructNode().getChildText("title", Configuration.getInstance().getNamespaces().get("dc")));
+        if (value != null) {
+            // Remove non-sort characters from LABEL, if configured to do so
+            if (Configuration.getInstance().isLabelCleanup()) {
+                value = value.replace("<ns>", "");
+                value = value.replace("</ns>", "");
+                value = value.replace("<<", "");
+                value = value.replace(">>", "");
+                value = value.replace("¬", "");
             }
+            indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
