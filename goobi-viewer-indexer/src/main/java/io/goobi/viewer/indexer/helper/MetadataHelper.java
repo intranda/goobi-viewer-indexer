@@ -336,7 +336,8 @@ public class MetadataHelper {
                     // Add normalized year
                     if (configurationItem.isNormalizeYear()) {
                         List<LuceneField> normalizedFields =
-                                parseDatesAndCenturies(centuries, fieldValue, configurationItem.getNormalizeYearMinDigits());
+                                parseDatesAndCenturies(centuries, fieldValue, configurationItem.getNormalizeYearMinDigits(),
+                                        configurationItem.getNormalizeYearField());
                         ret.addAll(normalizedFields);
                         // Add sort fields for normalized years, centuries, etc.
                         for (LuceneField normalizedDateField : normalizedFields) {
@@ -365,7 +366,10 @@ public class MetadataHelper {
                 }
                 // Add years in between collected YEAR values, if so configured
                 if (configurationItem.isInterpolateYears()) {
-                    ret.addAll(completeYears(ret));
+                    ret.addAll(completeYears(ret, SolrConstants.YEAR));
+                    if (StringUtils.isNotEmpty(configurationItem.getNormalizeYearField())) {
+                        ret.addAll(completeYears(ret, configurationItem.getNormalizeYearField()));
+                    }
                 }
             }
         }
@@ -895,11 +899,13 @@ public class MetadataHelper {
      * @param centuries
      * @param value
      * @param normalizeYearMinDigits
+     * @param customField Optional custom index field to add years to (in addition to YEAR)
      * @return List of generated LuceneFields.
      * @should parse centuries and dates correctly
      * @should normalize year digits
+     * @should add custom field correctly
      */
-    static List<LuceneField> parseDatesAndCenturies(Set<Integer> centuries, String value, int normalizeYearMinDigits) {
+    static List<LuceneField> parseDatesAndCenturies(Set<Integer> centuries, String value, int normalizeYearMinDigits, String customField) {
         if (StringUtils.isEmpty(value)) {
             return Collections.emptyList();
         }
@@ -909,12 +915,15 @@ public class MetadataHelper {
             if (date.getYear() == null) {
                 continue;
             }
-            logger.trace("using PrimitiveDate: {}", date.toString());
+            logger.trace("using PrimitiveDate: {}", date);
             ret.add(new LuceneField(SolrConstants.YEAR, String.valueOf(date.getYear())));
             int century = getCentury(date.getYear());
             if (!centuries.contains(century)) {
                 ret.add(new LuceneField(SolrConstants.CENTURY, String.valueOf(century)));
                 centuries.add(century);
+            }
+            if (StringUtils.isNotEmpty(customField)) {
+                ret.add(new LuceneField(customField, String.valueOf(date.getYear())));
             }
             if (date.getMonth() != null) {
                 String year = FORMAT_FOUR_DIGITS.get().format(date.getYear());
@@ -983,11 +992,13 @@ public class MetadataHelper {
      * Adds additional YEAR fields if there is a gap (e.g. if there is 1990 and 1993, also add 1991 and 1992).
      * 
      * @param fields
+     * @param fieldName
      * @return
      * @should complete years correctly
+     *
      */
-    static List<LuceneField> completeYears(List<LuceneField> fields) {
-        return completeIntegerValues(fields, SolrConstants.YEAR, null);
+    static List<LuceneField> completeYears(List<LuceneField> fields, String fieldName) {
+        return completeIntegerValues(fields, fieldName, null);
     }
 
     /**
@@ -998,29 +1009,27 @@ public class MetadataHelper {
      * @return
      */
     private static List<LuceneField> completeIntegerValues(List<LuceneField> fields, String fieldName, Set<Integer> skipValues) {
-        List<LuceneField> newValues = new ArrayList<>();
-        if (fields != null && !fields.isEmpty()) {
-            List<Integer> oldValues = new ArrayList<>();
-            for (LuceneField field : fields) {
-                if (field.getField().equals(fieldName) && !oldValues.contains(Integer.valueOf(field.getValue()))) {
-                    oldValues.add(Integer.valueOf(field.getValue()));
-                }
+        if (StringUtils.isEmpty(fieldName)) {
+            throw new IllegalArgumentException("fieldName may not be null or empty");
+        }
+        if (fields == null || fields.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> oldValues = new ArrayList<>();
+        for (LuceneField field : fields) {
+            if (field.getField().equals(fieldName) && !oldValues.contains(Integer.valueOf(field.getValue()))) {
+                oldValues.add(Integer.valueOf(field.getValue()));
             }
-            if (!oldValues.isEmpty()) {
-                Collections.sort(oldValues);
-                // int count = 0;
-                for (int i = oldValues.get(0); i < oldValues.get(oldValues.size() - 1); ++i) {
-                    if (!oldValues.contains(i)) {
-                        if (skipValues != null && skipValues.contains(i)) {
-                            continue;
-                        }
-                        newValues.add(new LuceneField(fieldName, String.valueOf(i)));
-                        logger.debug("Added implicit {}: {}", fieldName, i);
-                        // count++;
-                    }
-                    //                    if (count == 10) {
-                    //                        break;
-                    //                    }
+        }
+
+        List<LuceneField> newValues = new ArrayList<>();
+        if (!oldValues.isEmpty()) {
+            Collections.sort(oldValues);
+            for (int i = oldValues.get(0); i < oldValues.get(oldValues.size() - 1); ++i) {
+                if (!oldValues.contains(i) && !(skipValues != null && skipValues.contains(i))) {
+                    newValues.add(new LuceneField(fieldName, String.valueOf(i)));
+                    logger.debug("Added implicit {}:{}", fieldName, i);
                 }
             }
         }

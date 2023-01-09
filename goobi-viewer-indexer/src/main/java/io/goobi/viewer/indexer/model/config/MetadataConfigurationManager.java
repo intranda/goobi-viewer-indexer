@@ -170,6 +170,7 @@ public final class MetadataConfigurationManager {
                     BaseHierarchicalConfiguration eleNormalizeYear = (BaseHierarchicalConfiguration) eleNormalizeYearList.get(0);
                     fieldConfig.setNormalizeYear(eleNormalizeYear.getBoolean("", false));
                     fieldConfig.setNormalizeYearMinDigits(eleNormalizeYear.getInt("[@minYearDigits]", 3));
+                    fieldConfig.setNormalizeYearField(eleNormalizeYear.getString("[@field]"));
                     fieldConfig.setInterpolateYears(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").interpolateYears", false));
                 }
 

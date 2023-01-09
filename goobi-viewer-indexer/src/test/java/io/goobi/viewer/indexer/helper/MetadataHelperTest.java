@@ -309,7 +309,7 @@ public class MetadataHelperTest extends AbstractTest {
         List<LuceneField> years = new ArrayList<>();
         years.add(new LuceneField(SolrConstants.YEAR, "1990"));
         years.add(new LuceneField(SolrConstants.YEAR, "1993"));
-        List<LuceneField> newYears = MetadataHelper.completeYears(years);
+        List<LuceneField> newYears = MetadataHelper.completeYears(years, SolrConstants.YEAR);
         Assert.assertEquals(2, newYears.size());
         Assert.assertEquals(SolrConstants.YEAR, newYears.get(0).getField());
         Assert.assertEquals("1991", newYears.get(0).getValue());
@@ -502,7 +502,7 @@ public class MetadataHelperTest extends AbstractTest {
     public void parseDatesAndCenturies_shouldParseCenturiesAndDatesCorrectly() throws Exception {
         String date = "2019-03-18";
         Set<Integer> centuries = new HashSet<>(1);
-        List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4);
+        List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, null);
         Assert.assertEquals(5, result.size());
         result.get(0).getField().equals(SolrConstants.YEAR);
         result.get(0).getValue().equals("2019");
@@ -525,7 +525,7 @@ public class MetadataHelperTest extends AbstractTest {
     public void parseDatesAndCenturies_shouldNormalizeYearDigits() throws Exception {
         String date = "0190-03-18";
         Set<Integer> centuries = new HashSet<>(1);
-        List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4);
+        List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, null);
         Assert.assertEquals(5, result.size());
         result.get(0).getField().equals(SolrConstants.YEAR);
         result.get(0).getValue().equals("0190");
@@ -535,6 +535,22 @@ public class MetadataHelperTest extends AbstractTest {
         result.get(2).getValue().equals("01900318");
         result.get(3).getField().equals(SolrConstants.MONTHDAY);
         result.get(3).getValue().equals("0318");
+    }
+
+    /**
+     * @see MetadataHelper#parseDatesAndCenturies(Set,String,int,String)
+     * @verifies add custom field correctly
+     */
+    @Test
+    public void parseDatesAndCenturies_shouldAddCustomFieldCorrectly() throws Exception {
+        String date = "2023-01-09";
+        Set<Integer> centuries = new HashSet<>(1);
+        List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, "MDNUM_CUSTOMYEAR");
+        Assert.assertEquals(6, result.size());
+        result.get(0).getField().equals(SolrConstants.YEAR);
+        result.get(0).getValue().equals("2019");
+        result.get(1).getField().equals("MDNUM_CUSTOMYEAR");
+        result.get(1).getValue().equals("2019");
     }
 
     /**
