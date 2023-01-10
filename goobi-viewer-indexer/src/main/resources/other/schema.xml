@@ -36,7 +36,7 @@
 
 <!-- PLEASE ADD A CHECKBOX IN THE TICKET TO REMEMBER TO UPDATE THIS FILE IN THE
      GOOBI-VIEWER-DOCKER-SOLR REPOSITORY AS WELL -->
-<schema name="goobi_viewer-20230109" version="1.6">
+<schema name="goobi_viewer-20230110" version="1.6">
 
 
 
@@ -258,8 +258,9 @@
 	<copyField source="DOCSTRCT_*" dest="FACET_DOCSTRCT_*" />
 	<copyField source="YEAR" dest="FACET_YEAR" />
 	<copyField source="MD_*" dest="FACET_*" maxChars="10000" />
-	<copyField source="MD2_*" dest="FACET_*" maxChars="10000" />
-	<copyField source="NE_*" dest="FACET_*" maxChars="10000" />
+	<copyField source="MD2_*" dest="FACET_MD2_*" maxChars="10000" />
+    <copyField source="MDNUM_*" dest="FACET_MDNUM_*" />
+	<copyField source="NE_*" dest="FACET_NE_*" maxChars="10000" />
 	<copyField source="URN" dest="URN_UNTOKENIZED" />
 	<copyField source="IMAGEURN" dest="IMAGEURN_UNTOKENIZED"  />
 	<copyField source="IMAGEURN_OAI" dest="IMAGEURN_OAI_UNTOKENIZED"  />
