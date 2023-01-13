@@ -3499,6 +3499,11 @@
                     </xpath>
                     <addToDefault>true</addToDefault>
                     <normalizeYear minYearDigits="4" field="MDNUM_BIRTHYEAR">true</normalizeYear>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
                 </item>
             </list>
         </MD_BIRTHDATE>

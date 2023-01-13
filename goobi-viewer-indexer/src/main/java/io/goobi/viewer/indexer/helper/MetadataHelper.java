@@ -1066,16 +1066,26 @@ public class MetadataHelper {
         StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null);
 
         String mdValue = null;
+
+        Map<String, String> additionalFieldsFromParent = new HashMap<>();
         for (LuceneField field : ret.getFields()) {
             if (field.getField().equals(SolrConstants.MD_VALUE)
                     || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(groupEntity.getType()))
                     || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(groupEntity.getType()))) {
                 mdValue = cleanUpName(field.getValue());
                 field.setValue(mdValue);
+            } else if ("MD_REFID".equals(field.getField()) && ele.getParentElement() != null) {
+                additionalFieldsFromParent.put("{0}", field.getValue());
             }
+        }
+
+        logger.info("Collecting source metadata");
+        if (!additionalFieldsFromParent.isEmpty()) {
+            ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele.getParentElement(), authorityDataEnabled,
+                    additionalFieldsFromParent);
         }
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
@@ -1109,7 +1119,7 @@ public class MetadataHelper {
                             .fetch()
                             .build();
                     ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
-                            primo.getXp().getRootElement(), authorityDataEnabled);
+                            primo.getXp().getRootElement(), authorityDataEnabled, null);
                 } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
                     logger.error(e.getMessage());
                 }

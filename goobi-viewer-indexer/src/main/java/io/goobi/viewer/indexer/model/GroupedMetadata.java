@@ -130,11 +130,11 @@ public class GroupedMetadata {
      * @param groupEntityFields
      * @param ele Root of the XML (sub)tree
      * @param authorityDataEnabled
+     * @param xpathReplacements
      * @throws FatalIndexerException
      */
     public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, SubfieldConfig> groupEntityFields, Element ele,
-            boolean authorityDataEnabled)
-            throws FatalIndexerException {
+            boolean authorityDataEnabled, Map<String, String> xpathReplacements) throws FatalIndexerException {
         if (ele == null) {
             throw new IllegalArgumentException("element may not be null");
         }
@@ -148,6 +148,11 @@ public class GroupedMetadata {
 
             SubfieldConfig subfield = entry.getValue();
             for (String xpath : subfield.getXpaths()) {
+                if (xpathReplacements != null) {
+                    for (Entry<String, String> xpathReplacementsEntry : xpathReplacements.entrySet()) {
+                        xpath = xpath.replace(xpathReplacementsEntry.getKey(), xpathReplacementsEntry.getValue());
+                    }
+                }
                 logger.debug("XPath: {}", xpath);
                 List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
                 if (values == null || values.isEmpty()) {
