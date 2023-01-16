@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,12 +33,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.StringConstants;
 import io.goobi.viewer.indexer.helper.Utils;
@@ -590,6 +593,30 @@ public class DataRepository {
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS, dataRepositories);
         // Delete image download trigger folder
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, dataRepositories);
+    }
+
+    /**
+     * Searches and deletes copies of a file with the given fileName in repositories that are not this one.
+     * 
+     * @param fileName File to check
+     * @param param Data folder name parameter
+     * @param dataRepositories List of all available data repositories
+     * @throws IOException
+     * @should delete only misplaced files
+     * 
+     */
+    public void checkOtherRepositoriesForRecordFileDuplicates(String fileName, String param, List<DataRepository> dataRepositories)
+            throws IOException {
+        for (DataRepository repo : dataRepositories) {
+            if (!repo.equals(this) && repo.getDir(param) != null) {
+                Path misplacedRecordFile = Paths.get(repo.getDir(param).toAbsolutePath().toString(), fileName);
+                if (Files.isRegularFile(misplacedRecordFile)) {
+                    logger.warn("Found {} file this record in different data repository: {}, deleting file...", param,
+                            misplacedRecordFile.toAbsolutePath());
+                    Files.delete(misplacedRecordFile);
+                }
+            }
+        }
     }
 
     /**
