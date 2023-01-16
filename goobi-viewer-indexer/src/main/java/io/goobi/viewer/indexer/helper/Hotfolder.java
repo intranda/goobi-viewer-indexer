@@ -980,6 +980,8 @@ public class Hotfolder {
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
             }
             Files.copy(metsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
+                    dataRepositoryStrategy.getAllDataRepositories());
 
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
@@ -1136,6 +1138,8 @@ public class Hotfolder {
                     try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
                         outputter.output(doc, out);
                     }
+                    dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newLidoFileName, DataRepository.PARAM_INDEXED_LIDO,
+                            dataRepositoryStrategy.getAllDataRepositories());
 
                     // Move non-repository data directories to the selected repository
                     if (previousDataRepository != null) {
@@ -1321,6 +1325,8 @@ public class Hotfolder {
                     try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
                         outputter.output(doc, out);
                     }
+                    dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDenkXwebFileName, DataRepository.PARAM_INDEXED_DENKXWEB,
+                            dataRepositoryStrategy.getAllDataRepositories());
 
                     // Move non-repository data directories to the selected repository
                     if (previousDataRepository != null) {
@@ -1505,6 +1511,8 @@ public class Hotfolder {
                 return;
             }
             Files.copy(dcFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDcFileName, DataRepository.PARAM_INDEXED_DUBLINCORE,
+                    dataRepositoryStrategy.getAllDataRepositories());
 
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
@@ -1633,6 +1641,8 @@ public class Hotfolder {
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
             }
             Files.copy(mainFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
+                    dataRepositoryStrategy.getAllDataRepositories());
 
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository

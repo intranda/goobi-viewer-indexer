@@ -19,18 +19,20 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -53,10 +55,6 @@ public class DataRepositoryTest extends AbstractTest {
         hotfolder = new Hotfolder(TEST_CONFIG_PATH, null);
     }
 
-    @Before
-    public void setUp() throws Exception {
-    }
-
     @After
     public void tearDown() throws Exception {
         File indexerFolder = new File("target/indexer");
@@ -69,10 +67,6 @@ public class DataRepositoryTest extends AbstractTest {
             logger.info("Deleting {}...", viewerRootFolder);
             FileUtils.deleteDirectory(viewerRootFolder);
         }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     /**
@@ -754,5 +748,29 @@ public class DataRepositoryTest extends AbstractTest {
         DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, dataFolder.toPath()),
                 Collections.emptyMap());
         Assert.assertFalse(dataFolder.exists());
+    }
+
+    /**
+     * @see DataRepository#checkOtherRepositoriesForRecordFileDuplicates(String,String,List)
+     * @verifies delete only misplaced files
+     */
+    @Test
+    public void checkOtherRepositoriesForRecordFileDuplicates_shouldDeleteOnlyMisplacedFiles() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/1/", true);
+        DataRepository otherRepository = new DataRepository("target/viewer/data/2/", true);
+
+        List<DataRepository> repositories = Arrays.asList(useRepository, otherRepository);
+
+        Path file = Paths.get("target/viewer/data/1/indexed_mets/foo.xml");
+        Files.createFile(file);
+        Assert.assertTrue(Files.isRegularFile(file));
+
+        Path misplacedFile = Paths.get("target/viewer/data/2/indexed_mets/foo.xml");
+        Files.createFile(misplacedFile);
+        Assert.assertTrue(Files.isRegularFile(misplacedFile));
+
+        useRepository.checkOtherRepositoriesForRecordFileDuplicates("foo.xml", DataRepository.PARAM_INDEXED_METS, repositories);
+        Assert.assertTrue(Files.exists(file));
+        Assert.assertFalse(Files.exists(misplacedFile));
     }
 }

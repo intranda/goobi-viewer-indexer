@@ -135,7 +135,7 @@
         <proxyPort></proxyPort>
         <!-- whitelist: List of hosts not to be accessed via proxy -->
         <whitelist>
-            <!-- <host></host> -->
+            <host>127.0.0.1</host>
         </whitelist>
     </proxy>
 
