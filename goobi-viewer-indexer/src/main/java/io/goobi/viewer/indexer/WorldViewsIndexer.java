@@ -15,7 +15,6 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -34,15 +33,12 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
@@ -123,54 +119,52 @@ public class WorldViewsIndexer extends Indexer {
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             // Set PI
-            {
-                String pi = xp.evaluateToString("worldviews//identifier/text()", null);
-                if (StringUtils.isNotBlank(pi)) {
-                    pi = MetadataHelper.applyIdentifierModifications(pi);
-                    logger.info("Record PI: {}", pi);
-
-                    // Do not allow identifiers with characters that cannot be used in file names
-                    Pattern p = Pattern.compile("[^\\w|-]");
-                    Matcher m = p.matcher(pi);
-                    if (m.find()) {
-                        ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                        throw new IndexerException(ret[1]);
-                    }
-                    indexObj.setPi(pi);
-                    indexObj.setTopstructPI(pi);
-                    logger.debug("PI: {}", indexObj.getPi());
-
-                    // Determine the data repository to use
-                    DataRepository[] repositories =
-                            hotfolder.getDataRepositoryStrategy()
-                                    .selectDataRepository(pi, mainFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
-                    dataRepository = repositories[0];
-                    previousDataRepository = repositories[1];
-
-                    if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                        indexObj.setDataRepository(dataRepository.getPath());
-                    }
-
-                    ret[0] = new StringBuilder(indexObj.getPi()).append(Indexer.XML_EXTENSION).toString();
-
-                    // Check and use old data folders, if no new ones found
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-                    checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
-                } else {
-                    ret[1] = "PI not found.";
-                    throw new IndexerException(ret[1]);
-                }
+            String pi = xp.evaluateToString("worldviews//identifier/text()", null);
+            if (StringUtils.isBlank(pi)) {
+                ret[1] = "PI not found.";
+                throw new IndexerException(ret[1]);
             }
+
+            pi = MetadataHelper.applyIdentifierModifications(pi);
+            logger.info("Record PI: {}", pi);
+
+            // Do not allow identifiers with characters that cannot be used in file names
+            Pattern p = Pattern.compile("[^\\w|-]");
+            Matcher m = p.matcher(pi);
+            if (m.find()) {
+                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
+                throw new IndexerException(ret[1]);
+            }
+            indexObj.setPi(pi);
+            indexObj.setTopstructPI(pi);
+            logger.debug("PI: {}", indexObj.getPi());
+
+            // Determine the data repository to use
+            DataRepository[] repositories =
+                    hotfolder.getDataRepositoryStrategy()
+                            .selectDataRepository(pi, mainFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
+            dataRepository = repositories[0];
+            previousDataRepository = repositories[1];
+
+            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+                indexObj.setDataRepository(dataRepository.getPath());
+            }
+
+            ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
+
+            // Check and use old data folders, if no new ones found
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy
@@ -261,7 +255,7 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.writeDateModified(!fromReindexQueue);
 
             // Generate docs for all pages and add to the write strategy
-            generatePageDocuments(writeStrategy, dataFolders, pageCountStart);
+            generatePageDocuments(writeStrategy, dataFolders, pi, pageCountStart);
             indexObj.setNumPages(writeStrategy.getPageDocsSize());
             if (indexObj.getNumPages() > 0) {
                 indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
@@ -636,6 +630,7 @@ public class WorldViewsIndexer extends Indexer {
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
+     * @param pi
      * @param pageCountStart a int.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
@@ -644,7 +639,8 @@ public class WorldViewsIndexer extends Indexer {
      * @should switch to DEFAULT file group correctly
      * @should maintain page order after parallel processing
      */
-    public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders, int pageCountStart)
+    public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders, final String pi,
+            int pageCountStart)
             throws FatalIndexerException {
         // Get all physical elements
         List<Element> eleListImages = xp.evaluateToElements("worldviews/resource/images/image", null);
@@ -660,7 +656,7 @@ public class WorldViewsIndexer extends Indexer {
                     @Override
                     public void run() {
                         try {
-                            generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), null, writeStrategy,
+                            generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, null, writeStrategy,
                                     dataFolders);
                         } catch (FatalIndexerException e) {
                             logger.error("Should be exiting here now...");
@@ -673,15 +669,10 @@ public class WorldViewsIndexer extends Indexer {
             executor.shutdown();
             while (!executor.isTerminated()) {
             }
-
-            // TODO lambda instead of loop with Java 8
-            //        eleStructMapPhysicalList.parallelStream().forEach(
-            //                eleStructMapPhysical -> generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(hotfolder.getSolrHelper())), null,
-            //                        writeStrategy, dataFolders));
         } else {
             int order = pageCountStart;
             for (final Element eleImage : eleListImages) {
-                if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), order, writeStrategy, dataFolders)) {
+                if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, order, writeStrategy, dataFolders)) {
                     order++;
                 }
             }
@@ -693,6 +684,7 @@ public class WorldViewsIndexer extends Indexer {
      * 
      * @param eleImage
      * @param iddoc
+     * @param pi
      * @param order
      * @param writeStrategy
      * @param dataFolders
@@ -701,7 +693,8 @@ public class WorldViewsIndexer extends Indexer {
      * @should add all basic fields
      * @should add page metadata correctly
      */
-    boolean generatePageDocument(Element eleImage, String iddoc, Integer order, ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders)
+    boolean generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders)
             throws FatalIndexerException {
         String id = eleImage.getAttributeValue("ID");
         if (order == null) {
@@ -787,177 +780,7 @@ public class WorldViewsIndexer extends Indexer {
         }
 
         if (dataFolders != null) {
-            Map<String, Object> altoData = null;
-            String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
-
-            // Add complete crowdsourcing ALTO document and full-text generated from ALTO, if available
-            boolean foundCrowdsourcingData = false;
-            if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
-                File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
-                try {
-                    altoData = TextHelper.readAltoFile(altoFile);
-                } catch (FileNotFoundException e) {
-                    // Not all pages will have custom ALTO docs
-                } catch (JDOMException | IOException e) {
-                    if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
-                        logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
-                    }
-                }
-                if (altoData != null) {
-                    foundCrowdsourcingData = true;
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-                        doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
-                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))) {
-                        doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                        logger.debug("Added FULLTEXT from crowdsourcing ALTO for page {}", order);
-                    }
-                    if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                        addNamedEntitiesFields(altoData, doc);
-                    }
-                }
-            }
-
-            // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
-            if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-                String fulltext =
-                        TextHelper.generateFulltext(baseFileName + TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
-                                false, Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
-                if (fulltext != null) {
-                    foundCrowdsourcingData = true;
-                    doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
-                    doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
-                    logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
-                }
-            }
-            // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
-            if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
-                    && dataFolders.get(DataRepository.PARAM_ALTO) != null) {
-                File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + XML_EXTENSION);
-                try {
-                    altoData = TextHelper.readAltoFile(altoFile);
-                } catch (IOException | JDOMException e) {
-                    if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
-                        logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
-                    }
-                }
-                if (altoData != null) {
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
-                        doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
-                        doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
-                    }
-                    if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                        doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                        logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
-                    }
-
-                    if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                        addNamedEntitiesFields(altoData, doc);
-                    }
-                }
-            }
-
-            // If FULLTEXT is still empty, look for a plain full-text
-            if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null) {
-                String fulltext = TextHelper.generateFulltext(baseFileName + TXT_EXTENSION,
-                        dataFolders.get(DataRepository.PARAM_FULLTEXT), true,
-                        Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
-                if (fulltext != null) {
-                    doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
-                    doc.addField(SolrConstants.FILENAME_FULLTEXT, baseFileName + TXT_EXTENSION);
-                    logger.debug("Added FULLTEXT from regular plain text for page {}", order);
-                }
-            }
-
-            // ABBYY XML (converted to ALTO)
-            if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null) {
-                try {
-                    try {
-                        altoData = TextHelper.readAbbyyToAlto(
-                                new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
-                        if (altoData != null) {
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
-                                doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
-                                logger.debug("Added ALTO from regular ALTO for page {}", order);
-                            }
-                            if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
-                                    && doc.getField(SolrConstants.FULLTEXT) == null) {
-                                doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                                doc.addField("MD_FULLTEXT", altoData.get(SolrConstants.FULLTEXT));
-                                logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
-                            }
-                            if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                                addNamedEntitiesFields(altoData, doc);
-                            }
-                        }
-                    } catch (FileNotFoundException e) {
-                        logger.warn(e.getMessage());
-                    }
-                } catch (XMLStreamException e) {
-                    logger.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
-                }
-            }
-
-            // Read word coords from TEI only if none has been read from ALTO for this page yet
-            if (!foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null) {
-                try {
-                    altoData = TextHelper.readTeiToAlto(
-                            new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
-                    if (altoData != null) {
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.ALTO) == null) {
-                            doc.addField(SolrConstants.ALTO, altoData.get(SolrConstants.ALTO));
-                            doc.addField(SolrConstants.FILENAME_ALTO, baseFileName + XML_EXTENSION);
-                            logger.debug("Added ALTO from regular ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT)) && doc.getField(SolrConstants.FULLTEXT) == null) {
-                            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                            logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
-
-                        }
-                        if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                            addNamedEntitiesFields(altoData, doc);
-                        }
-                    }
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
-                }
-            }
-
-            if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
-                try {
-                    Map<String, String> mixData = TextHelper
-                            .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(), baseFileName + XML_EXTENSION));
-                    for (String key : mixData.keySet()) {
-                        if (!(key.equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
-                                && !(key.equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
-                            doc.addField(key, mixData.get(key));
-                        }
-                    }
-                } catch (JDOMException e) {
-                    logger.error(e.getMessage(), e);
-                } catch (IOException e) {
-                    logger.warn(e.getMessage());
-                }
-            }
-
-            //get width/height from image file if it is an actual image and width/height haven't been set
-            if (doc.getField(SolrConstants.HEIGHT) == null || doc.getField(SolrConstants.WIDTH) == null) {
-                getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
-                    doc.addField(SolrConstants.WIDTH, dimension.width);
-                    doc.addField(SolrConstants.HEIGHT, dimension.height);
-                });
-            }
-
-            // FULLTEXTAVAILABLE indicates whether this page has full-text
-            if (doc.getField(SolrConstants.FULLTEXT) != null) {
-                doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
-                recordHasFulltext = true;
-            } else {
-                doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
-            }
+            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, null);
         }
 
         writeStrategy.addPageDoc(doc);
@@ -979,7 +802,7 @@ public class WorldViewsIndexer extends Indexer {
             String indexedAnchorFilePath =
                     new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
                             .append(piParent)
-                            .append(Indexer.XML_EXTENSION)
+                            .append(FileTools.XML_EXTENSION)
                             .toString();
             Path indexedAnchor = Paths.get(indexedAnchorFilePath);
             if (Files.exists(indexedAnchor)) {

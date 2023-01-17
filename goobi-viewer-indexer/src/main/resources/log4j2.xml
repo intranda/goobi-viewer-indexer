@@ -1,31 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
 
-	<Appenders>
-		<Console name="stdout">
-			<PatternLayout pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %location%n        %msg%n" />
-		</Console>
-		<RollingFile name="rolling" fileName="/opt/digiverso/logs/indexer.log" filePattern="/opt/digiverso/logs/indexer.log.%d{yyyy-MM-dd}.gz">
-			<PatternLayout pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %location%n        %msg%n" />
-			<SizeBasedTriggeringPolicy size="20 MB" />
-		</RollingFile>
+    <Properties>
+        <Property name="baseDir">/opt/digiverso/logs</Property>
+        <Property name="indexerLogfileName">$${env:LOGFILENAME:-indexer}</Property>
+    </Properties>
+
+
+    <Appenders>
+        <Console name="stdout">
+            <PatternLayout pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %location%n        %msg%n" />
+        </Console>
+        <RollingFile name="rolling" fileName="${baseDir}/${indexerLogfileName}.log" filePattern="${baseDir}/${indexerLogfileName}.log.%d{yyyy-MM-dd}.gz">
+            <PatternLayout pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %location%n        %msg%n" />
+            <SizeBasedTriggeringPolicy size="20 MB" />
+        </RollingFile>
         <RollingFile name="rolling_normdata" fileName="/opt/digiverso/logs/normdata.log" filePattern="/opt/digiverso/logs/normdata.log.%d{yyyy-MM-dd}.gz">
             <PatternLayout pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %location%n        %msg%n" />
             <SizeBasedTriggeringPolicy size="20 MB" />
         </RollingFile>
-	</Appenders>
-	
-	<Loggers>
-		<Logger name="io.goobi" level="INFO" additivity="true" />
-		<Logger name="de.intranda.digiverso.ocr" level="WARN" additivity="false" />
-		<Logger name="de.intranda.digiverso.normdataimporter" level="DEBUG" additivity="false">
-		    <AppenderRef ref="rolling_normdata" />
-		</Logger>
-		<Logger name="org.apache" level="ERROR" additivity="true" />
-		<Root level="info">
-			<AppenderRef ref="stdout" />
-			<AppenderRef ref="rolling" />
-		</Root>
-	</Loggers>
+    </Appenders>
+
+
+    <Loggers>
+        <Logger name="io.goobi" level="INFO" additivity="true" />
+        <Logger name="de.intranda.digiverso.ocr" level="WARN" additivity="false" />
+        <Logger name="de.intranda.digiverso.normdataimporter" level="DEBUG" additivity="false">
+            <AppenderRef ref="rolling_normdata" />
+        </Logger>
+        <Logger name="org.apache" level="ERROR" additivity="true" />
+        <Root level="info">
+            <AppenderRef ref="stdout" />
+            <AppenderRef ref="rolling" />
+        </Root>
+    </Loggers>
 
 </Configuration>

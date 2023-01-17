@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -135,7 +134,7 @@ public class Hotfolder {
     private Path errorMets;
     private Path origLido;
     private Path origDenkxWeb;
-    private Path success;
+    private Path successFolder;
 
     private Indexer currentIndexer;
     private boolean addVolumeCollectionsToAnchor = false;
@@ -165,7 +164,6 @@ public class Hotfolder {
      * @param oldSolrClient Optional old SolrClient for data migration
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
-    @SuppressWarnings("unchecked")
     public Hotfolder(String confFilename, SolrClient solrClient, SolrClient oldSolrClient) throws FatalIndexerException {
         logger.debug("Config file: {}", confFilename);
         Configuration config = Configuration.getInstance(confFilename);
@@ -178,6 +176,69 @@ public class Hotfolder {
         } else {
             this.oldSearchIndex = null;
         }
+
+        dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(config);
+
+        initFolders(config);
+
+        metsFileSizeThreshold = Configuration.getInstance().getInt("performance.metsFileSizeThreshold", 10485760);
+        dataFolderSizeThreshold = Configuration.getInstance().getInt("performance.dataFolderSizeThreshold", 157286400);
+
+        SolrSearchIndex.optimize = Configuration.getInstance().isAutoOptimize();
+        logger.info("Auto-optimize: {}", SolrSearchIndex.optimize);
+
+        try {
+            addVolumeCollectionsToAnchor = Configuration.getInstance().isAddVolumeCollectionsToAnchor();
+            if (addVolumeCollectionsToAnchor) {
+                logger.info("Volume collections WILL BE ADDED to anchors.");
+            } else {
+                logger.info("Volume collections WILL NOT BE ADDED to anchors.");
+            }
+        } catch (Exception e) {
+            logger.error("<addVolumeCollectionsToAnchor> not defined.");
+        }
+
+        String temp = Configuration.getInstance().getConfiguration("deleteContentFilesOnFailure");
+        if (temp != null) {
+            deleteContentFilesOnFailure = Boolean.valueOf(temp);
+        }
+        if (deleteContentFilesOnFailure) {
+            logger.info("Content files will be REMOVED from the hotfolder in case of indexing errors.");
+        } else {
+            logger.info("Content files will be PRESERVED in the hotfolder in case of indexing errors.");
+        }
+
+        MetadataHelper.authorityDataEnabled = config.getBoolean("init.authorityData[@enabled]", true);
+        if (MetadataHelper.authorityDataEnabled) {
+            // Authority data fields to be added to DEFAULT
+            MetadataHelper.addAuthorityDataFieldsToDefault = config.getStringList("init.authorityData.addFieldsToDefault.field");
+            if (MetadataHelper.addAuthorityDataFieldsToDefault != null) {
+                for (String field : MetadataHelper.addAuthorityDataFieldsToDefault) {
+                    logger.info("{} values will be added to DEFAULT", field);
+                }
+            }
+        } else {
+            logger.info("Authority data retrieval is disabled.");
+        }
+
+        // REST API token configuration
+        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+            logger.warn("Goobi viewer REST API token not found, communications disabled.");
+        }
+
+        // E-mail configuration
+        emailConfigurationComplete = checkEmailConfiguration();
+        if (emailConfigurationComplete) {
+            logger.info("E-mail configuration OK.");
+        }
+    }
+
+    /**
+     * 
+     * @param config
+     * @throws FatalIndexerException
+     */
+    private void initFolders(Configuration config) throws FatalIndexerException {
 
         try {
             minStorageSpace = Integer.valueOf(config.getConfiguration("minStorageSpace"));
@@ -216,8 +277,6 @@ public class Hotfolder {
             logger.error("<tempFolder> not defined.");
             throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
-
-        dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(config);
 
         // METS folders
         if (config.getConfiguration(DataRepository.PARAM_INDEXED_METS) == null) {
@@ -286,62 +345,12 @@ public class Hotfolder {
         }
 
         try {
-            success = Paths.get(config.getConfiguration("successFolder"));
-            if (!Utils.checkAndCreateDirectory(success)) {
-                throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + success.toAbsolutePath().toString());
+            successFolder = Paths.get(config.getConfiguration("successFolder"));
+            if (!Utils.checkAndCreateDirectory(successFolder)) {
+                throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + successFolder.toAbsolutePath().toString());
             }
         } catch (Exception e) {
             throw new FatalIndexerException("<successFolder> not defined.");
-        }
-        metsFileSizeThreshold = Configuration.getInstance().getInt("performance.metsFileSizeThreshold", 10485760);
-        dataFolderSizeThreshold = Configuration.getInstance().getInt("performance.dataFolderSizeThreshold", 157286400);
-
-        SolrSearchIndex.optimize = Configuration.getInstance().isAutoOptimize();
-        logger.info("Auto-optimize: {}", SolrSearchIndex.optimize);
-
-        try {
-            addVolumeCollectionsToAnchor = Configuration.getInstance().isAddVolumeCollectionsToAnchor();
-            if (addVolumeCollectionsToAnchor) {
-                logger.info("Volume collections WILL BE ADDED to anchors.");
-            } else {
-                logger.info("Volume collections WILL NOT BE ADDED to anchors.");
-            }
-        } catch (Exception e) {
-            logger.error("<addVolumeCollectionsToAnchor> not defined.");
-        }
-
-        String temp = Configuration.getInstance().getConfiguration("deleteContentFilesOnFailure");
-        if (temp != null) {
-            deleteContentFilesOnFailure = Boolean.valueOf(temp);
-        }
-        if (deleteContentFilesOnFailure) {
-            logger.info("Content files will be REMOVED from the hotfolder in case of indexing errors.");
-        } else {
-            logger.info("Content files will be PRESERVED in the hotfolder in case of indexing errors.");
-        }
-
-        MetadataHelper.authorityDataEnabled = config.getBoolean("init.authorityData[@enabled]", true);
-        if (MetadataHelper.authorityDataEnabled) {
-            // Authority data fields to be added to DEFAULT
-            MetadataHelper.addAuthorityDataFieldsToDefault = config.getList("init.authorityData.addFieldsToDefault.field");
-            if (MetadataHelper.addAuthorityDataFieldsToDefault != null) {
-                for (String field : MetadataHelper.addAuthorityDataFieldsToDefault) {
-                    logger.info("{} values will be added to DEFAULT", field);
-                }
-            }
-        } else {
-            logger.info("Authority data retrieval is disabled.");
-        }
-
-        // REST API token configuration
-        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
-            logger.warn("Goobi viewer REST API token not found, communications disabled.");
-        }
-
-        // E-mail configuration
-        emailConfigurationComplete = checkEmailConfiguration();
-        if (emailConfigurationComplete) {
-            logger.info("E-mail configuration OK.");
         }
     }
 
@@ -543,7 +552,7 @@ public class Hotfolder {
 
         try (Stream<Path> files = Files.list(hotfolderPath)) {
             long ret = files.filter(p -> !Files.isDirectory(p))
-                    .map(p -> p.toString())
+                    .map(Path::toString)
                     .filter(f -> (f.toLowerCase().endsWith(".xml") || f.endsWith(FILENAME_EXTENSION_DELETE) || f.endsWith(FILENAME_EXTENSION_PURGE)
                             || f.endsWith(".docupdate")
                             || f.endsWith(".UPDATED")))
@@ -971,6 +980,8 @@ public class Hotfolder {
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
             }
             Files.copy(metsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
+                    dataRepositoryStrategy.getAllDataRepositories());
 
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
@@ -993,7 +1004,7 @@ public class Hotfolder {
             FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
 
             // success for goobi
-            Path successFile = Paths.get(success.toAbsolutePath().toString(), metsFile.getFileName().toString());
+            Path successFile = Paths.get(successFolder.toAbsolutePath().toString(), metsFile.getFileName().toString());
             try {
                 Files.createFile(successFile);
                 Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
@@ -1048,7 +1059,6 @@ public class Hotfolder {
      * @throws FatalIndexerException
      * 
      */
-    @SuppressWarnings("unchecked")
     private void addLidoToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String[] resp = { null, null };
@@ -1111,7 +1121,7 @@ public class Hotfolder {
                 try {
                     currentIndexer = new LidoIndexer(this);
                     resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
-                            Configuration.getInstance().getList("init.lido.imageXPath"),
+                            Configuration.getInstance().getStringList("init.lido.imageXPath"),
                             dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
                             reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
                 } finally {
@@ -1128,6 +1138,8 @@ public class Hotfolder {
                     try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
                         outputter.output(doc, out);
                     }
+                    dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newLidoFileName, DataRepository.PARAM_INDEXED_LIDO,
+                            dataRepositoryStrategy.getAllDataRepositories());
 
                     // Move non-repository data directories to the selected repository
                     if (previousDataRepository != null) {
@@ -1313,6 +1325,8 @@ public class Hotfolder {
                     try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
                         outputter.output(doc, out);
                     }
+                    dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDenkXwebFileName, DataRepository.PARAM_INDEXED_DENKXWEB,
+                            dataRepositoryStrategy.getAllDataRepositories());
 
                     // Move non-repository data directories to the selected repository
                     if (previousDataRepository != null) {
@@ -1497,6 +1511,8 @@ public class Hotfolder {
                 return;
             }
             Files.copy(dcFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDcFileName, DataRepository.PARAM_INDEXED_DUBLINCORE,
+                    dataRepositoryStrategy.getAllDataRepositories());
 
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
@@ -1625,6 +1641,8 @@ public class Hotfolder {
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
             }
             Files.copy(mainFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
+                    dataRepositoryStrategy.getAllDataRepositories());
 
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
@@ -1647,7 +1665,7 @@ public class Hotfolder {
             FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
 
             // Create success file for Goobi workflow
-            Path successFile = Paths.get(success.toAbsolutePath().toString(), mainFile.getFileName().toString());
+            Path successFile = Paths.get(successFolder.toAbsolutePath().toString(), mainFile.getFileName().toString());
             try {
                 Files.createFile(successFile);
                 Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
@@ -2005,13 +2023,13 @@ public class Hotfolder {
 
     /**
      * <p>
-     * Getter for the field <code>success</code>.
+     * Getter for the field <code>successFolder</code>.
      * </p>
      *
      * @return a {@link java.nio.file.Path} object.
      */
-    public Path getSuccess() {
-        return success;
+    public Path getSuccessFolder() {
+        return successFolder;
     }
 
     /**
@@ -2044,46 +2062,5 @@ public class Hotfolder {
      */
     public long getDataFolderSizeThreshold() {
         return dataFolderSizeThreshold;
-    }
-
-    /**
-     * <p>
-     * getDataFolderFilter.
-     * </p>
-     *
-     * @param prefix a {@link java.lang.String} object.
-     * @return a {@link java.io.FilenameFilter} object.
-     */
-    public static FilenameFilter getDataFolderFilter(final String prefix) {
-        return new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return (name.startsWith(prefix) && new File(dir, name).isDirectory());
-            }
-        };
-    }
-
-    /**
-     * 
-     * @return
-     */
-    public static FilenameFilter getRecordFileFilter() {
-        return new FilenameFilter() {
-            private final List<String> extensions =
-                    Arrays.asList(".xml", FILENAME_EXTENSION_DELETE, FILENAME_EXTENSION_PURGE, ".docupdate", ".UPDATED");
-
-            @Override
-            public boolean accept(File dir, String name) {
-                if (new File(dir, name).isDirectory()) {
-                    return false;
-                }
-                String extension = FilenameUtils.getExtension(name);
-                if (extension != null) {
-                    return extensions.contains(extension.toLowerCase());
-                }
-                return false;
-            }
-        };
     }
 }

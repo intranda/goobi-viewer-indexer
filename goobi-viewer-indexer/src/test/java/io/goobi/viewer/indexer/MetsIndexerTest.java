@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
+import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -303,7 +304,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
                     Assert.assertNotNull(value);
-                    Assert.assertEquals("fulltext/PPN517154005/" + FilenameUtils.getBaseName(fileName) + Indexer.TXT_EXTENSION, value);
+                    Assert.assertEquals("fulltext/PPN517154005/" + FilenameUtils.getBaseName(fileName) + FileTools.TXT_EXTENSION, value);
                     Assert.assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
                 }
                 {
@@ -760,15 +761,15 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
                         null)
                 .size());
     }
-    
+
     @Test
     public void index_shouldWriteThumbnailCorrectly() throws Exception {
         // WRITE THUMBNAIL FROM use="banner"
-        {            
+        {
             Map<String, Path> dataFolders = new HashMap<>();
             Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
             new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
-            
+
             SolrDocumentList docs = hotfolder.getSearchIndex()
                     .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +ISWORK:true", Collections.singletonList(SolrConstants.THUMBNAIL));
             Assert.assertEquals(1, docs.size());
@@ -776,18 +777,19 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals("flb000645_0007.jpg", thumbnail);
         }
         // WRITE THUMBNAIL FROM xlink:label="START_PAGE"
-        {            
+        {
             Map<String, Path> dataFolders = new HashMap<>();
             Path metsFile = Paths.get("src/test/resources/METS/rosdok_ppn1011383616.dv.mets.xml");
             String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
             Assert.assertEquals("PPN1011383616.xml", ret[0]);
-            
+
             SolrDocumentList docs = hotfolder.getSearchIndex()
                     .search("+" + SolrConstants.PI_TOPSTRUCT + ":PPN1011383616 +ISWORK:true", Collections.singletonList(SolrConstants.THUMBNAIL));
             Assert.assertEquals(1, docs.size());
             String thumbnail = docs.get(0).getFirstValue(SolrConstants.THUMBNAIL).toString();
-            Assert.assertEquals("https://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn1011383616%252Fphys_0005/full/full/0/native.jpg", thumbnail);
-            
+            Assert.assertEquals("https://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn1011383616%252Fphys_0005/full/full/0/native.jpg",
+                    thumbnail);
+
         }
     }
 

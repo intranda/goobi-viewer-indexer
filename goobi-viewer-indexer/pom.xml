@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>22.11</version>
+	<version>22.12-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -36,7 +36,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.5.9</alto.version>
 		<iiif-api-model.version>2.3.0</iiif-api-model.version>
-		<normdataimporter.version>1.9.4</normdataimporter.version>
+		<normdataimporter.version>1.10.0</normdataimporter.version>
 
 		<!-- other libraries -->
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -51,7 +51,7 @@
 		<imageio-openjpeg.version>0.6.2</imageio-openjpeg.version>
 		<log4j.version>2.19.0</log4j.version>
 		<jackson.version>2.14.1</jackson.version>
-		<jaxen.version>1.2.0</jaxen.version>
+		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
@@ -60,7 +60,7 @@
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.18.0</metadata-extractor.version>
 		<solr.version>8.11.2</solr.version>
-		<sf-geojson.version>3.3.0</sf-geojson.version>
+		<sf-geojson.version>3.3.1</sf-geojson.version>
 	</properties>
 
 
@@ -247,7 +247,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>enforce-maven</id>
@@ -266,7 +266,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.10.1</version>
                 <configuration>
                     <compilerArgument>-Xlint:deprecation</compilerArgument>
 				</configuration>
@@ -282,7 +282,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>analyze</id>
@@ -303,6 +303,9 @@
 
                                 <!-- imageio is used to read image dimensions during indexing -->
                                 <ignoredUnusedDeclaredDependency>com.github.jai-imageio:jai-imageio-core</ignoredUnusedDeclaredDependency>
+
+                                <!-- openjeg is used to read image dimensions from jp2 images during indexing -->
+                                <ignoredUnusedDeclaredDependency>de.digitalcollections.imageio:imageio-openjpeg</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -330,7 +333,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.4</version>
+                <version>3.0.0</version>
                 <configuration>
                     <shortRevisionLength>7</shortRevisionLength>
                     <doCheck>false</doCheck>
@@ -377,7 +380,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.7</version>
+				<version>0.8.8</version>
 				<executions>
 					<execution>
 						<goals>
@@ -404,7 +407,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>7.1.0</version>
+                <version>7.4.4</version>
                 <configuration>
                     <!--failBuildOnCVSS>5.0</failBuildOnCVSS-->
                     <skipProvidedScope>true</skipProvidedScope>

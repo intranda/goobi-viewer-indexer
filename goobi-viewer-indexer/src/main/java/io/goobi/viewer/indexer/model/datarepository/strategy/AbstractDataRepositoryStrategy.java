@@ -26,7 +26,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public abstract class AbstractDataRepositoryStrategy implements IDataRepositoryStrategy {
 
-    private static final Logger logger = LogManager.getLogger(RemainingSpaceStrategy.class);
+    private static final Logger logger = LogManager.getLogger(AbstractDataRepositoryStrategy.class);
 
     protected List<DataRepository> dataRepositories;
 
@@ -52,7 +52,7 @@ public abstract class AbstractDataRepositoryStrategy implements IDataRepositoryS
             case "RemainingSpaceStrategy":
                 return new RemainingSpaceStrategy(config);
             default:
-                logger.error("Unknown data repository strategy: '{}', using SingleRepositoryStrategy instead.");
+                logger.error("Unknown data repository strategy: '{}', using SingleRepositoryStrategy instead.", config.getDataRepositoryStrategy());
                 return new SingleRepositoryStrategy(config);
         }
     }

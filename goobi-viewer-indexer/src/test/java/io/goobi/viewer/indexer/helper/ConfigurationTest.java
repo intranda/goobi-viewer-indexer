@@ -53,7 +53,7 @@ public class ConfigurationTest extends AbstractTest {
     public void folderTest() throws Exception {
         Assert.assertTrue(Files.isDirectory(hotfolder.getHotfolder()));
         Assert.assertTrue(new File(Configuration.getInstance().getString("init.viewerHome")).isDirectory());
-        Assert.assertTrue(Files.isDirectory(hotfolder.getSuccess()));
+        Assert.assertTrue(Files.isDirectory(hotfolder.getSuccessFolder()));
         Assert.assertTrue(Files.isDirectory(hotfolder.getUpdatedMets()));
         Assert.assertTrue(Files.isDirectory(hotfolder.getDeletedMets()));
         Assert.assertTrue(Files.isDirectory(hotfolder.getErrorMets()));
@@ -277,5 +277,41 @@ public class ConfigurationTest extends AbstractTest {
     @Test
     public void getAuthorityDataCacheRecordTTL_shouldReturnCorrectValue() throws Exception {
         Assert.assertEquals(12, Configuration.getInstance().getAuthorityDataCacheRecordTTL());
+    }
+
+    /**
+     * @see Configuration#isProxyEnabled()
+     * @verifies return correct value
+     */
+    @Test
+    public void isProxyEnabled_shouldReturnCorrectValue() throws Exception {
+        Assert.assertTrue(Configuration.getInstance().isProxyEnabled());
+    }
+
+    /**
+     * @see Configuration#getProxyUrl()
+     * @verifies return correct value
+     */
+    @Test
+    public void getProxyUrl_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals("my.proxy", Configuration.getInstance().getProxyUrl());
+    }
+
+    /**
+     * @see Configuration#getProxyPort()
+     * @verifies return correct value
+     */
+    @Test
+    public void getProxyPort_shouldReturnCorrectValue() throws Exception {
+        Assert.assertEquals(9999, Configuration.getInstance().getProxyPort());
+    }
+
+    /**
+     * @see Configuration#isHostProxyWhitelisted(String)
+     * @verifies return true if host whitelisted
+     */
+    @Test
+    public void isHostProxyWhitelistedd_shouldReturnTrueIfHostWhitelisted() throws Exception {
+        Assert.assertTrue(Configuration.getInstance().isHostProxyWhitelisted("http://localhost:1234"));
     }
 }

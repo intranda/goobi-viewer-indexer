@@ -52,6 +52,10 @@ public class UsageStatisticsIndexer extends Indexer {
 
     private static final Logger logger = LogManager.getLogger(UsageStatisticsIndexer.class);
 
+    /**
+     * 
+     * @param hotfolder
+     */
     public UsageStatisticsIndexer(Hotfolder hotfolder) {
         this.hotfolder = hotfolder;
     }
@@ -60,16 +64,15 @@ public class UsageStatisticsIndexer extends Indexer {
      * @param sourceFile
      * @throws IOException
      * @throws FatalIndexerException
-     * @throws SolrServerException 
+     * @throws SolrServerException
      */
     public SolrInputDocument index(Path sourceFile) throws IOException, FatalIndexerException, SolrServerException {
         String solrDateString = getStatisticsDate(sourceFile);
-        if(statisticsExists(solrDateString)) {
-            logger.info("Don't index usage statistics for " + solrDateString + ": Statistics already exist for that date");
+        if (statisticsExists(solrDateString)) {
+            logger.info("Don't index usage statistics for {}: Statistics already exist for that date", solrDateString);
             return null;
         }
-        
-        
+
         String jsonString = Files.readString(sourceFile);
         if (StringUtils.isBlank(jsonString)) {
             throw new IllegalArgumentException("Usage statistics file {} is empty".replace("{}", sourceFile.toString()));
@@ -84,7 +87,7 @@ public class UsageStatisticsIndexer extends Indexer {
             ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(sourceFile, Collections.emptyMap(), this.hotfolder);
             writeStrategy.setRootDoc(rootDoc);
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
-            logger.info("Written usage statistics from " + sourceFile.toString() + " to index with IDDOC " + rootDoc.getFieldValue("IDDOC"));
+            logger.info("Written usage statistics from {} to index with IDDOC {}", sourceFile, rootDoc.getFieldValue("IDDOC"));
             return rootDoc;
         } catch (JSONException | IndexerException e) {
             throw new IllegalArgumentException("Usage statistics file {} contains invalid json".replace("{}", sourceFile.toString()));
@@ -95,11 +98,12 @@ public class UsageStatisticsIndexer extends Indexer {
     /**
      * @param solrDateString
      * @return
-     * @throws IOException 
-     * @throws SolrServerException 
+     * @throws IOException
+     * @throws SolrServerException
      */
     private boolean statisticsExists(String solrDateString) throws SolrServerException, IOException {
-        String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
+        String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":"
+                + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
         return hotfolder.getSearchIndex().getNumHits(query) > 0;
     }
 
@@ -136,28 +140,31 @@ public class UsageStatisticsIndexer extends Indexer {
 
     /**
      * @param sourceFile
-     * @param searchIndex
      * @return
-     * @throws FatalIndexerException 
+     * @throws FatalIndexerException
      */
     public boolean removeFromIndex(Path sourceFile) throws FatalIndexerException {
         String solrDateString = getStatisticsDate(sourceFile);
-        
-        try {            
-            String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
-            logger.info("Deleting usage statistics for " + StatisticsLuceneFields.DATE + ":" + solrDateString);
+
+        try {
+            String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":"
+                    + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
+            logger.info("Deleting usage statistics for {}:{}", StatisticsLuceneFields.DATE, solrDateString);
             return hotfolder.getSearchIndex().deleteByQuery(query);
         } finally {
-            hotfolder.getSearchIndex().commit(false);            
+            hotfolder.getSearchIndex().commit(false);
         }
-
     }
 
-    private String getStatisticsDate(Path sourceFile) {
+    /**
+     * 
+     * @param sourceFile
+     * @return
+     */
+    private static String getStatisticsDate(Path sourceFile) {
         String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
         LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
-        String solrDateString = StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
-        return solrDateString;
+        return StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
     }
 
 }

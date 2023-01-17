@@ -46,7 +46,6 @@ public final class SolrIndexerDaemon {
     private static SolrIndexerDaemon instance = null;
 
     private String confFilename = "config_indexer.xml";
-    private int sleepInterval = 1000;
     private volatile boolean running = false;
 
     /**
@@ -123,7 +122,9 @@ public final class SolrIndexerDaemon {
             }
         });
 
-        logger.info(Version.asString());
+        if (logger.isInfoEnabled()) {
+            logger.info(Version.asString());
+        }
         if (StringUtils.isNotEmpty(configFilePath)) {
             confFilename = configFilePath;
         }
@@ -141,7 +142,7 @@ public final class SolrIndexerDaemon {
                         SolrSearchIndex.getNewHttpSolrClient(Configuration.getInstance(confFilename).getConfiguration("oldSolrUrl"),
                                 SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true));
 
-        if (hotfolder.getSuccess() == null || !Files.isDirectory(hotfolder.getSuccess())) {
+        if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
             throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
         }
 
@@ -155,6 +156,7 @@ public final class SolrIndexerDaemon {
             return;
         }
         // Set the hotfolder sleep interval
+        int sleepInterval = 1000;
         try {
             sleepInterval = Integer.valueOf(Configuration.getInstance().getConfiguration("sleep"));
             if (sleepInterval < 500) {
@@ -200,25 +202,31 @@ public final class SolrIndexerDaemon {
         running = false;
     }
 
+    /**
+     * 
+     * @param doc
+     * @return
+     */
     private static boolean checkSolrSchemaName(Document doc) {
-        if (doc != null) {
-            Element eleRoot = doc.getRootElement();
-            if (eleRoot != null) {
-                String schemaName = eleRoot.getAttributeValue("name");
-                if (StringUtils.isNotEmpty(schemaName)) {
-                    try {
-                        if (schemaName.length() > SCHEMA_VERSION_PREFIX.length()
-                                && Integer.parseInt(schemaName.substring(SCHEMA_VERSION_PREFIX.length())) >= SolrIndexerDaemon.MIN_SCHEMA_VERSION) {
-                            return true;
-                        }
-                    } catch (NumberFormatException e) {
-                        logger.error("Schema version must contain a number.");
-                    }
-                    logger.error("Solr schema is not up to date; required: {}{}, found: {}", SCHEMA_VERSION_PREFIX, MIN_SCHEMA_VERSION, schemaName);
-                }
-            }
-        } else {
+        if (doc == null) {
             logger.error("Could not read the Solr schema name.");
+            return false;
+        }
+
+        Element eleRoot = doc.getRootElement();
+        if (eleRoot != null) {
+            String schemaName = eleRoot.getAttributeValue("name");
+            if (StringUtils.isNotEmpty(schemaName)) {
+                try {
+                    if (schemaName.length() > SCHEMA_VERSION_PREFIX.length()
+                            && Integer.parseInt(schemaName.substring(SCHEMA_VERSION_PREFIX.length())) >= SolrIndexerDaemon.MIN_SCHEMA_VERSION) {
+                        return true;
+                    }
+                } catch (NumberFormatException e) {
+                    logger.error("Schema version must contain a number.");
+                }
+                logger.error("Solr schema is not up to date; required: {}{}, found: {}", SCHEMA_VERSION_PREFIX, MIN_SCHEMA_VERSION, schemaName);
+            }
         }
 
         return false;

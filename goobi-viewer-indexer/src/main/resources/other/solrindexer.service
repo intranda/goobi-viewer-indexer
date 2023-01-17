@@ -8,6 +8,7 @@ Requires=solr.service
 
 [Service]
 Environment="STOPFILE=/opt/digiverso/viewer/hotfolder/.SHUTDOWN_INDEXER"
+Environment="LOGFILENAME=indexer"
 Restart=always
 RestartSec=20s
 StartLimitInterval=100s

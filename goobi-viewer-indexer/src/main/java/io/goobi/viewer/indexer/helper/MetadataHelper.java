@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,11 +35,11 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import de.intranda.digiverso.normdataimporter.model.NormData;
@@ -82,29 +83,11 @@ public class MetadataHelper {
     protected static Map<String, Record> authorityDataCache = new HashMap<>();
 
     /** Constant <code>FORMAT_TWO_DIGITS</code> */
-    public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = new ThreadLocal<DecimalFormat>() {
-
-        @Override
-        protected DecimalFormat initialValue() {
-            return new DecimalFormat("00");
-        }
-    };
+    public static final ThreadLocal<DecimalFormat> FORMAT_TWO_DIGITS = ThreadLocal.withInitial(() -> new DecimalFormat("00"));
     /** Constant <code>FORMAT_FOUR_DIGITS</code> */
-    public static final ThreadLocal<DecimalFormat> FORMAT_FOUR_DIGITS = new ThreadLocal<DecimalFormat>() {
-
-        @Override
-        protected DecimalFormat initialValue() {
-            return new DecimalFormat("0000");
-        }
-    };
+    public static final ThreadLocal<DecimalFormat> FORMAT_FOUR_DIGITS = ThreadLocal.withInitial(() -> new DecimalFormat("0000"));
     /** Constant <code>FORMAT_EIGHT_DIGITS</code> */
-    public static final ThreadLocal<DecimalFormat> FORMAT_EIGHT_DIGITS = new ThreadLocal<DecimalFormat>() {
-
-        @Override
-        protected DecimalFormat initialValue() {
-            return new DecimalFormat("00000000");
-        }
-    };
+    public static final ThreadLocal<DecimalFormat> FORMAT_EIGHT_DIGITS = ThreadLocal.withInitial(() -> new DecimalFormat("00000000"));
 
     public static boolean authorityDataEnabled = true;
 
@@ -453,7 +436,18 @@ public class MetadataHelper {
 
         }
         if (rec == null) {
-            rec = NormDataImporter.getSingleRecord(url);
+            String proxyUrl = null;
+            int proxyPort = 0;
+            try {
+                if (Configuration.getInstance().isProxyEnabled() && !Configuration.getInstance().isHostProxyWhitelisted(url)) {
+                    proxyUrl = Configuration.getInstance().getProxyUrl();
+                    proxyPort = Configuration.getInstance().getProxyPort();
+                }
+            } catch (MalformedURLException e) {
+                logger.error(e.getMessage());
+            }
+
+            rec = NormDataImporter.getSingleRecord(url, proxyUrl, proxyPort);
             if (rec == null) {
                 logger.warn("Authority dataset could not be retrieved: {}", url);
                 return Collections.emptyList();
@@ -661,7 +655,7 @@ public class MetadataHelper {
             // PI modifications
             fieldValue = applyIdentifierModifications(fieldValue);
         }
-        
+
         if (configurationItem.isOneToken()) {
             fieldValue = toOneToken(fieldValue, configurationItem.getSplittingCharacter());
         }
@@ -962,16 +956,14 @@ public class MetadataHelper {
             // First century years are <= 2
             yearString = "0";
         }
-        int century = Integer.valueOf(yearString);
+        int century = Integer.parseInt(yearString);
         if (bc) {
             century *= -1;
             century -= 1;
         } else {
             century++;
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("year: " + year + ", century: " + century);
-        }
+        logger.debug("year: {}, century: {}", year, century);
 
         return century;
     }
