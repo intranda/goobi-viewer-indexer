@@ -3700,7 +3700,7 @@
             </list>
         </MD_DESCRIPTION_LANG_DE>
         
-        <MD_RELATION>
+        <MD_RELATIONSHIP>
             <list>
                 <item>
                     <xpath>
@@ -3709,7 +3709,7 @@
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
+                    <groupEntity type="RELATIONSHIP">
                         <field name="MD_VALUE">mods:titleInfo/mods:title</field>
                         <field name="MD_TYPE">@otherType</field>
                         <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
@@ -3719,7 +3719,7 @@
                     </groupEntity>
                 </item>
             </list>
-        </MD_RELATION>
+        </MD_RELATIONSHIP>
         
         <MD_RELATION_AWARD>
             <list>
