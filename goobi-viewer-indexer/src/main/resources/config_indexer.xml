@@ -348,6 +348,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='restriction on access']</item>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='moving wall']/@type</item>
+                            <item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="restriction"]/lido:conceptID[@lido:type="http://terminology.lido-schema.org/identifier_type/local_identifier"]</item>
 							<item>dc:rights[not(contains(text(),'http'))]</item>
 						</list>
 					</xpath>
