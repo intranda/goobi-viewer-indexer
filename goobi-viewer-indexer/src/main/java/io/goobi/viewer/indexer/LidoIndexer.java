@@ -698,6 +698,11 @@ public class LidoIndexer extends Indexer {
             // Find event type
             query = "lido:eventType/lido:term/text()";
             String type = xp.evaluateToString(query, eleEvent);
+            if (StringUtils.isBlank(type)) {
+                // LIDO 1.1 skos:Concept fallback
+                query = "lido:eventType/skos:Concept/skos:prefLabel[@xml:lang='en']/text()";
+                type = xp.evaluateToString(query, eleEvent);
+            }
             if (StringUtils.isNotBlank(type)) {
                 eventDoc.addField(SolrConstants.EVENTTYPE, type);
                 indexObj.setDefaultValue(type);
