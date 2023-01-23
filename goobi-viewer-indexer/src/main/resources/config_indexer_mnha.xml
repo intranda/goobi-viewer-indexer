@@ -8,7 +8,7 @@
 	  <!-- Minimum required free space to index (MB) -->
 	  <minStorageSpace>2048</minStorageSpace>
 
-	  <solrUrl>http://localhost:8983/solr/collection1</solrUrl>
+	  <solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 	  <!--oldSolrUrl>http://localhost:8080/solr/collection1</oldSolrUrl-->
 	  <viewerUrl>http://localhost:8080</viewerUrl>
 	  <viewerAuthorizationToken>64daad5f-ff9e-4c53-8315-a6fd91ab4f14</viewerAuthorizationToken>
@@ -241,7 +241,7 @@
 						  <!-- LIDO 1.0 -->
 						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="collection"]/lido:conceptID[@lido:type="http://terminology.lido-schema.org/identifier_type/local_identifier"]</item>
 						  <!-- LIDO 1.1 -->
-						  <item>lido:administrativeMetadata[@xml:lang="fr"]/recordWrap/collection/object/objectID</item>
+						  <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:collection/lido:object/lido:objectID</item>
 						  <item>dc:subject</item>
 					  </list>
 				  </xpath>
@@ -324,7 +324,7 @@
 						  <!-- LIDO 1.0 -->
 						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[not(@lido:type)]/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</item>
 						  <!-- LIDO 1.1 -->
-						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="main_title"]/lido:appellationValue[@lido:type="http://terminology.lido-schema.org/lido00169"][not(@xml:lang) or @xml:lang="fr"]</item>
+						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="main_title"]/lido:appellationValue[normalize-space(@lido:type)="http://terminology.lido-schema.org/lido00169"][not(@xml:lang) or @xml:lang="fr"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -346,7 +346,7 @@
 						  <!-- LIDO 1.0 -->
 						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[not(@lido:type)]/lido:appellationValue[@xml:lang="de"]</item>
 						  <!-- LIDO 1.1 -->
-						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="main_title"]/lido:appellationValue[@lido:type="http://terminology.lido-schema.org/lido00169"][@xml:lang="de"]</item>
+						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="main_title"]/lido:appellationValue[normalize-space(@lido:type)="http://terminology.lido-schema.org/lido00169"][@xml:lang="de"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -368,7 +368,7 @@
 						  <!-- LIDO 1.0 -->
 						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[not(@lido:type)]/lido:appellationValue[@xml:lang="en"]</item>
 						  <!-- LIDO 1.1 -->
-						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="main_title"]/lido:appellationValue[@lido:type="http://terminology.lido-schema.org/lido00169"][@xml:lang="en"]</item>
+						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="main_title"]/lido:appellationValue[normalize-space(@lido:type)="http://terminology.lido-schema.org/lido00169"][@xml:lang="en"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -392,7 +392,7 @@
 						  <!-- LIDO 1.0 -->
 						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other"]/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</item>
 						  <!-- LIDO 1.1 -->
-						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other_title"]/lido:appellationValue[@lido:type="http://terminology.lido-schema.org/lido00170"][not(@xml:lang) or @xml:lang="fr"]</item>
+						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other_title"]/lido:appellationValue[normalize-space(@lido:type)="http://terminology.lido-schema.org/lido00170"][not(@xml:lang) or @xml:lang="fr"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -414,7 +414,7 @@
 						  <!-- LIDO 1.0 -->
 						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other"]/lido:appellationValue[@xml:lang="de"]</item>
 						  <!-- LIDO 1.1 -->
-						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other_title"]/lido:appellationValue[@lido:type="http://terminology.lido-schema.org/lido00170"][@xml:lang="de"]</item>
+						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other_title"]/lido:appellationValue[normalize-space(@lido:type)="http://terminology.lido-schema.org/lido00170"][@xml:lang="de"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -436,7 +436,7 @@
 						  <!-- LIDO 1.0 -->
 						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other"]/lido:appellationValue[@xml:lang="en"]</item>
 						  <!-- LIDO 1.1 -->
-						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other_title"]/lido:appellationValue[@lido:type="http://terminology.lido-schema.org/lido00170"][@xml:lang="en"]</item>
+						  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet[@lido:type="other_title"]/lido:appellationValue[normalize-space(@lido:type)="http://terminology.lido-schema.org/lido00170"][@xml:lang="en"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -569,41 +569,53 @@
 	  <MD_ARTIST_ROLE_LANG_FR>
 		  <list>
 			  <item>
-				  <!--xpath>mets:xmlData/mods:mods/mods:name[@type="person"]/mods:description[@lang='fre']</xpath-->
-				  <xpath>mets:xmlData/mods:mods/mods:name/mods:description[@lang='fre']</xpath>
-				  <!-- LIDO 1.0 -->
-				  <!-- <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[not(@xml:lang)]</item> -->
-				  <!-- LIDO 1.1 -->
-				  <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:prefLabel</item>
-				  <addToDefault>true</addToDefault>
+                  <xpath>
+                      <list>
+				        <!--item>mets:xmlData/mods:mods/mods:name[@type="person"]/mods:description[@lang='fre']</item-->
+				        <item>mets:xmlData/mods:mods/mods:name/mods:description[@lang='fre']</item>
+				        <!-- LIDO 1.0 -->
+				        <!-- <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[not(@xml:lang)]</item> -->
+				        <!-- LIDO 1.1 -->
+				        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:prefLabel</item>
+                      </list>
+                  </xpath>
+                  <addToDefault>true</addToDefault>
 			  </item>
 		  </list>
 	  </MD_ARTIST_ROLE_LANG_FR>
 	  <MD_ARTIST_ROLE_LANG_DE>
-		  <list>
-			  <item>
-				  <!--xpath>mets:xmlData/mods:mods/mods:name[@type="person"]/mods:description[@lang='ger']</xpath-->
-				  <xpath>mets:xmlData/mods:mods/mods:name/mods:description[@lang='ger']</xpath>
-				  <!-- LIDO 1.0 -->
-				  <!-- <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[@xml:lang='de']</item> -->
-				  <!-- LIDO 1.1 -->
-				  <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:altLabel[@xml:lang="de"]</item>
-				  <addToDefault>true</addToDefault>
-			  </item>
-		  </list>
+          <list>
+              <item>
+                  <xpath>
+                      <list>
+                        <!--item>mets:xmlData/mods:mods/mods:name[@type="person"]/mods:description[@lang='ger']</item-->
+                        <item>mets:xmlData/mods:mods/mods:name/mods:description[@lang='ger']</item>
+                        <!-- LIDO 1.0 -->
+                        <!-- <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[@xml:lang='de']</item> -->
+                        <!-- LIDO 1.1 -->
+                        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:altLabel[@xml:lang="de"]</item>
+                      </list>
+                  </xpath>
+                  <addToDefault>true</addToDefault>
+              </item>
+          </list>
 	  </MD_ARTIST_ROLE_LANG_DE>
 	  <MD_ARTIST_ROLE_LANG_EN>
-		  <list>
-			  <item>
-				  <!--xpath>mets:xmlData/mods:mods/mods:name[@type="person"]/mods:description[@lang='eng']</xpath-->
-				  <xpath>mets:xmlData/mods:mods/mods:name/mods:description[@lang='eng']</xpath>
-				  <!-- LIDO 1.0 -->
-				  <!--<item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[@xml:lang='en']</item> -->
-				  <!-- LIDO 1.1 -->
-				  <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:altLabel[@xml:lang="en"]</item>
-				  <addToDefault>true</addToDefault>
-			  </item>
-		  </list>
+          <list>
+              <item>
+                  <xpath>
+                      <list>
+                        <!--item>mets:xmlData/mods:mods/mods:name[@type="person"]/mods:description[@lang='eng']</item-->
+                        <item>mets:xmlData/mods:mods/mods:name/mods:description[@lang='eng']</item>
+                        <!-- LIDO 1.0 -->
+                        <!-- <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[@xml:lang='en']</item> -->
+                        <!-- LIDO 1.1 -->
+                        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:altLabel[@xml:lang="en"]</item>
+                      </list>
+                  </xpath>
+                  <addToDefault>true</addToDefault>
+              </item>
+          </list>
 	  </MD_ARTIST_ROLE_LANG_EN>
 
 
@@ -615,14 +627,17 @@
 				<item>
 					<xpath>
 						<list>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="date"]/text()!=''][lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]/text()!='']</item>
+							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[not(@xml:lang) or @xml:lang="fr"][not(@lido:label) or @lido:label="date"]/text()!=''][lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]/text()!='']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
-						<field name="MD_VALUE">concat(lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="date"], ' | ', lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"])</field>
-						<field name="MD_DATE_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="date"]</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_VALUE">concat(lido:displayDate[not(@xml:lang) or @xml:lang="fr"][not(@lido:label) or @lido:label="date"], ' | ', lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"])</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_DATE_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][not(@lido:label) or @lido:label="date"]</field>
+						<!-- LIDO 1.0 -->
 						<field name="MD_CENTURY_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]</field>
 					</groupEntity>
 				</item>
@@ -630,14 +645,17 @@
 				<item>
 					<xpath>
 						<list>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="date"]/text()!=''][not(lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]/text())]</item>
+							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[not(@xml:lang) or @xml:lang="fr"][not(@lido:label) or @lido:label="date"]/text()!=''][not(lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]/text())]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
-						<field name="MD_VALUE">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="date"]</field>
-						<field name="MD_DATE_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="date"]</field>
+					<!-- LIDO 1.0/1.1 -->
+						<field name="MD_VALUE">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][not(@lido:label) or @lido:label="date"]</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_DATE_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][not(@lido:label) or @lido:label="date"]</field>
+						<!-- LIDO 1.0 -->
 						<field name="MD_CENTURY_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]</field>
 					</groupEntity>
 				</item>
@@ -645,14 +663,17 @@
 				<item>
 					<xpath>
 						<list>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[not(lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="date"]/text())][lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]/text()!='']</item>
+							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[not(lido:displayDate[not(@xml:lang) or @xml:lang="fr"][not(@lido:label) or @lido:label="date"]/text())][lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]/text()!='']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
+					<!-- LIDO 1.0 -->
 						<field name="MD_VALUE">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]</field>
-						<field name="MD_DATE_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="date"]</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_DATE_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][not(@lido:label) or @lido:label="date"]</field>
+						<!-- LIDO 1.0-->
 						<field name="MD_CENTURY_LANG_FR">lido:displayDate[not(@xml:lang) or @xml:lang="fr"][@lido:label="century"]</field>
 					</groupEntity>
 				</item>
@@ -686,8 +707,11 @@
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
-						<field name="MD_VALUE">concat(lido:displayDate[@xml:lang="de"][@lido:label="date"], ' | ', lido:displayDate[@xml:lang="de"][@lido:label="century"])</field>
-						<field name="MD_DATE_LANG_FR">lido:displayDate[@xml:lang="de"][@lido:label="date"]</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_VALUE">concat(lido:displayDate[@xml:lang="de"][not(@lido:label) or @lido:label="date"], ' | ', lido:displayDate[@xml:lang="de"][@lido:label="century"])</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_DATE_LANG_FR">lido:displayDate[@xml:lang="de"][not(@lido:label) or @lido:label="date"]</field>
+						<!-- LIDO 1.0 -->
 						<field name="MD_CENTURY_LANG_FR">lido:displayDate[@xml:lang="de"][@lido:label="century"]</field>
 					</groupEntity>
 				</item>
@@ -695,27 +719,29 @@
 				<item>
 					<xpath>
 						<list>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[@xml:lang="de"][@lido:label="date"]/text()!=''][not(lido:displayDate[@xml:lang="de"][@lido:label="century"]/text())]</item>
+							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[@xml:lang="de"][not(@lido:label) or @lido:label="date"]/text()!=''][not(lido:displayDate[@xml:lang="de"][@lido:label="century"]/text())]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
-						<field name="MD_VALUE">lido:displayDate[@xml:lang="de"][@lido:label="date"]</field>
-						<field name="MD_DATE_LANG_FR">lido:displayDate[@xml:lang="de"][@lido:label="date"]</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_VALUE">lido:displayDate[@xml:lang="de"][not(@lido:label) or @lido:label="date"]</field>
+						<field name="MD_DATE_LANG_FR">lido:displayDate[@xml:lang="de"][not(@lido:label) or @lido:label="date"]</field>
 					</groupEntity>
 				</item>
 				<!-- LIDO: just century -->
 				<item>
 					<xpath>
 						<list>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[not(lido:displayDate[@xml:lang="de"][@lido:label="date"]/text())][lido:displayDate[@xml:lang="de"][@lido:label="century"]/text()!='']</item>
+							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[not(lido:displayDate[@xml:lang="de"][not(@lido:label) or @lido:label="date"]/text())][lido:displayDate[@xml:lang="de"][@lido:label="century"]/text()!='']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
-						<field name="MD_VALUE">lido:displayDate[ @xml:lang="de"][@lido:label="century"]</field>
+						<!-- LIDO 1.0 -->
+						<field name="MD_VALUE">lido:displayDate[@xml:lang="de"][@lido:label="century"]</field>
 						<field name="MD_CENTURY_LANG_FR">lido:displayDate[@xml:lang="de"][@lido:label="century"]</field>
 					</groupEntity>
 				</item>
@@ -743,14 +769,16 @@
 				<item>
 					<xpath>
 						<list>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[@xml:lang="en"][@lido:label="date"]/text()!=''][lido:displayDate[@xml:lang="en"][@lido:label="century"]/text()!='']</item>
+							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[@xml:lang="en"][not(@lido:label) or @lido:label="date"]/text()!=''][lido:displayDate[@xml:lang="en"][@lido:label="century"]/text()!='']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
-						<field name="MD_VALUE">concat(lido:displayDate[@xml:lang="en"][@lido:label="date"], ' | ', lido:displayDate[@xml:lang="en"][@lido:label="century"])</field>
-						<field name="MD_DATE_LANG_FR">lido:displayDate[@xml:lang="en"][@lido:label="date"]</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_VALUE">concat(lido:displayDate[@xml:lang="en"][not(@lido:label) or @lido:label="date"], ' | ', lido:displayDate[@xml:lang="en"][@lido:label="century"])</field>
+						<field name="MD_DATE_LANG_FR">lido:displayDate[@xml:lang="en"][not(@lido:label) or @lido:label="date"]</field>
+						<!-- LIDO 1.0 -->
 						<field name="MD_CENTURY_LANG_FR">lido:displayDate[@xml:lang="en"][@lido:label="century"]</field>
 					</groupEntity>
 				</item>
@@ -758,26 +786,28 @@
 				<item>
 					<xpath>
 						<list>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[@xml:lang="en"][@lido:label="date"]/text()!=''][not(lido:displayDate[@xml:lang="en"][@lido:label="century"]/text())]</item>
+							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[lido:displayDate[@xml:lang="en"][not(@lido:label) or @lido:label="date"]/text()!=''][not(lido:displayDate[@xml:lang="en"][@lido:label="century"]/text())]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
-						<field name="MD_VALUE">lido:displayDate[@xml:lang="en"][@lido:label="date"]</field>
-						<field name="MD_DATE_LANG_FR">lido:displayDate[@xml:lang="en"][@lido:label="date"]</field>
+						<!-- LIDO 1.0/1.1 -->
+						<field name="MD_VALUE">lido:displayDate[@xml:lang="en"][not(@lido:label) or @lido:label="date"]</field>
+						<field name="MD_DATE_LANG_FR">lido:displayDate[@xml:lang="en"][not(@lido:label) or @lido:label="date"]</field>
 					</groupEntity>
 				</item>
 				<!-- LIDO: just century -->
 				<item>
 					<xpath>
 						<list>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[not(lido:displayDate[@xml:lang="en"][@lido:label="date"]/text())][lido:displayDate[@xml:lang="en"][@lido:label="century"]/text()!='']</item>
+							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventDate[not(lido:displayDate[@xml:lang="en"][not(@lido:label) or @lido:label="date"]/text())][lido:displayDate[@xml:lang="en"][@lido:label="century"]/text()!='']</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<groupEntity type="OTHER">
+						<!-- LIDO 1.0 -->
 						<field name="MD_VALUE">lido:displayDate[ @xml:lang="en"][@lido:label="century"]</field>
 						<field name="MD_CENTURY_LANG_FR">lido:displayDate[@xml:lang="en"][@lido:label="century"]</field>
 					</groupEntity>
@@ -822,7 +852,8 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:relatedItem/mods:identifier[@type='InventoryNumber']</item>
-              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/repositorySet_type/current_repository_or_location"]/lido:workID</item>
+			  <!-- LIDO 1.0/1.1 -->
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[normalize-space(@lido:type)="http://terminology.lido-schema.org/lido01017" or @lido:type="http://terminology.lido-schema.org/repositorySet_type/current_repository_or_location"]/lido:workID[not(@lido:label) or @lido:label="inventory_number"]</item>
             </list>
 				  </xpath>
 				  <onefield>false</onefield>
@@ -840,7 +871,10 @@
 				  <xpath>
             <list>
               <item>concat(mets:xmlData/mods:mods/mods:classification[@authority='ivdcc'][@lang='fre'][@usage='primary']/text(),"#",mets:xmlData/mods:mods/mods:classification[@authority='ivdcc'][@lang='fre'][@usage='secondary']/text())</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="collection"]/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:collection/lido:object/lido:objectName/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</item>
             </list>
           </xpath>
 				  <getnode>first</getnode>
@@ -861,7 +895,10 @@
 				  <xpath>
             <list>
               <item>concat(mets:xmlData/mods:mods/mods:classification[@authority='ivdcc'][@lang='ger'][@usage='primary']/text(),"#",mets:xmlData/mods:mods/mods:classification[@authority='ivdcc'][@lang='ger'][@usage='secondary']/text())</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="collection"]/lido:term[@xml:lang="de"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:collection/lido:object/lido:objectName/lido:appellationValue[@xml:lang="de"]</item>
             </list>
           </xpath>
 				  <getnode>first</getnode>
@@ -882,7 +919,10 @@
 				  <xpath>
             <list>
               <item>concat(mets:xmlData/mods:mods/mods:classification[@authority='ivdcc'][@lang='eng'][@usage='primary']/text(),"#",mets:xmlData/mods:mods/mods:classification[@authority='ivdcc'][@lang='eng'][@usage='secondary']/text())</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="collection"]/lido:term[@xml:lang="en"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:collection/lido:object/lido:objectName/lido:appellationValue[@xml:lang="en"]</item>
             </list>
           </xpath>
 				  <getnode>first</getnode>
@@ -906,7 +946,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:genre[@lang="fre"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:prefLabel</item>
             </list>
           </xpath>
 				  <onefield>false</onefield>
@@ -920,7 +963,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:genre[@lang="ger"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType/lido:term[@xml:lang="de"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:altLabel[@xml:lang="de"]</item>
             </list>
            </xpath>
 				  <onefield>false</onefield>
@@ -934,7 +980,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:genre[@lang="eng"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType/lido:term[@xml:lang="en"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:altLabel[@xml:lang="en"]</item>
             </list>
           </xpath>
 				  <onefield>false</onefield>
@@ -952,7 +1001,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:extension/lux:lux/lux:designation[@lang="fre"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="designation"]/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:prefLabel</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -966,7 +1018,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:extension/lux:lux/lux:designation[@lang="ger"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="designation"]/lido:term[@xml:lang="de"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:altLabel[@xml:lang="de"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -980,7 +1035,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:extension/lux:lux/lux:designation[@lang="eng"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="designation"]/lido:term[@xml:lang="en"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:altLabel[@xml:lang="en"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -997,7 +1055,9 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:subject[@lang='fre']/mods:temporal</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="period_style_movement"]/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
+			  <!-- TODO: LIDO 1.1 -->
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1010,7 +1070,9 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:subject[@lang='ger']/mods:temporal</item>
-              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="period_style_movement"]/lido:term[@xml:lang="de"]</item>
+			  <!-- LIDO 1.0 -->
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="period_style_movement"]/lido:term[@xml:lang="de"]</item>
+			  <!-- TODO: LIDO 1.1 -->
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1023,7 +1085,9 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:subject[@lang='eng']/mods:temporal</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="period_style_movement"]/lido:term[@xml:lang="en"]</item>
+			  <!-- TODO: LIDO 1.1 -->
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1040,7 +1104,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:form[@type="technique"][@lang="fre"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventMaterialsTech/lido:displayMaterialsTech[not(@xml:lang) or @xml:lang="fr"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectMaterialsTechWrap/lido:objectMaterialsTech/lido:displayMaterialsTech[not(@xml:lang) or @xml:lang="fr"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1054,7 +1121,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:form[@type="technique"][@lang="ger"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventMaterialsTech/lido:displayMaterialsTech[@xml:lang="de"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectMaterialsTechWrap/lido:objectMaterialsTech/lido:displayMaterialsTech[@xml:lang="de"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1068,7 +1138,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:form[@type="technique"][@lang="eng"]</item>
+			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event/lido:eventMaterialsTech/lido:displayMaterialsTech[@xml:lang="en"]</item>
+			  <!-- LIDO 1.1 -->
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectMaterialsTechWrap/lido:objectMaterialsTech/lido:displayMaterialsTech[@xml:lang="de"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1098,6 +1171,7 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent[@lang="fre"]</item>
+			  <!-- LIDO 1.0/1.1 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:displayObjectMeasurements[not(@xml:lang) or @xml:lang="fr"]</item>
             </list>
           </xpath>
@@ -1111,6 +1185,7 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent[@lang="ger"]</item>
+			  <!-- LIDO 1.0/1.1 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:displayObjectMeasurements[@xml:lang="de"]</item>
             </list>
           </xpath>
@@ -1124,6 +1199,7 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent[@lang="eng"]</item>
+			  <!-- LIDO 1.0/1.1 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:displayObjectMeasurements[@xml:lang="en"]</item>
             </list>
           </xpath>
@@ -1140,6 +1216,7 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:physicalDescription</item>
+							<!-- LIDO 1.0/1.1 -->
 							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
 						</list>
 					</xpath>
@@ -1166,7 +1243,8 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:physicalDescription</item>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
+							<!-- LIDO 1.0/1.1 -->
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -1192,7 +1270,8 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:physicalDescription</item>
-							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
+							<!-- LIDO 1.0/1.1 -->
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:inscriptionsWrap/lido:inscriptions</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -1256,6 +1335,9 @@
                 </item>
             </list>
         </MD_NOTE_CITATION_REFERENCE>
+        
+        
+        <!-- CUT -->
 
 
 		<MD_SUBJECT_HIERARCHICALGEOGRAPHIC_LANG_FR>
@@ -1388,7 +1470,10 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordOrigin[@lang="fre"]</item>
+                            <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/acquisition"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00001"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -1402,7 +1487,10 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordOrigin[@lang="ger"]</item>
+                            <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/acquisition"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[@xml:lang="de"]</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00001"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[@xml:lang="de"]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -1416,7 +1504,10 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordOrigin[@lang="eng"]</item>
+                            <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/acquisition"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[@xml:lang="en"]</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00001"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[@xml:lang="de"]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -1434,7 +1525,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@lang='fre']</item>
+              <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/repositorySet_type/current_repository_or_location"]/lido:repositoryLocation/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</item>
+              <!-- LIDO 1.1 -->
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/lido01017"]/lido:displayRepository[not(@xml:lang) or @xml:lang="fr"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1447,7 +1541,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@lang='ger']</item>
+              <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/repositorySet_type/current_repository_or_location"]/lido:repositoryLocation/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</item>
+              <!-- LIDO 1.1 -->
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/lido01017"]/lido:displayRepository[@xml:lang="de"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1460,7 +1557,10 @@
 				  <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@lang='eng']</item>
+              <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/repositorySet_type/current_repository_or_location"]/lido:repositoryLocation/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</item>
+              <!-- LIDO 1.1 -->
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/lido01017"]/lido:displayRepository[@xml:lang="en"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1477,7 +1577,7 @@
           <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:subject/mods:topic[@lang='fre'][not(@transliteration)]</item>
-              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="long"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="long" or @lido:type="description_long"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
             </list>
           </xpath>
           <addToDefault>true</addToDefault>
