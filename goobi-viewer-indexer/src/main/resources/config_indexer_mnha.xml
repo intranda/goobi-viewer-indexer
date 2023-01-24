@@ -1337,21 +1337,27 @@
         </MD_NOTE_CITATION_REFERENCE>
         
         
+        
         <!-- CUT -->
 
 
 		<MD_SUBJECT_HIERARCHICALGEOGRAPHIC_LANG_FR>
 			<list>
+                <!-- LIDO -->
 				<item>
 					<xpath>
 						<list>
+                            <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/beginning_of_existence"][descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue/text() != ""]/lido:eventPlace/lido:place</item>
 							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject/lido:subjectPlace/lido:place[descendant::lido:partOfPlace/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]/text() != ""]</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00028"]/lido:eventPlace</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 					<groupEntity type="LOCATION">
+                        <!-- LIDO 1.0 -->
 						<field name="MD_VALUE">descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
 						<field name="MD_VALUE">descendant::lido:partOfPlace[@lido:politicalEntity="city"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
 						<field name="MD_GENRE_LANG_FR" defaultValue="Lieu représenté">ancestor::lido:event/lido:eventType/lido:term[not(@xml:lang) or @xml:lang="fr"]</field>
@@ -1359,8 +1365,15 @@
 						<field name="MD_CITY_LANG_FR">descendant::lido:partOfPlace[@lido:politicalEntity="city"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
 						<field name="MD_AREA_LANG_FR">descendant::lido:partOfPlace[@lido:politicalEntity="neighbourhood"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
 						<field name="MD_PLACE_LANG_FR">descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <!-- LIDO 1.1 -->
+                        <field name="MD_VALUE">lido:place[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_VALUE">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_PLACE_LANG_FR">lido:place[not(lido:placeClassification)]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_CITY_LANG_FR">lido:place[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_CITY_LANG_FR">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
 					</groupEntity>
 				</item>
+                <!-- METS -->
 				<item>
 					<xpath>
 						<list>
