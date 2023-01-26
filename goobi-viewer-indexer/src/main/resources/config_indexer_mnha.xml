@@ -1500,10 +1500,6 @@
 			</list>
 		</MD_SUBJECT_HIERARCHICALGEOGRAPHIC_LANG_DE>
         
-        
-        
-        <!-- CUT -->
-
 
 	  <!-- Credit -->
 		<MD_RECORDINFO_RECORDORIGIN_LANG_FR>
@@ -1514,7 +1510,7 @@
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordOrigin[@lang="fre"]</item>
                             <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/acquisition"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
-                            <!-- LIDO 1.1 -->
+                            <!-- LIDO 1.1 [UNTESTED] -->
                             <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00001"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
 						</list>
 					</xpath>
@@ -1531,7 +1527,7 @@
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordOrigin[@lang="ger"]</item>
                             <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/acquisition"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[@xml:lang="de"]</item>
-                            <!-- LIDO 1.1 -->
+                            <!-- LIDO 1.1 [UNTESTED] -->
                             <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00001"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[@xml:lang="de"]</item>
 						</list>
 					</xpath>
@@ -1548,7 +1544,7 @@
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordOrigin[@lang="eng"]</item>
                             <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/acquisition"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[@xml:lang="en"]</item>
-                            <!-- LIDO 1.1 -->
+                            <!-- LIDO 1.1 [UNTESTED] -->
                             <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00001"]/lido:eventDescriptionSet/lido:descriptiveNoteValue[@xml:lang="de"]</item>
 						</list>
 					</xpath>
@@ -1612,7 +1608,8 @@
 
 
 
-	  <!-- Description -->
+	<!-- Description -->
+    <!-- TODO: Doesn't exist in LIDO 1.1? -->
     <MD_SUBJECT_TOPIC_LANG_FR>
       <list>
         <item>
@@ -1662,7 +1659,8 @@
           <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:subject/mods:topic[@lang='fre'][@transliteration="short"]</item>
-              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="short"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
+              <!-- LIDO 1.0/1.1 -->
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="short" or @lido:type="description_short"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
             </list>
           </xpath>
           <addToDefault>true</addToDefault>
@@ -1676,7 +1674,8 @@
           <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:subject/mods:topic[@lang='ger'][@transliteration="short"]</item>
-              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="short"]/lido:descriptiveNoteValue[@xml:lang="de"]</item>
+              <!-- LIDO 1.0/1.1 -->
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="short" or @lido:type="description_short"]/lido:descriptiveNoteValue[@xml:lang="de"]</item>
             </list>
           </xpath>
           <addToDefault>true</addToDefault>
@@ -1690,7 +1689,8 @@
           <xpath>
             <list>
               <item>mets:xmlData/mods:mods/mods:subject/mods:topic[@lang='eng'][@transliteration="short"]</item>
-              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="short"]/lido:descriptiveNoteValue[@xml:lang="en"]</item>
+              <!-- LIDO 1.0/1.1 -->
+              <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="short" or @lido:type="description_short"]/lido:descriptiveNoteValue[@xml:lang="en"]</item>
             </list>
           </xpath>
           <addToDefault>true</addToDefault>
@@ -1698,7 +1698,6 @@
         </item>
       </list>
     </MD_SUBJECT_TOPIC_SHORT_LANG_EN>
-
 
 
 
@@ -1750,8 +1749,6 @@
 
 
 
-
-
         <!-- Copyright. This has language specific labels and general links-->
         <MD_ACCESSCONDITION_LICENSE_IMAGE>
             <list>
@@ -1759,13 +1756,20 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='image-license']</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:rightsType/lido:conceptID[@lido:type='http://terminology.lido-schema.org/identifier_type/uri']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[normalize-space(lido:resourceType/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q1250322"]/lido:rightsResource/lido:rightsType[normalize-space(@lido:type)="http://terminology.lido-schema.org/lido00921"]/skos:Concept/@rdf:about</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
                 </item>
             </list>
         </MD_ACCESSCONDITION_LICENSE_IMAGE>
+
+        
+        <!-- CUT -->
+        
         <MD_ACCESSCONDITION_LICENSE_WORK>
             <list>
                 <item>
