@@ -1336,10 +1336,6 @@
             </list>
         </MD_NOTE_CITATION_REFERENCE>
         
-        
-        
-        <!-- CUT -->
-
 
 		<MD_SUBJECT_HIERARCHICALGEOGRAPHIC_LANG_FR>
 			<list>
@@ -1352,6 +1348,7 @@
 							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject/lido:subjectPlace/lido:place[descendant::lido:partOfPlace/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]/text() != ""]</item>
                             <!-- LIDO 1.1 -->
                             <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00028"]/lido:eventPlace</item>
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject/lido:subjectPlace[lido:place/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]/text() != ""]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -1366,11 +1363,13 @@
 						<field name="MD_AREA_LANG_FR">descendant::lido:partOfPlace[@lido:politicalEntity="neighbourhood"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
 						<field name="MD_PLACE_LANG_FR">descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
                         <!-- LIDO 1.1 -->
-                        <field name="MD_VALUE">lido:place[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_VALUE">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_VALUE">lido:place[not(lido:placeClassification)]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_VALUE">lido:place[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_VALUE">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
                         <field name="MD_PLACE_LANG_FR">lido:place[not(lido:placeClassification)]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_CITY_LANG_FR">lido:place[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
-                        <field name="MD_CITY_LANG_FR">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_CITY_LANG_FR">lido:place[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_CITY_LANG_FR">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_COUNTRY_LANG_FR">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q6256"]/lido:namePlaceSet/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</field>
 					</groupEntity>
 				</item>
                 <!-- METS -->
@@ -1398,13 +1397,18 @@
 				<item>
 					<xpath>
 						<list>
+                            <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/beginning_of_existence"][descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue/text() != ""]/lido:eventPlace/lido:place</item>
 							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject/lido:subjectPlace/lido:place[descendant::lido:partOfPlace/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]/text() != ""]</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00028"]/lido:eventPlace</item>
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject/lido:subjectPlace[lido:place/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]/text() != ""]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 					<groupEntity type="LOCATION">
+                        <!-- LIDO 1.0 -->
 						<field name="MD_VALUE">descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
 						<field name="MD_VALUE">descendant::lido:partOfPlace[@lido:politicalEntity="city"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
 						<field name="MD_GENRE_LANG_EN" defaultValue="Depicted place">ancestor::lido:event/lido:eventType/lido:term[@xml:lang="en"]</field>
@@ -1412,6 +1416,13 @@
 						<field name="MD_CITY_LANG_EN">descendant::lido:partOfPlace[@lido:politicalEntity="city"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
 						<field name="MD_AREA_LANG_EN">descendant::lido:partOfPlace[@lido:politicalEntity="neighbourhood"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
 						<field name="MD_PLACE_LANG_EN">descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
+                        <!-- LIDO 1.1 -->
+                        <field name="MD_VALUE">lido:place[not(lido:placeClassification)]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
+                        <field name="MD_VALUE">lido:place[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
+                        <field name="MD_VALUE">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
+                        <field name="MD_PLACE_LANG_EN">lido:place[not(lido:placeClassification)]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
+                        <field name="MD_CITY_LANG_EN">lido:place[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
+                        <field name="MD_CITY_LANG_EN">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="en"]</field>
 					</groupEntity>
 				</item>
 				<item>
@@ -1439,13 +1450,18 @@
 				<item>
 					<xpath>
 						<list>
+                            <!-- LIDO 1.0 -->
 							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/lido:conceptID)="http://terminology.lido-schema.org/eventType/beginning_of_existence"][descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue/text() != ""]/lido:eventPlace/lido:place</item>
 							<item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject/lido:subjectPlace/lido:place[descendant::lido:partOfPlace/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]/text() != ""]</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:eventWrap/lido:eventSet/lido:event[normalize-space(lido:eventType/skos:Concept/@rdf:about)="http://terminology.lido-schema.org/lido00028"]/lido:eventPlace</item>
+                            <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject/lido:subjectPlace[lido:place/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]/text() != ""]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 					<groupEntity type="LOCATION">
+                        <!-- LIDO 1.0 -->
 						<field name="MD_VALUE">descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
 						<field name="MD_VALUE">descendant::lido:partOfPlace[@lido:politicalEntity="city"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
 						<field name="MD_GENRE_LANG_DE" defaultValue="Dargestellter Ort">ancestor::lido:event/lido:eventType/lido:term[@xml:lang="de"]</field>
@@ -1453,6 +1469,13 @@
 						<field name="MD_CITY_LANG_DE">descendant::lido:partOfPlace[@lido:politicalEntity="city"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
 						<field name="MD_AREA_LANG_DE">descendant::lido:partOfPlace[@lido:politicalEntity="neighbourhood"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
 						<field name="MD_PLACE_LANG_DE">descendant::lido:partOfPlace[@lido:politicalEntity="place"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
+                        <!-- LIDO 1.1 -->
+                        <field name="MD_VALUE">lido:place[not(lido:placeClassification)]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
+                        <field name="MD_VALUE">lido:place[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
+                        <field name="MD_VALUE">descendant::lido:partOfPlace[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
+                        <field name="MD_PLACE_LANG_DE">lido:place[not(lido:placeClassification)]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
+                        <field name="MD_CITY_LANG_DE">lido:place[normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or normalize-space(lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
+                        <field name="MD_CITY_LANG_DE">descendant::lido:partOfPlace[normalize-space(normalize-space(lido:placeClassification/lido:conceptID)="http://www.wikidata.org/wiki/Q515" or lido:placeClassification/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q3257686"]/lido:namePlaceSet/lido:appellationValue[@xml:lang="de"]</field>
 					</groupEntity>
 				</item>
 				<item>
@@ -1474,6 +1497,10 @@
 
 			</list>
 		</MD_SUBJECT_HIERARCHICALGEOGRAPHIC_LANG_DE>
+        
+        
+        
+        <!-- CUT -->
 
 
 	  <!-- Credit -->
