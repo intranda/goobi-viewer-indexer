@@ -86,8 +86,10 @@
 	  <piSplittingCharOccurrence>1</piSplittingCharOccurrence>
 
 	  <namespaces>
-		  <list><lux>https://lux01.intranda.com/</lux></list>
-		  <list><intranda>https://intranda.com/MODS</intranda></list>
+		  <list>
+              <intranda>https://intranda.com/MODS</intranda>
+              <lux>https://lux01.intranda.com/</lux>
+          </list>
 	  </namespaces>
 	  
 	  <!-- pageCountStart: Order number for the first page. Default is 1. -->
@@ -576,7 +578,7 @@
 				        <!-- LIDO 1.0 -->
 				        <!-- <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[not(@xml:lang)]</item> -->
 				        <!-- LIDO 1.1 -->
-				        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:prefLabel</item>
+				        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</item>
                       </list>
                   </xpath>
                   <addToDefault>true</addToDefault>
@@ -593,7 +595,7 @@
                         <!-- LIDO 1.0 -->
                         <!-- <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[@xml:lang='de']</item> -->
                         <!-- LIDO 1.1 -->
-                        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:altLabel[@xml:lang="de"]</item>
+                        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:prefLabel[@xml:lang="de"]</item>
                       </list>
                   </xpath>
                   <addToDefault>true</addToDefault>
@@ -610,7 +612,7 @@
                         <!-- LIDO 1.0 -->
                         <!-- <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:roleActor/lido:term[@xml:lang='en']</item> -->
                         <!-- LIDO 1.1 -->
-                        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:altLabel[@xml:lang="en"]</item>
+                        <item>lido:descriptiveMetadata/lido:eventWrap/lido:eventSet/lido:event/lido:eventActor/lido:actorInRole/lido:actor/lido:roleActor/skos:Concept/skos:prefLabel[@xml:lang="en"]</item>
                       </list>
                   </xpath>
                   <addToDefault>true</addToDefault>
@@ -949,7 +951,7 @@
 			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
 			  <!-- LIDO 1.1 -->
-			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:prefLabel</item>
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</item>
             </list>
           </xpath>
 				  <onefield>false</onefield>
@@ -966,7 +968,7 @@
 			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType/lido:term[@xml:lang="de"]</item>
 			  <!-- LIDO 1.1 -->
-			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:altLabel[@xml:lang="de"]</item>
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:prefLabel[@xml:lang="de"]</item>
             </list>
            </xpath>
 				  <onefield>false</onefield>
@@ -983,7 +985,7 @@
 			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType/lido:term[@xml:lang="en"]</item>
 			  <!-- LIDO 1.1 -->
-			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:altLabel[@xml:lang="en"]</item>
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T51"]/skos:Concept/skos:prefLabel[@xml:lang="en"]</item>
             </list>
           </xpath>
 				  <onefield>false</onefield>
@@ -1004,7 +1006,7 @@
 			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="designation"]/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
 			  <!-- LIDO 1.1 -->
-			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:prefLabel</item>
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1021,7 +1023,7 @@
 			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="designation"]/lido:term[@xml:lang="de"]</item>
 			  <!-- LIDO 1.1 -->
-			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:altLabel[@xml:lang="de"]</item>
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:prefLabel[@xml:lang="de"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1038,7 +1040,7 @@
 			  <!-- LIDO 1.0 -->
               <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="designation"]/lido:term[@xml:lang="en"]</item>
 			  <!-- LIDO 1.1 -->
-			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:altLabel[@xml:lang="en"]</item>
+			  <item>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectClassificationWrap/lido:objectWorkTypeWrap/lido:objectWorkType[normalize-space(@lido:type)="http://data.culture.fr/thesaurus/page/ark:/67717/T505"]/skos:Concept/skos:Label[@xml:lang="en"]</item>
             </list>
           </xpath>
 				  <addToDefault>true</addToDefault>
@@ -1768,8 +1770,7 @@
         </MD_ACCESSCONDITION_LICENSE_IMAGE>
 
         
-        <!-- CUT -->
-        
+        <!-- TODO LIDO 1.1 -->
         <MD_ACCESSCONDITION_LICENSE_WORK>
             <list>
                 <item>
@@ -1789,13 +1790,17 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='metadata-license']</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:recordRights/lido:rightsType/lido:conceptID[@lido:type='http://terminology.lido-schema.org/identifier_type/uri']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:recordRights/lido:rightsType/skos:Concept/@rdf:about</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
                 </item>
             </list>
         </MD_ACCESSCONDITION_LICENSE_METADATA>
+        
 
         <!-- WORK COPYRIGHT -->
         <MD_ACCESSCONDITION_COPYRIGHT_WORK_LANG_FR>
@@ -1804,7 +1809,10 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='work-copyright'][@lang="fre"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsType/lido:term[not(@xml:lang) or @xml:lang='fr']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsType/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1817,7 +1825,10 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='work-copyright'][@lang="ger"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsType/lido:term[@xml:lang='de']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="de"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1830,19 +1841,25 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='work-copyright'][@lang="eng"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsType/lido:term[@xml:lang='en']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="en"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
                 </item>
             </list>
 	 </MD_ACCESSCONDITION_COPYRIGHT_WORK_LANG_EN>
+     
+
 	  <MD_ACCESSCONDITION_NOTICE_WORK_LANG_FR>
             <list>
                 <item>
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='notice-work'][@lang="fre"]</item>
+                            <!-- LIDO 1.0/1.1 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:creditLine[not(@xml:lang) or @xml:lang='fr']</item>
                         </list>
                     </xpath>
@@ -1856,6 +1873,7 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='notice-work'][@lang="ger"]</item>
+                            <!-- LIDO 1.0/1.1 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:creditLine[@xml:lang='de']</item>
                         </list>
                     </xpath>
@@ -1869,6 +1887,7 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='notice-work'][@lang="eng"]</item>
+                            <!-- LIDO 1.0/1.1 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:rightsWorkWrap/lido:rightsWorkSet/lido:creditLine[@xml:lang='en']</item>
                         </list>
                     </xpath>
@@ -1876,6 +1895,7 @@
                 </item>
             </list>
 	  </MD_ACCESSCONDITION_NOTICE_WORK_LANG_EN>
+      
 
         <!-- IMAGE COPYRIGHT -->
         <MD_ACCESSCONDITION_COPYRIGHT_IMAGE_LANG_FR>
@@ -1884,7 +1904,10 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='image-copyright'][@lang="fre"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:rightsType[lido:conceptID/@lido:type='http://terminology.lido-schema.org/identifier_type/uri']/lido:term[not(@xml:lang) or @xml:lang='fr']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet/lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1897,7 +1920,10 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='image-copyright'][@lang="ger"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:rightsType[lido:conceptID/@lido:type='http://terminology.lido-schema.org/identifier_type/uri']/lido:term[@xml:lang='de']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet/lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="de"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1910,20 +1936,28 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='image-copyright'][@lang="eng"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:rightsType[lido:conceptID/@lido:type='http://terminology.lido-schema.org/identifier_type/uri']/lido:term[@xml:lang='en']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet/lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="en"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
                 </item>
             </list>
 	 </MD_ACCESSCONDITION_COPYRIGHT_IMAGE_LANG_EN>
+     
+     
 	  <MD_ACCESSCONDITION_NOTICE_IMAGE_LANG_FR>
             <list>
                 <item>
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='notice-image'][@lang="fre"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:creditLine[not(@xml:lang) or @xml:lang='fr']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet/lido:resourceSource/lido:legalBodyName/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1936,7 +1970,10 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='notice-image'][@lang="ger"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:creditLine[@xml:lang='de']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet/lido:resourceSource/lido:legalBodyName/lido:appellationValue[@xml:lang="de"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1949,13 +1986,17 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='notice-image'][@lang="eng"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:creditLine[@xml:lang='en']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet/lido:resourceSource/lido:legalBodyName/lido:appellationValue[@xml:lang="en"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
                 </item>
             </list>
 	  </MD_ACCESSCONDITION_NOTICE_IMAGE_LANG_EN>
+      
 
         <!-- METADATA COPYRIGHT -->
         <MD_ACCESSCONDITION_COPYRIGHT_METADATA_LANG_FR>
@@ -1964,7 +2005,10 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='metadata-copyright'][@lang="fre"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:recordRights/lido:rightsType/lido:term[not(@xml:lang) or @xml:lang='fr']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:recordRights/lido:rightsType/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1977,7 +2021,10 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='metadata-copyright'][@lang="ger"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:recordRights/lido:rightsType/lido:term[@xml:lang='de']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:recordRights/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="de"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -1990,7 +2037,10 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:accessCondition[@type='metadata-copyright'][@lang="eng"]</item>
+                            <!-- LIDO 1.0 -->
                             <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:recordRights/lido:rightsType/lido:term[@xml:lang='en']</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:recordWrap/lido:recordRights/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="en"]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -2004,10 +2054,13 @@
 			<list>
 				<item>
 					<xpath>
-                        			<list>
+                        <list>
 							<item>mets:xmlData/mods:mods/mods:name[@type="person"][mods:role/mods:roleTerm="pht"[@authority='marcrelator'][@type='code']]/mods:namePart/text()</item>
-							<item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:creditLine[not(@xml:lang)]</item>
-                        			</list>
+							<!-- LIDO 1.0 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[lido:resourceDescription='Image']/lido:rightsResource/lido:creditLine[not(@xml:lang)]</item>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet/lido:resourceSource/lido:legalBodyName/lido:appellationValue[not(@xml:lang) or @xml:lang="fr"]</item>
+                        </list>
 					</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
@@ -2042,9 +2095,6 @@
 
 
 
-
-
-
 	  <!-- Start and End for facetting using the chronology slider -->
 	  <MD_YEARPUBLISHSTART>
 		  <list>
@@ -2071,7 +2121,7 @@
 		  </list>
 	  </MD_YEARPUBLISHEND>
 	  
-
+      
 
 	  <!-- This URL is used in the 3D widget in the object view-->
 	  <MD_LOCATION_URL_MATTERPORT>
@@ -2080,8 +2130,10 @@
 				  <xpath>
 					  <list>
 						  <item>mets:xmlData/mods:mods/mods:location/mods:url[@note='matterport']</item>
+                          <!-- LIDO 1.0 -->
 						  <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/repositorySet_type/current_repository_or_location"]/lido:repositoryLocation/lido:placeID</item>
-
+                          <!-- LIDO 1.1 [UNTESTED] -->
+                          <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type="http://terminology.lido-schema.org/lido01017"]/lido:repositoryLocation/lido:partOfPlace/lido:placeID</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>false</addToDefault>
@@ -2100,6 +2152,7 @@
 				  <addToDefault>false</addToDefault>
 			  </item>
 			  <item>
+                  <!-- LIDO 1.0/1.1 [UNTESTED] -->
 				  <xpath>lido:descriptiveMetadata/lido:objectRelationWrap/lido:relatedWorksWrap/lido:relatedWorkSet[lido:relatedWorkRelType/lido:term/text()="Objet lié"]/lido:relatedWork/lido:object/lido:objectID</xpath>
 				  <addToDefault>false</addToDefault>
 			  </item>
@@ -2119,15 +2172,16 @@
                 </item>
             </list>
         </BOOL_HIGHLIGHT>
-<BOOL_CONTAINSIMAGE>
-    <list>
-        <item>
-            <xpath>string(boolean(mets:fileSec/mets:fileGrp[@USE="PRESENTATION"]))</xpath>
-            <addToDefault>false</addToDefault>
-            <addSortField>true</addSortField>
-        </item>
-    </list>
-</BOOL_CONTAINSIMAGE>
+        
+        <BOOL_CONTAINSIMAGE>
+            <list>
+                <item>
+                    <xpath>string(boolean(mets:fileSec/mets:fileGrp[@USE="PRESENTATION"]))</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>true</addSortField>
+                </item>
+            </list>
+        </BOOL_CONTAINSIMAGE>
 
 
 	  <MD_BIBLIOGRAPHY_GROUP>
@@ -2156,13 +2210,17 @@
 			  </item>
 		  </list>
 	  </MD_BIBLIOGRAPHY_GROUP>
+      
 	  
 	  <MD_CATEGORY_TERM_LANG_FR>
 		  <list>
 			  <item>
 				  <xpath>
 					  <list>
+                          <!-- LIDO 1.0 -->
 						  <item>lido:category/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
+                          <!-- LIDO 1.1 -->
+                          <item>lido:category/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -2176,7 +2234,10 @@
 			  <item>
 				  <xpath>
 					  <list>
-						  <item>lido:category/lido:term[@xml:lang="de"]</item>
+						  <!-- LIDO 1.0 -->
+                          <item>lido:category/lido:term[@xml:lang="de"]</item>
+                          <!-- LIDO 1.1 -->
+                          <item>lido:category/skos:Concept/skos:prefLabel[@xml:lang="de"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -2190,7 +2251,10 @@
 			  <item>
 				  <xpath>
 					  <list>
-						  <item>lido:category/lido:term[@xml:lang="en"]</item>
+						  <!-- LIDO 1.0 -->
+                          <item>lido:category/lido:term[@xml:lang="en"]</item>
+                          <!-- LIDO 1.1 -->
+                          <item>lido:category/skos:Concept/skos:prefLabel[@xml:lang="en"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -2199,14 +2263,17 @@
 		  </list>
 	  </MD_CATEGORY_TERM_LANG_EN>
 
-         <!-- Iconography -->
+      <!-- Iconography -->
 
 	  <MD_ICONOGRAPHY_LANG_FR>
 		  <list>
 			  <item>
 				  <xpath>
 					  <list>
-						  <item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="iconography"]/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
+						  <!-- LIDO 1.0 -->
+                          <item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="iconography"]/lido:term[not(@xml:lang) or @xml:lang="fr"]</item>
+                          <!-- LIDO 1.1 -->
+                          <item>lido:descriptiveMetadata/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject[@lido:type="http://terminology.lido-schema.org/lido00136"]/lido:subjectConcept/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -2220,7 +2287,10 @@
 			  <item>
 				  <xpath>
 					  <list>
-						  <item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="iconography"]/lido:term[@xml:lang="de"]</item>
+						  <!-- LIDO 1.0 -->
+                          <item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="iconography"]/lido:term[@xml:lang="de"]</item>
+                          <!-- LIDO 1.1 -->
+                          <item>lido:descriptiveMetadata/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject[@lido:type="http://terminology.lido-schema.org/lido00136"]/lido:subjectConcept/skos:Concept/skos:prefLabel[@xml:lang="de"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -2234,7 +2304,10 @@
 			  <item>
 				  <xpath>
 					  <list>
-						  <item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="iconography"]/lido:term[@xml:lang="en"]</item>
+						  <!-- LIDO 1.0 -->
+                          <item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="iconography"]/lido:term[@xml:lang="en"]</item>
+                          <!-- LIDO 1.1 -->
+                          <item>lido:descriptiveMetadata/lido:objectRelationWrap/lido:subjectWrap/lido:subjectSet/lido:subject[@lido:type="http://terminology.lido-schema.org/lido00136"]/lido:subjectConcept/skos:Concept/skos:prefLabel[@xml:lang="en"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -2242,13 +2315,15 @@
 			  </item>
 		  </list>
 	  </MD_ICONOGRAPHY_LANG_EN>
+      
 
 	  <MD_DESCRIPTION>
 		  <list>
 			  <item>
 				  <xpath>
 					  <list>
-						  <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="short"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
+                          <!-- LIDO 1.0/1.1 -->
+						  <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="short" or @lido:type="description_short"]/lido:descriptiveNoteValue[not(@xml:lang) or @xml:lang="fr"]</item>
 					  </list>
 				  </xpath>
 				  <addToDefault>true</addToDefault>
@@ -2258,16 +2333,15 @@
 	  </MD_DESCRIPTION>
 
 
-
-    <MD2_VIEWERINSTANCE>
-        <list>
-            <item>
-                <xpath>mets:xmlData/mods:mods/mods:extension/intranda:viewerinstance</xpath>
-                <addToDefault>false</addToDefault>
-                <addUntokenizedVersion>false</addUntokenizedVersion>
-            </item>
-        </list>
-    </MD2_VIEWERINSTANCE>
+        <MD2_VIEWERINSTANCE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:viewerinstance</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD2_VIEWERINSTANCE>
 
 
                 <MD_PUBLISHER>
@@ -2353,39 +2427,35 @@
 		</MD_SUBJECT_PERSON>
 
 
-          <MD_CREATOR>
-              <list>
-                  <item>
-                      <xpath>
-			<list>
-				<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="cre"[@authority='marcrelator'][@type='code']]/mods:displayForm</item>
-<item>dc:creatory</item>
-
-
-			</list>
-		      </xpath>
-                      <addToDefault>true</addToDefault>
-                      <addSortField>true</addSortField>
-                      <replace string="&lt;&lt;"></replace>
-                      <replace string="&gt;&gt;"></replace>
-                      <replace char="152"></replace>
-                      <replace char="156"></replace>
-                      <groupEntity type="PERSON">
-                          <field name="MD_VALUE">mods:displayForm</field>
-                          <field name="MD_DISPLAYFORM">mods:displayForm</field>
-                          <field name="MD_LINK">@xlink:href</field>
-                          <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-                          <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-                          <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-                          <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-                          <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-<field name="MD_VALUE">text()</field>
-
-
-                      </groupEntity>
-                  </item>
-              </list>
-          </MD_CREATOR>
+        <MD_CREATOR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="cre"[@authority='marcrelator'][@type='code']]/mods:displayForm</item>
+                            <item>dc:creatory</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace char="152"></replace>
+                    <replace char="156"></replace>
+                    <groupEntity type="PERSON">
+                        <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_DISPLAYFORM">mods:displayForm</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                        <field name="MD_VALUE">text()</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CREATOR>
 
         <MD2_ALLPERSONS>
             <list>
@@ -2394,6 +2464,7 @@
                         <list>
                             <item>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority='marcrelator'][@type='code'])]</item>
                             <item>lido:eventActor/lido:actorInRole/lido:actor</item>
+                            <item>lido:eventActor/lido:actorInRole/lido:displayActorInRole</item>
                         </list>
                     </xpath>
                     <addToDefault>false</addToDefault>
@@ -2422,15 +2493,15 @@
             </list>
         </MD2_ALLPERSONS>
 
-<BOOL_DIRECTION_RTL>
-    <list>
-        <item>
-            <xpath>mets:xmlData/mods:mods/mods:extension/intranda:directionRTL</xpath>
-            <addToDefault>false</addToDefault>
-            <addSortField>true</addSortField>
-        </item>
-    </list>
-</BOOL_DIRECTION_RTL>
+        <BOOL_DIRECTION_RTL>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:directionRTL</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>true</addSortField>
+                </item>
+            </list>
+        </BOOL_DIRECTION_RTL>
 
 		<MD_DATECREATED>
 			<list>
@@ -2465,27 +2536,27 @@
 			</list>
 		</MD_ACCESSLICENSE>
 
-<ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
-    <list>
-        <item>
-            <xpath>mets:xmlData/mods:mods/mods:extension/intranda:accessConditionPdfPercentageQuota</xpath>
-            <addToDefault>false</addToDefault>
-            <addSortField>false</addSortField>
-            <addUntokenizedVersion>false</addUntokenizedVersion>
-        </item>
-    </list>
-</ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
+        <ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:accessConditionPdfPercentageQuota</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </ACCESSCONDITION_PDF_PERCENTAGE_QUOTA>
 
-<ACCESSCONDITION_CONCURRENTUSE>
-    <list>
-        <item>
-            <xpath>mets:xmlData/mods:mods/mods:extension/intranda:accessConditionConcurrentUse</xpath>
-            <addToDefault>false</addToDefault>
-            <addSortField>false</addSortField>
-            <addUntokenizedVersion>false</addUntokenizedVersion>
-        </item>
-    </list>
-</ACCESSCONDITION_CONCURRENTUSE>
+        <ACCESSCONDITION_CONCURRENTUSE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:accessConditionConcurrentUse</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>false</addSortField>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+           </list>
+        </ACCESSCONDITION_CONCURRENTUSE>
 
         <MD_CITATION_APA>
             <list>
@@ -2507,21 +2578,22 @@
         </MD_CITATION_APA>
 
 
-<MD_ARCHIVE_ENTRY_ID>
-    <list>
-        <item>
-            <xpath>mets:xmlData/mods:mods/mods:identifier[@type="ead node"]</xpath>
-            <addToDefault>true</addToDefault>
-            <onefield>false</onefield>
-        </item>
-    </list>
-</MD_ARCHIVE_ENTRY_ID>
+        <MD_ARCHIVE_ENTRY_ID>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="ead node"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                </item>
+            </list>
+        </MD_ARCHIVE_ENTRY_ID>
 
 
 	  <MD_PERSIST_IDENTIFIER>
 		  <list>
 			  <item>
-				  <xpath>lido:objectPublishedID[@lido:label="Persist"][not(text()='https://persist.lu/')]</xpath>
+                  <!-- LIDO 1.0/1.1 -->
+				  <xpath>lido:objectPublishedID[@lido:label="Persist" or @lido:type="http://terminology.lido-schema.org/lido00099"][not(text()='https://persist.lu/')]</xpath>
 				  <addToDefault>true</addToDefault>
 			  </item>
 		  </list>
