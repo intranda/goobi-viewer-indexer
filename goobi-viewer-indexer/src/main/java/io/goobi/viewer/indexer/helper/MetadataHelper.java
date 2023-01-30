@@ -1082,7 +1082,7 @@ public class MetadataHelper {
             }
         }
 
-        logger.info("Collecting source metadata");
+        logger.trace("Collecting source metadata");
         if (!additionalFieldsFromParent.isEmpty()) {
             ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele.getParentElement(), authorityDataEnabled,
                     additionalFieldsFromParent);
