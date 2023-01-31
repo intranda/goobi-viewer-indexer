@@ -535,60 +535,61 @@
 			</list>
 		</SORT_TITLE>
 
-                <MD_TITLE_LANG_FR>
-                        <list>
-                                <item>
-                                        <xpath>
-                                                <list>
-                                                        <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@lang="fre"]</item>
-                                                </list>
-                                        </xpath>
-                                        <addToDefault>true</addToDefault>
-                                        <addSortField>true</addSortField>
-                                        <replace string="&lt;ns&gt;"></replace>
-                                        <replace string="&lt;/ns&gt;"></replace>
-                                        <replace string="&lt;&lt;"></replace>
-                                        <replace string="&gt;&gt;"></replace>
-                                        <replace string="¬"></replace>
-                                </item>
-                        </list>
-                </MD_TITLE_LANG_FR>
-                <MD_TITLE_LANG_DE>
-                        <list>
-                                <item>
-                                        <xpath>
-                                                <list>
-                                                        <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@lang="ger"]</item>
-                                                </list>
-                                        </xpath>
-                                        <addToDefault>true</addToDefault>
-                                        <addSortField>true</addSortField>
-                                        <replace string="&lt;ns&gt;"></replace>
-                                        <replace string="&lt;/ns&gt;"></replace>
-                                        <replace string="&lt;&lt;"></replace>
-                                        <replace string="&gt;&gt;"></replace>
-                                        <replace string="¬"></replace>
-                                </item>
-                        </list>
-                </MD_TITLE_LANG_DE>
-                <MD_TITLE_LANG_EN>
-                        <list>
-                                <item>
-                                        <xpath>
-                                                <list>
-                                                        <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@lang="eng"]</item>
-                                                </list>
-                                        </xpath>
-                                        <addToDefault>true</addToDefault>
-                                        <addSortField>true</addSortField>
-                                        <replace string="&lt;ns&gt;"></replace>
-                                        <replace string="&lt;/ns&gt;"></replace>
-                                        <replace string="&lt;&lt;"></replace>
-                                        <replace string="&gt;&gt;"></replace>
-                                        <replace string="¬"></replace>
-                                </item>
-                        </list>
-                </MD_TITLE_LANG_EN>
+            <MD_TITLE_LANG_FR>
+                <list>
+                    <item>
+                        <xpath>
+                            <list>
+                                <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@xml:lang="fre" or @lang="fre"]</item>
+                                <item>>concat(mets:xmlData/mods:mods/mods:mods/mods:name[@type="personal"]/mods:namePart[@xml:lang="fre" or @lang="fre"][@type="family"], ", ", mets:xmlData/mods:mods/mods:mods/mods:name[@type="personal"]/mods:namePart[@xml:lang="fre" or @lang="fre"][@type="given"]</item>
+                            </list>
+                        </xpath>
+                        <addToDefault>true</addToDefault>
+                        <addSortField>true</addSortField>
+                        <replace string="&lt;ns&gt;"></replace>
+                        <replace string="&lt;/ns&gt;"></replace>
+                        <replace string="&lt;&lt;"></replace>
+                        <replace string="&gt;&gt;"></replace>
+                        <replace string="¬"></replace>
+                    </item>
+                </list>
+            </MD_TITLE_LANG_FR>
+            <MD_TITLE_LANG_DE>
+                <list>
+                    <item>
+                        <xpath>
+                            <list>
+                                <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@xml:lang="ger" or @lang="ger"]</item>
+                            </list>
+                        </xpath>
+                        <addToDefault>true</addToDefault>
+                        <addSortField>true</addSortField>
+                        <replace string="&lt;ns&gt;"></replace>
+                        <replace string="&lt;/ns&gt;"></replace>
+                        <replace string="&lt;&lt;"></replace>
+                        <replace string="&gt;&gt;"></replace>
+                        <replace string="¬"></replace>
+                    </item>
+                </list>
+            </MD_TITLE_LANG_DE>
+            <MD_TITLE_LANG_EN>
+                <list>
+                    <item>
+                        <xpath>
+                            <list>
+                                <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@xml:lang="ger" or @lang="eng"]</item>
+                            </list>
+                        </xpath>
+                        <addToDefault>true</addToDefault>
+                        <addSortField>true</addSortField>
+                        <replace string="&lt;ns&gt;"></replace>
+                        <replace string="&lt;/ns&gt;"></replace>
+                        <replace string="&lt;&lt;"></replace>
+                        <replace string="&gt;&gt;"></replace>
+                        <replace string="¬"></replace>
+                    </item>
+                </list>
+            </MD_TITLE_LANG_EN>
 
 		<MD_SUBTITLE>
 			<list>
@@ -3470,7 +3471,7 @@
                             <item>mets:xmlData/mods:mods/mods:typeOfResource[@usage="importance"]</item>
                         </list>
                     </xpath>
-                    <addToDefault>true</addToDefault>
+                    <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                 </item>
             </list>
@@ -3727,11 +3728,11 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="received"]</item>
+                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="received" or @otherType="was given to")]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
+                    <groupEntity type="RELATIONSHIP">
                         <field name="MD_VALUE">mods:titleInfo/mods:title</field>
                         <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
                         <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
@@ -3751,7 +3752,7 @@
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
+                    <groupEntity type="RELATIONSHIP">
                         <field name="MD_VALUE">mods:titleInfo/mods:title</field>
                         <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
                         <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
@@ -3771,7 +3772,7 @@
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
+                    <groupEntity type="RELATIONSHIP">
                         <field name="MD_VALUE">mods:titleInfo/mods:title</field>
                         <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
                         <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
@@ -3803,6 +3804,7 @@
             </list>
         </MD_RELATIONSHIP_PERSON>
         
+        <!--
         <MD_RELATION_COLLABORATION>
             <list>
                 <item>
@@ -3956,6 +3958,7 @@
                 </item>
             </list>
         </MD_RELATION_WORK_OWNERSHIP>
+        -->
              
 	</fields>
 </root>
