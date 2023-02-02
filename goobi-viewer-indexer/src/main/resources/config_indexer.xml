@@ -541,7 +541,10 @@
                         <xpath>
                             <list>
                                 <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@xml:lang="fre" or @lang="fre"]</item>
-                                <item>>concat(mets:xmlData/mods:mods/mods:mods/mods:name[@type="personal"]/mods:namePart[@xml:lang="fre" or @lang="fre"][@type="family"], ", ", mets:xmlData/mods:mods/mods:mods/mods:name[@type="personal"]/mods:namePart[@xml:lang="fre" or @lang="fre"][@type="given"]</item>
+                                <!-- AD Event -->
+                                <item>mets:xmlData/mods:mods/mods:name[@type="corporate" and @ID]/mods:namePart[@xml:lang="fre" or @lang="fre"]</item>
+                                <!-- AD Person -->
+                                <item>concat(mets:xmlData/mods:mods/mods:name[@type="personal" and @ID]/mods:namePart[@xml:lang="fre" or @lang="fre"][@type="given"], " ", mets:xmlData/mods:mods/mods:name[@type="personal" and @ID]/mods:namePart[@xml:lang="fre" or @lang="fre"][@type="family"])</item>
                             </list>
                         </xpath>
                         <addToDefault>true</addToDefault>
@@ -560,6 +563,10 @@
                         <xpath>
                             <list>
                                 <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@xml:lang="ger" or @lang="ger"]</item>
+                                <!-- AD Event -->
+                                <item>mets:xmlData/mods:mods/mods:name[@type="corporate" and @ID]/mods:namePart[@lang="ger"]</item>
+                                <!-- AD Person -->
+                                <item>concat(mets:xmlData/mods:mods/mods:name[@type="personal" and @ID]/mods:namePart[@xml:lang="ger" or @lang="ger"][@type="given"], " ", mets:xmlData/mods:mods/mods:name[@type="personal" and @ID]/mods:namePart[@xml:lang="ger" or @lang="ger"][@type="family"])</item>
                             </list>
                         </xpath>
                         <addToDefault>true</addToDefault>
@@ -578,6 +585,10 @@
                         <xpath>
                             <list>
                                 <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@xml:lang="ger" or @lang="eng"]</item>
+                                <!-- AD Event -->
+                                <item>mets:xmlData/mods:mods/mods:name[@type="corporate" and @ID]/mods:namePart[@lang="eng"]</item>
+                                <!-- AD Person -->
+                                <item>concat(mets:xmlData/mods:mods/mods:name[@type="personal" and @ID]/mods:namePart[@xml:lang="eng" or @lang="eng"][@type="given"], " ", mets:xmlData/mods:mods/mods:name[@type="personal" and @ID]/mods:namePart[@xml:lang="eng" or @lang="eng"][@type="family"])</item>
                             </list>
                         </xpath>
                         <addToDefault>true</addToDefault>
@@ -3728,7 +3739,7 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="received" or @otherType="was given to")]</item>
+                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="received")]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -3788,7 +3799,7 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="is child of" or @otherType="is family member of" or @otherType="is parent of" or @otherType="is student of" or @otherType="is teacher of" or @otherType="was influenced by")]</item>
+                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="is child of" or @otherType="is family member of" or @otherType="is parent of" or @otherType="is student of" or @otherType="is teacher of" or @otherType="was influenced by" or @otherType="was given to")]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
