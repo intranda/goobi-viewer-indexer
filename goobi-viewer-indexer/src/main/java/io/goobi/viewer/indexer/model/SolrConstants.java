@@ -44,6 +44,7 @@ public final class SolrConstants {
         RECORD,
         CITATION,
         EVENT,
+        RELATIONSHIP,
         OTHER;
 
         /**

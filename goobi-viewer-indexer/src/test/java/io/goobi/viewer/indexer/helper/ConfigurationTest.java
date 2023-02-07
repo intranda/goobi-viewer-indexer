@@ -196,7 +196,7 @@ public class ConfigurationTest extends AbstractTest {
     @Test
     public void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
         Configuration.getInstance().initNamespaces();
-        Assert.assertEquals(15, Configuration.getInstance().getNamespaces().size());
+        Assert.assertEquals(17, Configuration.getInstance().getNamespaces().size());
         Assert.assertNotNull(Configuration.getInstance().getNamespaces().get("intranda"));
     }
 

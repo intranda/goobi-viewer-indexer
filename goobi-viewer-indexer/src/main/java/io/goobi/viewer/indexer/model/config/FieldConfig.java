@@ -47,6 +47,7 @@ public class FieldConfig {
     private boolean normalizeYear = false;
     private boolean interpolateYears = false;
     private int normalizeYearMinDigits = 3;
+    private String normalizeYearField;
     private GroupEntity groupEntity = null;
     private Map<Object, String> replaceRules = new LinkedHashMap<>();
     private List<NonSortConfiguration> nonSortConfigurations;
@@ -502,6 +503,20 @@ public class FieldConfig {
      */
     public void setNormalizeYearMinDigits(int normalizeYearMinDigits) {
         this.normalizeYearMinDigits = normalizeYearMinDigits;
+    }
+
+    /**
+     * @return the normalizeYearField
+     */
+    public String getNormalizeYearField() {
+        return normalizeYearField;
+    }
+
+    /**
+     * @param normalizeYearField the normalizeYearField to set
+     */
+    public void setNormalizeYearField(String normalizeYearField) {
+        this.normalizeYearField = normalizeYearField;
     }
 
     /**

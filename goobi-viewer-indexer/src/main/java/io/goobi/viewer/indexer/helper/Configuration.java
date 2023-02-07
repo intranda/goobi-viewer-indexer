@@ -204,6 +204,8 @@ public final class Configuration {
         namespaces.put("denkxweb", Namespace.getNamespace("denkxweb", "http://denkxweb.de/"));
         namespaces.put("dc", Namespace.getNamespace("dc", "http://purl.org/dc/elements/1.1/"));
         namespaces.put("pnx", Namespace.getNamespace("pnx", "http://www.exlibrisgroup.com/xsd/primo/primo_nm_bib"));
+        namespaces.put("rdf", Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
+        namespaces.put("skos", Namespace.getNamespace("skos", "http://www.w3.org/2004/02/skos/core#"));
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         for (Entry<String, String> entry : additionalNamespaces.entrySet()) {
