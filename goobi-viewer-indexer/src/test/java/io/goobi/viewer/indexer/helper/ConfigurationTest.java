@@ -51,7 +51,7 @@ public class ConfigurationTest extends AbstractTest {
 
     @Test
     public void folderTest() throws Exception {
-        Assert.assertTrue(Files.isDirectory(hotfolder.getHotfolder()));
+        Assert.assertTrue(Files.isDirectory(hotfolder.getHotfolderPath()));
         Assert.assertTrue(new File(Configuration.getInstance().getString("init.viewerHome")).isDirectory());
         Assert.assertTrue(Files.isDirectory(hotfolder.getSuccessFolder()));
         Assert.assertTrue(Files.isDirectory(hotfolder.getUpdatedMets()));

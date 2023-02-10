@@ -44,6 +44,7 @@ import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -74,6 +75,111 @@ public class DocUpdateIndexer extends Indexer {
     }
 
     /**
+     * Updates the Solr document described by the given data file with content from data folders in the hotfolder.
+     * 
+     * @param dataFile {@link File}
+     * @param fromReindexQueue
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * 
+     */
+    @Override
+    public void addToIndex(Path dataFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        Map<String, Path> dataFolders = new HashMap<>();
+        String fileNameRoot = FilenameUtils.getBaseName(dataFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        try (DirectoryStream<Path> stream =
+                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
+            for (Path path : stream) {
+                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
+                switch (fileNameSansRoot) {
+                    case FOLDER_SUFFIX_TXTCROWD:
+                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
+                        break;
+                    case FOLDER_SUFFIX_ALTOCROWD:
+                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
+                        break;
+                    case "_ugc":
+                        dataFolders.put(DataRepository.PARAM_UGC, path);
+                        break;
+                    case "_cms":
+                        dataFolders.put(DataRepository.PARAM_CMS, path);
+                        break;
+                    default:
+                        // nothing
+                }
+            }
+        }
+
+        if (dataFolders.isEmpty()) {
+            logger.info("No data folders found for '{}', file won't be processed.", dataFile.getFileName());
+            try {
+                Files.delete(dataFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
+            }
+            return;
+        }
+
+        String[] resp = index(dataFile, dataFolders);
+
+        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
+            String pi = resp[0];
+
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, new HashMap<>(),
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            // Delete unsupported data folders
+            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+            try {
+                Files.delete(dataFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
+            }
+
+        } else {
+            // Error
+            logger.error(resp[1]);
+            if (hotfolder.isDeleteContentFilesOnFailure()) {
+                // Delete all data folders in hotfolder
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolder.getHotfolderPath(), new DirectoryStream.Filter<Path>() {
+
+                    @Override
+                    public boolean accept(Path entry) throws IOException {
+                        return Files.isDirectory(entry)
+                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith(FOLDER_SUFFIX_MEDIA));
+                    }
+                });) {
+                    for (Path path : stream) {
+                        logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                        Utils.deleteDirectory(path);
+                    }
+                }
+
+                if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD));
+                }
+                if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD));
+                }
+                if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
+                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_UGC));
+                }
+            }
+            handleError(dataFile, resp[1], FileFormat.UNKNOWN);
+            try {
+                Files.delete(dataFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
+            }
+        }
+    }
+
+    /**
      * Updates the Solr document with the IDDOC contained in the data file name.
      *
      * @param dataFile a {@link java.nio.file.Path} object.
@@ -82,7 +188,6 @@ public class DocUpdateIndexer extends Indexer {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should update document correctly
      */
-
     @SuppressWarnings("unchecked")
     public String[] index(Path dataFile, Map<String, Path> dataFolders) throws FatalIndexerException {
         String[] ret = { STATUS_ERROR, null };

@@ -44,6 +44,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
@@ -92,6 +93,185 @@ public class DublinCoreIndexer extends Indexer {
     public DublinCoreIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
+    }
+
+    /**
+     * Indexes the given DublinCore file.
+     * 
+     * @param dcFile {@link File}
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * 
+     */
+    @Override
+    public void addToIndex(Path dcFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        try (DirectoryStream<Path> stream =
+                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
+            for (Path path : stream) {
+                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
+                switch (fileNameSansRoot) {
+                    case "_tif":
+                    case FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
+                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
+                        break;
+                    case "_txt":
+                        dataFolders.put(DataRepository.PARAM_FULLTEXT, path);
+                        break;
+                    case FOLDER_SUFFIX_TXTCROWD:
+                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
+                        break;
+                    case "_wc":
+                        dataFolders.put(DataRepository.PARAM_TEIWC, path);
+                        break;
+                    case "_neralto":
+                        dataFolders.put(DataRepository.PARAM_ALTO, path);
+                        logger.info("NER ALTO folder found: {}", path.getFileName());
+                        break;
+                    case "_alto":
+                        // Only add regular ALTO path if no NER ALTO folder is found
+                        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
+                            dataFolders.put(DataRepository.PARAM_ALTO, path);
+                        }
+                        break;
+                    case FOLDER_SUFFIX_ALTOCROWD:
+                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
+                        break;
+                    case "_xml":
+                        dataFolders.put(DataRepository.PARAM_ABBYY, path);
+                        break;
+                    case "_pdf":
+                        dataFolders.put(DataRepository.PARAM_PAGEPDF, path);
+                        break;
+                    case "_mix":
+                        dataFolders.put(DataRepository.PARAM_MIX, path);
+                        break;
+                    case "_src":
+                        dataFolders.put(DataRepository.PARAM_SOURCE, path);
+                        break;
+                    case "_ugc":
+                        dataFolders.put(DataRepository.PARAM_UGC, path);
+                        break;
+                    case "_cms":
+                        dataFolders.put(DataRepository.PARAM_CMS, path);
+                        break;
+                    case "_tei":
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
+                        break;
+                    case "_annotations":
+                        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
+                        break;
+                    default:
+                        // nothing
+                }
+            }
+        }
+
+        // Use existing folders for those missing in the hotfolder
+        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
+            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
+            reindexSettings.put(DataRepository.PARAM_ALTO, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
+            reindexSettings.put(DataRepository.PARAM_ALTOCROWD, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
+            reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
+            reindexSettings.put(DataRepository.PARAM_FULLTEXTCROWD, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIWC, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
+            reindexSettings.put(DataRepository.PARAM_ABBYY, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
+            reindexSettings.put(DataRepository.PARAM_MIX, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
+            reindexSettings.put(DataRepository.PARAM_UGC, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
+            reindexSettings.put(DataRepository.PARAM_CMS, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
+            reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
+        }
+
+        String[] resp = index(dcFile, dataFolders, null, Configuration.getInstance().getPageCountStart());
+        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
+            String newDcFileName = resp[0];
+            String pi = FilenameUtils.getBaseName(newDcFileName);
+            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), newDcFileName);
+            if (dcFile.equals(indexed)) {
+                return;
+            }
+            Files.copy(dcFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDcFileName, DataRepository.PARAM_INDEXED_DUBLINCORE,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            if (previousDataRepository != null) {
+                // Move non-repository data folders to the selected repository
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newDcFileName));
+            }
+
+            // Copy and delete media folder
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                if (msg != null) {
+                    logger.info(msg);
+                }
+            }
+
+            // Copy data folders
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            // Delete unsupported data folders
+            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+            try {
+                Files.delete(dcFile);
+            } catch (IOException e) {
+                logger.warn(LOG_COULD_NOT_BE_DELETED, dcFile.toAbsolutePath());
+            }
+
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        } else {
+            // Error
+            if (hotfolder.isDeleteContentFilesOnFailure()) {
+                // Delete all data folders for this record from the hotfolder
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+            }
+            handleError(dcFile, resp[1], FileFormat.DUBLINCORE);
+            try {
+                Files.delete(dcFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, dcFile.toAbsolutePath());
+            }
+        }
     }
 
     /**
