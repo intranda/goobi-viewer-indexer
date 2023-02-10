@@ -111,6 +111,17 @@ public class JDomXPTest extends AbstractTest {
     }
 
     /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect cms files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/cms/cms1.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.CMS, JDomXP.determineFileFormat(file));
+    }
+
+    /**
      * @see JDomXP#splitLidoFile(File)
      * @verifies split multi record documents correctly
      */
