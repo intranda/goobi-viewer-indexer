@@ -47,6 +47,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
+import io.goobi.viewer.indexer.CmsPageIndexer;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
 import io.goobi.viewer.indexer.DublinCoreIndexer;
@@ -663,6 +664,15 @@ public class Hotfolder {
                             logger.error("WorldViews indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
                         }
+                        break;
+                    case CMS:
+                        try {
+                            currentIndexer = new CmsPageIndexer(this);
+                            currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                        } finally {
+                            currentIndexer = null;
+                        }
+
                         break;
                     default:
                         logger.error("Unknown file format, deleting: {}", filename);

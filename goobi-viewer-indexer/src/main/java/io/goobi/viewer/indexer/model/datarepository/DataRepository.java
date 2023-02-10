@@ -61,6 +61,8 @@ public class DataRepository {
     public static final String PARAM_INDEXED_DENKXWEB = "indexedDenkXweb";
     /** Constant <code>PARAM_INDEXED_DC="indexedDC"</code> */
     public static final String PARAM_INDEXED_DUBLINCORE = "indexedDublinCore";
+    /** Constant <code>PARAM_INDEXED_CMS="indexedCMS"</code> */
+    public static final String PARAM_INDEXED_CMS = "indexedCMS";
     /** Constant <code>PARAM_MEDIA="mediaFolder"</code> */
     public static final String PARAM_MEDIA = "mediaFolder";
     /** Constant <code>PARAM_ALTO="altoFolder"</code> */
@@ -149,6 +151,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_INDEXED_LIDO, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DUBLINCORE, createFolders);
+        checkAndCreateDataSubdir(PARAM_INDEXED_CMS, createFolders);
         checkAndCreateDataSubdir(PARAM_MEDIA, createFolders);
         checkAndCreateDataSubdir(PARAM_ALTO, createFolders);
         checkAndCreateDataSubdir(PARAM_ALTOCROWD, createFolders);
@@ -237,6 +240,7 @@ public class DataRepository {
                 case PARAM_INDEXED_LIDO:
                 case PARAM_INDEXED_DENKXWEB:
                 case PARAM_INDEXED_DUBLINCORE:
+                case PARAM_INDEXED_CMS:
                     return;
                 default:
                     throw new FatalIndexerException("No configuration found for '" + dataDirName + "', exiting...");
@@ -313,11 +317,11 @@ public class DataRepository {
     }
 
     /**
-     * Counts the total number of records in this data repository by adding METS, LIDO, DenkXWeb and DC records.
+     * Counts the total number of records in this data repository by adding METS, LIDO, DenkXWeb, DC and CMS page records.
      *
      * @throws java.io.IOException
+     * @return Number of records of all types
      * @should calculate number correctly
-     * @return a int.
      */
     public int getNumRecords() throws IOException {
         int metsRecords = countFiles(getDir(PARAM_INDEXED_METS));
@@ -328,8 +332,10 @@ public class DataRepository {
         logger.info("Data repository '{}' contains {} DenkXweb records.", path, denkxwebRecords);
         int dcRecords = countFiles(getDir(PARAM_INDEXED_DUBLINCORE));
         logger.info("Data repository '{}' contains {} Dublin Core records.", path, dcRecords);
+        int cmsRecords = countFiles(getDir(PARAM_INDEXED_CMS));
+        logger.info("Data repository '{}' contains {} CMS page records.", path, cmsRecords);
 
-        return metsRecords + lidoRecords + denkxwebRecords + dcRecords;
+        return metsRecords + lidoRecords + denkxwebRecords + dcRecords + cmsRecords;
     }
 
     /**
@@ -427,6 +433,18 @@ public class DataRepository {
                     logger.info("Deleted old repository Dublin Core file: {}", oldRecordFile.toAbsolutePath());
                 } catch (IOException e) {
                     logger.error("Could not delete old repository Dublin Core file: {}", oldRecordFile.toAbsolutePath());
+                }
+            }
+        }
+        // CMS PAGES
+        if (getDir(PARAM_INDEXED_CMS) != null) {
+            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_CMS).toAbsolutePath().toString(), pi + ".xml");
+            if (Files.isRegularFile(oldRecordFile)) {
+                try {
+                    Files.delete(oldRecordFile);
+                    logger.info("Deleted old repository CMS page file: {}", oldRecordFile.toAbsolutePath());
+                } catch (IOException e) {
+                    logger.error("Could not delete old repository CMS page file: {}", oldRecordFile.toAbsolutePath());
                 }
             }
         }

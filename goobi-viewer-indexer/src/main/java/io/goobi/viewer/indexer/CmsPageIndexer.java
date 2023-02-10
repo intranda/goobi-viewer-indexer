@@ -15,38 +15,30 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.jdom2.Element;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -57,7 +49,6 @@ import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
-import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
@@ -69,7 +60,6 @@ public class CmsPageIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(CmsPageIndexer.class);
-    
 
     /**
      * Constructor.
@@ -82,10 +72,82 @@ public class CmsPageIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
+    /* (non-Javadoc)
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+     */
+    @Override
+    public void addToIndex(Path cmsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        String fileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
+
+        String[] resp = index(cmsFile, dataFolders, null, Configuration.getInstance().getPageCountStart());
+        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
+            String newCmsFileName = resp[0];
+            String pi = FilenameUtils.getBaseName(newCmsFileName);
+            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toAbsolutePath().toString(), newCmsFileName);
+            if (cmsFile.equals(indexed)) {
+                return;
+            }
+            Files.copy(cmsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newCmsFileName, DataRepository.PARAM_INDEXED_CMS,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            if (previousDataRepository != null) {
+                // Move non-repository data folders to the selected repository
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newCmsFileName));
+            }
+
+            // Copy and delete media folder
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                if (msg != null) {
+                    logger.info(msg);
+                }
+            }
+
+            // Copy data folders
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            // Delete unsupported data folders
+            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+            try {
+                Files.delete(cmsFile);
+            } catch (IOException e) {
+                logger.warn(LOG_COULD_NOT_BE_DELETED, cmsFile.toAbsolutePath());
+            }
+
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        } else {
+            // Error
+            if (hotfolder.isDeleteContentFilesOnFailure()) {
+                // Delete all data folders for this record from the hotfolder
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+            }
+            handleError(cmsFile, resp[1], FileFormat.CMS);
+            try {
+                Files.delete(cmsFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, cmsFile.toAbsolutePath());
+            }
+        }
+    }
+
     /**
      * Indexes the given CMS page file.
      *
-     * @param dcFile {@link java.nio.file.Path}
+     * @param cmsFile {@link java.nio.file.Path}
      * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart Order number for the first page.
      * @should index record correctly
@@ -97,27 +159,27 @@ public class CmsPageIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path xmlFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
+    public String[] index(Path cmsFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
         String[] ret = { null, null };
 
-        if (xmlFile == null || !Files.exists(xmlFile)) {
+        if (cmsFile == null || !Files.exists(cmsFile)) {
             throw new IllegalArgumentException("dcfile must point to an existing Dublin Core file.");
         }
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null.");
         }
 
-        logger.debug("Indexing CMS page file '{}'...", xmlFile.getFileName());
+        logger.debug("Indexing CMS page file '{}'...", cmsFile.getFileName());
         try {
-            initJDomXP(xmlFile);
+            initJDomXP(cmsFile);
             IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setRootStructNode(xp.getRootElement());
 
             // set some simple data in den indexObject
             setSimpleData(indexObj);
-            setUrn(indexObj);
+            // setUrn(indexObj);
 
             // Set PI
             String pi = MetadataHelper.getPIFromXML("/record/", xp);
@@ -139,7 +201,7 @@ public class CmsPageIndexer extends Indexer {
                 // Determine the data repository to use
                 DataRepository[] repositories =
                         hotfolder.getDataRepositoryStrategy()
-                                .selectDataRepository(pi, xmlFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
+                                .selectDataRepository(pi, cmsFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
                 dataRepository = repositories[0];
                 previousDataRepository = repositories[1];
                 if (StringUtils.isNotEmpty(dataRepository.getPath())) {
@@ -168,7 +230,7 @@ public class CmsPageIndexer extends Indexer {
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy
-                writeStrategy = AbstractWriteStrategy.create(xmlFile, dataFolders, hotfolder);
+                writeStrategy = AbstractWriteStrategy.create(cmsFile, dataFolders, hotfolder);
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
@@ -220,7 +282,7 @@ public class CmsPageIndexer extends Indexer {
             indexObj.writeDateModified(true);
 
             // Generate docs for all pages and add to the write strategy
-            generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
+            //            generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
 
             // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
             indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
@@ -229,10 +291,10 @@ public class CmsPageIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
-            if (thumbnailFields != null) {
-                indexObj.getLuceneFields().addAll(thumbnailFields);
-            }
+            //            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
+            //            if (thumbnailFields != null) {
+            //                indexObj.getLuceneFields().addAll(thumbnailFields);
+            //            }
 
             // ISWORK only for non-anchors
             indexObj.addToLucene(SolrConstants.ISWORK, "true");
@@ -319,9 +381,9 @@ public class CmsPageIndexer extends Indexer {
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
-            logger.info("Successfully finished indexing '{}'.", xmlFile.getFileName());
+            logger.info("Successfully finished indexing '{}'.", cmsFile.getFileName());
         } catch (Exception e) {
-            logger.error("Indexing of '{}' could not be finished due to an error.", xmlFile.getFileName());
+            logger.error("Indexing of '{}' could not be finished due to an error.", cmsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
             hotfolder.getSearchIndex().rollback();
@@ -332,271 +394,6 @@ public class CmsPageIndexer extends Indexer {
         }
 
         return ret;
-    }
-
-    /**
-     * 
-     * @param indexObj
-     * @param writeStrategy
-     * @return
-     * @throws FatalIndexerException
-     */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
-        List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
-        for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
-            physIds.add(String.valueOf(i));
-        }
-        List<SolrInputDocument> pageDocs = writeStrategy.getPageDocsForPhysIdList(physIds);
-        if (pageDocs.isEmpty()) {
-            logger.warn("No pages found for {}", indexObj.getLogId());
-            return Collections.emptyList();
-        }
-
-        List<LuceneField> ret = new ArrayList<>(5);
-
-        SolrInputDocument firstPageDoc = pageDocs.get(0);
-        if (firstPageDoc != null) {
-            // Add thumbnail information from the first page
-            String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
-            ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
-            if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue("ORDER_PARENT"))));
-            } else {
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
-            }
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
-            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
-        }
-
-        // If this is a top struct element, look for a representative image
-        for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = pageDoc.getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
-                    ? (String) pageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
-                    : (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
-            String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
-
-            // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-            if (pageDoc.getField(FIELD_OWNERDEPTH) == null || 0 > (Integer) pageDoc.getFieldValue(FIELD_OWNERDEPTH)) {
-                pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                pageDoc.setField(FIELD_OWNERDEPTH, 0);
-
-                // Add the parent document's structure element to the page
-                pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
-
-                // Add topstruct type to the page
-                if (!pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
-                    pageDoc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
-                }
-
-                // Remove SORT_ fields from a previous, higher up docstruct
-                Set<String> fieldsToRemove = new HashSet<>();
-                for (String fieldName : pageDoc.getFieldNames()) {
-                    if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
-                        fieldsToRemove.add(fieldName);
-                    }
-                }
-                for (String fieldName : fieldsToRemove) {
-                    pageDoc.removeField(fieldName);
-                }
-                //  Add this docstruct's SORT_* fields to page
-                if (indexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
-                    for (LuceneField field : indexObj.getLuceneFields()) {
-                        if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
-                            pageDoc.addField(field.getField(), field.getValue());
-                        }
-                    }
-                }
-            }
-
-            if (pageDoc.getField(SolrConstants.PI_TOPSTRUCT) == null) {
-                pageDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
-            }
-            if (pageDoc.getField(SolrConstants.DATAREPOSITORY) == null && indexObj.getDataRepository() != null) {
-                pageDoc.addField(SolrConstants.DATAREPOSITORY, indexObj.getDataRepository());
-            }
-            if (pageDoc.getField(SolrConstants.DATEUPDATED) == null && !indexObj.getDateUpdated().isEmpty()) {
-                for (Long date : indexObj.getDateUpdated()) {
-                    pageDoc.addField(SolrConstants.DATEUPDATED, date);
-                }
-            }
-            if (pageDoc.getField(SolrConstants.DATEINDEXED) == null && !indexObj.getDateIndexed().isEmpty()) {
-                for (Long date : indexObj.getDateIndexed()) {
-                    pageDoc.addField(SolrConstants.DATEINDEXED, date);
-                }
-            }
-
-            // Add of each docstruct access conditions (no duplicates)
-            Set<String> existingAccessConditions = new HashSet<>();
-            if (pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
-                for (Object obj : pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION)) {
-                    existingAccessConditions.add((String) obj);
-                }
-            }
-            for (String s : indexObj.getAccessConditions()) {
-                if (!existingAccessConditions.contains(s)) {
-                    pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
-                }
-            }
-            if (indexObj.getAccessConditions().isEmpty()) {
-                logger.warn("{}: {} has no access conditions.", pageFileBaseName, indexObj.getIddoc());
-            }
-
-            // Add owner docstruct's metadata (tokenized only!) and SORT_* fields to the page
-            Set<String> existingMetadataFieldNames = new HashSet<>();
-            Set<String> existingSortFieldNames = new HashSet<>();
-            for (String fieldName : pageDoc.getFieldNames()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
-                    for (Object value : pageDoc.getFieldValues(fieldName)) {
-                        existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
-                    }
-                } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
-                    existingSortFieldNames.add(fieldName);
-                }
-            }
-            for (LuceneField field : indexObj.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
-                        && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
-                    // Avoid duplicates (same field name + value)
-                    pageDoc.addField(field.getField(), field.getValue());
-                    logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), pageDoc.getFieldValue(SolrConstants.ORDER));
-                } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !existingSortFieldNames.contains(field.getField())) {
-                    // Only one instance of each SORT_ field may exist
-                    pageDoc.addField(field.getField(), field.getValue());
-                }
-            }
-
-            // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
-            writeStrategy.updateDoc(pageDoc);
-        }
-
-        // Add the number of assigned pages and the labels of the first and last page to this structure element
-        indexObj.setNumPages(pageDocs.size());
-        if (!pageDocs.isEmpty()) {
-            SolrInputDocument lastPagedoc = pageDocs.get(pageDocs.size() - 1);
-            String firstPageLabel = (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL);
-            String lastPageLabel = (String) lastPagedoc.getFieldValue(SolrConstants.ORDERLABEL);
-            if (firstPageLabel != null && !"-".equals(firstPageLabel.trim())) {
-                indexObj.setFirstPageLabel(firstPageLabel);
-            }
-            if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
-                indexObj.setLastPageLabel(lastPageLabel);
-            }
-        }
-
-        return ret;
-    }
-
-    /**
-     * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
-     * docstruct (such as docstruct iddoc, type, collection, etc.).
-     *
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
-     * @param dataFolders a {@link java.util.Map} object.
-     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
-     * @param pi a {@link java.lang.String} object.
-     * @param pageCountStart a int.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @should create documents for all mapped pages
-     * @should set correct ORDER values
-     * @should skip unmapped pages
-     * @should switch to DEFAULT file group correctly
-     * @should maintain page order after parallel processing
-     */
-    public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
-            final DataRepository dataRepository, final String pi, int pageCountStart) throws FatalIndexerException {
-        // Get all physical elements
-        String xpath = "/record/dc:relation";
-        List<Element> eleImageList = xp.evaluateToElements(xpath, null);
-        logger.info("Generating {} page documents (count starts at {})...", eleImageList.size(), pageCountStart);
-
-        // Generate pages sequentially
-        int order = pageCountStart;
-        for (final Element eleImage : eleImageList) {
-            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, order, writeStrategy,
-                    dataFolders)) {
-                order++;
-            }
-        }
-        logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
-    }
-
-    /**
-     * 
-     * @param eleImage
-     * @param iddoc
-     * @param pi
-     * @param order
-     * @param writeStrategy
-     * @param dataFolders
-     * @return
-     * @throws FatalIndexerException
-     */
-    boolean generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders)
-            throws FatalIndexerException {
-        if (eleImage == null) {
-            throw new IllegalArgumentException("eleImage may not be null");
-        }
-        if (dataFolders == null) {
-            throw new IllegalArgumentException("dataFolders may not be null");
-        }
-        if (order == null) {
-            // TODO page order within the metadata
-        }
-
-        // Create Solr document for this page
-        SolrInputDocument doc = new SolrInputDocument();
-        doc.addField(SolrConstants.IDDOC, iddoc);
-        doc.addField(SolrConstants.GROUPFIELD, iddoc);
-        doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        doc.addField(SolrConstants.ORDER, order);
-        doc.addField(SolrConstants.PHYSID, String.valueOf(order));
-
-        doc.addField(SolrConstants.ORDERLABEL, String.valueOf(order));
-
-        // URL
-        String fileName = eleImage.getText();
-
-        // Mime type
-        parseMimeType(doc, fileName);
-
-        // Add file size
-        try {
-            Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-            // TODO other mime types/folders
-            if (dataFolder != null) {
-                Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                if (Files.isRegularFile(path)) {
-                    doc.addField(FIELD_FILESIZE, Files.size(path));
-                }
-            }
-        } catch (IllegalArgumentException | IOException e) {
-            logger.warn(e.getMessage());
-        }
-        if (!doc.containsKey(FIELD_FILESIZE)) {
-            doc.addField(FIELD_FILESIZE, -1);
-        }
-
-        // Add image dimension values from EXIF
-        if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)) {
-            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
-                doc.addField(SolrConstants.WIDTH, dimension.width);
-                doc.addField(SolrConstants.HEIGHT, dimension.height);
-            });
-        }
-
-        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
-                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            doc.addField(FIELD_IMAGEAVAILABLE, true);
-            recordHasImages = true;
-        } else {
-            doc.addField(FIELD_IMAGEAVAILABLE, false);
-        }
-
-        addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, null);
-        writeStrategy.addPageDoc(doc);
-        return true;
     }
 
     /**
@@ -631,68 +428,5 @@ public class CmsPageIndexer extends Indexer {
             indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
-    }
-
-    /**
-     * Retrieves and sets the URN for mets:structMap[@TYPE='LOGICAL'] elements.
-     * 
-     * @param indexObj
-     * @return
-     * @throws FatalIndexerException
-     */
-    private String setUrn(IndexObject indexObj) throws FatalIndexerException {
-        String query = "/mets:mets/mets:structMap[@TYPE='LOGICAL']//mets:div[@ID='" + indexObj.getLogId() + "']/@CONTENTIDS";
-        String urn = xp.evaluateToAttributeStringValue(query, null);
-        if (Utils.isUrn(urn)) {
-            indexObj.setUrn(urn);
-            indexObj.addToLucene(SolrConstants.URN, urn);
-        }
-
-        return urn;
-    }
-
-    /**
-     * Moves an updated anchor METS file to the indexed METS folder and the previous version to the updated_mets folder without doing any index
-     * operations.
-     *
-     * @param metsFile {@link java.nio.file.Path} z.B.: PPN1234567890.UPDATED
-     * @param updatedMetsFolder Updated METS folder for old METS files.
-     * @param dataRepository Data repository to which to copy the new file.
-     * @throws java.io.IOException in case of errors.
-     * @should copy new METS file correctly
-     * @should copy old METS file to updated mets folder if file already exists
-     */
-    public static void superupdate(Path metsFile, Path updatedMetsFolder, DataRepository dataRepository) throws IOException {
-        logger.debug("Renaming and moving updated anchor...");
-        if (metsFile == null) {
-            throw new IllegalArgumentException("metsFile may not be null");
-        }
-        if (updatedMetsFolder == null) {
-            throw new IllegalArgumentException("updatedMetsFolder may not be null");
-        }
-        if (dataRepository == null) {
-            throw new IllegalArgumentException("dataRepository may not be null");
-        }
-
-        String baseFileName = FilenameUtils.getBaseName(metsFile.getFileName().toString());
-        StringBuilder sbNewFilename = new StringBuilder(baseFileName).append(".xml");
-        if (sbNewFilename.length() > 0) {
-            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
-            try {
-                // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems. Instead, move the file.
-                Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed);
-            } catch (FileAlreadyExistsException e) {
-                // Add a timestamp to the old file nameformatterBasicDateTime
-                String oldMetsFilename = new StringBuilder(FilenameUtils.getBaseName(sbNewFilename.toString())).append("_")
-                        .append(LocalDate.now().format(DateTools.formatterBasicDateTime))
-                        .append(".xml")
-                        .toString();
-                Files.move(indexed, Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename));
-                logger.debug("Old anchor file copied to '{}{}{}'.", updatedMetsFolder.toAbsolutePath(), File.separator, oldMetsFilename);
-                // Then copy the new file again, overwriting the old
-                Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed, StandardCopyOption.REPLACE_EXISTING);
-            }
-            logger.info("New anchor file copied to '{}'.", indexed.toAbsolutePath());
-        }
     }
 }
