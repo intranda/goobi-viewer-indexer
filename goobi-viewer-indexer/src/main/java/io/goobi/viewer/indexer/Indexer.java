@@ -17,9 +17,11 @@ package io.goobi.viewer.indexer;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -30,6 +32,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -93,6 +96,7 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
 import io.goobi.viewer.indexer.helper.XmlTools;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -126,6 +130,14 @@ public abstract class Indexer {
     protected static final String LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO = "Added FULLTEXT from regular ALTO for page {}";
 
     public static final String STATUS_ERROR = "ERROR";
+
+    static final String FOLDER_SUFFIX_ALTOCROWD = "_altocrowd";
+    static final String FOLDER_SUFFIX_DOWNLOADIMAGES = "_downloadimages";
+    static final String FOLDER_SUFFIX_MEDIA = "_media";
+    static final String FOLDER_SUFFIX_TXTCROWD = "_txtcrowd";
+
+    static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted! Please delete it manually!";
+    static final String LOG_FOUND_DATA_FOLDER = "Found data folder: {}";
 
     public static final String[] IIIF_IMAGE_FILE_NAMES =
             { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
@@ -163,6 +175,40 @@ public abstract class Indexer {
     protected Indexer(HttpConnector httpConnector) {
         this.httpConnector = httpConnector;
         mapper.registerModule(new JavaTimeModule());
+    }
+
+    /**
+     * 
+     * @param recordFile
+     * @param fromReindexQueue
+     * @param reindexSettings
+     * @throws IOException
+     * @throws FatalIndexerException
+     */
+    public abstract void addToIndex(Path recordFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+
+    /**
+     * Move data file to the error folder.
+     * 
+     * @param dataFile {@link File}
+     * @param error
+     * @param format
+     */
+    void handleError(Path dataFile, String error, FileFormat format) {
+        logger.error("Failed to process '{}'.", dataFile.getFileName());
+        // Error log file
+        if (FileFormat.METS.equals(format)) {
+            File logFile = new File(hotfolder.getErrorMets().toFile(), FilenameUtils.getBaseName(dataFile.getFileName().toString()) + ".log");
+            try (FileWriter fw = new FileWriter(logFile); BufferedWriter out = new BufferedWriter(fw)) {
+                Files.copy(dataFile, Paths.get(hotfolder.getErrorMets().toAbsolutePath().toString(), dataFile.getFileName().toString()),
+                        StandardCopyOption.REPLACE_EXISTING);
+                if (error != null) {
+                    out.write(error);
+                }
+            } catch (IOException e) {
+                logger.error("Data file could not be moved to errorMets!", e);
+            }
+        }
     }
 
     /**

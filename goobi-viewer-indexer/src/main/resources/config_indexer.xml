@@ -541,7 +541,6 @@
                         <xpath>
                             <list>
                                 <item>mets:xmlData/mods:mods/mods:titleInfo/mods:title[@xml:lang="fre" or @lang="fre"]</item>
-                                <item>>concat(mets:xmlData/mods:mods/mods:mods/mods:name[@type="personal"]/mods:namePart[@xml:lang="fre" or @lang="fre"][@type="family"], ", ", mets:xmlData/mods:mods/mods:mods/mods:name[@type="personal"]/mods:namePart[@xml:lang="fre" or @lang="fre"][@type="given"]</item>
                             </list>
                         </xpath>
                         <addToDefault>true</addToDefault>

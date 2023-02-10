@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
@@ -60,13 +61,33 @@ public class UsageStatisticsIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
+    /* (non-Javadoc)
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+     */
+    @Override
+    public void addToIndex(Path sourceFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
+        if (sourceFile == null) {
+            throw new IllegalArgumentException("usage statistics file may not be null");
+        } else if (!Files.isRegularFile(sourceFile)) {
+            throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
+        }
+        try {
+            index(sourceFile);
+        } catch (SolrServerException e) {
+            logger.error("Error indexing file {}. Reason: {}", sourceFile, e.getMessage());
+            throw new IOException(e);
+        }
+
+    }
+
     /**
      * @param sourceFile
      * @throws IOException
      * @throws FatalIndexerException
      * @throws SolrServerException
      */
-    public SolrInputDocument index(Path sourceFile) throws IOException, FatalIndexerException, SolrServerException {
+    SolrInputDocument index(Path sourceFile) throws IOException, FatalIndexerException, SolrServerException {
         String solrDateString = getStatisticsDate(sourceFile);
         if (statisticsExists(solrDateString)) {
             logger.info("Don't index usage statistics for {}: Statistics already exist for that date", solrDateString);
@@ -166,5 +187,4 @@ public class UsageStatisticsIndexer extends Indexer {
         LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
         return StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
     }
-
 }
