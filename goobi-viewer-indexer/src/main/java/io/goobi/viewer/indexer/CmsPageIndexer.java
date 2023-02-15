@@ -247,9 +247,6 @@ public class CmsPageIndexer extends Indexer {
             // put some simple data to Lucene array
             indexObj.pushSimpleDataToLuceneArray();
 
-            // Write metadata relative to the mdWrap
-            MetadataHelper.writeMetadataToObject(indexObj, xp.getMdWrap(indexObj.getDmdid()), "", xp);
-
             // Write root metadata (outside of MODS sections)
             MetadataHelper.writeMetadataToObject(indexObj, xp.getRootElement(), "", xp);
 
