@@ -221,6 +221,9 @@ public abstract class Indexer {
      * @return {@link java.lang.Boolean}
      * @throws java.io.IOException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @should throw IllegalArgumentException if pi empty
+     * @should throw IllegalArgumentException if searchIndex null
+     * @should return false if pi not found
      * @should delete METS record from index completely
      * @should delete LIDO record from index completely
      * @should leave trace document for METS record if requested
@@ -417,8 +420,9 @@ public abstract class Indexer {
      * Replaces irrelevant characters in the DEFAULT field value with spaces.
      *
      * @param field a {@link java.lang.String} object.
-     * @should replace irrelevant chars with spaces correctly
      * @return a {@link java.lang.String} object.
+     * @should replace irrelevant chars with spaces correctly
+     * @should return null if field null
      */
     public static String cleanUpDefaultField(String field) {
         if (field != null) {

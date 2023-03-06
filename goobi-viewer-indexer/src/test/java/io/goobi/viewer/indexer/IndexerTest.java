@@ -86,6 +86,33 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Indexer#delete(String,boolean,SolrSearchIndex)
+     * @verifies throw IllegalArgumentException if pi empty
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void delete_shouldThrowIllegalArgumentExceptionIfPiEmpty() throws Exception {
+        Indexer.delete("", false, hotfolder.getSearchIndex());
+    }
+
+    /**
+     * @see Indexer#delete(String,boolean,SolrSearchIndex)
+     * @verifies throw IllegalArgumentException if searchIndex null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void delete_shouldThrowIllegalArgumentExceptionIfSearchIndexNull() throws Exception {
+        Indexer.delete("foo", false, null);
+    }
+
+    /**
+     * @see Indexer#delete(String,boolean,SolrSearchIndex)
+     * @verifies return false if pi not found
+     */
+    @Test
+    public void delete_shouldReturnFalseIfPiNotFound() throws Exception {
+        Assert.assertFalse(Indexer.delete("foo", false, hotfolder.getSearchIndex()));
+    }
+
+    /**
      * @see Indexer#delete(String,boolean)
      * @verifies delete METS record from index completely
      */
@@ -213,6 +240,15 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void cleanUpDefaultField_shouldReplaceIrrelevantCharsWithSpacesCorrectly() throws Exception {
         Assert.assertEquals("A B C D", Indexer.cleanUpDefaultField(" A,B;C:D,  "));
+    }
+
+    /**
+     * @see Indexer#cleanUpDefaultField(String)
+     * @verifies return null if field null
+     */
+    @Test
+    public void cleanUpDefaultField_shouldReturnNullIfFieldNull() throws Exception {
+        Assert.assertNull(Indexer.cleanUpDefaultField(null));
     }
 
     /**
