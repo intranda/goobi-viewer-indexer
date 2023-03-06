@@ -86,33 +86,10 @@ public class DocUpdateIndexer extends Indexer {
      */
     @Override
     public void addToIndex(Path dataFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
-        Map<String, Path> dataFolders = new HashMap<>();
         String fileNameRoot = FilenameUtils.getBaseName(dataFile.getFileName().toString());
 
         // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case FOLDER_SUFFIX_TXTCROWD:
-                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
-                        break;
-                    case FOLDER_SUFFIX_ALTOCROWD:
-                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
-                        break;
-                    case "_ugc":
-                        dataFolders.put(DataRepository.PARAM_UGC, path);
-                        break;
-                    case "_cms":
-                        dataFolders.put(DataRepository.PARAM_CMS, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
+        Map<String, Path> dataFolders = checkDataFolders(fileNameRoot);
 
         if (dataFolders.isEmpty()) {
             logger.info("No data folders found for '{}', file won't be processed.", dataFile.getFileName());

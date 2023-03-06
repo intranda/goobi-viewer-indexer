@@ -109,34 +109,10 @@ public class LidoIndexer extends Indexer {
     @Override
     public void addToIndex(Path lidoFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
-        Map<String, Path> dataFolders = new HashMap<>();
         String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
 
         // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA:
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case "_mix":
-                        dataFolders.put(DataRepository.PARAM_MIX, path);
-                        break;
-                    case FOLDER_SUFFIX_DOWNLOADIMAGES:
-                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
-                        break;
-                    case "_tei":
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
+        Map<String, Path> dataFolders = checkDataFolders(fileNameRoot);
 
         if (dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) {
             logger.info("External images will be downloaded.");
@@ -149,15 +125,7 @@ public class LidoIndexer extends Indexer {
         }
 
         // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
-            reindexSettings.put(DataRepository.PARAM_MIX, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
-        }
+        checkReindexSettings(dataFolders, reindexSettings);
 
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         logger.info("File contains {} LIDO documents.", lidoDocs.size());

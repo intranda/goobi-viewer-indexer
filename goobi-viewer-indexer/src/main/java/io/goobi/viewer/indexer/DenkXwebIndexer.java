@@ -109,28 +109,10 @@ public class DenkXwebIndexer extends Indexer {
 
         logger.debug("Indexing DenkXweb file '{}'...", denkxwebFile.getFileName());
         String[] resp = { null, null };
-        Map<String, Path> dataFolders = new HashMap<>();
         String fileNameRoot = FilenameUtils.getBaseName(denkxwebFile.getFileName().toString());
 
         // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA:
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case FOLDER_SUFFIX_DOWNLOADIMAGES:
-                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
+        Map<String, Path> dataFolders = checkDataFolders(fileNameRoot);
 
         if (dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) {
             logger.info("External images will be downloaded.");
@@ -143,9 +125,7 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
+        checkReindexSettings(dataFolders, reindexSettings);
 
         List<Document> denkxwebDocs = JDomXP.splitDenkXwebFile(denkxwebFile.toFile());
         logger.info("File contains {} DenkXweb documents.", denkxwebDocs.size());

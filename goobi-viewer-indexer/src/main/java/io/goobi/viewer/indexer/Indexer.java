@@ -185,7 +185,8 @@ public abstract class Indexer {
      * @throws IOException
      * @throws FatalIndexerException
      */
-    public abstract void addToIndex(Path recordFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+    public abstract void addToIndex(Path recordFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException;
 
     /**
      * Move data file to the error folder.
@@ -1935,6 +1936,135 @@ public abstract class Indexer {
             recordHasFulltext = true;
         } else {
             doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
+        }
+    }
+
+    /**
+     * 
+     * @param fileNameRoot
+     * @return
+     * @throws IOException
+     */
+    Map<String, Path> checkDataFolders(String fileNameRoot) throws IOException {
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        try (DirectoryStream<Path> stream =
+                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
+            for (Path path : stream) {
+                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
+                switch (fileNameSansRoot) {
+                    case "_tif":
+                    case FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
+                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
+                        break;
+                    case "_txt":
+                        dataFolders.put(DataRepository.PARAM_FULLTEXT, path);
+                        break;
+                    case FOLDER_SUFFIX_TXTCROWD:
+                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
+                        break;
+                    case "_wc":
+                        dataFolders.put(DataRepository.PARAM_TEIWC, path);
+                        break;
+                    case "_neralto":
+                        dataFolders.put(DataRepository.PARAM_ALTO, path);
+                        logger.info("NER ALTO folder found: {}", path.getFileName());
+                        break;
+                    case "_alto":
+                        // Only add regular ALTO path if no NER ALTO folder is found
+                        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
+                            dataFolders.put(DataRepository.PARAM_ALTO, path);
+                        }
+                        break;
+                    case FOLDER_SUFFIX_ALTOCROWD:
+                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
+                        break;
+                    case "_xml":
+                        dataFolders.put(DataRepository.PARAM_ABBYY, path);
+                        break;
+                    case "_pdf":
+                        dataFolders.put(DataRepository.PARAM_PAGEPDF, path);
+                        break;
+                    case "_mix":
+                        dataFolders.put(DataRepository.PARAM_MIX, path);
+                        break;
+                    case "_src":
+                        dataFolders.put(DataRepository.PARAM_SOURCE, path);
+                        break;
+                    case "_ugc":
+                        dataFolders.put(DataRepository.PARAM_UGC, path);
+                        break;
+                    case "_cms":
+                        dataFolders.put(DataRepository.PARAM_CMS, path);
+                        break;
+                    case "_tei":
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
+                        break;
+                    case "_annotations":
+                        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
+                        break;
+                    case FOLDER_SUFFIX_DOWNLOADIMAGES:
+                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
+                        break;
+                    default:
+                        // nothing
+                }
+            }
+        }
+
+        return dataFolders;
+    }
+
+    /**
+     * Checks 
+     * @param dataFolders
+     * @param reindexSettings
+     */
+    void checkReindexSettings(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+        if (reindexSettings == null) {
+            throw new IllegalArgumentException("reindexSettings may not be null");
+        }
+
+        // Use existing folders for those missing in the hotfolder
+        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
+            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
+            reindexSettings.put(DataRepository.PARAM_ALTO, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
+            reindexSettings.put(DataRepository.PARAM_ALTOCROWD, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
+            reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
+            reindexSettings.put(DataRepository.PARAM_FULLTEXTCROWD, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIWC, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
+            reindexSettings.put(DataRepository.PARAM_ABBYY, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
+            reindexSettings.put(DataRepository.PARAM_MIX, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
+            reindexSettings.put(DataRepository.PARAM_UGC, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
+            reindexSettings.put(DataRepository.PARAM_CMS, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
+            reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
         }
     }
 }
