@@ -102,7 +102,7 @@ public class DublinCoreIndexer extends Indexer {
      * @param reindexSettings
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
-     * 
+     * @should add record to index correctly
      */
     @Override
     public void addToIndex(Path dcFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)

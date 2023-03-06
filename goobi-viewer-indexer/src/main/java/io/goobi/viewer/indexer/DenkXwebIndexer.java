@@ -96,7 +96,7 @@ public class DenkXwebIndexer extends Indexer {
      * @param reindexSettings
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
-     * 
+     * @should throw IllegalArgumentException if denkxwebFile null
      */
     @Override
     public void addToIndex(Path denkxwebFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)

@@ -319,6 +319,7 @@
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID
 							</item>
                             <item>//denkxweb:recId</item>
+                            <item>dc:identifier</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
