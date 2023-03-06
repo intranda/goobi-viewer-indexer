@@ -494,6 +494,7 @@ public abstract class Indexer {
      * @param fileNameRoot
      * @return List of Solr input documents for the UGC contents
      * @throws FatalIndexerException
+     * @should return empty list if dataFolder null
      */
     List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
             Map<String, String> groupIds, int order, String fileNameRoot) throws FatalIndexerException {
@@ -548,8 +549,9 @@ public abstract class Indexer {
      * @param order
      * @return Generated {@link SolrInputDocument}
      * @throws FatalIndexerException
+     * @should throw IllegalArgumentException if eleContent null
      */
-    private SolrInputDocument generateUserGeneratedContentDocForPage(Element eleContent, SolrInputDocument pageDoc, String pi,
+    SolrInputDocument generateUserGeneratedContentDocForPage(Element eleContent, SolrInputDocument pageDoc, String pi,
             String anchorPi, Map<String, String> groupIds, int order) throws FatalIndexerException {
         if (eleContent == null) {
             throw new IllegalArgumentException("eleContent may not be null");
@@ -682,6 +684,7 @@ public abstract class Indexer {
      * @param order
      * @return List of Solr input documents for the comment annotations
      * @throws FatalIndexerException
+     * @should return empty list if dataFolder null
      * @should construct doc correctly
      */
     List<SolrInputDocument> generateUserCommentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,

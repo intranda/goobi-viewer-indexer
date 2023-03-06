@@ -761,6 +761,41 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Indexer#generateUserGeneratedContentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
+     * @verifies return empty list if dataFolder null
+     */
+    @Test
+    public void generateUserGeneratedContentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        List<SolrInputDocument> result =
+                indexer.generateUserGeneratedContentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1,
+                        "foo");
+        Assert.assertTrue(result.isEmpty());
+    }
+
+    /**
+     * @see Indexer#generateUserGeneratedContentDocForPage(Element,SolrInputDocument,String,String,Map,int)
+     * @verifies throw IllegalArgumentException if eleContent null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void generateUserGeneratedContentDocForPage_shouldThrowIllegalArgumentExceptionIfEleContentNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.generateUserGeneratedContentDocForPage(null, null, "foo", null, Collections.emptyMap(), 1);
+    }
+
+    /**
+     * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int)
+     * @verifies return empty list if dataFolder null
+     */
+    @Test
+    public void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        List<SolrInputDocument> result =
+                indexer.generateUserCommentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1);
+        Assert.assertTrue(result.isEmpty());
+    }
+
+    /**
      * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
      * @verifies construct doc correctly
      */
@@ -776,7 +811,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
         ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
         List<SolrInputDocument> docs =
-                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", null, null, 1);
+                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", "PPN-anchor", null, 1);
         Assert.assertNotNull(docs);
         Assert.assertEquals(2, docs.size());
 
