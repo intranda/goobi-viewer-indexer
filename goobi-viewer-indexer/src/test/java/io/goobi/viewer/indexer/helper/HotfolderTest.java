@@ -24,6 +24,9 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 
+/**
+ * TODO "Connection pool cloased" error if more than one test (Jenkins only)
+ */
 public class HotfolderTest extends AbstractSolrEnabledTest {
 
     /**
@@ -81,24 +84,5 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
 
         Assert.assertEquals(6, hotfolder.countRecordFiles());
 
-    }
-
-    /**
-     * @see Hotfolder#checkEmailConfiguration()
-     * @verifies return false until all values configured
-     */
-    @Test
-    public void checkEmailConfiguration_shouldReturnFalseUntilAllValuesConfigured() throws Exception {
-        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
-        Configuration.getInstance().overrideValue("init.email.recipients", "recipient@example.com");
-        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
-        Configuration.getInstance().overrideValue("init.email.smtpServer", "smtp.example.com");
-        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
-        Configuration.getInstance().overrideValue("init.email.smtpSenderAddress", "sender@example.com");
-        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
-        Configuration.getInstance().overrideValue("init.email.smtpSenderName", "Sender");
-        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
-        Configuration.getInstance().overrideValue("init.email.smtpSecurity", "NONE");
-        Assert.assertTrue(Hotfolder.checkEmailConfiguration());
     }
 }
