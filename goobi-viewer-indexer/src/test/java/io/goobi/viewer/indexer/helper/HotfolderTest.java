@@ -25,7 +25,7 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 
 public class HotfolderTest extends AbstractSolrEnabledTest {
-    
+
     /**
      * @see Hotfolder#countRecordFiles()
      * @verifies count files correctly
@@ -35,7 +35,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
         Configuration.getInstance().overrideValue("performance.countHotfolderFiles", true);
         Assert.assertTrue(Configuration.getInstance().isCountHotfolderFiles());
-        
+
         {
             Path path = Paths.get("target/viewer/hotfolder", "1.xml");
             Files.createFile(path);
@@ -81,5 +81,24 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
 
         Assert.assertEquals(6, hotfolder.countRecordFiles());
 
+    }
+
+    /**
+     * @see Hotfolder#checkEmailConfiguration()
+     * @verifies return false until all values configured
+     */
+    @Test
+    public void checkEmailConfiguration_shouldReturnFalseUntilAllValuesConfigured() throws Exception {
+        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.recipients", "recipient@example.com");
+        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.smtpServer", "smtp.example.com");
+        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.smtpSenderAddress", "sender@example.com");
+        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.smtpSenderName", "Sender");
+        Assert.assertFalse(Hotfolder.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.smtpSecurity", "NONE");
+        Assert.assertTrue(Hotfolder.checkEmailConfiguration());
     }
 }

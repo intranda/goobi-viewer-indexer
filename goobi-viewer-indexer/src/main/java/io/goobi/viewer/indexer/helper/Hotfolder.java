@@ -370,6 +370,7 @@ public class Hotfolder {
      * 
      * @return true if all email configuration date is complete; false otherwise
      * @throws FatalIndexerException
+     * @should return false until all values configured
      */
     static boolean checkEmailConfiguration() throws FatalIndexerException {
         if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.recipients"))) {
