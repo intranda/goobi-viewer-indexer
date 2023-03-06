@@ -110,7 +110,7 @@ public class DublinCoreIndexer extends Indexer {
         String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
 
         // Check data folders in the hotfolder
-        Map<String, Path> dataFolders = checkDataFolders(fileNameRoot);
+        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
 
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);

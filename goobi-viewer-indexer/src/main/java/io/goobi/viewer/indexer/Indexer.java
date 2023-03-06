@@ -1941,15 +1941,17 @@ public abstract class Indexer {
 
     /**
      * 
+     * @param hotfolderPath
      * @param fileNameRoot
      * @return
      * @throws IOException
+     * @should check add data folder paths correctly
      */
-    Map<String, Path> checkDataFolders(String fileNameRoot) throws IOException {
+    static Map<String, Path> checkDataFolders(Path hotfolderPath, String fileNameRoot) throws IOException {
         Map<String, Path> dataFolders = new HashMap<>();
 
         try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
+                Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
             for (Path path : stream) {
                 logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
                 String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
@@ -2017,11 +2019,14 @@ public abstract class Indexer {
     }
 
     /**
-     * Checks 
+     * Checks
+     * 
      * @param dataFolders
      * @param reindexSettings
+     * @should throw IllegalArgumentException if dataFolders null
+     * @should throw IllegalArgumentException if reindexSettings null
      */
-    void checkReindexSettings(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
+    static void checkReindexSettings(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }

@@ -792,4 +792,72 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals("true", indexObj.getLuceneFields().get(0).getValue());
     }
 
+    /**
+     * @see Indexer#checkDataFolders(String)
+     * @verifies check add data folder paths correctly
+     */
+    @Test
+    public void checkDataFolders_shouldCheckAddDataFolderPathsCorrectly() throws Exception {
+        String fileNameRoot = "foo";
+        Assert.assertTrue(Files
+                .isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_MEDIA))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_txt"))));
+        Assert.assertTrue(
+                Files.isDirectory(
+                        Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_TXTCROWD))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_wc"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_alto"))));
+        Assert.assertTrue(
+                Files.isDirectory(
+                        Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_ALTOCROWD))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_xml"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_pdf"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_mix"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_src"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_ugc"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_cms"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_tei"))));
+        Assert.assertTrue(
+                Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_annotations"))));
+        Assert.assertTrue(
+                Files.isDirectory(Files
+                        .createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_DOWNLOADIMAGES))));
+
+        Map<String, Path> result = Indexer.checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.get(DataRepository.PARAM_MEDIA));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_FULLTEXT));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_TEIWC));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_ALTO));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_ABBYY));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_PAGEPDF));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_MIX));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_SOURCE));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_UGC));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_CMS));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_ANNOTATIONS));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies throw IllegalArgumentException if dataFolders null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
+        Indexer.checkReindexSettings(null, Collections.emptyMap());
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies throw IllegalArgumentException if reindexSettings null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() throws Exception {
+        Indexer.checkReindexSettings(Collections.emptyMap(), null);
+    }
+
 }

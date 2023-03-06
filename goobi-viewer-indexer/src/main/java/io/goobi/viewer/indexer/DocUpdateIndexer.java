@@ -89,7 +89,7 @@ public class DocUpdateIndexer extends Indexer {
         String fileNameRoot = FilenameUtils.getBaseName(dataFile.getFileName().toString());
 
         // Check data folders in the hotfolder
-        Map<String, Path> dataFolders = checkDataFolders(fileNameRoot);
+        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
 
         if (dataFolders.isEmpty()) {
             logger.info("No data folders found for '{}', file won't be processed.", dataFile.getFileName());
