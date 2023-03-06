@@ -194,6 +194,7 @@ public abstract class Indexer {
      * @param dataFile {@link File}
      * @param error
      * @param format
+     * @should write log file and copy of mets file into errorMets
      */
     void handleError(Path dataFile, String error, FileFormat format) {
         logger.error("Failed to process '{}'.", dataFile.getFileName());

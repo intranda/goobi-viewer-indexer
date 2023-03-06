@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -45,6 +46,7 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.TextHelper;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -83,6 +85,19 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         if (StringUtils.isNotBlank(libraryPath)) {
             System.setProperty("java.library.path", libraryPath);
         }
+    }
+
+    /**
+     * @see Indexer#handleError(Path,String,FileFormat)
+     * @verifies write log file and copy of mets file into errorMets
+     */
+    @Test
+    public void handleError_shouldWriteLogFileAndCopyOfMetsFileIntoErrorMets() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.handleError(metsFile, "lorem ipsum dolor sit amet", FileFormat.METS);
+        Assert.assertTrue(Files.isRegularFile(
+                Paths.get(hotfolder.getErrorMets().toString(), FilenameUtils.getBaseName(metsFile.getFileName().toString()) + ".log")));
+        Assert.assertTrue(Files.isRegularFile(Paths.get(hotfolder.getErrorMets().toString(), metsFile.getFileName().toString())));
     }
 
     /**
