@@ -3543,7 +3543,7 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:birthdate</item>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:deathdate</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -3565,8 +3565,8 @@
                 </item>
             </list>
         </MD_GENDER>
-        
-        <MD_PROFESSION>
+
+        <MD_PROFESSION_LANG_FR>
             <list>
                 <item>
                     <xpath>
@@ -3576,30 +3576,131 @@
                     </xpath>
                     <addToDefault>true</addToDefault>
                     <groupEntity type="OTHER">
-                        <field name="MD_VALUE">@ID</field>
+                        <field name="MD_VALUE">luxArtDic:value[@xml:lang="fre"]</field>
                         <field name="MD_DATESTART">@start</field>
                         <field name="MD_DATEEND">@end</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
                     </groupEntity>
                 </item>
             </list>
-        </MD_PROFESSION>
+        </MD_PROFESSION_LANG_FR>
         
-        <MD_DISCIPLINE>
+        <MD_PROFESSION_LANG_DE>
             <list>
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:discipline</item>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:profession</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:value[@xml:lang="ger"]</field>
+                        <field name="MD_DATESTART">@start</field>
+                        <field name="MD_DATEEND">@end</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_PROFESSION_LANG_DE>
+        
+        <MD_PROFESSION_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:profession</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:value[@xml:lang="eng"]</field>
+                        <field name="MD_DATESTART">@start</field>
+                        <field name="MD_DATEEND">@end</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_PROFESSION_LANG_EN>
+        
+        <MD_DISCIPLINE_NOLANG>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:discipline[not(luxArtDic:discipline/@xml:lang)]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
                     <groupEntity type="OTHER">
                         <field name="MD_VALUE">luxArtDic:discipline</field>
                         <field name="NORM_URI">luxArtDic:discipline/@valueURI</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
                     </groupEntity>
                 </item>
             </list>
-        </MD_DISCIPLINE>
+        </MD_DISCIPLINE_NOLANG>
+
+        <MD_DISCIPLINE_LANG_FR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:discipline[luxArtDic:discipline/@xml:lang="fre"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:discipline[@xml:lang="fre"]</field>
+                        <field name="NORM_URI">luxArtDic:discipline/@valueURI</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_DISCIPLINE_LANG_FR>
+        <MD_DISCIPLINE_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:discipline[luxArtDic:discipline/@xml:lang="ger"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:discipline[@xml:lang="ger"]</field>
+                        <field name="NORM_URI">luxArtDic:discipline/@valueURI</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_DISCIPLINE_LANG_DE>
+        <MD_DISCIPLINE_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:discipline[luxArtDic:discipline/@xml:lang="eng"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:discipline[@xml:lang="eng"]</field>
+                        <field name="NORM_URI">luxArtDic:discipline/@valueURI</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_DISCIPLINE_LANG_EN>
+
+
         
         <MD_ARTISTIC_MOVEMENT>
             <list>
@@ -3613,12 +3714,14 @@
                     <groupEntity type="OTHER">
                         <field name="MD_VALUE">luxArtDic:artisticmovement</field>
                         <field name="NORM_URI">luxArtDic:artisticmovement/@valueURI</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
                     </groupEntity>
                 </item>
             </list>
         </MD_ARTISTIC_MOVEMENT>
         
-        <MD_BIOGRAPHY_EDUCATION>
+        <MD_BIOGRAPHY_EDUCATION_LANG_FR>
             <list>
                 <item>
                     <xpath>
@@ -3633,10 +3736,54 @@
                         <field name="MD_DATEEND">@end</field>
                         <field name="MD_LOCATION">luxArtDic:location</field>
                         <field name="NORM_URI">luxArtDic:location/@valueURI</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
                     </groupEntity>
                 </item>
             </list>
-        </MD_BIOGRAPHY_EDUCATION>
+        </MD_BIOGRAPHY_EDUCATION_LANG_FR>
+        <MD_BIOGRAPHY_EDUCATION_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:biography[@type="Education"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:description[@xml:lang="ger"]</field>
+                        <field name="MD_DATESTART">@start</field>
+                        <field name="MD_DATEEND">@end</field>
+                        <field name="MD_LOCATION">luxArtDic:location</field>
+                        <field name="NORM_URI">luxArtDic:location/@valueURI</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_BIOGRAPHY_EDUCATION_LANG_DE>
+        <MD_BIOGRAPHY_EDUCATION_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:biography[@type="Education"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:description[@xml:lang="eng"]</field>
+                        <field name="MD_DATESTART">@start</field>
+                        <field name="MD_DATEEND">@end</field>
+                        <field name="MD_LOCATION">luxArtDic:location</field>
+                        <field name="NORM_URI">luxArtDic:location/@valueURI</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_BIOGRAPHY_EDUCATION_LANG_EN>
         
         <MD_BIOGRAPHY_MARRIAGE>
             <list>
@@ -3651,12 +3798,14 @@
                         <field name="MD_VALUE">@ID</field>
                         <field name="MD_DATESTART">@start</field>
                         <field name="MD_DATEEND">@end</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
                     </groupEntity>
                 </item>
             </list>
         </MD_BIOGRAPHY_MARRIAGE>
-        
-        <MD_BIOGRAPHY_JOURNEY>
+
+        <MD_BIOGRAPHY_JOURNEY_LANG_FR>
             <list>
                 <item>
                     <xpath>
@@ -3669,11 +3818,50 @@
                         <field name="MD_VALUE">luxArtDic:description[@xml:lang="fre"]</field>
                         <field name="MD_DATESTART">@start</field>
                         <field name="MD_DATEEND">@end</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
                     </groupEntity>
                 </item>
             </list>
-        </MD_BIOGRAPHY_JOURNEY>
-        
+        </MD_BIOGRAPHY_JOURNEY_LANG_FR>
+        <MD_BIOGRAPHY_JOURNEY_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:biography[@type="Journey"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:description[@xml:lang="fre"]</field>
+                        <field name="MD_DATESTART">@start</field>
+                        <field name="MD_DATEEND">@end</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_BIOGRAPHY_JOURNEY_LANG_DE>
+        <MD_BIOGRAPHY_JOURNEY_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:biography[@type="Journey"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">luxArtDic:description[@xml:lang="eng"]</field>
+                        <field name="MD_DATESTART">@start</field>
+                        <field name="MD_DATEEND">@end</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_BIOGRAPHY_JOURNEY_LANG_EN>        
         <MD_DESCRIPTION_LANG_FR>
             <list>
                 <item>
@@ -3712,6 +3900,7 @@
                 </item>
             </list>
         </MD_DESCRIPTION_LANG_DE>
+        
         
         <MD_RELATIONSHIP>
             <list>
