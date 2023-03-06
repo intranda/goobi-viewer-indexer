@@ -906,19 +906,18 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIMETADATA, p);
         dataFolders.put(DataRepository.PARAM_ANNOTATIONS, p);
 
-        Indexer.checkReindexSettings(Collections.emptyMap(), reindexSettings);
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_MEDIA));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_TEIWC));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_ALTO));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_ABBYY));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_MIX));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_UGC));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_CMS));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
-        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
+        Indexer.checkReindexSettings(dataFolders, reindexSettings);
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_MEDIA));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_TEIWC));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ALTO));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ABBYY));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_MIX));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_UGC));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_CMS));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
     }
-
 }
