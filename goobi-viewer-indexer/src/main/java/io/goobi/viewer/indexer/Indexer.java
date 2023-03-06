@@ -1945,7 +1945,7 @@ public abstract class Indexer {
      * @param fileNameRoot
      * @return
      * @throws IOException
-     * @should check add data folder paths correctly
+     * @should add data folder paths correctly
      */
     static Map<String, Path> checkDataFolders(Path hotfolderPath, String fileNameRoot) throws IOException {
         Map<String, Path> dataFolders = new HashMap<>();
@@ -2025,6 +2025,8 @@ public abstract class Indexer {
      * @param reindexSettings
      * @should throw IllegalArgumentException if dataFolders null
      * @should throw IllegalArgumentException if reindexSettings null
+     * @should add reindex flags correctly if data folders missing
+     * @should not add reindex flags if data folders present
      */
     static void checkReindexSettings(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
         if (dataFolders == null) {

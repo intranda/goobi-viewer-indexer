@@ -794,10 +794,10 @@ public class IndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see Indexer#checkDataFolders(String)
-     * @verifies check add data folder paths correctly
+     * @verifies add data folder paths correctly
      */
     @Test
-    public void checkDataFolders_shouldCheckAddDataFolderPathsCorrectly() throws Exception {
+    public void checkDataFolders_shouldAddDataFolderPathsCorrectly() throws Exception {
         String fileNameRoot = "foo";
         Assert.assertTrue(Files
                 .isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_MEDIA))));
@@ -858,6 +858,67 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     @Test(expected = IllegalArgumentException.class)
     public void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() throws Exception {
         Indexer.checkReindexSettings(Collections.emptyMap(), null);
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies add reindex flags correctly if data folders missing
+     */
+    @Test
+    public void checkReindexSettings_shouldAddReindexFlagsCorrectlyIfDataFoldersMissing() throws Exception {
+        Map<String, Boolean> reindexSettings = new HashMap<>();
+
+        Indexer.checkReindexSettings(Collections.emptyMap(), reindexSettings);
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_MEDIA));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_TEIWC));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_ALTO));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_ABBYY));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_MIX));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_UGC));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_CMS));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies not add reindex flags if data folders present
+     */
+    @Test
+    public void checkReindexSettings_shouldNotAddReindexFlagsIfDataFoldersPresent() throws Exception {
+        Map<String, Boolean> reindexSettings = new HashMap<>();
+
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path p = Paths.get("foo");
+        dataFolders.put(DataRepository.PARAM_MEDIA, p);
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, p);
+        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, p);
+        dataFolders.put(DataRepository.PARAM_TEIWC, p);
+        dataFolders.put(DataRepository.PARAM_ALTO, p);
+        dataFolders.put(DataRepository.PARAM_ALTOCROWD, p);
+        dataFolders.put(DataRepository.PARAM_ABBYY, p);
+        dataFolders.put(DataRepository.PARAM_MIX, p);
+        dataFolders.put(DataRepository.PARAM_UGC, p);
+        dataFolders.put(DataRepository.PARAM_CMS, p);
+        dataFolders.put(DataRepository.PARAM_TEIMETADATA, p);
+        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, p);
+
+        Indexer.checkReindexSettings(Collections.emptyMap(), reindexSettings);
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_MEDIA));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_TEIWC));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_ALTO));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_ABBYY));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_MIX));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_UGC));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_CMS));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertFalse(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
     }
 
 }
