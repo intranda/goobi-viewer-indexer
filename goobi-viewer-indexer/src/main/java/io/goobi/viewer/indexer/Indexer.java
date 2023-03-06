@@ -771,6 +771,7 @@ public abstract class Indexer {
      * @param order
      * @return
      * @throws FatalIndexerException
+     * @should return empty list if dataFolder null
      * @should create docs correctly
      */
     List<SolrInputDocument> generateAnnotationDocs(Map<Integer, SolrInputDocument> pageDocs, Path dataFolder, String pi, String anchorPi,
@@ -1190,6 +1191,9 @@ public abstract class Indexer {
      * @param dcFields
      * @return Number of added Solr docs
      * @throws FatalIndexerException
+     * @should throw IllegalArgumentException if gmd null
+     * @should throw IllegalArgumentException indexObj null
+     * @should throw IllegalArgumentException if writeStrategy null
      * @should add BOOL_WKT_COORDINATES true to docstruct if WKT_COORDS found
      */
     int addGroupedMetadataDocs(GroupedMetadata gmd, ISolrWriteStrategy writeStrategy, IndexObject indexObj, long ownerIddoc, Set<String> skipFields,
@@ -1321,8 +1325,11 @@ public abstract class Indexer {
      * @param paramName a {@link java.lang.String} object.
      * @param pi a {@link java.lang.String} object.
      * @throws java.io.IOException
+     * @should throw IllegalArgumentException if dataFolders null
+     * @should throw IllegalArgumentException if paramName null
+     * @should throw IllegalArgumentException if pi null
      */
-    protected void checkOldDataFolder(Map<String, Path> dataFolders, String paramName, String pi) throws IOException {
+    void checkOldDataFolder(Map<String, Path> dataFolders, String paramName, String pi) throws IOException {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
@@ -1420,6 +1427,11 @@ public abstract class Indexer {
      * @param order Page order
      * @return
      * @throws IOException
+     * @should return false if altodata null
+     * @should throw IllegalArgumentException if doc null
+     * @should throw IllegalArgumentException if dataFolders null
+     * @should throw IllegalArgumentException if pi null
+     * @should throw IllegalArgumentException if baseFileName null
      * @should add filename for native alto file
      * @should add filename for crowdsourcing alto file
      * @should add filename for converted alto file
