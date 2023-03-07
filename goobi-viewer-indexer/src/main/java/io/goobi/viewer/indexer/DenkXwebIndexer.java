@@ -18,7 +18,6 @@ package io.goobi.viewer.indexer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,7 +25,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +34,13 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -98,7 +96,7 @@ public class DenkXwebIndexer extends Indexer {
      * @param reindexSettings
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
-     * 
+     * @should throw IllegalArgumentException if denkxwebFile null
      */
     @Override
     public void addToIndex(Path denkxwebFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
@@ -109,28 +107,10 @@ public class DenkXwebIndexer extends Indexer {
 
         logger.debug("Indexing DenkXweb file '{}'...", denkxwebFile.getFileName());
         String[] resp = { null, null };
-        Map<String, Path> dataFolders = new HashMap<>();
         String fileNameRoot = FilenameUtils.getBaseName(denkxwebFile.getFileName().toString());
 
         // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA:
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case FOLDER_SUFFIX_DOWNLOADIMAGES:
-                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
+        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
 
         if (dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) {
             logger.info("External images will be downloaded.");
@@ -143,9 +123,7 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
+        checkReindexSettings(dataFolders, reindexSettings);
 
         List<Document> denkxwebDocs = JDomXP.splitDenkXwebFile(denkxwebFile.toFile());
         logger.info("File contains {} DenkXweb documents.", denkxwebDocs.size());
