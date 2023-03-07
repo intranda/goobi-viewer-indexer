@@ -27,6 +27,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -64,6 +65,7 @@ import org.jdom2.Element;
 import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
@@ -137,6 +139,112 @@ public class MetsIndexer extends Indexer {
     public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
+    }
+
+    /**
+     * Indexes the given METS file.
+     * 
+     * @param metsFile {@link File}
+     * @param fromReindexQueue
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * 
+     */
+    @Override
+    public void addToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
+        //        Map<String, Path> dataFolders = new HashMap<>();
+
+        String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+        // Use existing folders for those missing in the hotfolder
+        checkReindexSettings(dataFolders, reindexSettings);
+
+        String[] resp = index(metsFile, fromReindexQueue, dataFolders, null,
+                Configuration.getInstance().getPageCountStart(), dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+
+        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
+            String newMetsFileName = resp[0];
+            String pi = FilenameUtils.getBaseName(newMetsFileName);
+            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
+            if (metsFile.equals(indexed)) {
+                return;
+            }
+            if (Files.exists(indexed)) {
+                // Add a timestamp to the old file name
+                String oldMetsFilename =
+                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.formatterBasicDateTime) + ".xml";
+                Path newFile = Paths.get(hotfolder.getUpdatedMets().toAbsolutePath().toString(), oldMetsFilename);
+                Files.copy(indexed, newFile);
+                logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
+            }
+            Files.copy(metsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            if (previousDataRepository != null) {
+                // Move non-repository data folders to the selected repository
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newMetsFileName));
+            }
+
+            // Copy and delete media folder
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                if (msg != null) {
+                    logger.info(msg);
+                }
+            }
+
+            // Copy data folders
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            // Delete unsupported data folders
+            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+            // success for goobi
+            Path successFile = Paths.get(hotfolder.getSuccessFolder().toAbsolutePath().toString(), metsFile.getFileName().toString());
+            try {
+                Files.createFile(successFile);
+                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
+            } catch (FileAlreadyExistsException e) {
+                Files.delete(successFile);
+                Files.createFile(successFile);
+                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
+            }
+
+            try {
+                Files.delete(metsFile);
+            } catch (IOException e) {
+                logger.warn(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
+            }
+
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        } else {
+            // Error
+            if (hotfolder.isDeleteContentFilesOnFailure()) {
+                // Delete all data folders for this record from the hotfolder
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+            }
+            handleError(metsFile, resp[1], FileFormat.METS);
+            try {
+                Files.delete(metsFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
+            }
+        }
     }
 
     /**
@@ -1546,7 +1654,7 @@ public class MetsIndexer extends Indexer {
         }
 
         Path updatedAnchorFile =
-                Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolder().toAbsolutePath().toString(), indexObj.getPi(), "#", extension);
+                Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolderPath().toAbsolutePath().toString(), indexObj.getPi(), "#", extension);
 
         xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
         if (Files.exists(updatedAnchorFile)) {

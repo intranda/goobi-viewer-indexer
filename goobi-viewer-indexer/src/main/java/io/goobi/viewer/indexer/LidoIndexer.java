@@ -16,10 +16,13 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,15 +36,17 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.jdom2.output.XMLOutputter;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
@@ -89,6 +94,126 @@ public class LidoIndexer extends Indexer {
     public LidoIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
+    }
+
+    /**
+     * Indexes the given LIDO file.
+     * 
+     * @param lidoFile {@link File}
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * 
+     */
+    @Override
+    public void addToIndex(Path lidoFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+        logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
+        String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+        if (dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) {
+            logger.info("External images will be downloaded.");
+            Path newMediaFolder = Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_tif");
+            dataFolders.put(DataRepository.PARAM_MEDIA, newMediaFolder);
+            if (!Files.exists(newMediaFolder)) {
+                Files.createDirectory(newMediaFolder);
+                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath());
+            }
+        }
+
+        // Use existing folders for those missing in the hotfolder
+        checkReindexSettings(dataFolders, reindexSettings);
+
+        List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
+        logger.info("File contains {} LIDO documents.", lidoDocs.size());
+        XMLOutputter outputter = new XMLOutputter();
+        for (Document doc : lidoDocs) {
+            String[] resp = index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
+                    Configuration.getInstance().getStringList("init.lido.imageXPath"),
+                    dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
+                    reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
+
+            if (!Indexer.STATUS_ERROR.equals(resp[0])) {
+                String identifier = resp[0];
+                String newLidoFileName = identifier + ".xml";
+
+                // Write individual LIDO records as separate files
+                Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), newLidoFileName);
+                try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
+                    outputter.output(doc, out);
+                }
+                dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newLidoFileName, DataRepository.PARAM_INDEXED_LIDO,
+                        hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+                // Move non-repository data directories to the selected repository
+                if (previousDataRepository != null) {
+                    previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
+                }
+
+                // Copy media files
+                int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
+                        lidoFile.getFileName().toString(), hotfolder.getDataRepositoryStrategy(), resp[1],
+                        reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
+                if (imageCounter > 0) {
+                    String msg = Utils.removeRecordImagesFromCache(identifier);
+                    if (msg != null) {
+                        logger.info(msg);
+                    }
+                }
+
+                // Copy MIX files
+                if (reindexSettings.get(DataRepository.PARAM_MIX) == null || !reindexSettings.get(DataRepository.PARAM_MIX)) {
+                    Path destMixDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), identifier);
+                    if (!Files.exists(destMixDir)) {
+                        Files.createDirectory(destMixDir);
+                    }
+                    int counter = 0;
+                    if (StringUtils.isNotEmpty(resp[1]) && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
+                        String[] mixFileNamesSplit = resp[1].split(";");
+                        List<String> mixFileNames = new ArrayList<>();
+                        for (String fileName : mixFileNamesSplit) {
+                            mixFileNames.add(FilenameUtils.getBaseName(fileName) + ".xml");
+                        }
+                        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MIX))) {
+                            for (Path file : stream) {
+                                if (mixFileNames.contains(file.getFileName().toString())) {
+                                    Files.copy(file, Paths.get(destMixDir.toAbsolutePath().toString(), file.getFileName().toString()),
+                                            StandardCopyOption.REPLACE_EXISTING);
+                                    counter++;
+                                }
+                            }
+                            logger.info("{} MIX file(s) copied.", counter);
+                        }
+                    }
+                }
+
+                // Update data repository cache map in the Goobi viewer
+                if (previousDataRepository != null) {
+                    try {
+                        Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
+                    } catch (HTTPException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            } else {
+                handleError(lidoFile, resp[1], FileFormat.LIDO);
+            }
+        }
+
+        // Copy original LIDO file into the orig folder
+        Path orig = Paths.get(hotfolder.getOrigLido().toAbsolutePath().toString(), lidoFile.getFileName().toString());
+        Files.copy(lidoFile, orig, StandardCopyOption.REPLACE_EXISTING);
+
+        // Delete files from the hotfolder
+        try {
+            Files.delete(lidoFile);
+        } catch (IOException e) {
+            logger.error("'{}' could not be deleted; please delete it manually.", lidoFile.toAbsolutePath());
+        }
+        // Delete all data folders for this record from the hotfolder
+        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
     }
 
     /**

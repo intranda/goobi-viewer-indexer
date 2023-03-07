@@ -15,13 +15,18 @@
  */
 package io.goobi.viewer.indexer;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,14 +46,17 @@ import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -89,6 +97,111 @@ public class WorldViewsIndexer extends Indexer {
      */
     public WorldViewsIndexer(Hotfolder hotfolder) {
         this.hotfolder = hotfolder;
+    }
+
+    /**
+     * Indexes the given WorldViews file.
+     * 
+     * @param mainFile {@link File}
+     * @param fromReindexQueue
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * 
+     */
+    @Override
+    public void addToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
+        logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
+        String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+        // Use existing folders for those missing in the hotfolder
+        checkReindexSettings(dataFolders, reindexSettings);
+
+        String[] resp = index(mainFile, fromReindexQueue, dataFolders, null,
+                Configuration.getInstance().getPageCountStart());
+
+        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
+            String newMetsFileName = resp[0];
+            String pi = FilenameUtils.getBaseName(newMetsFileName);
+            Path indexed = Paths.get(getDataRepository().getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
+            if (mainFile.equals(indexed)) {
+                return;
+            }
+            if (Files.exists(indexed)) {
+                // Add a timestamp to the old file name
+                String oldMetsFilename =
+                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.formatterBasicDateTime) + ".xml";
+                Path newFile = Paths.get(hotfolder.getUpdatedMets().toAbsolutePath().toString(), oldMetsFilename);
+                Files.copy(indexed, newFile);
+                logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
+            }
+            Files.copy(mainFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            getDataRepository().checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            if (previousDataRepository != null) {
+                // Move non-repository data folders to the selected repository
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newMetsFileName));
+            }
+
+            // Copy and delete media folder
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                if (msg != null) {
+                    logger.info(msg);
+                }
+            }
+
+            // Copy other data folders
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            // Delete unsupported data folders
+            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+            // Create success file for Goobi workflow
+            Path successFile = Paths.get(hotfolder.getSuccessFolder().toAbsolutePath().toString(), mainFile.getFileName().toString());
+            try {
+                Files.createFile(successFile);
+                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
+            } catch (FileAlreadyExistsException e) {
+                Files.delete(successFile);
+                Files.createFile(successFile);
+                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
+            }
+
+            try {
+                Files.delete(mainFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, mainFile.toAbsolutePath());
+            }
+
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+        } else {
+            // Error
+            if (hotfolder.isDeleteContentFilesOnFailure()) {
+                // Delete all data folders for this record from the hotfolder
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+            }
+            handleError(mainFile, resp[1], FileFormat.WORLDVIEWS);
+            try {
+                Files.delete(mainFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, mainFile.toAbsolutePath());
+            }
+        }
     }
 
     /**
@@ -660,7 +773,6 @@ public class WorldViewsIndexer extends Indexer {
                                     dataFolders);
                         } catch (FatalIndexerException e) {
                             logger.error("Should be exiting here now...");
-                        } finally {
                         }
                     }
                 };

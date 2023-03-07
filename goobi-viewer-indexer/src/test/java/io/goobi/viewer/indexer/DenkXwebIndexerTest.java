@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,11 +51,20 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        
+
         hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
 
         denkxwebFile = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(denkxwebFile.isFile());
+    }
+
+    /**
+     * @see DenkXwebIndexer#addToIndex(Path,boolean,Map)
+     * @verifies throw IllegalArgumentException if denkxwebFile null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addToIndex_shouldThrowIllegalArgumentExceptionIfDenkxwebFileNull() throws Exception {
+        new DenkXwebIndexer(hotfolder).addToIndex(null, false, Collections.emptyMap());
     }
 
     /**
@@ -72,9 +82,6 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
             Assert.assertNotEquals(ret[1], "ERROR", ret[0]);
         }
-
-        Map<String, Boolean> iddocMap = new HashMap<>();
-        String iddoc;
 
         // Top document
         {

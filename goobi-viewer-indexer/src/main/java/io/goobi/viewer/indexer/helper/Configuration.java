@@ -616,4 +616,35 @@ public final class Configuration {
     public void overrideValue(String property, Object value) {
         getConfig().setProperty(property, value);
     }
+    
+    /**
+     * 
+     * @return true if all email configuration date is complete; false otherwise
+     * @throws FatalIndexerException
+     * @should return false until all values configured
+     */
+    static boolean checkEmailConfiguration() throws FatalIndexerException {
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.recipients"))) {
+            logger.warn("init.email.recipients not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpServer"))) {
+            logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderAddress"))) {
+            logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderName"))) {
+            logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSecurity"))) {
+            logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
+            return false;
+        }
+
+        return true;
+    }
 }

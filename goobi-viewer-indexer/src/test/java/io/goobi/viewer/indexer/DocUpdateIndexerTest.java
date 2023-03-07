@@ -97,7 +97,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Path updateCrowdsourcingAltoFolderSourcePath =
                     Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_altocrowd");
             Path updateCrowdsourcingAltoFolderHotfolderPath =
-                    Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_altocrowd");
+                    Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_altocrowd");
             Files.createDirectory(updateCrowdsourcingAltoFolderHotfolderPath);
             Assert.assertEquals(1,
                     Hotfolder.copyDirectory(updateCrowdsourcingAltoFolderSourcePath.toFile(), updateCrowdsourcingAltoFolderHotfolderPath.toFile()));
@@ -107,7 +107,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Path updateCrowdsourcingTextFolderSourcePath =
                     Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
             Path updateCrowdsourcingTextFolderHotfolderPath =
-                    Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
+                    Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
             Files.createDirectory(updateCrowdsourcingTextFolderHotfolderPath);
             Assert.assertEquals(1,
                     Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath.toFile(), updateCrowdsourcingTextFolderHotfolderPath.toFile()));
@@ -117,14 +117,14 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Path updateCrowdsourcingUgcFolderSourcePath =
                     Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_ugc");
             Path updateCrowdsourcingUgcFolderHotfolderPath =
-                    Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_ugc");
+                    Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_ugc");
             Files.createDirectory(updateCrowdsourcingUgcFolderHotfolderPath);
             Assert.assertEquals(1,
                     Hotfolder.copyDirectory(updateCrowdsourcingUgcFolderSourcePath.toFile(), updateCrowdsourcingUgcFolderHotfolderPath.toFile()));
             dataFolders.put(DataRepository.PARAM_UGC, updateCrowdsourcingUgcFolderHotfolderPath);
 
             // Update doc and check updated values
-            Path updateFile = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
+            Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
@@ -179,11 +179,11 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Path updateCrowdsourcingTextFolderSourcePath =
                     Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
             Path updateCrowdsourcingTextFolderHotfolderPath =
-                    Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
+                    Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
             Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath.toFile(), updateCrowdsourcingTextFolderHotfolderPath.toFile());
             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, updateCrowdsourcingTextFolderHotfolderPath);
 
-            Path updateFile = Paths.get(hotfolder.getHotfolder().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
+            Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
