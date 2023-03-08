@@ -479,6 +479,30 @@ public final class Configuration {
     }
 
     /**
+     * Whether a viewer task should be triggered that creates pdf files for all images of an indexed process
+     * @return Whether a viewer task should be triggered that creates pdf files for all images of an indexed process
+     */
+    public boolean isPrerenderPdfsEnabled() {
+        return getBoolean("init.viewerNotifications.prerenderPdfs[@enabled]", false);
+    }
+    
+    /**
+     * Whether pdfs for record images should be prerendered in any case, even if they already exist
+     * @return Whether pdfs for record images should be prerendered in any case, even if they already exist
+     */
+    public boolean isForcePrerenderPdfs() {
+        return getBoolean("init.viewerNotifications.prerenderPdfs[@force]", false);
+    }
+
+    /**
+     * The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
+     * @return The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
+     */
+    public String getPrerenderPdfsConfig() {
+        return getString("init.viewerNotifications.prerenderPdfs[@config]", "default");
+    }
+    
+    /**
      * <p>
      * getListConfiguration.
      * </p>
@@ -647,4 +671,6 @@ public final class Configuration {
 
         return true;
     }
+
+
 }

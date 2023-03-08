@@ -198,6 +198,11 @@ public class MetsIndexer extends Indexer {
                 if (msg != null) {
                     logger.info(msg);
                 }
+                try {
+                    Utils.prerenderPdfs(pi);
+                } catch (IOException | HTTPException | FatalIndexerException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
 
             // Copy data folders

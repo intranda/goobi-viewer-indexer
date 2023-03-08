@@ -161,6 +161,11 @@ public class LidoIndexer extends Indexer {
                     if (msg != null) {
                         logger.info(msg);
                     }
+                    try {
+                        Utils.prerenderPdfs(identifier);
+                    } catch (IOException | HTTPException | FatalIndexerException e) {
+                        logger.error(e.getMessage(), e);
+                    }
                 }
 
                 // Copy MIX files

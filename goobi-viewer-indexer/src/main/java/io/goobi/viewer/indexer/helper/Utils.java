@@ -165,6 +165,14 @@ public class Utils {
                 Configuration.getInstance().getViewerAuthorizationToken());
     }
 
+    public static void prerenderPdfs(String pi) throws IOException, HTTPException, FatalIndexerException {
+        if(StringUtils.isNotBlank(pi) && Configuration.getInstance().isPrerenderPdfsEnabled()) {            
+            prerenderPdfs(pi, Configuration.getInstance().isForcePrerenderPdfs(), Configuration.getInstance().getPrerenderPdfsConfig(),
+                    Configuration.getInstance().getViewerUrl(),
+                    Configuration.getInstance().getViewerAuthorizationToken());
+        }
+    }
+
     /**
      * 
      * @param pi
@@ -193,6 +201,30 @@ public class Utils {
         json.put("type", "UPDATE_DATA_REPOSITORY_NAMES");
         json.put("pi", pi);
         json.put("dataRepositoryName", dataRepositoryName);
+
+        String url = viewerUrl + "/api/v1/tasks/";
+        Map<String, String> headerParams = new HashMap<>(2);
+        headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
+        headerParams.put("token", token);
+        getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
+    }
+
+    public static void prerenderPdfs(String pi, boolean force, String config, String viewerUrl, String token)
+            throws IOException, HTTPException {
+        if (StringUtils.isEmpty(token)) {
+            return;
+        }
+
+        if (pi == null) {
+            throw new IllegalArgumentException("pi may not be null");
+        }
+
+        logger.info("Requesting prerender pdf task in viewer...");
+        JSONObject json = new JSONObject();
+        json.put("type", "PRERENDER_PDF");
+        json.put("pi", pi);
+        json.put("force", force);
+        json.put("config", config);
 
         String url = viewerUrl + "/api/v1/tasks/";
         Map<String, String> headerParams = new HashMap<>(2);
