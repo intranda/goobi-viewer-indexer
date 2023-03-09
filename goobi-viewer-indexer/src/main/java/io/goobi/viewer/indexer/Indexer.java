@@ -185,7 +185,8 @@ public abstract class Indexer {
      * @throws IOException
      * @throws FatalIndexerException
      */
-    public abstract void addToIndex(Path recordFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+    public abstract void addToIndex(Path recordFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException;
 
     /**
      * Move data file to the error folder.
@@ -193,6 +194,7 @@ public abstract class Indexer {
      * @param dataFile {@link File}
      * @param error
      * @param format
+     * @should write log file and copy of mets file into errorMets
      */
     void handleError(Path dataFile, String error, FileFormat format) {
         logger.error("Failed to process '{}'.", dataFile.getFileName());
@@ -220,6 +222,9 @@ public abstract class Indexer {
      * @return {@link java.lang.Boolean}
      * @throws java.io.IOException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @should throw IllegalArgumentException if pi empty
+     * @should throw IllegalArgumentException if searchIndex null
+     * @should return false if pi not found
      * @should delete METS record from index completely
      * @should delete LIDO record from index completely
      * @should leave trace document for METS record if requested
@@ -416,8 +421,9 @@ public abstract class Indexer {
      * Replaces irrelevant characters in the DEFAULT field value with spaces.
      *
      * @param field a {@link java.lang.String} object.
-     * @should replace irrelevant chars with spaces correctly
      * @return a {@link java.lang.String} object.
+     * @should replace irrelevant chars with spaces correctly
+     * @should return null if field null
      */
     public static String cleanUpDefaultField(String field) {
         if (field != null) {
@@ -489,6 +495,7 @@ public abstract class Indexer {
      * @param fileNameRoot
      * @return List of Solr input documents for the UGC contents
      * @throws FatalIndexerException
+     * @should return empty list if dataFolder null
      */
     List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
             Map<String, String> groupIds, int order, String fileNameRoot) throws FatalIndexerException {
@@ -543,8 +550,9 @@ public abstract class Indexer {
      * @param order
      * @return Generated {@link SolrInputDocument}
      * @throws FatalIndexerException
+     * @should throw IllegalArgumentException if eleContent null
      */
-    private SolrInputDocument generateUserGeneratedContentDocForPage(Element eleContent, SolrInputDocument pageDoc, String pi,
+    SolrInputDocument generateUserGeneratedContentDocForPage(Element eleContent, SolrInputDocument pageDoc, String pi,
             String anchorPi, Map<String, String> groupIds, int order) throws FatalIndexerException {
         if (eleContent == null) {
             throw new IllegalArgumentException("eleContent may not be null");
@@ -677,6 +685,7 @@ public abstract class Indexer {
      * @param order
      * @return List of Solr input documents for the comment annotations
      * @throws FatalIndexerException
+     * @should return empty list if dataFolder null
      * @should construct doc correctly
      */
     List<SolrInputDocument> generateUserCommentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
@@ -762,6 +771,7 @@ public abstract class Indexer {
      * @param order
      * @return
      * @throws FatalIndexerException
+     * @should return empty list if dataFolder null
      * @should create docs correctly
      */
     List<SolrInputDocument> generateAnnotationDocs(Map<Integer, SolrInputDocument> pageDocs, Path dataFolder, String pi, String anchorPi,
@@ -1181,6 +1191,9 @@ public abstract class Indexer {
      * @param dcFields
      * @return Number of added Solr docs
      * @throws FatalIndexerException
+     * @should throw IllegalArgumentException if gmd null
+     * @should throw IllegalArgumentException indexObj null
+     * @should throw IllegalArgumentException if writeStrategy null
      * @should add BOOL_WKT_COORDINATES true to docstruct if WKT_COORDS found
      */
     int addGroupedMetadataDocs(GroupedMetadata gmd, ISolrWriteStrategy writeStrategy, IndexObject indexObj, long ownerIddoc, Set<String> skipFields,
@@ -1312,8 +1325,11 @@ public abstract class Indexer {
      * @param paramName a {@link java.lang.String} object.
      * @param pi a {@link java.lang.String} object.
      * @throws java.io.IOException
+     * @should throw IllegalArgumentException if dataFolders null
+     * @should throw IllegalArgumentException if paramName null
+     * @should throw IllegalArgumentException if pi null
      */
-    protected void checkOldDataFolder(Map<String, Path> dataFolders, String paramName, String pi) throws IOException {
+    void checkOldDataFolder(Map<String, Path> dataFolders, String paramName, String pi) throws IOException {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
@@ -1411,6 +1427,11 @@ public abstract class Indexer {
      * @param order Page order
      * @return
      * @throws IOException
+     * @should return false if altodata null
+     * @should throw IllegalArgumentException if doc null
+     * @should throw IllegalArgumentException if dataFolders null
+     * @should throw IllegalArgumentException if pi null
+     * @should throw IllegalArgumentException if baseFileName null
      * @should add filename for native alto file
      * @should add filename for crowdsourcing alto file
      * @should add filename for converted alto file
@@ -1935,6 +1956,142 @@ public abstract class Indexer {
             recordHasFulltext = true;
         } else {
             doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
+        }
+    }
+
+    /**
+     * 
+     * @param hotfolderPath
+     * @param fileNameRoot
+     * @return
+     * @throws IOException
+     * @should add data folder paths correctly
+     */
+    static Map<String, Path> checkDataFolders(Path hotfolderPath, String fileNameRoot) throws IOException {
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        try (DirectoryStream<Path> stream =
+                Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
+            for (Path path : stream) {
+                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
+                switch (fileNameSansRoot) {
+                    case "_tif":
+                    case FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
+                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
+                        break;
+                    case "_txt":
+                        dataFolders.put(DataRepository.PARAM_FULLTEXT, path);
+                        break;
+                    case FOLDER_SUFFIX_TXTCROWD:
+                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
+                        break;
+                    case "_wc":
+                        dataFolders.put(DataRepository.PARAM_TEIWC, path);
+                        break;
+                    case "_neralto":
+                        dataFolders.put(DataRepository.PARAM_ALTO, path);
+                        logger.info("NER ALTO folder found: {}", path.getFileName());
+                        break;
+                    case "_alto":
+                        // Only add regular ALTO path if no NER ALTO folder is found
+                        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
+                            dataFolders.put(DataRepository.PARAM_ALTO, path);
+                        }
+                        break;
+                    case FOLDER_SUFFIX_ALTOCROWD:
+                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
+                        break;
+                    case "_xml":
+                        dataFolders.put(DataRepository.PARAM_ABBYY, path);
+                        break;
+                    case "_pdf":
+                        dataFolders.put(DataRepository.PARAM_PAGEPDF, path);
+                        break;
+                    case "_mix":
+                        dataFolders.put(DataRepository.PARAM_MIX, path);
+                        break;
+                    case "_src":
+                        dataFolders.put(DataRepository.PARAM_SOURCE, path);
+                        break;
+                    case "_ugc":
+                        dataFolders.put(DataRepository.PARAM_UGC, path);
+                        break;
+                    case "_cms":
+                        dataFolders.put(DataRepository.PARAM_CMS, path);
+                        break;
+                    case "_tei":
+                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
+                        break;
+                    case "_annotations":
+                        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
+                        break;
+                    case FOLDER_SUFFIX_DOWNLOADIMAGES:
+                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
+                        break;
+                    default:
+                        // nothing
+                }
+            }
+        }
+
+        return dataFolders;
+    }
+
+    /**
+     * Checks
+     * 
+     * @param dataFolders
+     * @param reindexSettings
+     * @should throw IllegalArgumentException if dataFolders null
+     * @should throw IllegalArgumentException if reindexSettings null
+     * @should add reindex flags correctly if data folders missing
+     * @should not add reindex flags if data folders present
+     */
+    static void checkReindexSettings(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+        if (reindexSettings == null) {
+            throw new IllegalArgumentException("reindexSettings may not be null");
+        }
+
+        // Use existing folders for those missing in the hotfolder
+        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
+            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
+            reindexSettings.put(DataRepository.PARAM_ALTO, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
+            reindexSettings.put(DataRepository.PARAM_ALTOCROWD, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
+            reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
+            reindexSettings.put(DataRepository.PARAM_FULLTEXTCROWD, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIWC, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
+            reindexSettings.put(DataRepository.PARAM_ABBYY, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
+            reindexSettings.put(DataRepository.PARAM_MIX, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
+            reindexSettings.put(DataRepository.PARAM_UGC, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
+            reindexSettings.put(DataRepository.PARAM_CMS, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
+            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
+            reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
         }
     }
 }

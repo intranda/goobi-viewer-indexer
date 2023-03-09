@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -45,6 +46,7 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.TextHelper;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -83,6 +85,46 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         if (StringUtils.isNotBlank(libraryPath)) {
             System.setProperty("java.library.path", libraryPath);
         }
+    }
+
+    /**
+     * @see Indexer#handleError(Path,String,FileFormat)
+     * @verifies write log file and copy of mets file into errorMets
+     */
+    @Test
+    public void handleError_shouldWriteLogFileAndCopyOfMetsFileIntoErrorMets() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.handleError(metsFile, "lorem ipsum dolor sit amet", FileFormat.METS);
+        Assert.assertTrue(Files.isRegularFile(
+                Paths.get(hotfolder.getErrorMets().toString(), FilenameUtils.getBaseName(metsFile.getFileName().toString()) + ".log")));
+        Assert.assertTrue(Files.isRegularFile(Paths.get(hotfolder.getErrorMets().toString(), metsFile.getFileName().toString())));
+    }
+
+    /**
+     * @see Indexer#delete(String,boolean,SolrSearchIndex)
+     * @verifies throw IllegalArgumentException if pi empty
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void delete_shouldThrowIllegalArgumentExceptionIfPiEmpty() throws Exception {
+        Indexer.delete("", false, hotfolder.getSearchIndex());
+    }
+
+    /**
+     * @see Indexer#delete(String,boolean,SolrSearchIndex)
+     * @verifies throw IllegalArgumentException if searchIndex null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void delete_shouldThrowIllegalArgumentExceptionIfSearchIndexNull() throws Exception {
+        Indexer.delete("foo", false, null);
+    }
+
+    /**
+     * @see Indexer#delete(String,boolean,SolrSearchIndex)
+     * @verifies return false if pi not found
+     */
+    @Test
+    public void delete_shouldReturnFalseIfPiNotFound() throws Exception {
+        Assert.assertFalse(Indexer.delete("foo", false, hotfolder.getSearchIndex()));
     }
 
     /**
@@ -216,6 +258,15 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Indexer#cleanUpDefaultField(String)
+     * @verifies return null if field null
+     */
+    @Test
+    public void cleanUpDefaultField_shouldReturnNullIfFieldNull() throws Exception {
+        Assert.assertNull(Indexer.cleanUpDefaultField(null));
+    }
+
+    /**
      * @see Indexer#cleanUpNamedEntityValue(String)
      * @verifies clean up value correctly
      */
@@ -266,6 +317,16 @@ public class IndexerTest extends AbstractSolrEnabledTest {
                 FileUtils.deleteDirectory(outputFolder);
             }
         }
+    }
+
+    /**
+     * @see Indexer#generateAnnotationDocs(Map,Path,String,String,Map)
+     * @verifies return empty list if dataFolder null
+     */
+    @Test
+    public void generateAnnotationDocs_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+        List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(Collections.emptyMap(), null, "PPN517154005", null, null);
+        Assert.assertTrue(docs.isEmpty());
     }
 
     /**
@@ -600,6 +661,57 @@ public class IndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies return false if altodata null
+     */
+    @Test
+    public void addIndexFieldsFromAltoData_shouldReturnFalseIfAltodataNull() throws Exception {
+        Assert.assertFalse(
+                new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), null, Collections.emptyMap(),
+                        DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies throw IllegalArgumentException if doc null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDocNull() throws Exception {
+        new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(null, Collections.emptyMap(), Collections.emptyMap(), DataRepository.PARAM_ALTO,
+                "PPN123", "00000010", 10, false);
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies throw IllegalArgumentException if dataFolders null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
+        new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(), null,
+                DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false);
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies throw IllegalArgumentException if pi null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfPiNull() throws Exception {
+        new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(), Collections.emptyMap(),
+                DataRepository.PARAM_ALTO, null, "00000010", 10, false);
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
+     * @verifies throw IllegalArgumentException if baseFileName null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfBaseFileNameNull() throws Exception {
+        new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(), Collections.emptyMap(),
+                DataRepository.PARAM_ALTO, "PPN123", null, 10, false);
+    }
+
+    /**
+     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
      * @verifies add filename for native alto file
      */
     @Test
@@ -725,6 +837,41 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see Indexer#generateUserGeneratedContentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
+     * @verifies return empty list if dataFolder null
+     */
+    @Test
+    public void generateUserGeneratedContentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        List<SolrInputDocument> result =
+                indexer.generateUserGeneratedContentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1,
+                        "foo");
+        Assert.assertTrue(result.isEmpty());
+    }
+
+    /**
+     * @see Indexer#generateUserGeneratedContentDocForPage(Element,SolrInputDocument,String,String,Map,int)
+     * @verifies throw IllegalArgumentException if eleContent null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void generateUserGeneratedContentDocForPage_shouldThrowIllegalArgumentExceptionIfEleContentNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.generateUserGeneratedContentDocForPage(null, null, "foo", null, Collections.emptyMap(), 1);
+    }
+
+    /**
+     * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int)
+     * @verifies return empty list if dataFolder null
+     */
+    @Test
+    public void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        List<SolrInputDocument> result =
+                indexer.generateUserCommentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1);
+        Assert.assertTrue(result.isEmpty());
+    }
+
+    /**
      * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
      * @verifies construct doc correctly
      */
@@ -740,7 +887,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
         ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
         List<SolrInputDocument> docs =
-                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", null, null, 1);
+                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", "PPN-anchor", null, 1);
         Assert.assertNotNull(docs);
         Assert.assertEquals(2, docs.size());
 
@@ -772,6 +919,43 @@ public class IndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see Indexer#addGroupedMetadataDocs(GroupedMetadata,ISolrWriteStrategy,IndexObject,long,Set,List)
+     * @verifies throw IllegalArgumentException if gmd null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfGmdNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(2L);
+        indexer.addGroupedMetadataDocs(null, AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder), indexObj, 1L, new HashSet<>(),
+                Collections.emptyList());
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(GroupedMetadata,ISolrWriteStrategy,IndexObject,long,Set,List)
+     * @verifies throw IllegalArgumentException indexObj null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIndexObjNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        GroupedMetadata gmd = new GroupedMetadata();
+        indexer.addGroupedMetadataDocs(gmd, AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder), null, 1L, new HashSet<>(),
+                Collections.emptyList());
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(GroupedMetadata,ISolrWriteStrategy,IndexObject,long,Set,List)
+     * @verifies throw IllegalArgumentException if writeStrategy null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfWriteStrategyNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(2L);
+        GroupedMetadata gmd = new GroupedMetadata();
+        indexer.addGroupedMetadataDocs(gmd, null, indexObj, 1L, new HashSet<>(),
+                Collections.emptyList());
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocs(GroupedMetadata,ISolrWriteStrategy,IndexObject,long,Set,List)
      * @verifies add BOOL_WKT_COORDINATES true to docstruct if WKT_COORDS found
      */
     @Test
@@ -792,4 +976,162 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals("true", indexObj.getLuceneFields().get(0).getValue());
     }
 
+    /**
+     * @see Indexer#checkOldDataFolder(Map,String,String)
+     * @verifies throw IllegalArgumentException if dataFolders null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.checkOldDataFolder(null, DataRepository.PARAM_ALTO, "foo");
+    }
+
+    /**
+     * @see Indexer#checkOldDataFolder(Map,String,String)
+     * @verifies throw IllegalArgumentException if paramName null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfParamNameNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.checkOldDataFolder(Collections.emptyMap(), null, "foo");
+    }
+
+    /**
+     * @see Indexer#checkOldDataFolder(Map,String,String)
+     * @verifies throw IllegalArgumentException if pi null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfPiNull() throws Exception {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        indexer.checkOldDataFolder(Collections.emptyMap(), DataRepository.PARAM_ALTO, null);
+    }
+
+    /**
+     * @see Indexer#checkDataFolders(String)
+     * @verifies add data folder paths correctly
+     */
+    @Test
+    public void checkDataFolders_shouldAddDataFolderPathsCorrectly() throws Exception {
+        String fileNameRoot = "foo";
+        Assert.assertTrue(Files
+                .isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_MEDIA))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_txt"))));
+        Assert.assertTrue(
+                Files.isDirectory(
+                        Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_TXTCROWD))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_wc"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_alto"))));
+        Assert.assertTrue(
+                Files.isDirectory(
+                        Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_ALTOCROWD))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_xml"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_pdf"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_mix"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_src"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_ugc"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_cms"))));
+        Assert.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_tei"))));
+        Assert.assertTrue(
+                Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_annotations"))));
+        Assert.assertTrue(
+                Files.isDirectory(Files
+                        .createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_DOWNLOADIMAGES))));
+
+        Map<String, Path> result = Indexer.checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.get(DataRepository.PARAM_MEDIA));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_FULLTEXT));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_TEIWC));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_ALTO));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_ABBYY));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_PAGEPDF));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_MIX));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_SOURCE));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_UGC));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_CMS));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_ANNOTATIONS));
+        Assert.assertNotNull(result.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies throw IllegalArgumentException if dataFolders null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
+        Indexer.checkReindexSettings(null, Collections.emptyMap());
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies throw IllegalArgumentException if reindexSettings null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() throws Exception {
+        Indexer.checkReindexSettings(Collections.emptyMap(), null);
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies add reindex flags correctly if data folders missing
+     */
+    @Test
+    public void checkReindexSettings_shouldAddReindexFlagsCorrectlyIfDataFoldersMissing() throws Exception {
+        Map<String, Boolean> reindexSettings = new HashMap<>();
+
+        Indexer.checkReindexSettings(Collections.emptyMap(), reindexSettings);
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_MEDIA));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_TEIWC));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_ALTO));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_ABBYY));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_MIX));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_UGC));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_CMS));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertTrue(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies not add reindex flags if data folders present
+     */
+    @Test
+    public void checkReindexSettings_shouldNotAddReindexFlagsIfDataFoldersPresent() throws Exception {
+        Map<String, Boolean> reindexSettings = new HashMap<>();
+
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path p = Paths.get("foo");
+        dataFolders.put(DataRepository.PARAM_MEDIA, p);
+        dataFolders.put(DataRepository.PARAM_FULLTEXT, p);
+        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, p);
+        dataFolders.put(DataRepository.PARAM_TEIWC, p);
+        dataFolders.put(DataRepository.PARAM_ALTO, p);
+        dataFolders.put(DataRepository.PARAM_ALTOCROWD, p);
+        dataFolders.put(DataRepository.PARAM_ABBYY, p);
+        dataFolders.put(DataRepository.PARAM_MIX, p);
+        dataFolders.put(DataRepository.PARAM_UGC, p);
+        dataFolders.put(DataRepository.PARAM_CMS, p);
+        dataFolders.put(DataRepository.PARAM_TEIMETADATA, p);
+        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, p);
+
+        Indexer.checkReindexSettings(dataFolders, reindexSettings);
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_MEDIA));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_TEIWC));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ALTO));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ABBYY));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_MIX));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_UGC));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_CMS));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
+        Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
+    }
 }

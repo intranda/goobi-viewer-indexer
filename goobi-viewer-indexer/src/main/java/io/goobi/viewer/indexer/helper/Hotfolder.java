@@ -209,7 +209,7 @@ public class Hotfolder {
         }
 
         // E-mail configuration
-        emailConfigurationComplete = checkEmailConfiguration();
+        emailConfigurationComplete = Configuration.checkEmailConfiguration();
         if (emailConfigurationComplete) {
             logger.info("E-mail configuration OK.");
         }
@@ -365,36 +365,6 @@ public class Hotfolder {
         config.addAppender(secondaryAppender); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
         context.getRootLogger().addAppender(secondaryAppender);
         context.updateLoggers();
-    }
-
-    /**
-     * 
-     * @return true if all email configuration date is complete; false otherwise
-     * @throws FatalIndexerException
-     */
-    static boolean checkEmailConfiguration() throws FatalIndexerException {
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.recipients"))) {
-            logger.warn("init.email.recipients not configured, cannot send e-mail report.");
-            return false;
-        }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpServer"))) {
-            logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
-            return false;
-        }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderAddress"))) {
-            logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
-            return false;
-        }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderName"))) {
-            logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
-            return false;
-        }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSecurity"))) {
-            logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
-            return false;
-        }
-
-        return true;
     }
 
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {

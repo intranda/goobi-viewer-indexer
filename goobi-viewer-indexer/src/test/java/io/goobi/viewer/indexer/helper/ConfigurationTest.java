@@ -314,4 +314,23 @@ public class ConfigurationTest extends AbstractTest {
     public void isHostProxyWhitelistedd_shouldReturnTrueIfHostWhitelisted() throws Exception {
         Assert.assertTrue(Configuration.getInstance().isHostProxyWhitelisted("http://localhost:1234"));
     }
+
+    /**
+     * @see Configuration#checkEmailConfiguration()
+     * @verifies return false until all values configured
+     */
+    @Test
+    public void checkEmailConfiguration_shouldReturnFalseUntilAllValuesConfigured() throws Exception {
+        Assert.assertFalse(Configuration.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.recipients", "recipient@example.com");
+        Assert.assertFalse(Configuration.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.smtpServer", "smtp.example.com");
+        Assert.assertFalse(Configuration.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.smtpSenderAddress", "sender@example.com");
+        Assert.assertFalse(Configuration.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.smtpSenderName", "Sender");
+        Assert.assertFalse(Configuration.checkEmailConfiguration());
+        Configuration.getInstance().overrideValue("init.email.smtpSecurity", "NONE");
+        Assert.assertTrue(Configuration.checkEmailConfiguration());
+    }
 }

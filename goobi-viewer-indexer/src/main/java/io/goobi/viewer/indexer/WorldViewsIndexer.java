@@ -113,42 +113,13 @@ public class WorldViewsIndexer extends Indexer {
     public void addToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
             throws IOException, FatalIndexerException {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
-        Map<String, Path> dataFolders = new HashMap<>();
         String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
 
         // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream =
-                Files.newDirectoryStream(hotfolder.getHotfolderPath(), new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA:
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case "_tei":
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
-                        break;
-                    case "_cmdi":
-                        dataFolders.put(DataRepository.PARAM_CMDI, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
+        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
 
         // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_CMDI) == null) {
-            reindexSettings.put(DataRepository.PARAM_CMDI, true);
-        }
+        checkReindexSettings(dataFolders, reindexSettings);
 
         String[] resp = index(mainFile, fromReindexQueue, dataFolders, null,
                 Configuration.getInstance().getPageCountStart());
