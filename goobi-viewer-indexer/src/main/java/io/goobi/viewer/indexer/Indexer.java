@@ -2105,11 +2105,14 @@ public abstract class Indexer {
     void prerenderPagePdfsIfRequired(String pi, boolean hasNewMediaFiles) {
         try {
             if(hasNewMediaFiles) {
+                logger.debug("New media files found: Trigger prerenderPDFs task in viewer and force update");
                 Utils.prerenderPdfs(pi, true);
             } else {
                 Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
                 if(mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
-                    Utils.prerenderPdfs(pi, Configuration.getInstance().isForcePrerenderPdfs());
+                    boolean force = Configuration.getInstance().isForcePrerenderPdfs();
+                    logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}");
+                    Utils.prerenderPdfs(pi, force);
                 }
             }
         } catch (IOException | HTTPException | FatalIndexerException e) {
