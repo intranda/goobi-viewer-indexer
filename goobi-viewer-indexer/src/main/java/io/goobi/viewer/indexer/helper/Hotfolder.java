@@ -96,6 +96,8 @@ public class Hotfolder {
     private boolean dcEnabled = true;
     /** Constant <code>worldviewsEnabled=true</code> */
     private boolean worldviewsEnabled = true;
+    /** Constant <code>cmsEnabled=true</code> */
+    private boolean cmsEnabled = true;
 
     private StringWriter swSecondaryLog;
     private WriterAppender secondaryAppender;
@@ -324,6 +326,12 @@ public class Hotfolder {
         if (config.getConfiguration(DataRepository.PARAM_INDEXED_DUBLINCORE) == null) {
             dcEnabled = false;
             logger.warn("<{}> not defined - Dublin Core indexing is disabled.", DataRepository.PARAM_INDEXED_DUBLINCORE);
+        }
+
+        // CMS page folder
+        if (config.getConfiguration(DataRepository.PARAM_INDEXED_CMS) == null) {
+            cmsEnabled = false;
+            logger.warn("<{}> not defined - CMS page indexing is disabled.", DataRepository.PARAM_INDEXED_CMS);
         }
 
         try {
@@ -636,13 +644,17 @@ public class Hotfolder {
                         }
                         break;
                     case CMS:
-                        try {
-                            currentIndexer = new CmsPageIndexer(this);
-                            currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
-                        } finally {
-                            currentIndexer = null;
+                        if (cmsEnabled) {
+                            try {
+                                currentIndexer = new CmsPageIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
+                        } else {
+                            logger.error("CMS page indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(sourceFile);
                         }
-
                         break;
                     default:
                         logger.error("Unknown file format, deleting: {}", filename);

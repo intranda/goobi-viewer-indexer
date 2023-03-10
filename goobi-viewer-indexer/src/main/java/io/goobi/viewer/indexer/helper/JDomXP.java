@@ -608,7 +608,7 @@ public class JDomXP {
             if (xp.doc.getRootElement().getName().equals("TEI.2")) {
                 return FileFormat.TEI;
             }
-            if (xp.doc.getRootElement().getName().equals("cms")) {
+            if (xp.doc.getRootElement().getName().equals("cmsPage")) {
                 return FileFormat.CMS;
             }
         } catch (JDOMException e) {

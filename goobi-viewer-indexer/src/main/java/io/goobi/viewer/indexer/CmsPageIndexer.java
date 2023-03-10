@@ -16,14 +16,12 @@
 package io.goobi.viewer.indexer;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,8 +30,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.jdom2.Document;
+import org.jdom2.Element;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -44,8 +43,8 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
-import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.helper.XmlTools;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -172,17 +171,18 @@ public class CmsPageIndexer extends Indexer {
 
         logger.debug("Indexing CMS page file '{}'...", cmsFile.getFileName());
         try {
-            initJDomXP(cmsFile);
+            Document doc = XmlTools.readXmlFile(cmsFile);
             IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
-            indexObj.setRootStructNode(xp.getRootElement());
 
-            // set some simple data in den indexObject
-            setSimpleData(indexObj);
-            // setUrn(indexObj);
+            // LOGID
+            indexObj.setLogId("LOG0000");
+
+            // TYPE
+            indexObj.setType("cms_page");
 
             // Set PI
-            String pi = MetadataHelper.getPIFromXML("/record/", xp);
+            String pi = doc.getRootElement().getAttributeValue("id");
             if (StringUtils.isNotBlank(pi)) {
                 pi = MetadataHelper.applyIdentifierModifications(pi);
                 logger.info("Record PI: {}", pi);
@@ -209,20 +209,6 @@ public class CmsPageIndexer extends Indexer {
                 }
 
                 ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
-
-                // Check and use old data folders, if no new ones found
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
             } else {
                 ret[1] = "PI not found.";
                 throw new IndexerException(ret[1]);
@@ -236,41 +222,43 @@ public class CmsPageIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DUBLINCORE.name());
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.CMS.name());
             prepareUpdate(indexObj);
 
-            // Process TEI files
-            if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) != null) {
-                MetadataHelper.processTEIMetadataFiles(indexObj, dataFolders.get(DataRepository.PARAM_TEIMETADATA));
+            // Set title
+            String title = doc.getRootElement().getChildText("title");
+            indexObj.setLabel(title);
+            indexObj.addToLucene("MD_TITLE", title);
+
+            // Categories
+            List<Element> eleListCategories = doc.getRootElement().getChild("categories").getChildren("category");
+            if (eleListCategories != null) {
+                for (Element eleCat : eleListCategories) {
+                    String value = eleCat.getText();
+                    if (StringUtils.isNotEmpty(value)) {
+                        indexObj.addToLucene("MD_CATEGORY", value);
+                    }
+                }
+            }
+
+            // Texts
+            List<Element> eleListTexts = doc.getRootElement().getChildren("text");
+            if (eleListTexts != null) {
+                StringBuilder sbDefault = new StringBuilder();
+                for (Element eleText : eleListTexts) {
+                    String lang = eleText.getAttributeValue("lang");
+                    String value = eleText.getText();
+                    if (StringUtils.isNotEmpty(value)) {
+                        String fieldName = StringUtils.isNotEmpty(lang) ? "MD_TEXT" + SolrConstants.MIXFIX_LANG + lang.toUpperCase() : "MD_TEXT";
+                        indexObj.addToLucene(fieldName, value);
+                        sbDefault.append(' ').append(value.trim());
+                    }
+                }
+                indexObj.setDefaultValue(sbDefault.toString());
             }
 
             // put some simple data to Lucene array
             indexObj.pushSimpleDataToLuceneArray();
-
-            // Write root metadata (outside of MODS sections)
-            MetadataHelper.writeMetadataToObject(indexObj, xp.getRootElement(), "", xp);
-
-            // If this is a volume (= has an anchor) that has already been indexed, copy access conditions from the anchor element
-            if (indexObj.isVolume() && indexObj.getAccessConditions().isEmpty()) {
-                String anchorPi = MetadataHelper.getAnchorPi(xp);
-                if (anchorPi != null) {
-                    indexObj.setAnchorPI(anchorPi);
-                    SolrDocumentList hits = hotfolder.getSearchIndex()
-                            .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
-                    if (hits != null && !hits.isEmpty()) {
-                        Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
-                        if (fields != null) {
-                            for (Object o : fields) {
-                                indexObj.getAccessConditions().add(o.toString());
-                            }
-                        } else {
-                            logger.error(
-                                    "Anchor document '{}' has no ACCESSCONDITION values. Please check whether it is a proper anchor and not a group!",
-                                    anchorPi);
-                        }
-                    }
-                }
-            }
 
             // Set access conditions
             indexObj.writeAccessConditions(null);
@@ -278,20 +266,11 @@ public class CmsPageIndexer extends Indexer {
             // Write created/updated timestamps
             indexObj.writeDateModified(true);
 
-            // Generate docs for all pages and add to the write strategy
-            //            generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
-
             // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
             indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
 
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
-
-            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            //            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
-            //            if (thumbnailFields != null) {
-            //                indexObj.getLuceneFields().addAll(thumbnailFields);
-            //            }
 
             // ISWORK only for non-anchors
             indexObj.addToLucene(SolrConstants.ISWORK, "true");
@@ -299,25 +278,8 @@ public class CmsPageIndexer extends Indexer {
 
             // Add DEFAULT field
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-                indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+                indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue().trim()));
                 indexObj.setDefaultValue("");
-            }
-
-            // CMS texts
-            if (dataFolders.get(DataRepository.PARAM_CMS) != null) {
-                Path staticPageFolder = dataFolders.get(DataRepository.PARAM_CMS);
-                if (Files.isDirectory(staticPageFolder)) {
-                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(staticPageFolder, "*.{xml,htm,html,xhtml}")) {
-                        for (Path file : stream) {
-                            // Add a new CMS_TEXT_* field for each file
-                            String field = FilenameUtils.getBaseName(file.getFileName().toString()).toUpperCase();
-                            String content = FileTools.readFileToString(file.toFile(), null);
-                            String value = TextHelper.cleanUpHtmlTags(content);
-                            indexObj.addToLucene(SolrConstants.PREFIX_CMS_TEXT + field, value);
-                            indexObj.addToLucene(SolrConstants.CMS_TEXT_ALL, value);
-                        }
-                    }
-                }
             }
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
@@ -340,11 +302,11 @@ public class CmsPageIndexer extends Indexer {
                         moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                     }
                 }
-                SolrInputDocument doc = hotfolder.getSearchIndex()
+                SolrInputDocument groupDoc = hotfolder.getSearchIndex()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
                                 getNextIddoc(hotfolder.getSearchIndex()));
-                if (doc != null) {
-                    writeStrategy.addDoc(doc);
+                if (groupDoc != null) {
+                    writeStrategy.addDoc(groupDoc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 } else {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -391,39 +353,5 @@ public class CmsPageIndexer extends Indexer {
         }
 
         return ret;
-    }
-
-    /**
-     * Sets DMDID, ID, TYPE and LABEL from the METS document.
-     * 
-     * @param indexObj {@link IndexObject}
-     * @throws FatalIndexerException
-     */
-    private static void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
-        logger.trace("setSimpleData(IndexObject) - start");
-
-        // LOGID
-        indexObj.setLogId("LOD_0000");
-        logger.trace("LOGID: {}", indexObj.getLogId());
-
-        // TYPE
-        indexObj.setType("record");
-        logger.trace("TYPE: {}", indexObj.getType());
-
-        // LABEL
-        String value = TextHelper
-                .normalizeSequence(indexObj.getRootStructNode().getChildText("title", Configuration.getInstance().getNamespaces().get("dc")));
-        if (value != null) {
-            // Remove non-sort characters from LABEL, if configured to do so
-            if (Configuration.getInstance().isLabelCleanup()) {
-                value = value.replace("<ns>", "");
-                value = value.replace("</ns>", "");
-                value = value.replace("<<", "");
-                value = value.replace(">>", "");
-                value = value.replace("¬", "");
-            }
-            indexObj.setLabel(value);
-        }
-        logger.trace("LABEL: {}", indexObj.getLabel());
     }
 }
