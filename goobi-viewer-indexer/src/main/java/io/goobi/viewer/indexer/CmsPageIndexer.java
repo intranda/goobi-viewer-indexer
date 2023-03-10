@@ -71,8 +71,9 @@ public class CmsPageIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /* (non-Javadoc)
+    /**
      * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+     * @should add record to index correctly
      */
     @Override
     public void addToIndex(Path cmsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
