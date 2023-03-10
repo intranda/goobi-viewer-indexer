@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cmsPage id="CMS123">
+	<title>CMS Page Title</title>
+	<categories>
+		<category>cat1</category>
+        <category>cat2</category>
+	</categories>
+	<text lang="de">eins zwei drei</text>
+    <text lang="en">one two three</text>
+</cmsPage>
