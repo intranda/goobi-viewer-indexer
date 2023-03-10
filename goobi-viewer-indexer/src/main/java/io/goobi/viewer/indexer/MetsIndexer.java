@@ -198,11 +198,6 @@ public class MetsIndexer extends Indexer {
                 if (msg != null) {
                     logger.info(msg);
                 }
-                try {
-                    Utils.prerenderPdfs(pi);
-                } catch (IOException | HTTPException | FatalIndexerException e) {
-                    logger.error(e.getMessage(), e);
-                }
             }
 
             // Copy data folders
@@ -237,6 +232,7 @@ public class MetsIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
+            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -251,6 +247,8 @@ public class MetsIndexer extends Indexer {
             }
         }
     }
+
+
 
     /**
      * Indexes the given METS file.

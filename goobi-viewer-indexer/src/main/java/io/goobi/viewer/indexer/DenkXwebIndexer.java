@@ -158,11 +158,6 @@ public class DenkXwebIndexer extends Indexer {
                     if (msg != null) {
                         logger.info(msg);
                     }
-                    try {
-                        Utils.prerenderPdfs(identifier);
-                    } catch (IOException | HTTPException | FatalIndexerException e) {
-                        logger.error(e.getMessage(), e);
-                    }
                 }
 
                 // Update data repository cache map in the Goobi viewer
@@ -173,6 +168,7 @@ public class DenkXwebIndexer extends Indexer {
                         logger.error(e.getMessage(), e);
                     }
                 }
+                prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             } else {
                 handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
             }
