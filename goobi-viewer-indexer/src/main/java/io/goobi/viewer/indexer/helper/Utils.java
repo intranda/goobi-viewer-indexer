@@ -167,7 +167,7 @@ public class Utils {
 
     public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException, FatalIndexerException {
         if(StringUtils.isNotBlank(pi) && Configuration.getInstance().isPrerenderPdfsEnabled()) {            
-            prerenderPdfs(pi, forceUpdate, Configuration.getInstance().getPrerenderPdfsConfig(),
+            prerenderPdfs(pi, forceUpdate, Configuration.getInstance().getPrerenderPdfsConfigVariant(),
                     Configuration.getInstance().getViewerUrl(),
                     Configuration.getInstance().getViewerAuthorizationToken());
         }

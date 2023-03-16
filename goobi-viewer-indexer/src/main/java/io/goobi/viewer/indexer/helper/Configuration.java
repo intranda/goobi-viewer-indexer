@@ -498,8 +498,8 @@ public final class Configuration {
      * The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
      * @return The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
      */
-    public String getPrerenderPdfsConfig() {
-        return getString("init.viewerNotifications.prerenderPdfs[@config]", "default");
+    public String getPrerenderPdfsConfigVariant() {
+        return getString("init.viewerNotifications.prerenderPdfs[@variant]", "default");
     }
     
     /**
