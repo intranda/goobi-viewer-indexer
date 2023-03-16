@@ -224,7 +224,7 @@ public class Utils {
         json.put("type", "PRERENDER_PDF");
         json.put("pi", pi);
         json.put("force", force);
-        json.put("config", config);
+        json.put("variant", config);
 
         String url = viewerUrl + "/api/v1/tasks/";
         Map<String, String> headerParams = new HashMap<>(2);
