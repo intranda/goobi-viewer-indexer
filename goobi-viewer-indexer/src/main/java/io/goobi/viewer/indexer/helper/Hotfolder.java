@@ -15,27 +15,19 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileTime;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Stream;
@@ -54,8 +46,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.jdom2.Document;
-import org.jdom2.output.XMLOutputter;
 
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
@@ -68,7 +58,6 @@ import io.goobi.viewer.indexer.UsageStatisticsIndexer;
 import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
-import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -95,14 +84,6 @@ public class Hotfolder {
     public static final String FILENAME_EXTENSION_PURGE = ".purge";
 
     private static final String FILENAME_PREFIX_STATISTICS_USAGE = "statistics-usage-";
-
-    private static final String FOLDER_SUFFIX_ALTOCROWD = "_altocrowd";
-    private static final String FOLDER_SUFFIX_DOWNLOADIMAGES = "_downloadimages";
-    private static final String FOLDER_SUFFIX_MEDIA = "_media";
-    private static final String FOLDER_SUFFIX_TXTCROWD = "_txtcrowd";
-
-    private static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted! Please delete it manually!";
-    private static final String LOG_FOUND_DATA_FOLDER = "Found data folder: {}";
 
     /** Constant <code>metsEnabled=true</code> */
     private boolean metsEnabled = true;
@@ -227,7 +208,7 @@ public class Hotfolder {
         }
 
         // E-mail configuration
-        emailConfigurationComplete = checkEmailConfiguration();
+        emailConfigurationComplete = Configuration.checkEmailConfiguration();
         if (emailConfigurationComplete) {
             logger.info("E-mail configuration OK.");
         }
@@ -383,36 +364,6 @@ public class Hotfolder {
         config.addAppender(secondaryAppender); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
         context.getRootLogger().addAppender(secondaryAppender);
         context.updateLoggers();
-    }
-
-    /**
-     * 
-     * @return true if all email configuration date is complete; false otherwise
-     * @throws FatalIndexerException
-     */
-    static boolean checkEmailConfiguration() throws FatalIndexerException {
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.recipients"))) {
-            logger.warn("init.email.recipients not configured, cannot send e-mail report.");
-            return false;
-        }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpServer"))) {
-            logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
-            return false;
-        }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderAddress"))) {
-            logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
-            return false;
-        }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderName"))) {
-            logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
-            return false;
-        }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSecurity"))) {
-            logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
-            return false;
-        }
-
-        return true;
     }
 
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
@@ -620,7 +571,12 @@ public class Hotfolder {
                 switch (fileType) {
                     case METS:
                         if (metsEnabled) {
-                            addMetsToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            try {
+                                currentIndexer = new MetsIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
                         } else {
                             logger.error("METS indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -628,7 +584,12 @@ public class Hotfolder {
                         break;
                     case LIDO:
                         if (lidoEnabled) {
-                            addLidoToIndex(sourceFile, reindexSettings);
+                            try {
+                                currentIndexer = new LidoIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
                         } else {
                             logger.error("LIDO indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -636,7 +597,12 @@ public class Hotfolder {
                         break;
                     case DENKXWEB:
                         if (denkxwebEnabled) {
-                            addDenkXwebToIndex(sourceFile, reindexSettings);
+                            try {
+                                currentIndexer = new DenkXwebIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
                         } else {
                             logger.error("DenkXweb indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -644,7 +610,12 @@ public class Hotfolder {
                         break;
                     case DUBLINCORE:
                         if (dcEnabled) {
-                            addDublinCoreToIndex(sourceFile, reindexSettings);
+                            try {
+                                currentIndexer = new DublinCoreIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
                         } else {
                             logger.error("Dublin Core indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -652,7 +623,12 @@ public class Hotfolder {
                         break;
                     case WORLDVIEWS:
                         if (worldviewsEnabled) {
-                            addWorldViewsToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            try {
+                                currentIndexer = new WorldViewsIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
                         } else {
                             logger.error("WorldViews indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
@@ -666,7 +642,13 @@ public class Hotfolder {
                 Utils.submitDataToViewer(countRecordFiles());
             } else if (filename.endsWith(".json")) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
-                    addUsageStatisticsToIndex(sourceFile);
+                    try {
+                        this.currentIndexer = new UsageStatisticsIndexer(this);
+                        currentIndexer.addToIndex(sourceFile, false, null);
+                        ;
+                    } finally {
+                        this.currentIndexer = null;
+                    }
                     Files.delete(sourceFile);
                 }
             } else if (filename.endsWith(FILENAME_EXTENSION_DELETE)) {
@@ -696,7 +678,13 @@ public class Hotfolder {
                 Utils.submitDataToViewer(countRecordFiles());
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
-                updateSingleDocument(sourceFile);
+                try {
+                    currentIndexer = new DocUpdateIndexer(this);
+                    currentIndexer.addToIndex(sourceFile, false, null);
+                } finally {
+                    currentIndexer = null;
+                }
+                ;
                 Utils.submitDataToViewer(countRecordFiles());
             }
         } catch (IOException e) {
@@ -832,408 +820,6 @@ public class Hotfolder {
     }
 
     /**
-     * Indexes the given METS file.
-     * 
-     * @param metsFile {@link File}
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
-    protected void addMetsToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
-        // index file
-        String[] resp = { null, null };
-        Map<String, Path> dataFolders = new HashMap<>();
-
-        String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
-
-        // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case "_txt":
-                        dataFolders.put(DataRepository.PARAM_FULLTEXT, path);
-                        break;
-                    case FOLDER_SUFFIX_TXTCROWD:
-                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
-                        break;
-                    case "_wc":
-                        dataFolders.put(DataRepository.PARAM_TEIWC, path);
-                        break;
-                    case "_neralto":
-                        dataFolders.put(DataRepository.PARAM_ALTO, path);
-                        logger.info("NER ALTO folder found: {}", path.getFileName());
-                        break;
-                    case "_alto":
-                        // Only add regular ALTO path if no NER ALTO folder is found
-                        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
-                            dataFolders.put(DataRepository.PARAM_ALTO, path);
-                        }
-                        break;
-                    case FOLDER_SUFFIX_ALTOCROWD:
-                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
-                        break;
-                    case "_xml":
-                        dataFolders.put(DataRepository.PARAM_ABBYY, path);
-                        break;
-                    case "_pdf":
-                        dataFolders.put(DataRepository.PARAM_PAGEPDF, path);
-                        break;
-                    case "_mix":
-                        dataFolders.put(DataRepository.PARAM_MIX, path);
-                        break;
-                    case "_src":
-                        dataFolders.put(DataRepository.PARAM_SOURCE, path);
-                        break;
-                    case "_ugc":
-                        dataFolders.put(DataRepository.PARAM_UGC, path);
-                        break;
-                    case "_cms":
-                        dataFolders.put(DataRepository.PARAM_CMS, path);
-                        break;
-                    case "_tei":
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
-                        break;
-                    case "_annotations":
-                        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
-                        break;
-                    case FOLDER_SUFFIX_DOWNLOADIMAGES:
-                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
-
-        // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
-            reindexSettings.put(DataRepository.PARAM_ALTO, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
-            reindexSettings.put(DataRepository.PARAM_ALTOCROWD, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
-            reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
-            reindexSettings.put(DataRepository.PARAM_FULLTEXTCROWD, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
-            reindexSettings.put(DataRepository.PARAM_TEIWC, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
-            reindexSettings.put(DataRepository.PARAM_ABBYY, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
-            reindexSettings.put(DataRepository.PARAM_MIX, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
-            reindexSettings.put(DataRepository.PARAM_UGC, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
-            reindexSettings.put(DataRepository.PARAM_CMS, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
-            reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
-        }
-
-        DataRepository dataRepository;
-        DataRepository previousDataRepository;
-        try {
-            currentIndexer = getMetsIndexer();
-            resp = ((MetsIndexer) currentIndexer).index(metsFile, fromReindexQueue, dataFolders, null,
-                    Configuration.getInstance().getPageCountStart(), dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-        } finally {
-            dataRepository = currentIndexer.getDataRepository();
-            previousDataRepository = currentIndexer.getPreviousDataRepository();
-            currentIndexer = null;
-        }
-
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newMetsFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newMetsFileName);
-            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
-            if (metsFile.equals(indexed)) {
-                return;
-            }
-            if (Files.exists(indexed)) {
-                // Add a timestamp to the old file name
-                String oldMetsFilename =
-                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.formatterBasicDateTime) + ".xml";
-                Path newFile = Paths.get(updatedMets.toAbsolutePath().toString(), oldMetsFilename);
-                Files.copy(indexed, newFile);
-                logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
-            }
-            Files.copy(metsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
-            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
-                    dataRepositoryStrategy.getAllDataRepositories());
-
-            if (previousDataRepository != null) {
-                // Move non-repository data folders to the selected repository
-                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newMetsFileName));
-            }
-
-            // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
-                    dataRepositoryStrategy.getAllDataRepositories()) > 0) {
-                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
-                if (msg != null) {
-                    logger.info(msg);
-                }
-            }
-
-            // Copy data folders
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings, dataRepositoryStrategy.getAllDataRepositories());
-
-            // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
-
-            // success for goobi
-            Path successFile = Paths.get(successFolder.toAbsolutePath().toString(), metsFile.getFileName().toString());
-            try {
-                Files.createFile(successFile);
-                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
-            } catch (FileAlreadyExistsException e) {
-                Files.delete(successFile);
-                Files.createFile(successFile);
-                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
-            }
-
-            try {
-                Files.delete(metsFile);
-            } catch (IOException e) {
-                logger.warn(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
-            }
-
-            // Update data repository cache map in the Goobi viewer
-            if (previousDataRepository != null) {
-                try {
-                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
-                } catch (HTTPException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-        } else {
-            // Error
-            if (deleteContentFilesOnFailure) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(metsFile, resp[1], FileFormat.METS);
-            try {
-                Files.delete(metsFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
-            }
-        }
-    }
-
-    /**
-     * @return
-     */
-    private Indexer getMetsIndexer() {
-        return new MetsIndexer(this);
-    }
-
-    /**
-     * Indexes the given LIDO file.
-     * 
-     * @param lidoFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
-    private void addLidoToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
-        logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
-        String[] resp = { null, null };
-        Map<String, Path> dataFolders = new HashMap<>();
-        String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
-
-        // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA:
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case "_mix":
-                        dataFolders.put(DataRepository.PARAM_MIX, path);
-                        break;
-                    case FOLDER_SUFFIX_DOWNLOADIMAGES:
-                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
-                        break;
-                    case "_tei":
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
-
-        if (dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) {
-            logger.info("External images will be downloaded.");
-            Path newMediaFolder = Paths.get(hotfolderPath.toString(), fileNameRoot + "_tif");
-            dataFolders.put(DataRepository.PARAM_MEDIA, newMediaFolder);
-            if (!Files.exists(newMediaFolder)) {
-                Files.createDirectory(newMediaFolder);
-                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath());
-            }
-        }
-
-        // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
-            reindexSettings.put(DataRepository.PARAM_MIX, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
-        }
-
-        List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        logger.info("File contains {} LIDO documents.", lidoDocs.size());
-        XMLOutputter outputter = new XMLOutputter();
-        try {
-            for (Document doc : lidoDocs) {
-                DataRepository dataRepository;
-                DataRepository previousDataRepository;
-                try {
-                    currentIndexer = new LidoIndexer(this);
-                    resp = ((LidoIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
-                            Configuration.getInstance().getStringList("init.lido.imageXPath"),
-                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
-                            reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
-                } finally {
-                    dataRepository = currentIndexer.getDataRepository();
-                    previousDataRepository = currentIndexer.getPreviousDataRepository();
-                    currentIndexer = null;
-                }
-                if (!Indexer.STATUS_ERROR.equals(resp[0])) {
-                    String identifier = resp[0];
-                    String newLidoFileName = identifier + ".xml";
-
-                    // Write individual LIDO records as separate files
-                    Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), newLidoFileName);
-                    try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
-                        outputter.output(doc, out);
-                    }
-                    dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newLidoFileName, DataRepository.PARAM_INDEXED_LIDO,
-                            dataRepositoryStrategy.getAllDataRepositories());
-
-                    // Move non-repository data directories to the selected repository
-                    if (previousDataRepository != null) {
-                        previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
-                    }
-
-                    // Copy media files
-                    int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
-                            lidoFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
-                            reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
-                    if (imageCounter > 0) {
-                        String msg = Utils.removeRecordImagesFromCache(identifier);
-                        if (msg != null) {
-                            logger.info(msg);
-                        }
-                    }
-
-                    // Copy MIX files
-                    if (reindexSettings.get(DataRepository.PARAM_MIX) == null || !reindexSettings.get(DataRepository.PARAM_MIX)) {
-                        Path destMixDir = Paths.get(dataRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), identifier);
-                        if (!Files.exists(destMixDir)) {
-                            Files.createDirectory(destMixDir);
-                        }
-                        int counter = 0;
-                        if (StringUtils.isNotEmpty(resp[1]) && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-                            String[] mixFileNamesSplit = resp[1].split(";");
-                            List<String> mixFileNames = new ArrayList<>();
-                            for (String fileName : mixFileNamesSplit) {
-                                mixFileNames.add(FilenameUtils.getBaseName(fileName) + ".xml");
-                            }
-                            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MIX))) {
-                                for (Path file : stream) {
-                                    if (mixFileNames.contains(file.getFileName().toString())) {
-                                        Files.copy(file, Paths.get(destMixDir.toAbsolutePath().toString(), file.getFileName().toString()),
-                                                StandardCopyOption.REPLACE_EXISTING);
-                                        counter++;
-                                    }
-                                }
-                                logger.info("{} MIX file(s) copied.", counter);
-                            }
-                        }
-                    }
-
-                    // Update data repository cache map in the Goobi viewer
-                    if (previousDataRepository != null) {
-                        try {
-                            Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
-                        } catch (HTTPException e) {
-                            logger.error(e.getMessage(), e);
-                        }
-                    }
-                } else {
-                    handleError(lidoFile, resp[1], FileFormat.LIDO);
-                }
-            }
-        } finally {
-            currentIndexer = null;
-        }
-
-        // Copy original LIDO file into the orig folder
-        Path orig = Paths.get(origLido.toAbsolutePath().toString(), lidoFile.getFileName().toString());
-        Files.copy(lidoFile, orig, StandardCopyOption.REPLACE_EXISTING);
-
-        // Delete files from the hotfolder
-        try {
-            Files.delete(lidoFile);
-        } catch (IOException e) {
-            logger.error("'{}' could not be deleted; please delete it manually.", lidoFile.toAbsolutePath());
-        }
-        // Delete all data folders for this record from the hotfolder
-        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-    }
-
-    /**
-     * @param sourceFile
-     */
-    private void addUsageStatisticsToIndex(Path sourceFile) {
-        if (sourceFile == null) {
-            throw new IllegalArgumentException("usage statistics file may not be null");
-        } else if (!Files.isRegularFile(sourceFile)) {
-            throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
-        }
-        try {
-            this.currentIndexer = new UsageStatisticsIndexer(this);
-            ((UsageStatisticsIndexer) this.currentIndexer).index(sourceFile);
-        } catch (IOException | IllegalArgumentException | FatalIndexerException | SolrServerException e) {
-            logger.error("Error indexing file {}. Reason: {}", sourceFile, e.getMessage());
-        } finally {
-            this.currentIndexer = null;
-        }
-
-    }
-
-    /**
      * @param sourceFile
      * @throws FatalIndexerException
      */
@@ -1244,599 +830,6 @@ public class Hotfolder {
             throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
         }
         return new UsageStatisticsIndexer(this).removeFromIndex(sourceFile);
-    }
-
-    /**
-     * Indexes the given DenkXweb file.
-     * 
-     * @param denkxwebFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
-    private void addDenkXwebToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
-        if (denkxwebFile == null) {
-            throw new IllegalArgumentException("denkxwebFile may not be null");
-        }
-
-        logger.debug("Indexing DenkXweb file '{}'...", denkxwebFile.getFileName());
-        String[] resp = { null, null };
-        Map<String, Path> dataFolders = new HashMap<>();
-        String fileNameRoot = FilenameUtils.getBaseName(denkxwebFile.getFileName().toString());
-
-        // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA:
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case FOLDER_SUFFIX_DOWNLOADIMAGES:
-                        dataFolders.put(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
-
-        if (dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER)) {
-            logger.info("External images will be downloaded.");
-            Path newMediaFolder = Paths.get(hotfolderPath.toString(), fileNameRoot + "_tif");
-            dataFolders.put(DataRepository.PARAM_MEDIA, newMediaFolder);
-            if (!Files.exists(newMediaFolder)) {
-                Files.createDirectory(newMediaFolder);
-                logger.info("Created media folder {}", newMediaFolder.toAbsolutePath());
-            }
-        }
-
-        // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
-
-        List<Document> denkxwebDocs = JDomXP.splitDenkXwebFile(denkxwebFile.toFile());
-        logger.info("File contains {} DenkXweb documents.", denkxwebDocs.size());
-        XMLOutputter outputter = new XMLOutputter();
-        try {
-            for (Document doc : denkxwebDocs) {
-                DataRepository dataRepository;
-                DataRepository previousDataRepository;
-                try {
-                    currentIndexer = new DenkXwebIndexer(this);
-                    resp = ((DenkXwebIndexer) currentIndexer).index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
-                            dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-                } finally {
-                    dataRepository = currentIndexer.getDataRepository();
-                    previousDataRepository = currentIndexer.getPreviousDataRepository();
-                    currentIndexer = null;
-                }
-                if (!Indexer.STATUS_ERROR.equals(resp[0])) {
-                    String identifier = resp[0];
-                    String newDenkXwebFileName = identifier + ".xml";
-
-                    // Write individual LIDO records as separate files
-                    Path indexed =
-                            Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), newDenkXwebFileName);
-                    try (FileOutputStream out = new FileOutputStream(indexed.toFile())) {
-                        outputter.output(doc, out);
-                    }
-                    dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDenkXwebFileName, DataRepository.PARAM_INDEXED_DENKXWEB,
-                            dataRepositoryStrategy.getAllDataRepositories());
-
-                    // Move non-repository data directories to the selected repository
-                    if (previousDataRepository != null) {
-                        previousDataRepository.moveDataFoldersToRepository(dataRepository, identifier);
-                    }
-
-                    // Copy media files
-                    int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
-                            denkxwebFile.getFileName().toString(), dataRepositoryStrategy, resp[1],
-                            reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
-                    if (imageCounter > 0) {
-                        String msg = Utils.removeRecordImagesFromCache(identifier);
-                        if (msg != null) {
-                            logger.info(msg);
-                        }
-                    }
-
-                    // Update data repository cache map in the Goobi viewer
-                    if (previousDataRepository != null) {
-                        try {
-                            Utils.updateDataRepositoryCache(identifier, dataRepository.getPath());
-                        } catch (HTTPException e) {
-                            logger.error(e.getMessage(), e);
-                        }
-                    }
-                } else {
-                    handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
-                }
-            }
-        } finally {
-            currentIndexer = null;
-        }
-
-        // Copy original DenkXweb file into the orig folder
-        Path orig = Paths.get(origDenkxWeb.toAbsolutePath().toString(), denkxwebFile.getFileName().toString());
-        Files.copy(denkxwebFile, orig, StandardCopyOption.REPLACE_EXISTING);
-
-        // Delete files from the hotfolder
-        try {
-            Files.delete(denkxwebFile);
-        } catch (IOException e) {
-            logger.error("'{}' could not be deleted; please delete it manually.", denkxwebFile.toAbsolutePath());
-        }
-        // Delete all data folders for this record from the hotfolder
-        DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-    }
-
-    /**
-     * Indexes the given DublinCore file.
-     * 
-     * @param dcFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
-    private void addDublinCoreToIndex(Path dcFile, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
-        // index file
-        String[] resp = { null, null };
-        Map<String, Path> dataFolders = new HashMap<>();
-
-        String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
-
-        // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case "_txt":
-                        dataFolders.put(DataRepository.PARAM_FULLTEXT, path);
-                        break;
-                    case FOLDER_SUFFIX_TXTCROWD:
-                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
-                        break;
-                    case "_wc":
-                        dataFolders.put(DataRepository.PARAM_TEIWC, path);
-                        break;
-                    case "_neralto":
-                        dataFolders.put(DataRepository.PARAM_ALTO, path);
-                        logger.info("NER ALTO folder found: {}", path.getFileName());
-                        break;
-                    case "_alto":
-                        // Only add regular ALTO path if no NER ALTO folder is found
-                        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
-                            dataFolders.put(DataRepository.PARAM_ALTO, path);
-                        }
-                        break;
-                    case FOLDER_SUFFIX_ALTOCROWD:
-                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
-                        break;
-                    case "_xml":
-                        dataFolders.put(DataRepository.PARAM_ABBYY, path);
-                        break;
-                    case "_pdf":
-                        dataFolders.put(DataRepository.PARAM_PAGEPDF, path);
-                        break;
-                    case "_mix":
-                        dataFolders.put(DataRepository.PARAM_MIX, path);
-                        break;
-                    case "_src":
-                        dataFolders.put(DataRepository.PARAM_SOURCE, path);
-                        break;
-                    case "_ugc":
-                        dataFolders.put(DataRepository.PARAM_UGC, path);
-                        break;
-                    case "_cms":
-                        dataFolders.put(DataRepository.PARAM_CMS, path);
-                        break;
-                    case "_tei":
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
-                        break;
-                    case "_annotations":
-                        dataFolders.put(DataRepository.PARAM_ANNOTATIONS, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
-
-        // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_ALTO) == null) {
-            reindexSettings.put(DataRepository.PARAM_ALTO, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) == null) {
-            reindexSettings.put(DataRepository.PARAM_ALTOCROWD, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_FULLTEXT) == null) {
-            reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) == null) {
-            reindexSettings.put(DataRepository.PARAM_FULLTEXTCROWD, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TEIWC) == null) {
-            reindexSettings.put(DataRepository.PARAM_TEIWC, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_ABBYY) == null) {
-            reindexSettings.put(DataRepository.PARAM_ABBYY, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_MIX) == null) {
-            reindexSettings.put(DataRepository.PARAM_MIX, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_UGC) == null) {
-            reindexSettings.put(DataRepository.PARAM_UGC, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_CMS) == null) {
-            reindexSettings.put(DataRepository.PARAM_CMS, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
-            reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
-        }
-
-        DataRepository dataRepository;
-        DataRepository previousDataRepository;
-        try {
-            currentIndexer = new DublinCoreIndexer(this);
-            resp = ((DublinCoreIndexer) currentIndexer).index(dcFile, dataFolders, null,
-                    Configuration.getInstance().getPageCountStart());
-        } finally {
-            dataRepository = currentIndexer.getDataRepository();
-            previousDataRepository = currentIndexer.getPreviousDataRepository();
-            currentIndexer = null;
-        }
-
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newDcFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newDcFileName);
-            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), newDcFileName);
-            if (dcFile.equals(indexed)) {
-                return;
-            }
-            Files.copy(dcFile, indexed, StandardCopyOption.REPLACE_EXISTING);
-            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDcFileName, DataRepository.PARAM_INDEXED_DUBLINCORE,
-                    dataRepositoryStrategy.getAllDataRepositories());
-
-            if (previousDataRepository != null) {
-                // Move non-repository data folders to the selected repository
-                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newDcFileName));
-            }
-
-            // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
-                    dataRepositoryStrategy.getAllDataRepositories()) > 0) {
-                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
-                if (msg != null) {
-                    logger.info(msg);
-                }
-            }
-
-            // Copy data folders
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings, dataRepositoryStrategy.getAllDataRepositories());
-
-            // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
-
-            try {
-                Files.delete(dcFile);
-            } catch (IOException e) {
-                logger.warn(LOG_COULD_NOT_BE_DELETED, dcFile.toAbsolutePath());
-            }
-
-            // Update data repository cache map in the Goobi viewer
-            if (previousDataRepository != null) {
-                try {
-                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
-                } catch (HTTPException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-        } else {
-            // Error
-            if (deleteContentFilesOnFailure) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(dcFile, resp[1], FileFormat.DUBLINCORE);
-            try {
-                Files.delete(dcFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, dcFile.toAbsolutePath());
-            }
-        }
-    }
-
-    /**
-     * Indexes the given WorldViews file.
-     * 
-     * @param mainFile {@link File}
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
-    private void addWorldViewsToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
-        logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
-        String[] resp = { null, null };
-        Map<String, Path> dataFolders = new HashMap<>();
-        String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
-
-        // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA:
-                        dataFolders.put(DataRepository.PARAM_MEDIA, path);
-                        break;
-                    case "_tei":
-                        dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
-                        break;
-                    case "_cmdi":
-                        dataFolders.put(DataRepository.PARAM_CMDI, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
-
-        // Use existing folders for those missing in the hotfolder
-        if (dataFolders.get(DataRepository.PARAM_MEDIA) == null) {
-            reindexSettings.put(DataRepository.PARAM_MEDIA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) == null) {
-            reindexSettings.put(DataRepository.PARAM_TEIMETADATA, true);
-        }
-        if (dataFolders.get(DataRepository.PARAM_CMDI) == null) {
-            reindexSettings.put(DataRepository.PARAM_CMDI, true);
-        }
-
-        DataRepository dataRepository;
-        DataRepository previousDataRepository;
-        try {
-            currentIndexer = new WorldViewsIndexer(this);
-            resp = ((WorldViewsIndexer) currentIndexer).index(mainFile, fromReindexQueue, dataFolders, null,
-                    Configuration.getInstance().getPageCountStart());
-        } finally {
-            dataRepository = currentIndexer.getDataRepository();
-            previousDataRepository = currentIndexer.getPreviousDataRepository();
-            currentIndexer = null;
-        }
-
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newMetsFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newMetsFileName);
-            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
-            if (mainFile.equals(indexed)) {
-                return;
-            }
-            if (Files.exists(indexed)) {
-                // Add a timestamp to the old file name
-                String oldMetsFilename =
-                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.formatterBasicDateTime) + ".xml";
-                Path newFile = Paths.get(updatedMets.toAbsolutePath().toString(), oldMetsFilename);
-                Files.copy(indexed, newFile);
-                logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
-            }
-            Files.copy(mainFile, indexed, StandardCopyOption.REPLACE_EXISTING);
-            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
-                    dataRepositoryStrategy.getAllDataRepositories());
-
-            if (previousDataRepository != null) {
-                // Move non-repository data folders to the selected repository
-                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newMetsFileName));
-            }
-
-            // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
-                    dataRepositoryStrategy.getAllDataRepositories()) > 0) {
-                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
-                if (msg != null) {
-                    logger.info(msg);
-                }
-            }
-
-            // Copy other data folders
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings, dataRepositoryStrategy.getAllDataRepositories());
-
-            // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
-
-            // Create success file for Goobi workflow
-            Path successFile = Paths.get(successFolder.toAbsolutePath().toString(), mainFile.getFileName().toString());
-            try {
-                Files.createFile(successFile);
-                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
-            } catch (FileAlreadyExistsException e) {
-                Files.delete(successFile);
-                Files.createFile(successFile);
-                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
-            }
-
-            try {
-                Files.delete(mainFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, mainFile.toAbsolutePath());
-            }
-
-            // Update data repository cache map in the Goobi viewer
-            if (previousDataRepository != null) {
-                try {
-                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
-                } catch (HTTPException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-        } else {
-            // Error
-            if (deleteContentFilesOnFailure) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(mainFile, resp[1], FileFormat.WORLDVIEWS);
-            try {
-                Files.delete(mainFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, mainFile.toAbsolutePath());
-            }
-        }
-    }
-
-    /**
-     * Updates the Solr document described by the given data file with content from data folders in the hotfolder.
-     * 
-     * @param dataFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
-    private void updateSingleDocument(Path dataFile) throws IOException, FatalIndexerException {
-        // index file
-        String[] resp = { null, null };
-        Map<String, Path> dataFolders = new HashMap<>();
-
-        String fileNameRoot = FilenameUtils.getBaseName(dataFile.getFileName().toString());
-
-        // Check data folders in the hotfolder
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new StringBuilder(fileNameRoot).append("_*").toString())) {
-            for (Path path : stream) {
-                logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
-                switch (fileNameSansRoot) {
-                    case FOLDER_SUFFIX_TXTCROWD:
-                        dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, path);
-                        break;
-                    case FOLDER_SUFFIX_ALTOCROWD:
-                        dataFolders.put(DataRepository.PARAM_ALTOCROWD, path);
-                        break;
-                    case "_ugc":
-                        dataFolders.put(DataRepository.PARAM_UGC, path);
-                        break;
-                    case "_cms":
-                        dataFolders.put(DataRepository.PARAM_CMS, path);
-                        break;
-                    default:
-                        // nothing
-                }
-            }
-        }
-
-        if (dataFolders.isEmpty()) {
-            logger.info("No data folders found for '{}', file won't be processed.", dataFile.getFileName());
-            try {
-                Files.delete(dataFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
-            }
-            return;
-        }
-
-        DataRepository dataRepository;
-        try {
-            currentIndexer = new DocUpdateIndexer(this);
-            resp = ((DocUpdateIndexer) currentIndexer).index(dataFile, dataFolders);
-        } finally {
-            dataRepository = currentIndexer.getDataRepository();
-            currentIndexer = null;
-        }
-
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String pi = resp[0];
-
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, new HashMap<>(), dataRepositoryStrategy.getAllDataRepositories());
-
-            // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolderPath, fileNameRoot);
-
-            try {
-                Files.delete(dataFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
-            }
-
-        } else {
-            // Error
-            logger.error(resp[1]);
-            if (deleteContentFilesOnFailure) {
-                // Delete all data folders in hotfolder
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {
-
-                    @Override
-                    public boolean accept(Path entry) throws IOException {
-                        return Files.isDirectory(entry)
-                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith(FOLDER_SUFFIX_MEDIA));
-                    }
-                });) {
-                    for (Path path : stream) {
-                        logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                        Utils.deleteDirectory(path);
-                    }
-                }
-
-                if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
-                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD));
-                }
-                if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD));
-                }
-                if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
-                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_UGC));
-                }
-            }
-            handleError(dataFile, resp[1], FileFormat.UNKNOWN);
-            try {
-                Files.delete(dataFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
-            }
-        }
-    }
-
-    /**
-     * Move data file to the error folder.
-     * 
-     * @param dataFile {@link File}
-     * @param error
-     * @param format
-     */
-    private void handleError(Path dataFile, String error, FileFormat format) {
-        logger.error("Failed to process '{}'.", dataFile.getFileName());
-        // Error log file
-        if (FileFormat.METS.equals(format)) {
-            File logFile = new File(errorMets.toFile(), FilenameUtils.getBaseName(dataFile.getFileName().toString()) + ".log");
-            try (FileWriter fw = new FileWriter(logFile); BufferedWriter out = new BufferedWriter(fw)) {
-                Files.copy(dataFile, Paths.get(errorMets.toAbsolutePath().toString(), dataFile.getFileName().toString()),
-                        StandardCopyOption.REPLACE_EXISTING);
-                if (error != null) {
-                    out.write(error);
-                }
-            } catch (IOException e) {
-                logger.error("Data file could not be moved to errorMets!", e);
-            }
-        }
     }
 
     /**
@@ -1935,12 +928,12 @@ public class Hotfolder {
 
     /**
      * <p>
-     * getHotfolder.
+     * getHotfolderPath.
      * </p>
      *
      * @return a {@link java.nio.file.Path} object.
      */
-    public Path getHotfolder() {
+    public Path getHotfolderPath() {
         return hotfolderPath;
     }
 
@@ -1964,6 +957,20 @@ public class Hotfolder {
      */
     public boolean isAddVolumeCollectionsToAnchor() {
         return addVolumeCollectionsToAnchor;
+    }
+
+    /**
+     * @return the deleteContentFilesOnFailure
+     */
+    public boolean isDeleteContentFilesOnFailure() {
+        return deleteContentFilesOnFailure;
+    }
+
+    /**
+     * @param deleteContentFilesOnFailure the deleteContentFilesOnFailure to set
+     */
+    public void setDeleteContentFilesOnFailure(boolean deleteContentFilesOnFailure) {
+        this.deleteContentFilesOnFailure = deleteContentFilesOnFailure;
     }
 
     /**
@@ -2019,6 +1026,13 @@ public class Hotfolder {
      */
     public Path getOrigLido() {
         return origLido;
+    }
+
+    /**
+     * @return the origDenkxWeb
+     */
+    public Path getOrigDenkxWeb() {
+        return origDenkxWeb;
     }
 
     /**

@@ -479,6 +479,30 @@ public final class Configuration {
     }
 
     /**
+     * Whether a viewer task should be triggered that creates pdf files for all images of an indexed process
+     * @return Whether a viewer task should be triggered that creates pdf files for all images of an indexed process
+     */
+    public boolean isPrerenderPdfsEnabled() {
+        return getBoolean("init.viewerNotifications.prerenderPdfs[@enabled]", false);
+    }
+    
+    /**
+     * Whether pdfs for record images should be prerendered in any case, even if they already exist
+     * @return Whether pdfs for record images should be prerendered in any case, even if they already exist
+     */
+    public boolean isForcePrerenderPdfs() {
+        return getBoolean("init.viewerNotifications.prerenderPdfs[@force]", false);
+    }
+
+    /**
+     * The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
+     * @return The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
+     */
+    public String getPrerenderPdfsConfigVariant() {
+        return getString("init.viewerNotifications.prerenderPdfs[@variant]", "default");
+    }
+    
+    /**
      * <p>
      * getListConfiguration.
      * </p>
@@ -616,4 +640,37 @@ public final class Configuration {
     public void overrideValue(String property, Object value) {
         getConfig().setProperty(property, value);
     }
+    
+    /**
+     * 
+     * @return true if all email configuration date is complete; false otherwise
+     * @throws FatalIndexerException
+     * @should return false until all values configured
+     */
+    static boolean checkEmailConfiguration() throws FatalIndexerException {
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.recipients"))) {
+            logger.warn("init.email.recipients not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpServer"))) {
+            logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderAddress"))) {
+            logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderName"))) {
+            logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
+            return false;
+        }
+        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSecurity"))) {
+            logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
+            return false;
+        }
+
+        return true;
+    }
+
+
 }

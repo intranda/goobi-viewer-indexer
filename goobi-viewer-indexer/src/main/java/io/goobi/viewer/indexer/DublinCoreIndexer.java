@@ -44,6 +44,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
@@ -92,6 +93,89 @@ public class DublinCoreIndexer extends Indexer {
     public DublinCoreIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
+    }
+
+    /**
+     * Indexes the given DublinCore file.
+     * 
+     * @param dcFile {@link File}
+     * @param reindexSettings
+     * @throws IOException in case of errors.
+     * @throws FatalIndexerException
+     * @should add record to index correctly
+     */
+    @Override
+    public void addToIndex(Path dcFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
+            throws IOException, FatalIndexerException {
+        String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
+
+        // Check data folders in the hotfolder
+        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+        // Use existing folders for those missing in the hotfolder
+        checkReindexSettings(dataFolders, reindexSettings);
+
+        String[] resp = index(dcFile, dataFolders, null, Configuration.getInstance().getPageCountStart());
+        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
+            String newDcFileName = resp[0];
+            String pi = FilenameUtils.getBaseName(newDcFileName);
+            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), newDcFileName);
+            if (dcFile.equals(indexed)) {
+                return;
+            }
+            Files.copy(dcFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDcFileName, DataRepository.PARAM_INDEXED_DUBLINCORE,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            if (previousDataRepository != null) {
+                // Move non-repository data folders to the selected repository
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newDcFileName));
+            }
+
+            // Copy and delete media folder
+            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
+                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                if (msg != null) {
+                    logger.info(msg);
+                }
+            }
+
+            // Copy data folders
+            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
+
+            // Delete unsupported data folders
+            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+
+            try {
+                Files.delete(dcFile);
+            } catch (IOException e) {
+                logger.warn(LOG_COULD_NOT_BE_DELETED, dcFile.toAbsolutePath());
+            }
+
+            // Update data repository cache map in the Goobi viewer
+            if (previousDataRepository != null) {
+                try {
+                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                } catch (HTTPException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+        } else {
+            // Error
+            if (hotfolder.isDeleteContentFilesOnFailure()) {
+                // Delete all data folders for this record from the hotfolder
+                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+            }
+            handleError(dcFile, resp[1], FileFormat.DUBLINCORE);
+            try {
+                Files.delete(dcFile);
+            } catch (IOException e) {
+                logger.error(LOG_COULD_NOT_BE_DELETED, dcFile.toAbsolutePath());
+            }
+        }
     }
 
     /**
