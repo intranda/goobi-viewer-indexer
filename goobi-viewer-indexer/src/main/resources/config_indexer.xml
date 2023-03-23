@@ -3523,7 +3523,7 @@
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mods:mods/mods:genre</item>
+                            <item>mets:xmlData/mods:mods/mods:genre[not(@xml:lang)]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -3531,6 +3531,46 @@
                 </item>
             </list>
         </MD_GENRE>
+        
+        <MD_GENRE_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:genre[@xml:lang="ger"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_GENRE_LANG_DE>
+        <MD_GENRE_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:genre[@xml:lang="eng"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_GENRE_LANG_EN>
+        <MD_GENRE_LANG_FR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:genre[@xml:lang="fre"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_GENRE_LANG_FR>
         
         <MDNUM_IMPORTANCE>
             <list>
