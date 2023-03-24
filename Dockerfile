@@ -1,4 +1,9 @@
 FROM maven:3.6-jdk-11 AS BUILD
+
+LABEL org.opencontainers.image.authors="Matthias Geerdsen <matthias.geerdsen@intranda.com>"
+LABEL org.opencontainers.image.source="https://github.com/intranda/goobi-viewer-indexer"
+LABEL org.opencontainers.image.description="Goobi viewer - Indexer daemon"
+
 # you can use --build-arg build=false to skip viewer.war compilation, a viewer.war file needs to be available in target/viewer.war then
 ARG build=true
 
