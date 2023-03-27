@@ -70,6 +70,12 @@ pipeline {
     }
     stage('build, test and publish docker image') {
       agent {label 'controller'}
+      when {
+        anyOf {
+          tag "v*"
+          branch 'develop'
+        }
+      }
       steps {
         unstash 'app'
 
