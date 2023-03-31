@@ -362,4 +362,30 @@ public class GeoJSONTools {
         // return Double.valueOf(MetadataHelper.FORMAT_EIGHT_DECIMAL_PLACES.get().format(ret));
     }
 
+    /**
+     * 
+     * @param coords
+     * @return
+     * @should detect sexagesimal points correctly
+     * @should detect sexagesimal polygons correctly
+     */
+    static String getCoordinatesType(String coords) {
+        String type = "mods:coordinates/point";
+
+        String[] coordsSplit = coords.split(" ");
+        if (coords.startsWith("E") || coords.startsWith("W")) {
+            switch (coordsSplit.length) {
+                case 2:
+                    type = "sexagesimal:point";
+                    break;
+                case 4:
+                    type = "sexagesimal:polygon";
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return type;
+    }
 }
