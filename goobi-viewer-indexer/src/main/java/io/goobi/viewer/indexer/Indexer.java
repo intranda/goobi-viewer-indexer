@@ -2101,8 +2101,9 @@ public abstract class Indexer {
      * In the first case, always overwrite any existing page PDFs; in the second case, only do so if {@link Configuration#isForcePrerenderPdfs()} is true
      * @param pi    The identifier of the process to create pdfs for
      * @param hasNewMediaFiles  if the data repository has been updated with new media files
+     * @throws FatalIndexerException 
      */
-    void prerenderPagePdfsIfRequired(String pi, boolean hasNewMediaFiles) {
+    void prerenderPagePdfsIfRequired(String pi, boolean hasNewMediaFiles) throws FatalIndexerException {
         try {
             if(hasNewMediaFiles) {
                 logger.debug("New media files found: Trigger prerenderPDFs task in viewer and force update");
@@ -2111,12 +2112,12 @@ public abstract class Indexer {
                 Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
                 if(mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
                     boolean force = Configuration.getInstance().isForcePrerenderPdfs();
-                    logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}");
+                    logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", pi);
                     Utils.prerenderPdfs(pi, force);
                 }
             }
-        } catch (IOException | HTTPException | FatalIndexerException e) {
-            logger.error(e.getMessage(), e);
+        } catch (IOException | HTTPException e) {
+            logger.error(e.getMessage());
         }
     }
 }
