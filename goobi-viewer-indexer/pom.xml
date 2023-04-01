@@ -36,7 +36,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.5.9</alto.version>
 		<iiif-api-model.version>2.4.2</iiif-api-model.version>
-		<normdataimporter.version>1.10.0</normdataimporter.version>
+		<normdataimporter.version>1.10.1</normdataimporter.version>
 
 		<!-- other libraries -->
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
