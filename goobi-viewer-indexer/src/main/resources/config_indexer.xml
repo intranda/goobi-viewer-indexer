@@ -124,7 +124,7 @@
 		</email>
 
 		<viewerNotifications>
-			<prerenderPdfs enabled="true" force="true" variant="small"/>
+			<prerenderPdfs enabled="false" force="false" variant="small"/>
 		</viewerNotifications>
 
 		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
