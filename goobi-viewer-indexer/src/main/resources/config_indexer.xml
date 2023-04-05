@@ -123,6 +123,10 @@
 			<smtpPort>465</smtpPort>
 		</email>
 
+		<viewerNotifications>
+			<prerenderPdfs enabled="true" force="true" variant="small"/>
+		</viewerNotifications>
+
 		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
 		<viewerAuthorizationToken>test</viewerAuthorizationToken>
 	</init>

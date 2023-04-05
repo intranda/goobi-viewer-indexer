@@ -2094,4 +2094,30 @@ public abstract class Indexer {
             reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
         }
     }
+    
+    /**
+     * Send a request to the viewer rest api to start a task to prerender page PDF files if it is required.
+     * The task is required if either hasNewMediaFiles is true, of if a non-empty _media folder exists in the {@link #getDataRepository()}.
+     * In the first case, always overwrite any existing page PDFs; in the second case, only do so if {@link Configuration#isForcePrerenderPdfs()} is true
+     * @param pi    The identifier of the process to create pdfs for
+     * @param hasNewMediaFiles  if the data repository has been updated with new media files
+     * @throws FatalIndexerException 
+     */
+    void prerenderPagePdfsIfRequired(String pi, boolean hasNewMediaFiles) throws FatalIndexerException {
+        try {
+            if(hasNewMediaFiles) {
+                logger.debug("New media files found: Trigger prerenderPDFs task in viewer and force update");
+                Utils.prerenderPdfs(pi, true);
+            } else {
+                Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
+                if(mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
+                    boolean force = Configuration.getInstance().isForcePrerenderPdfs();
+                    logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", pi);
+                    Utils.prerenderPdfs(pi, force);
+                }
+            }
+        } catch (IOException | HTTPException e) {
+            logger.error(e.getMessage());
+        }
+    }
 }

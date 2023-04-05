@@ -232,6 +232,7 @@ public class MetsIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
+            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -2045,18 +2046,14 @@ public class MetsIndexer extends Indexer {
      * Checks whether this is a volume of a multivolume work (should be false for monographs and anchors).
      * 
      * @return boolean
-     * @throws IndexerException
      * @throws FatalIndexerException
      */
-    private boolean isVolume() throws IndexerException, FatalIndexerException {
+    private boolean isVolume() throws FatalIndexerException {
         String query =
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
-        if (relatedItemList != null && !relatedItemList.isEmpty()) {
-            return true;
-        }
 
-        return false;
+        return relatedItemList != null && !relatedItemList.isEmpty();
     }
 
     /**
@@ -2078,7 +2075,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param dateString Date string to parse
      * @return {@link ZonedDateTime} parsed from the given string
-     * @should parse iso instant corretly
+     * @should parse iso instant correctly
      * @should parse iso local dateTime correctly
      * @should parse iso offset dateTime correctly
      */

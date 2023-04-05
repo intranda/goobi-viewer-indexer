@@ -111,8 +111,8 @@ public class GeoJSONToolsTest {
      */
     @Test
     public void convertSexagesimalToDecimalPoints_shouldConvertPointsCorrectly() throws Exception {
-        List<Position> result = GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 N0465228", " ");
-        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(1, GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 N0465228", " ").size());
+        Assert.assertEquals(1, GeoJSONTools.convertSexagesimalToDecimalPoints("W0024143 N0544530", " ").size());
     }
 
     /**
@@ -125,6 +125,11 @@ public class GeoJSONToolsTest {
         Assert.assertEquals(1, result.size());
         Assert.assertEquals(Double.valueOf(8.13), Double.valueOf(Math.floor(result.get(0).getX() * 100) / 100));
         Assert.assertEquals(Double.valueOf(46.87), Double.valueOf(Math.floor(result.get(0).getY() * 100) / 100));
+
+        result = GeoJSONTools.convertSexagesimalToDecimalPoints("W0024143 W0024143 N0544530 N0544530", " ");
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals(Double.valueOf(-2.7), Double.valueOf(Math.floor(result.get(0).getX() * 100) / 100));
+        Assert.assertEquals(Double.valueOf(54.75), Double.valueOf(Math.floor(result.get(0).getY() * 100) / 100));
     }
 
     /**
@@ -276,5 +281,23 @@ public class GeoJSONToolsTest {
         Assert.assertEquals(Double.valueOf(8.132222222222223), ((Point) geometry).getPosition().getX());
         Assert.assertEquals(Double.valueOf(46.87444444444444), ((Point) geometry).getPosition().getY());
 
+    }
+
+    /**
+     * @see GeoJSONTools#getCoordinatesType(String)
+     * @verifies detect sexagesimal points correctly
+     */
+    @Test
+    public void getCoordinatesType_shouldDetectSexagesimalPointsCorrectly() throws Exception {
+        Assert.assertEquals("sexagesimal:point", GeoJSONTools.getCoordinatesType("W0024143 N0465228"));
+    }
+
+    /**
+     * @see GeoJSONTools#getCoordinatesType(String)
+     * @verifies detect sexagesimal polygons correctly
+     */
+    @Test
+    public void getCoordinatesType_shouldDetectSexagesimalPolygonsCorrectly() throws Exception {
+        Assert.assertEquals("sexagesimal:polygon", GeoJSONTools.getCoordinatesType("E0080756 E0083024 N0465228 N0465228"));
     }
 }

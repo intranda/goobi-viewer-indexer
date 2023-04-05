@@ -552,22 +552,7 @@ public class MetadataHelper {
                         }
                     }
                 } else if (authorityDataField.getKey().equals(Record.AUTOCOORDS_FIELD)) {
-                    String[] textValueSplit = textValue.split(" ");
-
-                    String type = "mods:coordinates/point";
-                    if (textValue.startsWith("E")) {
-                        switch (textValueSplit.length) {
-                            case 2:
-                                type = "sexagesimal:point";
-                                break;
-                            case 4:
-                                type = "sexagesimal:polygon";
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
+                    String type = GeoJSONTools.getCoordinatesType(textValue);
                     GeoCoords coords = GeoJSONTools.convert(textValue, type, " ");
 
                     // Add searchable WKT lon-lat coordinates

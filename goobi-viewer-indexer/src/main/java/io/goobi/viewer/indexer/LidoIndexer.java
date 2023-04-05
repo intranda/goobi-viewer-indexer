@@ -197,6 +197,7 @@ public class LidoIndexer extends Indexer {
                         logger.error(e.getMessage(), e);
                     }
                 }
+                prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             } else {
                 handleError(lidoFile, resp[1], FileFormat.LIDO);
             }

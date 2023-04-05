@@ -70,6 +70,12 @@ pipeline {
     }
     stage('build, test and publish docker image') {
       agent {label 'controller'}
+      when {
+        anyOf {
+          tag "v*"
+          branch 'develop'
+        }
+      }
       steps {
         unstash 'app'
 
@@ -120,6 +126,19 @@ pipeline {
         }
       }
     }
+    stage('publish develop image to GitHub container registry'){
+      agent {label 'controller'}
+      when {
+        branch 'develop'
+      }
+      steps{
+        script{
+          docker.withRegistry('https://ghcr.io','jenkins-github-container-registry'){
+            dockerimage_public.push("${env.BRANCH_NAME}")
+          }
+        }
+      }
+    }
     stage('publish production image to Docker Hub'){
       agent {label 'controller'}
       when {
@@ -128,6 +147,20 @@ pipeline {
       steps{
         script{
           docker.withRegistry('','0b13af35-a2fb-41f7-8ec7-01eaddcbe99d'){
+            dockerimage_public.push("${env.TAG_NAME}")
+            dockerimage_public.push("latest")
+          }
+        }
+      }
+    }
+    stage('publish production image to GitHub container registry'){
+      agent {label 'controller'}
+      when {
+        tag "v*"
+      }
+      steps{
+        script{
+          docker.withRegistry('https://ghcr.io','jenkins-github-container-registry'){
             dockerimage_public.push("${env.TAG_NAME}")
             dockerimage_public.push("latest")
           }

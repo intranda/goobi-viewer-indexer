@@ -168,6 +168,7 @@ public class DenkXwebIndexer extends Indexer {
                         logger.error(e.getMessage(), e);
                     }
                 }
+                prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             } else {
                 handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
             }

@@ -189,6 +189,7 @@ public class WorldViewsIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
+            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
