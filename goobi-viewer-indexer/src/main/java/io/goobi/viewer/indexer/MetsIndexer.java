@@ -233,6 +233,7 @@ public class MetsIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+            logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -609,7 +610,7 @@ public class MetsIndexer extends Indexer {
                 logger.info("Re-indexing anchor...");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
-            logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
+            logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);

@@ -190,6 +190,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+            logger.info("Successfully finished indexing '{}'.", mainFile.getFileName());
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -472,7 +473,7 @@ public class WorldViewsIndexer extends Indexer {
                 logger.info("Re-indexing anchor...");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
-            logger.info("Successfully finished indexing '{}'.", mainFile.getFileName());
+            logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
