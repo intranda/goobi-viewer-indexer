@@ -32,6 +32,8 @@ public class AbstractWriteStrategyTest {
         SolrInputDocument doc = new SolrInputDocument();
         doc.addField("BOOL_FOO", false);
         doc.addField("BOOL_FOO", true);
+        doc.addField("MDNUM_YEARPUBLISH", "2000");
+        doc.addField("MDNUM_YEARPUBLISH", "2001");
         doc.addField(SolrConstants.DATECREATED, 123L);
         doc.addField(SolrConstants.DATECREATED, 456L);
         
@@ -40,6 +42,10 @@ public class AbstractWriteStrategyTest {
         Assert.assertNotNull(doc.getFieldValues("BOOL_FOO"));
         Assert.assertEquals(1, doc.getFieldValues("BOOL_FOO").size());
         Assert.assertFalse((boolean) doc.getFieldValue("BOOL_FOO"));
+        
+        Assert.assertNotNull(doc.getFieldValues("MDNUM_YEARPUBLISH"));
+        Assert.assertEquals(1, doc.getFieldValues("MDNUM_YEARPUBLISH").size());
+        Assert.assertEquals("2000", doc.getFieldValue("MDNUM_YEARPUBLISH"));
         
         Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATECREATED));
         Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATECREATED).size());
