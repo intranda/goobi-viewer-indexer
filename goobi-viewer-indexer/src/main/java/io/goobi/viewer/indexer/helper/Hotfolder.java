@@ -401,6 +401,7 @@ public class Hotfolder {
         try {
             Utils.postMail(Arrays.asList(recipientsSplit), subject, body, smtpServer, smtpUser, smtpPassword, smtpSenderAddress, smtpSenderName,
                     smtpSecurity, smtpPort);
+            logger.info("Report e-mailed to configured recipients.");
         } catch (UnsupportedEncodingException | MessagingException e) {
             logger.error(e.getMessage(), e);
         }
