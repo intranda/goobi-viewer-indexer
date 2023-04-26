@@ -461,6 +461,7 @@ public class Utils {
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
             final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity, Integer smtpPort)
             throws MessagingException, UnsupportedEncodingException {
+        logger.info("postMail");
         if (recipients == null) {
             throw new IllegalArgumentException("recipients may not be null");
         }

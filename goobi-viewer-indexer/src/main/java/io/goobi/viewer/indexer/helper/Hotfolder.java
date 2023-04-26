@@ -367,6 +367,7 @@ public class Hotfolder {
     }
 
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
+        logger.info("checkAndSendErrorReport: {}", subject);
         logger.debug("body:\n{}", body);
         // Send report e-mail if the text body contains at least one ERROR level log message
         if (!body.contains(Indexer.STATUS_ERROR)) {
