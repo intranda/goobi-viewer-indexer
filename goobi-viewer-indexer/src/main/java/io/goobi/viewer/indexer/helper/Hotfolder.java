@@ -366,9 +366,18 @@ public class Hotfolder {
         context.updateLoggers();
     }
 
+    /**
+     * 
+     * @param subject
+     * @param body
+     * @throws FatalIndexerException
+     */
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
         logger.info("checkAndSendErrorReport: {}", subject);
         logger.debug("body:\n{}", body);
+        if (StringUtils.isEmpty(body)) {
+            logger.warn("E-Mail body is empty.");
+        }
         // Send report e-mail if the text body contains at least one ERROR level log message
         if (!body.contains(Indexer.STATUS_ERROR)) {
             return;
