@@ -348,7 +348,7 @@ public class Hotfolder {
         }
         swSecondaryLog = new StringWriter();
 
-        final LoggerContext context = (LoggerContext) LogManager.getContext(true);
+        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
         final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
         if (secondaryAppender != null) {
             secondaryAppender.stop();
@@ -359,7 +359,7 @@ public class Hotfolder {
                 .withPattern("%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n")
                 .withConfiguration(config)
                 .build();
-        secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", true, true);
+        secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", false, true);
         secondaryAppender.start();
         config.addAppender(secondaryAppender); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
         context.getRootLogger().addAppender(secondaryAppender);
