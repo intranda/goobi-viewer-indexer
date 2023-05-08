@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -380,7 +381,7 @@ public class FileTools {
                 Files.createDirectory(targetLocation);
             }
             try (Stream<Path> walk = Files.walk(sourceLocation)) {
-                walk.forEach(file -> {
+                walk.filter(Files::isRegularFile).forEach(file -> {
                     Path newFile = Paths.get(targetLocation.toAbsolutePath().toString(), file.getFileName().toString());
                     try {
                         Files.copy(file, newFile, StandardCopyOption.REPLACE_EXISTING);
