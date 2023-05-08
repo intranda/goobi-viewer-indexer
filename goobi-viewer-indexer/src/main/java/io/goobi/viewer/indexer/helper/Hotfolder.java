@@ -867,41 +867,6 @@ public class Hotfolder {
         return total1 == total2;
     }
 
-    /**
-     * <p>
-     * copyDirectory.
-     * </p>
-     *
-     * @param sourceLocation {@link java.nio.file.Path}
-     * @param targetLocation {@link java.nio.file.Path}
-     * @return number of copied files.
-     * @throws java.io.IOException in case of errors.
-     */
-    public static int copyDirectory(Path sourceLocation, Path targetLocation) throws IOException {
-        if (sourceLocation == null) {
-            throw new IllegalArgumentException("targetsourceLocationLocation may not be null");
-        }
-        if (targetLocation == null) {
-            throw new IllegalArgumentException("targetLocation may not be null");
-        }
-
-        int count = sourceLocation.toFile().listFiles().length;
-        if (count > 0) {
-            try (Stream<Path> walk = Files.walk(sourceLocation)) {
-                walk.forEach(file -> {
-                    Path newFile = Paths.get(targetLocation.toAbsolutePath().toString(), file.getFileName().toString());
-                    try {
-                        Files.copy(file, newFile, StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e) {
-                        logger.error(e.getMessage());
-                    }
-                });
-            }
-        }
-
-        return count;
-    }
-
     protected class DataFolderSizeCounter implements FileFilter {
 
         private String recordFileName;

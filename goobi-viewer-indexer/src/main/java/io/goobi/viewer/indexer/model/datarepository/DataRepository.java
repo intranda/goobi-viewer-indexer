@@ -38,7 +38,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.StringConstants;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
@@ -453,7 +453,7 @@ public class DataRepository {
         if (oldDataFolder.toFile().isDirectory()) {
             Path newDataDir = Paths.get(toRepository.getDir(type).toAbsolutePath().toString(), pi);
             try {
-                int copied = Hotfolder.copyDirectory(oldDataFolder, newDataDir);
+                int copied = FileTools.copyDirectory(oldDataFolder, newDataDir);
                 if (copied > 0) {
                     logger.info("Copied {} files to repository directory: {}", copied, newDataDir.toAbsolutePath());
                 }
@@ -679,7 +679,7 @@ public class DataRepository {
         int counter = 0;
         if (!DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER.equals(paramName)) {
             logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath());
-            counter = Hotfolder.copyDirectory(srcFolder, new File(getDir(paramName).toFile(), identifier).toPath());
+            counter = FileTools.copyDirectory(srcFolder, new File(getDir(paramName).toFile(), identifier).toPath());
             logger.info("{} {} files copied.", counter, paramName);
         }
         if (!Utils.deleteDirectory(srcFolder)) {

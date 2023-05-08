@@ -100,7 +100,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                     Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_altocrowd");
             Files.createDirectory(updateCrowdsourcingAltoFolderHotfolderPath);
             Assert.assertEquals(1,
-                    Hotfolder.copyDirectory(updateCrowdsourcingAltoFolderSourcePath, updateCrowdsourcingAltoFolderHotfolderPath));
+                    FileTools.copyDirectory(updateCrowdsourcingAltoFolderSourcePath, updateCrowdsourcingAltoFolderHotfolderPath));
             dataFolders.put(DataRepository.PARAM_ALTOCROWD, updateCrowdsourcingAltoFolderHotfolderPath);
 
             // New FULLTEXT (should be ignored because ALTO is present)
@@ -110,7 +110,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                     Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
             Files.createDirectory(updateCrowdsourcingTextFolderHotfolderPath);
             Assert.assertEquals(1,
-                    Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath, updateCrowdsourcingTextFolderHotfolderPath));
+                    FileTools.copyDirectory(updateCrowdsourcingTextFolderSourcePath, updateCrowdsourcingTextFolderHotfolderPath));
             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, updateCrowdsourcingTextFolderHotfolderPath);
 
             // New UGC
@@ -120,7 +120,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                     Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_ugc");
             Files.createDirectory(updateCrowdsourcingUgcFolderHotfolderPath);
             Assert.assertEquals(1,
-                    Hotfolder.copyDirectory(updateCrowdsourcingUgcFolderSourcePath, updateCrowdsourcingUgcFolderHotfolderPath));
+                    FileTools.copyDirectory(updateCrowdsourcingUgcFolderSourcePath, updateCrowdsourcingUgcFolderHotfolderPath));
             dataFolders.put(DataRepository.PARAM_UGC, updateCrowdsourcingUgcFolderHotfolderPath);
 
             // Update doc and check updated values
@@ -180,7 +180,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                     Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/pageupdate/PPN517154005#1483455145198_txtcrowd");
             Path updateCrowdsourcingTextFolderHotfolderPath =
                     Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
-            Hotfolder.copyDirectory(updateCrowdsourcingTextFolderSourcePath, updateCrowdsourcingTextFolderHotfolderPath);
+            FileTools.copyDirectory(updateCrowdsourcingTextFolderSourcePath, updateCrowdsourcingTextFolderHotfolderPath);
             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, updateCrowdsourcingTextFolderHotfolderPath);
 
             Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
