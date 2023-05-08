@@ -348,7 +348,7 @@ public class Hotfolder {
         }
         swSecondaryLog = new StringWriter();
 
-        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        final LoggerContext context = (LoggerContext) LogManager.getContext(true);
         final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
         if (secondaryAppender != null) {
             secondaryAppender.stop();
@@ -373,8 +373,8 @@ public class Hotfolder {
      * @throws FatalIndexerException
      */
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
-        logger.info("checkAndSendErrorReport: {}", subject);
-        logger.debug("body:\n{}", body);
+        logger.info("checkAndSendErrorReport");
+        logger.info("body:\n{}", body);
         if (StringUtils.isEmpty(body)) {
             logger.warn("E-Mail body is empty.");
         }
