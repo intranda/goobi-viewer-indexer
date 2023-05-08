@@ -872,12 +872,12 @@ public class Hotfolder {
      * copyDirectory.
      * </p>
      *
-     * @param sourceLocation {@link java.io.File}
-     * @param targetLocation {@link java.io.File}
+     * @param sourceLocation {@link java.nio.file.Path}
+     * @param targetLocation {@link java.nio.file.Path}
      * @return number of copied files.
      * @throws java.io.IOException in case of errors.
      */
-    public static int copyDirectory(File sourceLocation, File targetLocation) throws IOException {
+    public static int copyDirectory(Path sourceLocation, Path targetLocation) throws IOException {
         if (sourceLocation == null) {
             throw new IllegalArgumentException("targetsourceLocationLocation may not be null");
         }
@@ -885,9 +885,18 @@ public class Hotfolder {
             throw new IllegalArgumentException("targetLocation may not be null");
         }
 
-        int count = sourceLocation.listFiles().length;
+        int count = sourceLocation.toFile().listFiles().length;
         if (count > 0) {
-            FileUtils.copyDirectory(sourceLocation, targetLocation);
+            try (Stream<Path> walk = Files.walk(sourceLocation)) {
+                walk.forEach(file -> {
+                    Path newFile = Paths.get(targetLocation.toAbsolutePath().toString(), file.getFileName().toString());
+                    try {
+                        Files.copy(file, newFile, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        logger.error(e.getMessage());
+                    }
+                });
+            }
         }
 
         return count;
