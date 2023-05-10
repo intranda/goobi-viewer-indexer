@@ -359,7 +359,13 @@ public class Hotfolder {
                 .withPattern("%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n")
                 .withConfiguration(config)
                 .build();
-        secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", false, true);
+        secondaryAppender =
+                // WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", false, true);
+                WriterAppender.newBuilder()
+                        .setName("record_appender")
+                        .setTarget(swSecondaryLog)
+                        .setLayout(layout)
+                        .build();
         secondaryAppender.start();
         config.addAppender(secondaryAppender); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
         context.getRootLogger().addAppender(secondaryAppender);
@@ -370,6 +376,7 @@ public class Hotfolder {
             logger.info("logger: {}", logr);
             for (String key : config.getLoggerConfig(logr).getAppenders().keySet()) {
                 logger.info("Appender: {}", key);
+                // config.getLoggerConfig(logr).getAppenders().get(key)
             }
         }
 
