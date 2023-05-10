@@ -18,7 +18,6 @@ package io.goobi.viewer.indexer.helper;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -40,8 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.WriterAppender;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -59,6 +56,7 @@ import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.helper.logging.SecondaryAppender;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -96,8 +94,7 @@ public class Hotfolder {
     /** Constant <code>worldviewsEnabled=true</code> */
     private boolean worldviewsEnabled = true;
 
-    private StringWriter swSecondaryLog;
-    private WriterAppender secondaryAppender;
+    private SecondaryAppender secondaryAppender;
 
     private final SolrSearchIndex searchIndex;
     private final SolrSearchIndex oldSearchIndex;
@@ -339,47 +336,23 @@ public class Hotfolder {
      * Empties and re-inits the secondary logger.
      */
     private void resetSecondaryLog() {
-        if (swSecondaryLog != null) {
-            try {
-                swSecondaryLog.close();
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            }
+        if (secondaryAppender == null) {
+            secondaryAppender = SecondaryAppender.createAndStartAppender("record_appender");
+
+        } else {
+            secondaryAppender.reset();
         }
-        swSecondaryLog = new StringWriter();
 
         final LoggerContext context = (LoggerContext) LogManager.getContext(false);
         final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
-        if (secondaryAppender != null) {
-            secondaryAppender.stop();
-            context.getRootLogger().removeAppender(secondaryAppender);
-        }
-
-        final PatternLayout layout = PatternLayout.newBuilder()
-                .withPattern("%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n")
-                .withConfiguration(config)
-                .build();
-        secondaryAppender =
-                // WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", false, true);
-                WriterAppender.newBuilder()
-                        .setName("record_appender")
-                        .setTarget(swSecondaryLog)
-                        .setLayout(layout)
-                        .build();
-        secondaryAppender.start();
-        config.addAppender(secondaryAppender); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
-        context.getRootLogger().addAppender(secondaryAppender);
-        context.updateLoggers();
-
         logger.info("log4j config: {}", config.getConfigurationSource().getLocation());
         for (String logr : config.getLoggers().keySet()) {
             logger.info("logger: {}", logr);
             for (String key : config.getLoggerConfig(logr).getAppenders().keySet()) {
                 logger.info("Appender: {}", key);
-                // config.getLoggerConfig(logr).getAppenders().get(key)
+                //                 config.getLoggerConfig(logr).getAppenders().get(key)
             }
         }
-
     }
 
     /**
@@ -459,9 +432,9 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_MIX, true);
             reindexSettings.put(DataRepository.PARAM_UGC, true);
             noerror = handleSourceFile(fileToReindex, true, reindexSettings);
-            if (swSecondaryLog != null && emailConfigurationComplete) {
+            if (secondaryAppender != null && emailConfigurationComplete) {
                 checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                        swSecondaryLog.toString());
+                        secondaryAppender.getLog());
             }
         } else {
             // Check for the shutdown trigger file first
@@ -501,7 +474,7 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleSourceFile(recordFile, false, reindexSettings);
                         checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                                swSecondaryLog.toString());
+                                secondaryAppender.getLog());
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
                         Files.delete(recordFile);
@@ -555,9 +528,9 @@ public class Hotfolder {
         logger.debug("Available storage space: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
-            if (swSecondaryLog != null && emailConfigurationComplete) {
+            if (secondaryAppender != null && emailConfigurationComplete) {
                 checkAndSendErrorReport("Record indexing failed due to insufficient space (" + Version.asString() + ")",
-                        swSecondaryLog.toString());
+                        secondaryAppender.getLog());
             }
             throw new FatalIndexerException("Insufficient free space");
         }

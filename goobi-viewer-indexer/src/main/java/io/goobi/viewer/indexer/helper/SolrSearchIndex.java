@@ -572,7 +572,7 @@ public final class SolrSearchIndex {
         } catch (ClientProtocolException | JDOMException e) {
             logger.error(e.getMessage(), e);
         } catch (IOException e) {
-            logger.error(e.getMessage() + "; URL: " + url, e);
+            logger.error("{}; URL: {}", e.getMessage(), url, e);
         }
 
         return null;
