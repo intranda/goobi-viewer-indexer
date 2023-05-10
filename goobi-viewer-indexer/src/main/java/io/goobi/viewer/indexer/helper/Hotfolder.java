@@ -38,7 +38,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -343,16 +342,15 @@ public class Hotfolder {
             secondaryAppender.reset();
         }
 
-        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
-        logger.info("log4j config: {}", config.getConfigurationSource().getLocation());
-        for (String logr : config.getLoggers().keySet()) {
-            logger.info("logger: {}", logr);
-            for (String key : config.getLoggerConfig(logr).getAppenders().keySet()) {
-                logger.info("Appender: {}", key);
-                //                 config.getLoggerConfig(logr).getAppenders().get(key)
-            }
-        }
+        //        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        //        final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
+        //        logger.info("log4j config: {}", config.getConfigurationSource().getLocation());
+        //        for (String logr : config.getLoggers().keySet()) {
+        //            logger.info("logger: {}", logr);
+        //            for (String key : config.getLoggerConfig(logr).getAppenders().keySet()) {
+        //                logger.info("Appender: {}", key);
+        //            }
+        //        }
     }
 
     /**

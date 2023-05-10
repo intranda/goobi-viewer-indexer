@@ -49,8 +49,7 @@ public class SecondaryAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent logEvent) {
-        // logger.info("APPENDING: {}", getLayout().toSerializable(logEvent).toString());
-        
+        logger.info("APPENDING: {}", getLayout().toSerializable(logEvent));
         writer.append(getLayout().toSerializable(logEvent).toString());
     }
 
@@ -86,6 +85,7 @@ public class SecondaryAppender extends AbstractAppender {
      * @should reset writer correctly
      */
     public void reset() {
+        logger.info("resetting writer");
         writer.getBuffer().setLength(0);
     }
 }
