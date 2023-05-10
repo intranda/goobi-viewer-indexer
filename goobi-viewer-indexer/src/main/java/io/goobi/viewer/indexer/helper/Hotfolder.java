@@ -365,9 +365,14 @@ public class Hotfolder {
         context.getRootLogger().addAppender(secondaryAppender);
         context.updateLoggers();
 
-        for (String key : context.getRootLogger().getAppenders().keySet()) {
-            logger.info("Appender: {}", key);
+        logger.info("log4j config: {}", config.getConfigurationSource().getLocation());
+        for (String logr : config.getLoggers().keySet()) {
+            logger.info("logger: {}", logr);
+            for (String key : config.getLoggerConfig(logr).getAppenders().keySet()) {
+                logger.info("Appender: {}", key);
+            }
         }
+
     }
 
     /**
