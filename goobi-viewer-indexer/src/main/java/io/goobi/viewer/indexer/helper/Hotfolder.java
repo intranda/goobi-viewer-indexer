@@ -364,6 +364,10 @@ public class Hotfolder {
         config.addAppender(secondaryAppender); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
         context.getRootLogger().addAppender(secondaryAppender);
         context.updateLoggers();
+
+        for (String key : context.getRootLogger().getAppenders().keySet()) {
+            logger.info("Appender: {}", key);
+        }
     }
 
     /**
