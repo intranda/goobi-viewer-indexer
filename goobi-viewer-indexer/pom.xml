@@ -34,7 +34,7 @@
         <buildDate>${maven.build.timestamp}</buildDate>
 
 		<!-- intranda libraries -->
-		<alto.version>1.5.9</alto.version>
+		<alto.version>1.5.10</alto.version>
 		<iiif-api-model.version>2.4.2</iiif-api-model.version>
 		<normdataimporter.version>1.10.1</normdataimporter.version>
 
@@ -50,12 +50,12 @@
 		<icu.version>73.1</icu.version>
 		<imageio-openjpeg.version>0.6.6</imageio-openjpeg.version>
 		<log4j.version>2.20.0</log4j.version>
-		<jackson.version>2.14.2</jackson.version>
+		<jackson.version>2.15.0</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
-		<jsoup.version>1.15.4</jsoup.version>
+		<jsoup.version>1.16.1</jsoup.version>
 		<json.version>20230227</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.18.0</metadata-extractor.version>
