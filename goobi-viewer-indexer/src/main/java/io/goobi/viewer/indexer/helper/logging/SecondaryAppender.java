@@ -23,17 +23,16 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 /**
- * 
+ * Appender that logs the indexing of a single records. The contents can be then e-mailed to configured recipients in case of errors.
  */
 @Plugin(name = "SecondaryAppender", category = "Core", elementType = "appender", printObject = false)
 public class SecondaryAppender extends AbstractAppender {
@@ -49,32 +48,22 @@ public class SecondaryAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent logEvent) {
-        logger.info("APPENDING: {}", getLayout().toSerializable(logEvent));
+        logger.trace("APPENDING: {}", getLayout().toSerializable(logEvent));
         writer.append(getLayout().toSerializable(logEvent).toString());
     }
 
     @PluginFactory
-    public static SecondaryAppender createAndStartAppender(@PluginAttribute("name") String name) {
+    public static SecondaryAppender createAppender(@PluginAttribute("name") String name,
+            @PluginElement("Layout") Layout<? extends Serializable> layout, @PluginElement("Filter") final Filter filter) {
         if (name == null) {
             logger.error("No name provided for SecondaryAppender");
             return null;
         }
+        if (layout == null) {
+            layout = PatternLayout.createDefaultLayout();
+        }
 
-        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        final Configuration config = context.getConfiguration();
-        PatternLayout layout = PatternLayout.newBuilder()
-                .withPattern("%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n")
-                .withConfiguration(config)
-                .build();
-
-        SecondaryAppender ret = new SecondaryAppender(name, null, layout, true);
-        config.addAppender(ret); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
-        ret.start();
-        
-        context.getRootLogger().addAppender(ret);
-        context.updateLoggers();
-
-        return ret;
+        return new SecondaryAppender(name, filter, layout, true);
     }
 
     public String getLog() {

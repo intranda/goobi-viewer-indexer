@@ -38,6 +38,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -336,11 +337,13 @@ public class Hotfolder {
      */
     private void resetSecondaryLog() {
         if (secondaryAppender == null) {
-            secondaryAppender = SecondaryAppender.createAndStartAppender("record_appender");
+            // secondaryAppender = SecondaryAppender.createAndStartAppender("record_appender");
 
-        } else {
-            secondaryAppender.reset();
+            final LoggerContext context = (LoggerContext) LogManager.getContext(false);
+            final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
+            secondaryAppender = (SecondaryAppender) config.getRootLogger().getAppenders().get("record");
         }
+        secondaryAppender.reset();
 
         //        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
         //        final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
