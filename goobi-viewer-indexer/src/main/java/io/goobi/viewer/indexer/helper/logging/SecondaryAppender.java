@@ -41,6 +41,14 @@ public class SecondaryAppender extends AbstractAppender {
 
     private StringWriter writer;
 
+    /**
+     * Constructor.
+     * 
+     * @param name
+     * @param filter
+     * @param layout
+     * @param ignoreExceptions
+     */
     protected SecondaryAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions) {
         super(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY);
         writer = new StringWriter();
@@ -48,7 +56,7 @@ public class SecondaryAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent logEvent) {
-        logger.trace("APPENDING: {}", getLayout().toSerializable(logEvent));
+        logger.info("APPENDING: {}", getLayout().toSerializable(logEvent));
         writer.append(getLayout().toSerializable(logEvent).toString());
     }
 
