@@ -39,7 +39,7 @@ public class SecondaryAppender extends AbstractAppender {
 
     private static final Logger logger = LogManager.getLogger(SecondaryAppender.class);
 
-    private static final StringWriter writer = new StringWriter();
+    private static final StringWriter writer = new StringWriter(); // static to ensure it's the same object over different appender instances
 
     /**
      * Constructor.
