@@ -212,8 +212,7 @@ public class Hotfolder {
 
         // Secondary logging appender
         final LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        final org.apache.logging.log4j.core.config.Configuration log4jConfig = context.getConfiguration();
-        secondaryAppender = (SecondaryAppender) log4jConfig.getRootLogger().getAppenders().get("record");
+        secondaryAppender = (SecondaryAppender) context.getConfiguration().getAppenders().get("record");
     }
 
     /**
