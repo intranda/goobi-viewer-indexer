@@ -362,8 +362,8 @@ public class Hotfolder {
      * @throws FatalIndexerException
      */
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
-        logger.info("checkAndSendErrorReport");
-        logger.info("body:\n{}", body);
+        logger.debug("checkAndSendErrorReport");
+        logger.trace("body:\n{}", body);
         if (StringUtils.isEmpty(body)) {
             logger.warn("E-Mail body is empty.");
         }
