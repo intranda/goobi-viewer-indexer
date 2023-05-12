@@ -56,7 +56,7 @@ public class SecondaryAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent logEvent) {
-        logger.info("APPENDING ({}): {}", System.identityHashCode(writer), getLayout().toSerializable(logEvent));
+        logger.info("APPENDING ({} / {})", System.identityHashCode(this), System.identityHashCode(writer));
         writer.append(getLayout().toSerializable(logEvent).toString());
     }
 
@@ -75,7 +75,7 @@ public class SecondaryAppender extends AbstractAppender {
     }
 
     public String getLog() {
-        logger.info("getLog ({})", System.identityHashCode(writer));
+        logger.info("getLog ({} / {})", System.identityHashCode(this), System.identityHashCode(writer));
         return writer.toString();
     }
 
