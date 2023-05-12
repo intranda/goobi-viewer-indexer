@@ -39,7 +39,7 @@ public class SecondaryAppender extends AbstractAppender {
 
     private static final Logger logger = LogManager.getLogger(SecondaryAppender.class);
 
-    private StringWriter writer;
+    private static final StringWriter writer = new StringWriter();
 
     /**
      * Constructor.
@@ -51,7 +51,6 @@ public class SecondaryAppender extends AbstractAppender {
      */
     protected SecondaryAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions) {
         super(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY);
-        writer = new StringWriter();
     }
 
     @Override
