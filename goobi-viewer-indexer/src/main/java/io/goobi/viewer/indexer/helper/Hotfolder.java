@@ -209,6 +209,11 @@ public class Hotfolder {
         if (emailConfigurationComplete) {
             logger.info("E-mail configuration OK.");
         }
+
+        // Secondary logging appender
+        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        final org.apache.logging.log4j.core.config.Configuration log4jConfig = context.getConfiguration();
+        secondaryAppender = (SecondaryAppender) log4jConfig.getRootLogger().getAppenders().get("record");
     }
 
     /**
@@ -336,14 +341,9 @@ public class Hotfolder {
      * Empties and re-inits the secondary logger.
      */
     private void resetSecondaryLog() {
-        if (secondaryAppender == null) {
-            // secondaryAppender = SecondaryAppender.createAndStartAppender("record_appender");
-
-            final LoggerContext context = (LoggerContext) LogManager.getContext(false);
-            final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
-            secondaryAppender = (SecondaryAppender) config.getRootLogger().getAppenders().get("record");
+        if (secondaryAppender != null) {
+            secondaryAppender.reset();
         }
-        secondaryAppender.reset();
 
         //        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
         //        final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
