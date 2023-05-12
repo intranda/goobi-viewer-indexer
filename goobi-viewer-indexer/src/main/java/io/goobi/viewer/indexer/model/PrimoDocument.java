@@ -22,11 +22,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.ClientProtocolException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -35,7 +34,7 @@ import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
 
 public class PrimoDocument {
-    
+
     private static final Logger logger = LogManager.getLogger(PrimoDocument.class);
 
     private static final String REGEX = "\\$\\{([^{}]+)\\}";
@@ -74,7 +73,7 @@ public class PrimoDocument {
             return this;
         }
 
-        Pattern p = Pattern.compile(REGEX);     //NOSONAR   regex save and input controlled
+        Pattern p = Pattern.compile(REGEX); //NOSONAR   regex save and input controlled
         Matcher m = p.matcher(url);
 
         if (!m.find()) {
@@ -92,7 +91,13 @@ public class PrimoDocument {
         return this;
     }
 
-    public PrimoDocument fetch() throws HTTPException, ClientProtocolException, IOException {
+    /**
+     * 
+     * @return
+     * @throws HTTPException
+     * @throws IOException
+     */
+    public PrimoDocument fetch() throws HTTPException, IOException {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalStateException("url may not be null or empty");
         }

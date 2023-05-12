@@ -33,8 +33,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -747,6 +750,7 @@ public class WorldViewsIndexer extends Indexer {
      * @param dataFolders a {@link java.util.Map} object.
      * @param pi
      * @param pageCountStart a int.
+     * @throws InterruptedException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
@@ -755,33 +759,35 @@ public class WorldViewsIndexer extends Indexer {
      * @should maintain page order after parallel processing
      */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders, final String pi,
-            int pageCountStart)
-            throws FatalIndexerException {
+            int pageCountStart) throws InterruptedException, FatalIndexerException {
         // Get all physical elements
         List<Element> eleListImages = xp.evaluateToElements("worldviews/resource/images/image", null);
         logger.info("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
 
         if (Configuration.getInstance().getThreads() > 1) {
-            ExecutorService executor = Executors.newFixedThreadPool(Configuration.getInstance().getThreads());
-            for (final Element eleImage : eleListImages) {
-
-                // Generate each page document in its own thread
-                Runnable r = new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, null, writeStrategy,
-                                    dataFolders);
-                        } catch (FatalIndexerException e) {
-                            logger.error("Should be exiting here now...");
+            // Generate each page document in its own thread
+            ForkJoinPool pool = new ForkJoinPool(Configuration.getInstance().getThreads());
+            ConcurrentHashMap<Long, Boolean> map = new ConcurrentHashMap<>();
+            try {
+                pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
+                    try {
+                        long iddoc = getNextIddoc(hotfolder.getSearchIndex());
+                        if (map.containsKey(iddoc)) {
+                            logger.error("Duplicate IDDOC: {}", iddoc);
                         }
+                        generatePageDocument(eleImage, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders);
+                        map.put(iddoc, true);
+                    } catch (FatalIndexerException e) {
+                        logger.error("Should be exiting here now...");
                     }
-                };
-                executor.execute(r);
-            }
-            executor.shutdown();
-            while (!executor.isTerminated()) {
+                })).get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
+            } catch (ExecutionException e) {
+                logger.error(e.getMessage(), e);
+                SolrIndexerDaemon.getInstance().stop();
+            } catch (TimeoutException e) {
+                throw new InterruptedException("Generating page documents timed out for object " + pi);
+            } finally {
+                pool.shutdown();
             }
         } else {
             int order = pageCountStart;
@@ -810,7 +816,6 @@ public class WorldViewsIndexer extends Indexer {
     boolean generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, ISolrWriteStrategy writeStrategy,
             Map<String, Path> dataFolders)
             throws FatalIndexerException {
-        String id = eleImage.getAttributeValue("ID");
         if (order == null) {
             order = Integer.parseInt(eleImage.getChildText("sequence"));
         }

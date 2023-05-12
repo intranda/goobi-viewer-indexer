@@ -162,8 +162,8 @@ public class Hotfolder {
         metsFileSizeThreshold = Configuration.getInstance().getInt("performance.metsFileSizeThreshold", 10485760);
         dataFolderSizeThreshold = Configuration.getInstance().getInt("performance.dataFolderSizeThreshold", 157286400);
 
-        SolrSearchIndex.optimize = Configuration.getInstance().isAutoOptimize();
-        logger.info("Auto-optimize: {}", SolrSearchIndex.optimize);
+        this.searchIndex.setOptimize(Configuration.getInstance().isAutoOptimize());
+        logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
 
         try {
             addVolumeCollectionsToAnchor = Configuration.getInstance().isAddVolumeCollectionsToAnchor();
@@ -343,16 +343,6 @@ public class Hotfolder {
         if (secondaryAppender != null) {
             secondaryAppender.reset();
         }
-
-        //        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        //        final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
-        //        logger.info("log4j config: {}", config.getConfigurationSource().getLocation());
-        //        for (String logr : config.getLoggers().keySet()) {
-        //            logger.info("logger: {}", logr);
-        //            for (String key : config.getLoggerConfig(logr).getAppenders().keySet()) {
-        //                logger.info("Appender: {}", key);
-        //            }
-        //        }
     }
 
     /**
@@ -645,7 +635,6 @@ public class Hotfolder {
                     try {
                         this.currentIndexer = new UsageStatisticsIndexer(this);
                         currentIndexer.addToIndex(sourceFile, false, null);
-                        ;
                     } finally {
                         this.currentIndexer = null;
                     }
@@ -684,7 +673,6 @@ public class Hotfolder {
                 } finally {
                     currentIndexer = null;
                 }
-                ;
                 Utils.submitDataToViewer(countRecordFiles());
             }
         } catch (IOException e) {

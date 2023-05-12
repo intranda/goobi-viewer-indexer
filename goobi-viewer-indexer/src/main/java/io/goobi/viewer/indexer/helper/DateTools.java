@@ -102,18 +102,21 @@ public class DateTools {
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
+            // Not this format, try next
         }
         try {
             LocalDate date = LocalDate.parse(dateString, formatterISO8601DateTimeInstant);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
+            // Not this format, try next
         }
         try {
             LocalDate date = LocalDate.parse(dateString, formatterDEDate);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
+            // Not this format, try next
         }
         try {
             LocalDate date = LocalDate.parse(dateString, formatterISO8601Date);
@@ -121,30 +124,35 @@ public class DateTools {
             logger.trace("parsed date: {} (using format yyyy-MM-dd)", date);
             return ret;
         } catch (DateTimeParseException e) {
+            // Not this format, try next
         }
         try {
             LocalDate date = LocalDate.parse(dateString, formatterISO8601YearMonth);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
+            // Not this format, try next
         }
         try {
             LocalDate date = LocalDate.parse(dateString, formatterUSDate);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
+            // Not this format, try next
         }
         try {
             LocalDate date = LocalDate.parse(dateString, formatterCNDate);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
+            // Not this format, try next
         }
         try {
             LocalDate date = LocalDate.parse(dateString, formatterJPDate);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
+            // Not this format, try next
         }
 
         // Try parsing year ranges
@@ -165,7 +173,7 @@ public class DateTools {
             return ret;
         }
         // Try parsing remaining numbers
-        Pattern p = Pattern.compile("[-]{0,1}\\d+");
+        Pattern p = Pattern.compile("-?\\d+");
         Matcher m = p.matcher(dateString);
         while (m.find()) {
             try {

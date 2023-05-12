@@ -30,7 +30,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,8 +50,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.FileWriterWithEncoding;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -121,7 +120,7 @@ public class FileTools {
         try (FileInputStream fis = new FileInputStream(file)) {
             boolean charsetDetected = true;
             String charset = getCharset(new FileInputStream(file));
-            // logger.debug("{} charset: {}", file.getAbsolutePath(), charset);
+            // logger.debug("{} charset: {}", file.getAbsolutePath(), charset); //NOSONAR This is needed for debugging sometimes
             if (charset == null) {
                 charsetDetected = false;
                 charset = TextHelper.DEFAULT_CHARSET;

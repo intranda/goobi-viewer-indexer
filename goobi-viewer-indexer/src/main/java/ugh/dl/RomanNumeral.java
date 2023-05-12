@@ -92,7 +92,7 @@ public class RomanNumeral extends Number {
      * The buffer used to compute and store the string representation of the RomanNumeral.
      * </p>
      **************************************************************************/
-    private StringBuffer num;
+    private StringBuilder num;
 
     /***************************************************************************
      * <p>
@@ -108,7 +108,7 @@ public class RomanNumeral extends Number {
     public RomanNumeral() {
         this.styleIsArchaic = false;
         this.intValue = 1;
-        this.num = new StringBuffer();
+        this.num = new StringBuilder();
         this.num.append('I');
     }
 
@@ -212,7 +212,7 @@ public class RomanNumeral extends Number {
     private void convertIntArchaic(int number) {
 
         int div;
-        this.num = new StringBuffer();
+        this.num = new StringBuilder();
 
         for (int i = 0; i < NUM_DIVISORS && number > 0; i++) {
             div = number / DIVISORS[i];
@@ -234,7 +234,7 @@ public class RomanNumeral extends Number {
     private void convertInt(int number) {
         int div;
 
-        this.num = new StringBuffer();
+        this.num = new StringBuilder();
         for (int i = 0; i < NUM_DIVISORS && number > 0; i++) {
             div = number / DIVISORS[i];
             if (div == 4) {
@@ -302,7 +302,7 @@ public class RomanNumeral extends Number {
         }
         value = value.toUpperCase();
         this.intValue = convertRomanToInt(value);
-        this.num = new StringBuffer(value);
+        this.num = new StringBuilder(value);
     }
 
     /***************************************************************************
@@ -395,9 +395,7 @@ public class RomanNumeral extends Number {
         if (getClass() != obj.getClass())
             return false;
         RomanNumeral other = (RomanNumeral) obj;
-        if (intValue != other.intValue)
-            return false;
-        return true;
+        return intValue == other.intValue;
     }
 
     /***************************************************************************
@@ -471,6 +469,7 @@ public class RomanNumeral extends Number {
      * 
      * @return the short value of the Roman numeral
      **************************************************************************/
+    @Override
     public short shortValue() {
         return (short) this.intValue;
     }
@@ -484,6 +483,7 @@ public class RomanNumeral extends Number {
      * 
      * @return the byte value of the Roman numeral
      **************************************************************************/
+    @Override
     public byte byteValue() {
         return (byte) this.intValue;
     }

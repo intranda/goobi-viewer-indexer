@@ -510,16 +510,6 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER);
-
-        // Delete unsupported data folders
-        //                List<File> unknownDirs = Arrays.asList(hotfolderPath.listFiles(getDataFolderFilter(fileNameRoot + "_")));
-        //                if (unknownDirs != null) {
-        //                    for (File f : unknownDirs) {
-        //                        if (!deleteDirectory(f)) {
-        //                            logger.warn("'" + f.getAbsolutePath() + "' could not be deleted.");
-        //                        }
-        //                    }
-        //                }
     }
 
     /**
