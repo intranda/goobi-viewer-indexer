@@ -231,7 +231,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             }
         }
 
-        return null;
+        return null; //NOSONAR Returning empty map would complicate things
     }
 
     /**
@@ -267,10 +267,10 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
 
         sanitizeDoc(rootDoc);
-        
+
         // Check for duplicate URNs
         checkForValueCollisions(SolrConstants.URN, (String) rootDoc.getFieldValue(SolrConstants.PI));
-        
+
         logger.info("Writing {} structure/content documents to the index...", docIddocs.size());
         for (String iddoc : docIddocs) {
             SolrInputDocument doc = load(iddoc);
@@ -343,7 +343,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             throw new IndexerException(e.getMessage());
         }
 
-        searchIndex.commit(SolrSearchIndex.optimize);
+        searchIndex.commit(searchIndex.isOptimize());
     }
 
     /**
@@ -420,20 +420,19 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         Path tempFile = Paths.get(tempFolder.toAbsolutePath().toString(), iddoc);
         if (Files.isRegularFile(tempFile)) {
             deleteTempFile(tempFile);
-            {
-                Path tempXmlFile = Paths.get(tempFolder.toAbsolutePath().toString(),
-                        new StringBuilder().append(iddoc).append("_").append(SolrConstants.ALTO).toString());
-                if (Files.isRegularFile(tempXmlFile)) {
-                    deleteTempFile(tempXmlFile);
-                }
+
+            Path tempAltoFile = Paths.get(tempFolder.toAbsolutePath().toString(),
+                    new StringBuilder().append(iddoc).append("_").append(SolrConstants.ALTO).toString());
+            if (Files.isRegularFile(tempAltoFile)) {
+                deleteTempFile(tempAltoFile);
             }
-            {
-                Path tempXmlFile = Paths.get(tempFolder.toAbsolutePath().toString(),
-                        new StringBuilder().append(iddoc).append("_").append(SolrConstants.FULLTEXT).toString());
-                if (Files.isRegularFile(tempXmlFile)) {
-                    deleteTempFile(tempXmlFile);
-                }
+
+            Path tempFulltextFile = Paths.get(tempFolder.toAbsolutePath().toString(),
+                    new StringBuilder().append(iddoc).append("_").append(SolrConstants.FULLTEXT).toString());
+            if (Files.isRegularFile(tempFulltextFile)) {
+                deleteTempFile(tempFulltextFile);
             }
+
         }
     }
 
@@ -465,7 +464,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             copyFailedFile(file);
         }
 
-        return null;
+        return null; //NOSONAR Returning empty map would complicate things
     }
 
     private boolean save(SolrInputDocument doc, String fileName) {

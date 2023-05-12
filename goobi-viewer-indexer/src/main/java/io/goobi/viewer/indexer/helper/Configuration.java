@@ -140,9 +140,6 @@ public final class Configuration {
                         }
                     }
                 });
-        //        PeriodicReloadingTrigger trigger = new PeriodicReloadingTrigger(builder.getReloadingController(),
-        //                null, 10, TimeUnit.SECONDS);
-        //        trigger.start();
     }
 
     private XMLConfiguration getConfig() {

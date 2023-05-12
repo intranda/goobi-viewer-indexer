@@ -182,7 +182,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
             return pageOrderMap.get(order);
         }
 
-        return null;
+        return null; //NOSONAR Returning empty map would complicate things
     }
 
     /** {@inheritDoc} */
@@ -251,7 +251,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
         if (!docsToAdd.isEmpty()) {
             searchIndex.writeToIndex(docsToAdd);
-            searchIndex.commit(SolrSearchIndex.optimize);
+            searchIndex.commit(searchIndex.isOptimize());
             logger.debug("{} new doc(s) added.", docsToAdd.size());
         } else {
             throw new IndexerException("No docs to write");

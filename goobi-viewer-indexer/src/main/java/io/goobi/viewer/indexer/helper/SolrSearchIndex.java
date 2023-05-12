@@ -71,11 +71,22 @@ public final class SolrSearchIndex {
     private static final String ERROR_SOLR_CONNECTION = "Solr connection error";
     private static final String ERROR_UPDATE_STATUS = "Update status: {}";
 
-    /** Constant <code>optimize=false</code> */
-    public static boolean optimize = false;
     private static Map<Long, Boolean> usedIddocs = new ConcurrentHashMap<>();
 
+    private boolean optimize = false;
+
     private SolrClient server;
+
+    /**
+     * <p>
+     * Constructor for SolrSearchIndex.
+     * </p>
+     *
+     * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
+     */
+    public SolrSearchIndex(SolrClient server) {
+        this.server = server;
+    }
 
     /**
      * <p>
@@ -107,17 +118,6 @@ public final class SolrSearchIndex {
         server.setRequestWriter(new BinaryRequestWriter());
 
         return server;
-    }
-
-    /**
-     * <p>
-     * Constructor for SolrSearchIndex.
-     * </p>
-     *
-     * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
-     */
-    public SolrSearchIndex(SolrClient server) {
-        this.server = server;
     }
 
     /**
@@ -226,7 +226,7 @@ public final class SolrSearchIndex {
      */
     public static SolrInputDocument createDocument(List<LuceneField> luceneFields) {
         if (luceneFields == null) {
-            return null;
+            return null; //NOSONAR Returning empty map would complicate things
         }
 
         SolrInputDocument doc = new SolrInputDocument();
@@ -664,7 +664,7 @@ public final class SolrSearchIndex {
             logger.error(e.getMessage(), e);
         }
 
-        return null;
+        return null; //NOSONAR Returning empty map would complicate things
     }
 
     /**
@@ -819,5 +819,19 @@ public final class SolrSearchIndex {
         }
 
         return ret;
+    }
+
+    /**
+     * @return the optimize
+     */
+    public boolean isOptimize() {
+        return optimize;
+    }
+
+    /**
+     * @param optimize the optimize to set
+     */
+    public void setOptimize(boolean optimize) {
+        this.optimize = optimize;
     }
 }

@@ -34,6 +34,10 @@ public class WebAnnotationTools {
     static final String TARGET_REGEX_MANIFEST = "/records/([^/]+)/manifest";
     static final String TARGET_REGEX_SECTION = "/records/([^/]+)/sections/([^/]+)/range/";
 
+    /** Private constructor. */
+    private WebAnnotationTools() {
+    }
+
     /**
      * Extract the page order from a canvas url. If the url points to a manifest, return null
      *
@@ -83,10 +87,10 @@ public class WebAnnotationTools {
      */
     public static Matcher getMatchingMatcher(URI uri) {
         Matcher matcher = null;
-        Matcher matcherOld = Pattern.compile(TARGET_REGEX).matcher(uri.toString());                 //NOSONAR   regex save and input controlled
-        Matcher matcherCanvas = Pattern.compile(TARGET_REGEX_CANVAS).matcher(uri.toString());       //NOSONAR   regex save and input controlled
-        Matcher matcherManifest = Pattern.compile(TARGET_REGEX_MANIFEST).matcher(uri.toString());   //NOSONAR   regex save and input controlled
-        Matcher matcherSection = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString());     //NOSONAR   regex save and input controlled
+        Matcher matcherOld = Pattern.compile(TARGET_REGEX).matcher(uri.toString()); //NOSONAR   regex save and input controlled
+        Matcher matcherCanvas = Pattern.compile(TARGET_REGEX_CANVAS).matcher(uri.toString()); //NOSONAR   regex save and input controlled
+        Matcher matcherManifest = Pattern.compile(TARGET_REGEX_MANIFEST).matcher(uri.toString()); //NOSONAR   regex save and input controlled
+        Matcher matcherSection = Pattern.compile(TARGET_REGEX_SECTION).matcher(uri.toString()); //NOSONAR   regex save and input controlled
 
         if (matcherOld.find()) {
             matcher = matcherOld;
