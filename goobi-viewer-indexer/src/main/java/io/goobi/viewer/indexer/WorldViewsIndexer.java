@@ -477,6 +477,12 @@ public class WorldViewsIndexer extends Indexer {
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
             logger.info("Finished writing data for '{}' to Solr.", pi);
+        } catch (InterruptedException e) {
+            logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
+            logger.error(e.getMessage(), e);
+            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            hotfolder.getSearchIndex().rollback();
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
