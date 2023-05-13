@@ -98,7 +98,7 @@
         </authorityData>
 
 		<aggregateRecords>true</aggregateRecords>
-		
+
 		<!-- fulltextForceUTF8: If true, full-text files will automatically be converted to UTF-8
 		    if a different charset is detected. Default is true. -->
 		<fulltextForceUTF8>false</fulltextForceUTF8>
@@ -156,11 +156,11 @@
 
         <!-- If more than 1, page documents will be generated in parallel threads. Default is 1. -->
         <threads>4</threads>
-	        
+
         <!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
             Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
         <countHotfolderFiles>true</countHotfolderFiles>
-            
+
         <!-- authorityDataCache/@enabled: If true, previously retrieved authority data records will be cached within the application
             for the duration of its lifetime. Default is true. -->
         <authorityDataCache enabled="true">
@@ -250,7 +250,7 @@
 				</item>
 			</list>
 		</PI>
-		
+
         <MD_ARCHIVE_ENTRY_ID>
             <list>
                 <item>
@@ -260,7 +260,7 @@
                 </item>
             </list>
         </MD_ARCHIVE_ENTRY_ID>
-		
+
         <!-- This field is important, see chapter 3.13 of the manual -->
         <LABEL>
             <list>
@@ -486,7 +486,7 @@
 				</item>
 			</list>
 	    </MD_TITLE_SERIES>
-        
+
         <SORT_TITLE_SERIES>
             <list>
                 <item>
@@ -1047,7 +1047,7 @@
 				</item>
 			</list>
 		</MD_CARTOGRAPHER>
-        
+
         <MD_CENSOR>
             <list>
                 <item>
@@ -1630,7 +1630,7 @@
 				</item>
 			</list>
 		</MD_PHOTOGRAPHER>
-        
+
         <MD_PRAESES>
             <list>
                 <item>
@@ -1740,7 +1740,7 @@
                 </item>
             </list>
         </MD_SUBJECTPERSON>
-        
+
         <MD_TRANSCRIBER>
             <list>
                 <item>
@@ -3073,7 +3073,7 @@
 				</item>
 			</list>
 		</MD_GEOJSON_POLYGON>
-		
+
         <MD_GPS_POLYGON>
             <list>
                 <item>
@@ -3193,7 +3193,7 @@
                 </item>
             </list>
         </MD_INTRANDAINSTITUTION>
-        
+
         <MD_FINDINGAIDSLINK>
             <list>
                 <item>
@@ -3223,12 +3223,12 @@
                 </item>
             </list>
         </MD_CITATION_APA>
-        
+
         <MD_CLASSIFICATION_COMBINED>
                         <list>
                                 <item>
                                         <xpath>mets:xmlData/mods:mods/mods:classification[@displayLabel='category']</xpath>
-                                       
+
                 <!-- <getnode>first</getnode> -->
                 <!-- <getparents>all</getparents> -->
                 <onetoken>true</onetoken>
@@ -3243,7 +3243,7 @@
                                 </item>
                         </list>
         </MD_CLASSIFICATION_COMBINED>
-        
+
         <MD_GROUP>
             <list>
                 <item>
@@ -3267,7 +3267,7 @@
                 </item>
             </list>
         </MD_GROUP>
-                
+
         <MD_REPOSITORY>
             <list>
                 <item>
@@ -3345,7 +3345,7 @@
                 </item>
             </list>
         </MD_EVENT>
-        
+
         <MD_SCOPECONTENT>
             <list>
                 <item>
@@ -3449,8 +3449,8 @@
                                 </item>
                         </list>
                 </MD_USEANDREPRODUCTIONLICENSE>
-                
-                
+
+
         <!-- ARTIST DICTIONARY -->
         <MD_ROLE>
             <list>
@@ -3465,7 +3465,7 @@
                 </item>
             </list>
         </MD_ROLE>
-        
+
         <MDNUM_IMPORTANCE>
             <list>
                 <item>
@@ -3479,7 +3479,7 @@
                 </item>
             </list>
         </MDNUM_IMPORTANCE>
-        
+
         <NORM_URI>
             <list>
                 <item>
@@ -3493,7 +3493,7 @@
                 </item>
             </list>
         </NORM_URI>
-        
+
         <MD_BIRTHDATE>
             <list>
                 <item>
@@ -3512,7 +3512,7 @@
                 </item>
             </list>
         </MD_BIRTHDATE>
-        
+
         <MD_BIRTHPLACE>
             <list>
                 <item>
@@ -3529,7 +3529,7 @@
                 </item>
             </list>
         </MD_BIRTHPLACE>
-        
+
         <MD_DEATHDATE>
             <list>
                 <item>
@@ -3543,7 +3543,7 @@
                 </item>
             </list>
         </MD_DEATHDATE>
-        
+
         <MD_GENDER>
             <list>
                 <item>
@@ -3557,7 +3557,7 @@
                 </item>
             </list>
         </MD_GENDER>
-        
+
         <MD_PROFESSION>
             <list>
                 <item>
@@ -3575,7 +3575,7 @@
                 </item>
             </list>
         </MD_PROFESSION>
-        
+
         <MD_DISCIPLINE>
             <list>
                 <item>
@@ -3592,7 +3592,7 @@
                 </item>
             </list>
         </MD_DISCIPLINE>
-        
+
         <MD_ARTISTIC_MOVEMENT>
             <list>
                 <item>
@@ -3609,7 +3609,7 @@
                 </item>
             </list>
         </MD_ARTISTIC_MOVEMENT>
-        
+
         <MD_BIOGRAPHY_EDUCATION>
             <list>
                 <item>
@@ -3629,7 +3629,7 @@
                 </item>
             </list>
         </MD_BIOGRAPHY_EDUCATION>
-        
+
         <MD_BIOGRAPHY_MARRIAGE>
             <list>
                 <item>
@@ -3647,7 +3647,7 @@
                 </item>
             </list>
         </MD_BIOGRAPHY_MARRIAGE>
-        
+
         <MD_BIOGRAPHY_JOURNEY>
             <list>
                 <item>
@@ -3665,7 +3665,7 @@
                 </item>
             </list>
         </MD_BIOGRAPHY_JOURNEY>
-        
+
         <MD_DESCRIPTION_LANG_FR>
             <list>
                 <item>
@@ -3678,7 +3678,7 @@
                 </item>
             </list>
         </MD_DESCRIPTION_LANG_FR>
-        
+
         <MD_DESCRIPTION_LANG_EN>
             <list>
                 <item>
@@ -3691,7 +3691,7 @@
                 </item>
             </list>
         </MD_DESCRIPTION_LANG_EN>
-        
+
         <MD_DESCRIPTION_LANG_DE>
             <list>
                 <item>
@@ -3704,7 +3704,7 @@
                 </item>
             </list>
         </MD_DESCRIPTION_LANG_DE>
-        
+
         <MD_RELATIONSHIP>
             <list>
                 <item>
@@ -3725,7 +3725,7 @@
                 </item>
             </list>
         </MD_RELATIONSHIP>
-        
+
         <MD_RELATIONSHIP_AWARD>
             <list>
                 <item>
@@ -3745,7 +3745,7 @@
                 </item>
             </list>
         </MD_RELATIONSHIP_AWARD>
-        
+
         <MD_RELATIONSHIP_EVENT>
             <list>
                 <item>
@@ -3765,7 +3765,7 @@
                 </item>
             </list>
         </MD_RELATIONSHIP_EVENT>
-        
+
         <MD_RELATIONSHIP_GROUP>
             <list>
                 <item>
@@ -3785,7 +3785,7 @@
                 </item>
             </list>
         </MD_RELATIONSHIP_GROUP>
-        
+
         <MD_RELATIONSHIP_PERSON>
             <list>
                 <item>
@@ -3806,7 +3806,7 @@
                 </item>
             </list>
         </MD_RELATIONSHIP_PERSON>
-        
+
         <!--
         <MD_RELATION_COLLABORATION>
             <list>
@@ -3826,7 +3826,7 @@
                 </item>
             </list>
         </MD_RELATION_COLLABORATION>
-        
+
         <MD_RELATION_COLLECTION>
             <list>
                 <item>
@@ -3845,7 +3845,7 @@
                 </item>
             </list>
         </MD_RELATION_COLLECTION>
-        
+
         <MD_RELATION_GIVEN_BY>
             <list>
                 <item>
@@ -3865,7 +3865,7 @@
                 </item>
             </list>
         </MD_RELATION_GIVEN_BY>
-        
+
         <MD_RELATION_GIVEN_TO>
             <list>
                 <item>
@@ -3885,7 +3885,7 @@
                 </item>
             </list>
         </MD_RELATION_GIVEN_TO>
-        
+
         <MD_RELATION_PARTNERSHIP>
             <list>
                 <item>
@@ -3904,7 +3904,7 @@
                 </item>
             </list>
         </MD_RELATION_PARTNERSHIP>
-        
+
         <MD_RELATION_REPRESENTATION_ACTIVE>
             <list>
                 <item>
@@ -3923,7 +3923,7 @@
                 </item>
             </list>
         </MD_RELATION_REPRESENTATION_ACTIVE>
-        
+
         <MD_RELATION_REPRESENTATION_PASSIVE>
             <list>
                 <item>
@@ -3942,7 +3942,7 @@
                 </item>
             </list>
         </MD_RELATION_REPRESENTATION_PASSIVE>
-        
+
         <MD_RELATION_WORK_OWNERSHIP>
             <list>
                 <item>
@@ -3962,6 +3962,6 @@
             </list>
         </MD_RELATION_WORK_OWNERSHIP>
         -->
-             
+
 	</fields>
 </root>

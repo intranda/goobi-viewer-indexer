@@ -32,12 +32,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -47,8 +50,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.FileWriterWithEncoding;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -71,7 +74,8 @@ public class FileTools {
     }
 
     /** Constant <code>FILENAME_FILTER_XML</code> */
-    public static final FilenameFilter FILENAME_FILTER_XML = (dir, name) -> XML_EXTENSION.equals("." + FilenameUtils.getExtension(name.toLowerCase()));
+    public static final FilenameFilter FILENAME_FILTER_XML =
+            (dir, name) -> XML_EXTENSION.equals("." + FilenameUtils.getExtension(name.toLowerCase()));
 
     /**
      * Reads a String from a byte array
@@ -116,7 +120,7 @@ public class FileTools {
         try (FileInputStream fis = new FileInputStream(file)) {
             boolean charsetDetected = true;
             String charset = getCharset(new FileInputStream(file));
-            // logger.debug("{} charset: {}", file.getAbsolutePath(), charset);
+            // logger.debug("{} charset: {}", file.getAbsolutePath(), charset); //NOSONAR This is needed for debugging sometimes
             if (charset == null) {
                 charsetDetected = false;
                 charset = TextHelper.DEFAULT_CHARSET;
@@ -350,6 +354,44 @@ public class FileTools {
         while ((len = input.read(buf)) > 0) {
             output.write(buf, 0, len);
         }
+    }
+
+    /**
+     * <p>
+     * copyDirectory.
+     * </p>
+     *
+     * @param sourceLocation {@link java.nio.file.Path}
+     * @param targetLocation {@link java.nio.file.Path}
+     * @return number of copied files.
+     * @throws java.io.IOException in case of errors.
+     */
+    public static int copyDirectory(Path sourceLocation, Path targetLocation) throws IOException {
+        if (sourceLocation == null) {
+            throw new IllegalArgumentException("targetsourceLocationLocation may not be null");
+        }
+        if (targetLocation == null) {
+            throw new IllegalArgumentException("targetLocation may not be null");
+        }
+
+        int count = sourceLocation.toFile().listFiles().length;
+        if (count > 0) {
+            if (!Files.exists(targetLocation)) {
+                Files.createDirectory(targetLocation);
+            }
+            try (Stream<Path> walk = Files.walk(sourceLocation)) {
+                walk.filter(Files::isRegularFile).forEach(file -> {
+                    Path newFile = Paths.get(targetLocation.toAbsolutePath().toString(), file.getFileName().toString());
+                    try {
+                        Files.copy(file, newFile, StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        logger.error(e.getMessage());
+                    }
+                });
+            }
+        }
+
+        return count;
     }
 
     /**

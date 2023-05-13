@@ -163,6 +163,7 @@ public class DublinCoreIndexer extends Indexer {
                 }
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+            logger.info("Successfully finished indexing '{}'.", dcFile.getFileName());
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -415,7 +416,7 @@ public class DublinCoreIndexer extends Indexer {
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
-            logger.info("Successfully finished indexing '{}'.", dcFile.getFileName());
+            logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);

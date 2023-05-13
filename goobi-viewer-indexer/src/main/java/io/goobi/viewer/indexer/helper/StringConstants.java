@@ -18,7 +18,9 @@ package io.goobi.viewer.indexer.helper;
 public class StringConstants {
 
     public static final String ERROR_CONFIG = "Configuration error, see log for details.";
+    public static final String ERROR_DATAFOLDERS_MAY_NOT_BE_NULL = "dataFolders may not be null";
     public static final String ERROR_DOC_MAY_NOT_BE_NULL = "doc may not be null";
+    public static final String ERROR_PI_MAY_NOT_BE_NULL = "pi may not be null";
 
     public static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted.";
 

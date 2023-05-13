@@ -126,8 +126,8 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
 
         Map<String, Object> fieldsToTrim = new HashMap<>();
         for (String field : doc.getFieldNames()) {
-            if ((SolrConstants.DATECREATED.equals(field) || field.startsWith("BOOL_")) && doc.getFieldValues(field) != null
-                    && doc.getFieldValues(field).size() > 1) {
+            if ((SolrConstants.DATECREATED.equals(field) || field.startsWith("BOOL_") || field.startsWith(SolrConstants.PREFIX_MDNUM))
+                    && doc.getFieldValues(field) != null && doc.getFieldValues(field).size() > 1) {
                 Object firstValue = doc.getFieldValues(field).iterator().next();
                 if (firstValue != null) {
                     fieldsToTrim.put(field, firstValue);

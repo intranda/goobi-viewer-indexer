@@ -16,7 +16,9 @@
 package io.goobi.viewer.indexer.model.config;
 
 /**
- * <p>NonSortConfiguration class.</p>
+ * <p>
+ * NonSortConfiguration class.
+ * </p>
  *
  */
 public class NonSortConfiguration {
@@ -37,7 +39,9 @@ public class NonSortConfiguration {
     }
 
     /**
-     * <p>apply.</p>
+     * <p>
+     * apply.
+     * </p>
      *
      * @param s a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
@@ -53,14 +57,14 @@ public class NonSortConfiguration {
             regex.append(suffix);
         }
         s = s.replaceAll(regex.toString(), "").trim();
-        // logger.info("Non-sort regex: {}", regex);
-        // logger.info("s: {}", s);
 
         return s;
     }
 
     /**
-     * <p>Getter for the field <code>prefix</code>.</p>
+     * <p>
+     * Getter for the field <code>prefix</code>.
+     * </p>
      *
      * @return the prefix
      */
@@ -69,7 +73,9 @@ public class NonSortConfiguration {
     }
 
     /**
-     * <p>Getter for the field <code>suffix</code>.</p>
+     * <p>
+     * Getter for the field <code>suffix</code>.
+     * </p>
      *
      * @return the suffix
      */

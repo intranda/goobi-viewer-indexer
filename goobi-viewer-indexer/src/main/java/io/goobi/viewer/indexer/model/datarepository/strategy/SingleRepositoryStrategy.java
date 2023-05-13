@@ -83,7 +83,7 @@ public class SingleRepositoryStrategy extends AbstractDataRepositoryStrategy {
         }
         if (StringUtils.isBlank(pi)) {
             if (dataFile != null) {
-                logger.error("Could not parse PI from '{}'", dataFile.getFileName().toString());
+                logger.error("Could not parse PI from '{}'", dataFile.getFileName());
             }
             return ret;
         }
@@ -98,9 +98,7 @@ public class SingleRepositoryStrategy extends AbstractDataRepositoryStrategy {
                     logger.info("Data repository found in old index: {}", previousRepository);
                 }
             }
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (IOException | SolrServerException e) {
             logger.error(e.getMessage(), e);
         }
         if (previousRepository != null) {

@@ -169,6 +169,7 @@ public class DenkXwebIndexer extends Indexer {
                     }
                 }
                 prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+                logger.info("Successfully finished indexing '{}'.", identifier);
             } else {
                 handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
             }
@@ -186,6 +187,7 @@ public class DenkXwebIndexer extends Indexer {
         }
         // Delete all data folders for this record from the hotfolder
         DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        logger.info("Finished indexing DenkXweb file '{}'.", denkxwebFile.getFileName());
     }
 
     /**
@@ -363,7 +365,7 @@ public class DenkXwebIndexer extends Indexer {
                 sbImgFileNames.deleteCharAt(0);
             }
             ret[1] = sbImgFileNames.toString();
-            logger.info("Successfully finished indexing '{}'.", pi);
+            logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (Exception e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
                 logger.error("Indexing of '{}' could not be finished due to an error: {}", pi, e.getMessage());
