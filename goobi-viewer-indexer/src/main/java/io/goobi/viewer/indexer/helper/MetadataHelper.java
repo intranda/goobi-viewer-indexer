@@ -91,6 +91,10 @@ public class MetadataHelper {
     /** Constant <code>addNormDataFieldsToDefault</code> */
     public static List<String> addAuthorityDataFieldsToDefault;
 
+    /** Private constructor. */
+    private MetadataHelper() {
+    }
+
     /**
      * Retrieves configured metadata fields from the given XML node. Written for LIDO events, but should theoretically work for any METS or LIDO node.
      *
@@ -311,6 +315,11 @@ public class MetadataHelper {
                     }
                     // Apply string modifications configured for this field
                     fieldValue = applyAllModifications(configurationItem, fieldValue);
+                    
+                    // If value is blank after modifications, skip
+                    if (StringUtils.isBlank(fieldValue)) {
+                        continue;
+                    }
 
                     // Convert to geoJSON
                     if (configurationItem.getGeoJSONSource() != null) {
