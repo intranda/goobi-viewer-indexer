@@ -50,7 +50,7 @@
 		<icu.version>73.1</icu.version>
 		<imageio-openjpeg.version>0.6.6</imageio-openjpeg.version>
 		<log4j.version>2.20.0</log4j.version>
-		<jackson.version>2.15.0</jackson.version>
+		<jackson.version>2.15.1</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <javax.mail.version>1.6.2</javax.mail.version>
