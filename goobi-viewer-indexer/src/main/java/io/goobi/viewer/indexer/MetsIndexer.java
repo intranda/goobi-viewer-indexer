@@ -865,6 +865,7 @@ public class MetsIndexer extends Indexer {
                 shapeGmd.getFields().add(new LuceneField(FIELD_COORDS, (String) pageDoc.getFieldValue(FIELD_COORDS)));
                 shapeGmd.getFields().add(new LuceneField(FIELD_SHAPE, (String) pageDoc.getFieldValue(FIELD_SHAPE)));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, (String) pageDoc.getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.ORDER, String.valueOf(pageDoc.getFieldValue("ORDER_PARENT"))));
                 // Add main value, otherwise the document will be skipped
                 shapeGmd.setMainValue((String) pageDoc.getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);

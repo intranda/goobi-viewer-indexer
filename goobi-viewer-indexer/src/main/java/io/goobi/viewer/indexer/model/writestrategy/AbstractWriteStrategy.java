@@ -22,8 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +52,7 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
     protected SolrSearchIndex searchIndex;
 
     /** Collected field values for further checks, etc. */
-    protected Map<String, List<String>> collectedValues = new HashMap<>();
+    protected Map<String, List<String>> collectedValues = new ConcurrentHashMap<>();
 
     /**
      * 
