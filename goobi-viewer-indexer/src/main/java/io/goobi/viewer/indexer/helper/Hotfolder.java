@@ -18,7 +18,6 @@ package io.goobi.viewer.indexer.helper;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -40,8 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.WriterAppender;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -59,6 +56,7 @@ import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.WorldViewsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.helper.logging.SecondaryAppender;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -96,8 +94,7 @@ public class Hotfolder {
     /** Constant <code>worldviewsEnabled=true</code> */
     private boolean worldviewsEnabled = true;
 
-    private StringWriter swSecondaryLog;
-    private WriterAppender secondaryAppender;
+    private SecondaryAppender secondaryAppender;
 
     private final SolrSearchIndex searchIndex;
     private final SolrSearchIndex oldSearchIndex;
@@ -165,8 +162,8 @@ public class Hotfolder {
         metsFileSizeThreshold = Configuration.getInstance().getInt("performance.metsFileSizeThreshold", 10485760);
         dataFolderSizeThreshold = Configuration.getInstance().getInt("performance.dataFolderSizeThreshold", 157286400);
 
-        SolrSearchIndex.optimize = Configuration.getInstance().isAutoOptimize();
-        logger.info("Auto-optimize: {}", SolrSearchIndex.optimize);
+        this.searchIndex.setOptimize(Configuration.getInstance().isAutoOptimize());
+        logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
 
         try {
             addVolumeCollectionsToAnchor = Configuration.getInstance().isAddVolumeCollectionsToAnchor();
@@ -212,6 +209,10 @@ public class Hotfolder {
         if (emailConfigurationComplete) {
             logger.info("E-mail configuration OK.");
         }
+
+        // Secondary logging appender
+        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        secondaryAppender = (SecondaryAppender) context.getConfiguration().getAppenders().get("record");
     }
 
     /**
@@ -339,35 +340,23 @@ public class Hotfolder {
      * Empties and re-inits the secondary logger.
      */
     private void resetSecondaryLog() {
-        if (swSecondaryLog != null) {
-            try {
-                swSecondaryLog.close();
-            } catch (IOException e) {
-                logger.error(e.getMessage());
-            }
-        }
-        swSecondaryLog = new StringWriter();
-
-        final LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
         if (secondaryAppender != null) {
-            secondaryAppender.stop();
-            context.getRootLogger().removeAppender(secondaryAppender);
+            secondaryAppender.reset();
         }
-
-        final PatternLayout layout = PatternLayout.newBuilder()
-                .withPattern("%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] (%F\\:%M\\:%L)%n        %msg%n")
-                .withConfiguration(config)
-                .build();
-        secondaryAppender = WriterAppender.createAppender(layout, null, swSecondaryLog, "record_appender", true, true);
-        secondaryAppender.start();
-        config.addAppender(secondaryAppender); //NOSONAR   appender is from original logger configuration, so no more vulnerable than configured logging
-        context.getRootLogger().addAppender(secondaryAppender);
-        context.updateLoggers();
     }
 
+    /**
+     * 
+     * @param subject
+     * @param body
+     * @throws FatalIndexerException
+     */
     private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
-        logger.debug("body:\n{}", body);
+        logger.debug("checkAndSendErrorReport");
+        logger.trace("body:\n{}", body);
+        if (StringUtils.isEmpty(body)) {
+            logger.warn("E-Mail body is empty.");
+        }
         // Send report e-mail if the text body contains at least one ERROR level log message
         if (!body.contains(Indexer.STATUS_ERROR)) {
             return;
@@ -401,6 +390,7 @@ public class Hotfolder {
         try {
             Utils.postMail(Arrays.asList(recipientsSplit), subject, body, smtpServer, smtpUser, smtpPassword, smtpSenderAddress, smtpSenderName,
                     smtpSecurity, smtpPort);
+            logger.info("Report e-mailed to configured recipients.");
         } catch (UnsupportedEncodingException | MessagingException e) {
             logger.error(e.getMessage(), e);
         }
@@ -432,9 +422,9 @@ public class Hotfolder {
             reindexSettings.put(DataRepository.PARAM_MIX, true);
             reindexSettings.put(DataRepository.PARAM_UGC, true);
             noerror = handleSourceFile(fileToReindex, true, reindexSettings);
-            if (swSecondaryLog != null && emailConfigurationComplete) {
+            if (secondaryAppender != null && emailConfigurationComplete) {
                 checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                        swSecondaryLog.toString());
+                        secondaryAppender.getLog());
             }
         } else {
             // Check for the shutdown trigger file first
@@ -474,7 +464,7 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleSourceFile(recordFile, false, reindexSettings);
                         checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                                swSecondaryLog.toString());
+                                secondaryAppender.getLog());
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
                         Files.delete(recordFile);
@@ -528,9 +518,9 @@ public class Hotfolder {
         logger.debug("Available storage space: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
-            if (swSecondaryLog != null && emailConfigurationComplete) {
+            if (secondaryAppender != null && emailConfigurationComplete) {
                 checkAndSendErrorReport("Record indexing failed due to insufficient space (" + Version.asString() + ")",
-                        swSecondaryLog.toString());
+                        secondaryAppender.getLog());
             }
             throw new FatalIndexerException("Insufficient free space");
         }
@@ -645,7 +635,6 @@ public class Hotfolder {
                     try {
                         this.currentIndexer = new UsageStatisticsIndexer(this);
                         currentIndexer.addToIndex(sourceFile, false, null);
-                        ;
                     } finally {
                         this.currentIndexer = null;
                     }
@@ -684,7 +673,6 @@ public class Hotfolder {
                 } finally {
                     currentIndexer = null;
                 }
-                ;
                 Utils.submitDataToViewer(countRecordFiles());
             }
         } catch (IOException e) {
@@ -854,32 +842,6 @@ public class Hotfolder {
         long total2 = sc.getTotal();
 
         return total1 == total2;
-    }
-
-    /**
-     * <p>
-     * copyDirectory.
-     * </p>
-     *
-     * @param sourceLocation {@link java.io.File}
-     * @param targetLocation {@link java.io.File}
-     * @return number of copied files.
-     * @throws java.io.IOException in case of errors.
-     */
-    public static int copyDirectory(File sourceLocation, File targetLocation) throws IOException {
-        if (sourceLocation == null) {
-            throw new IllegalArgumentException("targetsourceLocationLocation may not be null");
-        }
-        if (targetLocation == null) {
-            throw new IllegalArgumentException("targetLocation may not be null");
-        }
-
-        int count = sourceLocation.listFiles().length;
-        if (count > 0) {
-            FileUtils.copyDirectory(sourceLocation, targetLocation);
-        }
-
-        return count;
     }
 
     protected class DataFolderSizeCounter implements FileFilter {

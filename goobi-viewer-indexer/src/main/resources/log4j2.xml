@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration>
+<Configuration packages="io.goobi.viewer.indexer.helper.logging">
 
     <Properties>
         <Property name="baseDir">/opt/digiverso/logs</Property>
@@ -19,6 +19,9 @@
             <PatternLayout pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %location%n        %msg%n" />
             <SizeBasedTriggeringPolicy size="20 MB" />
         </RollingFile>
+        <SecondaryAppender name="record">
+            <PatternLayout pattern="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %location%n        %msg%n" />
+        </SecondaryAppender>
     </Appenders>
 
 
@@ -32,6 +35,7 @@
         <Root level="info">
             <AppenderRef ref="stdout" />
             <AppenderRef ref="rolling" />
+            <AppenderRef ref="record" />
         </Root>
     </Loggers>
 

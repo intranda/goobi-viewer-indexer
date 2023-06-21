@@ -417,6 +417,7 @@ public final class TextHelper {
                     Integer.parseInt(str);
                     ret.put(SolrConstants.WIDTH, str);
                 } catch (NumberFormatException e) {
+                    // Skip of not an int
                 }
             }
             // Image height
@@ -427,6 +428,7 @@ public final class TextHelper {
                     Integer.parseInt(str);
                     ret.put(SolrConstants.HEIGHT, str);
                 } catch (NumberFormatException e) {
+                    // Skip if not an int
                 }
             }
             // Color space
