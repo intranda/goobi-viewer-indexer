@@ -91,7 +91,7 @@ public class UsageStatisticsIndexer extends Indexer {
         String solrDateString = getStatisticsDate(sourceFile);
         if (statisticsExists(solrDateString)) {
             logger.info("Don't index usage statistics for {}: Statistics already exist for that date", solrDateString);
-            return null;
+            return null; //NOSONAR Returning empty map would complicate things
         }
 
         String jsonString = Files.readString(sourceFile);

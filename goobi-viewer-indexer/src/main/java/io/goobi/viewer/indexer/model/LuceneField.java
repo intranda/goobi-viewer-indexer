@@ -175,10 +175,10 @@ public class LuceneField {
      * @should generate SolrInputField correctly
      */
     public SolrInputField generateField() {
-        SolrInputField field = new SolrInputField(getField());
-        field.setValue(getValue());
+        SolrInputField f = new SolrInputField(getField());
+        f.setValue(getValue());
 
-        return field;
+        return f;
     }
 
     /** {@inheritDoc} */

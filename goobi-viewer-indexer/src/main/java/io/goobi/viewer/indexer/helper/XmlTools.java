@@ -18,7 +18,6 @@ package io.goobi.viewer.indexer.helper;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -27,17 +26,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -47,13 +39,9 @@ import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.jdom2.transform.JDOMResult;
-import org.jdom2.transform.JDOMSource;
 import org.jdom2.xpath.XPathBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 /**
  * XML utilities.
@@ -61,7 +49,11 @@ import org.apache.logging.log4j.LogManager;
 public class XmlTools {
 
     private static final Logger logger = LogManager.getLogger(XmlTools.class);
-    
+
+    /** Private constructor. */
+    private XmlTools() {
+    }
+
     public static SAXBuilder getSAXBuilder() {
         SAXBuilder builder = new SAXBuilder();
         // Disable access to external entities
@@ -73,17 +65,18 @@ public class XmlTools {
     }
 
     /**
-     * <p>readXmlFile.</p>
+     * <p>
+     * readXmlFile.
+     * </p>
      *
      * @param filePath a {@link java.lang.String} object.
-     * @throws java.io.FileNotFoundException if file not found
+     * @return a {@link org.jdom2.Document} object.
      * @throws java.io.IOException in case of errors
      * @throws org.jdom2.JDOMException
      * @should build document from string correctly
      * @should throw FileNotFoundException if file not found
-     * @return a {@link org.jdom2.Document} object.
      */
-    public static Document readXmlFile(String filePath) throws FileNotFoundException, IOException, JDOMException {
+    public static Document readXmlFile(String filePath) throws IOException, JDOMException {
         try (FileInputStream fis = new FileInputStream(new File(filePath))) {
             return getSAXBuilder().build(fis);
         }
@@ -93,47 +86,48 @@ public class XmlTools {
      * Reads an XML document from the given URL and returns a JDOM2 document. Works with XML files within JARs.
      *
      * @param url a {@link java.net.URL} object.
-     * @throws java.io.FileNotFoundException
+     * @return a {@link org.jdom2.Document} object.
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
      * @should build document from url correctly
-     * @return a {@link org.jdom2.Document} object.
      */
-    public static Document readXmlFile(URL url) throws FileNotFoundException, IOException, JDOMException {
+    public static Document readXmlFile(URL url) throws IOException, JDOMException {
         try (InputStream is = url.openStream()) {
             return getSAXBuilder().build(is);
         }
     }
 
     /**
-     * <p>readXmlFile.</p>
+     * <p>
+     * readXmlFile.
+     * </p>
      *
      * @param path a {@link java.nio.file.Path} object.
-     * @throws java.io.FileNotFoundException
+     * @return a {@link org.jdom2.Document} object.
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
-     * @return a {@link org.jdom2.Document} object.
      * @should build document from path correctly
      * @should throw IOException if file not found
      */
-    public static Document readXmlFile(Path path) throws FileNotFoundException, IOException, JDOMException {
+    public static Document readXmlFile(Path path) throws IOException, JDOMException {
         try (InputStream is = Files.newInputStream(path)) {
             return getSAXBuilder().build(is);
         }
     }
 
     /**
-     * <p>writeXmlFile.</p>
+     * <p>
+     * writeXmlFile.
+     * </p>
      *
      * @param doc a {@link org.jdom2.Document} object.
      * @param filePath a {@link java.lang.String} object.
-     * @throws java.io.FileNotFoundException
+     * @return a {@link java.io.File} object.
      * @throws java.io.IOException
      * @should write file correctly
      * @should throw FileNotFoundException if file is directory
-     * @return a {@link java.io.File} object.
      */
-    public static File writeXmlFile(Document doc, String filePath) throws FileNotFoundException, IOException {
+    public static File writeXmlFile(Document doc, String filePath) throws IOException {
         return FileTools.getFileFromString(getStringFromElement(doc, TextHelper.DEFAULT_CHARSET), filePath, TextHelper.DEFAULT_CHARSET, false);
     }
 
@@ -141,11 +135,11 @@ public class XmlTools {
      * Create a JDOM document from an XML string.
      *
      * @param string a {@link java.lang.String} object.
+     * @param encoding a {@link java.lang.String} object.
+     * @return a {@link org.jdom2.Document} object.
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
      * @should build document correctly
-     * @param encoding a {@link java.lang.String} object.
-     * @return a {@link org.jdom2.Document} object.
      */
     public static Document getDocumentFromString(String string, String encoding) throws JDOMException, IOException {
         if (encoding == null) {
@@ -155,15 +149,19 @@ public class XmlTools {
         byte[] byteArray = null;
         try {
             byteArray = string.getBytes(encoding);
+            ByteArrayInputStream baos = new ByteArrayInputStream(byteArray);
+            return getSAXBuilder().build(baos);
         } catch (UnsupportedEncodingException e) {
+            logger.error(e.getMessage());
         }
-        ByteArrayInputStream baos = new ByteArrayInputStream(byteArray);
 
-        return getSAXBuilder().build(baos);
+        return null;
     }
 
     /**
-     * <p>getStringFromElement.</p>
+     * <p>
+     * getStringFromElement.
+     * </p>
      *
      * @param element a {@link java.lang.Object} object.
      * @param encoding a {@link java.lang.String} object.
@@ -211,13 +209,14 @@ public class XmlTools {
 
         List<Object> list = evaluate(expr, element, Filters.element(), namespaces);
         if (list == null) {
-            return null;
+            return retList;
         }
         for (Object object : list) {
             if (object instanceof Element) {
                 retList.add((Element) object);
             }
         }
+        
         return retList;
     }
 
@@ -244,7 +243,9 @@ public class XmlTools {
     }
 
     /**
-     * <p>determineFileFormat.</p>
+     * <p>
+     * determineFileFormat.
+     * </p>
      *
      * @param xml a {@link java.lang.String} object.
      * @param encoding a {@link java.lang.String} object.

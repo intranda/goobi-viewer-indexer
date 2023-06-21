@@ -139,7 +139,12 @@ public final class TextHelper {
      * @param file a {@link java.io.File} object.
      */
     public static Map<String, Object> readAltoFile(File file) throws IOException, JDOMException {
-        AltoDocument altoDoc = AltoDocument.getDocumentFromFile(file);
+        AltoDocument altoDoc;
+        try {
+            altoDoc = AltoDocument.getDocumentFromFile(file);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e);
+        }
         HyphenationLinker linker = new HyphenationLinker();
         linker.linkWords(altoDoc);
         Document doc = new Document(altoDoc.writeToDom());
@@ -412,6 +417,7 @@ public final class TextHelper {
                     Integer.parseInt(str);
                     ret.put(SolrConstants.WIDTH, str);
                 } catch (NumberFormatException e) {
+                    // Skip of not an int
                 }
             }
             // Image height
@@ -422,6 +428,7 @@ public final class TextHelper {
                     Integer.parseInt(str);
                     ret.put(SolrConstants.HEIGHT, str);
                 } catch (NumberFormatException e) {
+                    // Skip if not an int
                 }
             }
             // Color space

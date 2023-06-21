@@ -18,7 +18,6 @@ package io.goobi.viewer.indexer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -94,11 +93,6 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
  */
 public class MetsIndexer extends Indexer {
 
-    /**
-     * 
-     */
-    private static final int GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS = 6;
-
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(MetsIndexer.class);
 
@@ -154,8 +148,6 @@ public class MetsIndexer extends Indexer {
     @Override
     public void addToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
             throws IOException, FatalIndexerException {
-        //        Map<String, Path> dataFolders = new HashMap<>();
-
         String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -232,6 +224,8 @@ public class MetsIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
+            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+            logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -608,7 +602,7 @@ public class MetsIndexer extends Indexer {
                 logger.info("Re-indexing anchor...");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
-            logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
+            logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
@@ -871,6 +865,7 @@ public class MetsIndexer extends Indexer {
                 shapeGmd.getFields().add(new LuceneField(FIELD_COORDS, (String) pageDoc.getFieldValue(FIELD_COORDS)));
                 shapeGmd.getFields().add(new LuceneField(FIELD_SHAPE, (String) pageDoc.getFieldValue(FIELD_SHAPE)));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, (String) pageDoc.getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.ORDER, String.valueOf(pageDoc.getFieldValue("ORDER_PARENT"))));
                 // Add main value, otherwise the document will be skipped
                 shapeGmd.setMainValue((String) pageDoc.getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
@@ -1138,7 +1133,6 @@ public class MetsIndexer extends Indexer {
         }
         String dmdId = eleStructMapPhysical.getAttributeValue(SolrConstants.DMDID);
         if (StringUtils.isNotEmpty(dmdId)) {
-            // TODO page PURL
             IndexObject pageObj = new IndexObject(0);
             MetadataHelper.writeMetadataToObject(pageObj, xp.getMdWrap(dmdId), "", xp);
             for (LuceneField field : pageObj.getLuceneFields()) {
@@ -1301,10 +1295,7 @@ public class MetsIndexer extends Indexer {
                     } catch (FileNotFoundException | NoSuchFileException e) {
                         logger.warn("File not found: {}", e.getMessage());
                         doc.addField(FIELD_FILESIZE, -1);
-                    } catch (IOException e) {
-                        logger.error(e.getMessage(), e);
-                        doc.addField(FIELD_FILESIZE, -1);
-                    } catch (IllegalArgumentException e) {
+                    } catch (IOException | IllegalArgumentException e) {
                         logger.error(e.getMessage(), e);
                         doc.addField(FIELD_FILESIZE, -1);
                     }
@@ -1668,9 +1659,8 @@ public class MetsIndexer extends Indexer {
      * @param indexObj {@link IndexObject}
      * @param hotfolder
      * @param dataRepository
-     * @throws UnsupportedEncodingException
      */
-    void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) throws UnsupportedEncodingException {
+    void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) {
         logger.debug("copyAndReIndexAnchor: {}", indexObj.getPi());
         if (indexObj.getParent() == null) {
             logger.warn("No anchor file has been indexed for this {} yet.", indexObj.getPi());
@@ -1718,7 +1708,6 @@ public class MetsIndexer extends Indexer {
                 logger.debug("{} already has the correct parent, skipping.", pi);
                 continue;
             }
-            // String indexedMetsFilePath = URLEncoder.encode(Hotfolder.getIndexedMets() + File.separator + pi + AbstractIndexer.XML_EXTENSION, "utf-8");
             String indexedMetsFilePath = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + FileTools.XML_EXTENSION;
             Path indexedMets = Paths.get(indexedMetsFilePath);
             if (Files.exists(indexedMets)) {
@@ -1971,7 +1960,7 @@ public class MetsIndexer extends Indexer {
             for (String pageUrn : physUrnList) {
                 String urn = null;
                 if (Utils.isUrn(pageUrn)) {
-                    urn = pageUrn.replaceAll("[\\\\]", "");
+                    urn = pageUrn.replace("\\\\", "");
                 }
                 if (StringUtils.isEmpty(urn)) {
                     urn = "NOURN";
@@ -2045,18 +2034,14 @@ public class MetsIndexer extends Indexer {
      * Checks whether this is a volume of a multivolume work (should be false for monographs and anchors).
      * 
      * @return boolean
-     * @throws IndexerException
      * @throws FatalIndexerException
      */
-    private boolean isVolume() throws IndexerException, FatalIndexerException {
+    private boolean isVolume() throws FatalIndexerException {
         String query =
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
-        if (relatedItemList != null && !relatedItemList.isEmpty()) {
-            return true;
-        }
 
-        return false;
+        return relatedItemList != null && !relatedItemList.isEmpty();
     }
 
     /**
@@ -2078,7 +2063,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param dateString Date string to parse
      * @return {@link ZonedDateTime} parsed from the given string
-     * @should parse iso instant corretly
+     * @should parse iso instant correctly
      * @should parse iso local dateTime correctly
      * @should parse iso offset dateTime correctly
      */

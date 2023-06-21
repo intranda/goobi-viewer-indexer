@@ -28,10 +28,12 @@ import java.util.Set;
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -46,7 +48,7 @@ public final class MetadataConfigurationManager {
     private static final Logger logger = LogManager.getLogger(MetadataConfigurationManager.class);
 
     private static final String SPACE_PLACEHOLDER = "#SPACE#";
-    
+
     private static final String XML_PATH_ATTRIBUTE_PREFIX = "[@prefix]";
     private static final String XML_PATH_ATTRIBUTE_SUFFIX = "[@suffix]";
     private static final String XML_PATH_FIELDS = "fields.";
@@ -63,10 +65,15 @@ public final class MetadataConfigurationManager {
      * </p>
      *
      * @param config a {@link org.apache.commons.configuration.XMLConfiguration} object.
+     * @throws ConfigurationException
      */
-    public MetadataConfigurationManager(XMLConfiguration config) {
+    public MetadataConfigurationManager(XMLConfiguration config) throws ConfigurationException {
         // Regular fields
-        fieldConfigurations = loadFieldConfiguration(config);
+        try {
+            fieldConfigurations = loadFieldConfiguration(config);
+        } catch (ConfigurationRuntimeException e) {
+            throw new ConfigurationException(e.getMessage());
+        }
     }
 
     /**
@@ -77,7 +84,7 @@ public final class MetadataConfigurationManager {
      * @should load nested group entities correctly
      */
     @SuppressWarnings({ "rawtypes" })
-    private Map<String, List<FieldConfig>> loadFieldConfiguration(XMLConfiguration config) {
+    private Map<String, List<FieldConfig>> loadFieldConfiguration(XMLConfiguration config) throws ConfigurationRuntimeException {
         Map<String, List<FieldConfig>> ret = new HashMap<>();
         Iterator<String> fields = config.getKeys("fields");
         List<String> newFields = new ArrayList<>();
@@ -132,15 +139,18 @@ public final class MetadataConfigurationManager {
                 fieldConfig.setOneFieldSeparator(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").onefield[@separator]",
                         FieldConfig.DEFAULT_MULTIVALUE_SEPARATOR).replace(SPACE_PLACEHOLDER, " "));
                 fieldConfig.setConstantValue(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").constantValue", null));
-                fieldConfig.setSplittingCharacter(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").splittingCharacter", null));
+                fieldConfig
+                        .setSplittingCharacter(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").splittingCharacter", null));
                 fieldConfig.setNode(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").getnode", null));
                 fieldConfig.setAddToDefault(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addToDefault", false));
-                fieldConfig.setAddUntokenizedVersion(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addUntokenizedVersion", true));
+                fieldConfig.setAddUntokenizedVersion(
+                        config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addUntokenizedVersion", true));
                 fieldConfig.setLowercase(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").lowercase", false));
                 fieldConfig.setAddSortField(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addSortField", false));
                 fieldConfig.setAddSortFieldToTopstruct(
                         config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addSortFieldToTopstruct", false));
-                fieldConfig.setAddExistenceBoolean(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addExistenceBoolean", false));
+                fieldConfig.setAddExistenceBoolean(
+                        config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addExistenceBoolean", false));
 
                 if (config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addToParents", false)) {
                     if (config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").addToParents[@keepOnChildren]", false)) {
@@ -156,11 +166,13 @@ public final class MetadataConfigurationManager {
                     fieldsToAddToPages.add(fieldname);
                 }
 
-                fieldConfig.setAllowDuplicateValues(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").allowDuplicateValues", false));
+                fieldConfig.setAllowDuplicateValues(
+                        config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").allowDuplicateValues", false));
                 fieldConfig.setGeoJSONSource(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").geoJSONSource", null));
                 fieldConfig
-                        .setGeoJSONSourceSeparator(config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").geoJSONSource[@separator]", " ")
-                                .replace(SPACE_PLACEHOLDER, " "));
+                        .setGeoJSONSourceSeparator(
+                                config.getString(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").geoJSONSource[@separator]", " ")
+                                        .replace(SPACE_PLACEHOLDER, " "));
                 fieldConfig.setGeoJSONAddSearchField(
                         config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").geoJSONSource[@addSearchField]", false));
 
@@ -171,7 +183,8 @@ public final class MetadataConfigurationManager {
                     fieldConfig.setNormalizeYear(eleNormalizeYear.getBoolean("", false));
                     fieldConfig.setNormalizeYearMinDigits(eleNormalizeYear.getInt("[@minYearDigits]", 3));
                     fieldConfig.setNormalizeYearField(eleNormalizeYear.getString("[@field]"));
-                    fieldConfig.setInterpolateYears(config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").interpolateYears", false));
+                    fieldConfig.setInterpolateYears(
+                            config.getBoolean(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").interpolateYears", false));
                 }
 
                 // Group entity config
@@ -215,54 +228,48 @@ public final class MetadataConfigurationManager {
                     }
                 }
 
-                {
-                    // A field can only be configured with chars or strings to be replaced, not both!
-                    Map<Object, String> replaceRules = new LinkedHashMap<>();
-                    List elements = config.configurationsAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").replace");
-                    if (elements != null) {
-                        for (Iterator it = elements.iterator(); it.hasNext();) {
-                            HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
-                            Character character = null;
-                            try {
-                                int charIndex = sub.getInt("[@char]");
-                                character = (char) charIndex;
-                            } catch (NoSuchElementException e) {
-                                //
-                            }
-                            String string = null;
-                            try {
-                                string = sub.getString("[@string]");
-                            } catch (NoSuchElementException e) {
-                                //
-                            }
-                            String regex = null;
-                            try {
-                                regex = sub.getString("[@regex]");
-                            } catch (NoSuchElementException e) {
-                                //
-                            }
-                            String replaceWith = sub.getString("");
-                            if (replaceWith == null) {
-                                replaceWith = "";
-                            }
-                            replaceWith = replaceWith.replace(SPACE_PLACEHOLDER, " ");
-                            if (character != null) {
-                                replaceRules.put(character, replaceWith);
-                            } else if (string != null) {
-                                replaceRules.put(string.replace(SPACE_PLACEHOLDER, " "), replaceWith);
-                            } else if (regex != null) {
-                                replaceRules.put("REGEX:" + regex.replace(SPACE_PLACEHOLDER, " "), replaceWith);
-                            }
+                // A field can only be configured with chars or strings to be replaced, not both!
+                Map<Object, String> replaceRules = new LinkedHashMap<>();
+                List elements = config.configurationsAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").replace");
+                if (elements != null) {
+                    for (Iterator it = elements.iterator(); it.hasNext();) {
+                        HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
+                        Character character = null;
+                        try {
+                            int charIndex = sub.getInt("[@char]");
+                            character = (char) charIndex;
+                        } catch (NoSuchElementException e) {
+                            //
                         }
-                        fieldConfig.setReplaceRules(replaceRules);
+                        String string = null;
+                        try {
+                            string = sub.getString("[@string]");
+                        } catch (NoSuchElementException e) {
+                            //
+                        }
+                        String regex = null;
+                        try {
+                            regex = sub.getString("[@regex]");
+                        } catch (NoSuchElementException e) {
+                            //
+                        }
+                        String replaceWith = sub.getString("");
+                        if (replaceWith == null) {
+                            replaceWith = "";
+                        }
+                        replaceWith = replaceWith.replace(SPACE_PLACEHOLDER, " ");
+                        if (character != null) {
+                            replaceRules.put(character, replaceWith);
+                        } else if (string != null) {
+                            replaceRules.put(string.replace(SPACE_PLACEHOLDER, " "), replaceWith);
+                        } else if (regex != null) {
+                            replaceRules.put("REGEX:" + regex.replace(SPACE_PLACEHOLDER, " "), replaceWith);
+                        }
                     }
+                    fieldConfig.setReplaceRules(replaceRules);
                 }
 
-                List<FieldConfig> configs = ret.get(fieldname);
-                if (configs == null) {
-                    configs = new ArrayList<>(count);
-                    ret.put(fieldname, configs);
-                }
+                List<FieldConfig> configs = ret.computeIfAbsent(fieldname, k -> new ArrayList<>(count));
                 configs.add(fieldConfig);
             }
         }
@@ -286,7 +293,7 @@ public final class MetadataConfigurationManager {
             type = MetadataGroupType.getByName(typeName);
             if (type == null) {
                 type = MetadataGroupType.OTHER;
-                logger.warn("Unknown metadata group type: {}, using {} instead.", typeName, type.name());
+                logger.warn("Unknown metadata group type: {}, using {} instead.", typeName, type);
             }
         }
 
@@ -302,22 +309,20 @@ public final class MetadataConfigurationManager {
                 .setAddCoordsToDocstruct(addCoordsToDocstruct);
 
         // Subfield configurations
-        {
-            List<HierarchicalConfiguration<ImmutableNode>> elements = config.configurationsAt("field");
-            if (elements != null) {
-                for (Iterator<HierarchicalConfiguration<ImmutableNode>> it = elements.iterator(); it.hasNext();) {
-                    HierarchicalConfiguration<ImmutableNode> sub = it.next();
-                    SubfieldConfig sfc = readSubfield(sub);
-                    if (sfc == null) {
-                        continue;
-                    }
-                    if (!ret.getSubfields().containsKey(sfc.getFieldname())) {
-                        ret.getSubfields().put(sfc.getFieldname(), sfc);
-                    } else {
-                        // If a configuration for this field name already exists, transfer the xpath expressions over
-                        SubfieldConfig existing = ret.getSubfields().get(sfc.getFieldname());
-                        existing.ingestXpaths(sfc);
-                    }
+        List<HierarchicalConfiguration<ImmutableNode>> elements = config.configurationsAt("field");
+        if (elements != null) {
+            for (Iterator<HierarchicalConfiguration<ImmutableNode>> it = elements.iterator(); it.hasNext();) {
+                HierarchicalConfiguration<ImmutableNode> sub = it.next();
+                SubfieldConfig sfc = readSubfield(sub);
+                if (sfc == null) {
+                    continue;
+                }
+                if (!ret.getSubfields().containsKey(sfc.getFieldname())) {
+                    ret.getSubfields().put(sfc.getFieldname(), sfc);
+                } else {
+                    // If a configuration for this field name already exists, transfer the xpath expressions over
+                    SubfieldConfig existing = ret.getSubfields().get(sfc.getFieldname());
+                    existing.ingestXpaths(sfc);
                 }
             }
         }

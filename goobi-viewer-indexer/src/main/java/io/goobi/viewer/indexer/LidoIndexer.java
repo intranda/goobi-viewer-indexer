@@ -197,6 +197,8 @@ public class LidoIndexer extends Indexer {
                         logger.error(e.getMessage(), e);
                     }
                 }
+                prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+                logger.info("Successfully finished indexing '{}'.", identifier);
             } else {
                 handleError(lidoFile, resp[1], FileFormat.LIDO);
             }
@@ -214,6 +216,7 @@ public class LidoIndexer extends Indexer {
         }
         // Delete all data folders for this record from the hotfolder
         DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        logger.info("Finished indexing LIDO file '{}'.", lidoFile.getFileName());
     }
 
     /**
@@ -401,7 +404,7 @@ public class LidoIndexer extends Indexer {
                 sbImgFileNames.deleteCharAt(0);
             }
             ret[1] = sbImgFileNames.toString();
-            logger.info("Successfully finished indexing '{}'.", pi);
+            logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (Exception e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
                 logger.error("Indexing of '{}' could not be finished due to an error: {}", pi, e.getMessage());

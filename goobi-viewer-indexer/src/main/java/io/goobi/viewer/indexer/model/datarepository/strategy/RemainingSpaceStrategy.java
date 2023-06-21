@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -107,7 +108,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
 
         if (StringUtils.isBlank(pi)) {
             if (dataFile != null) {
-                logger.error("Could not parse PI from '{}'", dataFile.getFileName().toString());
+                logger.error("Could not parse PI from '{}'", dataFile.getFileName());
             }
             return ret;
         }
@@ -136,9 +137,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
                     logger.info("Data repository found in old index: {}", previousRepository);
                 }
             }
-        } catch (SolrServerException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (IOException | SolrServerException e) {
             logger.error(e.getMessage(), e);
         }
         if (previousRepository != null) {
@@ -244,18 +243,18 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
         long ret = Files.size(dataFile);
         if (dataFolders != null) {
             // Count data folders' size
-            for (String key : dataFolders.keySet()) {
-                if (dataFolders.get(key) != null) {
-                    Path dataFolder = dataFolders.get(key);
+            for (Entry<String, Path> entry : dataFolders.entrySet()) {
+                if (entry.getValue() != null) {
+                    Path dataFolder = entry.getValue();
                     if (Files.isDirectory(dataFolder)) {
                         long dataFolderSize = FileUtils.sizeOfDirectory(dataFolder.toFile());
                         if (dataFolderSize > 0) {
                             ret += dataFolderSize;
                         } else {
-                            logger.error("Data folder '{}' has a size of {} bytes.", dataFolder.getFileName().toString());
+                            logger.error("Data folder '{}' has a size of {} bytes.", dataFolder.getFileName(), dataFolderSize);
                         }
                     } else {
-                        logger.error("Data folder not found: {}", dataFolder.toAbsolutePath().toString());
+                        logger.error("Data folder not found: {}", dataFolder.toAbsolutePath());
                     }
                 }
             }
@@ -274,7 +273,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
                     if (dataFolderSize > 0) {
                         ret += dataFolderSize;
                     } else {
-                        logger.error("Data folder '{}' has a size of {} bytes.", dataFolder.getFileName().toString());
+                        logger.error("Data folder '{}' has a size of {} bytes.", dataFolder.getFileName(), dataFolderSize);
                     }
                 }
             }

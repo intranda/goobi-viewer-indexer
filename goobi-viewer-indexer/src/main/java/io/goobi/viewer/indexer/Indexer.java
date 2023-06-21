@@ -113,13 +113,12 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
  */
 public abstract class Indexer {
 
-    /**
-     * 
-     */
-    private static final int HTTP_CONNECTION_TIMEOUT = 4000;
-
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(Indexer.class);
+
+    private static final int HTTP_CONNECTION_TIMEOUT = 4000;
+
+    protected static final int GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS = 6;
 
     protected static final String FIELD_COORDS = "MD_COORDS";
     protected static final String FIELD_IMAGEAVAILABLE = "BOOL_IMAGEAVAILABLE";
@@ -258,7 +257,7 @@ public abstract class Indexer {
         // Delete
         try {
             if (deleteWithPI(pi, trace, searchIndex)) {
-                searchIndex.commit(SolrSearchIndex.optimize);
+                searchIndex.commit(searchIndex.isOptimize());
 
                 // Clear cache for record
                 String msg = Utils.removeRecordImagesFromCache(pi);
@@ -385,7 +384,7 @@ public abstract class Indexer {
         }
         if (pageUrns != null) {
             for (String pageUrn : pageUrns) {
-                fields.add(new LuceneField(SolrConstants.IMAGEURN_OAI, pageUrn.replaceAll("[\\\\]", "")));
+                fields.add(new LuceneField(SolrConstants.IMAGEURN_OAI, pageUrn.replace("\\\\", "")));
             }
         }
         fields.add(new LuceneField(SolrConstants.DATEDELETED, dateDeleted));
@@ -815,7 +814,7 @@ public abstract class Indexer {
             String json = FileTools.readFileToString(path.toFile(), TextHelper.DEFAULT_CHARSET);
             WebAnnotation annotation = mapper.readValue(json, WebAnnotation.class);
             if (annotation == null) {
-                return null;
+                return null; //NOSONAR Returning empty map would complicate things
             }
 
             String annotationId = Paths.get(annotation.getId().getPath()).getFileName().toString();
@@ -917,7 +916,7 @@ public abstract class Indexer {
             logger.error(e.getMessage(), e);
         }
 
-        return null;
+        return null; //NOSONAR Returning empty map would complicate things
     }
 
     /**
@@ -1164,8 +1163,7 @@ public abstract class Indexer {
      * @should recursively add child metadata
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj, List<GroupedMetadata> groupedMetadataList,
-            long ownerIddoc)
-            throws FatalIndexerException {
+            long ownerIddoc) throws FatalIndexerException {
         if (groupedMetadataList == null || groupedMetadataList.isEmpty()) {
             return 0;
         }
@@ -1331,7 +1329,7 @@ public abstract class Indexer {
      */
     void checkOldDataFolder(Map<String, Path> dataFolders, String paramName, String pi) throws IOException {
         if (dataFolders == null) {
-            throw new IllegalArgumentException("dataFolders may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_DATAFOLDERS_MAY_NOT_BE_NULL);
         }
         if (paramName == null) {
             throw new IllegalArgumentException("paramName may not be null");
@@ -1838,19 +1836,15 @@ public abstract class Indexer {
         // Convert ABBYY XML to ALTO
         if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null && !"info".equals(baseFileName)) {
             try {
-                try {
-                    altoData = TextHelper.readAbbyyToAlto(
-                            new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
-                                    baseFileName + FileTools.XML_EXTENSION));
-                    altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName,
-                            order, true);
-                } catch (FileNotFoundException e) {
-                    logger.warn(e.getMessage());
-                }
-            } catch (XMLStreamException e) {
-                logger.error(e.getMessage(), e);
+                altoData = TextHelper.readAbbyyToAlto(
+                        new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
+                                baseFileName + FileTools.XML_EXTENSION));
+                altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName,
+                        order, true);
             } catch (IOException e) {
                 logger.warn(e.getMessage());
+            } catch (XMLStreamException e) {
+                logger.error(e.getMessage(), e);
             }
         }
 
@@ -2092,6 +2086,33 @@ public abstract class Indexer {
         }
         if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
             reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
+        }
+    }
+
+    /**
+     * Send a request to the viewer rest api to start a task to prerender page PDF files if it is required. The task is required if either
+     * hasNewMediaFiles is true, of if a non-empty _media folder exists in the {@link #getDataRepository()}. In the first case, always overwrite any
+     * existing page PDFs; in the second case, only do so if {@link Configuration#isForcePrerenderPdfs()} is true
+     * 
+     * @param pi The identifier of the process to create pdfs for
+     * @param hasNewMediaFiles if the data repository has been updated with new media files
+     * @throws FatalIndexerException
+     */
+    void prerenderPagePdfsIfRequired(String pi, boolean hasNewMediaFiles) throws FatalIndexerException {
+        try {
+            if (hasNewMediaFiles) {
+                logger.debug("New media files found: Trigger prerenderPDFs task in viewer and force update");
+                Utils.prerenderPdfs(pi, true);
+            } else {
+                Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
+                if (mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
+                    boolean force = Configuration.getInstance().isForcePrerenderPdfs();
+                    logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", pi);
+                    Utils.prerenderPdfs(pi, force);
+                }
+            }
+        } catch (IOException | HTTPException e) {
+            logger.error(e.getMessage());
         }
     }
 }

@@ -29,9 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
@@ -93,6 +90,10 @@ public class MetadataHelper {
 
     /** Constant <code>addNormDataFieldsToDefault</code> */
     public static List<String> addAuthorityDataFieldsToDefault;
+
+    /** Private constructor. */
+    private MetadataHelper() {
+    }
 
     /**
      * Retrieves configured metadata fields from the given XML node. Written for LIDO events, but should theoretically work for any METS or LIDO node.
@@ -314,6 +315,11 @@ public class MetadataHelper {
                     }
                     // Apply string modifications configured for this field
                     fieldValue = applyAllModifications(configurationItem, fieldValue);
+                    
+                    // If value is blank after modifications, skip
+                    if (StringUtils.isBlank(fieldValue)) {
+                        continue;
+                    }
 
                     // Convert to geoJSON
                     if (configurationItem.getGeoJSONSource() != null) {
@@ -552,22 +558,7 @@ public class MetadataHelper {
                         }
                     }
                 } else if (authorityDataField.getKey().equals(Record.AUTOCOORDS_FIELD)) {
-                    String[] textValueSplit = textValue.split(" ");
-
-                    String type = "mods:coordinates/point";
-                    if (textValue.startsWith("E")) {
-                        switch (textValueSplit.length) {
-                            case 2:
-                                type = "sexagesimal:point";
-                                break;
-                            case 4:
-                                type = "sexagesimal:polygon";
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
+                    String type = GeoJSONTools.getCoordinatesType(textValue);
                     GeoCoords coords = GeoJSONTools.convert(textValue, type, " ");
 
                     // Add searchable WKT lon-lat coordinates
@@ -1364,36 +1355,6 @@ public class MetadataHelper {
     }
 
     /**
-     * <p>
-     * main.
-     * </p>
-     *
-     * @param args an array of {@link java.lang.String} objects.
-     */
-    public static void main(String[] args) {
-        String string = "Vol. 15 xxx";
-        Pattern p = Pattern.compile(".*(\\d+).*");
-        Matcher m = p.matcher(string);
-
-        if (m.find()) {
-            MatchResult mr = m.toMatchResult();
-            String value = mr.group(1);
-            System.out.println("found: " + value);
-        }
-
-        p = Pattern.compile("\\d+");
-        m = p.matcher(string);
-        while (m.find()) {
-            try {
-                String sub = string.substring(m.start(), m.end());
-                System.out.println("found 2: " + sub);
-            } catch (NumberFormatException e) {
-                logger.error(e.getMessage());
-            }
-        }
-    }
-
-    /**
      * Extracts the (lowercase) language code from the given field name.
      *
      * @param fieldName a {@link java.lang.String} object.
@@ -1437,17 +1398,16 @@ public class MetadataHelper {
         StringBuilder sbFulltext = new StringBuilder();
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(teiFolder, "*.{xml}")) {
             for (Path path : stream) {
-                logger.info("Found TEI file: {}", path.getFileName().toString());
+                logger.info("Found TEI file: {}", path.getFileName());
                 JDomXP tei = new JDomXP(path.toFile());
                 writeMetadataToObject(indexObj, tei.getRootElement(), "", tei);
 
                 // Add text body
                 Element eleText = tei.getRootElement().getChild("text", null);
                 if (eleText != null && eleText.getChild("body", null) != null) {
-                    String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml")); // TODO extract language from a different element? - No, this is the correct element (Florian)
+                    String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml"));
                     String fileFieldName = SolrConstants.FILENAME_TEI;
                     if (language != null) {
-                        //                                String isoCode = MetadataConfigurationManager.getLanguageMapping(language);
                         String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();
                         if (isoCode != null) {
                             fileFieldName += SolrConstants.MIXFIX_LANG + isoCode.toUpperCase();

@@ -38,7 +38,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
-import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.StringConstants;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
@@ -471,7 +471,7 @@ public class DataRepository {
         if (oldDataFolder.toFile().isDirectory()) {
             Path newDataDir = Paths.get(toRepository.getDir(type).toAbsolutePath().toString(), pi);
             try {
-                int copied = Hotfolder.copyDirectory(oldDataFolder.toFile(), newDataDir.toFile());
+                int copied = FileTools.copyDirectory(oldDataFolder, newDataDir);
                 if (copied > 0) {
                     logger.info("Copied {} files to repository directory: {}", copied, newDataDir.toAbsolutePath());
                 }
@@ -528,16 +528,6 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER);
-
-        // Delete unsupported data folders
-        //                List<File> unknownDirs = Arrays.asList(hotfolderPath.listFiles(getDataFolderFilter(fileNameRoot + "_")));
-        //                if (unknownDirs != null) {
-        //                    for (File f : unknownDirs) {
-        //                        if (!deleteDirectory(f)) {
-        //                            logger.warn("'" + f.getAbsolutePath() + "' could not be deleted.");
-        //                        }
-        //                    }
-        //                }
     }
 
     /**
@@ -697,7 +687,7 @@ public class DataRepository {
         int counter = 0;
         if (!DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER.equals(paramName)) {
             logger.info("Copying {} files from '{}' to '{}'...", paramName, srcFolder, getDir(paramName).toAbsolutePath());
-            counter = Hotfolder.copyDirectory(srcFolder.toFile(), new File(getDir(paramName).toFile(), identifier));
+            counter = FileTools.copyDirectory(srcFolder, new File(getDir(paramName).toFile(), identifier).toPath());
             logger.info("{} {} files copied.", counter, paramName);
         }
         if (!Utils.deleteDirectory(srcFolder)) {

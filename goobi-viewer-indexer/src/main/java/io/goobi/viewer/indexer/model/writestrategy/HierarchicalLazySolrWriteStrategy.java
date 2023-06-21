@@ -55,9 +55,9 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
         }
 
         sanitizeDoc(rootDoc);
-        
+
         String pi = (String) rootDoc.getFieldValue(SolrConstants.PI);
-        
+
         // Check for duplicate URNs
         checkForValueCollisions(SolrConstants.URN, pi);
 
@@ -88,7 +88,7 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
         }
 
         searchIndex.writeToIndex(rootDoc);
-        searchIndex.commit(SolrSearchIndex.optimize);
+        searchIndex.commit(searchIndex.isOptimize());
         logger.debug("{} new doc(s) added.", docsToAdd.size());
     }
 }

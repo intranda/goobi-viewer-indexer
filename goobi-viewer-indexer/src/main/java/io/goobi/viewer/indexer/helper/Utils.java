@@ -165,6 +165,14 @@ public class Utils {
                 Configuration.getInstance().getViewerAuthorizationToken());
     }
 
+    public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException, FatalIndexerException {
+        if (StringUtils.isNotBlank(pi) && Configuration.getInstance().isPrerenderPdfsEnabled()) {
+            prerenderPdfs(pi, forceUpdate, Configuration.getInstance().getPrerenderPdfsConfigVariant(),
+                    Configuration.getInstance().getViewerUrl(),
+                    Configuration.getInstance().getViewerAuthorizationToken());
+        }
+    }
+
     /**
      * 
      * @param pi
@@ -182,7 +190,7 @@ public class Utils {
         }
 
         if (pi == null) {
-            throw new IllegalArgumentException("pi may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
         if (dataRepositoryName == null) {
             throw new IllegalArgumentException("dataRepositoryName may not be null");
@@ -193,6 +201,30 @@ public class Utils {
         json.put("type", "UPDATE_DATA_REPOSITORY_NAMES");
         json.put("pi", pi);
         json.put("dataRepositoryName", dataRepositoryName);
+
+        String url = viewerUrl + "/api/v1/tasks/";
+        Map<String, String> headerParams = new HashMap<>(2);
+        headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
+        headerParams.put("token", token);
+        getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
+    }
+
+    public static void prerenderPdfs(String pi, boolean force, String config, String viewerUrl, String token)
+            throws IOException, HTTPException {
+        if (StringUtils.isEmpty(token)) {
+            return;
+        }
+
+        if (pi == null) {
+            throw new IllegalArgumentException("pi may not be null");
+        }
+
+        logger.info("Requesting prerender pdf task in viewer...");
+        JSONObject json = new JSONObject();
+        json.put("type", "PRERENDER_PDF");
+        json.put("pi", pi);
+        json.put("force", force);
+        json.put("variant", config);
 
         String url = viewerUrl + "/api/v1/tasks/";
         Map<String, String> headerParams = new HashMap<>(2);
@@ -429,6 +461,7 @@ public class Utils {
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
             final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity, Integer smtpPort)
             throws MessagingException, UnsupportedEncodingException {
+        logger.info("postMail");
         if (recipients == null) {
             throw new IllegalArgumentException("recipients may not be null");
         }
@@ -521,15 +554,15 @@ public class Utils {
         }
         msg.setRecipients(Message.RecipientType.TO, addressTo);
         msg.setSubject(subject);
-        {
-            // Message body
-            MimeBodyPart messagePart = new MimeBodyPart();
-            messagePart.setText(body, "utf-8");
-            messagePart.setHeader(HTTP_HEADER_CONTENT_TYPE, "text/plain; charset=\"utf-8\"");
-            MimeMultipart multipart = new MimeMultipart();
-            multipart.addBodyPart(messagePart);
-            msg.setContent(multipart);
-        }
+
+        // Message body
+        MimeBodyPart messagePart = new MimeBodyPart();
+        messagePart.setText(body, "utf-8");
+        messagePart.setHeader(HTTP_HEADER_CONTENT_TYPE, "text/plain; charset=\"utf-8\"");
+        MimeMultipart multipart = new MimeMultipart();
+        multipart.addBodyPart(messagePart);
+        msg.setContent(multipart);
+
         msg.setSentDate(new Date());
         Transport.send(msg);
     }
