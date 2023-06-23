@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -381,7 +380,7 @@ public final class TextHelper {
         Map<String, Object> ret = new HashMap<>();
 
         // Convert to ALTO
-        Element alto = new ConvertAbbyyToAltoStaX().convert(file, new Date(file.lastModified()));
+        Element alto = new ConvertAbbyyToAltoStaX().convert(file);
         if (alto != null) {
             Document altoDoc = new Document();
             altoDoc.setRootElement(alto);
