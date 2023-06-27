@@ -476,7 +476,7 @@ public class MetsIndexer extends Indexer {
                 generatePageUrns(indexObj);
 
                 // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, hierarchyLevel);
+                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, null, true, writeStrategy, hierarchyLevel);
                 if (thumbnailFields != null) {
                     indexObj.getLuceneFields().addAll(thumbnailFields);
                 }
@@ -656,6 +656,7 @@ public class MetsIndexer extends Indexer {
      * must be set before calling this method.
      * 
      * @param indexObj {@link IndexObject}
+     * @param parentIndexObject
      * @param isWork
      * @param writeStrategy
      * @param depth Depth of the current docstruct in the docstruct hierarchy.
@@ -663,7 +664,8 @@ public class MetsIndexer extends Indexer {
      * @throws IndexerException -
      * @throws FatalIndexerException
      */
-    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy, int depth)
+    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, IndexObject parentIndexObject, boolean isWork,
+            ISolrWriteStrategy writeStrategy, int depth)
             throws IndexerException, FatalIndexerException {
         if (StringUtils.isEmpty(indexObj.getLogId())) {
             throw new IndexerException("Object has no LOG_ID.");
@@ -869,6 +871,14 @@ public class MetsIndexer extends Indexer {
                 // Add main value, otherwise the document will be skipped
                 shapeGmd.setMainValue((String) pageDoc.getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
+                // Make sure the shape metadata is on the lowest docstruct
+                while (parentIndexObject != null) {
+                    if (parentIndexObject.getGroupedMetadataFields().contains(shapeGmd)) {
+                        parentIndexObject.getGroupedMetadataFields().remove(shapeGmd);
+                        logger.debug("removed shape metadata {} from {}", shapeGmd.getMainValue(), parentIndexObject.getLogId());
+                    }
+                    parentIndexObject = parentIndexObject.getParent();
+                }
                 logger.debug("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
 
@@ -1791,7 +1801,7 @@ public class MetsIndexer extends Indexer {
             // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
             if (StringUtils.isNotEmpty(indexObj.getLogId())) {
                 try {
-                    List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, false, writeStrategy, depth);
+                    List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, parentIndexObject, false, writeStrategy, depth);
                     if (thumbnailFields != null) {
                         indexObj.getLuceneFields().addAll(thumbnailFields);
                     }
