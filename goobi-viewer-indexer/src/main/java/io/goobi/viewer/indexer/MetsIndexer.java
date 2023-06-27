@@ -692,7 +692,7 @@ public class MetsIndexer extends Indexer {
                 filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroupGlobal);
                 if (StringUtils.isNotBlank(filePathBanner)) {
                     logger.debug("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
-                } else if (StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
+                } else if (Configuration.getInstance().isUseFirstPageAsDefaultRepresentative() && StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
                     filePathBanner = indexObj.getThumbnailRepresent();
                     logger.debug("No representation thumbnail for {} found in METS, using previous file: {}", indexObj.getLogId(), filePathBanner);
                 }
@@ -701,7 +701,7 @@ public class MetsIndexer extends Indexer {
         boolean thumbnailSet = false;
         List<LuceneField> ret = new ArrayList<>();
         SolrInputDocument firstPageDoc = !pageDocs.isEmpty() ? pageDocs.get(0) : null;
-        if (StringUtils.isEmpty(filePathBanner) && firstPageDoc != null) {
+        if (StringUtils.isEmpty(filePathBanner) && Configuration.getInstance().isUseFirstPageAsDefaultRepresentative() && firstPageDoc != null) {
             // Add thumbnail information from the first page
             String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));

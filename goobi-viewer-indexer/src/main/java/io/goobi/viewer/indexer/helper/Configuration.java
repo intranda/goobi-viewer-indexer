@@ -631,6 +631,16 @@ public final class Configuration {
         URL urlAsURL = new URL(url);
         return getProxyWhitelist().contains(urlAsURL.getHost());
     }
+    
+    /**
+     * If true, the first page of a document is set as the representative image if no other page is
+            specified in the source document. If this is set to false, and no page is explicitly set as representative,
+            no representative image will be set. Defaults to true
+     * @return whether the first page should be used as representative image per default
+     */
+    public boolean isUseFirstPageAsDefaultRepresentative() {
+        return getBoolean("init.representativeImage.useFirstPageAsDefault", true);
+    }
 
     /**
      * Overrides values in the config file (for unit test purposes).
@@ -672,5 +682,7 @@ public final class Configuration {
 
         return true;
     }
+
+
 
 }
