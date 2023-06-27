@@ -68,6 +68,13 @@
 		<!-- If true, all collection names from volumes will be added to their corresponding anchor record (default is false) -->
 		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
 
+		<representativeImage>
+			<!-- If true, the first page of a document is set as the representative image if no other page is
+			specified in the source document. If this is set to false, and no page is explicitly set as representative,
+			no representative image will be set. Defaults to true -->
+			<useFirstPageAsDefault>true</useFirstPageAsDefault>
+		</representativeImage>
+
 		<namespaces>
 			<list>
 			    <intranda>http://intranda.com/MODS/</intranda>

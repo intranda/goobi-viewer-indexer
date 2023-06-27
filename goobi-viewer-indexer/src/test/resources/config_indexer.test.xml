@@ -79,6 +79,12 @@
 		<!-- Occurrence of the splitting character in the string that separates 
 			the partner ID from the record identifier (e.g. '1' means second occurrence) -->
 		<piSplittingCharOccurrence>1</piSplittingCharOccurrence>
+		<representativeImage>
+			<!-- If true, the first page of a document is set as the representative image if no other page is
+			specified in the source document. If this is set to false, and no page is explicitly set as representative,
+			no representative image will be set. Defaults to true -->
+			<useFirstPageAsDefault>true</useFirstPageAsDefault>
+		</representativeImage>
 
 		<namespaces>
 			<list>
