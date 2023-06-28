@@ -2879,8 +2879,12 @@
 		<MD_RECORDID>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="record"]</xpath>
-                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="record-id"]</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="record"]</item>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="record-id"]</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 				</item>
@@ -2916,8 +2920,6 @@
 				</item>
 			</list>
 		</MD_SEX>
-
-
 
 		<MD_HOSTID>
 			<list>
