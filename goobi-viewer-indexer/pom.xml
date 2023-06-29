@@ -47,7 +47,7 @@
         <commons-text.version>1.10.0</commons-text.version>
 		<httpclient.version>4.5.14</httpclient.version>
 		<httpcore.version>4.4.16</httpcore.version>
-		<icu.version>73.1</icu.version>
+		<icu.version>73.2</icu.version>
 		<imageio-openjpeg.version>0.6.7</imageio-openjpeg.version>
 		<log4j.version>2.20.0</log4j.version>
 		<jackson.version>2.15.2</jackson.version>
@@ -56,7 +56,7 @@
         <javax.mail.version>1.6.2</javax.mail.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.16.1</jsoup.version>
-		<json.version>20230227</json.version>
+		<json.version>20230618</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.18.0</metadata-extractor.version>
 		<solr.version>8.11.2</solr.version>
