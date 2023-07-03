@@ -1017,7 +1017,13 @@ public class MetsIndexer extends Indexer {
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
         if (order == null) {
-            order = Integer.parseInt(eleStructMapPhysical.getAttributeValue("ORDER"));
+            String orderValue = eleStructMapPhysical.getAttributeValue("ORDER");
+            if (StringUtils.isNotEmpty(orderValue)) {
+                order = Integer.parseInt(orderValue);
+            } else {
+                logger.warn("ORDER attribute no found, skipping...");
+                return false;
+            }
         }
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().getId());
         // Check whether this physical element is mapped to any logical element, skip if not
