@@ -694,7 +694,8 @@ public class MetsIndexer extends Indexer {
                 filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroupGlobal);
                 if (StringUtils.isNotBlank(filePathBanner)) {
                     logger.debug("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
-                } else if (Configuration.getInstance().isUseFirstPageAsDefaultRepresentative() && StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
+                } else if (Configuration.getInstance().isUseFirstPageAsDefaultRepresentative()
+                        && StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
                     filePathBanner = indexObj.getThumbnailRepresent();
                     logger.debug("No representation thumbnail for {} found in METS, using previous file: {}", indexObj.getLogId(), filePathBanner);
                 }
@@ -1332,27 +1333,20 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
-                // Width + height (invalid)
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@WIDTH";
-                List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                Integer width = null;
-                Integer height = null;
-                if (widthAttrList != null && !widthAttrList.isEmpty() && StringUtils.isNotBlank(widthAttrList.get(0).getValue())) {
-                    width = Integer.valueOf(widthAttrList.get(0).getValue());
-                    logger.warn("mets:file[@ID='{}'] contains illegal WIDTH attribute. It will still be used, though.", fileId);
+            // Width + height (from IIIF)
+            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
+                    && filePath.endsWith("info.json")) {
+                int[] dim = getImageDimensionsFromIIIF(filePath);
+                if (dim.length == 2) {
+                    doc.addField(SolrConstants.WIDTH, dim[0]);
+                    doc.addField(SolrConstants.HEIGHT, dim[1]);
+                    logger.info("Added WIDTH from IIIF: {}", doc.getFieldValue(SolrConstants.WIDTH));
+                    logger.info("Added HEIGHT from IIIF: {}", doc.getFieldValue(SolrConstants.HEIGHT));
                 }
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@HEIGHT";
-                List<Attribute> heightAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                if (heightAttrList != null && !heightAttrList.isEmpty() && StringUtils.isNotBlank(heightAttrList.get(0).getValue())) {
-                    height = Integer.valueOf(heightAttrList.get(0).getValue());
-                    logger.warn("mets:file[@ID='{}'] contains illegal HEIGHT attribute. It will still be used, though.", fileId);
-                }
-                if (width != null && height != null) {
-                    doc.addField(SolrConstants.WIDTH, width);
-                    doc.addField(SolrConstants.HEIGHT, height);
-                }
+            }
 
+            // Width + height (from techMD)
+            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
                 // Width + height (from techMD)
                 xpath = XPATH_FILE + fileIdXPathCondition + "/@ADMID";
                 List<Attribute> amdIdAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
@@ -1373,6 +1367,29 @@ public class MetsIndexer extends Indexer {
                         }
                     }
                 }
+            }
+
+            // Width + height (invalid)
+            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
+                xpath = XPATH_FILE + fileIdXPathCondition + "/@WIDTH";
+                List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
+                Integer width = null;
+                Integer height = null;
+                if (widthAttrList != null && !widthAttrList.isEmpty() && StringUtils.isNotBlank(widthAttrList.get(0).getValue())) {
+                    width = Integer.valueOf(widthAttrList.get(0).getValue());
+                    logger.warn("mets:file[@ID='{}'] contains illegal WIDTH attribute. It will still be used, though.", fileId);
+                }
+                xpath = XPATH_FILE + fileIdXPathCondition + "/@HEIGHT";
+                List<Attribute> heightAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
+                if (heightAttrList != null && !heightAttrList.isEmpty() && StringUtils.isNotBlank(heightAttrList.get(0).getValue())) {
+                    height = Integer.valueOf(heightAttrList.get(0).getValue());
+                    logger.warn("mets:file[@ID='{}'] contains illegal HEIGHT attribute. It will still be used, though.", fileId);
+                }
+                if (width != null && height != null) {
+                    doc.addField(SolrConstants.WIDTH, width);
+                    doc.addField(SolrConstants.HEIGHT, height);
+                }
+
             }
         }
 

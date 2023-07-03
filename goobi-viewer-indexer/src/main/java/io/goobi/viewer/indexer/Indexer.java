@@ -64,6 +64,9 @@ import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -89,6 +92,7 @@ import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.StringConstants;
@@ -96,7 +100,6 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.WebAnnotationTools;
 import io.goobi.viewer.indexer.helper.XmlTools;
-import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -1530,6 +1533,31 @@ public abstract class Indexer {
         }
 
         throw new IOException("Failed to write file '" + targetPath + "' from url '" + fileUrl + "'");
+    }
+
+    /**
+     * 
+     * @param url
+     * @return
+     * @should fetch dimensions correctly
+     */
+    protected static int[] getImageDimensionsFromIIIF(String url) {
+        if (StringUtils.isEmpty(url)) {
+            return new int[0];
+        }
+
+        try {
+            URI uri = new URI(url);
+            JSONTokener tokener = new JSONTokener(uri.toURL().openStream());
+            JSONObject root = new JSONObject(tokener);
+            int width = root.getInt("width");
+            int height = root.getInt("height");
+            return new int[] { width, height };
+        } catch (IOException | JSONException | URISyntaxException e) {
+            logger.error("Could not fetch JSON from '{}': {}", url, e.getMessage());
+        }
+
+        return new int[0];
     }
 
     /**
