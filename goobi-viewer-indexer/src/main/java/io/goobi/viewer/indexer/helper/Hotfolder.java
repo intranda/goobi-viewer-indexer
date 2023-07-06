@@ -464,7 +464,7 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleSourceFile(recordFile, false, reindexSettings);
                         checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                                secondaryAppender.getLog());
+                                secondaryAppender != null ? secondaryAppender.getLog() : "NO LOG");
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
                         Files.delete(recordFile);
