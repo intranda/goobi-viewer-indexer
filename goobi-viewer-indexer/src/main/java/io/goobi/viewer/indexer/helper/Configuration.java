@@ -59,7 +59,7 @@ public final class Configuration {
     private static final Object lock = new Object();
 
     /* default */
-    private static String configPath = "src/main/resources/config_indexer.xml";
+    private static String configPath = "config_indexer.xml";
     private static Configuration instance = null;
 
     private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
