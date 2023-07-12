@@ -938,10 +938,10 @@ public class MetsIndexer extends Indexer {
                 for (Element eleFptr : eleFptrList) {
                     String fileID = eleFptr.getAttributeValue("FILEID");
                     String url = xp.evaluateToAttributeStringValue("/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + DOWNLOAD_FILEGROUP + "\"]/mets:file[@ID=\""
-                            + fileID + "\"]/mets:FLocat[@LOCTYPE=\"URL\"]/@xlink:href", null);
+                            + fileID + "\" and @MIMETYPE=\"text/html\"]/mets:FLocat[@LOCTYPE=\"URL\"]/@xlink:href", null);
                     if (StringUtils.isNotEmpty(url)) {
                         indexObj.addToLucene("MD2_DOWNLOAD_URL", url);
-                        logger.info("Found download URL: {}", url);
+                        logger.info("Found external download URL: {}", url);
                     }
                 }
             }
