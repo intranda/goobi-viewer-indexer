@@ -96,16 +96,18 @@ public class MetsIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(MetsIndexer.class);
 
-    /** Constant <code>DEFAULT_FILEGROUP_1="PRESENTATION"</code> */
-    public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
-    /** Constant <code>DEFAULT_FILEGROUP_2="DEFAULT"</code> */
-    public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
+    /** Constant <code>PRESENTATION_FILEGROUP="PRESENTATION"</code> */
+    public static final String PRESENTATION_FILEGROUP = "PRESENTATION";
+    /** Constant <code>DEFAULT_FILEGROUP="DEFAULT"</code> */
+    public static final String DEFAULT_FILEGROUP = "DEFAULT";
     /** Constant <code>OBJECT_FILEGROUP="OBJECT"</code> */
     public static final String OBJECT_FILEGROUP = "OBJECT";
     /** Constant <code>ALTO_FILEGROUP="ALTO"</code> */
     public static final String ALTO_FILEGROUP = "ALTO";
     /** Constant <code>FULLTEXT_FILEGROUP="FULLTEXT"</code> */
     public static final String FULLTEXT_FILEGROUP = "FULLTEXT";
+    /** Constant <code>DOWNLOAD_FILEGROUP="DOWNLOAD"</code> */
+    public static final String DOWNLOAD_FILEGROUP = "DOWNLOAD";
     /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
 
@@ -463,6 +465,9 @@ public class MetsIndexer extends Indexer {
                 indexObj.addToLucene(SolrConstants.NUMVOLUMES, String.valueOf(numVolumes));
                 logger.info("Added number of volumes: {}", numVolumes);
             } else {
+                // Look for a download URL for the entire record
+                collectDownloadUrl(indexObj);
+
                 // Generate docs for all pages and add to the write strategy
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
@@ -693,7 +698,7 @@ public class MetsIndexer extends Indexer {
             } else {
                 filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroupGlobal);
                 if (StringUtils.isNotBlank(filePathBanner)) {
-                    logger.debug("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
+                    logger.info("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
                 } else if (Configuration.getInstance().isUseFirstPageAsDefaultRepresentative()
                         && StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
                     filePathBanner = indexObj.getThumbnailRepresent();
@@ -918,6 +923,32 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
+     * 
+     * @param indexObj
+     * @throws FatalIndexerException
+     */
+    public void collectDownloadUrl(final IndexObject indexObj)
+            throws FatalIndexerException {
+        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div[@TYPE=\"physSequence\"]"; //NOSONAR XPath expression, not URI...
+        List<Element> eleStructMapPhysSequenceList = xp.evaluateToElements(xpath, null);
+        if (!eleStructMapPhysSequenceList.isEmpty()) {
+            List<Element> eleFptrList =
+                    eleStructMapPhysSequenceList.get(0).getChildren("fptr", Configuration.getInstance().getNamespaces().get("mets"));
+            if (eleFptrList != null && !eleFptrList.isEmpty()) {
+                for (Element eleFptr : eleFptrList) {
+                    String fileID = eleFptr.getAttributeValue("FILEID");
+                    String url = xp.evaluateToAttributeStringValue("/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + DOWNLOAD_FILEGROUP + "\"]/mets:file[@ID=\""
+                            + fileID + "\"]/mets:FLocat[@LOCTYPE=\"URL\"]/@xlink:href", null);
+                    if (StringUtils.isNotEmpty(url)) {
+                        indexObj.addToLucene("MD2_DOWNLOAD_URL", url);
+                        logger.info("Found download URL: {}", url);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
      * docstruct (such as docstruct iddoc, type, collection, etc.).
      *
@@ -937,7 +968,7 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
-        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
+        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"]";
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
@@ -1055,18 +1086,18 @@ public class MetsIndexer extends Indexer {
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
-            if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP_2)) {
+            if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP)) {
                 //If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
-                useFileGroup = DEFAULT_FILEGROUP_2;
+                useFileGroup = DEFAULT_FILEGROUP;
                 useFileID = fileID;
                 preferCurrentFileGroup = true;
-            } else if (fileID.contains(DEFAULT_FILEGROUP_1) && !preferCurrentFileGroup) {
+            } else if (fileID.contains(PRESENTATION_FILEGROUP) && !preferCurrentFileGroup) {
                 // Always prefer PRESENTATION: override if already set to something else
-                useFileGroup = DEFAULT_FILEGROUP_1;
+                useFileGroup = PRESENTATION_FILEGROUP;
                 useFileID = fileID;
                 preferCurrentFileGroup = true;
-            } else if (fileID.contains(DEFAULT_FILEGROUP_2) && !preferCurrentFileGroup) {
-                useFileGroup = DEFAULT_FILEGROUP_2;
+            } else if (fileID.contains(DEFAULT_FILEGROUP) && !preferCurrentFileGroup) {
+                useFileGroup = DEFAULT_FILEGROUP;
                 useFileID = fileID;
             } else if (fileID.contains(OBJECT_FILEGROUP) && !preferCurrentFileGroup) {
                 useFileGroup = OBJECT_FILEGROUP;
@@ -1166,8 +1197,8 @@ public class MetsIndexer extends Indexer {
             String fileGrpId = eleFileGrp.getAttributeValue("ID");
             logger.debug("Found file group: {}", fileGrpUse);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if (!downloadExternalImages && (useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
-                    && (DEFAULT_FILEGROUP_1.equals(fileGrpUse) || DEFAULT_FILEGROUP_2.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
+            if (!downloadExternalImages && (useFileGroup == null || !PRESENTATION_FILEGROUP.equals(useFileGroup))
+                    && (PRESENTATION_FILEGROUP.equals(fileGrpUse) || DEFAULT_FILEGROUP.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
                 useFileGroup = fileGrpUse;
             }
             String fileId = null;
@@ -1275,7 +1306,7 @@ public class MetsIndexer extends Indexer {
                     }
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
-                    if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup)
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroup)
                             && !doc.containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
                         doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
                     }
@@ -1346,8 +1377,8 @@ public class MetsIndexer extends Indexer {
                 if (dim.length == 2) {
                     doc.addField(SolrConstants.WIDTH, dim[0]);
                     doc.addField(SolrConstants.HEIGHT, dim[1]);
-                    logger.info("Added WIDTH from IIIF: {}", doc.getFieldValue(SolrConstants.WIDTH));
-                    logger.info("Added HEIGHT from IIIF: {}", doc.getFieldValue(SolrConstants.HEIGHT));
+                    logger.debug("Added WIDTH from IIIF: {}", doc.getFieldValue(SolrConstants.WIDTH));
+                    logger.debug("Added HEIGHT from IIIF: {}", doc.getFieldValue(SolrConstants.HEIGHT));
                 }
             }
 
