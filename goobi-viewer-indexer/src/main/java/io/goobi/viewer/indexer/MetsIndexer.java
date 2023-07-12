@@ -937,10 +937,12 @@ public class MetsIndexer extends Indexer {
             if (eleFptrList != null && !eleFptrList.isEmpty()) {
                 for (Element eleFptr : eleFptrList) {
                     String fileID = eleFptr.getAttributeValue("FILEID");
-                    String url = xp.evaluateToAttributeStringValue("/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + DOWNLOAD_FILEGROUP + "\"]/mets:file[@ID=\""
-                            + fileID + "\" and @MIMETYPE=\"text/html\"]/mets:FLocat[@LOCTYPE=\"URL\"]/@xlink:href", null);
+                    String url = xp.evaluateToAttributeStringValue(
+                            "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + DOWNLOAD_FILEGROUP + "\"]/mets:file[@ID=\""
+                                    + fileID + "\" and @MIMETYPE=\"text/html\"]/mets:FLocat[@LOCTYPE=\"URL\"]/@xlink:href",
+                            null);
                     if (StringUtils.isNotEmpty(url)) {
-                        indexObj.addToLucene("MD2_DOWNLOAD_URL", url);
+                        indexObj.addToLucene(SolrConstants.DOWNLOAD_URL_EXTERNAL, url);
                         logger.info("Found external download URL: {}", url);
                     }
                 }
