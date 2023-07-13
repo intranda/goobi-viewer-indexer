@@ -147,10 +147,14 @@ public class Hotfolder {
         Configuration config = Configuration.getInstance(confFilename);
 
         this.searchIndex = new SolrSearchIndex(solrClient);
-        logger.info("Using Solr server at {}", config.getConfiguration("solrUrl"));
+        if (logger.isInfoEnabled()) {
+            logger.info("Using Solr server at {}", config.getConfiguration("solrUrl"));
+        }
         if (oldSolrClient != null) {
             this.oldSearchIndex = new SolrSearchIndex(oldSolrClient);
-            logger.info("Also using old Solr server at {}", config.getConfiguration("oldSolrUrl"));
+            if (logger.isInfoEnabled()) {
+                logger.info("Also using old Solr server at {}", config.getConfiguration("oldSolrUrl"));
+            }
         } else {
             this.oldSearchIndex = null;
         }
@@ -464,7 +468,7 @@ public class Hotfolder {
                         reindexSettings.put(DataRepository.PARAM_UGC, false);
                         noerror = handleSourceFile(recordFile, false, reindexSettings);
                         checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                                secondaryAppender.getLog());
+                                secondaryAppender != null ? secondaryAppender.getLog() : "NO LOG");
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
                         Files.delete(recordFile);

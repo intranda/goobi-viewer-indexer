@@ -109,7 +109,7 @@ public class GroupedMetadata {
         if (getClass() != obj.getClass())
             return false;
         GroupedMetadata other = (GroupedMetadata) obj;
-        if (!fields.equals(other.fields))
+        if (fields.size() != other.fields.size())
             return false;
         if (label == null) {
             if (other.label != null)

@@ -96,23 +96,26 @@ public class MetsIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(MetsIndexer.class);
 
-    /** Constant <code>DEFAULT_FILEGROUP_1="PRESENTATION"</code> */
-    public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
-    /** Constant <code>DEFAULT_FILEGROUP_2="DEFAULT"</code> */
-    public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
+    /** Constant <code>PRESENTATION_FILEGROUP="PRESENTATION"</code> */
+    public static final String PRESENTATION_FILEGROUP = "PRESENTATION";
+    /** Constant <code>DEFAULT_FILEGROUP="DEFAULT"</code> */
+    public static final String DEFAULT_FILEGROUP = "DEFAULT";
     /** Constant <code>OBJECT_FILEGROUP="OBJECT"</code> */
     public static final String OBJECT_FILEGROUP = "OBJECT";
     /** Constant <code>ALTO_FILEGROUP="ALTO"</code> */
     public static final String ALTO_FILEGROUP = "ALTO";
     /** Constant <code>FULLTEXT_FILEGROUP="FULLTEXT"</code> */
     public static final String FULLTEXT_FILEGROUP = "FULLTEXT";
+    /** Constant <code>DOWNLOAD_FILEGROUP="DOWNLOAD"</code> */
+    public static final String DOWNLOAD_FILEGROUP = "DOWNLOAD";
     /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
 
     private static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
 
-    private static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='";
+    private static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
     private static final String XPATH_FILE = "mets:file";
+    private static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
 
     /** */
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
@@ -395,7 +398,7 @@ public class MetsIndexer extends Indexer {
 
             // write opac url
             String opacXpath =
-                    "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()";
+                    "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()"; //NOSONAR XPath, not URI
             String opacUrl = xp.evaluateToString(opacXpath, null);
             if (StringUtils.isEmpty(opacUrl)) {
                 opacUrl = xp.evaluateToCdata(opacXpath, null);
@@ -463,6 +466,9 @@ public class MetsIndexer extends Indexer {
                 indexObj.addToLucene(SolrConstants.NUMVOLUMES, String.valueOf(numVolumes));
                 logger.info("Added number of volumes: {}", numVolumes);
             } else {
+                // Look for a download URL for the entire record
+                collectDownloadUrl(indexObj);
+
                 // Generate docs for all pages and add to the write strategy
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
@@ -476,7 +482,7 @@ public class MetsIndexer extends Indexer {
                 generatePageUrns(indexObj);
 
                 // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, true, writeStrategy, hierarchyLevel);
+                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, null, true, writeStrategy, hierarchyLevel);
                 if (thumbnailFields != null) {
                     indexObj.getLuceneFields().addAll(thumbnailFields);
                 }
@@ -534,8 +540,10 @@ public class MetsIndexer extends Indexer {
                                 getNextIddoc(hotfolder.getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                    }
+                } else if (logger.isDebugEnabled()) {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }
@@ -625,7 +633,7 @@ public class MetsIndexer extends Indexer {
 
     private static String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) throws FatalIndexerException {
         String filePathBanner = "";
-        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
+        String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
         filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
         if (StringUtils.isNotEmpty(filePathBanner)) {
             // Add thumbnail information from the representative page
@@ -637,12 +645,11 @@ public class MetsIndexer extends Indexer {
 
     private static String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) throws FatalIndexerException {
         String filePathBanner = "";
-
         String xpathFilePtr =
-                "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID";
+                "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID"; //NOSONAR XPath, not URI
         List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).collect(Collectors.toList());
         for (String fileId : fileIds) {
-            String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@ID='" + fileId + "']/mets:FLocat/@xlink:href";
+            String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@ID='" + fileId + "']/mets:FLocat/@xlink:href";
             filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
             if (StringUtils.isNotBlank(filePathBanner)) {
                 return filePathBanner;
@@ -656,6 +663,7 @@ public class MetsIndexer extends Indexer {
      * must be set before calling this method.
      * 
      * @param indexObj {@link IndexObject}
+     * @param parentIndexObject
      * @param isWork
      * @param writeStrategy
      * @param depth Depth of the current docstruct in the docstruct hierarchy.
@@ -663,7 +671,8 @@ public class MetsIndexer extends Indexer {
      * @throws IndexerException -
      * @throws FatalIndexerException
      */
-    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, boolean isWork, ISolrWriteStrategy writeStrategy, int depth)
+    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, IndexObject parentIndexObject, boolean isWork,
+            ISolrWriteStrategy writeStrategy, int depth)
             throws IndexerException, FatalIndexerException {
         if (StringUtils.isEmpty(indexObj.getLogId())) {
             throw new IndexerException("Object has no LOG_ID.");
@@ -691,8 +700,9 @@ public class MetsIndexer extends Indexer {
             } else {
                 filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroupGlobal);
                 if (StringUtils.isNotBlank(filePathBanner)) {
-                    logger.debug("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
-                } else if (StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
+                    logger.info("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
+                } else if (Configuration.getInstance().isUseFirstPageAsDefaultRepresentative()
+                        && StringUtils.isNotEmpty(indexObj.getThumbnailRepresent())) {
                     filePathBanner = indexObj.getThumbnailRepresent();
                     logger.debug("No representation thumbnail for {} found in METS, using previous file: {}", indexObj.getLogId(), filePathBanner);
                 }
@@ -701,7 +711,7 @@ public class MetsIndexer extends Indexer {
         boolean thumbnailSet = false;
         List<LuceneField> ret = new ArrayList<>();
         SolrInputDocument firstPageDoc = !pageDocs.isEmpty() ? pageDocs.get(0) : null;
-        if (StringUtils.isEmpty(filePathBanner) && firstPageDoc != null) {
+        if (StringUtils.isEmpty(filePathBanner) && Configuration.getInstance().isUseFirstPageAsDefaultRepresentative() && firstPageDoc != null) {
             // Add thumbnail information from the first page
             String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
@@ -869,6 +879,14 @@ public class MetsIndexer extends Indexer {
                 // Add main value, otherwise the document will be skipped
                 shapeGmd.setMainValue((String) pageDoc.getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
+                // Make sure the shape metadata is on the lowest docstruct
+                while (parentIndexObject != null) {
+                    if (parentIndexObject.getGroupedMetadataFields().contains(shapeGmd)) {
+                        parentIndexObject.getGroupedMetadataFields().remove(shapeGmd);
+                        logger.debug("removed shape metadata {} from {}", shapeGmd.getMainValue(), parentIndexObject.getLogId());
+                    }
+                    parentIndexObject = parentIndexObject.getParent();
+                }
                 logger.debug("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
 
@@ -907,6 +925,34 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
+     * 
+     * @param indexObj
+     * @throws FatalIndexerException
+     */
+    public void collectDownloadUrl(final IndexObject indexObj)
+            throws FatalIndexerException {
+        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div[@TYPE=\"physSequence\"]"; //NOSONAR XPath expression, not URI...
+        List<Element> eleStructMapPhysSequenceList = xp.evaluateToElements(xpath, null);
+        if (!eleStructMapPhysSequenceList.isEmpty()) {
+            List<Element> eleFptrList =
+                    eleStructMapPhysSequenceList.get(0).getChildren("fptr", Configuration.getInstance().getNamespaces().get("mets"));
+            if (eleFptrList != null && !eleFptrList.isEmpty()) {
+                for (Element eleFptr : eleFptrList) {
+                    String fileID = eleFptr.getAttributeValue("FILEID");
+                    String url = xp.evaluateToAttributeStringValue(
+                            XPATH_FILEGRP + DOWNLOAD_FILEGROUP + "\"]/mets:file[@ID=\""
+                                    + fileID + "\" and @MIMETYPE=\"text/html\"]/mets:FLocat[@LOCTYPE=\"URL\"]/@xlink:href",
+                            null);
+                    if (StringUtils.isNotEmpty(url)) {
+                        indexObj.addToLucene(SolrConstants.DOWNLOAD_URL_EXTERNAL, url);
+                        logger.info("Found external download URL: {}", url);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
      * docstruct (such as docstruct iddoc, type, collection, etc.).
      *
@@ -926,7 +972,7 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
-        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
+        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"]"; //NOSONAR XPath, not URI
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
@@ -1006,7 +1052,13 @@ public class MetsIndexer extends Indexer {
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
         if (order == null) {
-            order = Integer.parseInt(eleStructMapPhysical.getAttributeValue("ORDER"));
+            String orderValue = eleStructMapPhysical.getAttributeValue("ORDER");
+            if (StringUtils.isNotEmpty(orderValue)) {
+                order = Integer.parseInt(orderValue);
+            } else {
+                logger.warn("ORDER attribute no found, skipping...");
+                return false;
+            }
         }
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().getId());
         // Check whether this physical element is mapped to any logical element, skip if not
@@ -1038,18 +1090,18 @@ public class MetsIndexer extends Indexer {
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
-            if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP_2)) {
+            if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP)) {
                 //If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
-                useFileGroup = DEFAULT_FILEGROUP_2;
+                useFileGroup = DEFAULT_FILEGROUP;
                 useFileID = fileID;
                 preferCurrentFileGroup = true;
-            } else if (fileID.contains(DEFAULT_FILEGROUP_1) && !preferCurrentFileGroup) {
+            } else if (fileID.contains(PRESENTATION_FILEGROUP) && !preferCurrentFileGroup) {
                 // Always prefer PRESENTATION: override if already set to something else
-                useFileGroup = DEFAULT_FILEGROUP_1;
+                useFileGroup = PRESENTATION_FILEGROUP;
                 useFileID = fileID;
                 preferCurrentFileGroup = true;
-            } else if (fileID.contains(DEFAULT_FILEGROUP_2) && !preferCurrentFileGroup) {
-                useFileGroup = DEFAULT_FILEGROUP_2;
+            } else if (fileID.contains(DEFAULT_FILEGROUP) && !preferCurrentFileGroup) {
+                useFileGroup = DEFAULT_FILEGROUP;
                 useFileID = fileID;
             } else if (fileID.contains(OBJECT_FILEGROUP) && !preferCurrentFileGroup) {
                 useFileGroup = OBJECT_FILEGROUP;
@@ -1149,8 +1201,8 @@ public class MetsIndexer extends Indexer {
             String fileGrpId = eleFileGrp.getAttributeValue("ID");
             logger.debug("Found file group: {}", fileGrpUse);
             // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if (!downloadExternalImages && (useFileGroup == null || !DEFAULT_FILEGROUP_1.equals(useFileGroup))
-                    && (DEFAULT_FILEGROUP_1.equals(fileGrpUse) || DEFAULT_FILEGROUP_2.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
+            if (!downloadExternalImages && (useFileGroup == null || !PRESENTATION_FILEGROUP.equals(useFileGroup))
+                    && (PRESENTATION_FILEGROUP.equals(fileGrpUse) || DEFAULT_FILEGROUP.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
                 useFileGroup = fileGrpUse;
             }
             String fileId = null;
@@ -1258,7 +1310,7 @@ public class MetsIndexer extends Indexer {
                     }
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
-                    if (!downloadExternalImages && DEFAULT_FILEGROUP_2.equals(useFileGroup)
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroup)
                             && !doc.containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
                         doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
                     }
@@ -1322,27 +1374,20 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
-                // Width + height (invalid)
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@WIDTH";
-                List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                Integer width = null;
-                Integer height = null;
-                if (widthAttrList != null && !widthAttrList.isEmpty() && StringUtils.isNotBlank(widthAttrList.get(0).getValue())) {
-                    width = Integer.valueOf(widthAttrList.get(0).getValue());
-                    logger.warn("mets:file[@ID='{}'] contains illegal WIDTH attribute. It will still be used, though.", fileId);
+            // Width + height (from IIIF)
+            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
+                    && filePath.endsWith("info.json")) {
+                int[] dim = getImageDimensionsFromIIIF(filePath);
+                if (dim.length == 2) {
+                    doc.addField(SolrConstants.WIDTH, dim[0]);
+                    doc.addField(SolrConstants.HEIGHT, dim[1]);
+                    logger.debug("Added WIDTH from IIIF: {}", doc.getFieldValue(SolrConstants.WIDTH));
+                    logger.debug("Added HEIGHT from IIIF: {}", doc.getFieldValue(SolrConstants.HEIGHT));
                 }
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@HEIGHT";
-                List<Attribute> heightAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                if (heightAttrList != null && !heightAttrList.isEmpty() && StringUtils.isNotBlank(heightAttrList.get(0).getValue())) {
-                    height = Integer.valueOf(heightAttrList.get(0).getValue());
-                    logger.warn("mets:file[@ID='{}'] contains illegal HEIGHT attribute. It will still be used, though.", fileId);
-                }
-                if (width != null && height != null) {
-                    doc.addField(SolrConstants.WIDTH, width);
-                    doc.addField(SolrConstants.HEIGHT, height);
-                }
+            }
 
+            // Width + height (from techMD)
+            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
                 // Width + height (from techMD)
                 xpath = XPATH_FILE + fileIdXPathCondition + "/@ADMID";
                 List<Attribute> amdIdAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
@@ -1363,6 +1408,29 @@ public class MetsIndexer extends Indexer {
                         }
                     }
                 }
+            }
+
+            // Width + height (invalid)
+            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
+                xpath = XPATH_FILE + fileIdXPathCondition + "/@WIDTH";
+                List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
+                Integer width = null;
+                Integer height = null;
+                if (widthAttrList != null && !widthAttrList.isEmpty() && StringUtils.isNotBlank(widthAttrList.get(0).getValue())) {
+                    width = Integer.valueOf(widthAttrList.get(0).getValue());
+                    logger.warn("mets:file[@ID='{}'] contains illegal WIDTH attribute. It will still be used, though.", fileId);
+                }
+                xpath = XPATH_FILE + fileIdXPathCondition + "/@HEIGHT";
+                List<Attribute> heightAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
+                if (heightAttrList != null && !heightAttrList.isEmpty() && StringUtils.isNotBlank(heightAttrList.get(0).getValue())) {
+                    height = Integer.valueOf(heightAttrList.get(0).getValue());
+                    logger.warn("mets:file[@ID='{}'] contains illegal HEIGHT attribute. It will still be used, though.", fileId);
+                }
+                if (width != null && height != null) {
+                    doc.addField(SolrConstants.WIDTH, width);
+                    doc.addField(SolrConstants.HEIGHT, height);
+                }
+
             }
         }
 
@@ -1791,7 +1859,7 @@ public class MetsIndexer extends Indexer {
             // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
             if (StringUtils.isNotEmpty(indexObj.getLogId())) {
                 try {
-                    List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, false, writeStrategy, depth);
+                    List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, parentIndexObject, false, writeStrategy, depth);
                     if (thumbnailFields != null) {
                         indexObj.getLuceneFields().addAll(thumbnailFields);
                     }
@@ -1903,43 +1971,35 @@ public class MetsIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // DMDID
-        {
-            indexObj.setDmdid(TextHelper.normalizeSequence(structNode.getAttributeValue(SolrConstants.DMDID)));
-            logger.trace("DMDID: {}", indexObj.getDmdid());
-        }
+        indexObj.setDmdid(TextHelper.normalizeSequence(structNode.getAttributeValue(SolrConstants.DMDID)));
+        logger.trace("DMDID: {}", indexObj.getDmdid());
 
         // LOGID
-        {
-            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("ID"));
-            if (value != null) {
-                indexObj.setLogId(value);
-            }
-            logger.trace("LOGID: {}", indexObj.getLogId());
+        String value = TextHelper.normalizeSequence(structNode.getAttributeValue("ID"));
+        if (value != null) {
+            indexObj.setLogId(value);
         }
+        logger.trace("LOGID: {}", indexObj.getLogId());
 
         // TYPE
-        {
-            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("TYPE"));
-            if (value != null) {
-                indexObj.setType(value);
-            }
+        value = TextHelper.normalizeSequence(structNode.getAttributeValue("TYPE"));
+        if (value != null) {
+            indexObj.setType(value);
         }
         logger.trace("TYPE: {}", indexObj.getType());
 
         // LABEL
-        {
-            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("LABEL"));
-            if (value != null) {
-                // Remove non-sort characters from LABEL, if configured to do so
-                if (Configuration.getInstance().isLabelCleanup()) {
-                    value = value.replace("<ns>", "");
-                    value = value.replace("</ns>", "");
-                    value = value.replace("<<", "");
-                    value = value.replace(">>", "");
-                    value = value.replace("¬", "");
-                }
-                indexObj.setLabel(value);
+        value = TextHelper.normalizeSequence(structNode.getAttributeValue("LABEL"));
+        if (value != null) {
+            // Remove non-sort characters from LABEL, if configured to do so
+            if (Configuration.getInstance().isLabelCleanup()) {
+                value = value.replace("<ns>", "");
+                value = value.replace("</ns>", "");
+                value = value.replace("<<", "");
+                value = value.replace(">>", "");
+                value = value.replace("¬", "");
             }
+            indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
@@ -2024,10 +2084,8 @@ public class MetsIndexer extends Indexer {
     boolean isAnchor() throws FatalIndexerException {
         String anchorQuery = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']";
         List<Element> anchorList = xp.evaluateToElements(anchorQuery, null);
-        if (anchorList == null || anchorList.isEmpty()) {
-            return true;
-        }
-        return false;
+
+        return anchorList == null || anchorList.isEmpty();
     }
 
     /**

@@ -28,6 +28,8 @@ import java.util.Set;
 import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.ex.ConfigurationRuntimeException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -63,10 +65,15 @@ public final class MetadataConfigurationManager {
      * </p>
      *
      * @param config a {@link org.apache.commons.configuration.XMLConfiguration} object.
+     * @throws ConfigurationException
      */
-    public MetadataConfigurationManager(XMLConfiguration config) {
+    public MetadataConfigurationManager(XMLConfiguration config) throws ConfigurationException {
         // Regular fields
-        fieldConfigurations = loadFieldConfiguration(config);
+        try {
+            fieldConfigurations = loadFieldConfiguration(config);
+        } catch (ConfigurationRuntimeException e) {
+            throw new ConfigurationException(e.getMessage());
+        }
     }
 
     /**
@@ -77,7 +84,7 @@ public final class MetadataConfigurationManager {
      * @should load nested group entities correctly
      */
     @SuppressWarnings({ "rawtypes" })
-    private Map<String, List<FieldConfig>> loadFieldConfiguration(XMLConfiguration config) {
+    private Map<String, List<FieldConfig>> loadFieldConfiguration(XMLConfiguration config) throws ConfigurationRuntimeException {
         Map<String, List<FieldConfig>> ret = new HashMap<>();
         Iterator<String> fields = config.getKeys("fields");
         List<String> newFields = new ArrayList<>();

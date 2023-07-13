@@ -1134,4 +1134,16 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertNull(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
         Assert.assertNull(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
     }
+
+//    /**
+//     * @see Indexer#getImageDimensionsFromIIIF(String)
+//     * @verifies fetch dimensions correctly
+//     */
+//    @Test
+//    public void getImageDimensionsFromIIIF_shouldFetchDimensionsCorrectly() throws Exception {
+//        int[] dim = Indexer.getImageDimensionsFromIIIF("https://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn894068725%252Fphys_0001/info.json");
+//        Assert.assertEquals(2, dim.length);
+//        Assert.assertEquals(1427, dim[0]);
+//        Assert.assertEquals(2220, dim[1]);
+//    }
 }

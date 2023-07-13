@@ -59,7 +59,7 @@ public final class Configuration {
     private static final Object lock = new Object();
 
     /* default */
-    private static String configPath = "src/main/resources/config_indexer.xml";
+    private static String configPath = "config_indexer.xml";
     private static Configuration instance = null;
 
     private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
@@ -162,8 +162,9 @@ public final class Configuration {
      * Reloads metadata fields, namespaces, etc. from the configuration object.
      * 
      * @param config
+     * @throws ConfigurationException
      */
-    private void reloadConfig(XMLConfiguration config) {
+    private void reloadConfig(XMLConfiguration config) throws ConfigurationException {
         metadataConfigurationManager = new MetadataConfigurationManager(config);
         namespaces = new HashMap<>();
         initNamespaces();
@@ -477,14 +478,16 @@ public final class Configuration {
 
     /**
      * Whether a viewer task should be triggered that creates pdf files for all images of an indexed process
+     * 
      * @return Whether a viewer task should be triggered that creates pdf files for all images of an indexed process
      */
     public boolean isPrerenderPdfsEnabled() {
         return getBoolean("init.viewerNotifications.prerenderPdfs[@enabled]", false);
     }
-    
+
     /**
      * Whether pdfs for record images should be prerendered in any case, even if they already exist
+     * 
      * @return Whether pdfs for record images should be prerendered in any case, even if they already exist
      */
     public boolean isForcePrerenderPdfs() {
@@ -493,12 +496,13 @@ public final class Configuration {
 
     /**
      * The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
+     * 
      * @return The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
      */
     public String getPrerenderPdfsConfigVariant() {
         return getString("init.viewerNotifications.prerenderPdfs[@variant]", "default");
     }
-    
+
     /**
      * <p>
      * getListConfiguration.
@@ -627,6 +631,16 @@ public final class Configuration {
         URL urlAsURL = new URL(url);
         return getProxyWhitelist().contains(urlAsURL.getHost());
     }
+    
+    /**
+     * If true, the first page of a document is set as the representative image if no other page is
+            specified in the source document. If this is set to false, and no page is explicitly set as representative,
+            no representative image will be set. Defaults to true
+     * @return whether the first page should be used as representative image per default
+     */
+    public boolean isUseFirstPageAsDefaultRepresentative() {
+        return getBoolean("init.representativeImage.useFirstPageAsDefault", true);
+    }
 
     /**
      * Overrides values in the config file (for unit test purposes).
@@ -637,7 +651,7 @@ public final class Configuration {
     public void overrideValue(String property, Object value) {
         getConfig().setProperty(property, value);
     }
-    
+
     /**
      * 
      * @return true if all email configuration date is complete; false otherwise
@@ -668,6 +682,7 @@ public final class Configuration {
 
         return true;
     }
+
 
 
 }

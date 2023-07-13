@@ -67,6 +67,13 @@
 		<!-- If true, all collection names from volumes will be added to their corresponding anchor record (default is false) -->
 		<addVolumeCollectionsToAnchor>false</addVolumeCollectionsToAnchor>
 
+		<representativeImage>
+			<!-- If true, the first page of a document is set as the representative image if no other page is
+			specified in the source document. If this is set to false, and no page is explicitly set as representative,
+			no representative image will be set. Defaults to true -->
+			<useFirstPageAsDefault>true</useFirstPageAsDefault>
+		</representativeImage>
+
 		<namespaces>
 			<list>
 			    <intranda>http://intranda.com/MODS/</intranda>
@@ -2846,17 +2853,6 @@
 			</list>
 		</MD_DV_LINK>
 
-
-		<MD_PROVENIENCE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:physicalLocation[not(@type)]</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-				</item>
-			</list>
-		</MD_PROVENIENCE>
-
 		<MD_SUBJECTGEOGRAPHIC>
 			<list>
 				<item>
@@ -2883,7 +2879,12 @@
 		<MD_RECORDID>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="record"]</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="record"]</item>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="record-id"]</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 				</item>
@@ -2919,8 +2920,6 @@
 				</item>
 			</list>
 		</MD_SEX>
-
-
 
 		<MD_HOSTID>
 			<list>
@@ -3449,8 +3448,209 @@
                                 </item>
                         </list>
                 </MD_USEANDREPRODUCTIONLICENSE>
+<!-- archive -->
 
 
+        <MD_PROVENIENCE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type='ownership']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_PROVENIENCE>
+        <MD_NODEID>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_NODEID>
+        <MD_EADID>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-id"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_EADID>
+        <MD_UNITID>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="unit-id"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_UNITID>
+        <MD_BIOGRAPHICALINFORMATION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type='bibliography']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_BIOGRAPHICALINFORMATION>
+        <MD_INVENTORYHISTORY>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type='bibliographic history']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_INVENTORYHISTORY>
+        <MD_AQUISITIONINFORMATION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type='acquisition']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_AQUISITIONINFORMATION>
+        <MD_APPRAISALINFORMATION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:appraisal</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_APPRAISALINFORMATION>
+        <MD_ADDITIONS>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:additions</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ADDITIONS>
+        <MD_ARRANGEMENT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:classification[@displayLabel='arrangement']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ARRANGEMENT>
+        <MD_USERESTRICTION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='condition']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_USERESTRICTION>
+        <MD_FONTTYPE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:language/mods:scriptTerm</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_FONTTYPE>
+        <MD_PHYSTECH>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='physical description']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_PHYSTECH>
+        <MD_OTHERFINDAID>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:otherFindAid</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_OTHERFINDAID>
+        <MD_ORIGINALSLOCATION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:location/mods:physicalLocation</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ORIGINALSLOCATION>
+        <MD_ALTERNATIVEFORMAVAILABLE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='additional physical form']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ALTERNATIVEFORMAVAILABLE>
+        <MD_SEPARATEDMATERIAL>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type='original version']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_SEPARATEDMATERIAL>
+        <MD_DIDNOTE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type='source identifier']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_DIDNOTE>
+        <MD_ODD>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type='source note']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ODD>
+        <MD_CONVENTIONDECLARATION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='organization']</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_CONVENTIONDECLARATION>
         <!-- ARTIST DICTIONARY -->
         <MD_ROLE>
             <list>

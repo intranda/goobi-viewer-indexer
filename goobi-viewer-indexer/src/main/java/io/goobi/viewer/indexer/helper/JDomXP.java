@@ -254,7 +254,7 @@ public class JDomXP {
     }
 
     /**
-     * Evaluates the given XPath expression to a single string.
+     * Evaluates the given XPath expression to a single string. Does not work for attribute values (use <code>evaluateToAttributeStringValue</code>).
      *
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.

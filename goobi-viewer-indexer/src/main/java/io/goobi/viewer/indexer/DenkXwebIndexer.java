@@ -541,7 +541,7 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         // Add thumbnail information from the first page
-        if (StringUtils.isEmpty(filePathBanner)) {
+        if (StringUtils.isEmpty(filePathBanner) && Configuration.getInstance().isUseFirstPageAsDefaultRepresentative()) {
             String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
                     ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
