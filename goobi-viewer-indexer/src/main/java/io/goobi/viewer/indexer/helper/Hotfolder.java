@@ -99,6 +99,7 @@ public class Hotfolder {
     private final SolrSearchIndex searchIndex;
     private final SolrSearchIndex oldSearchIndex;
     private final IDataRepositoryStrategy dataRepositoryStrategy;
+    private final Queue<Path> indexQueue = new LinkedList<>();
     private final Queue<Path> reindexQueue = new LinkedList<>();
 
     private int minStorageSpace = 2048;
@@ -408,24 +409,12 @@ public class Hotfolder {
             noerror = false;
             logger.error("Hotfolder not found!");
             return noerror;
-
         }
         Path fileToReindex = reindexQueue.poll();
         if (fileToReindex != null) {
             resetSecondaryLog();
             logger.info("Found file '{}' (re-index queue).", fileToReindex.getFileName());
-            checkFreeSpace();
-            Map<String, Boolean> reindexSettings = new HashMap<>();
-            reindexSettings.put(DataRepository.PARAM_FULLTEXT, true);
-            reindexSettings.put(DataRepository.PARAM_TEIWC, true);
-            reindexSettings.put(DataRepository.PARAM_ALTO, true);
-            reindexSettings.put(DataRepository.PARAM_MIX, true);
-            reindexSettings.put(DataRepository.PARAM_UGC, true);
-            noerror = handleSourceFile(fileToReindex, true, reindexSettings);
-            if (secondaryAppender != null && emailConfigurationComplete) {
-                checkAndSendErrorReport(fileToReindex.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                        secondaryAppender.getLog());
-            }
+            noerror = doIndex(fileToReindex);
         } else {
             // Check for the shutdown trigger file first
             Path shutdownFile = Paths.get(hotfolderPath.toAbsolutePath().toString(), SHUTDOWN_FILE);
@@ -439,44 +428,75 @@ public class Hotfolder {
                 SolrIndexerDaemon.getInstance().stop();
                 return true;
             }
-            logger.trace("Hotfolder: Listing files...");
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
-                for (Path path : stream) {
-                    // Only one file at a time right now
-                    if (currentIndexer != null) {
-                        break;
-                    }
-                    Path recordFile = path;
-                    if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
-                        // Check whether the data folders for this record have been copied completely, otherwise skip
-                        if (!isDataFolderExportDone(recordFile)) {
-                            logger.trace("Export not yet finished for '{}'", recordFile.getFileName());
-                            continue;
-                        }
-                        resetSecondaryLog();
-                        logger.info("Found file '{}' (hotfolder).", recordFile.getFileName());
-                        checkFreeSpace();
-                        Map<String, Boolean> reindexSettings = new HashMap<>();
-                        reindexSettings.put(DataRepository.PARAM_FULLTEXT, false);
-                        reindexSettings.put(DataRepository.PARAM_TEIWC, false);
-                        reindexSettings.put(DataRepository.PARAM_ALTO, false);
-                        reindexSettings.put(DataRepository.PARAM_MIX, false);
-                        reindexSettings.put(DataRepository.PARAM_UGC, false);
-                        noerror = handleSourceFile(recordFile, false, reindexSettings);
-                        checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
-                                secondaryAppender != null ? secondaryAppender.getLog() : "NO LOG");
-                    } else {
-                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
-                        Files.delete(recordFile);
-                    }
-                    break; // always break after attempting to index a file, so that the loop restarts
+
+            Path recordFile = indexQueue.peek();
+            if (recordFile != null) {
+                // Check whether the data folders for this record have been copied completely, otherwise skip
+                if (!isDataFolderExportDone(recordFile)) {
+                    logger.trace("Export not yet finished for '{}'", recordFile.getFileName());
+                    return true;
                 }
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                recordFile = indexQueue.poll();
+                noerror = doIndex(recordFile);
+            } else {
+                logger.info("Hotfolder: Listing files...");
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
+                    for (Path path : stream) {
+                        // Only one file at a time right now
+                        if (currentIndexer != null) {
+                            break;
+                        }
+                        recordFile = path;
+                        if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
+                            indexQueue.add(recordFile);
+                            logger.info("Added file to index queue: {}", path.getFileName());
+
+                           
+                            resetSecondaryLog();
+                            logger.info("Found file '{}' (hotfolder).", recordFile.getFileName());
+                            checkFreeSpace();
+                            Map<String, Boolean> reindexSettings = new HashMap<>();
+                            reindexSettings.put(DataRepository.PARAM_FULLTEXT, false);
+                            reindexSettings.put(DataRepository.PARAM_TEIWC, false);
+                            reindexSettings.put(DataRepository.PARAM_ALTO, false);
+                            reindexSettings.put(DataRepository.PARAM_MIX, false);
+                            reindexSettings.put(DataRepository.PARAM_UGC, false);
+                            noerror = handleSourceFile(recordFile, false, reindexSettings);
+                            if (secondaryAppender != null && emailConfigurationComplete) {
+                                checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
+                                        secondaryAppender.getLog());
+                            }
+                        } else {
+                            logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
+                            Files.delete(recordFile);
+                        }
+                        break; // always break after attempting to index a file, so that the loop restarts
+                    }
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         }
 
         return noerror;
+    }
+
+    boolean doIndex(Path recordFile) throws FatalIndexerException {
+        resetSecondaryLog();
+        checkFreeSpace();
+        Map<String, Boolean> reindexSettings = new HashMap<>();
+        reindexSettings.put(DataRepository.PARAM_FULLTEXT, false);
+        reindexSettings.put(DataRepository.PARAM_TEIWC, false);
+        reindexSettings.put(DataRepository.PARAM_ALTO, false);
+        reindexSettings.put(DataRepository.PARAM_MIX, false);
+        reindexSettings.put(DataRepository.PARAM_UGC, false);
+        boolean ret = handleSourceFile(recordFile, false, reindexSettings);
+        if (secondaryAppender != null && emailConfigurationComplete) {
+            checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
+                    secondaryAppender.getLog());
+        }
+
+        return ret;
     }
 
     /**
