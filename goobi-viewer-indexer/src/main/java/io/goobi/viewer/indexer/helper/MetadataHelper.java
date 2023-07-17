@@ -315,7 +315,7 @@ public class MetadataHelper {
                     }
                     // Apply string modifications configured for this field
                     fieldValue = applyAllModifications(configurationItem, fieldValue);
-                    
+
                     // If value is blank after modifications, skip
                     if (StringUtils.isBlank(fieldValue)) {
                         continue;
@@ -1271,7 +1271,11 @@ public class MetadataHelper {
                             getGroupedMetadata(eleChild, childGroupEntity, configurationItem, childGroupEntity.getName(), sbDefaultMetadataValues,
                                     luceneFields);
                     ret.getChildren().add(child);
-                    logger.debug("added child: {}", child.getMainValue());
+                    if (StringUtils.isNotEmpty(child.getMainValue())) {
+                        logger.debug("added child: {}", child.getMainValue());
+                    } else {
+                        logger.warn("MD_VALUE not found on child metadata group of fild config {}", configurationItem.getFieldname());
+                    }
                 }
             }
         }

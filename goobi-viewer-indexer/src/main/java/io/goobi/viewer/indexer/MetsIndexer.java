@@ -113,8 +113,9 @@ public class MetsIndexer extends Indexer {
 
     private static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
 
-    private static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='";
+    private static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
     private static final String XPATH_FILE = "mets:file";
+    private static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
 
     /** */
     private static List<Path> reindexedChildrenFileList = new ArrayList<>();
@@ -397,7 +398,7 @@ public class MetsIndexer extends Indexer {
 
             // write opac url
             String opacXpath =
-                    "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()";
+                    "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()"; //NOSONAR XPath, not URI
             String opacUrl = xp.evaluateToString(opacXpath, null);
             if (StringUtils.isEmpty(opacUrl)) {
                 opacUrl = xp.evaluateToCdata(opacXpath, null);
@@ -539,8 +540,10 @@ public class MetsIndexer extends Indexer {
                                 getNextIddoc(hotfolder.getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                    }
+                } else if (logger.isDebugEnabled()) {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }
@@ -630,7 +633,7 @@ public class MetsIndexer extends Indexer {
 
     private static String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) throws FatalIndexerException {
         String filePathBanner = "";
-        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
+        String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
         filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
         if (StringUtils.isNotEmpty(filePathBanner)) {
             // Add thumbnail information from the representative page
@@ -642,12 +645,11 @@ public class MetsIndexer extends Indexer {
 
     private static String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) throws FatalIndexerException {
         String filePathBanner = "";
-
         String xpathFilePtr =
-                "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID";
+                "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID"; //NOSONAR XPath, not URI
         List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).collect(Collectors.toList());
         for (String fileId : fileIds) {
-            String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + filegroup + "\"]/mets:file[@ID='" + fileId + "']/mets:FLocat/@xlink:href";
+            String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@ID='" + fileId + "']/mets:FLocat/@xlink:href";
             filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
             if (StringUtils.isNotBlank(filePathBanner)) {
                 return filePathBanner;
@@ -938,7 +940,7 @@ public class MetsIndexer extends Indexer {
                 for (Element eleFptr : eleFptrList) {
                     String fileID = eleFptr.getAttributeValue("FILEID");
                     String url = xp.evaluateToAttributeStringValue(
-                            "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\"" + DOWNLOAD_FILEGROUP + "\"]/mets:file[@ID=\""
+                            XPATH_FILEGRP + DOWNLOAD_FILEGROUP + "\"]/mets:file[@ID=\""
                                     + fileID + "\" and @MIMETYPE=\"text/html\"]/mets:FLocat[@LOCTYPE=\"URL\"]/@xlink:href",
                             null);
                     if (StringUtils.isNotEmpty(url)) {
@@ -970,7 +972,7 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
-        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"]";
+        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"]"; //NOSONAR XPath, not URI
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
@@ -1969,43 +1971,35 @@ public class MetsIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // DMDID
-        {
-            indexObj.setDmdid(TextHelper.normalizeSequence(structNode.getAttributeValue(SolrConstants.DMDID)));
-            logger.trace("DMDID: {}", indexObj.getDmdid());
-        }
+        indexObj.setDmdid(TextHelper.normalizeSequence(structNode.getAttributeValue(SolrConstants.DMDID)));
+        logger.trace("DMDID: {}", indexObj.getDmdid());
 
         // LOGID
-        {
-            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("ID"));
-            if (value != null) {
-                indexObj.setLogId(value);
-            }
-            logger.trace("LOGID: {}", indexObj.getLogId());
+        String value = TextHelper.normalizeSequence(structNode.getAttributeValue("ID"));
+        if (value != null) {
+            indexObj.setLogId(value);
         }
+        logger.trace("LOGID: {}", indexObj.getLogId());
 
         // TYPE
-        {
-            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("TYPE"));
-            if (value != null) {
-                indexObj.setType(value);
-            }
+        value = TextHelper.normalizeSequence(structNode.getAttributeValue("TYPE"));
+        if (value != null) {
+            indexObj.setType(value);
         }
         logger.trace("TYPE: {}", indexObj.getType());
 
         // LABEL
-        {
-            String value = TextHelper.normalizeSequence(structNode.getAttributeValue("LABEL"));
-            if (value != null) {
-                // Remove non-sort characters from LABEL, if configured to do so
-                if (Configuration.getInstance().isLabelCleanup()) {
-                    value = value.replace("<ns>", "");
-                    value = value.replace("</ns>", "");
-                    value = value.replace("<<", "");
-                    value = value.replace(">>", "");
-                    value = value.replace("¬", "");
-                }
-                indexObj.setLabel(value);
+        value = TextHelper.normalizeSequence(structNode.getAttributeValue("LABEL"));
+        if (value != null) {
+            // Remove non-sort characters from LABEL, if configured to do so
+            if (Configuration.getInstance().isLabelCleanup()) {
+                value = value.replace("<ns>", "");
+                value = value.replace("</ns>", "");
+                value = value.replace("<<", "");
+                value = value.replace(">>", "");
+                value = value.replace("¬", "");
             }
+            indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
@@ -2090,10 +2084,8 @@ public class MetsIndexer extends Indexer {
     boolean isAnchor() throws FatalIndexerException {
         String anchorQuery = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']";
         List<Element> anchorList = xp.evaluateToElements(anchorQuery, null);
-        if (anchorList == null || anchorList.isEmpty()) {
-            return true;
-        }
-        return false;
+
+        return anchorList == null || anchorList.isEmpty();
     }
 
     /**
