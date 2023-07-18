@@ -459,9 +459,10 @@ public class Hotfolder {
                         break;
                     }
                     Path recordFile = path;
-                    if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
-                        indexQueue.add(recordFile);
-                        logger.info("Added file to index queue: {}", path.getFileName());
+                    if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !indexQueue.contains(recordFile)) {
+                        if (indexQueue.offer(recordFile)) {
+                            logger.info("Added file to index queue: {}", path.getFileName());
+                        }
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
                         Files.delete(recordFile);
