@@ -74,6 +74,7 @@ public class MetadataHelper {
     public static final String FIELD_WKT_COORDS = "WKT_COORDS";
     public static final String FIELD_HAS_WKT_COORDS = "BOOL_WKT_COORDS";
     private static final String FIELD_NORM_NAME = "NORM_NAME";
+    private static final String SPLIT_PLACEHOLDER = "{SPLIT}";
 
     private static final String LOG_DMDID_NOT_FOUND = "DMDID for Parent element '{}' not found.";
 
@@ -618,7 +619,17 @@ public class MetadataHelper {
                 // Add access conditions to a separate list
                 indexObj.getAccessConditions().add(field.getValue());
             } else {
-                indexObj.addToLucene(field, false);
+                if (field.getValue().contains(SPLIT_PLACEHOLDER)) {
+                    // If value contains the split trigger, split into multiple values
+                    String[] values = field.getValue().replace(SPLIT_PLACEHOLDER, "o_O").split("o_O");
+                    for (String val : values) {
+                        if (StringUtils.isNotEmpty(val)) {
+                            indexObj.addToLucene(new LuceneField(field.getField(), val), false);
+                        }
+                    }
+                } else {
+                    indexObj.addToLucene(field, false);
+                }
             }
 
             indexObj.setDefaultValue(indexObj.getDefaultValue().trim());
