@@ -21,6 +21,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
@@ -115,9 +116,10 @@ public final class SolrIndexerDaemon {
         logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
 
         // Init old search index, if configured
-        if (configuration.getOldSolrUrl() != null) {
-            this.oldSearchIndex = new SolrSearchIndex(SolrSearchIndex.getNewHttpSolrClient(configuration.getOldSolrUrl(),
-                    SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true));
+        HttpSolrClient oldClient = SolrSearchIndex.getNewHttpSolrClient(configuration.getOldSolrUrl(),
+                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true);
+        if (oldClient != null) {
+            this.oldSearchIndex = new SolrSearchIndex(oldClient);
             if (logger.isInfoEnabled()) {
                 logger.info("Also using old Solr server at {}", SolrIndexerDaemon.getInstance().getConfiguration().getOldSolrUrl());
             }

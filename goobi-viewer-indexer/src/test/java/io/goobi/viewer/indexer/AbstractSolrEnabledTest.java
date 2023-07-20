@@ -42,7 +42,6 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
     protected static Hotfolder hotfolder;
 
     protected SolrClient client;
-    //    protected SolrSearchIndex searchIndex;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -60,7 +59,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
                 solrUrl.startsWith("http://localhost:") || solrUrl.equals("https://viewer-testing-index.goobi.io/solr/indexer-testing"));
 
         client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, 30000, 30000, true);
-        //        searchIndex = new SolrSearchIndex(client);
+        SolrIndexerDaemon.getInstance();
     }
 
     @After
