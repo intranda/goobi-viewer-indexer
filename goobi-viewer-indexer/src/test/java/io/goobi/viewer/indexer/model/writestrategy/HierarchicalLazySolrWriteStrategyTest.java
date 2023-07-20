@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 
@@ -32,7 +33,7 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
     }
 
     /**

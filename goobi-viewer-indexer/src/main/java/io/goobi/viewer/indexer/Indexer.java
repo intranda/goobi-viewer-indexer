@@ -562,7 +562,7 @@ public abstract class Indexer {
 
         StringBuilder sbTerms = new StringBuilder();
         SolrInputDocument doc = new SolrInputDocument();
-        long iddoc = getNextIddoc(hotfolder.getSearchIndex());
+        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
         doc.addField(SolrConstants.IDDOC, iddoc);
         if (pageDoc != null) {
             if (pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
@@ -717,7 +717,7 @@ public abstract class Indexer {
                     }
 
                     SolrInputDocument doc = new SolrInputDocument();
-                    long iddoc = getNextIddoc(hotfolder.getSearchIndex());
+                    long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
                     doc.addField(SolrConstants.IDDOC, iddoc);
 
                     if (pageDoc != null) {
@@ -786,7 +786,7 @@ public abstract class Indexer {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolder, "*.{json}")) {
             List<SolrInputDocument> ret = new ArrayList<>();
             for (Path path : stream) {
-                long iddoc = getNextIddoc(hotfolder.getSearchIndex());
+                long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
                 ret.add(readAnnotation(path, iddoc, pi, anchorPi, pageDocs, groupIds));
             }
 
@@ -1279,7 +1279,7 @@ public abstract class Indexer {
             fieldsToAddToGroupDoc.addAll(gmd.getAuthorityDataFields());
         }
         SolrInputDocument doc = SolrSearchIndex.createDocument(fieldsToAddToGroupDoc);
-        long iddoc = getNextIddoc(hotfolder.getSearchIndex());
+        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
         doc.addField(SolrConstants.IDDOC, iddoc);
         if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
             logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
@@ -1587,11 +1587,11 @@ public abstract class Indexer {
      */
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+        SolrDocumentList hits = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
         // Retrieve record from old index, if available
         boolean fromOldIndex = false;
-        if (hits.getNumFound() == 0 && hotfolder.getOldSearchIndex() != null) {
-            hits = hotfolder.getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+        if (hits.getNumFound() == 0 && SolrIndexerDaemon.getInstance().getOldSearchIndex() != null) {
+            hits = SolrIndexerDaemon.getInstance().getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             if (hits.getNumFound() > 0) {
                 fromOldIndex = true;
                 logger.info("Retrieving data from old index for record '{}'.", pi);
@@ -1633,21 +1633,22 @@ public abstract class Indexer {
             // Keep old IDDOC
             indexObj.setIddoc(Long.valueOf(doc.getFieldValue(SolrConstants.IDDOC).toString()));
             // Delete old doc
-            hotfolder.getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
+            SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
             // Delete secondary docs (aggregated metadata, events)
             List<String> iddocsToDelete = new ArrayList<>();
-            hits = hotfolder.getSearchIndex()
+            hits = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(SolrConstants.IDDOC));
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
             if (!iddocsToDelete.isEmpty()) {
                 logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
-                hotfolder.getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
             }
         } else if (!fromOldIndex) {
             // Recursively delete all children, if not an anchor
-            deleteWithPI(pi, false, hotfolder.getSearchIndex());
+            deleteWithPI(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex());
         }
     }
 
@@ -1679,7 +1680,7 @@ public abstract class Indexer {
         // External image
         if (url.startsWith("http")) {
             // Download image, if so requested (and not a local resource)
-            String viewerUrl = Configuration.getInstance().getViewerUrl();
+            String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
             logger.debug("media folder: {}", mediaTargetPath);
             if (downloadExternalImages && mediaTargetPath != null && viewerUrl != null && !url.startsWith(viewerUrl)) {
                 // Download image and use locally
@@ -1820,7 +1821,7 @@ public abstract class Indexer {
         if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
             String fulltext =
                     TextHelper.generateFulltext(baseFileName + FileTools.TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
-                            false, Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
+                            false, SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.fulltextForceUTF8", true));
             if (fulltext != null) {
                 foundCrowdsourcingData = true;
                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
@@ -1849,7 +1850,7 @@ public abstract class Indexer {
                 && !"info".equals(baseFileName)) {
             String fulltext = TextHelper.generateFulltext(baseFileName + FileTools.TXT_EXTENSION,
                     dataFolders.get(DataRepository.PARAM_FULLTEXT), true,
-                    Configuration.getInstance().getBoolean("init.fulltextForceUTF8", true));
+                    SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.fulltextForceUTF8", true));
             if (fulltext != null) {
                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                 doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepo
@@ -1908,7 +1909,8 @@ public abstract class Indexer {
 
         // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
         if (!altoWritten && !foundCrowdsourcingData && altoURL != null && altoURL.startsWith("http")
-                && Configuration.getInstance().getViewerUrl() != null && !altoURL.startsWith(Configuration.getInstance().getViewerUrl())) {
+                && SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl() != null
+                && !altoURL.startsWith(SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl())) {
             try {
                 logger.info("Downloading ALTO from {}", altoURL);
                 String alto = Utils.getWebContentGET(altoURL);
@@ -2134,7 +2136,7 @@ public abstract class Indexer {
             } else {
                 Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
                 if (mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
-                    boolean force = Configuration.getInstance().isForcePrerenderPdfs();
+                    boolean force = SolrIndexerDaemon.getInstance().getConfiguration().isForcePrerenderPdfs();
                     logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", pi);
                     Utils.prerenderPdfs(pi, force);
                 }

@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.output.FileWriterWithEncoding;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.CDATA;
 import org.jdom2.Comment;
@@ -37,9 +39,8 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.xpath.XPathBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 
 /**
@@ -150,8 +151,8 @@ public class JDomXP {
 
         XPathBuilder<Object> builder = new XPathBuilder<>(expr.trim().replace("\n", ""), filter);
         // Add all namespaces
-        for (String key : Configuration.getInstance().getNamespaces().keySet()) {
-            Namespace value = Configuration.getInstance().getNamespaces().get(key);
+        for (String key : SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().keySet()) {
+            Namespace value = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get(key);
             builder.setNamespace(key, value.getURI());
         }
         XPathExpression<Object> xpath = builder.compileWith(XPathFactory.instance());
@@ -450,7 +451,7 @@ public class JDomXP {
             if (xp.doc.getRootElement().getName().equals("lidoWrap")) {
                 // Multiple LIDO document file
                 Namespace nsXsi = Namespace.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                List<Element> lidoElements = xp.doc.getRootElement().getChildren("lido", Configuration.getInstance().getNamespaces().get("lido"));
+                List<Element> lidoElements = xp.doc.getRootElement().getChildren("lido", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("lido"));
                 if (lidoElements != null) {
                     List<Document> ret = new ArrayList<>(lidoElements.size());
                     for (Element eleLidoDoc : lidoElements) {
@@ -499,7 +500,7 @@ public class JDomXP {
             if (xp.doc.getRootElement().getName().equals("monuments")) {
                 // Multiple DenkXweb document file
                 List<Element> eleListRecord =
-                        xp.doc.getRootElement().getChildren("monument", Configuration.getInstance().getNamespaces().get("denkxweb"));
+                        xp.doc.getRootElement().getChildren("monument", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("denkxweb"));
                 if (eleListRecord != null) {
                     List<Document> ret = new ArrayList<>(eleListRecord.size());
                     for (Element eleDoc : eleListRecord) {

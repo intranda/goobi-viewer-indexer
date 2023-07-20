@@ -51,6 +51,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -556,7 +557,7 @@ public final class SolrSearchIndex {
      */
     public static Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
-        String url = Configuration.getInstance().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml";
+        String url = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml";
         try (HttpSolrClient solrClient = getNewHttpSolrClient(solrUrl, 30000, 30000, false)) {
             if (solrClient == null) {
                 return null;

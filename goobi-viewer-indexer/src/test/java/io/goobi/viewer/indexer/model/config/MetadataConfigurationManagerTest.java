@@ -17,11 +17,13 @@ package io.goobi.viewer.indexer.model.config;
 
 import java.util.List;
 
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 
 public class MetadataConfigurationManagerTest extends AbstractTest {
@@ -52,23 +54,28 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
     @Test
     public void getConfigurationListForField_shouldReturnCorrectFieldConfig() throws Exception {
         List<FieldConfig> result =
-                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.size());
         Assert.assertEquals("MD_TESTFIELD", result.get(0).getFieldname());
     }
-    
+
     /**
      * @see MetadataConfigurationManager#loadFieldConfiguration(XMLConfiguration)
      * @verifies load all field configs correctly
      */
     @Test
     public void loadFieldConfiguration_shouldLoadAllFieldConfigsCorrectly() throws Exception {
-        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
+        List<FieldConfig> configItems =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assert.assertNotNull(configItems);
         Assert.assertEquals(1, configItems.size());
 
-        Assert.assertTrue(Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToParents().contains("!MD_TESTFIELD"));
+        Assert.assertTrue(SolrIndexerDaemon.getInstance()
+                .getConfiguration()
+                .getMetadataConfigurationManager()
+                .getFieldsToAddToParents()
+                .contains("!MD_TESTFIELD"));
     }
 
     /**
@@ -77,7 +84,8 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
      */
     @Test
     public void loadFieldConfiguration_shouldLoadNestedGroupEntitiesCorrectly() throws Exception {
-        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
+        List<FieldConfig> configItems =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
         Assert.assertNotNull(configItems);
         Assert.assertEquals(1, configItems.size());
         FieldConfig fieldConfig = configItems.get(0);
@@ -101,7 +109,10 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
     @Test
     public void readGroupEntity_shouldReadGroupEntityCorrectly() throws Exception {
         List<FieldConfig> configItems =
-                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_ACCESSLOCATIONS");
+                SolrIndexerDaemon.getInstance()
+                        .getConfiguration()
+                        .getMetadataConfigurationManager()
+                        .getConfigurationListForField("MD_ACCESSLOCATIONS");
         Assert.assertNotNull(configItems);
         Assert.assertEquals(1, configItems.size());
         FieldConfig fieldConfig = configItems.get(0);
@@ -117,7 +128,8 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
      */
     @Test
     public void readGroupEntity_shouldRecursivelyReadChildGroupEntities() throws Exception {
-        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
+        List<FieldConfig> configItems =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
         Assert.assertNotNull(configItems);
         Assert.assertEquals(1, configItems.size());
         FieldConfig fieldConfig = configItems.get(0);

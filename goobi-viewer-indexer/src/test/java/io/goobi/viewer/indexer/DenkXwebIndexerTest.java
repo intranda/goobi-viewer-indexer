@@ -52,7 +52,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         denkxwebFile = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(denkxwebFile.isFile());
@@ -85,7 +85,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             {
@@ -121,7 +121,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
         }
 
         // Top document
-        SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
         Assert.assertEquals(1, docList.size());
         SolrDocument topDoc = docList.get(0);
         {
@@ -137,7 +137,7 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
         // Pages
         {
             SolrDocumentList pageDocList =
-                    hotfolder.getSearchIndex().search(" +" + SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " +" + SolrConstants.DOCTYPE + ":PAGE", null);
+                    SolrIndexerDaemon.getInstance().getSearchIndex().search(" +" + SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " +" + SolrConstants.DOCTYPE + ":PAGE", null);
             Assert.assertEquals(2, pageDocList.size());
             SolrDocument doc = pageDocList.get(0);
             {

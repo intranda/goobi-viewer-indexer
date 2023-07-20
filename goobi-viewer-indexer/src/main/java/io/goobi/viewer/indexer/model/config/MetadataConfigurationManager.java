@@ -35,8 +35,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
 
@@ -411,7 +411,7 @@ public final class MetadataConfigurationManager {
      * @return a {@link java.lang.String} object.
      */
     public static String getLanguageMapping(String code) throws FatalIndexerException {
-        return Configuration.getInstance().getString("languageMapping." + code);
+        return SolrIndexerDaemon.getInstance().getConfiguration().getString("languageMapping." + code);
     }
 
     /**
@@ -424,10 +424,10 @@ public final class MetadataConfigurationManager {
      */
     public static String mapDocStrct(String string) throws FatalIndexerException {
         String ret = string.replace(" ", "_");
-        Map<String, String> docStructMap = Configuration.getInstance().getListConfiguration("docstructmapping");
+        Map<String, String> docStructMap = SolrIndexerDaemon.getInstance().getConfiguration().getListConfiguration("docstructmapping");
         if (docStructMap.containsKey(ret)) {
             return docStructMap.get(ret);
-        } else if (Boolean.TRUE.equals(Boolean.valueOf(Configuration.getInstance().getConfiguration("docstructmapping.useDefaultDocstruct")))) {
+        } else if (Boolean.TRUE.equals(Boolean.valueOf(SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("docstructmapping.useDefaultDocstruct")))) {
             return docStructMap.get("_default");
         } else {
             return ret;

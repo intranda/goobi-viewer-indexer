@@ -37,16 +37,15 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -115,7 +114,7 @@ public class DublinCoreIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(dcFile, dataFolders, null, Configuration.getInstance().getPageCountStart());
+        String[] resp = index(dcFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newDcFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newDcFileName);
@@ -208,7 +207,7 @@ public class DublinCoreIndexer extends Indexer {
         logger.debug("Indexing Dublin Core file '{}'...", dcFile.getFileName());
         try {
             initJDomXP(dcFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setRootStructNode(xp.getRootElement());
 
@@ -236,7 +235,8 @@ public class DublinCoreIndexer extends Indexer {
                 // Determine the data repository to use
                 DataRepository[] repositories =
                         hotfolder.getDataRepositoryStrategy()
-                                .selectDataRepository(pi, dcFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
+                                .selectDataRepository(pi, dcFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
+                                        SolrIndexerDaemon.getInstance().getOldSearchIndex());
                 dataRepository = repositories[0];
                 previousDataRepository = repositories[1];
                 if (StringUtils.isNotEmpty(dataRepository.getPath())) {
@@ -293,7 +293,8 @@ public class DublinCoreIndexer extends Indexer {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
                     indexObj.setAnchorPI(anchorPi);
-                    SolrDocumentList hits = hotfolder.getSearchIndex()
+                    SolrDocumentList hits = SolrIndexerDaemon.getInstance()
+                            .getSearchIndex()
                             .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && !hits.isEmpty()) {
                         Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
@@ -378,9 +379,10 @@ public class DublinCoreIndexer extends Indexer {
                         moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                     }
                 }
-                SolrInputDocument doc = hotfolder.getSearchIndex()
+                SolrInputDocument doc = SolrIndexerDaemon.getInstance()
+                        .getSearchIndex()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(hotfolder.getSearchIndex()));
+                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
                     if (logger.isDebugEnabled()) {
@@ -417,13 +419,13 @@ public class DublinCoreIndexer extends Indexer {
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
-            writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
+            writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
-            hotfolder.getSearchIndex().rollback();
+            SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
@@ -544,7 +546,11 @@ public class DublinCoreIndexer extends Indexer {
             Set<String> existingMetadataFieldNames = new HashSet<>();
             Set<String> existingSortFieldNames = new HashSet<>();
             for (String fieldName : pageDoc.getFieldNames()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
+                if (SolrIndexerDaemon.getInstance()
+                        .getConfiguration()
+                        .getMetadataConfigurationManager()
+                        .getFieldsToAddToPages()
+                        .contains(fieldName)) {
                     for (Object value : pageDoc.getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
@@ -553,7 +559,11 @@ public class DublinCoreIndexer extends Indexer {
                 }
             }
             for (LuceneField field : indexObj.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
+                if (SolrIndexerDaemon.getInstance()
+                        .getConfiguration()
+                        .getMetadataConfigurationManager()
+                        .getFieldsToAddToPages()
+                        .contains(field.getField())
                         && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                     // Avoid duplicates (same field name + value)
                     pageDoc.addField(field.getField(), field.getValue());
@@ -611,8 +621,8 @@ public class DublinCoreIndexer extends Indexer {
         // Generate pages sequentially
         int order = pageCountStart;
         for (final Element eleImage : eleImageList) {
-            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, order, writeStrategy,
-                    dataFolders)) {
+            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
+                    writeStrategy, dataFolders)) {
                 order++;
             }
         }
@@ -717,10 +727,11 @@ public class DublinCoreIndexer extends Indexer {
 
         // LABEL
         String value = TextHelper
-                .normalizeSequence(indexObj.getRootStructNode().getChildText("title", Configuration.getInstance().getNamespaces().get("dc")));
+                .normalizeSequence(indexObj.getRootStructNode()
+                        .getChildText("title", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("dc")));
         if (value != null) {
             // Remove non-sort characters from LABEL, if configured to do so
-            if (Configuration.getInstance().isLabelCleanup()) {
+            if (SolrIndexerDaemon.getInstance().getConfiguration().isLabelCleanup()) {
                 value = value.replace("<ns>", "");
                 value = value.replace("</ns>", "");
                 value = value.replace("<<", "");

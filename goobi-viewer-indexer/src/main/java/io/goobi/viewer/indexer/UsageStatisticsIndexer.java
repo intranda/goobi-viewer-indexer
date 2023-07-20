@@ -24,16 +24,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.IndexObject;
@@ -107,7 +106,7 @@ public class UsageStatisticsIndexer extends Indexer {
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObject.getLuceneFields());
             ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(sourceFile, Collections.emptyMap(), this.hotfolder);
             writeStrategy.setRootDoc(rootDoc);
-            writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
+            writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Written usage statistics from {} to index with IDDOC {}", sourceFile, rootDoc.getFieldValue("IDDOC"));
             return rootDoc;
         } catch (JSONException | IndexerException e) {
@@ -122,10 +121,10 @@ public class UsageStatisticsIndexer extends Indexer {
      * @throws IOException
      * @throws SolrServerException
      */
-    private boolean statisticsExists(String solrDateString) throws SolrServerException, IOException {
+    private static boolean statisticsExists(String solrDateString) throws SolrServerException, IOException {
         String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":"
                 + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
-        return hotfolder.getSearchIndex().getNumHits(query) > 0;
+        return SolrIndexerDaemon.getInstance().getSearchIndex().getNumHits(query) > 0;
     }
 
     /**
@@ -133,8 +132,8 @@ public class UsageStatisticsIndexer extends Indexer {
      * @return
      * @throws FatalIndexerException
      */
-    private IndexObject createIndexObject(DailyUsageStatistics stats) throws FatalIndexerException {
-        IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
+    private static IndexObject createIndexObject(DailyUsageStatistics stats) throws FatalIndexerException {
+        IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
         indexObj.addToLucene(SolrConstants.IDDOC, Long.toString(indexObj.getIddoc()));
         indexObj.addToLucene(SolrConstants.GROUPFIELD, Long.toString(indexObj.getIddoc()));
         indexObj.addToLucene(SolrConstants.DOCTYPE, StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE);
@@ -171,9 +170,9 @@ public class UsageStatisticsIndexer extends Indexer {
             String query = "+" + StatisticsLuceneFields.DATE + ":\"" + solrDateString + "\" +" + SolrConstants.DOCTYPE + ":"
                     + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE;
             logger.info("Deleting usage statistics for {}:{}", StatisticsLuceneFields.DATE, solrDateString);
-            return hotfolder.getSearchIndex().deleteByQuery(query);
+            return SolrIndexerDaemon.getInstance().getSearchIndex().deleteByQuery(query);
         } finally {
-            hotfolder.getSearchIndex().commit(false);
+            SolrIndexerDaemon.getInstance().getSearchIndex().commit(false);
         }
     }
 
