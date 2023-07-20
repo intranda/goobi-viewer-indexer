@@ -34,7 +34,6 @@ import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Hotfolder;
-import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -73,8 +72,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
-        SolrSearchIndex sh = new SolrSearchIndex(client);
-        SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
+        SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex(), tempFolder);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
@@ -100,8 +98,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
-        SolrSearchIndex sh = new SolrSearchIndex(client);
-        SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
+        SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex(), tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
         indexer.index(metsFile, false, dataFolders, strat, 1, false);
@@ -122,8 +119,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
-        SolrSearchIndex sh = new SolrSearchIndex(client);
-        SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(sh, tempFolder);
+        SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex(), tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
         indexer.index(metsFile, false, dataFolders, strat, 1, false);

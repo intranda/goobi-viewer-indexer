@@ -57,9 +57,8 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void LazySolrWriteStrategy_shouldSetAttributesCorrectly() throws Exception {
-        SolrSearchIndex sh = new SolrSearchIndex(client);
-        LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
-        Assert.assertEquals(sh, strat.searchIndex);
+        LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
+        Assert.assertEquals(SolrIndexerDaemon.getInstance().getSearchIndex(), strat.searchIndex);
     }
 
     /**
@@ -68,8 +67,7 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
-        SolrSearchIndex sh = new SolrSearchIndex(client);
-        LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
+        LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
@@ -95,8 +93,7 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
-        SolrSearchIndex sh = new SolrSearchIndex(client);
-        LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
+        LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
         indexer.index(metsFile, false, dataFolders, strat, 1, false);
@@ -117,8 +114,7 @@ public class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
 
-        SolrSearchIndex sh = new SolrSearchIndex(client);
-        LazySolrWriteStrategy strat = new LazySolrWriteStrategy(sh);
+        LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
         indexer.index(metsFile, false, dataFolders, strat, 1, false);
