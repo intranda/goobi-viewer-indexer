@@ -16,6 +16,7 @@
 
 		<!-- Folder configuration -->
 		<hotFolder>C:/opt/digiverso/viewer/hotfolder/</hotFolder>
+        <hotFolder>C:/opt/digiverso/viewer/hotfolder2/</hotFolder>
 		<tempFolder>C:/opt/digiverso/indexer/temp/</tempFolder>
 		<viewerHome>C:/opt/digiverso/viewer/</viewerHome>
 		<dataRepositories>

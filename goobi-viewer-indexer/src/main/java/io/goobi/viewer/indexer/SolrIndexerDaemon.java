@@ -16,8 +16,9 @@
 package io.goobi.viewer.indexer;
 
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,7 +56,7 @@ public final class SolrIndexerDaemon {
     private SolrSearchIndex searchIndex;
     private SolrSearchIndex oldSearchIndex;
 
-    private Hotfolder hotfolder;
+    private List<Hotfolder> hotfolders = new ArrayList<>();
 
     /**
      * <p>
@@ -109,10 +110,17 @@ public final class SolrIndexerDaemon {
             }
         }
 
-        // create main hotfolder
-        hotfolder = new Hotfolder(getConfiguration().getHotfolderPath());
-        if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
-            throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
+        // create hotfolder(s)
+        for (String hotfolderPath : getConfiguration().getHotfolderPaths()) {
+            Hotfolder hotfolder = new Hotfolder(hotfolderPath);
+            hotfolders.add(hotfolder);
+            if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
+                throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
+            }
+        }
+
+        if (hotfolders.isEmpty()) {
+            throw new FatalIndexerException("No hotfolder configuration found, exiting...");
         }
     }
 
@@ -191,12 +199,16 @@ public final class SolrIndexerDaemon {
 
         logger.info("Using {} CPU thread(s).", configuration.getThreads());
 
-        Utils.submitDataToViewer(hotfolder.countRecordFiles());
+        Utils.submitDataToViewer(hotfolders.get(0).countRecordFiles());
 
         // main loop
-        logger.info("Program started, monitoring hotfolder...");
+        logger.info("Program started, monitoring hotfolder(s)...");
         while (running) {
-            hotfolder.scan();
+            for (Hotfolder hotfolder : hotfolders) {
+                if (hotfolder.scan()) {
+                    break;
+                }
+            }
             try {
                 Thread.sleep(sleepInterval);
             } catch (InterruptedException e) {

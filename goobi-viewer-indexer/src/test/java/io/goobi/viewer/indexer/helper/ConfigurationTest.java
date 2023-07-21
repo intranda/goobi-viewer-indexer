@@ -347,11 +347,21 @@ public class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#getHotfolderPaths()
+     * @verifies return all values
+     */
+    @Test
+    public void getHotfolderPaths_shouldReturnAllValues() throws Exception {
+        Assert.assertEquals(2, SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPaths().size());
+    }
+
+    /**
      * @see Configuration#getOldSolrUrl()
      * @verifies return correct value
      */
     @Test
     public void getOldSolrUrl_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("https://viewer-testing-index.goobi.io/solr/indexer-testing",  SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
+        Assert.assertEquals("https://viewer-testing-index.goobi.io/solr/indexer-testing",
+                SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
     }
 }

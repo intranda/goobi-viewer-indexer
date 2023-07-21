@@ -375,10 +375,10 @@ public class Hotfolder {
      *
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public void scan() throws FatalIndexerException {
+    public boolean scan() throws FatalIndexerException {
         if (!Files.isDirectory(hotfolderPath)) {
-            logger.error("Hotfolder not found!");
-            return;
+            logger.error("Hotfolder not found in file system: {}", hotfolderPath);
+            return false;
         }
         Path fileToReindex = highPriorityIndexQueue.poll();
         if (fileToReindex != null) {
@@ -396,7 +396,7 @@ public class Hotfolder {
                     logger.error(e.getMessage(), e);
                 }
                 SolrIndexerDaemon.getInstance().stop();
-                return;
+                return false;
             }
 
             if (!indexQueue.isEmpty()) {
@@ -409,13 +409,13 @@ public class Hotfolder {
                     indexQueue.add(recordFile);
                     if (alreadyCheckedFiles.contains(indexQueue.peek())) {
                         logger.info("All files in queue have not yet finished export.");
-                        return;
+                        return true;
                     }
                     recordFile = indexQueue.poll();
                 }
                 logger.info("Processing {} from memory queue...", recordFile.getFileName());
                 doIndex(recordFile);
-                return; // always break after attempting to index a file, so that the loop restarts
+                return true; // always break after attempting to index a file, so that the loop restarts
             }
 
             logger.trace("Hotfolder: Listing files...");
@@ -439,6 +439,8 @@ public class Hotfolder {
                 logger.error(e.getMessage(), e);
             }
         }
+        
+        return !highPriorityIndexQueue.isEmpty() || !indexQueue.isEmpty();
     }
 
     /**

@@ -190,6 +190,20 @@ public final class Configuration {
         }
         return answer;
     }
+    
+    /**
+     * 
+     * @param elementName
+     * @return
+     */
+    public List<String> getConfigurations(String elementName) {
+        List<String> ret = new ArrayList<>();
+        int countInit = getConfig().getMaxIndex("init");
+        for (int i = 0; i <= countInit; i++) {
+           ret.add(getConfig().getString("init(" + i + ")." + elementName));
+        }
+        return ret;
+    }
 
     /**
      * 
@@ -310,14 +324,23 @@ public final class Configuration {
     public String getViewerHome() {
         return getString("init.viewerHome");
     }
-
+    
     /**
      * 
      * @return
      * @should return correct value
      */
     public String getHotfolderPath() {
-        return getConfiguration("hotFolder");
+        return getHotfolderPaths().get(0);
+    }
+
+    /**
+     * 
+     * @return
+     * @should return all values
+     */
+    public List<String> getHotfolderPaths() {
+        return getConfigurations("hotFolder");
     }
 
     /**

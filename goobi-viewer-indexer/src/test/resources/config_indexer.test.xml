@@ -12,6 +12,7 @@
 
 		<!-- Folder configuration -->
 		<hotFolder>target/viewer/hotfolder/</hotFolder>
+        <hotFolder>target/viewer/hotfolder2/</hotFolder>
 		<tempFolder>target/indexer/temp/</tempFolder>
 		<viewerHome>target/viewer/</viewerHome>
 		<dataRepositories>
