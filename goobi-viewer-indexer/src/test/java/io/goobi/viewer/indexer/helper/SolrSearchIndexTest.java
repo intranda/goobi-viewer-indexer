@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -49,6 +50,8 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(SolrSearchIndexTest.class);
 
+    private SolrClient client;
+
     private SolrSearchIndex searchIndex;
 
     @Override
@@ -56,6 +59,8 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
+        String solrUrl = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl");
+        client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, true);
         searchIndex = new SolrSearchIndex(client);
     }
 

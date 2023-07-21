@@ -95,29 +95,13 @@ public final class SolrIndexerDaemon {
             logger.info(Version.asString());
         }
 
-        try {
-            configuration = new Configuration(confFilename);
-        } catch (ConfigurationException e) {
-            throw new FatalIndexerException("Configuration error, exiting... (" + e.getMessage() + ")");
-        }
-
         if (!checkSolrSchemaName(
-                SolrSearchIndex.getSolrSchemaDocument(configuration.getSolrUrl()))) {
+                SolrSearchIndex.getSolrSchemaDocument(getConfiguration().getSolrUrl()))) {
             throw new FatalIndexerException("Incompatible Solr schema, exiting..");
         }
 
-        // Init search index
-        this.searchIndex = new SolrSearchIndex(SolrSearchIndex.getNewHttpSolrClient(configuration.getSolrUrl(),
-                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true));
-        if (logger.isInfoEnabled()) {
-            logger.info("Using Solr server at {}", SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
-        }
-        this.searchIndex.setOptimize(configuration.isAutoOptimize());
-        logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
-
         // Init old search index, if configured
-        HttpSolrClient oldClient = SolrSearchIndex.getNewHttpSolrClient(configuration.getOldSolrUrl(),
-                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true);
+        HttpSolrClient oldClient = SolrSearchIndex.getNewHttpSolrClient(getConfiguration().getOldSolrUrl(), true);
         if (oldClient != null) {
             this.oldSearchIndex = new SolrSearchIndex(oldClient);
             if (logger.isInfoEnabled()) {
@@ -126,7 +110,7 @@ public final class SolrIndexerDaemon {
         }
 
         // create main hotfolder
-        hotfolder = new Hotfolder(configuration.getHotfolderPath());
+        hotfolder = new Hotfolder(getConfiguration().getHotfolderPath());
         if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
             throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
         }
@@ -271,14 +255,10 @@ public final class SolrIndexerDaemon {
      * @return the configuration
      * @throws FatalIndexerException
      */
-    public Configuration getConfiguration() throws FatalIndexerException {
+    public Configuration getConfiguration() {
         if (configuration == null) {
             synchronized (lock) {
-                try {
-                    configuration = new Configuration(Configuration.CONFIG_FILE_NAME);
-                } catch (ConfigurationException e) {
-                    throw new FatalIndexerException("Configuration error, exiting... (" + e.getMessage() + ")");
-                }
+                configuration = new Configuration(confFilename);
             }
         }
 
@@ -304,7 +284,26 @@ public final class SolrIndexerDaemon {
      * @return the searchIndex
      */
     public SolrSearchIndex getSearchIndex() {
-        return searchIndex;
+        if (this.searchIndex == null) {
+            synchronized (lock) {
+                this.searchIndex = new SolrSearchIndex(null);
+                this.searchIndex.setOptimize(configuration.isAutoOptimize());
+                logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
+            }
+        }
+
+        return this.searchIndex;
+    }
+
+    /**
+     * Sets custom SolrSearchIndex object (used for unit testing).
+     *
+     * @param searchIndex a {@link io.goobi.viewer.solr.SolrSearchIndex} object.
+     */
+    public void injectSearchIndex(SolrSearchIndex searchIndex) {
+        if (searchIndex != null) {
+            this.searchIndex = searchIndex;
+        }
     }
 
     /**

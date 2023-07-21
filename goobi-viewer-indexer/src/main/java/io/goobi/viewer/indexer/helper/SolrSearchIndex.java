@@ -76,7 +76,7 @@ public final class SolrSearchIndex {
 
     private boolean optimize = false;
 
-    private SolrClient server;
+    private SolrClient client;
 
     /**
      * <p>
@@ -84,9 +84,14 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
+     * @throws FatalIndexerException
      */
-    public SolrSearchIndex(SolrClient server) {
-        this.server = server;
+    public SolrSearchIndex(SolrClient client) {
+        if (client == null) {
+            this.client = getNewHttpSolrClient(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl(), true);
+        } else {
+            this.client = client;
+        }
     }
 
     /**
@@ -95,21 +100,19 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param solrUrl URL to the Solr server
-     * @param timeoutSocket
-     * @param timeoutConnection
      * @param allowCompression
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
      * @should return null if solrUrl is empty
      */
-    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, int timeoutSocket, int timeoutConnection, boolean allowCompression) {
+    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, boolean allowCompression) {
         if (StringUtils.isEmpty(solrUrl)) {
             return null;
         }
 
         HttpSolrClient server = new HttpSolrClient.Builder()
                 .withBaseSolrUrl(solrUrl)
-                .withSocketTimeout(timeoutSocket)
-                .withConnectionTimeout(timeoutConnection)
+                .withSocketTimeout(TIMEOUT_SO)
+                .withConnectionTimeout(TIMEOUT_CONNECTION)
                 .allowCompression(allowCompression)
                 .build();
         //        server.setDefaultMaxConnectionsPerHost(100);
@@ -145,7 +148,7 @@ public final class SolrSearchIndex {
         while (!success && tries > 0) {
             tries--;
             try {
-                QueryResponse resp = server.query(query);
+                QueryResponse resp = client.query(query);
                 if (!resp.getResults().isEmpty()) {
                     usedIddocs.put(iddoc, true);
                     return false;
@@ -215,7 +218,7 @@ public final class SolrSearchIndex {
             }
         }
 
-        return server.query(solrQuery).getResults();
+        return client.query(solrQuery).getResults();
     }
 
     /**
@@ -259,7 +262,7 @@ public final class SolrSearchIndex {
         SolrQuery solrQuery = new SolrQuery(SolrConstants.PI + ":" + pi);
         solrQuery.setRows(1);
         solrQuery.setFields(SolrConstants.DATAREPOSITORY);
-        QueryResponse resp = server.query(solrQuery);
+        QueryResponse resp = client.query(solrQuery);
 
         if (!resp.getResults().isEmpty()) {
             if (resp.getResults().get(0).getFieldValue(SolrConstants.DATAREPOSITORY) != null) {
@@ -314,7 +317,7 @@ public final class SolrSearchIndex {
         while (!success && tries > 0) {
             tries--;
             try {
-                UpdateResponse ur = server.add(doc);
+                UpdateResponse ur = client.add(doc);
                 if (ur.getStatus() == 0) {
                     success = true;
                 } else {
@@ -348,7 +351,7 @@ public final class SolrSearchIndex {
         while (!success && tries > 0) {
             tries--;
             try {
-                UpdateResponse ur = server.add(docs);
+                UpdateResponse ur = client.add(docs);
                 if (ur.getStatus() == 0) {
                     success = true;
                 } else {
@@ -381,7 +384,7 @@ public final class SolrSearchIndex {
         while (!success && tries > 0) {
             tries--;
             try {
-                UpdateResponse ur = server.deleteById(id);
+                UpdateResponse ur = client.deleteById(id);
                 if (ur.getStatus() == 0) {
                     success = true;
                 } else {
@@ -422,7 +425,7 @@ public final class SolrSearchIndex {
         while (!success && tries > 0) {
             tries--;
             try {
-                UpdateResponse ur = server.deleteById(ids);
+                UpdateResponse ur = client.deleteById(ids);
                 if (ur.getStatus() == 0) {
                     success = true;
                 } else {
@@ -459,7 +462,7 @@ public final class SolrSearchIndex {
         while (!success && tries > 0) {
             tries--;
             try {
-                UpdateResponse ur = server.deleteByQuery(query);
+                UpdateResponse ur = client.deleteByQuery(query);
                 if (ur.getStatus() == 0) {
                     success = true;
                 } else {
@@ -495,7 +498,7 @@ public final class SolrSearchIndex {
         while (!success && tries > 0) {
             tries--;
             try {
-                UpdateResponse ur = server.commit();
+                UpdateResponse ur = client.commit();
                 if (ur.getStatus() == 0) {
                     success = true;
                 } else {
@@ -518,7 +521,7 @@ public final class SolrSearchIndex {
         if (optimize) {
             logger.debug("Optimizing index...");
             try {
-                server.optimize();
+                client.optimize();
                 logger.debug("...done.");
             } catch (SolrServerException e) {
                 // Optimize is an expensive operation and may cause a socket timeout, which shouldn't cause the entire indexing operation to fail,
@@ -538,7 +541,7 @@ public final class SolrSearchIndex {
     public void rollback() {
         logger.info("Rolling back...");
         try {
-            server.rollback();
+            client.rollback();
         } catch (SolrServerException | IOException e) {
             logger.error(e.getMessage(), e);
         } catch (RemoteSolrException e) {
@@ -557,8 +560,9 @@ public final class SolrSearchIndex {
      */
     public static Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
-        String url = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl") + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml";
-        try (HttpSolrClient solrClient = getNewHttpSolrClient(solrUrl, 30000, 30000, false)) {
+        String url = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl")
+                + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml";
+        try (HttpSolrClient solrClient = getNewHttpSolrClient(solrUrl, false)) {
             if (solrClient == null) {
                 return null;
             }

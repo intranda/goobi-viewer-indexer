@@ -73,7 +73,7 @@ public final class Configuration {
      * @throws ConfigurationException
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Configuration(String configFilePath) throws ConfigurationException {
+    public Configuration(String configFilePath) {
         builder =
                 new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
                         .configure(new Parameters().properties()
