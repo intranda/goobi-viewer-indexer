@@ -200,7 +200,6 @@ public class Hotfolder {
         } catch (NumberFormatException e) {
             logger.error("<minStorageSpace> must contain a numerical value - using default ({}) instead.", minStorageSpace);
         }
-        logger.info(hotfolderPathString);
         try {
             hotfolderPath = Paths.get(hotfolderPathString);
             if (!Utils.checkAndCreateDirectory(hotfolderPath)) {

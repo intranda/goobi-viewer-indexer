@@ -190,7 +190,7 @@ public final class Configuration {
         }
         return answer;
     }
-    
+
     /**
      * 
      * @param elementName
@@ -198,9 +198,9 @@ public final class Configuration {
      */
     public List<String> getConfigurations(String elementName) {
         List<String> ret = new ArrayList<>();
-        int countInit = getConfig().getMaxIndex("init");
+        int countInit = getConfig().getMaxIndex("init." + elementName);
         for (int i = 0; i <= countInit; i++) {
-           ret.add(getConfig().getString("init(" + i + ")." + elementName));
+            ret.add(getConfig().getString("init." + elementName + "(" + i + ")"));
         }
         return ret;
     }
@@ -324,7 +324,7 @@ public final class Configuration {
     public String getViewerHome() {
         return getString("init.viewerHome");
     }
-    
+
     /**
      * 
      * @return
