@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
 import javax.mail.MessagingException;
@@ -95,14 +96,7 @@ public class Hotfolder {
     /** Constant <code>worldviewsEnabled=true</code> */
     private boolean worldviewsEnabled = true;
 
-    private SecondaryAppender secondaryAppender;
-
-    private final IDataRepositoryStrategy dataRepositoryStrategy;
-    /** Regular index queue for files found in the regular hotfolder. */
-    private final Queue<Path> indexQueue = new LinkedList<>();
-    /** High priority index queue for volume re-indexing, etc. */
-    private final Queue<Path> highPriorityIndexQueue = new LinkedList<>();
-
+    private int queueCapacity = 500;
     private int minStorageSpace = 2048;
     private long metsFileSizeThreshold = 10485760;
     private long dataFolderSizeThreshold = 157286400;
@@ -120,6 +114,14 @@ public class Hotfolder {
     private boolean addVolumeCollectionsToAnchor = false;
     private boolean deleteContentFilesOnFailure = true;
     private boolean emailConfigurationComplete = false;
+
+    private SecondaryAppender secondaryAppender;
+
+    private final IDataRepositoryStrategy dataRepositoryStrategy;
+    /** Regular index queue for files found in the regular hotfolder. */
+    private final Queue<Path> indexQueue = new LinkedBlockingQueue<>(queueCapacity);
+    /** High priority index queue for volume re-indexing, etc. */
+    private final Queue<Path> highPriorityIndexQueue = new LinkedList<>();
 
     /**
      * <p>
@@ -427,6 +429,8 @@ public class Hotfolder {
                     if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !indexQueue.contains(recordFile)) {
                         if (indexQueue.offer(recordFile)) {
                             logger.info("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), path.getFileName());
+                        } else {
+                            logger.debug("Queue full ({})", getHotfolderPath().getFileName());
                         }
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
