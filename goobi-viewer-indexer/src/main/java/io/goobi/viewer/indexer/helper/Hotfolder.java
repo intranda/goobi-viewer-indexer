@@ -322,9 +322,8 @@ public class Hotfolder {
      * 
      * @param subject
      * @param body
-     * @throws FatalIndexerException
      */
-    private static void checkAndSendErrorReport(String subject, String body) throws FatalIndexerException {
+    private static void checkAndSendErrorReport(String subject, String body) {
         logger.debug("checkAndSendErrorReport");
         logger.trace("body:\n{}", body);
         if (StringUtils.isEmpty(body)) {
@@ -412,7 +411,7 @@ public class Hotfolder {
                     }
                     recordFile = indexQueue.poll();
                 }
-                logger.info("Processing {} from memory queue...", recordFile.getFileName());
+                logger.info("Processing {} from memory queue ({})...", recordFile.getFileName(), getHotfolderPath().getFileName());
                 doIndex(recordFile);
                 return true; // always break after attempting to index a file, so that the loop restarts
             }
@@ -427,7 +426,7 @@ public class Hotfolder {
                     Path recordFile = path;
                     if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !indexQueue.contains(recordFile)) {
                         if (indexQueue.offer(recordFile)) {
-                            logger.info("Added file to index queue: {}", path.getFileName());
+                            logger.info("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), path.getFileName());
                         }
                     } else {
                         logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
@@ -438,7 +437,7 @@ public class Hotfolder {
                 logger.error(e.getMessage(), e);
             }
         }
-        
+
         return !highPriorityIndexQueue.isEmpty() || !indexQueue.isEmpty();
     }
 
