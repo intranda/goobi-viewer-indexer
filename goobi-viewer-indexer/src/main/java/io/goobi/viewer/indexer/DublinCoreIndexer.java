@@ -163,6 +163,9 @@ public class DublinCoreIndexer extends Indexer {
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             logger.info("Successfully finished indexing '{}'.", dcFile.getFileName());
+            
+            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
+            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -385,10 +388,8 @@ public class DublinCoreIndexer extends Indexer {
                                 getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                    }
-                } else if (logger.isDebugEnabled()) {
+                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                } else {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }
@@ -421,6 +422,9 @@ public class DublinCoreIndexer extends Indexer {
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Finished writing data for '{}' to Solr.", pi);
+            
+            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
+            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);

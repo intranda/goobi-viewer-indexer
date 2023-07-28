@@ -15,6 +15,7 @@
  */
 package io.goobi.viewer.indexer;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,6 +122,24 @@ public final class SolrIndexerDaemon {
 
         if (hotfolders.isEmpty()) {
             throw new FatalIndexerException("No hotfolder configuration found, exiting...");
+        }
+    }
+
+    /**
+     * Removes files that matches the given pi from hotfolders that are priorized lower than (i.e. listed after) usedHotfolder.
+     * 
+     * @param pi
+     * @param usedHotfolder
+     */
+    public void removeRecordFileFromLowerPriorityHotfolders(String pi, Hotfolder usedHotfolder) {
+        int index = hotfolders.indexOf(usedHotfolder);
+        for (int i = index; i < hotfolders.size(); ++i) {
+            Hotfolder hotfolder = hotfolders.get(i);
+            try {
+                hotfolder.removeSourceFileFromQueue(pi);
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+            }
         }
     }
 

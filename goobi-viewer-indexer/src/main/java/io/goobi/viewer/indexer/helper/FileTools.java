@@ -136,7 +136,7 @@ public class FileTools {
                 try {
                     Charset toCharset = Charset.forName(convertFileToCharset);
                     FileUtils.write(file, sb.toString(), toCharset);
-                    logger.info("File '{}' has been converted from {} to {}.", file.getAbsolutePath(), charset, convertFileToCharset);
+                    logger.debug("File '{}' has been converted from {} to {}.", file.getAbsolutePath(), charset, convertFileToCharset);
                 } catch (UnsupportedEncodingException e) {
                     logger.error("Cannot convert file '{}' - Unsupported target encoding '{}'.", file.getAbsolutePath(), e.getMessage());
                 }

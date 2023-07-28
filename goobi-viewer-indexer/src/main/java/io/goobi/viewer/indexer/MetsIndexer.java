@@ -169,6 +169,7 @@ public class MetsIndexer extends Indexer {
             if (metsFile.equals(indexed)) {
                 return;
             }
+
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
                 String oldMetsFilename =
@@ -229,6 +230,9 @@ public class MetsIndexer extends Indexer {
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
+            
+            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
+            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -545,10 +549,8 @@ public class MetsIndexer extends Indexer {
                                 getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                    }
-                } else if (logger.isDebugEnabled()) {
+                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                } else {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }

@@ -842,6 +842,38 @@ public class Hotfolder {
         return total1 == total2;
     }
 
+    /**
+     * 
+     * @param pi
+     * @throws IOException
+     */
+    public void removeSourceFileFromQueue(String pi) throws IOException {
+        if (StringUtils.isEmpty(pi)) {
+            return;
+        }
+
+        Path matchingFile = null;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
+            for (Path path : stream) {
+                if (FilenameUtils.getBaseName(path.getFileName().toString()).equals(pi)) {
+                    matchingFile = path;
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        if (matchingFile != null) {
+            if (indexQueue.contains(matchingFile)) {
+                indexQueue.remove(matchingFile);
+                logger.info("Removed '{}' from hotfolder '{}' index queue.", matchingFile.getFileName(), getHotfolderPath().getFileName());
+            }
+            Files.delete(matchingFile);
+            logger.info("Deleted '{}' from hotfolder '{}'.", matchingFile.getFileName(), getHotfolderPath().getFileName());
+        }
+    }
+
     protected class DataFolderSizeCounter implements FileFilter {
 
         private String recordFileName;

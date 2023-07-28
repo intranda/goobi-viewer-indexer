@@ -193,6 +193,9 @@ public class WorldViewsIndexer extends Indexer {
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             logger.info("Successfully finished indexing '{}'.", mainFile.getFileName());
+
+            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
+            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -448,10 +451,8 @@ public class WorldViewsIndexer extends Indexer {
                                 getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                    }
-                } else if (logger.isDebugEnabled()) {
+                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                } else {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }

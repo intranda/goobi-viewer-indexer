@@ -198,6 +198,9 @@ public class LidoIndexer extends Indexer {
                 }
                 prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
                 logger.info("Successfully finished indexing '{}'.", identifier);
+                
+                // Remove this file from lower priority hotfolders to avoid overriding changes with older version
+                SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
             } else {
                 handleError(lidoFile, resp[1], FileFormat.LIDO);
             }
