@@ -147,14 +147,10 @@ public class Hotfolder {
         Configuration config = Configuration.getInstance(confFilename);
 
         this.searchIndex = new SolrSearchIndex(solrClient);
-        if (logger.isInfoEnabled()) {
-            logger.info("Using Solr server at {}", config.getConfiguration("solrUrl"));
-        }
+        logger.info("Using Solr server at {}", config.getConfiguration("solrUrl"));
         if (oldSolrClient != null) {
             this.oldSearchIndex = new SolrSearchIndex(oldSolrClient);
-            if (logger.isInfoEnabled()) {
-                logger.info("Also using old Solr server at {}", config.getConfiguration("oldSolrUrl"));
-            }
+            logger.info("Also using old Solr server at {}", config.getConfiguration("oldSolrUrl"));
         } else {
             this.oldSearchIndex = null;
         }
