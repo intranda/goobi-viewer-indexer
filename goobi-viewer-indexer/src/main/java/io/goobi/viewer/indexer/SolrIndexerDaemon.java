@@ -133,6 +133,9 @@ public final class SolrIndexerDaemon {
      */
     public void removeRecordFileFromLowerPriorityHotfolders(String pi, Hotfolder usedHotfolder) {
         int index = hotfolders.indexOf(usedHotfolder);
+        if (index == -1) {
+            return;
+        }
         for (int i = index; i < hotfolders.size(); ++i) {
             Hotfolder hotfolder = hotfolders.get(i);
             try {
