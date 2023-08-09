@@ -53,7 +53,7 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         statisticsFile1 = Paths.get("src/test/resources/usage-statistics/statistics-usage-2022-07-04.json");
         Assert.assertTrue(Files.isRegularFile(statisticsFile1));
@@ -67,28 +67,28 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
     public void test_index() throws IOException, FatalIndexerException, SolrServerException {
         SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile1);
         assertNotNull(doc);
-        SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
         assertEquals(1, docList.size());
     }
     
     @Test
-    public void test_delete() throws IOException, FatalIndexerException, SolrServerException, InterruptedException {
+    public void test_delete() throws IOException, FatalIndexerException, SolrServerException {
         {
             SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile1);
             assertNotNull(doc);
-            SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
             assertEquals(1, docList.size());
         }
         {
             SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile2);
             assertNotNull(doc);
-            SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
             assertEquals(2, docList.size());
         }
         {            
             boolean deleted = new UsageStatisticsIndexer(hotfolder).removeFromIndex(deleteFile1);
             assertTrue(deleted);
-            SolrDocumentList docList = hotfolder.getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
             assertEquals(1, docList.size());
         }
     }

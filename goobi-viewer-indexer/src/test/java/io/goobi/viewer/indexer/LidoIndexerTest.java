@@ -29,7 +29,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -52,7 +51,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         lidoFile = new File("src/test/resources/LIDO/khm_lido_export.xml");
         Assert.assertTrue(lidoFile.isFile());
@@ -80,18 +79,23 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_MEDIA, lidoVideoMediaFolder.getAbsoluteFile().toPath());
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
+                    SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
-        SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":*", null);
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":*", null);
         Assert.assertEquals(1, docList.size());
         SolrDocument doc = docList.get(0);
         String docPi = (String) doc.getFieldValue(SolrConstants.PI);
         Assert.assertEquals("Document PI was expected to be " + videoPI + ", but was " + docPi, videoPI, docPi);
 
-        docList = hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + videoPI + " AND " + SolrConstants.FILENAME + ":*", null);
-        Assert.assertEquals("video page not in doclist. Total page hits: " + hotfolder.getSearchIndex().getNumHits(SolrConstants.FILENAME + ":*"), 1,
+        docList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search(SolrConstants.PI_TOPSTRUCT + ":" + videoPI + " AND " + SolrConstants.FILENAME + ":*", null);
+        Assert.assertEquals(
+                "video page not in doclist. Total page hits: "
+                        + SolrIndexerDaemon.getInstance().getSearchIndex().getNumHits(SolrConstants.FILENAME + ":*"),
+                1,
                 docList.size());
         doc = docList.get(0);
 
@@ -112,7 +116,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
+                    SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -121,7 +125,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             {
@@ -173,7 +177,9 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         // Pages
         {
             SolrDocumentList docList =
-                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.FILENAME + ":*", null);
+                    SolrIndexerDaemon.getInstance()
+                            .getSearchIndex()
+                            .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.FILENAME + ":*", null);
             Assert.assertEquals(1, docList.size());
 
             Map<String, Boolean> filenameMap = new HashMap<>();
@@ -220,7 +226,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         {
             // TODO event grouped metadata (docs exists with the event doc as parent; fields do not exist with the docstruct doc as parent)
 
-            SolrDocumentList docList = hotfolder.getSearchIndex()
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + iddoc + " AND " + SolrConstants.DOCTYPE + ":" + DocType.EVENT, null);
             Assert.assertEquals(1, docList.size());
 
@@ -309,7 +316,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
-                    Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
+                    SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
             Assert.assertNotEquals("ERROR", ret[0]);
         }
 
@@ -320,7 +327,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
@@ -337,7 +344,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         // Pages
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex()
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE, null);
             Assert.assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {
@@ -353,7 +361,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         // Events
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex()
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + iddoc + " AND " + SolrConstants.DOCTYPE + ":" + DocType.EVENT, null);
             Assert.assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {
@@ -368,14 +377,14 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         // Re-index
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
-                Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
+                SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
         Assert.assertNotEquals("ERROR", ret[0]);
 
         String newIddoc;
 
         // Top document
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
@@ -391,7 +400,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         // Pages
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex()
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE, null);
             Assert.assertEquals(1, docList.size());
 
@@ -408,7 +418,8 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         // Events
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex()
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + newIddoc + " AND " + SolrConstants.DOCTYPE + ":" + DocType.EVENT, null);
             Assert.assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {

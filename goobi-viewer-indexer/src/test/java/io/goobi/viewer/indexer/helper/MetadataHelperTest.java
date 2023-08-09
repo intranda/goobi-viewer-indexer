@@ -34,6 +34,7 @@ import org.junit.Test;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import io.goobi.viewer.indexer.AbstractTest;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -51,7 +52,7 @@ public class MetadataHelperTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, null);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
     }
 
     /**
@@ -127,7 +128,7 @@ public class MetadataHelperTest extends AbstractTest {
     @Test
     public void getGroupedMetadata_shouldGroupCorrectly() throws Exception {
         List<FieldConfig> fieldConfigurations =
-                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
         Assert.assertNotNull(fieldConfigurations);
         Assert.assertEquals(1, fieldConfigurations.size());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
@@ -137,7 +138,7 @@ public class MetadataHelperTest extends AbstractTest {
         Assert.assertNotNull(docMods);
         Assert.assertNotNull(docMods.getRootElement());
 
-        Element eleName = docMods.getRootElement().getChild("name", Configuration.getInstance().getNamespaces().get("mods"));
+        Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
         Assert.assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
                 new ArrayList<>());
@@ -208,7 +209,7 @@ public class MetadataHelperTest extends AbstractTest {
     @Test
     public void getGroupedMetadata_shouldNotLowercaseCertainFields() throws Exception {
         List<FieldConfig> fieldConfigurations =
-                Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
         Assert.assertNotNull(fieldConfigurations);
         Assert.assertEquals(1, fieldConfigurations.size());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
@@ -219,7 +220,7 @@ public class MetadataHelperTest extends AbstractTest {
         Assert.assertNotNull(docMods);
         Assert.assertNotNull(docMods.getRootElement());
 
-        Element eleName = docMods.getRootElement().getChild("name", Configuration.getInstance().getNamespaces().get("mods"));
+        Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
         Assert.assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
                 new ArrayList<>());

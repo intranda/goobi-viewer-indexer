@@ -42,6 +42,7 @@ import de.intranda.digiverso.normdataimporter.NormDataImporter;
 import de.intranda.digiverso.normdataimporter.model.NormData;
 import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import de.intranda.digiverso.normdataimporter.model.Record;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
@@ -112,14 +113,14 @@ public class MetadataHelper {
         List<LuceneField> ret = new ArrayList<>();
 
         Set<Integer> centuries = new HashSet<>();
-        List<String> fieldNamesList = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
+        List<String> fieldNamesList = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames();
         StringBuilder sbDefaultMetadataValues = new StringBuilder();
         if (indexObj.getDefaultValue() != null) {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());
         }
         for (String fieldName : fieldNamesList) {
             List<FieldConfig> configurationItemList =
-                    Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
+                    SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
             if (configurationItemList == null || configurationItemList.isEmpty()) {
                 continue;
             }
@@ -431,13 +432,13 @@ public class MetadataHelper {
         }
 
         url = url.trim();
-        boolean authorityDataCacheEnabled = Configuration.getInstance().isAuthorityDataCacheEnabled();
+        boolean authorityDataCacheEnabled = SolrIndexerDaemon.getInstance().getConfiguration().isAuthorityDataCacheEnabled();
 
         Record rec = authorityDataCache.get(url);
         if (rec != null) {
             long cachedRecordAge = (System.currentTimeMillis() - rec.getCreationTimestamp()) / 1000 / 60 / 60;
             logger.debug("Cached record age: {}", cachedRecordAge);
-            if (cachedRecordAge < Configuration.getInstance().getAuthorityDataCacheRecordTTL()) {
+            if (cachedRecordAge < SolrIndexerDaemon.getInstance().getConfiguration().getAuthorityDataCacheRecordTTL()) {
                 logger.debug("Authority data retrieved from local cache: {}", url);
             } else {
                 // Do not use expired record and clear from cache
@@ -450,9 +451,9 @@ public class MetadataHelper {
             String proxyUrl = null;
             int proxyPort = 0;
             try {
-                if (Configuration.getInstance().isProxyEnabled() && !Configuration.getInstance().isHostProxyWhitelisted(url)) {
-                    proxyUrl = Configuration.getInstance().getProxyUrl();
-                    proxyPort = Configuration.getInstance().getProxyPort();
+                if (SolrIndexerDaemon.getInstance().getConfiguration().isProxyEnabled() && !SolrIndexerDaemon.getInstance().getConfiguration().isHostProxyWhitelisted(url)) {
+                    proxyUrl = SolrIndexerDaemon.getInstance().getConfiguration().getProxyUrl();
+                    proxyPort = SolrIndexerDaemon.getInstance().getConfiguration().getProxyPort();
                 }
             } catch (MalformedURLException e) {
                 logger.error(e.getMessage());
@@ -469,7 +470,7 @@ public class MetadataHelper {
             }
             if (authorityDataCacheEnabled) {
                 authorityDataCache.put(url.trim(), rec);
-                if (authorityDataCache.size() > Configuration.getInstance().getAuthorityDataCacheSizeWarningThreshold()) {
+                if (authorityDataCache.size() > SolrIndexerDaemon.getInstance().getConfiguration().getAuthorityDataCacheSizeWarningThreshold()) {
                     logger.warn("Authority data cache size: {}, please restart indexer to clear.", authorityDataCache.size());
                 }
             }
@@ -607,7 +608,7 @@ public class MetadataHelper {
                 }
                 if (duplicate) {
                     List<FieldConfig> fieldConfigList =
-                            Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(field.getField());
+                            SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(field.getField());
                     if (fieldConfigList == null || fieldConfigList.isEmpty() || !fieldConfigList.get(0).isAllowDuplicateValues()) {
                         logger.debug("Duplicate field found: {}:{}", field.getField(), field.getValue());
                         continue;
@@ -763,7 +764,7 @@ public class MetadataHelper {
         }
         String ret = pi.trim();
         // Apply replace rules defined for the field PI
-        List<FieldConfig> configItems = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
+        List<FieldConfig> configItems = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (configItems != null && !configItems.isEmpty()) {
             Map<Object, String> replaceRules = configItems.get(0).getReplaceRules();
             if (replaceRules != null && !replaceRules.isEmpty()) {
@@ -877,7 +878,7 @@ public class MetadataHelper {
      * @should extract DenkXweb PI correctly
      */
     public static String getPIFromXML(String prefix, JDomXP xp) throws FatalIndexerException {
-        List<FieldConfig> piConfig = Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
+        List<FieldConfig> piConfig = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
             return null;
         }
@@ -1420,7 +1421,7 @@ public class MetadataHelper {
                 // Add text body
                 Element eleText = tei.getRootElement().getChild("text", null);
                 if (eleText != null && eleText.getChild("body", null) != null) {
-                    String language = eleText.getAttributeValue("lang", Configuration.getInstance().getNamespaces().get("xml"));
+                    String language = eleText.getAttributeValue("lang", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xml"));
                     String fileFieldName = SolrConstants.FILENAME_TEI;
                     if (language != null) {
                         String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();

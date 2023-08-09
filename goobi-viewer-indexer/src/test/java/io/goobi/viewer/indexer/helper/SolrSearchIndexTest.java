@@ -29,6 +29,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -39,6 +40,7 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.MetsIndexer;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -48,6 +50,8 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(SolrSearchIndexTest.class);
 
+    private SolrClient client;
+
     private SolrSearchIndex searchIndex;
 
     @Override
@@ -55,6 +59,8 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
+        String solrUrl = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl");
+        client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, true);
         searchIndex = new SolrSearchIndex(client);
     }
 
@@ -272,7 +278,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void checkDuplicateFieldValues_shouldReturnCorrectIdentifiers() throws Exception {
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
                 new HashMap<>(), null, 1, false);
@@ -280,7 +286,8 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
                 new HashMap<>(), null, 1, false);
         Assert.assertNull(ret[1]);
-        Set<String> result = hotfolder.getSearchIndex()
+        Set<String> result = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
                 .checkDuplicateFieldValues(Collections.singletonList(SolrConstants.PI_TOPSTRUCT), Arrays.asList("AC06736966", "H030001"), null);
         Assert.assertEquals(2, result.size());
         Assert.assertTrue(result.contains("H030001"));
@@ -293,7 +300,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void checkDuplicateFieldValues_shouldIgnoreRecordsThatMatchSkipPi() throws Exception {
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
                 new HashMap<>(), null, 1, false);
@@ -301,7 +308,8 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
                 new HashMap<>(), null, 1, false);
         Assert.assertNull(ret[1]);
-        Set<String> result = hotfolder.getSearchIndex()
+        Set<String> result = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
                 .checkDuplicateFieldValues(Collections.singletonList(SolrConstants.PI_TOPSTRUCT), Arrays.asList("AC06736966", "H030001"),
                         "AC06736966");
         Assert.assertEquals(1, result.size());

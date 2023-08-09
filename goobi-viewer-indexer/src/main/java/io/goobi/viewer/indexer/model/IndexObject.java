@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jdom2.Element;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom2.Element;
 
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -129,7 +129,7 @@ public class IndexObject {
             // Apply default modifications and replace rules to LABEL
             String moddedLabel = MetadataHelper.applyValueDefaultModifications(label);
             List<FieldConfig> configurationItemList =
-                    Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.LABEL);
+                    SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.LABEL);
             if (configurationItemList != null && !configurationItemList.isEmpty()) {
                 moddedLabel = MetadataHelper.applyReplaceRules(moddedLabel, configurationItemList.get(0).getReplaceRules());
             }
@@ -507,10 +507,10 @@ public class IndexObject {
             existingFields.add(field.getField());
         }
         // Check each field configuration where additional modifications might be configured
-        List<String> fieldNamesList = Configuration.getInstance().getMetadataConfigurationManager().getListWithAllFieldNames();
+        List<String> fieldNamesList = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames();
         for (String fieldName : fieldNamesList) {
             List<FieldConfig> fieldConfigList =
-                    Configuration.getInstance().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
+                    SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
             if (fieldConfigList == null || fieldConfigList.isEmpty()) {
                 continue;
             }

@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
@@ -127,7 +128,7 @@ public class DataRepository {
      */
     public DataRepository(final String path, final boolean createFolders) throws FatalIndexerException {
         this.path = path;
-        rootDir = "".equals(path) ? Paths.get(Configuration.getInstance().getViewerHome()) : Paths.get(path);
+        rootDir = "".equals(path) ? Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome()) : Paths.get(path);
 
         if (Files.exists(rootDir)) {
             if (Files.isRegularFile(rootDir)) {
@@ -230,7 +231,7 @@ public class DataRepository {
         if (dataDirName == null) {
             throw new IllegalArgumentException("name may not be null");
         }
-        String config = Configuration.getInstance().getConfiguration(dataDirName);
+        String config = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration(dataDirName);
         if (StringUtils.isEmpty(config)) {
             switch (dataDirName) {
                 case PARAM_INDEXED_METS:
@@ -783,7 +784,7 @@ public class DataRepository {
     public static String getAbsolutePath(String dataRepository) throws FatalIndexerException {
         if (dataRepository != null && !Paths.get(dataRepository).isAbsolute()) {
             logger.warn("Data repository value type is deprecated: {}", dataRepository);
-            dataRepository = Configuration.getInstance().getViewerHome() + "/data/" + dataRepository;
+            dataRepository = SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome() + "/data/" + dataRepository;
             dataRepository = dataRepository.replace("//", "/");
             logger.warn("Assuming absolute path to be: {}", dataRepository);
         }

@@ -45,7 +45,6 @@ import org.jdom2.output.XMLOutputter;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -129,7 +128,7 @@ public class DenkXwebIndexer extends Indexer {
         logger.info("File contains {} DenkXweb documents.", denkxwebDocs.size());
         XMLOutputter outputter = new XMLOutputter();
         for (Document doc : denkxwebDocs) {
-            resp = index(doc, dataFolders, null, Configuration.getInstance().getPageCountStart(),
+            resp = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
             if (!Indexer.STATUS_ERROR.equals(resp[0])) {
                 String identifier = resp[0];
@@ -170,6 +169,9 @@ public class DenkXwebIndexer extends Indexer {
                 }
                 prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
                 logger.info("Successfully finished indexing '{}'.", identifier);
+                
+                // Remove this file from lower priority hotfolders to avoid overriding changes with older version
+                SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
             } else {
                 handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
             }
@@ -212,7 +214,7 @@ public class DenkXwebIndexer extends Indexer {
                 throw new IndexerException("Could not create XML parser.");
             }
 
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = doc.getRootElement();
             indexObj.setRootStructNode(structNode);
@@ -221,51 +223,50 @@ public class DenkXwebIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI
-            {
-                pi = MetadataHelper.getPIFromXML("", xp);
-                if (StringUtils.isBlank(pi)) {
-                    ret[1] = "PI not found.";
-                    throw new IndexerException(ret[1]);
-                }
-
-                // Remove prefix
-                if (pi.contains(":")) {
-                    pi = pi.substring(pi.lastIndexOf(':') + 1);
-                }
-                if (pi.contains("/")) {
-                    pi = pi.substring(pi.lastIndexOf('/') + 1);
-                }
-                pi = MetadataHelper.applyIdentifierModifications(pi);
-                // Do not allow identifiers with illegal characters
-                Pattern p = Pattern.compile("[^\\w|-]");
-                Matcher m = p.matcher(pi);
-                if (m.find()) {
-                    ret[1] = "PI contains illegal characters: " + pi;
-                    throw new IndexerException(ret[1]);
-                }
-                indexObj.setPi(pi);
-                indexObj.setTopstructPI(pi);
-                logger.debug("PI: {}", indexObj.getPi());
-
-                // Determine the data repository to use
-                DataRepository[] repositories =
-                        hotfolder.getDataRepositoryStrategy()
-                                .selectDataRepository(pi, null, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
-                dataRepository = repositories[0];
-                previousDataRepository = repositories[1];
-                if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                    indexObj.setDataRepository(dataRepository.getPath());
-                }
-
-                ret[0] = indexObj.getPi();
-
-                // Check and use old data folders, if no new ones found
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            pi = MetadataHelper.getPIFromXML("", xp);
+            if (StringUtils.isBlank(pi)) {
+                ret[1] = "PI not found.";
+                throw new IndexerException(ret[1]);
             }
+
+            // Remove prefix
+            if (pi.contains(":")) {
+                pi = pi.substring(pi.lastIndexOf(':') + 1);
+            }
+            if (pi.contains("/")) {
+                pi = pi.substring(pi.lastIndexOf('/') + 1);
+            }
+            pi = MetadataHelper.applyIdentifierModifications(pi);
+            // Do not allow identifiers with illegal characters
+            Pattern p = Pattern.compile("[^\\w|-]");
+            Matcher m = p.matcher(pi);
+            if (m.find()) {
+                ret[1] = "PI contains illegal characters: " + pi;
+                throw new IndexerException(ret[1]);
+            }
+            indexObj.setPi(pi);
+            indexObj.setTopstructPI(pi);
+            logger.debug("PI: {}", indexObj.getPi());
+
+            // Determine the data repository to use
+            DataRepository[] repositories =
+                    hotfolder.getDataRepositoryStrategy()
+                            .selectDataRepository(pi, null, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
+                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
+            dataRepository = repositories[0];
+            previousDataRepository = repositories[1];
+            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+                indexObj.setDataRepository(dataRepository.getPath());
+            }
+
+            ret[0] = indexObj.getPi();
+
+            // Check and use old data folders, if no new ones found
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy
@@ -291,7 +292,8 @@ public class DenkXwebIndexer extends Indexer {
             if (indexObj.isVolume()) {
                 String anchorPi = MetadataHelper.getAnchorPi(xp);
                 if (anchorPi != null) {
-                    SolrDocumentList hits = hotfolder.getSearchIndex()
+                    SolrDocumentList hits = SolrIndexerDaemon.getInstance()
+                            .getSearchIndex()
                             .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
                     if (hits != null && hits.getNumFound() > 0) {
                         Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
@@ -358,7 +360,7 @@ public class DenkXwebIndexer extends Indexer {
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
-            writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
+            writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
 
             // Return image file names
             if (sbImgFileNames.length() > 0 && sbImgFileNames.charAt(0) == ';') {
@@ -375,7 +377,7 @@ public class DenkXwebIndexer extends Indexer {
             }
             ret[0] = STATUS_ERROR;
             ret[1] = e.getMessage();
-            hotfolder.getSearchIndex().rollback();
+            SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
@@ -499,7 +501,11 @@ public class DenkXwebIndexer extends Indexer {
             Set<String> existingMetadataFieldNames = new HashSet<>();
             Set<String> existingSortFieldNames = new HashSet<>();
             for (String fieldName : pageDoc.getFieldNames()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
+                if (SolrIndexerDaemon.getInstance()
+                        .getConfiguration()
+                        .getMetadataConfigurationManager()
+                        .getFieldsToAddToPages()
+                        .contains(fieldName)) {
                     for (Object value : pageDoc.getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
@@ -508,7 +514,11 @@ public class DenkXwebIndexer extends Indexer {
                 }
             }
             for (LuceneField field : indexObj.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
+                if (SolrIndexerDaemon.getInstance()
+                        .getConfiguration()
+                        .getMetadataConfigurationManager()
+                        .getFieldsToAddToPages()
+                        .contains(field.getField())
                         && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                     // Avoid duplicates (same field name + value)
                     pageDoc.addField(field.getField(), field.getValue());
@@ -541,7 +551,7 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         // Add thumbnail information from the first page
-        if (StringUtils.isEmpty(filePathBanner) && Configuration.getInstance().isUseFirstPageAsDefaultRepresentative()) {
+        if (StringUtils.isEmpty(filePathBanner) && SolrIndexerDaemon.getInstance().getConfiguration().isUseFirstPageAsDefaultRepresentative()) {
             String thumbnailFileName = firstPageDoc.getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
                     ? (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
@@ -624,8 +634,8 @@ public class DenkXwebIndexer extends Indexer {
         //                        writeStrategy, dataFolders, downloadExternalImages));
         int order = pageCountStart;
         for (Element eleImage : eleImageList) {
-            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), order, writeStrategy, dataFolders,
-                    downloadExternalImages)) {
+            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), order, writeStrategy,
+                    dataFolders, downloadExternalImages)) {
                 order++;
             }
         }
@@ -664,7 +674,7 @@ public class DenkXwebIndexer extends Indexer {
         doc.addField(SolrConstants.ORDER, order);
         doc.addField(SolrConstants.PHYSID, String.valueOf(order));
 
-        Element eleStandard = eleImage.getChild("standard", Configuration.getInstance().getNamespaces().get("denkxweb"));
+        Element eleStandard = eleImage.getChild("standard", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("denkxweb"));
         if (eleStandard == null) {
             logger.warn("No element <standard> found for image {}", order);
             return false;
@@ -674,11 +684,11 @@ public class DenkXwebIndexer extends Indexer {
         if (StringUtils.isNotEmpty(orderLabel)) {
             doc.addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
-            doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
+            doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
         }
 
         // Description
-        String desc = eleImage.getChildText("description", Configuration.getInstance().getNamespaces().get("denkxweb"));
+        String desc = eleImage.getChildText("description", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("denkxweb"));
         if (StringUtils.isNotEmpty(desc)) {
             doc.addField("MD_DESCRIPTION", desc);
         }

@@ -46,9 +46,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.common.SolrInputDocument;
 
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -305,8 +305,8 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         List<Integer> orderList = new ArrayList<>(pageDocOrderIddocMap.keySet());
         Collections.sort(orderList);
 
-        if (Configuration.getInstance().getThreads() > 1) {
-            ExecutorService executor = Executors.newFixedThreadPool(Configuration.getInstance().getThreads());
+        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
+            ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
             for (final int order : orderList) {
 
                 // Generate write page document in its own thread
@@ -482,7 +482,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     private static void copyFailedFile(Path file) throws FatalIndexerException {
         try {
-            Files.copy(file, Paths.get(Configuration.getInstance().getViewerHome(), file.getFileName().toString()),
+            Files.copy(file, Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome(), file.getFileName().toString()),
                     StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

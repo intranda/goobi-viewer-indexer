@@ -38,9 +38,9 @@ import org.apache.commons.configuration2.event.EventListener;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
-import org.jdom2.Namespace;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
@@ -56,11 +56,7 @@ public final class Configuration {
 
     private static final Logger logger = LogManager.getLogger(Configuration.class);
 
-    private static final Object lock = new Object();
-
-    /* default */
-    private static String configPath = "config_indexer.xml";
-    private static Configuration instance = null;
+    public static final String CONFIG_FILE_NAME = "config_indexer.xml";
 
     private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
     private MetadataConfigurationManager metadataConfigurationManager;
@@ -72,74 +68,42 @@ public final class Configuration {
     private Timer reloadTimer = new Timer();
 
     /**
-     * Re-inits the instance with the given config file name.
-     *
-     * @param confFilename a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @return a {@link io.goobi.viewer.indexer.helper.Configuration} object.
-     */
-    public static synchronized Configuration getInstance(String confFilename) throws FatalIndexerException {
-        if (confFilename != null) {
-            Configuration.configPath = confFilename;
-            Configuration.instance = null;
-        }
-        return getInstance();
-    }
-
-    /**
-     * Do not call this method before the correct config file path has been passed!
-     *
-     * @return a {@link io.goobi.viewer.indexer.helper.Configuration} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
-     */
-    public static synchronized Configuration getInstance() throws FatalIndexerException {
-        Configuration conf = instance;
-        if (conf == null) {
-            synchronized (lock) {
-                // Another thread might have initialized instance by now
-                conf = instance;
-                if (conf == null) {
-                    try {
-                        conf = new Configuration();
-                        instance = conf;
-                    } catch (ConfigurationException e) {
-                        logger.error(e.getMessage(), e);
-                        throw new FatalIndexerException("Cannot read configuration file '" + configPath + "', shutting down...");
-                    }
-                }
-            }
-        }
-
-        return instance;
-    }
-
-    /**
      * Private constructor.
      * 
      * @throws ConfigurationException
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Configuration() throws ConfigurationException {
+    public Configuration(String configFilePath) {
         builder =
                 new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
                         .configure(new Parameters().properties()
-                                .setFileName(configPath)
+                                .setFileName(configFilePath)
                                 .setListDelimiterHandler(new DefaultListDelimiterHandler(';'))
                                 .setThrowExceptionOnMissing(false));
-        lastFileReload = System.currentTimeMillis();
-        reloadConfig(builder.getConfiguration());
+        if (builder.getFileHandler().getFile().exists()) {
+            lastFileReload = System.currentTimeMillis();
+            try {
+                reloadConfig(builder.getConfiguration());
+                logger.info("Configuration file '{}' loaded.", builder.getFileHandler().getFile().getAbsolutePath());
+            } catch (ConfigurationException e) {
+                logger.error(e.getMessage(), e);
+            }
 
-        // Check every 10 seconds for changed config files and refresh maps if necessary
-        builder.addEventListener(ConfigurationBuilderEvent.CONFIGURATION_REQUEST,
-                new EventListener() {
+            // Check every 10 seconds for changed config files and refresh maps if necessary
+            builder.addEventListener(ConfigurationBuilderEvent.CONFIGURATION_REQUEST,
+                    new EventListener() {
 
-                    @Override
-                    public void onEvent(Event event) {
-                        if (builder.getReloadingController().checkForReloading(null)) {
-                            lastFileReload = System.currentTimeMillis();
+                        @Override
+                        public void onEvent(Event event) {
+                            if (builder.getReloadingController().checkForReloading(null)) {
+                                lastFileReload = System.currentTimeMillis();
+                            }
                         }
-                    }
-                });
+                    });
+        } else {
+            logger.error("Configuration file not found: {}; Base path is {}", builder.getFileHandler().getFile().getAbsoluteFile(),
+                    builder.getFileHandler().getBasePath());
+        }
     }
 
     private XMLConfiguration getConfig() {
@@ -229,6 +193,20 @@ public final class Configuration {
 
     /**
      * 
+     * @param elementName
+     * @return
+     */
+    public List<String> getConfigurations(String elementName) {
+        List<String> ret = new ArrayList<>();
+        int countInit = getConfig().getMaxIndex("init." + elementName);
+        for (int i = 0; i <= countInit; i++) {
+            ret.add(getConfig().getString("init." + elementName + "(" + i + ")"));
+        }
+        return ret;
+    }
+
+    /**
+     * 
      * @param inPath
      * @param defaultValue
      * @return
@@ -307,6 +285,23 @@ public final class Configuration {
     }
 
     /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public String getSolrUrl() {
+        return getConfiguration("solrUrl");
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public String getOldSolrUrl() {
+        return getConfiguration("oldSolrUrl");
+    }
+
+    /**
      * <p>
      * getViewerUrl.
      * </p>
@@ -328,6 +323,24 @@ public final class Configuration {
      */
     public String getViewerHome() {
         return getString("init.viewerHome");
+    }
+
+    /**
+     * 
+     * @return
+     * @should return correct value
+     */
+    public String getHotfolderPath() {
+        return getHotfolderPaths().get(0);
+    }
+
+    /**
+     * 
+     * @return
+     * @should return all values
+     */
+    public List<String> getHotfolderPaths() {
+        return getConfigurations("hotFolder");
     }
 
     /**
@@ -631,11 +644,11 @@ public final class Configuration {
         URL urlAsURL = new URL(url);
         return getProxyWhitelist().contains(urlAsURL.getHost());
     }
-    
+
     /**
-     * If true, the first page of a document is set as the representative image if no other page is
-            specified in the source document. If this is set to false, and no page is explicitly set as representative,
-            no representative image will be set. Defaults to true
+     * If true, the first page of a document is set as the representative image if no other page is specified in the source document. If this is set
+     * to false, and no page is explicitly set as representative, no representative image will be set. Defaults to true
+     * 
      * @return whether the first page should be used as representative image per default
      */
     public boolean isUseFirstPageAsDefaultRepresentative() {
@@ -658,31 +671,29 @@ public final class Configuration {
      * @throws FatalIndexerException
      * @should return false until all values configured
      */
-    static boolean checkEmailConfiguration() throws FatalIndexerException {
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.recipients"))) {
+    boolean checkEmailConfiguration() {
+        if (StringUtils.isEmpty(getString("init.email.recipients"))) {
             logger.warn("init.email.recipients not configured, cannot send e-mail report.");
             return false;
         }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpServer"))) {
+        if (StringUtils.isEmpty(getString("init.email.smtpServer"))) {
             logger.warn("init.email.smtpServer not configured, cannot send e-mail report.");
             return false;
         }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderAddress"))) {
+        if (StringUtils.isEmpty(getString("init.email.smtpSenderAddress"))) {
             logger.debug("init.email.smtpSenderAddress not configured, cannot send e-mail report.");
             return false;
         }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSenderName"))) {
+        if (StringUtils.isEmpty(getString("init.email.smtpSenderName"))) {
             logger.warn("init.email.smtpSenderName not configured, cannot send e-mail report.");
             return false;
         }
-        if (StringUtils.isEmpty(Configuration.getInstance().getString("init.email.smtpSecurity"))) {
+        if (StringUtils.isEmpty(getString("init.email.smtpSecurity"))) {
             logger.warn("init.email.smtpSecurity not configured, cannot send e-mail report.");
             return false;
         }
 
         return true;
     }
-
-
 
 }

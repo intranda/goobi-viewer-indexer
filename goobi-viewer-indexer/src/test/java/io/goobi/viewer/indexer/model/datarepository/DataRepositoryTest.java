@@ -33,7 +33,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 
 public class DataRepositoryTest extends AbstractTest {
@@ -50,7 +50,7 @@ public class DataRepositoryTest extends AbstractTest {
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, null);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
     }
 
     @After
@@ -73,7 +73,7 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void DataRepository_shouldCreateDummyRepositoryCorrectly() throws Exception {
-        DataRepository dataRepository = new DataRepository(Configuration.getInstance().getString("init.viewerHome"), true);
+        DataRepository dataRepository = new DataRepository(SolrIndexerDaemon.getInstance().getConfiguration().getString("init.viewerHome"), true);
         Assert.assertTrue(dataRepository.isValid());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
@@ -125,7 +125,7 @@ public class DataRepositoryTest extends AbstractTest {
     public void DataRepository_shouldSetRootDirToViewerHomePathIfEmptyStringWasGiven() throws Exception {
         DataRepository dataRepository = new DataRepository("", false);
         Assert.assertEquals("", dataRepository.getPath());
-        Assert.assertEquals(Paths.get(Configuration.getInstance().getViewerHome()), dataRepository.getRootDir());
+        Assert.assertEquals(Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome()), dataRepository.getRootDir());
     }
 
     /**
@@ -182,7 +182,7 @@ public class DataRepositoryTest extends AbstractTest {
      */
     @Test
     public void getNumRecords_shouldCalculateNumberCorrectly() throws Exception {
-        DataRepository dataRepository = new DataRepository(Configuration.getInstance().getString("init.viewerHome"), true);
+        DataRepository dataRepository = new DataRepository(SolrIndexerDaemon.getInstance().getConfiguration().getString("init.viewerHome"), true);
 
         File srcFile = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         File destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), srcFile.getName());

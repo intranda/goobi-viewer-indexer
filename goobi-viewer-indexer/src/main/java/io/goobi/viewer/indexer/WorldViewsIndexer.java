@@ -51,7 +51,6 @@ import org.jdom2.Element;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -125,7 +124,7 @@ public class WorldViewsIndexer extends Indexer {
         checkReindexSettings(dataFolders, reindexSettings);
 
         String[] resp = index(mainFile, fromReindexQueue, dataFolders, null,
-                Configuration.getInstance().getPageCountStart());
+                SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
 
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newMetsFileName = resp[0];
@@ -194,6 +193,9 @@ public class WorldViewsIndexer extends Indexer {
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             logger.info("Successfully finished indexing '{}'.", mainFile.getFileName());
+
+            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
+            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
         } else {
             // Error
             if (hotfolder.isDeleteContentFilesOnFailure()) {
@@ -233,7 +235,7 @@ public class WorldViewsIndexer extends Indexer {
 
         try {
             initJDomXP(mainFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             // Set PI
@@ -260,7 +262,8 @@ public class WorldViewsIndexer extends Indexer {
             // Determine the data repository to use
             DataRepository[] repositories =
                     hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, mainFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
+                            .selectDataRepository(pi, mainFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
+                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
             dataRepository = repositories[0];
             previousDataRepository = repositories[1];
 
@@ -442,9 +445,10 @@ public class WorldViewsIndexer extends Indexer {
                         moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                     }
                 }
-                SolrInputDocument doc = hotfolder.getSearchIndex()
+                SolrInputDocument doc = SolrIndexerDaemon.getInstance()
+                        .getSearchIndex()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(hotfolder.getSearchIndex()));
+                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -471,7 +475,7 @@ public class WorldViewsIndexer extends Indexer {
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
-            writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
+            writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
                 logger.info("Re-indexing anchor...");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
@@ -481,13 +485,13 @@ public class WorldViewsIndexer extends Indexer {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
-            hotfolder.getSearchIndex().rollback();
+            SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
-            hotfolder.getSearchIndex().rollback();
+            SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
@@ -543,7 +547,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
 
                 // Create new docstruct object
-                currentIndexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
+                currentIndexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 currentIndexObj.setParent(rootIndexObj);
                 currentIndexObj.setTopstructPI(rootIndexObj.getTopstructPI());
                 currentIndexObj.setType(pageDocstructLabel);
@@ -577,14 +581,22 @@ public class WorldViewsIndexer extends Indexer {
                 Set<String> existingMetadataFields = new HashSet<>();
                 Set<String> existingSortFieldNames = new HashSet<>();
                 for (LuceneField field : currentIndexObj.getLuceneFields()) {
-                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())) {
+                    if (SolrIndexerDaemon.getInstance()
+                            .getConfiguration()
+                            .getMetadataConfigurationManager()
+                            .getFieldsToAddToChildren()
+                            .contains(field.getField())) {
                         existingMetadataFields.add(new StringBuilder(field.getField()).append(field.getValue()).toString());
                     } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                         existingSortFieldNames.add(field.getField());
                     }
                 }
                 for (LuceneField field : rootIndexObj.getLuceneFields()) {
-                    if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToChildren().contains(field.getField())
+                    if (SolrIndexerDaemon.getInstance()
+                            .getConfiguration()
+                            .getMetadataConfigurationManager()
+                            .getFieldsToAddToChildren()
+                            .contains(field.getField())
                             && !existingMetadataFields.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                         // Avoid duplicates (same field name + value)
                         currentIndexObj.addToLucene(field.getField(), field.getValue());
@@ -608,7 +620,7 @@ public class WorldViewsIndexer extends Indexer {
                     // logger.info("Adding own LABEL to DEFAULT: " + indexObj.getLabel());
                     sbDefaultValue.append(labelWithSpaces);
                 }
-                if (Configuration.getInstance().isAddLabelToChildren()) {
+                if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
                     for (String label : currentIndexObj.getParentLabels()) {
                         String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
                         if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
@@ -653,7 +665,11 @@ public class WorldViewsIndexer extends Indexer {
             Set<String> existingMetadataFieldNames = new HashSet<>();
             Set<String> existingSortFieldNames = new HashSet<>();
             for (String fieldName : pageDoc.getFieldNames()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(fieldName)) {
+                if (SolrIndexerDaemon.getInstance()
+                        .getConfiguration()
+                        .getMetadataConfigurationManager()
+                        .getFieldsToAddToPages()
+                        .contains(fieldName)) {
                     for (Object value : pageDoc.getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
@@ -662,7 +678,11 @@ public class WorldViewsIndexer extends Indexer {
                 }
             }
             for (LuceneField field : currentIndexObj.getLuceneFields()) {
-                if (Configuration.getInstance().getMetadataConfigurationManager().getFieldsToAddToPages().contains(field.getField())
+                if (SolrIndexerDaemon.getInstance()
+                        .getConfiguration()
+                        .getMetadataConfigurationManager()
+                        .getFieldsToAddToPages()
+                        .contains(field.getField())
                         && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                     // Avoid duplicates (same field name + value)
                     pageDoc.addField(field.getField(), field.getValue());
@@ -770,14 +790,14 @@ public class WorldViewsIndexer extends Indexer {
         List<Element> eleListImages = xp.evaluateToElements("worldviews/resource/images/image", null);
         logger.info("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
 
-        if (Configuration.getInstance().getThreads() > 1) {
+        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
-            ForkJoinPool pool = new ForkJoinPool(Configuration.getInstance().getThreads());
+            ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
             ConcurrentHashMap<Long, Boolean> map = new ConcurrentHashMap<>();
             try {
                 pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
                     try {
-                        long iddoc = getNextIddoc(hotfolder.getSearchIndex());
+                        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
@@ -798,7 +818,8 @@ public class WorldViewsIndexer extends Indexer {
         } else {
             int order = pageCountStart;
             for (final Element eleImage : eleListImages) {
-                if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(hotfolder.getSearchIndex())), pi, order, writeStrategy, dataFolders)) {
+                if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
+                        writeStrategy, dataFolders)) {
                     order++;
                 }
             }
@@ -834,7 +855,7 @@ public class WorldViewsIndexer extends Indexer {
         doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
         doc.addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(order));
         doc.addField(SolrConstants.ORDER, order);
-        doc.addField(SolrConstants.ORDERLABEL, Configuration.getInstance().getEmptyOrderLabelReplacement());
+        doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
 
         boolean displayImage = Boolean.valueOf(eleImage.getChildText("displayImage"));
         if (displayImage) {
@@ -931,7 +952,7 @@ public class WorldViewsIndexer extends Indexer {
                             .toString();
             Path indexedAnchor = Paths.get(indexedAnchorFilePath);
             if (Files.exists(indexedAnchor)) {
-                hotfolder.getReindexQueue().add(indexedAnchor);
+                hotfolder.getHighPriorityQueue().add(indexedAnchor);
             }
         } else {
             logger.warn("No anchor file has been indexed for this work yet.");

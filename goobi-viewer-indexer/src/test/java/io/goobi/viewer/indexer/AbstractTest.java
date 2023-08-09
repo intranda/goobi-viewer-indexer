@@ -32,6 +32,6 @@ public abstract class AbstractTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         System.setProperty("log4j.configurationFile", TEST_LOG_CONFIG_PATH);
-        Configuration.getInstance(TEST_CONFIG_PATH);
+        SolrIndexerDaemon.getInstance().injectConfiguration(new Configuration(TEST_CONFIG_PATH));
     }
 }

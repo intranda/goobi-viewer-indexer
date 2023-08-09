@@ -82,7 +82,7 @@ public class SecondaryAppender extends AbstractAppender {
      * @should reset writer correctly
      */
     public void reset() {
-        logger.info("resetting writer");
+        logger.debug("resetting writer");
         writer.getBuffer().setLength(0);
     }
 }

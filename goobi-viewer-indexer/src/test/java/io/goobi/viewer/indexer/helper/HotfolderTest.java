@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 
 /**
  * TODO "Connection pool cloased" error if more than one test (Jenkins only)
@@ -35,9 +36,9 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void countRecordFiles_shouldCountFilesCorrectly() throws Exception {
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
-        Configuration.getInstance().overrideValue("performance.countHotfolderFiles", true);
-        Assert.assertTrue(Configuration.getInstance().isCountHotfolderFiles());
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.countHotfolderFiles", true);
+        Assert.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles());
 
         {
             Path path = Paths.get("target/viewer/hotfolder", "1.xml");

@@ -27,7 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -47,7 +46,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile));
@@ -70,8 +69,9 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void index_shouldUpdateDocumentCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(Configuration.getInstance());
-        DataRepository dataRepository = dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, hotfolder.getSearchIndex(), null)[0];
+        IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
+        DataRepository dataRepository =
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0];
 
         // Index original doc and make sure all fields that will be updated already exist
         {
@@ -81,7 +81,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
             Assert.assertEquals(PI + ".xml", ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSearchIndex()
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.FULLTEXT + ":*", null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
@@ -129,7 +130,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
             {
-                SolrDocumentList docList = hotfolder.getSearchIndex()
+                SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                        .getSearchIndex()
                         .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.DOCTYPE + ":"
                                 + DocType.PAGE.name(), null);
                 Assert.assertEquals(1, docList.size());
@@ -150,7 +152,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
             // Check for new UGC docs
             {
-                SolrDocumentList docList = hotfolder.getSearchIndex()
+                SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                        .getSearchIndex()
                         .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.DOCTYPE + ":"
                                 + DocType.UGC.name(), null);
                 Assert.assertEquals(2, docList.size());
@@ -187,7 +190,8 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
             Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
             Assert.assertNull(ret[1]);
-            SolrDocumentList docList = hotfolder.getSearchIndex()
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1  AND " + SolrConstants.DOCTYPE + ":"
                             + DocType.PAGE.name(), null);
             Assert.assertEquals(1, docList.size());
