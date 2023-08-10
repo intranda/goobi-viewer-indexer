@@ -67,11 +67,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 import io.goobi.viewer.indexer.MetsIndexer;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.Version;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -161,15 +162,15 @@ public class Utils {
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
             throws FatalIndexerException, IOException, HTTPException {
-        updateDataRepositoryCache(pi, dataRepositoryName, Configuration.getInstance().getViewerUrl(),
-                Configuration.getInstance().getViewerAuthorizationToken());
+        updateDataRepositoryCache(pi, dataRepositoryName, SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl(),
+                SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
     }
 
     public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException, FatalIndexerException {
-        if (StringUtils.isNotBlank(pi) && Configuration.getInstance().isPrerenderPdfsEnabled()) {
-            prerenderPdfs(pi, forceUpdate, Configuration.getInstance().getPrerenderPdfsConfigVariant(),
-                    Configuration.getInstance().getViewerUrl(),
-                    Configuration.getInstance().getViewerAuthorizationToken());
+        if (StringUtils.isNotBlank(pi) && SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
+            prerenderPdfs(pi, forceUpdate, SolrIndexerDaemon.getInstance().getConfiguration().getPrerenderPdfsConfigVariant(),
+                    SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl(),
+                    SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
         }
     }
 
@@ -241,12 +242,12 @@ public class Utils {
      * @throws IOException
      */
     public static void submitDataToViewer(long fileCount) throws FatalIndexerException {
-        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+        if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
             return;
         }
 
-        String url = Configuration.getInstance().getViewerUrl() + "/api/v1/indexer/version?token="
-                + Configuration.getInstance().getViewerAuthorizationToken();
+        String url = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl() + "/api/v1/indexer/version?token="
+                + SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken();
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
@@ -577,11 +578,11 @@ public class Utils {
      * @return a {@link java.lang.String} object.
      */
     public static String removeRecordImagesFromCache(String pi) throws FatalIndexerException {
-        if (StringUtils.isEmpty(Configuration.getInstance().getViewerAuthorizationToken())) {
+        if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
             return null;
         }
 
-        String viewerUrl = Configuration.getInstance().getViewerUrl();
+        String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
         if (StringUtils.isEmpty(viewerUrl)) {
             return "<viewerUrl> is not configured.";
         }
@@ -594,7 +595,7 @@ public class Utils {
                 .append(pi)
                 .append("?content=true&thumbs=true&pdf=true")
                 .append("&token=")
-                .append(Configuration.getInstance().getViewerAuthorizationToken());
+                .append(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
 
         try {
             String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), new HashMap<>(0), null, null,

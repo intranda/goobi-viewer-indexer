@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Configuration;
 
 public class AbstractDataRepositoryStrategyTest extends AbstractTest {
@@ -29,8 +30,8 @@ public class AbstractDataRepositoryStrategyTest extends AbstractTest {
      */
     @Test
     public void create_shouldReturnCorrectType() throws Exception {
-        String strategyName = Configuration.getInstance().getDataRepositoryStrategy();
-        IDataRepositoryStrategy strategy = AbstractDataRepositoryStrategy.create(Configuration.getInstance());
+        String strategyName = SolrIndexerDaemon.getInstance().getConfiguration().getDataRepositoryStrategy();
+        IDataRepositoryStrategy strategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
         Assert.assertNotNull(strategy);
         Assert.assertEquals(strategyName, strategy.getClass().getSimpleName());
     }

@@ -35,18 +35,19 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
-import io.goobi.viewer.indexer.helper.MetadataHelper;
-import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.helper.MetadataHelper;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -66,7 +67,8 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        
         metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assert.assertTrue(Files.isRegularFile(metsFile));
         lidoFile = Paths.get("src/test/resources/LIDO/khm_lido_export.xml");
@@ -106,7 +108,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void delete_shouldThrowIllegalArgumentExceptionIfPiEmpty() throws Exception {
-        Indexer.delete("", false, hotfolder.getSearchIndex());
+        Indexer.delete("", false, SolrIndexerDaemon.getInstance().getSearchIndex());
     }
 
     /**
@@ -124,7 +126,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void delete_shouldReturnFalseIfPiNotFound() throws Exception {
-        Assert.assertFalse(Indexer.delete("foo", false, hotfolder.getSearchIndex()));
+        Assert.assertFalse(Indexer.delete("foo", false, SolrIndexerDaemon.getInstance().getSearchIndex()));
     }
 
     /**
@@ -142,12 +144,12 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(pi + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertEquals(22, docList.size());
         }
-        Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSearchIndex()));
+        Assert.assertTrue(Indexer.delete(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex()));
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertTrue(docList.isEmpty());
         }
     }
@@ -162,24 +164,24 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
-                Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
+                SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
         Assert.assertEquals("ERROR: " + ret[1], pi, ret[0]);
         String iddoc;
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             iddoc = (String) docList.get(0).getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(iddoc);
         }
         {
             SolrDocumentList docList =
-                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
+                    SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertEquals(3, docList.size());
         }
-        Assert.assertTrue(Indexer.delete(pi, false, hotfolder.getSearchIndex()));
+        Assert.assertTrue(Indexer.delete(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex()));
         {
             SolrDocumentList docList =
-                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
+                    SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertTrue(docList.isEmpty());
         }
     }
@@ -199,12 +201,12 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Assert.assertEquals(pi + ".xml", ret[0]);
         Assert.assertNull(ret[1]);
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             Assert.assertEquals(22, docList.size());
         }
-        Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSearchIndex()));
+        Assert.assertTrue(Indexer.delete(pi, true, SolrIndexerDaemon.getInstance().getSearchIndex()));
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));
@@ -224,23 +226,23 @@ public class IndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
-                Configuration.getInstance().getStringList("init.lido.imageXPath"), false, false);
+                SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
         Assert.assertEquals(pi, ret[0]);
         String iddoc;
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             iddoc = (String) docList.get(0).getFieldValue(SolrConstants.IDDOC);
             Assert.assertNotNull(iddoc);
         }
         {
             SolrDocumentList docList =
-                    hotfolder.getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
+                    SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
             Assert.assertEquals(3, docList.size());
         }
-        Assert.assertTrue(Indexer.delete(pi, true, hotfolder.getSearchIndex()));
+        Assert.assertTrue(Indexer.delete(pi, true, SolrIndexerDaemon.getInstance().getSearchIndex()));
         {
-            SolrDocumentList docList = hotfolder.getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
             Assert.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));

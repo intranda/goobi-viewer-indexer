@@ -15,13 +15,17 @@
  */
 package io.goobi.viewer.indexer;
 
+import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -45,8 +49,15 @@ public final class SolrIndexerDaemon {
     private static final Object lock = new Object();
     private static SolrIndexerDaemon instance = null;
 
-    private String confFilename = "src/main/resources/config_indexer.xml";
+    private static String confFilename = "src/main/resources/config_indexer.xml";
     private volatile boolean running = false;
+
+    private Configuration configuration;
+
+    private SolrSearchIndex searchIndex;
+    private SolrSearchIndex oldSearchIndex;
+
+    private List<Hotfolder> hotfolders = new ArrayList<>();
 
     /**
      * <p>
@@ -64,11 +75,75 @@ public final class SolrIndexerDaemon {
                 if (indexer == null) {
                     indexer = new SolrIndexerDaemon();
                     instance = indexer;
+                    try {
+                        instance.init();
+                    } catch (FatalIndexerException e) {
+                        logger.error(e.getMessage());
+                        System.exit(-1);
+                    }
                 }
             }
         }
 
         return indexer;
+    }
+
+    /**
+     * 
+     * @throws FatalIndexerException
+     */
+    private void init() throws FatalIndexerException {
+        if (logger.isInfoEnabled()) {
+            logger.info(Version.asString());
+        }
+
+        if (!checkSolrSchemaName(
+                SolrSearchIndex.getSolrSchemaDocument(getConfiguration().getSolrUrl()))) {
+            throw new FatalIndexerException("Incompatible Solr schema, exiting..");
+        }
+
+        // Init old search index, if configured
+        HttpSolrClient oldClient = SolrSearchIndex.getNewHttpSolrClient(getConfiguration().getOldSolrUrl(), true);
+        if (oldClient != null) {
+            this.oldSearchIndex = new SolrSearchIndex(oldClient);
+            if (logger.isInfoEnabled()) {
+                logger.info("Also using old Solr server at {}", SolrIndexerDaemon.getInstance().getConfiguration().getOldSolrUrl());
+            }
+        }
+
+        // create hotfolder(s)
+        for (String hotfolderPath : getConfiguration().getHotfolderPaths()) {
+            Hotfolder hotfolder = new Hotfolder(hotfolderPath);
+            hotfolders.add(hotfolder);
+            if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
+                throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
+            }
+        }
+
+        if (hotfolders.isEmpty()) {
+            throw new FatalIndexerException("No hotfolder configuration found, exiting...");
+        }
+    }
+
+    /**
+     * Removes files that matches the given pi from hotfolders that are priorized lower than (i.e. listed after) usedHotfolder.
+     * 
+     * @param pi
+     * @param usedHotfolder
+     */
+    public void removeRecordFileFromLowerPriorityHotfolders(String pi, Hotfolder usedHotfolder) {
+        int index = hotfolders.indexOf(usedHotfolder);
+        if (index == -1) {
+            return;
+        }
+        for (int i = index; i < hotfolders.size(); ++i) {
+            Hotfolder hotfolder = hotfolders.get(i);
+            try {
+                hotfolder.removeSourceFileFromQueue(pi);
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+            }
+        }
     }
 
     /**
@@ -79,18 +154,17 @@ public final class SolrIndexerDaemon {
      * @param args an array of {@link java.lang.String} objects.
      */
     public static void main(String[] args) {
-        String configFileName = null;
         boolean cleanupAnchors = false;
 
         if (args.length > 0) {
-            configFileName = args[0];
+            SolrIndexerDaemon.confFilename = args[0];
             if (args.length > 1 && args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
                 cleanupAnchors = true;
             }
         }
 
         try {
-            SolrIndexerDaemon.getInstance().start(configFileName, cleanupAnchors);
+            SolrIndexerDaemon.getInstance().start(cleanupAnchors);
         } catch (FatalIndexerException e) {
             logger.error(e.getMessage());
             System.exit(-1);
@@ -103,11 +177,10 @@ public final class SolrIndexerDaemon {
      * start.
      * </p>
      * 
-     * @param configFilePath a {@link java.lang.String} object.
      * @param cleanupAnchors a boolean.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public void start(String configFilePath, boolean cleanupAnchors) throws FatalIndexerException {
+    public void start(boolean cleanupAnchors) throws FatalIndexerException {
         if (running) {
             logger.warn("Indexer is already running");
             return;
@@ -122,35 +195,11 @@ public final class SolrIndexerDaemon {
             }
         });
 
-        if (logger.isInfoEnabled()) {
-            logger.info(Version.asString());
-        }
-        if (StringUtils.isNotEmpty(configFilePath)) {
-            confFilename = configFilePath;
-        }
-
-        if (!checkSolrSchemaName(
-                SolrSearchIndex.getSolrSchemaDocument(Configuration.getInstance(confFilename).getConfiguration("solrUrl")))) {
-            throw new FatalIndexerException("Incompatible Solr schema, exiting..");
-        }
-
-        // create hotfolder
-        Hotfolder hotfolder =
-                new Hotfolder(confFilename,
-                        SolrSearchIndex.getNewHttpSolrClient(Configuration.getInstance(confFilename).getConfiguration("solrUrl"),
-                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true),
-                        SolrSearchIndex.getNewHttpSolrClient(Configuration.getInstance(confFilename).getConfiguration("oldSolrUrl"),
-                                SolrSearchIndex.TIMEOUT_SO, SolrSearchIndex.TIMEOUT_CONNECTION, true));
-
-        if (hotfolder.getSuccessFolder() == null || !Files.isDirectory(hotfolder.getSuccessFolder())) {
-            throw new FatalIndexerException("Configured path for 'successFolder' does not exist, exiting...");
-        }
-
         running = true;
 
         if (cleanupAnchors) {
             logger.info("GRIEVING ANCHOR CLEANUP MODE");
-            logger.info("Removed {} anchor documents with no volumes.", hotfolder.getSearchIndex().removeGrievingAnchors());
+            logger.info("Removed {} anchor documents with no volumes.", getSearchIndex().removeGrievingAnchors());
             logger.info("Shutting down...");
             running = false;
             return;
@@ -158,7 +207,7 @@ public final class SolrIndexerDaemon {
         // Set the hotfolder sleep interval
         int sleepInterval = 1000;
         try {
-            sleepInterval = Integer.valueOf(Configuration.getInstance().getConfiguration("sleep"));
+            sleepInterval = Integer.valueOf(configuration.getConfiguration("sleep"));
             if (sleepInterval < 500) {
                 sleepInterval = DEFAULT_SLEEP_INTERVAL;
                 logger.warn("Sleep interval must be at lest 500 ms, using default interval of {} ms instead.", DEFAULT_SLEEP_INTERVAL);
@@ -170,14 +219,18 @@ public final class SolrIndexerDaemon {
             logger.warn("<sleep> must contain an numerical value, using default interval of {} ms instead.", DEFAULT_SLEEP_INTERVAL);
         }
 
-        logger.info("Using {} CPU thread(s).", Configuration.getInstance().getThreads());
+        logger.info("Using {} CPU thread(s).", configuration.getThreads());
 
-        Utils.submitDataToViewer(hotfolder.countRecordFiles());
+        Utils.submitDataToViewer(hotfolders.get(0).countRecordFiles());
 
         // main loop
-        logger.info("Program started, monitoring hotfolder...");
+        logger.info("Program started, monitoring hotfolder(s)...");
         while (running) {
-            hotfolder.scan();
+            for (Hotfolder hotfolder : hotfolders) {
+                if (hotfolder.scan()) {
+                    break;
+                }
+            }
             try {
                 Thread.sleep(sleepInterval);
             } catch (InterruptedException e) {
@@ -194,11 +247,7 @@ public final class SolrIndexerDaemon {
      */
     public void stop() {
         logger.info("Stopping indexer...");
-        try {
-            Configuration.getInstance().killReloadTimer();
-        } catch (FatalIndexerException e) {
-            logger.error(e.getMessage());
-        }
+        configuration.killReloadTimer();
         running = false;
     }
 
@@ -230,5 +279,71 @@ public final class SolrIndexerDaemon {
         }
 
         return false;
+    }
+
+    /**
+     * <p>
+     * Getter for the field <code>configuration</code>.
+     * </p>
+     *
+     * @return the configuration
+     * @throws FatalIndexerException
+     */
+    public Configuration getConfiguration() {
+        if (configuration == null) {
+            synchronized (lock) {
+                configuration = new Configuration(confFilename);
+            }
+        }
+
+        return configuration;
+    }
+
+    /**
+     * Sets custom Configuration object (used for unit testing).
+     *
+     * @param configuration a {@link io.goobi.viewer.controller.Configuration} object.
+     */
+    public void injectConfiguration(Configuration configuration) {
+        if (configuration != null) {
+            this.configuration = configuration;
+        }
+    }
+
+    /**
+     * <p>
+     * Getter for the field <code>searchIndex</code>.
+     * </p>
+     *
+     * @return the searchIndex
+     */
+    public SolrSearchIndex getSearchIndex() {
+        if (this.searchIndex == null) {
+            synchronized (lock) {
+                this.searchIndex = new SolrSearchIndex(null);
+                this.searchIndex.setOptimize(configuration.isAutoOptimize());
+                logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
+            }
+        }
+
+        return this.searchIndex;
+    }
+
+    /**
+     * Sets custom SolrSearchIndex object (used for unit testing).
+     *
+     * @param searchIndex a {@link io.goobi.viewer.solr.SolrSearchIndex} object.
+     */
+    public void injectSearchIndex(SolrSearchIndex searchIndex) {
+        if (searchIndex != null) {
+            this.searchIndex = searchIndex;
+        }
+    }
+
+    /**
+     * @return the oldSearchIndex
+     */
+    public SolrSearchIndex getOldSearchIndex() {
+        return oldSearchIndex;
     }
 }

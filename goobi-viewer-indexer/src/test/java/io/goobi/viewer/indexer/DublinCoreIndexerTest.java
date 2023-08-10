@@ -30,15 +30,15 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
 public class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
-    
+
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
     }
-    
+
     /**
      * @see DublinCoreIndexer#DublinCoreIndexer(Hotfolder)
      * @verifies set attributes correctly
@@ -56,15 +56,16 @@ public class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void addToIndex_shouldAddRecordToIndexCorrectly() throws Exception {
-      Path dcFile = Paths.get("src/test/resources/DC/record.xml");
-      Assert.assertTrue(Files.isRegularFile(dcFile));
+        Path dcFile = Paths.get("src/test/resources/DC/record.xml");
+        Assert.assertTrue(Files.isRegularFile(dcFile));
 
-      Indexer indexer = new DublinCoreIndexer(hotfolder);
-      indexer.addToIndex(dcFile, false, new HashMap<>());
-      
-     SolrDocumentList result = hotfolder.getSearchIndex().search(SolrConstants.PI + ":123e4567-e89b-12d3-a456-556642440000", null);
-     Assert.assertNotNull(result);
-     Assert.assertEquals(1, result.size());
-     Assert.assertEquals("123e4567-e89b-12d3-a456-556642440000", result.get(0).getFieldValue(SolrConstants.PI));
+        Indexer indexer = new DublinCoreIndexer(hotfolder);
+        indexer.addToIndex(dcFile, false, new HashMap<>());
+
+        SolrDocumentList result =
+                SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":123e4567-e89b-12d3-a456-556642440000", null);
+        Assert.assertNotNull(result);
+        Assert.assertEquals(1, result.size());
+        Assert.assertEquals("123e4567-e89b-12d3-a456-556642440000", result.get(0).getFieldValue(SolrConstants.PI));
     }
 }

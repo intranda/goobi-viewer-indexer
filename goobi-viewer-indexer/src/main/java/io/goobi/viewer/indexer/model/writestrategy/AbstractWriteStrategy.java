@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 
+import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
@@ -97,10 +98,10 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
         }
 
         if (useSerializingStrategy) {
-            return new SerializingSolrWriteStrategy(hotfolder.getSearchIndex(), hotfolder.getTempFolder());
+            return new SerializingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex(), hotfolder.getTempFolder());
         }
 
-        return new LazySolrWriteStrategy(hotfolder.getSearchIndex());
+        return new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
     }
 
     /**
