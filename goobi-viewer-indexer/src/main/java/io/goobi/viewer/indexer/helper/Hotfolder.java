@@ -15,11 +15,10 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -820,31 +819,6 @@ public class Hotfolder {
     }
 
     /**
-     * Checks whether the data folders for the given record file have finished being copied.
-     *
-     * @param recordFile a {@link java.nio.file.Path} object.
-     * @return a boolean.
-     */
-    protected boolean isDataFolderExportDone(Path recordFile) {
-        logger.info("isDataFolderExportDone: {}", recordFile.getFileName());
-        DataFolderSizeCounter sc = new DataFolderSizeCounter(recordFile.getFileName().toString());
-        hotfolderPath.toFile().listFiles(sc);
-        long total1 = sc.getTotal();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            logger.error("Error checking the hotfolder size.", e);
-            Thread.currentThread().interrupt();
-            return false;
-        }
-        sc = new DataFolderSizeCounter(recordFile.getFileName().toString());
-        hotfolderPath.toFile().listFiles(sc);
-        long total2 = sc.getTotal();
-
-        return total1 == total2;
-    }
-
-    /**
      * 
      * @param pi
      * @throws IOException
@@ -877,7 +851,46 @@ public class Hotfolder {
         }
     }
 
-    protected class DataFolderSizeCounter implements FileFilter {
+    /**
+     * Checks whether the data folders for the given record file have finished being copied.
+     *
+     * @param recordFile a {@link java.nio.file.Path} object.
+     * @return a boolean.
+     */
+    protected boolean isDataFolderExportDone(Path recordFile) {
+        logger.info("isDataFolderExportDone: {}", recordFile.getFileName());
+        DataFolderSizeCounter counter = new DataFolderSizeCounter(recordFile.getFileName().toString());
+
+        long total1 = 0;
+        try {
+            Files.newDirectoryStream(getHotfolderPath(), counter);
+            total1 = counter.getTotal();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            logger.error("Error checking the hotfolder size.", e);
+            Thread.currentThread().interrupt();
+            return false;
+        }
+
+        counter.resetTotal();
+        long total2 = 0;
+        try {
+            Files.newDirectoryStream(getHotfolderPath(), counter);
+            total2 = counter.getTotal();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        logger.info("Data export done: {}", total1 == total2);
+        return total1 == total2;
+    }
+
+    protected class DataFolderSizeCounter implements Filter<Path> {
 
         private String recordFileName;
         private long total = 0;
@@ -887,26 +900,32 @@ public class Hotfolder {
             this.recordFileName = recordFileName;
         }
 
+        /* (non-Javadoc)
+         * @see java.nio.file.DirectoryStream.Filter#accept(java.lang.Object)
+         */
         @Override
-        public boolean accept(File pathName) {
-            if (pathName != null && pathName.getName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
+        public boolean accept(Path entry) throws IOException {
+            if (entry != null && entry.getFileName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
                 try {
-                    if (pathName.isFile()) {
-                        total += FileUtils.sizeOf(pathName);
-                    } else if (pathName.isDirectory()) {
-                        pathName.listFiles(this);
-                        total += FileUtils.sizeOfDirectory(pathName);
+                    if (Files.isRegularFile(entry)) {
+                        total += FileUtils.sizeOf(entry.toFile());
+                    } else if (Files.isDirectory(entry)) {
+                        total += FileUtils.sizeOfDirectory(entry.toFile());
                     }
                 } catch (IllegalArgumentException e) {
                     logger.error(e.getMessage());
                 }
             }
 
-            return false;
+            return false; // reject everything, only the count matters
         }
 
         public long getTotal() {
             return total;
+        }
+
+        public void resetTotal() {
+            total = 0;
         }
     }
 
