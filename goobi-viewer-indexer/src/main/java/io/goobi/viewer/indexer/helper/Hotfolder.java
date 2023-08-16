@@ -420,7 +420,7 @@ public class Hotfolder {
                 return true; // always break after attempting to index a file, so that the loop restarts
             }
 
-            logger.info("Hotfolder: Listing files...");
+            logger.info("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
                     // Only one file at a time right now
