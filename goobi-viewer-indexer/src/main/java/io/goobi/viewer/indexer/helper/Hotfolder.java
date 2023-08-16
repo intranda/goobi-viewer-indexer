@@ -376,7 +376,8 @@ public class Hotfolder {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public boolean scan() throws FatalIndexerException {
-        if (!Files.isDirectory(hotfolderPath)) {
+        logger.info("scan ({})", getHotfolderPath().getFileName());
+        if (!Files.isDirectory(getHotfolderPath())) {
             logger.error("Hotfolder not found in file system: {}", hotfolderPath);
             return false;
         }
@@ -418,7 +419,7 @@ public class Hotfolder {
                 return true; // always break after attempting to index a file, so that the loop restarts
             }
 
-            logger.trace("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
+            logger.info("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
                     // Only one file at a time right now
@@ -509,7 +510,7 @@ public class Hotfolder {
     private void checkFreeSpace() throws FatalIndexerException {
         // TODO alternate check if RemainingSpaceStrategy is selected
         int freeSpace = (int) (hotfolderPath.toFile().getFreeSpace() / 1048576);
-        logger.debug("Available storage space: {}M", freeSpace);
+        logger.info("Available storage space: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (secondaryAppender != null && emailConfigurationComplete) {
@@ -825,6 +826,7 @@ public class Hotfolder {
      * @return a boolean.
      */
     protected boolean isDataFolderExportDone(Path recordFile) {
+        logger.info("isDataFolderExportDone: {}", recordFile.getFileName());
         DataFolderSizeCounter sc = new DataFolderSizeCounter(recordFile.getFileName().toString());
         hotfolderPath.toFile().listFiles(sc);
         long total1 = sc.getTotal();
@@ -851,6 +853,7 @@ public class Hotfolder {
         if (StringUtils.isEmpty(pi)) {
             return;
         }
+        logger.info("removeSourceFileFromQueue: {}/{}.xml", getHotfolderPath().getFileName(), pi);
 
         Path matchingFile = null;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
