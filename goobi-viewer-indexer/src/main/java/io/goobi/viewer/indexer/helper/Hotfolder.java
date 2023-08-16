@@ -383,7 +383,7 @@ public class Hotfolder {
         Path fileToReindex = highPriorityIndexQueue.poll();
         if (fileToReindex != null) {
             resetSecondaryLog();
-            logger.info("Found file '{}' (re-index queue).", fileToReindex.getFileName());
+            logger.info("Found file '{}' (priority queue).", fileToReindex.getFileName());
             doIndex(fileToReindex);
         } else {
             // Check for the shutdown trigger file first
@@ -406,7 +406,7 @@ public class Hotfolder {
                 while (!isDataFolderExportDone(recordFile)) {
                     logger.info("Export not yet finished for '{}'", recordFile.getFileName());
                     alreadyCheckedFiles.add(recordFile);
-                    indexQueue.add(recordFile);
+                    indexQueue.add(recordFile); // re-add at the end
                     if (alreadyCheckedFiles.contains(indexQueue.peek())) {
                         logger.info("All files in queue have not yet finished export.");
                         return true;
@@ -418,7 +418,7 @@ public class Hotfolder {
                 return true; // always break after attempting to index a file, so that the loop restarts
             }
 
-            logger.trace("Hotfolder: Listing files...");
+            logger.trace("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
                     // Only one file at a time right now
@@ -432,10 +432,11 @@ public class Hotfolder {
                         } else {
                             logger.debug("Queue full ({})", getHotfolderPath().getFileName());
                         }
-                    } else {
-                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
-                        Files.delete(recordFile);
                     }
+                    //                    else {
+                    //                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
+                    //                        Files.delete(recordFile);
+                    //                    }
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -477,10 +478,9 @@ public class Hotfolder {
      * Returns the number of record and command (delete, update) files in the hotfolder.
      * 
      * @return Number of files
-     * @throws FatalIndexerException
      * @should count files correctly
      */
-    public long countRecordFiles() throws FatalIndexerException {
+    public long countRecordFiles() {
         if (!SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles()) {
             return 0;
         }

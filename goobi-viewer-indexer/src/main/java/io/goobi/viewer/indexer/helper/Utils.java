@@ -156,17 +156,22 @@ public class Utils {
      * 
      * @param pi
      * @param dataRepositoryName
-     * @throws FatalIndexerException
      * @throws IOException
      * @throws HTTPException
      */
-    public static void updateDataRepositoryCache(String pi, String dataRepositoryName)
-            throws FatalIndexerException, IOException, HTTPException {
+    public static void updateDataRepositoryCache(String pi, String dataRepositoryName) throws IOException, HTTPException {
         updateDataRepositoryCache(pi, dataRepositoryName, SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl(),
                 SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
     }
 
-    public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException, FatalIndexerException {
+    /**
+     * 
+     * @param pi
+     * @param forceUpdate
+     * @throws IOException
+     * @throws HTTPException
+     */
+    public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException {
         if (StringUtils.isNotBlank(pi) && SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
             prerenderPdfs(pi, forceUpdate, SolrIndexerDaemon.getInstance().getConfiguration().getPrerenderPdfsConfigVariant(),
                     SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl(),
@@ -241,7 +246,7 @@ public class Utils {
      * @throws ClientProtocolException
      * @throws IOException
      */
-    public static void submitDataToViewer(long fileCount) throws FatalIndexerException {
+    public static void submitDataToViewer(long fileCount) {
         if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
             return;
         }
@@ -253,6 +258,7 @@ public class Utils {
             json.put("hotfolder-file-count", fileCount);
             getWebContentPUT(url, new HashMap<>(0), null, json.toString(),
                     Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
+            logger.info("Version and file count ({}) submitted to Goobi viewer.", fileCount);
         } catch (IOException | HTTPException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }
@@ -574,10 +580,9 @@ public class Utils {
      * </p>
      *
      * @param pi a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a {@link java.lang.String} object.
      */
-    public static String removeRecordImagesFromCache(String pi) throws FatalIndexerException {
+    public static String removeRecordImagesFromCache(String pi) {
         if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
             return null;
         }
