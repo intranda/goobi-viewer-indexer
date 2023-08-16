@@ -376,14 +376,15 @@ public class Hotfolder {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public boolean scan() throws FatalIndexerException {
-        if (!Files.isDirectory(hotfolderPath)) {
+        logger.info("scan ({})", getHotfolderPath().getFileName());
+        if (!Files.isDirectory(getHotfolderPath())) {
             logger.error("Hotfolder not found in file system: {}", hotfolderPath);
             return false;
         }
         Path fileToReindex = highPriorityIndexQueue.poll();
         if (fileToReindex != null) {
             resetSecondaryLog();
-            logger.info("Found file '{}' (re-index queue).", fileToReindex.getFileName());
+            logger.info("Found file '{}' (priority queue).", fileToReindex.getFileName());
             doIndex(fileToReindex);
         } else {
             // Check for the shutdown trigger file first
@@ -400,6 +401,7 @@ public class Hotfolder {
             }
 
             if (!indexQueue.isEmpty()) {
+                logger.info("queue not empty");
                 Path recordFile = indexQueue.poll();
                 // Check whether the data folders for this record have been copied completely, otherwise skip
                 Set<Path> alreadyCheckedFiles = new HashSet<>();
@@ -432,10 +434,11 @@ public class Hotfolder {
                         } else {
                             logger.debug("Queue full ({})", getHotfolderPath().getFileName());
                         }
-                    } else {
-                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
-                        Files.delete(recordFile);
                     }
+//                    else {
+//                        logger.info("Found file '{}' which is not in the index queue. This file will be deleted.", recordFile.getFileName());
+//                        Files.delete(recordFile);
+//                    }
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -455,6 +458,7 @@ public class Hotfolder {
         if (recordFile == null) {
             return false;
         }
+        logger.info("doIndex: {}/{}", getHotfolderPath().getFileName(), recordFile.getFileName());
 
         resetSecondaryLog();
         checkFreeSpace();
@@ -477,10 +481,9 @@ public class Hotfolder {
      * Returns the number of record and command (delete, update) files in the hotfolder.
      * 
      * @return Number of files
-     * @throws FatalIndexerException
      * @should count files correctly
      */
-    public long countRecordFiles() throws FatalIndexerException {
+    public long countRecordFiles() {
         if (!SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles()) {
             return 0;
         }
@@ -509,7 +512,7 @@ public class Hotfolder {
     private void checkFreeSpace() throws FatalIndexerException {
         // TODO alternate check if RemainingSpaceStrategy is selected
         int freeSpace = (int) (hotfolderPath.toFile().getFreeSpace() / 1048576);
-        logger.debug("Available storage space: {}M", freeSpace);
+        logger.info("Available storage space: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (secondaryAppender != null && emailConfigurationComplete) {
