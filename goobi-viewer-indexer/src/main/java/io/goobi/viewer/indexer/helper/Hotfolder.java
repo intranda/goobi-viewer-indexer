@@ -851,10 +851,9 @@ public class Hotfolder {
         if (StringUtils.isEmpty(pi)) {
             return;
         }
-        logger.info("removeSourceFileFromQueue: {}/{}.xml", getHotfolderPath().getFileName(), pi);
 
         Path matchingFile = null;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getHotfolderPath(), "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
             for (Path path : stream) {
                 if (FilenameUtils.getBaseName(path.getFileName().toString()).equals(pi)) {
                     matchingFile = path;
