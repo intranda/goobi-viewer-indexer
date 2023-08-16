@@ -375,7 +375,7 @@ public class Hotfolder {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public boolean scan() throws FatalIndexerException {
-        logger.info("scan ({})", getHotfolderPath().getFileName());
+        logger.debug("scan ({})", getHotfolderPath().getFileName());
         if (!Files.isDirectory(getHotfolderPath())) {
             logger.error("Hotfolder not found in file system: {}", hotfolderPath);
             return false;
@@ -418,7 +418,7 @@ public class Hotfolder {
                 return true; // always break after attempting to index a file, so that the loop restarts
             }
 
-            logger.info("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
+            logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
                     // Only one file at a time right now
@@ -509,7 +509,7 @@ public class Hotfolder {
     private void checkFreeSpace() throws FatalIndexerException {
         // TODO alternate check if RemainingSpaceStrategy is selected
         int freeSpace = (int) (hotfolderPath.toFile().getFreeSpace() / 1048576);
-        logger.info("Available storage space: {}M", freeSpace);
+        logger.debug("Available storage space: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (secondaryAppender != null && emailConfigurationComplete) {
@@ -858,7 +858,7 @@ public class Hotfolder {
      * @return a boolean.
      */
     protected boolean isDataFolderExportDone(Path recordFile) {
-        logger.info("isDataFolderExportDone: {}", recordFile.getFileName());
+        logger.debug("isDataFolderExportDone: {}", recordFile.getFileName());
         DataFolderSizeCounter counter = new DataFolderSizeCounter(recordFile.getFileName().toString());
 
         long total1 = 0;
@@ -886,7 +886,7 @@ public class Hotfolder {
             logger.error(e.getMessage(), e);
         }
 
-        logger.info("Data export done: {}", total1 == total2);
+        logger.trace("Data export done: {}", total1 == total2);
         return total1 == total2;
     }
 

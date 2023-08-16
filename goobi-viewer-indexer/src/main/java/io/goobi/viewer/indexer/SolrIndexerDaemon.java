@@ -132,7 +132,7 @@ public final class SolrIndexerDaemon {
      * @param usedHotfolder
      */
     public void removeRecordFileFromLowerPriorityHotfolders(String pi, Hotfolder usedHotfolder) {
-        logger.info("removeRecordFileFromLowerPriorityHotfolders: {}/{}", usedHotfolder.getHotfolderPath().getFileName(), pi);
+        logger.debug("removeRecordFileFromLowerPriorityHotfolders: {}/{}", usedHotfolder.getHotfolderPath().getFileName(), pi);
         int index = hotfolders.indexOf(usedHotfolder);
         if (index == -1) {
             return;
@@ -227,7 +227,6 @@ public final class SolrIndexerDaemon {
         // main loop
         logger.info("Program started, monitoring hotfolder(s)...");
         while (running) {
-            logger.info("heartbeat");
             for (Hotfolder hotfolder : hotfolders) {
                 if (hotfolder.scan()) {
                     break;
