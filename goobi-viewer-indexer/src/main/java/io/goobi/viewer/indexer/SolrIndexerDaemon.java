@@ -136,7 +136,7 @@ public final class SolrIndexerDaemon {
         if (index == -1) {
             return;
         }
-        for (int i = index; i < hotfolders.size(); ++i) {
+        for (int i = index + 1; i < hotfolders.size(); ++i) {
             Hotfolder hotfolder = hotfolders.get(i);
             try {
                 hotfolder.removeSourceFileFromQueue(pi);
