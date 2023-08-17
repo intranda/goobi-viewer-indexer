@@ -15,11 +15,10 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -376,14 +375,15 @@ public class Hotfolder {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public boolean scan() throws FatalIndexerException {
-        if (!Files.isDirectory(hotfolderPath)) {
+        logger.debug("scan ({})", getHotfolderPath().getFileName());
+        if (!Files.isDirectory(getHotfolderPath())) {
             logger.error("Hotfolder not found in file system: {}", hotfolderPath);
             return false;
         }
         Path fileToReindex = highPriorityIndexQueue.poll();
         if (fileToReindex != null) {
             resetSecondaryLog();
-            logger.info("Found file '{}' (re-index queue).", fileToReindex.getFileName());
+            logger.info("Found file '{}' (priority queue).", fileToReindex.getFileName());
             doIndex(fileToReindex);
         } else {
             // Check for the shutdown trigger file first
@@ -406,7 +406,7 @@ public class Hotfolder {
                 while (!isDataFolderExportDone(recordFile)) {
                     logger.info("Export not yet finished for '{}'", recordFile.getFileName());
                     alreadyCheckedFiles.add(recordFile);
-                    indexQueue.add(recordFile);
+                    indexQueue.add(recordFile); // re-add at the end
                     if (alreadyCheckedFiles.contains(indexQueue.peek())) {
                         logger.info("All files in queue have not yet finished export.");
                         return true;
@@ -418,7 +418,7 @@ public class Hotfolder {
                 return true; // always break after attempting to index a file, so that the loop restarts
             }
 
-            logger.trace("Hotfolder: Listing files...");
+            logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
                     // Only one file at a time right now
@@ -432,10 +432,11 @@ public class Hotfolder {
                         } else {
                             logger.debug("Queue full ({})", getHotfolderPath().getFileName());
                         }
-                    } else {
-                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
-                        Files.delete(recordFile);
                     }
+                    //                    else {
+                    //                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
+                    //                        Files.delete(recordFile);
+                    //                    }
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -477,10 +478,9 @@ public class Hotfolder {
      * Returns the number of record and command (delete, update) files in the hotfolder.
      * 
      * @return Number of files
-     * @throws FatalIndexerException
      * @should count files correctly
      */
-    public long countRecordFiles() throws FatalIndexerException {
+    public long countRecordFiles() {
         if (!SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles()) {
             return 0;
         }
@@ -819,30 +819,6 @@ public class Hotfolder {
     }
 
     /**
-     * Checks whether the data folders for the given record file have finished being copied.
-     *
-     * @param recordFile a {@link java.nio.file.Path} object.
-     * @return a boolean.
-     */
-    protected boolean isDataFolderExportDone(Path recordFile) {
-        DataFolderSizeCounter sc = new DataFolderSizeCounter(recordFile.getFileName().toString());
-        hotfolderPath.toFile().listFiles(sc);
-        long total1 = sc.getTotal();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            logger.error("Error checking the hotfolder size.", e);
-            Thread.currentThread().interrupt();
-            return false;
-        }
-        sc = new DataFolderSizeCounter(recordFile.getFileName().toString());
-        hotfolderPath.toFile().listFiles(sc);
-        long total2 = sc.getTotal();
-
-        return total1 == total2;
-    }
-
-    /**
      * 
      * @param pi
      * @throws IOException
@@ -851,6 +827,7 @@ public class Hotfolder {
         if (StringUtils.isEmpty(pi)) {
             return;
         }
+        logger.info("removeSourceFileFromQueue: {}/{}.xml", getHotfolderPath().getFileName(), pi);
 
         Path matchingFile = null;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
@@ -874,7 +851,46 @@ public class Hotfolder {
         }
     }
 
-    protected class DataFolderSizeCounter implements FileFilter {
+    /**
+     * Checks whether the data folders for the given record file have finished being copied.
+     *
+     * @param recordFile a {@link java.nio.file.Path} object.
+     * @return a boolean.
+     */
+    protected boolean isDataFolderExportDone(Path recordFile) {
+        logger.debug("isDataFolderExportDone: {}", recordFile.getFileName());
+        DataFolderSizeCounter counter = new DataFolderSizeCounter(recordFile.getFileName().toString());
+
+        long total1 = 0;
+        try {
+            Files.newDirectoryStream(getHotfolderPath(), counter);
+            total1 = counter.getTotal();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            logger.error("Error checking the hotfolder size.", e);
+            Thread.currentThread().interrupt();
+            return false;
+        }
+
+        counter.resetTotal();
+        long total2 = 0;
+        try {
+            Files.newDirectoryStream(getHotfolderPath(), counter);
+            total2 = counter.getTotal();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        logger.trace("Data export done: {}", total1 == total2);
+        return total1 == total2;
+    }
+
+    protected class DataFolderSizeCounter implements Filter<Path> {
 
         private String recordFileName;
         private long total = 0;
@@ -884,26 +900,32 @@ public class Hotfolder {
             this.recordFileName = recordFileName;
         }
 
+        /* (non-Javadoc)
+         * @see java.nio.file.DirectoryStream.Filter#accept(java.lang.Object)
+         */
         @Override
-        public boolean accept(File pathName) {
-            if (pathName != null && pathName.getName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
+        public boolean accept(Path entry) throws IOException {
+            if (entry != null && entry.getFileName().startsWith(FilenameUtils.getBaseName(recordFileName) + "_")) {
                 try {
-                    if (pathName.isFile()) {
-                        total += FileUtils.sizeOf(pathName);
-                    } else if (pathName.isDirectory()) {
-                        pathName.listFiles(this);
-                        total += FileUtils.sizeOfDirectory(pathName);
+                    if (Files.isRegularFile(entry)) {
+                        total += FileUtils.sizeOf(entry.toFile());
+                    } else if (Files.isDirectory(entry)) {
+                        total += FileUtils.sizeOfDirectory(entry.toFile());
                     }
                 } catch (IllegalArgumentException e) {
                     logger.error(e.getMessage());
                 }
             }
 
-            return false;
+            return false; // reject everything, only the count matters
         }
 
         public long getTotal() {
             return total;
+        }
+
+        public void resetTotal() {
+            total = 0;
         }
     }
 
