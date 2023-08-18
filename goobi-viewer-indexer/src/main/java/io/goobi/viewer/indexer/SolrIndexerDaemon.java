@@ -132,11 +132,12 @@ public final class SolrIndexerDaemon {
      * @param usedHotfolder
      */
     public void removeRecordFileFromLowerPriorityHotfolders(String pi, Hotfolder usedHotfolder) {
+        logger.debug("removeRecordFileFromLowerPriorityHotfolders: {}/{}", usedHotfolder.getHotfolderPath().getFileName(), pi);
         int index = hotfolders.indexOf(usedHotfolder);
         if (index == -1) {
             return;
         }
-        for (int i = index; i < hotfolders.size(); ++i) {
+        for (int i = index + 1; i < hotfolders.size(); ++i) {
             Hotfolder hotfolder = hotfolders.get(i);
             try {
                 hotfolder.removeSourceFileFromQueue(pi);
@@ -205,7 +206,7 @@ public final class SolrIndexerDaemon {
             return;
         }
         // Set the hotfolder sleep interval
-        int sleepInterval = 1000;
+        int sleepInterval = DEFAULT_SLEEP_INTERVAL;
         try {
             sleepInterval = Integer.valueOf(configuration.getConfiguration("sleep"));
             if (sleepInterval < 500) {
