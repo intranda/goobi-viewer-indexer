@@ -52,6 +52,7 @@
 		<indexedLido>indexed_lido</indexedLido>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
+        <indexedCMS>indexed_cms</indexedCMS>
 
 		<!-- Misc folders -->
 		<successFolder>target/viewer/success/</successFolder>

@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 
 public class JDomXPTest extends AbstractTest {
@@ -108,6 +107,17 @@ public class JDomXPTest extends AbstractTest {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml");
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.TEI, JDomXP.determineFileFormat(file));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect cms files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/indexed_cms/CMS123.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.CMS, JDomXP.determineFileFormat(file));
     }
 
     /**

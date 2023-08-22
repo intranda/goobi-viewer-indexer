@@ -77,6 +77,10 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataRepository.isValid());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toFile().isDirectory());
+
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MEDIA).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTO).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toFile().isDirectory());
@@ -102,6 +106,10 @@ public class DataRepositoryTest extends AbstractTest {
         Assert.assertTrue(dataRepository.isValid());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toFile().isDirectory());
+        Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toFile().isDirectory());
+
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_MEDIA).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTO).toFile().isDirectory());
         Assert.assertTrue(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD).toFile().isDirectory());
@@ -137,6 +145,10 @@ public class DataRepositoryTest extends AbstractTest {
         DataRepository dataRepository = new DataRepository("", false);
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS));
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS));
+
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MEDIA));
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ALTO));
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD));
@@ -161,6 +173,10 @@ public class DataRepositoryTest extends AbstractTest {
         DataRepository dataRepository = new DataRepository("1", false);
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS));
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE));
+        Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS));
+
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MEDIA));
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ALTO));
         Assert.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ALTOCROWD));
@@ -199,7 +215,22 @@ public class DataRepositoryTest extends AbstractTest {
         FileUtils.copyFile(srcFile, destFile);
         Assert.assertTrue(destFile.isFile());
 
-        Assert.assertEquals(3, dataRepository.getNumRecords());
+        srcFile = new File("src/test/resources/DenkXweb/10973880.xml");
+        destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), srcFile.getName());
+        FileUtils.copyFile(srcFile, destFile);
+        Assert.assertTrue(destFile.isFile());
+
+        srcFile = new File("src/test/resources/DC/record.xml");
+        destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), srcFile.getName());
+        FileUtils.copyFile(srcFile, destFile);
+        Assert.assertTrue(destFile.isFile());
+
+        srcFile = new File("src/test/resources/cms/cms1.xml");
+        destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toAbsolutePath().toString(), srcFile.getName());
+        FileUtils.copyFile(srcFile, destFile);
+        Assert.assertTrue(destFile.isFile());
+
+        Assert.assertEquals(6, dataRepository.getNumRecords());
     }
 
     /**

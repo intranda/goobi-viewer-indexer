@@ -58,6 +58,7 @@ public class JDomXP {
         DENKXWEB,
         DUBLINCORE,
         WORLDVIEWS,
+        CMS,
         ALTO,
         ABBYYXML,
         TEI;
@@ -78,6 +79,8 @@ public class JDomXP {
                     return DUBLINCORE;
                 case "WORLDVIEWS":
                     return WORLDVIEWS;
+                case "CMS":
+                    return CMS;
                 case "ABBYY":
                 case "ABBYYXML":
                     return ABBYYXML;
@@ -574,6 +577,7 @@ public class JDomXP {
      * @should detect worldviews files correctly
      * @should detect abbyy files correctly
      * @should detect tei files correctly
+     * @should detect cms files correctly
      * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object.
      */
     public static FileFormat determineFileFormat(File file) throws IOException {
@@ -604,6 +608,9 @@ public class JDomXP {
             }
             if (xp.doc.getRootElement().getName().equals("TEI.2")) {
                 return FileFormat.TEI;
+            }
+            if (xp.doc.getRootElement().getName().equals("cmsPage")) {
+                return FileFormat.CMS;
             }
         } catch (JDOMException e) {
             logger.error(e.getMessage());
