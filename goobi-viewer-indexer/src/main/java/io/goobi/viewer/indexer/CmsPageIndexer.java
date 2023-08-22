@@ -37,7 +37,6 @@ import org.jdom2.Element;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
-import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -82,7 +81,7 @@ public class CmsPageIndexer extends Indexer {
 
         String fileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
 
-        String[] resp = index(cmsFile, dataFolders, null, Configuration.getInstance().getPageCountStart());
+        String[] resp = index(cmsFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newCmsFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newCmsFileName);
@@ -173,7 +172,7 @@ public class CmsPageIndexer extends Indexer {
         logger.debug("Indexing CMS page file '{}'...", cmsFile.getFileName());
         try {
             Document doc = XmlTools.readXmlFile(cmsFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(hotfolder.getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             // LOGID
@@ -202,7 +201,8 @@ public class CmsPageIndexer extends Indexer {
                 // Determine the data repository to use
                 DataRepository[] repositories =
                         hotfolder.getDataRepositoryStrategy()
-                                .selectDataRepository(pi, cmsFile, dataFolders, hotfolder.getSearchIndex(), hotfolder.getOldSearchIndex());
+                                .selectDataRepository(pi, cmsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
+                                        SolrIndexerDaemon.getInstance().getOldSearchIndex());
                 dataRepository = repositories[0];
                 previousDataRepository = repositories[1];
                 if (StringUtils.isNotEmpty(dataRepository.getPath())) {
@@ -303,9 +303,10 @@ public class CmsPageIndexer extends Indexer {
                         moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                     }
                 }
-                SolrInputDocument groupDoc = hotfolder.getSearchIndex()
+                SolrInputDocument groupDoc = SolrIndexerDaemon.getInstance()
+                        .getSearchIndex()
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(hotfolder.getSearchIndex()));
+                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (groupDoc != null) {
                     writeStrategy.addDoc(groupDoc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -340,13 +341,13 @@ public class CmsPageIndexer extends Indexer {
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
-            writeStrategy.writeDocs(Configuration.getInstance().isAggregateRecords());
+            writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Successfully finished indexing '{}'.", cmsFile.getFileName());
         } catch (Exception e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", cmsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
-            hotfolder.getSearchIndex().rollback();
+            SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
