@@ -43,7 +43,7 @@ public class CmsPageIndexerTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        hotfolder = new Hotfolder(TEST_CONFIG_PATH, client);
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
     }
 
     /**
@@ -72,7 +72,7 @@ public class CmsPageIndexerTest extends AbstractSolrEnabledTest {
         Indexer indexer = new CmsPageIndexer(hotfolder);
         indexer.addToIndex(indexFile, false, new HashMap<>());
 
-        SolrDocumentList result = hotfolder.getSearchIndex().search(SolrConstants.PI + ":CMS123", null);
+        SolrDocumentList result = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":CMS123", null);
         Assert.assertNotNull(result);
         Assert.assertEquals(1, result.size());
         SolrDocument doc = result.get(0);
