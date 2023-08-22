@@ -49,7 +49,7 @@ public final class SolrIndexerDaemon {
     private static final Object lock = new Object();
     private static SolrIndexerDaemon instance = null;
 
-    private static String confFilename = "src/main/resources/config_indexer.xml";
+    private String confFilename = "src/main/resources/config_indexer.xml";
     private volatile boolean running = false;
 
     private Configuration configuration;
@@ -158,7 +158,7 @@ public final class SolrIndexerDaemon {
         boolean cleanupAnchors = false;
 
         if (args.length > 0) {
-            SolrIndexerDaemon.confFilename = args[0];
+            SolrIndexerDaemon.getInstance().confFilename = args[0];
             if (args.length > 1 && args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
                 cleanupAnchors = true;
             }
@@ -309,6 +309,16 @@ public final class SolrIndexerDaemon {
         if (configuration != null) {
             this.configuration = configuration;
         }
+    }
+    
+    /**
+     * 
+     * @param confFileName
+     * @return this
+     */
+    public SolrIndexerDaemon setConfFileName(String confFileName) {
+        this.confFilename = confFileName;
+        return this;
     }
 
     /**
