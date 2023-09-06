@@ -18,10 +18,13 @@ package io.goobi.viewer.indexer.helper;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +45,19 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         super.setUp();
         // Reset config for every test to reset overrides
         SolrIndexerDaemon.getInstance().injectConfiguration(new Configuration(TEST_CONFIG_PATH));
-        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+
+    }
+
+    @Override
+    @After
+    public void tearDown() {
+        Path hotfolderPath = Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        if (Files.isDirectory(hotfolderPath)) {
+            try {
+                FileUtils.deleteDirectory(hotfolderPath.toFile());
+            } catch (IOException e) {
+            }
+        }
     }
 
     /**
@@ -52,8 +67,8 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     @Test(expected = FatalIndexerException.class)
     public void initFolders_shouldThrowFatalIndexerExceptionIfHotfolderPathStringNull() throws Exception {
         // Create local hotfolder the default one has already been initialized
-        Hotfolder hf = new Hotfolder();
-        hf.initFolders(null, SolrIndexerDaemon.getInstance().getConfiguration());
+        hotfolder = new Hotfolder();
+        hotfolder.initFolders(null, SolrIndexerDaemon.getInstance().getConfiguration());
     }
 
     /**
@@ -66,8 +81,8 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         config.overrideValue("init.viewerHome", "X:/foo");
 
         // Create local hotfolder the default one has already been initialized
-        Hotfolder hf = new Hotfolder();
-        hf.initFolders(config.getHotfolderPath(), config);
+        hotfolder = new Hotfolder();
+        hotfolder.initFolders(config.getHotfolderPath(), config);
     }
 
     /**
@@ -80,8 +95,8 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         config.overrideValue("init.tempFolder", "X:/foo");
 
         // Create local hotfolder the default one has already been initialized
-        Hotfolder hf = new Hotfolder();
-        hf.initFolders(config.getHotfolderPath(), config);
+        hotfolder = new Hotfolder();
+        hotfolder.initFolders(config.getHotfolderPath(), config);
     }
 
     /**
@@ -103,8 +118,8 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         config.overrideValue("init.successFolder", "X:/foo");
 
         // Create local hotfolder the default one has already been initialized
-        Hotfolder hf = new Hotfolder();
-        hf.initFolders(config.getHotfolderPath(), config);
+        hotfolder = new Hotfolder();
+        hotfolder.initFolders(config.getHotfolderPath(), config);
     }
 
     /**
@@ -248,6 +263,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void doIndex_shouldReturnFalseIfRecordFileNull() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
         assertFalse(hotfolder.doIndex(null));
     }
 
@@ -257,6 +273,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void doIndex_shouldReturnTrueIfSuccessful() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
         Path srcPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Path destPath = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "kleiuniv_PPN517154005.xml");
         Files.copy(srcPath, destPath);
