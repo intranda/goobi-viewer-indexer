@@ -49,8 +49,8 @@ public final class SolrIndexerDaemon {
     private static final Object lock = new Object();
     private static SolrIndexerDaemon instance = null;
 
-    private String confFilename = "src/main/resources/config_indexer.xml";
-    private volatile boolean running = false;
+    String confFileName = "src/main/resources/config_indexer.xml";
+    volatile boolean running = false;
 
     private Configuration configuration;
 
@@ -158,7 +158,7 @@ public final class SolrIndexerDaemon {
         boolean cleanupAnchors = false;
 
         if (args.length > 0) {
-            SolrIndexerDaemon.getInstance().confFilename = args[0];
+            SolrIndexerDaemon.getInstance().confFileName = args[0];
             if (args.length > 1 && args[1].equalsIgnoreCase("-cleanupGrievingAnchors")) {
                 cleanupAnchors = true;
             }
@@ -242,9 +242,9 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * <p>
-     * stop.
-     * </p>
+     * Stops this instance
+     * 
+     * @should set running to false
      */
     public void stop() {
         logger.info("Stopping indexer...");
@@ -256,10 +256,11 @@ public final class SolrIndexerDaemon {
      * 
      * @param doc
      * @return
+     * @should return false if doc null
      */
-    private static boolean checkSolrSchemaName(Document doc) {
+    static boolean checkSolrSchemaName(Document doc) {
         if (doc == null) {
-            logger.error("Could not read the Solr schema name.");
+            logger.warn("Could not read the Solr schema name.");
             return false;
         }
 
@@ -293,7 +294,7 @@ public final class SolrIndexerDaemon {
     public Configuration getConfiguration() {
         if (configuration == null) {
             synchronized (lock) {
-                configuration = new Configuration(confFilename);
+                configuration = new Configuration(confFileName);
             }
         }
 
@@ -310,14 +311,15 @@ public final class SolrIndexerDaemon {
             this.configuration = configuration;
         }
     }
-    
+
     /**
      * 
      * @param confFileName
      * @return this
+     * @should set confFileName correctly
      */
     public SolrIndexerDaemon setConfFileName(String confFileName) {
-        this.confFilename = confFileName;
+        this.confFileName = confFileName;
         return this;
     }
 
@@ -327,6 +329,7 @@ public final class SolrIndexerDaemon {
      * </p>
      *
      * @return the searchIndex
+     * @should created new instance if none exists
      */
     public SolrSearchIndex getSearchIndex() {
         if (this.searchIndex == null) {
