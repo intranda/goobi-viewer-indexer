@@ -467,8 +467,10 @@ public class Hotfolder {
     /**
      * 
      * @param recordFile
-     * @return
+     * @return true if successful; false otherwise
      * @throws FatalIndexerException
+     * @should return false if recordFile null
+     * @should return true if successful
      */
     boolean doIndex(Path recordFile) throws FatalIndexerException {
         if (recordFile == null) {

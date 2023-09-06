@@ -16,12 +16,14 @@
 package io.goobi.viewer.indexer.helper;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
@@ -31,6 +33,13 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
  * TODO "Connection pool closed" error if more than one test (Jenkins only)
  */
 public class HotfolderTest extends AbstractSolrEnabledTest {
+
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+    }
 
     /**
      * @see Hotfolder#countRecordFiles()
@@ -151,5 +160,27 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderName", "Goobi viewer Indexer");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
+    }
+
+    /**
+     * @see Hotfolder#doIndex(Path)
+     * @verifies return false if recordFile null
+     */
+    @Test
+    public void doIndex_shouldReturnFalseIfRecordFileNull() throws Exception {
+        assertFalse(hotfolder.doIndex(null));
+    }
+
+    /**
+     * @see Hotfolder#doIndex(Path)
+     * @verifies return true if successful
+     */
+    @Test
+    public void doIndex_shouldReturnTrueIfSuccessful() throws Exception {
+        Path srcPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
+        Path destPath = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "kleiuniv_PPN517154005.xml");
+        Files.copy(srcPath, destPath);
+        Assert.assertTrue(Files.isRegularFile(destPath));
+        assertTrue(hotfolder.doIndex(destPath));
     }
 }
