@@ -61,6 +61,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     @Test(expected = FatalIndexerException.class)
     public void initFolders_shouldThrowFatalIndexerExceptionIfViewerHomeNonexistent() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.viewerHome", "X:/foo");
+        assertEquals("X:/foo", SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome());
         hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
                 SolrIndexerDaemon.getInstance().getConfiguration());
     }
@@ -72,11 +73,12 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     @Test(expected = FatalIndexerException.class)
     public void initFolders_shouldThrowFatalIndexerExceptionIfTempFolderNonexistent() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.tempFolder", "X:/foo");
+        assertEquals("X:/foo", SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("tempFolder"));
         hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
                 SolrIndexerDaemon.getInstance().getConfiguration());
     }
 
-    /**
+    /**Xt
      * @see Hotfolder#initFolders(String,Configuration)
      * @verifies throw FatalIndexerException if successFolder nonexistent
      */
@@ -90,6 +92,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedCMS", "X:/foo");
 
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.successFolder", "X:/foo");
+        assertEquals("X:/foo", SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("successFolder"));
         hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
                 SolrIndexerDaemon.getInstance().getConfiguration());
     }
