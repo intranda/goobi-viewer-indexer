@@ -15,6 +15,9 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

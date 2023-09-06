@@ -123,6 +123,16 @@ public class Hotfolder {
     private final Queue<Path> highPriorityIndexQueue = new LinkedList<>();
 
     /**
+     * Zero-arg constructor for tests.
+     * 
+     * @throws FatalIndexerException
+     */
+    Hotfolder() throws FatalIndexerException {
+        logger.info("Hotfolder()");
+        this.dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
+    }
+
+    /**
      * <p>
      * Constructor for Hotfolder.
      * </p>
@@ -131,6 +141,7 @@ public class Hotfolder {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public Hotfolder(String hotfolderPath) throws FatalIndexerException {
+        logger.info("Hotfolder({})", hotfolderPath);
         dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         initFolders(hotfolderPath, SolrIndexerDaemon.getInstance().getConfiguration());

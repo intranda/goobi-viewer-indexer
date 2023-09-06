@@ -49,8 +49,9 @@ public final class SolrIndexerDaemon {
     private static final Object lock = new Object();
     private static SolrIndexerDaemon instance = null;
 
-    private String confFilename = "src/main/resources/config_indexer.xml";
-    private volatile boolean running = false;
+    String confFileName = "src/main/resources/config_indexer.xml";
+    volatile boolean running = false;
+    private boolean initialized = false;
 
     private Configuration configuration;
 
@@ -75,12 +76,6 @@ public final class SolrIndexerDaemon {
                 if (indexer == null) {
                     indexer = new SolrIndexerDaemon();
                     instance = indexer;
-                    try {
-                        instance.init();
-                    } catch (FatalIndexerException e) {
-                        logger.error(e.getMessage());
-                        System.exit(-1);
-                    }
                 }
             }
         }
@@ -91,8 +86,9 @@ public final class SolrIndexerDaemon {
     /**
      * 
      * @throws FatalIndexerException
+     * @return this
      */
-    private void init() throws FatalIndexerException {
+    public SolrIndexerDaemon init() throws FatalIndexerException {
         if (logger.isInfoEnabled()) {
             logger.info(Version.asString());
         }
@@ -123,10 +119,13 @@ public final class SolrIndexerDaemon {
         if (hotfolders.isEmpty()) {
             throw new FatalIndexerException("No hotfolder configuration found, exiting...");
         }
+
+        initialized = true;
+        return this;
     }
 
     /**
-     * Removes files that matches the given pi from hotfolders that are priorized lower than (i.e. listed after) usedHotfolder.
+     * Removes files that matches the given pi from hotfolders that are prioritized lower than (i.e. listed after) usedHotfolder.
      * 
      * @param pi
      * @param usedHotfolder
@@ -165,7 +164,7 @@ public final class SolrIndexerDaemon {
         }
 
         try {
-            SolrIndexerDaemon.getInstance().start(cleanupAnchors);
+            SolrIndexerDaemon.getInstance().init().start(cleanupAnchors);
         } catch (FatalIndexerException e) {
             logger.error(e.getMessage());
             System.exit(-1);
@@ -182,6 +181,9 @@ public final class SolrIndexerDaemon {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void start(boolean cleanupAnchors) throws FatalIndexerException {
+        if (!initialized) {
+            init();
+        }
         if (running) {
             logger.warn("Indexer is already running");
             return;
