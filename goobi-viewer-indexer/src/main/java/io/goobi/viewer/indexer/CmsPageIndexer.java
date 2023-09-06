@@ -283,59 +283,6 @@ public class CmsPageIndexer extends Indexer {
                 indexObj.setDefaultValue("");
             }
 
-            // Create group documents if this record is part of a group and no doc exists for that group yet
-            for (String groupIdField : indexObj.getGroupIds().keySet()) {
-                String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
-                Map<String, String> moreMetadata = new HashMap<>();
-                String titleField = "MD_TITLE_" + groupSuffix;
-                String sortTitleField = "SORT_TITLE_" + groupSuffix;
-                for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (titleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put(SolrConstants.LABEL, field.getValue());
-                        moreMetadata.put("MD_TITLE", field.getValue());
-                    } else if (sortTitleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put("SORT_TITLE", field.getValue());
-                    } else if (field.getField().endsWith(groupSuffix)
-                            && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
-                        // Add any MD_*_GROUPSUFFIX field to the group doc
-                        moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
-                    }
-                }
-                SolrInputDocument groupDoc = SolrIndexerDaemon.getInstance()
-                        .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
-                if (groupDoc != null) {
-                    writeStrategy.addDoc(groupDoc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
-                    logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                }
-            }
-
-            // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
-
-            if (indexObj.getNumPages() > 0) {
-                // Write number of pages
-                indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
-                if (indexObj.getFirstPageLabel() != null) {
-                    indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
-                }
-                if (indexObj.getLastPageLabel() != null) {
-                    indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
-                }
-                if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
-                    indexObj.addToLucene("MD_ORDERLABELRANGE",
-                            new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
-                }
-
-                // Add used-generated content docs
-                writeUserGeneratedContents(writeStrategy, dataFolders, indexObj);
-            }
-
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
 

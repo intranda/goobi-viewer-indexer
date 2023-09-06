@@ -161,6 +161,20 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderName", "Goobi viewer Indexer");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
+    
+    /**
+     * @see Hotfolder#checkAndSendErrorReport(String,String)
+     * @verifies return false if sending mail fails
+     */
+    @Test
+    public void checkAndSendErrorReport_shouldReturnFalseIfSendingMailFails() throws Exception {
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderName", "Goobi viewer Indexer");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSecurity", "SSL");
+        assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
+    }
 
     /**
      * @see Hotfolder#doIndex(Path)

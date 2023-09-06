@@ -338,6 +338,7 @@ public class Hotfolder {
      * @should return false if smtpSenderAddress not configured
      * @should return false if smtpSenderName not configured
      * @should return false if smtpSecurity not configured
+     * @should return false if sending mail fails
      */
     static boolean checkAndSendErrorReport(String subject, String body) {
         logger.debug("checkAndSendErrorReport");
