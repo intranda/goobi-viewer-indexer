@@ -124,7 +124,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     @Test
     public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderAddressNotConfigured() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "foo@bar.com");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpServer", "bar.com");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "bar.com");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
 
@@ -135,8 +135,8 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     @Test
     public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderNameNotConfigured() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpServer", "smtp.example.foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpSenderAddress", "indexer@example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
 
@@ -147,9 +147,9 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     @Test
     public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSecurityNotConfigured() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpServer", "smtp.example.foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpSenderAddress", "indexer@example.foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpSenderName", "Goobi viewer Indexer");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderName", "Goobi viewer Indexer");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
 }
