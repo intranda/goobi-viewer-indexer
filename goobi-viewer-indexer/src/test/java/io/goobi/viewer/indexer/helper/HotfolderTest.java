@@ -60,10 +60,9 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      */
     @Test(expected = FatalIndexerException.class)
     public void initFolders_shouldThrowFatalIndexerExceptionIfViewerHomeNonexistent() throws Exception {
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.viewerHome", "X:/foo");
-        assertEquals("X:/foo", SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome());
-        hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
-                SolrIndexerDaemon.getInstance().getConfiguration());
+        Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+        config.overrideValue("init.viewerHome", "X:/foo");
+        hotfolder.initFolders(config.getHotfolderPath(), config);
     }
 
     /**
@@ -72,29 +71,29 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      */
     @Test(expected = FatalIndexerException.class)
     public void initFolders_shouldThrowFatalIndexerExceptionIfTempFolderNonexistent() throws Exception {
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.tempFolder", "X:/foo");
-        assertEquals("X:/foo", SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("tempFolder"));
-        hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
-                SolrIndexerDaemon.getInstance().getConfiguration());
+        Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+        config.overrideValue("init.tempFolder", "X:/foo");
+        hotfolder.initFolders(config.getHotfolderPath(), config);
     }
 
-    /**Xt
+    /**
+     * Xt
+     * 
      * @see Hotfolder#initFolders(String,Configuration)
      * @verifies throw FatalIndexerException if successFolder nonexistent
      */
     @Test(expected = FatalIndexerException.class)
     public void initFolders_shouldThrowFatalIndexerExceptionIfSuccessFolderNonexistent() throws Exception {
         // Disable indexed record file configurations for test coverage
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedMets", "X:/foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedLido", "X:/foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedDenkXweb", "X:/foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedDublinCore", "X:/foo");
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedCMS", "X:/foo");
+        Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+        config.overrideValue("init.indexedMets", "X:/foo");
+        config.overrideValue("init.indexedLido", "X:/foo");
+        config.overrideValue("init.indexedDenkXweb", "X:/foo");
+        config.overrideValue("init.indexedDublinCore", "X:/foo");
+        config.overrideValue("init.indexedCMS", "X:/foo");
 
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.successFolder", "X:/foo");
-        assertEquals("X:/foo", SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("successFolder"));
-        hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
-                SolrIndexerDaemon.getInstance().getConfiguration());
+        config.overrideValue("init.successFolder", "X:/foo");
+        hotfolder.initFolders(config.getHotfolderPath(), config);
     }
 
     /**
