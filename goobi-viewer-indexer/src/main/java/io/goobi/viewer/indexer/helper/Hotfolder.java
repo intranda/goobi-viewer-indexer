@@ -131,7 +131,7 @@ public class Hotfolder {
      * @throws FatalIndexerException
      */
     Hotfolder() throws FatalIndexerException {
-        logger.info("Hotfolder()");
+        logger.trace("Hotfolder()");
         this.dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
     }
 
@@ -144,7 +144,7 @@ public class Hotfolder {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public Hotfolder(String hotfolderPath) throws FatalIndexerException {
-        logger.info("Hotfolder({})", hotfolderPath);
+        logger.trace("Hotfolder({})", hotfolderPath);
         dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         initFolders(hotfolderPath, SolrIndexerDaemon.getInstance().getConfiguration());
@@ -209,9 +209,9 @@ public class Hotfolder {
      * @param config
      * @throws FatalIndexerException
      * @should throw FatalIndexerException if hotfolderPathString null
-     * @should throw FatalIndexerException if viewerHome nonexistent
-     * @should throw FatalIndexerException if tempFolder nonexistent
-     * @should throw FatalIndexerException if successFolder nonexistent
+     * @should throw FatalIndexerException if viewerHome not defined
+     * @should throw FatalIndexerException if tempFolder not defined
+     * @should throw FatalIndexerException if successFolder not defined
      */
     void initFolders(String hotfolderPathString, Configuration config) throws FatalIndexerException {
         try {
@@ -219,36 +219,33 @@ public class Hotfolder {
         } catch (NumberFormatException e) {
             logger.error("<minStorageSpace> must contain a numerical value - using default ({}) instead.", minStorageSpace);
         }
-        try {
-            hotfolderPath = Paths.get(hotfolderPathString);
-            if (!Utils.checkAndCreateDirectory(hotfolderPath)) {
-                logger.error("Could not create folder '{}', exiting...", hotfolderPath);
-                throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
-            }
-        } catch (Exception e) {
-            logger.error("<hotFolder> not defined.");
+        if (StringUtils.isEmpty(hotfolderPathString)) {
+            logger.error("Given <hotFolder> not defined, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
+        hotfolderPath = Paths.get(hotfolderPathString);
+        if (!Utils.checkAndCreateDirectory(hotfolderPath)) {
+            logger.error("Could not create folder '{}', exiting...", hotfolderPath);
             throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
 
-        try {
-            String viewerHomePath = config.getViewerHome();
-            if (!Files.isDirectory(Paths.get(viewerHomePath))) {
-                logger.error("Path defined in <viewerHome> does not exist, exiting...");
-                throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
-            }
-        } catch (Exception e) {
+        String viewerHomePath = config.getViewerHome();
+        if (StringUtils.isEmpty(viewerHomePath)) {
             logger.error("<viewerHome> not defined, exiting...");
             throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
+        if (!Files.isDirectory(Paths.get(viewerHomePath))) {
+            logger.error("Path defined in <viewerHome> does not exist, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
 
-        try {
-            tempFolderPath = Paths.get(config.getConfiguration("tempFolder"));
-            if (!Utils.checkAndCreateDirectory(tempFolderPath)) {
-                logger.error("Could not create folder '{}', exiting...", tempFolderPath);
-                throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
-            }
-        } catch (Exception e) {
-            logger.error("<tempFolder> not defined.");
+        if (StringUtils.isEmpty(config.getConfiguration("tempFolder"))) {
+            logger.error("<tempFolder> not defined, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
+        tempFolderPath = Paths.get(config.getConfiguration("tempFolder"));
+        if (!Utils.checkAndCreateDirectory(tempFolderPath)) {
+            logger.error("Could not create folder '{}', exiting...", tempFolderPath);
             throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
 
@@ -324,13 +321,13 @@ public class Hotfolder {
             logger.warn("<{}> not defined - CMS page indexing is disabled.", DataRepository.PARAM_INDEXED_CMS);
         }
 
-        try {
-            successFolder = Paths.get(config.getConfiguration("successFolder"));
-            if (!Utils.checkAndCreateDirectory(successFolder)) {
-                throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + successFolder.toAbsolutePath().toString());
-            }
-        } catch (Exception e) {
-            throw new FatalIndexerException("<successFolder> not defined.");
+        if (StringUtils.isEmpty(config.getConfiguration("successFolder"))) {
+            logger.error("<successFolder> not defined, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
+        successFolder = Paths.get(config.getConfiguration("successFolder"));
+        if (!Utils.checkAndCreateDirectory(successFolder)) {
+            throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + successFolder.toAbsolutePath().toString());
         }
     }
 

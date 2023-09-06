@@ -73,12 +73,12 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
 
     /**
      * @see Hotfolder#initFolders(String,Configuration)
-     * @verifies throw FatalIndexerException if viewerHome nonexistent
+     * @verifies throw FatalIndexerException if viewerHome not defined
      */
     @Test(expected = FatalIndexerException.class)
-    public void initFolders_shouldThrowFatalIndexerExceptionIfViewerHomeNonexistent() throws Exception {
+    public void initFolders_shouldThrowFatalIndexerExceptionIfViewerHomeNotDefined() throws Exception {
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
-        config.overrideValue("init.viewerHome", "X:/foo");
+        config.overrideValue("init.viewerHome", "");
 
         // Create local hotfolder the default one has already been initialized
         hotfolder = new Hotfolder();
@@ -87,12 +87,12 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
 
     /**
      * @see Hotfolder#initFolders(String,Configuration)
-     * @verifies throw FatalIndexerException if tempFolder nonexistent
+     * @verifies throw FatalIndexerException if tempFolder not defined
      */
     @Test(expected = FatalIndexerException.class)
-    public void initFolders_shouldThrowFatalIndexerExceptionIfTempFolderNonexistent() throws Exception {
+    public void initFolders_shouldThrowFatalIndexerExceptionIfTempFolderNotDefined() throws Exception {
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
-        config.overrideValue("init.tempFolder", "X:/foo");
+        config.overrideValue("init.tempFolder", "");
 
         // Create local hotfolder the default one has already been initialized
         hotfolder = new Hotfolder();
@@ -100,13 +100,11 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * Xt
-     * 
      * @see Hotfolder#initFolders(String,Configuration)
-     * @verifies throw FatalIndexerException if successFolder nonexistent
+     * @verifies throw FatalIndexerException if successFolder not defined
      */
     @Test(expected = FatalIndexerException.class)
-    public void initFolders_shouldThrowFatalIndexerExceptionIfSuccessFolderNonexistent() throws Exception {
+    public void initFolders_shouldThrowFatalIndexerExceptionIfSuccessFolderNotDefined() throws Exception {
         // Disable indexed record file configurations for test coverage
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
         config.overrideValue("init." + DataRepository.PARAM_INDEXED_METS, "");
@@ -115,7 +113,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         config.overrideValue("init." + DataRepository.PARAM_INDEXED_DUBLINCORE, "");
         config.overrideValue("init." + DataRepository.PARAM_INDEXED_CMS, "");
 
-        config.overrideValue("init.successFolder", "X:/foo");
+        config.overrideValue("init.successFolder", "");
 
         // Create local hotfolder the default one has already been initialized
         hotfolder = new Hotfolder();
