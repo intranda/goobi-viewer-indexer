@@ -126,6 +126,15 @@ public class Hotfolder {
     private final Queue<Path> highPriorityIndexQueue = new LinkedList<>();
 
     /**
+     * Zero-arg constructor for tests.
+     * 
+     * @throws FatalIndexerException
+     */
+    Hotfolder() throws FatalIndexerException {
+        this.dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
+    }
+
+    /**
      * <p>
      * Constructor for Hotfolder.
      * </p>
@@ -308,7 +317,7 @@ public class Hotfolder {
         }
 
         // CMS page folder
-        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_CMS))){
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_CMS))) {
             cmsEnabled = false;
             logger.warn("<{}> not defined - CMS page indexing is disabled.", DataRepository.PARAM_INDEXED_CMS);
         }
@@ -388,7 +397,7 @@ public class Hotfolder {
         } catch (UnsupportedEncodingException | MessagingException e) {
             logger.error(e.getMessage(), e);
         }
-        
+
         return false;
     }
 

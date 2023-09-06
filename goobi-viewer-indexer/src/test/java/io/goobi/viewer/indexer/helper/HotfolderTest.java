@@ -52,7 +52,9 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      */
     @Test(expected = FatalIndexerException.class)
     public void initFolders_shouldThrowFatalIndexerExceptionIfHotfolderPathStringNull() throws Exception {
-        hotfolder.initFolders(null, SolrIndexerDaemon.getInstance().getConfiguration());
+        // Create local hotfolder the default one has already been initialized
+        Hotfolder hf = new Hotfolder();
+        hf.initFolders(null, SolrIndexerDaemon.getInstance().getConfiguration());
     }
 
     /**
@@ -63,7 +65,10 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     public void initFolders_shouldThrowFatalIndexerExceptionIfViewerHomeNonexistent() throws Exception {
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
         config.overrideValue("init.viewerHome", "X:/foo");
-        hotfolder.initFolders(config.getHotfolderPath(), config);
+
+        // Create local hotfolder the default one has already been initialized
+        Hotfolder hf = new Hotfolder();
+        hf.initFolders(config.getHotfolderPath(), config);
     }
 
     /**
@@ -74,7 +79,10 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     public void initFolders_shouldThrowFatalIndexerExceptionIfTempFolderNonexistent() throws Exception {
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
         config.overrideValue("init.tempFolder", "X:/foo");
-        hotfolder.initFolders(config.getHotfolderPath(), config);
+
+        // Create local hotfolder the default one has already been initialized
+        Hotfolder hf = new Hotfolder();
+        hf.initFolders(config.getHotfolderPath(), config);
     }
 
     /**
@@ -94,7 +102,10 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         config.overrideValue("init." + DataRepository.PARAM_INDEXED_CMS, "");
 
         config.overrideValue("init.successFolder", "X:/foo");
-        hotfolder.initFolders(config.getHotfolderPath(), config);
+
+        // Create local hotfolder the default one has already been initialized
+        Hotfolder hf = new Hotfolder();
+        hf.initFolders(config.getHotfolderPath(), config);
     }
 
     /**
