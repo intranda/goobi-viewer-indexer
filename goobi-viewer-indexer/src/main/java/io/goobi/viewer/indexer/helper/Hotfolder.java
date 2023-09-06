@@ -197,8 +197,12 @@ public class Hotfolder {
      * @param hotfolderPathString
      * @param config
      * @throws FatalIndexerException
+     * @should throw FatalIndexerException if hotfolderPathString null
+     * @should throw FatalIndexerException if viewerHome nonexistent
+     * @should throw FatalIndexerException if tempFolder nonexistent
+     * @should throw FatalIndexerException if successFolder nonexistent
      */
-    private void initFolders(String hotfolderPathString, Configuration config) throws FatalIndexerException {
+    void initFolders(String hotfolderPathString, Configuration config) throws FatalIndexerException {
         try {
             minStorageSpace = Integer.valueOf(config.getConfiguration("minStorageSpace"));
         } catch (NumberFormatException e) {

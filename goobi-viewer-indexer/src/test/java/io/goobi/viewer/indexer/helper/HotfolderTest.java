@@ -15,6 +15,7 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -28,6 +29,7 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 
 /**
  * TODO "Connection pool closed" error if more than one test (Jenkins only)
@@ -39,6 +41,55 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     public void setUp() throws Exception {
         super.setUp();
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+    }
+
+    /**
+     * @see Hotfolder#initFolders(String,Configuration)
+     * @verifies throw FatalIndexerException if hotfolderPathString null
+     */
+    @Test(expected = FatalIndexerException.class)
+    public void initFolders_shouldThrowFatalIndexerExceptionIfHotfolderPathStringNull() throws Exception {
+        hotfolder.initFolders(null, SolrIndexerDaemon.getInstance().getConfiguration());
+    }
+
+    /**
+     * @see Hotfolder#initFolders(String,Configuration)
+     * @verifies throw FatalIndexerException if viewerHome nonexistent
+     */
+    @Test(expected = FatalIndexerException.class)
+    public void initFolders_shouldThrowFatalIndexerExceptionIfViewerHomeNonexistent() throws Exception {
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.viewerHome", "X:/foo");
+        hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
+                SolrIndexerDaemon.getInstance().getConfiguration());
+    }
+
+    /**
+     * @see Hotfolder#initFolders(String,Configuration)
+     * @verifies throw FatalIndexerException if tempFolder nonexistent
+     */
+    @Test(expected = FatalIndexerException.class)
+    public void initFolders_shouldThrowFatalIndexerExceptionIfTempFolderNonexistent() throws Exception {
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.tempFolder", "X:/foo");
+        hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
+                SolrIndexerDaemon.getInstance().getConfiguration());
+    }
+
+    /**
+     * @see Hotfolder#initFolders(String,Configuration)
+     * @verifies throw FatalIndexerException if successFolder nonexistent
+     */
+    @Test(expected = FatalIndexerException.class)
+    public void initFolders_shouldThrowFatalIndexerExceptionIfSuccessFolderNonexistent() throws Exception {
+        // Disable indexed record file configurations for test coverage
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedMets", "X:/foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedLido", "X:/foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedDenkXweb", "X:/foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedDublinCore", "X:/foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.indexedCMS", "X:/foo");
+
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.successFolder", "X:/foo");
+        hotfolder.initFolders(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath(),
+                SolrIndexerDaemon.getInstance().getConfiguration());
     }
 
     /**
@@ -161,7 +212,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderName", "Goobi viewer Indexer");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
-    
+
     /**
      * @see Hotfolder#checkAndSendErrorReport(String,String)
      * @verifies return false if sending mail fails
