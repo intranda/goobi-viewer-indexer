@@ -556,12 +556,12 @@ public final class SolrSearchIndex {
      *
      * @param confFilename
      * @return a {@link org.jdom2.Document} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
-    public static Document getSolrSchemaDocument(String solrUrl) throws FatalIndexerException {
+    public static Document getSolrSchemaDocument(String solrUrl) {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
         String url = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl")
                 + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml";
+        System.err.println("solr url: " + url);
         try (HttpSolrClient solrClient = getNewHttpSolrClient(solrUrl, false)) {
             if (solrClient == null) {
                 return null;
