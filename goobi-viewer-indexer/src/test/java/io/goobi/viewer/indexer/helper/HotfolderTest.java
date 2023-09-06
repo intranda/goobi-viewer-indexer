@@ -30,6 +30,7 @@ import org.junit.Test;
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
  * TODO "Connection pool closed" error if more than one test (Jenkins only)
@@ -86,11 +87,11 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
     public void initFolders_shouldThrowFatalIndexerExceptionIfSuccessFolderNonexistent() throws Exception {
         // Disable indexed record file configurations for test coverage
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
-        config.overrideValue("init.indexedMets", "X:/foo");
-        config.overrideValue("init.indexedLido", "X:/foo");
-        config.overrideValue("init.indexedDenkXweb", "X:/foo");
-        config.overrideValue("init.indexedDublinCore", "X:/foo");
-        config.overrideValue("init.indexedCMS", "X:/foo");
+        config.overrideValue("init." + DataRepository.PARAM_INDEXED_METS, "");
+        config.overrideValue("init." + DataRepository.PARAM_INDEXED_LIDO, "");
+        config.overrideValue("init." + DataRepository.PARAM_INDEXED_DENKXWEB, "");
+        config.overrideValue("init." + DataRepository.PARAM_INDEXED_DUBLINCORE, "");
+        config.overrideValue("init." + DataRepository.PARAM_INDEXED_CMS, "");
 
         config.overrideValue("init.successFolder", "X:/foo");
         hotfolder.initFolders(config.getHotfolderPath(), config);

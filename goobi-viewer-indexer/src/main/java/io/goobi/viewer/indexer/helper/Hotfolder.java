@@ -242,7 +242,7 @@ public class Hotfolder {
         }
 
         // METS folders
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_METS) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_METS))) {
             metsEnabled = false;
             logger.warn("<{}> not defined - METS indexing is disabled.", DataRepository.PARAM_INDEXED_METS);
         }
@@ -272,7 +272,7 @@ public class Hotfolder {
         }
 
         // LIDO folders
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_LIDO) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_LIDO))) {
             lidoEnabled = false;
             logger.warn("<{}> not defined - LIDO indexing is disabled.", DataRepository.PARAM_INDEXED_LIDO);
         }
@@ -287,7 +287,7 @@ public class Hotfolder {
         }
 
         // DenkXweb folders
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_DENKXWEB) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_DENKXWEB))) {
             denkxwebEnabled = false;
             logger.warn("<{}> not defined - DenkXweb indexing is disabled.", DataRepository.PARAM_INDEXED_DENKXWEB);
         }
@@ -302,13 +302,13 @@ public class Hotfolder {
         }
 
         // Dublin Core folder
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_DUBLINCORE) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_DUBLINCORE))) {
             dcEnabled = false;
             logger.warn("<{}> not defined - Dublin Core indexing is disabled.", DataRepository.PARAM_INDEXED_DUBLINCORE);
         }
 
         // CMS page folder
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_CMS) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_CMS))){
             cmsEnabled = false;
             logger.warn("<{}> not defined - CMS page indexing is disabled.", DataRepository.PARAM_INDEXED_CMS);
         }
