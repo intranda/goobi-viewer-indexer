@@ -15,6 +15,8 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import static org.junit.Assert.assertFalse;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,7 +28,7 @@ import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 
 /**
- * TODO "Connection pool cloased" error if more than one test (Jenkins only)
+ * TODO "Connection pool closed" error if more than one test (Jenkins only)
  */
 public class HotfolderTest extends AbstractSolrEnabledTest {
 
@@ -85,5 +87,69 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
 
         Assert.assertEquals(6, hotfolder.countRecordFiles());
 
+    }
+
+    /**
+     * @see Hotfolder#checkAndSendErrorReport(String,String)
+     * @verifies return false if body contains no error
+     */
+    @Test
+    public void checkAndSendErrorReport_shouldReturnFalseIfBodyContainsNoError() throws Exception {
+        assertFalse(Hotfolder.checkAndSendErrorReport("foo", "bar"));
+    }
+
+    /**
+     * @see Hotfolder#checkAndSendErrorReport(String,String)
+     * @verifies return false if recipients not configured
+     */
+    @Test
+    public void checkAndSendErrorReport_shouldReturnFalseIfRecipientsNotConfigured() throws Exception {
+        assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
+    }
+
+    /**
+     * @see Hotfolder#checkAndSendErrorReport(String,String)
+     * @verifies return false if smtpServer not configured
+     */
+    @Test
+    public void checkAndSendErrorReport_shouldReturnFalseIfSmtpServerNotConfigured() throws Exception {
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "foo@bar.com");
+        assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
+    }
+
+    /**
+     * @see Hotfolder#checkAndSendErrorReport(String,String)
+     * @verifies return false if smtpSenderAddress not configured
+     */
+    @Test
+    public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderAddressNotConfigured() throws Exception {
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "foo@bar.com");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpServer", "bar.com");
+        assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
+    }
+
+    /**
+     * @see Hotfolder#checkAndSendErrorReport(String,String)
+     * @verifies return false if smtpSenderName not configured
+     */
+    @Test
+    public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderNameNotConfigured() throws Exception {
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpServer", "smtp.example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpSenderAddress", "indexer@example.foo");
+        assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
+    }
+
+    /**
+     * @see Hotfolder#checkAndSendErrorReport(String,String)
+     * @verifies return false if smtpSecurity not configured
+     */
+    @Test
+    public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSecurityNotConfigured() throws Exception {
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpServer", "smtp.example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpSenderAddress", "indexer@example.foo");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("smtpSenderName", "Goobi viewer Indexer");
+        assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
 }

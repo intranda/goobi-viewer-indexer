@@ -332,8 +332,14 @@ public class Hotfolder {
      * 
      * @param subject
      * @param body
+     * @should return false if body contains no error
+     * @should return false if recipients not configured
+     * @should return false if smtpServer not configured
+     * @should return false if smtpSenderAddress not configured
+     * @should return false if smtpSenderName not configured
+     * @should return false if smtpSecurity not configured
      */
-    private static void checkAndSendErrorReport(String subject, String body) {
+    static boolean checkAndSendErrorReport(String subject, String body) {
         logger.debug("checkAndSendErrorReport");
         logger.trace("body:\n{}", body);
         if (StringUtils.isEmpty(body)) {
@@ -341,30 +347,30 @@ public class Hotfolder {
         }
         // Send report e-mail if the text body contains at least one ERROR level log message
         if (!body.contains(Indexer.STATUS_ERROR)) {
-            return;
+            return false;
         }
 
         String recipients = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.recipients");
         if (StringUtils.isEmpty(recipients)) {
-            return;
+            return false;
         }
         String smtpServer = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpServer");
         if (StringUtils.isEmpty(smtpServer)) {
-            return;
+            return false;
         }
         String smtpUser = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpUser");
         String smtpPassword = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpPassword");
         String smtpSenderAddress = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpSenderAddress");
         if (StringUtils.isEmpty(smtpSenderAddress)) {
-            return;
+            return false;
         }
         String smtpSenderName = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpSenderName");
         if (StringUtils.isEmpty(smtpSenderName)) {
-            return;
+            return false;
         }
         String smtpSecurity = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpSecurity");
         if (StringUtils.isEmpty(smtpSecurity)) {
-            return;
+            return false;
         }
         int smtpPort = SolrIndexerDaemon.getInstance().getConfiguration().getInt("init.email.smtpPort", -1);
         String[] recipientsSplit = recipients.split(";");
@@ -373,9 +379,12 @@ public class Hotfolder {
             Utils.postMail(Arrays.asList(recipientsSplit), subject, body, smtpServer, smtpUser, smtpPassword, smtpSenderAddress, smtpSenderName,
                     smtpSecurity, smtpPort);
             logger.info("Report e-mailed to configured recipients.");
+            return true;
         } catch (UnsupportedEncodingException | MessagingException e) {
             logger.error(e.getMessage(), e);
         }
+        
+        return false;
     }
 
     /**
