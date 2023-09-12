@@ -191,7 +191,7 @@ public class FileTools {
         }
 
         File file = new File(filePath);
-        try (FileWriterWithEncoding writer = new FileWriterWithEncoding(file, encoding, append)) {
+        try (FileWriterWithEncoding writer = FileWriterWithEncoding.builder().setFile(file).setCharset(encoding).setAppend(append).get()) {
             writer.write(string);
         }
 
