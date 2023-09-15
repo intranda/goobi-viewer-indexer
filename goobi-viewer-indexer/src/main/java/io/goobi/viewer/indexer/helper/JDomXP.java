@@ -54,7 +54,8 @@ public class JDomXP {
 
     public enum FileFormat {
         UNKNOWN,
-        METS,
+        METS_MARC,
+        METS_MODS,
         LIDO,
         DENKXWEB,
         DUBLINCORE,
@@ -70,8 +71,10 @@ public class JDomXP {
             }
 
             switch (name.toUpperCase()) {
-                case "METS":
-                    return METS;
+                case "METS_MODS":
+                    return METS_MODS;
+                case "METS_MARC":
+                    return METS_MARC;
                 case "LIDO":
                     return LIDO;
                 case "DENKXWEB":
@@ -168,10 +171,9 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.ArrayList} or null
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return all values
      */
-    public List<Element> evaluateToElements(String expr, Object parent) throws FatalIndexerException {
+    public List<Element> evaluateToElements(String expr, Object parent) {
         if (parent == null) {
             parent = doc;
         }
@@ -563,7 +565,8 @@ public class JDomXP {
      * @param file a {@link java.io.File} object.
      * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object.
      * @throws java.io.IOException
-     * @should detect mets files correctly
+     * @should detect mets mods files correctly
+     * @should detect mets marc files correctly
      * @should detect lido files correctly
      * @should detect denkxweb files correctly
      * @should detect dublin core files correctly
@@ -580,7 +583,10 @@ public class JDomXP {
             }
 
             if (xp.doc.getRootElement().getNamespace("mets") != null) {
-                return FileFormat.METS;
+                if (evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@TYPE='MARC']", xp.doc.getRootElement()) != null) {
+                    return FileFormat.METS_MARC;
+                }
+                return FileFormat.METS_MODS;
             }
             if (xp.doc.getRootElement().getNamespace("lido") != null) {
                 return FileFormat.LIDO;

@@ -96,7 +96,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void handleError_shouldWriteLogFileAndCopyOfMetsFileIntoErrorMets() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
-        indexer.handleError(metsFile, "lorem ipsum dolor sit amet", FileFormat.METS);
+        indexer.handleError(metsFile, "lorem ipsum dolor sit amet", FileFormat.METS_MODS);
         Assert.assertTrue(Files.isRegularFile(
                 Paths.get(hotfolder.getErrorMets().toString(), FilenameUtils.getBaseName(metsFile.getFileName().toString()) + ".log")));
         Assert.assertTrue(Files.isRegularFile(Paths.get(hotfolder.getErrorMets().toString(), metsFile.getFileName().toString())));

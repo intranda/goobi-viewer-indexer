@@ -586,7 +586,8 @@ public class Hotfolder {
                 // Check file format and start the appropriate indexing routine
                 FileFormat fileType = JDomXP.determineFileFormat(sourceFile.toFile());
                 switch (fileType) {
-                    case METS:
+                    case METS_MARC:
+                    case METS_MODS:
                         if (metsEnabled) {
                             try {
                                 currentIndexer = new MetsIndexer(this);
