@@ -52,6 +52,7 @@ import io.goobi.viewer.indexer.DublinCoreIndexer;
 import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
+import io.goobi.viewer.indexer.MetsMarcIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.UsageStatisticsIndexer;
 import io.goobi.viewer.indexer.Version;
@@ -586,11 +587,23 @@ public class Hotfolder {
                 // Check file format and start the appropriate indexing routine
                 FileFormat fileType = JDomXP.determineFileFormat(sourceFile.toFile());
                 switch (fileType) {
-                    case METS_MARC:
-                    case METS_MODS:
+                    case METS:
                         if (metsEnabled) {
                             try {
                                 currentIndexer = new MetsIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
+                        } else {
+                            logger.error("METS indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(sourceFile);
+                        }
+                        break;
+                    case METS_MARC:
+                        if (metsEnabled) {
+                            try {
+                                currentIndexer = new MetsMarcIndexer(this);
                                 currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
                             } finally {
                                 currentIndexer = null;

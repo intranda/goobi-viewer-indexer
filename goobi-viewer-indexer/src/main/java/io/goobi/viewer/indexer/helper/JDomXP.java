@@ -54,8 +54,8 @@ public class JDomXP {
 
     public enum FileFormat {
         UNKNOWN,
+        METS,
         METS_MARC,
-        METS_MODS,
         LIDO,
         DENKXWEB,
         DUBLINCORE,
@@ -71,8 +71,8 @@ public class JDomXP {
             }
 
             switch (name.toUpperCase()) {
-                case "METS_MODS":
-                    return METS_MODS;
+                case "METS":
+                    return METS;
                 case "METS_MARC":
                     return METS_MARC;
                 case "LIDO":
@@ -583,10 +583,11 @@ public class JDomXP {
             }
 
             if (xp.doc.getRootElement().getNamespace("mets") != null) {
-                if (evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@TYPE='MARC']", xp.doc.getRootElement()) != null) {
+                List<Element> elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@TYPE='MARC']", xp.doc.getRootElement());
+                if (elements != null && !elements.isEmpty()) {
                     return FileFormat.METS_MARC;
                 }
-                return FileFormat.METS_MODS;
+                return FileFormat.METS;
             }
             if (xp.doc.getRootElement().getNamespace("lido") != null) {
                 return FileFormat.LIDO;

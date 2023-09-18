@@ -244,7 +244,7 @@ public class MetsIndexer extends Indexer {
                 // Delete all data folders for this record from the hotfolder
                 DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
-            handleError(metsFile, resp[1], FileFormat.METS_MODS);
+            handleError(metsFile, resp[1], getSourceDocFormat());
             try {
                 Files.delete(metsFile);
             } catch (IOException e) {
@@ -361,7 +361,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.METS.name());
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, getSourceDocFormat().name());
             prepareUpdate(indexObj);
 
             int hierarchyLevel = 0; // depth of the docstrct that has ISWORK (volume or monograph)
@@ -2260,6 +2260,14 @@ public class MetsIndexer extends Indexer {
             }
             logger.info("New anchor file copied to '{}'.", indexed.toAbsolutePath());
         }
+    }
+
+    /**
+     * 
+     * @return
+     */
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.METS;
     }
 
     /**

@@ -201,7 +201,7 @@ public abstract class Indexer {
     void handleError(Path dataFile, String error, FileFormat format) {
         logger.error("Failed to process '{}'.", dataFile.getFileName());
         // Error log file
-        if (FileFormat.METS_MODS.equals(format) || FileFormat.METS_MARC.equals(format)) {
+        if (FileFormat.METS.equals(format) || FileFormat.METS_MARC.equals(format)) {
             File logFile = new File(hotfolder.getErrorMets().toFile(), FilenameUtils.getBaseName(dataFile.getFileName().toString()) + ".log");
             try (FileWriter fw = new FileWriter(logFile); BufferedWriter out = new BufferedWriter(fw)) {
                 Files.copy(dataFile, Paths.get(hotfolder.getErrorMets().toAbsolutePath().toString(), dataFile.getFileName().toString()),

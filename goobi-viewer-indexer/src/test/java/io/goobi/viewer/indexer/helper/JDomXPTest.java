@@ -40,7 +40,7 @@ public class JDomXPTest extends AbstractTest {
     public void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.METS_MODS, JDomXP.determineFileFormat(file));
+        Assert.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
     }
 
     /**
