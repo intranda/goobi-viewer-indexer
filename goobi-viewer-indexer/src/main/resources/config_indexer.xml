@@ -243,9 +243,9 @@
 							<item>lido:lidoRecID</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]</item>
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier</item>
-							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier[@source="gbv-ppn"]</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
+                            <item>mets:xmlData/bib/record/controlfield[@tag="001"]</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
 							<item>dc:identifier</item>

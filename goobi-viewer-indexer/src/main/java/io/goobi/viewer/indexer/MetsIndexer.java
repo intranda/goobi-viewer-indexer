@@ -305,7 +305,7 @@ public class MetsIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-            String preQuery = XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']/";
+            String preQuery = XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS' or @MDTYPE='MARC']/";
             logger.debug("preQuery: {}", preQuery);
             String pi = MetadataHelper.getPIFromXML(preQuery, xp);
             if (StringUtils.isBlank(pi)) {
@@ -1204,12 +1204,17 @@ public class MetsIndexer extends Indexer {
             doc.addField(SolrConstants.BOOL_DOUBLE_IMAGE, doubleImage);
         }
 
-        // ORDERLABEL
+        // ORDERLABEL / LABEL
         String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
             doc.addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
-            doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
+            // orderLabel = eleStructMapPhysical.getAttributeValue("LABEL");
+            if (StringUtils.isNotEmpty(orderLabel)) {
+                doc.addField(SolrConstants.ORDERLABEL, orderLabel);
+            } else {
+                doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
+            }
         }
 
         String contentIDs = eleStructMapPhysical.getAttributeValue(ATTRIBUTE_CONTENTIDS);

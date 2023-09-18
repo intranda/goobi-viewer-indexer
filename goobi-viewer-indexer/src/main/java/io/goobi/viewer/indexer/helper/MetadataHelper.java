@@ -875,10 +875,9 @@ public class MetadataHelper {
      * @param prefix a {@link java.lang.String} object.
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return String or null
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should extract DenkXweb PI correctly
      */
-    public static String getPIFromXML(String prefix, JDomXP xp) throws FatalIndexerException {
+    public static String getPIFromXML(String prefix, JDomXP xp) {
         List<FieldConfig> piConfig = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
             return null;
@@ -888,7 +887,7 @@ public class MetadataHelper {
         for (XPathConfig xPathConfig : xPathConfigurations) {
             String query = prefix + xPathConfig.getxPath();
             query = query.replace("///", "/");
-            logger.trace(query);
+            logger.info(query);
             String pi = xp.evaluateToString(query, null);
             if (StringUtils.isNotEmpty(pi)) {
                 return pi;

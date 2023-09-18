@@ -47,6 +47,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
  * Indexer implementation for METS/MARC documents.
@@ -187,6 +188,16 @@ public class MetsMarcIndexer extends MetsIndexer {
     }
 
     /**
+     * @should index record correctly
+     */
+    @Override
+    public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
+            int pageCountStart, boolean downloadExternalImages) {
+        logger.trace("index (METS/MARC)");
+        return super.index(metsFile, fromReindexQueue, dataFolders, writeStrategy, pageCountStart, downloadExternalImages);
+    }
+
+    /**
      * 
      * @param indexObj
      * @param collections
@@ -273,7 +284,7 @@ public class MetsMarcIndexer extends MetsIndexer {
 
         return relatedItemList != null && !relatedItemList.isEmpty();
     }
-    
+
     @Override
     protected FileFormat getSourceDocFormat() {
         return FileFormat.METS_MARC;
