@@ -306,6 +306,14 @@ public class MetadataHelper {
                 }
 
                 for (String fieldValue : fieldValues) {
+                    // Apply string modifications configured for this field
+                    fieldValue = applyAllModifications(configurationItem, fieldValue);
+
+                    // If value is blank after modifications, skip
+                    if (StringUtils.isBlank(fieldValue)) {
+                        continue;
+                    }
+                    
                     // CURRENTNOSORT must be an integer value
                     if (fieldName.equals(SolrConstants.CURRENTNOSORT)) {
                         try {
@@ -314,13 +322,6 @@ public class MetadataHelper {
                             logger.error("{} cannot be written because it's not an integer value: {}", SolrConstants.CURRENTNOSORT, fieldValue);
                             continue;
                         }
-                    }
-                    // Apply string modifications configured for this field
-                    fieldValue = applyAllModifications(configurationItem, fieldValue);
-
-                    // If value is blank after modifications, skip
-                    if (StringUtils.isBlank(fieldValue)) {
-                        continue;
                     }
 
                     // Convert to geoJSON
