@@ -583,7 +583,7 @@ public class JDomXP {
             }
 
             if (xp.doc.getRootElement().getNamespace("mets") != null) {
-                List<Element> elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@TYPE='MARC']", xp.doc.getRootElement());
+                List<Element> elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']", xp.doc.getRootElement());
                 if (elements != null && !elements.isEmpty()) {
                     return FileFormat.METS_MARC;
                 }

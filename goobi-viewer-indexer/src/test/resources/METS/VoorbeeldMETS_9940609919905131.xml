@@ -1,0 +1,2263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets xmlns:mets="http://www.loc.gov/METS/"
+           OBJID="https://hdl.handle.net/11245/3.39779">
+   <mets:metsHdr xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 CREATEDATE="2022-07-27T09:44:34Z">
+      <mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+         <mets:name>Goobi - ugh-3.0-6d40b80 - 06−September−2017</mets:name>
+         <mets:note>Goobi</mets:note>
+      </mets:agent>
+   </mets:metsHdr>
+   <mets:dmdSec ID="DMDLOG_0000">
+      <mets:mdWrap MDTYPE="OTHER">
+         <mets:xmlData>
+            <alephRecord href="https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/9940609919905131"/>
+            <analogueRecord href="https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/9940609919905131"/>
+            <analogueHolding href="https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/9940609919905131/holdings/22320121720005131"/>
+            <alephHolding href="https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/9940609919905131/holdings/22320121720005131"/>
+            <digitalRecord href="https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/9941142490705131"/>
+            <shelfmark>PH418 A</shelfmark>
+            <goobiId>8120</goobiId>
+            <publish>Yes</publish>
+         </mets:xmlData>
+      </mets:mdWrap>
+      <mets:mdWrap MDTYPE="MARC">
+         <mets:xmlData>
+            <bib xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                 xmlns:marc="http://www.loc.gov/MARC21/slim">
+               <suppress_from_publishing>false</suppress_from_publishing>
+               <record>
+                  <datafield tag="024" ind1="7" ind2="">
+                     <subfield code="a">https://hdl.handle.net/11245/3.39779</subfield>
+                     <subfield code="2">hdl</subfield>
+                  </datafield>
+                  <leader>     nam a2200277Mi 4500</leader>
+                  <controlfield tag="006">m|||||o||d||||||||</controlfield>
+                  <controlfield tag="007">cr||||||||||||</controlfield>
+                  <controlfield tag="008">      s1598    fr      o     000 0 ger d</controlfield>
+                  <datafield tag="040" ind1=" " ind2=" ">
+                     <subfield code="a">QGK</subfield>
+                     <subfield code="b">eng</subfield>
+                     <subfield code="e">rda</subfield>
+                     <subfield code="e">dcrmb</subfield>
+                  </datafield>
+                  <datafield ind1="1" ind2=" " tag="100">
+                     <subfield code="a">Suchten, Alexander von,</subfield>
+                     <subfield code="d">approximately 1520-approximately 1590,</subfield>
+                     <subfield code="e">author.</subfield>
+                  </datafield>
+                  <datafield tag="245" ind1="1" ind2="0">
+                     <subfield code="a">De secretis antimonii, das ist, von der grossen heymligkeit des Antimonij, zu Teutschem Spiesglas genant, die Artzney betreffend /</subfield>
+                     <subfield code="c">durch den Edlen unnd hochgelehrten Herrn Alexander von Suchten, der waren Philosophy, und Artzney Doctorn.</subfield>
+                  </datafield>
+                  <datafield ind1=" " ind2="1" tag="264">
+                     <subfield code="a">Gedruckt zu Mümpelgart :</subfield>
+                     <subfield code="b">durch Jacob Foillet,</subfield>
+                     <subfield code="c">1598</subfield>
+                  </datafield>
+                  <datafield tag="300" ind1=" " ind2=" ">
+                     <subfield code="a">1 online resource (72 pages ;)</subfield>
+                  </datafield>
+                  <datafield ind1=" " ind2=" " tag="500">
+                     <subfield code="a">Signatures: A-D⁸ E⁴.</subfield>
+                  </datafield>
+                  <datafield ind1="4" ind2=" " tag="510">
+                     <subfield code="a">Verzeichnis der im deutschen Sprachbereich erschienenen Drucke des 16. Jahrhunderts (VD 16),</subfield>
+                     <subfield code="c">VD16 S 10083</subfield>
+                  </datafield>
+                  <datafield ind1="1" ind2=" " tag="700">
+                     <subfield code="a">Foillet, Jacques,</subfield>
+                     <subfield code="d">active 1579-1619,</subfield>
+                     <subfield code="e">printer.</subfield>
+                  </datafield>
+                  <datafield ind1=" " ind2=" " tag="752">
+                     <subfield code="a">France</subfield>
+                     <subfield code="d">Montbéliard.</subfield>
+                  </datafield>
+                  <datafield ind1=" " ind2=" " tag="903">
+                     <subfield code="a">EAD : UBAinv688</subfield>
+                  </datafield>
+                  <datafield tag="336" ind1=" " ind2=" ">
+                     <subfield code="a">text</subfield>
+                     <subfield code="b">txt</subfield>
+                     <subfield code="2">rdacontent</subfield>
+                  </datafield>
+                  <datafield tag="337" ind1=" " ind2=" ">
+                     <subfield code="a">computer</subfield>
+                     <subfield code="b">c</subfield>
+                     <subfield code="2">rdamedia</subfield>
+                  </datafield>
+                  <datafield tag="338" ind1=" " ind2=" ">
+                     <subfield code="a">online resource</subfield>
+                     <subfield code="b">cr</subfield>
+                     <subfield code="2">rdacarrier</subfield>
+                  </datafield>
+                  <datafield tag="533" ind1=" " ind2=" ">
+                     <subfield code="a">Electronic Reproduction</subfield>
+                     <subfield code="b">Amsterdam</subfield>
+                     <subfield code="c">Library UvA/HvA</subfield>
+                     <subfield code="d">2018</subfield>
+                     <subfield code="n">Copy digitized: PH418 A</subfield>
+                     <subfield code="5">NL-AmU</subfield>
+                  </datafield>
+                  <datafield tag="583" ind1="1" ind2=" ">
+                     <subfield code="a">digitized</subfield>
+                     <subfield code="c">2018</subfield>
+                     <subfield code="h">Amsterdam, Library UvA/HvA</subfield>
+                     <subfield code="5">NL-AmU</subfield>
+                  </datafield>
+                  <datafield tag="588" ind1="0" ind2=" ">
+                     <subfield code="a">Print version record</subfield>
+                  </datafield>
+                  <datafield tag="655" ind1=" " ind2="4">
+                     <subfield code="a">Electronic books</subfield>
+                  </datafield>
+                  <datafield tag="776" ind1="0" ind2="8">
+                     <subfield code="a">Print version:</subfield>
+                     <subfield code="a">Suchten, Alexander von,, approximately 1520-approximately 1590,</subfield>
+                     <subfield code="t">De secretis antimonii, das ist, von der grossen heymligkeit des Antimonij, zu Teutschem Spiesglas genant, die Artzney betreffend /</subfield>
+                     <subfield code="d">Gedruckt zu Mümpelgart :: durch Jacob Foillet,, 1598</subfield>
+                     <subfield code="w">(OCoLC)1285510384</subfield>
+                  </datafield>
+                  <datafield tag="856" ind1="4" ind2="0">
+                     <subfield code="u">https://hdl.handle.net/11245/3.39779</subfield>
+                     <subfield code="z">Full text</subfield>
+                  </datafield>
+                  <datafield tag="910" ind1=" " ind2=" ">
+                     <subfield code="a">Digitalisering door UvA</subfield>
+                  </datafield>
+               </record>
+            </bib>
+         </mets:xmlData>
+      </mets:mdWrap>
+   </mets:dmdSec>
+   <mets:fileSec>
+      <mets:fileGrp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" USE="DEFAULT">
+         <mets:file ID="FILE_0001_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_001.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0002_DEFAULT" MIMETYPE="image/tiff" USE="banner">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_002.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_003.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0004_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_004.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0005_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_005.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0006_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_006.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0007_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_007.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0008_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_008.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0009_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_009.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0010_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_010.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0011_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_011.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0012_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_012.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0013_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_013.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0014_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_014.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0015_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_015.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0016_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_016.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0017_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_017.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0018_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_018.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0019_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_019.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0020_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_020.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0021_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_021.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0022_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_022.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0023_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_023.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0024_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_024.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0025_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_025.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0026_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_026.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0027_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_027.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0028_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_028.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0029_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_029.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0030_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_030.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0031_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_031.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0032_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_032.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0033_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_033.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0034_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_034.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0035_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_035.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0036_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_036.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0037_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_037.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0038_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_038.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0039_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_039.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0040_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_040.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0041_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_041.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0042_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_042.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0043_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_043.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0044_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_044.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0045_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_045.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0046_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_046.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0047_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_047.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0048_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_048.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0049_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_049.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0050_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_050.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0051_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_051.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0052_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_052.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0053_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_053.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0054_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_054.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0055_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_055.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0056_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_056.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0057_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_057.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0058_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_058.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0059_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_059.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0060_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_060.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0061_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_061.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0062_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_062.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0063_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_063.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0064_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_064.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0065_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_065.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0066_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_066.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0067_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_067.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0068_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_068.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0069_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_069.tif"/>
+         </mets:file>
+         <mets:file ID="FILE_0070_DEFAULT" MIMETYPE="image/tiff">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="file://ph418_b__bph_ok_962_(2)_070.tif"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="VIEWER">
+         <mets:file ID="FILE_0001_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_001.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0002_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_002.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_003.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0004_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_004.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0005_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_005.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0006_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_006.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0007_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_007.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0008_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_008.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0009_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_009.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0010_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_010.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0011_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_011.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0012_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_012.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0013_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_013.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0014_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_014.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0015_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_015.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0016_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_016.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0017_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_017.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0018_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_018.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0019_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_019.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0020_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_020.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0021_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_021.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0022_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_022.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0023_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_023.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0024_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_024.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0025_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_025.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0026_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_026.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0027_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_027.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0028_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_028.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0029_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_029.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0030_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_030.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0031_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_031.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0032_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_032.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0033_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_033.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0034_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_034.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0035_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_035.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0036_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_036.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0037_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_037.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0038_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_038.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0039_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_039.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0040_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_040.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0041_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_041.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0042_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_042.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0043_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_043.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0044_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_044.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0045_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_045.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0046_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_046.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0047_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_047.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0048_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_048.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0049_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_049.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0050_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_050.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0051_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_051.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0052_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_052.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0053_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_053.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0054_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_054.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0055_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_055.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0056_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_056.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0057_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_057.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0058_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_058.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0059_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_059.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0060_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_060.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0061_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_061.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0062_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_062.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0063_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_063.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0064_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_064.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0065_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_065.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0066_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_066.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0067_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_067.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0068_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_068.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0069_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_069.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0070_DEFAULT_VIEWER" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_070.jpg/full/!500,500/0/default.jpg"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="VIEWER_THUMB">
+         <mets:file ID="FILE_0001_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_001.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0002_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_002.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_003.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0004_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_004.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0005_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_005.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0006_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_006.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0007_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_007.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0008_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_008.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0009_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_009.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0010_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_010.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0011_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_011.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0012_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_012.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0013_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_013.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0014_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_014.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0015_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_015.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0016_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_016.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0017_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_017.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0018_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_018.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0019_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_019.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0020_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_020.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0021_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_021.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0022_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_022.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0023_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_023.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0024_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_024.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0025_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_025.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0026_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_026.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0027_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_027.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0028_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_028.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0029_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_029.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0030_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_030.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0031_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_031.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0032_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_032.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0033_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_033.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0034_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_034.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0035_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_035.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0036_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_036.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0037_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_037.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0038_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_038.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0039_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_039.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0040_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_040.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0041_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_041.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0042_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_042.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0043_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_043.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0044_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_044.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0045_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_045.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0046_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_046.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0047_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_047.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0048_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_048.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0049_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_049.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0050_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_050.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0051_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_051.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0052_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_052.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0053_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_053.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0054_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_054.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0055_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_055.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0056_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_056.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0057_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_057.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0058_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_058.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0059_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_059.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0060_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_060.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0061_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_061.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0062_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_062.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0063_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_063.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0064_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_064.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0065_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_065.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0066_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_066.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0067_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_067.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0068_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_068.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0069_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_069.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0070_DEFAULT_VIEWER_THUMB" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/102/ph418_b__bph_ok_962_(2)_070.jpg"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="BOOKVIEWER">
+         <mets:file ID="FILE_0001_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0001_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_001.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0002_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0002_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_002.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0003_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_003.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0004_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0004_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_004.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0005_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0005_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_005.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0006_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0006_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_006.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0007_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0007_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_007.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0008_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0008_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_008.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0009_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0009_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_009.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0010_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0010_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_010.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0011_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0011_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_011.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0012_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0012_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_012.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0013_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0013_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_013.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0014_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0014_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_014.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0015_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0015_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_015.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0016_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0016_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_016.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0017_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0017_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_017.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0018_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0018_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_018.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0019_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0019_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_019.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0020_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0020_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_020.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0021_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0021_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_021.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0022_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0022_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_022.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0023_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0023_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_023.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0024_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0024_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_024.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0025_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0025_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_025.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0026_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0026_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_026.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0027_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0027_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_027.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0028_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0028_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_028.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0029_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0029_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_029.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0030_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0030_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_030.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0031_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0031_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_031.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0032_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0032_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_032.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0033_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0033_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_033.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0034_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0034_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_034.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0035_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0035_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_035.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0036_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0036_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_036.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0037_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0037_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_037.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0038_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0038_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_038.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0039_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0039_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_039.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0040_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0040_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_040.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0041_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0041_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_041.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0042_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0042_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_042.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0043_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0043_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_043.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0044_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0044_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_044.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0045_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0045_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_045.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0046_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0046_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_046.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0047_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0047_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_047.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0048_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0048_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_048.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0049_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0049_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_049.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0050_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0050_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_050.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0051_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0051_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_051.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0052_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0052_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_052.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0053_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0053_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_053.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0054_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0054_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_054.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0055_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0055_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_055.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0056_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0056_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_056.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0057_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0057_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_057.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0058_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0058_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_058.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0059_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0059_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_059.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0060_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0060_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_060.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0061_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0061_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_061.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0062_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0062_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_062.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0063_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0063_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_063.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0064_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0064_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_064.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0065_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0065_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_065.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0066_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0066_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_066.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0067_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0067_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_067.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0068_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0068_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_068.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0069_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0069_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_069.jpg/info.json"/>
+         </mets:file>
+         <mets:file ID="FILE_0070_DEFAULT_BOOKVIEWER" ADMID="TECH_FILE_0070_DEFAULT"
+                    MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_070.jpg/info.json"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="THUMBNAIL">
+         <mets:file MIMETYPE="image/jpeg" ID="FILE_0002_DEFAULT_THUMB">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/img/e/erfgoed/9940609919905131/thumbs/296/ph418_b__bph_ok_962_(2)_002.jpg"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="DOWNLOAD">
+         <mets:file ID="FILE_0001_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_001.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0002_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_002.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_003.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0004_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_004.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0005_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_005.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0006_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_006.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0007_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_007.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0008_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_008.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0009_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_009.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0010_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_010.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0011_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_011.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0012_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_012.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0013_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_013.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0014_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_014.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0015_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_015.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0016_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_016.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0017_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_017.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0018_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_018.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0019_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_019.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0020_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_020.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0021_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_021.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0022_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_022.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0023_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_023.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0024_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_024.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0025_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_025.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0026_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_026.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0027_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_027.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0028_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_028.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0029_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_029.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0030_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_030.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0031_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_031.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0032_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_032.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0033_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_033.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0034_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_034.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0035_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_035.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0036_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_036.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0037_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_037.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0038_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_038.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0039_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_039.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0040_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_040.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0041_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_041.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0042_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_042.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0043_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_043.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0044_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_044.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0045_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_045.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0046_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_046.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0047_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_047.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0048_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_048.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0049_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_049.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0050_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_050.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0051_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_051.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0052_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_052.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0053_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_053.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0054_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_054.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0055_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_055.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0056_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_056.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0057_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_057.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0058_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_058.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0059_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_059.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0060_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_060.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0061_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_061.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0062_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_062.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0063_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_063.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0064_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_064.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0065_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_065.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0066_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_066.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0067_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_067.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0068_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_068.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0069_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_069.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0070_DEFAULT_DOWNLOAD" MIMETYPE="image/jpeg">
+            <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL"
+                         xlink:href="https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_070.jpg/full/full/0/default.jpg"/>
+         </mets:file>
+      </mets:fileGrp>
+   </mets:fileSec>
+   <mets:structMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" TYPE="LOGICAL">
+      <mets:div ADMID="AMD" DMDID="DMDLOG_0000" ID="LOG_0000"
+                LABEL="De secretis antimonii, das ist, von der grossen heymligkeit des Antimonij, zu Teutschem Spiesglas genant, die Artzney betreffend /"
+                TYPE="Monograph"/>
+   </mets:structMap>
+   <mets:structMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" TYPE="PHYSICAL">
+      <mets:div ID="PHYS_0000" TYPE="physSequence">
+         <mets:div ID="PHYS_0001" ORDER="1" LABEL="Voorplat" TYPE="page">
+            <mets:fptr FILEID="FILE_0001_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0001_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0001_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0001_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0001_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0002" ORDER="2" LABEL="1" TYPE="page">
+            <mets:fptr FILEID="FILE_0002_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0002_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0002_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0002_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0002_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0003" ORDER="3" LABEL="2-3" TYPE="page">
+            <mets:fptr FILEID="FILE_0003_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0003_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0003_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0003_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0003_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0004" ORDER="4" LABEL="4-5" TYPE="page">
+            <mets:fptr FILEID="FILE_0004_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0004_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0004_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0004_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0004_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0005" ORDER="5" LABEL="6-7" TYPE="page">
+            <mets:fptr FILEID="FILE_0005_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0005_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0005_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0005_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0005_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0006" ORDER="6" LABEL="8-9" TYPE="page">
+            <mets:fptr FILEID="FILE_0006_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0006_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0006_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0006_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0006_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0007" ORDER="7" LABEL="10-11" TYPE="page">
+            <mets:fptr FILEID="FILE_0007_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0007_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0007_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0007_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0007_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0008" ORDER="8" LABEL="12-13" TYPE="page">
+            <mets:fptr FILEID="FILE_0008_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0008_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0008_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0008_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0008_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0009" ORDER="9" LABEL="14-15" TYPE="page">
+            <mets:fptr FILEID="FILE_0009_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0009_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0009_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0009_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0009_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0010" ORDER="10" LABEL="16-17" TYPE="page">
+            <mets:fptr FILEID="FILE_0010_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0010_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0010_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0010_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0010_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0011" ORDER="11" LABEL="18-19" TYPE="page">
+            <mets:fptr FILEID="FILE_0011_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0011_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0011_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0011_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0011_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0012" ORDER="12" LABEL="20-21" TYPE="page">
+            <mets:fptr FILEID="FILE_0012_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0012_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0012_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0012_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0012_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0013" ORDER="13" LABEL="22-23" TYPE="page">
+            <mets:fptr FILEID="FILE_0013_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0013_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0013_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0013_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0013_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0014" ORDER="14" LABEL="24-25" TYPE="page">
+            <mets:fptr FILEID="FILE_0014_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0014_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0014_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0014_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0014_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0015" ORDER="15" LABEL="28-29" TYPE="page">
+            <mets:fptr FILEID="FILE_0015_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0015_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0015_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0015_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0015_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0016" ORDER="16" LABEL="30-31" TYPE="page">
+            <mets:fptr FILEID="FILE_0016_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0016_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0016_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0016_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0016_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0017" ORDER="17" LABEL="32-33" TYPE="page">
+            <mets:fptr FILEID="FILE_0017_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0017_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0017_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0017_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0017_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0018" ORDER="18" LABEL="34-35" TYPE="page">
+            <mets:fptr FILEID="FILE_0018_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0018_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0018_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0018_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0018_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0019" ORDER="19" LABEL="40-37" TYPE="page">
+            <mets:fptr FILEID="FILE_0019_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0019_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0019_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0019_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0019_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0020" ORDER="20" LABEL="38-39" TYPE="page">
+            <mets:fptr FILEID="FILE_0020_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0020_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0020_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0020_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0020_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0021" ORDER="21" LABEL="40-41" TYPE="page">
+            <mets:fptr FILEID="FILE_0021_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0021_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0021_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0021_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0021_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0022" ORDER="22" LABEL="42-43" TYPE="page">
+            <mets:fptr FILEID="FILE_0022_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0022_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0022_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0022_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0022_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0023" ORDER="23" LABEL="44-45" TYPE="page">
+            <mets:fptr FILEID="FILE_0023_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0023_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0023_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0023_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0023_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0024" ORDER="24" LABEL="46-47" TYPE="page">
+            <mets:fptr FILEID="FILE_0024_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0024_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0024_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0024_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0024_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0025" ORDER="25" LABEL="48-49" TYPE="page">
+            <mets:fptr FILEID="FILE_0025_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0025_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0025_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0025_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0025_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0026" ORDER="26" LABEL="50-51" TYPE="page">
+            <mets:fptr FILEID="FILE_0026_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0026_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0026_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0026_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0026_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0027" ORDER="27" LABEL="52-53" TYPE="page">
+            <mets:fptr FILEID="FILE_0027_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0027_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0027_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0027_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0027_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0028" ORDER="28" LABEL="54-55" TYPE="page">
+            <mets:fptr FILEID="FILE_0028_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0028_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0028_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0028_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0028_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0029" ORDER="29" LABEL="56-57" TYPE="page">
+            <mets:fptr FILEID="FILE_0029_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0029_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0029_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0029_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0029_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0030" ORDER="30" LABEL="58-59" TYPE="page">
+            <mets:fptr FILEID="FILE_0030_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0030_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0030_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0030_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0030_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0031" ORDER="31" LABEL="62-63" TYPE="page">
+            <mets:fptr FILEID="FILE_0031_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0031_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0031_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0031_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0031_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0032" ORDER="32" LABEL="64-65" TYPE="page">
+            <mets:fptr FILEID="FILE_0032_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0032_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0032_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0032_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0032_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0033" ORDER="33" LABEL="65-66" TYPE="page">
+            <mets:fptr FILEID="FILE_0033_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0033_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0033_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0033_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0033_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0034" ORDER="34" LABEL="68-69" TYPE="page">
+            <mets:fptr FILEID="FILE_0034_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0034_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0034_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0034_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0034_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0035" ORDER="35" LABEL="70-71" TYPE="page">
+            <mets:fptr FILEID="FILE_0035_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0035_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0035_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0035_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0035_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0036" ORDER="36" LABEL="72-73" TYPE="page">
+            <mets:fptr FILEID="FILE_0036_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0036_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0036_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0036_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0036_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0037" ORDER="37" LABEL="74-75" TYPE="page">
+            <mets:fptr FILEID="FILE_0037_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0037_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0037_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0037_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0037_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0038" ORDER="38" LABEL="76-77" TYPE="page">
+            <mets:fptr FILEID="FILE_0038_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0038_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0038_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0038_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0038_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0039" ORDER="39" LABEL="78-79" TYPE="page">
+            <mets:fptr FILEID="FILE_0039_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0039_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0039_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0039_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0039_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0040" ORDER="40" LABEL="80-81" TYPE="page">
+            <mets:fptr FILEID="FILE_0040_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0040_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0040_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0040_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0040_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0041" ORDER="41" LABEL="82-83" TYPE="page">
+            <mets:fptr FILEID="FILE_0041_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0041_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0041_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0041_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0041_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0042" ORDER="42" LABEL="84-85" TYPE="page">
+            <mets:fptr FILEID="FILE_0042_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0042_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0042_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0042_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0042_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0043" ORDER="43" LABEL="86-87" TYPE="page">
+            <mets:fptr FILEID="FILE_0043_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0043_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0043_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0043_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0043_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0044" ORDER="44" LABEL="88-89" TYPE="page">
+            <mets:fptr FILEID="FILE_0044_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0044_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0044_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0044_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0044_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0045" ORDER="45" LABEL="90-91" TYPE="page">
+            <mets:fptr FILEID="FILE_0045_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0045_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0045_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0045_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0045_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0046" ORDER="46" LABEL="92-93" TYPE="page">
+            <mets:fptr FILEID="FILE_0046_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0046_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0046_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0046_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0046_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0047" ORDER="47" LABEL="94-95" TYPE="page">
+            <mets:fptr FILEID="FILE_0047_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0047_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0047_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0047_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0047_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0048" ORDER="48" LABEL="96-97" TYPE="page">
+            <mets:fptr FILEID="FILE_0048_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0048_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0048_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0048_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0048_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0049" ORDER="49" LABEL="98-99" TYPE="page">
+            <mets:fptr FILEID="FILE_0049_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0049_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0049_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0049_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0049_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0050" ORDER="50" LABEL="100-102" TYPE="page">
+            <mets:fptr FILEID="FILE_0050_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0050_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0050_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0050_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0050_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0051" ORDER="51" LABEL="103-104" TYPE="page">
+            <mets:fptr FILEID="FILE_0051_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0051_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0051_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0051_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0051_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0052" ORDER="52" LABEL="105-106" TYPE="page">
+            <mets:fptr FILEID="FILE_0052_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0052_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0052_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0052_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0052_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0053" ORDER="53" LABEL="107-108" TYPE="page">
+            <mets:fptr FILEID="FILE_0053_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0053_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0053_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0053_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0053_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0054" ORDER="54" LABEL="109-110" TYPE="page">
+            <mets:fptr FILEID="FILE_0054_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0054_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0054_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0054_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0054_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0055" ORDER="55" LABEL="111-112" TYPE="page">
+            <mets:fptr FILEID="FILE_0055_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0055_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0055_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0055_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0055_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0056" ORDER="56" LABEL="113-114" TYPE="page">
+            <mets:fptr FILEID="FILE_0056_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0056_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0056_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0056_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0056_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0057" ORDER="57" LABEL="115-116" TYPE="page">
+            <mets:fptr FILEID="FILE_0057_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0057_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0057_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0057_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0057_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0058" ORDER="58" LABEL="117-118" TYPE="page">
+            <mets:fptr FILEID="FILE_0058_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0058_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0058_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0058_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0058_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0059" ORDER="59" LABEL="119-120" TYPE="page">
+            <mets:fptr FILEID="FILE_0059_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0059_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0059_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0059_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0059_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0060" ORDER="60" LABEL="121-124" TYPE="page">
+            <mets:fptr FILEID="FILE_0060_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0060_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0060_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0060_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0060_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0061" ORDER="61" LABEL="125-126" TYPE="page">
+            <mets:fptr FILEID="FILE_0061_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0061_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0061_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0061_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0061_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0062" ORDER="62" LABEL="127-128" TYPE="page">
+            <mets:fptr FILEID="FILE_0062_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0062_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0062_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0062_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0062_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0063" ORDER="63" LABEL="128-129" TYPE="page">
+            <mets:fptr FILEID="FILE_0063_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0063_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0063_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0063_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0063_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0064" ORDER="64" LABEL="130-131" TYPE="page">
+            <mets:fptr FILEID="FILE_0064_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0064_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0064_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0064_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0064_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0065" ORDER="65" LABEL="132-133" TYPE="page">
+            <mets:fptr FILEID="FILE_0065_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0065_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0065_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0065_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0065_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0066" ORDER="66" LABEL="134-135" TYPE="page">
+            <mets:fptr FILEID="FILE_0066_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0066_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0066_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0066_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0066_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0067" ORDER="67" LABEL="136-137" TYPE="page">
+            <mets:fptr FILEID="FILE_0067_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0067_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0067_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0067_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0067_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0068" ORDER="68" LABEL="138-139" TYPE="page">
+            <mets:fptr FILEID="FILE_0068_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0068_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0068_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0068_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0068_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0069" ORDER="69" LABEL="140-141" TYPE="page">
+            <mets:fptr FILEID="FILE_0069_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0069_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0069_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0069_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0069_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+         <mets:div ID="PHYS_0070" ORDER="70" LABEL="142" TYPE="page">
+            <mets:fptr FILEID="FILE_0070_DEFAULT"/>
+            <mets:fptr FILEID="FILE_0070_DEFAULT_VIEWER"/>
+            <mets:fptr FILEID="FILE_0070_DEFAULT_VIEWER_THUMB"/>
+            <mets:fptr FILEID="FILE_0070_DEFAULT_BOOKVIEWER"/>
+            <mets:fptr FILEID="FILE_0070_DEFAULT_DOWNLOAD"/>
+         </mets:div>
+      </mets:div>
+   </mets:structMap>
+   <mets:structLink xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0001"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0002"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0003"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0004"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0005"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0006"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0007"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0008"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0009"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0010"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0011"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0012"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0013"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0014"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0015"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0016"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0017"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0018"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0019"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0020"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0021"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0022"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0023"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0024"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0025"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0026"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0027"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0028"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0029"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0030"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0031"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0032"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0033"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0034"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0035"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0036"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0037"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0038"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0039"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0040"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0041"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0042"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0043"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0044"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0045"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0046"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0047"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0048"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0049"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0050"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0051"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0052"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0053"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0054"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0055"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0056"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0057"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0058"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0059"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0060"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0061"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0062"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0063"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0064"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0065"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0066"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0067"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0068"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0069"
+                   xlink:from="LOG_0000"/>
+      <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0070"
+                   xlink:from="LOG_0000"/>
+   </mets:structLink>
+</mets:mets>

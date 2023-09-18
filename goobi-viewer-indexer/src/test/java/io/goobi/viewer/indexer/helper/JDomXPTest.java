@@ -49,7 +49,7 @@ public class JDomXPTest extends AbstractTest {
      */
     @Test
     public void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
-        File file = new File("src/test/resources/METS/H030001_mets.xml");
+        File file = new File("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.METS_MARC, JDomXP.determineFileFormat(file));
     }
