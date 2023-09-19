@@ -305,9 +305,8 @@ public class MetsIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-            String preQuery = XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS' or @MDTYPE='MARC']/";
-            logger.debug("preQuery: {}", preQuery);
-            String pi = MetadataHelper.getPIFromXML(preQuery, xp);
+
+            String pi = MetadataHelper.getPIFromXML(getPiRootPath(indexObj.getDmdid()), xp);
             if (StringUtils.isBlank(pi)) {
                 ret[1] = "PI not found.";
                 throw new IndexerException(ret[1]);
@@ -2273,6 +2272,17 @@ public class MetsIndexer extends Indexer {
      */
     protected FileFormat getSourceDocFormat() {
         return FileFormat.METS;
+    }
+
+    /**
+     * 
+     * @param dmdId
+     * @return Root path for querying for PI
+     */
+    protected String getPiRootPath(String dmdId) {
+        String ret = XPATH_DMDSEC + dmdId + "']/mets:mdWrap[@MDTYPE='MODS']/";
+        logger.debug("preQuery: {}", ret);
+        return ret;
     }
 
     /**

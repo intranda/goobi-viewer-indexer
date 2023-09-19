@@ -417,8 +417,8 @@ public class JDomXP {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return mdWrap correctly
      */
-    public Element getMdWrap(String dmdId) throws FatalIndexerException {
-        List<Element> ret = evaluateToElements("mets:mets/mets:dmdSec[@ID='" + dmdId + "']/mets:mdWrap[@MDTYPE='MODS']", null);
+    public Element getMdWrap(String dmdId) {
+        List<Element> ret = evaluateToElements("mets:mets/mets:dmdSec[@ID='" + dmdId + "']/mets:mdWrap[@MDTYPE='MODS' or @MDTYPE='MARC']", null);
         if (ret != null && !ret.isEmpty()) {
             return ret.get(0);
         }

@@ -313,7 +313,7 @@ public class MetadataHelper {
                     if (StringUtils.isBlank(fieldValue)) {
                         continue;
                     }
-                    
+
                     // CURRENTNOSORT must be an integer value
                     if (fieldName.equals(SolrConstants.CURRENTNOSORT)) {
                         try {
@@ -452,7 +452,8 @@ public class MetadataHelper {
             String proxyUrl = null;
             int proxyPort = 0;
             try {
-                if (SolrIndexerDaemon.getInstance().getConfiguration().isProxyEnabled() && !SolrIndexerDaemon.getInstance().getConfiguration().isHostProxyWhitelisted(url)) {
+                if (SolrIndexerDaemon.getInstance().getConfiguration().isProxyEnabled()
+                        && !SolrIndexerDaemon.getInstance().getConfiguration().isHostProxyWhitelisted(url)) {
                     proxyUrl = SolrIndexerDaemon.getInstance().getConfiguration().getProxyUrl();
                     proxyPort = SolrIndexerDaemon.getInstance().getConfiguration().getProxyPort();
                 }
@@ -609,7 +610,10 @@ public class MetadataHelper {
                 }
                 if (duplicate) {
                     List<FieldConfig> fieldConfigList =
-                            SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(field.getField());
+                            SolrIndexerDaemon.getInstance()
+                                    .getConfiguration()
+                                    .getMetadataConfigurationManager()
+                                    .getConfigurationListForField(field.getField());
                     if (fieldConfigList == null || fieldConfigList.isEmpty() || !fieldConfigList.get(0).isAllowDuplicateValues()) {
                         logger.debug("Duplicate field found: {}:{}", field.getField(), field.getValue());
                         continue;
@@ -765,7 +769,8 @@ public class MetadataHelper {
         }
         String ret = pi.trim();
         // Apply replace rules defined for the field PI
-        List<FieldConfig> configItems = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
+        List<FieldConfig> configItems =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (configItems != null && !configItems.isEmpty()) {
             Map<Object, String> replaceRules = configItems.get(0).getReplaceRules();
             if (replaceRules != null && !replaceRules.isEmpty()) {
@@ -878,7 +883,8 @@ public class MetadataHelper {
      * @should extract DenkXweb PI correctly
      */
     public static String getPIFromXML(String prefix, JDomXP xp) {
-        List<FieldConfig> piConfig = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
+        List<FieldConfig> piConfig =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
             return null;
         }
@@ -887,8 +893,15 @@ public class MetadataHelper {
         for (XPathConfig xPathConfig : xPathConfigurations) {
             String query = prefix + xPathConfig.getxPath();
             query = query.replace("///", "/");
-            logger.info(query);
+            logger.debug(query);
             String pi = xp.evaluateToString(query, null);
+            if (pi == null) {
+                // Attribute evaluation fallback
+                List<Attribute> childrenNodeList = xp.evaluateToAttributes(query, null);
+                if (childrenNodeList != null && !childrenNodeList.isEmpty()) {
+                    pi = childrenNodeList.get(0).getValue();
+                }
+            }
             if (StringUtils.isNotEmpty(pi)) {
                 return pi;
             }
@@ -1421,7 +1434,8 @@ public class MetadataHelper {
                 // Add text body
                 Element eleText = tei.getRootElement().getChild("text", null);
                 if (eleText != null && eleText.getChild("body", null) != null) {
-                    String language = eleText.getAttributeValue("lang", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xml"));
+                    String language =
+                            eleText.getAttributeValue("lang", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xml"));
                     String fileFieldName = SolrConstants.FILENAME_TEI;
                     if (language != null) {
                         String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();

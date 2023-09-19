@@ -320,7 +320,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]</item>
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier</item>
-                            <item>mets:xmlData/bib/record/controlfield[@tag="001"]</item>
+                            <item>/mets:mets/@OBJID</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID</item>
                             <item>//denkxweb:recId</item>
                             <item>dc:identifier</item>
@@ -331,6 +331,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<replace string="replaceme/"></replace>
 					<replace string="/replacemetoo"></replace>
+                    <replace regex="https://hdl.handle.net/([0-9]+)/([0-9]+).([0-9]+)">$1_$2_$3</replace>
 				</item>
 			</list>
 		</PI>
@@ -353,8 +354,6 @@
 		</CURRENTNO>
 
 		<CURRENTNOSORT>
-			<!-- enthaelt die sortierbare Nummerierung (integer) z.B bei mehrbaendigen 
-				Werken // -->
 			<list>
 				<item>
 					<xpath>
@@ -449,6 +448,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
 							</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
 							</item>
 						</list>
@@ -495,6 +495,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:originInfo/mods:publisher
 							</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="b"]</item>
 							<item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Verlag']/lido:actor/lido:nameActorSet/lido:appellationValue
 							</item>
 						</list>
@@ -511,6 +512,7 @@
                         <list>
                             <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
                             </item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="a"]</item>
                         </list>
                     </xpath>
 					<addToDefault>true</addToDefault>
@@ -529,6 +531,7 @@
 							</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo/mods:dateIssued[not(@encoding)][not(@point)]
 							</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="c"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue
 							</item>
 						</list>

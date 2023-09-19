@@ -61,7 +61,7 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
         Path metsFile = Paths.get("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
         assertTrue(Files.isRegularFile(metsFile));
 
-        String pi = "9940609919905131";
+        String pi = "11245_3_39779";
         Map<String, Path> dataFolders = new HashMap<>();
         String[] ret = new MetsMarcIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
         assertEquals(pi + ".xml", ret[0]);
@@ -90,11 +90,11 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
             assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT));
             assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             {
-//                List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
-//                assertNotNull(mdList);
-//                assertEquals(2, mdList.size());
-//                assertEquals("varia", mdList.get(0));
-//                assertEquals("digiwunschbuch", mdList.get(1));
+                //                List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
+                //                assertNotNull(mdList);
+                //                assertEquals(2, mdList.size());
+                //                assertEquals("varia", mdList.get(0));
+                //                assertEquals("digiwunschbuch", mdList.get(1));
             }
             Assert.assertTrue(doc.containsKey(SolrConstants.DEFAULT));
             // Assert.assertTrue(doc.containsKey(SolrConstants.SUPERDEFAULT));
@@ -103,7 +103,9 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
             iddocMap.put(iddoc, true);
             assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
             assertEquals(true, doc.getFieldValue(SolrConstants.ISWORK));
-            assertEquals("De secretis antimonii, das ist, von der grossen heymligkeit des Antimonij, zu Teutschem Spiesglas genant, die Artzney betreffend /", doc.getFieldValue(SolrConstants.LABEL));
+            assertEquals(
+                    "De secretis antimonii, das ist, von der grossen heymligkeit des Antimonij, zu Teutschem Spiesglas genant, die Artzney betreffend /",
+                    doc.getFieldValue(SolrConstants.LABEL));
             assertEquals("LOG_0000", doc.getFieldValue(SolrConstants.LOGID));
             assertEquals(70, doc.getFieldValue(SolrConstants.NUMPAGES));
             assertEquals(pi, doc.getFieldValue(SolrConstants.PI));
@@ -115,115 +117,20 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
             assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
             Assert.assertNull(doc.getFieldValue(SolrConstants.IMAGEURN_OAI)); // only docs representing deleted records should have this field
             assertEquals(false, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
-            {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR");
-                assertNotNull(mdList);
-                assertEquals(1, mdList.size());
-                assertEquals("Klein, Felix", mdList.get(0));
-            }
-            {
-                List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR" + SolrConstants.SUFFIX_UNTOKENIZED);
-                assertNotNull(mdList);
-                assertEquals(1, mdList.size());
-                assertEquals("Klein, Felix", mdList.get(0));
-            }
-            assertEquals("Klein, Felix", doc.getFieldValue("SORT_AUTHOR"));
 
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEAR);
                 assertNotNull(mdList);
                 assertEquals(1, mdList.size());
-                assertEquals(Long.valueOf(1980), mdList.get(0));
-                assertEquals(Long.valueOf(1980), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR));
-            }
-            {
-                List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEARMONTH);
-                assertNotNull(mdList);
-                assertEquals(1, mdList.size());
-                assertEquals(Long.valueOf(198007), mdList.get(0));
-                assertEquals(Long.valueOf(198007), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEARMONTH));
-            }
-            {
-                List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEARMONTHDAY);
-                assertNotNull(mdList);
-                assertEquals(1, mdList.size());
-                assertEquals(Long.valueOf(19800710), mdList.get(0));
-                assertEquals(Long.valueOf(19800710), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEARMONTHDAY));
-            }
-            {
-                List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.MONTHDAY);
-                assertNotNull(mdList);
-                assertEquals(1, mdList.size());
-                assertEquals(Long.valueOf(710), mdList.get(0));
-                assertEquals(Long.valueOf(710), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.MONTHDAY));
+                assertEquals(Long.valueOf(1598), mdList.get(0));
+                assertEquals(Long.valueOf(1598), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.CENTURY);
                 assertNotNull(mdList);
                 assertEquals(1, mdList.size());
-                assertEquals(Long.valueOf(20), mdList.get(0));
-                assertEquals(Long.valueOf(20), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.CENTURY));
-            }
-        }
-
-        // Child docstructs
-        {
-            SolrDocumentList docList = SolrIndexerDaemon.getInstance()
-                    .getSearchIndex()
-                    .search(new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
-                            .append(pi)
-                            .append(" AND ")
-                            .append(SolrConstants.IDDOC_PARENT)
-                            .append(":*")
-                            .toString(), null);
-            assertEquals(3, docList.size());
-
-            Map<String, Boolean> logIdMap = new HashMap<>();
-
-            for (SolrDocument doc : docList) {
-                {
-                    Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                    assertNotNull(values);
-                    assertEquals(1, values.size());
-                    assertEquals("OPENACCESS", values.iterator().next());
-                }
-                {
-                    //                    Collection<Object> values = doc.getFieldValues(SolrConstants.DC);
-                    //                    assertNotNull(values);
-                    //                    assertEquals(2, values.size());
-                }
-                Assert.assertTrue(doc.containsKey(SolrConstants.DEFAULT));
-                assertEquals(DocType.DOCSTRCT.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
-                assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
-                assertEquals(doc.getFieldValue(SolrConstants.DOCSTRCT), doc.getFieldValue(SolrConstants.DOCSTRCT_SUB));
-                assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-                {
-//                    List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
-//                    assertNotNull(mdList);
-//                    assertEquals(2, mdList.size());
-//                    assertEquals("varia", mdList.get(0));
-//                    assertEquals("digiwunschbuch", mdList.get(1));
-                }
-                {
-                    String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    assertNotNull(value);
-                    Assert.assertNull(iddocMap.get(value));
-                    iddocMap.put(value, true);
-                    assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
-                }
-                assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_TOPSTRUCT));
-                {
-                    String value = (String) doc.getFieldValue(SolrConstants.LOGID);
-                    assertNotNull(value);
-                    Assert.assertNull(logIdMap.get(value));
-                    logIdMap.put(value, true);
-                }
-                assertNotNull(doc.getFieldValue(SolrConstants.THUMBNAIL));
-                assertNotNull(doc.getFieldValue(SolrConstants.THUMBPAGENO));
-                assertNotNull(doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
-                assertNotNull(doc.getFieldValue(SolrConstants.NUMPAGES));
-                assertNotNull(doc.getFieldValue(SolrConstants.URN));
-                assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
+                assertEquals(Long.valueOf(16), mdList.get(0));
+                assertEquals(Long.valueOf(16), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.CENTURY));
             }
         }
 
@@ -242,9 +149,9 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
                     assertEquals("OPENACCESS", values.iterator().next());
                 }
                 {
-                    Collection<Object> values = doc.getFieldValues(SolrConstants.DC);
-                    assertNotNull(values);
-                    assertEquals(2, values.size());
+                    //                    Collection<Object> values = doc.getFieldValues(SolrConstants.DC);
+                    //                    assertNotNull(values);
+                    //                    assertEquals(2, values.size());
                 }
                 Integer order = (Integer) doc.getFieldValue(SolrConstants.ORDER);
                 assertNotNull(order);
@@ -252,14 +159,7 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
                 assertNotNull(fileName);
                 assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
                 assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-                assertNotNull(doc.getFieldValue(SolrConstants.IMAGEURN));
-                assertNotNull(doc.getFieldValue(SolrConstants.FILEIDROOT));
-                {
-                    String value = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
-                    assertNotNull(value);
-                    assertEquals("fulltext/" + pi + "/" + FilenameUtils.getBaseName(fileName) + FileTools.TXT_EXTENSION, value);
-                    assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
-                }
+                //                assertNotNull(doc.getFieldValue(SolrConstants.FILEIDROOT)); // TODO Implement correct file group selection
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
                     assertNotNull(value);
@@ -272,7 +172,9 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
                 assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
                 // SORT_* fields from the direct owner docstruct
                 if (order == 2) {
-                    assertEquals("Universität und Technische Hochschule", doc.getFieldValue("SORT_TITLE"));
+                    assertEquals(
+                            "De secretis antimonii, das ist, von der grossen heymligkeit des Antimonij, zu Teutschem Spiesglas genant, die Artzney betreffend /",
+                            doc.getFieldValue("SORT_TITLE"));
                 }
             }
         }

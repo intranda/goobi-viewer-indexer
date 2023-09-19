@@ -291,6 +291,11 @@ public class MetsMarcIndexer extends MetsIndexer {
     }
 
     @Override
+    protected String getPiRootPath(String dmdId) {
+        return "";
+    }
+
+    @Override
     protected String getAnchorPiXpath() {
         return "']/mets:mdWrap[@MDTYPE='MARC']/mets:xmlData/marc:bib/marc:record/marc:datafield[@tag='773']/marc:subfield[@code='w']";
     }
