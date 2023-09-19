@@ -119,6 +119,10 @@ public class MetadataHelper {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());
         }
         for (String fieldName : fieldNamesList) {
+            // PI is processed separately
+            if (SolrConstants.PI.equals(fieldName)) {
+                continue;
+            }
             List<FieldConfig> configurationItemList =
                     SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
             if (configurationItemList == null || configurationItemList.isEmpty()) {

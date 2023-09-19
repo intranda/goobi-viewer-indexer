@@ -707,18 +707,20 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm
-							</item>
+							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="100"][subfield[@code="e"] = "author."]</item>
 						</list>
 					</xpath>
 					<groupEntity type="PERSON">
 					    <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_VALUE">subfield[@code="a"]</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
 						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_LIFEPERIOD">subfield[@code="d"]</field>
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
 					</groupEntity>
 					<addSortField>true</addSortField>
