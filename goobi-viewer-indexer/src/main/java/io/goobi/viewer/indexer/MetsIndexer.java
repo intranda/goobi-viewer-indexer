@@ -119,6 +119,7 @@ public class MetsIndexer extends Indexer {
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
+    private String preferredImageFileGroup = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroup();
     private volatile String useFileGroupGlobal = null;
 
     /**
@@ -1121,8 +1122,13 @@ public class MetsIndexer extends Indexer {
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
-            if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP)) {
-                //If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
+            if (StringUtils.isNotEmpty(preferredImageFileGroup) && fileID.contains(DEFAULT_FILEGROUP)) {
+                useFileGroup = preferredImageFileGroup;
+                useFileID = fileID;
+                preferCurrentFileGroup = true;
+            } else if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP)) {
+                // If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
+                // TODO
                 useFileGroup = DEFAULT_FILEGROUP;
                 useFileID = fileID;
                 preferCurrentFileGroup = true;
@@ -1237,9 +1243,14 @@ public class MetsIndexer extends Indexer {
             String fileGrpUse = eleFileGrp.getAttributeValue("USE");
             String fileGrpId = eleFileGrp.getAttributeValue("ID");
             logger.debug("Found file group: {}", fileGrpUse);
-            // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if (!downloadExternalImages && (useFileGroup == null || !PRESENTATION_FILEGROUP.equals(useFileGroup))
-                    && (PRESENTATION_FILEGROUP.equals(fileGrpUse) || DEFAULT_FILEGROUP.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
+            // If useFileGroup is still not set or not the configured preferred file group or PRESENTATION,
+            // check whether the current group is PRESENTATION or DEFAULT and set it to that
+            if (!downloadExternalImages
+                    && (useFileGroup == null || !(StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(useFileGroup))
+                            || !PRESENTATION_FILEGROUP.equals(useFileGroup))
+                    && ((StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(fileGrpUse)) ||
+                            PRESENTATION_FILEGROUP.equals(fileGrpUse) || DEFAULT_FILEGROUP.equals(fileGrpUse)
+                            || OBJECT_FILEGROUP.equals(fileGrpUse))) {
                 useFileGroup = fileGrpUse;
             }
             String fileId = null;
@@ -1323,8 +1334,14 @@ public class MetsIndexer extends Indexer {
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     if (doc.containsKey(SolrConstants.FILENAME)) {
-                        logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath,
-                                fileGrpUse);
+                        if (StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(fileGrpUse)) {
+                            // Preferred file group overrides any already added values
+                            doc.remove(SolrConstants.FILENAME);
+                        } else {
+                            logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc,
+                                    filePath,
+                                    fileGrpUse);
+                        }
                     }
 
                     String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
@@ -1365,6 +1382,11 @@ public class MetsIndexer extends Indexer {
                 }
 
                 // Add mime type
+                if (doc.containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(preferredImageFileGroup)
+                        && preferredImageFileGroup.equals(fileGrpUse)) {
+                    // Preferred file group overrides any already added values
+                    doc.removeField(SolrConstants.MIMETYPE);
+                }
                 doc.addField(SolrConstants.MIMETYPE, mimetype);
                 if (!shapePageDocs.isEmpty()) {
                     for (SolrInputDocument shapePageDoc : shapePageDocs) {

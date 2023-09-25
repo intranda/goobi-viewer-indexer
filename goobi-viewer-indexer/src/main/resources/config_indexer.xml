@@ -111,6 +111,12 @@
 		<!-- fulltextForceUTF8: If true, full-text files will automatically be converted to UTF-8
 		    if a different charset is detected. Default is true. -->
 		<fulltextForceUTF8>false</fulltextForceUTF8>
+        
+        <mets>
+            <!-- preferredImageFileGroup: If a name is configured and a group with that name exists,
+                it will be used for indexing image file paths. -->
+            <preferredImageFileGroup></preferredImageFileGroup>
+        </mets>
 
 		<lido>
 			<!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
@@ -245,7 +251,7 @@
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
-                            <item>mets:xmlData/bib/record/controlfield[@tag="001"]</item>
+                            <item>/mets:mets/@OBJID</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
 							<item>dc:identifier</item>
@@ -256,6 +262,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<replace string="rosdok/ppn"></replace>
 					<replace string="http://ld.zdb-services.de/resource/organisations/DE-MUS-814819/"></replace>
+                    <replace regex="https://hdl.handle.net/([0-9]+)/([0-9]+).([0-9]+)">$1_$2_$3</replace>
 				</item>
 			</list>
 		</PI>

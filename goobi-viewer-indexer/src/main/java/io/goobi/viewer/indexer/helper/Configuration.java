@@ -655,6 +655,10 @@ public final class Configuration {
     public boolean isUseFirstPageAsDefaultRepresentative() {
         return getBoolean("init.representativeImage.useFirstPageAsDefault", true);
     }
+    
+    public String getMetsPreferredImageFileGroup() {
+        return getString("init.mets.preferredImageFileGroup");
+    }
 
     /**
      * Overrides values in the config file (for unit test purposes).
