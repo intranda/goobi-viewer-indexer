@@ -1246,8 +1246,8 @@ public class MetsIndexer extends Indexer {
             // If useFileGroup is still not set or not the configured preferred file group or PRESENTATION,
             // check whether the current group is PRESENTATION or DEFAULT and set it to that
             if (!downloadExternalImages
-                    && (useFileGroup == null || !(StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(useFileGroup))
-                            || !PRESENTATION_FILEGROUP.equals(useFileGroup))
+                    && (useFileGroup == null || !((StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(useFileGroup))
+                            || PRESENTATION_FILEGROUP.equals(useFileGroup)))
                     && ((StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(fileGrpUse)) ||
                             PRESENTATION_FILEGROUP.equals(fileGrpUse) || DEFAULT_FILEGROUP.equals(fileGrpUse)
                             || OBJECT_FILEGROUP.equals(fileGrpUse))) {
