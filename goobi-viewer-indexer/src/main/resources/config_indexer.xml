@@ -644,7 +644,7 @@
 					</groupEntity>
 				</item>
 			</list>
-		</MD_PUBLISHER><item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="a"]</item>
+		</MD_PUBLISHER>
 
 		<!-- This field is important, see chapter 3.13 of the manual -->
 		<MD_PLACEPUBLISH>
