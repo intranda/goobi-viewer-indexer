@@ -1502,7 +1502,7 @@ public class MetsIndexer extends Indexer {
             doc.addField(FIELD_IMAGEAVAILABLE, false);
         }
 
-        if (dataFolders != null) {
+        if (dataFolders != null || altoURL != null) {
             addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, altoURL);
         }
 

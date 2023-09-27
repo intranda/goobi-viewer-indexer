@@ -115,7 +115,7 @@
         <mets>
             <!-- preferredImageFileGroup: If a name is configured and a group with that name exists,
                 it will be used for indexing image file paths. -->
-            <preferredImageFileGroup></preferredImageFileGroup>
+            <preferredImageFileGroup>BOOKVIEWER</preferredImageFileGroup>
         </mets>
 
 		<lido>
@@ -262,7 +262,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<replace string="rosdok/ppn"></replace>
 					<replace string="http://ld.zdb-services.de/resource/organisations/DE-MUS-814819/"></replace>
-                    <replace regex="https://hdl.handle.net/([0-9]+)/([0-9]+).([0-9]+)">$1_$2_$3</replace>
+                    <replace regex="https?://hdl.handle.net/([0-9]+)/([0-9]+).([0-9]+)">$1_$2_$3</replace>
 				</item>
 			</list>
 		</PI>
