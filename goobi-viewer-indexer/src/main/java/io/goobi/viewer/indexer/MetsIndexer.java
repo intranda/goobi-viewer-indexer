@@ -988,7 +988,7 @@ public class MetsIndexer extends Indexer {
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
+     * @param dataRepository a {@link io.goob4i.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
@@ -1008,6 +1008,9 @@ public class MetsIndexer extends Indexer {
             logger.info("No pages found.");
             return;
         }
+
+        useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
+        logger.info("Image file group selected: {}", useFileGroupGlobal);
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
@@ -1041,13 +1044,50 @@ public class MetsIndexer extends Indexer {
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
                 if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi,
-                        order, writeStrategy,
-                        dataFolders, dataRepository, downloadExternalImages)) {
+                        order, writeStrategy, dataFolders, dataRepository, downloadExternalImages)) {
                     order++;
                 }
             }
         }
         logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
+    }
+
+    String selectImageFileGroup(boolean downloadExternalImages) {
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath, not URI
+        List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
+        if (eleFileGrpList.isEmpty()) {
+            logger.info("No file groups found.");
+            return "";
+        }
+
+        String ret = "";
+        for (Element eleFileGrp : eleFileGrpList) {
+            String use = eleFileGrp.getAttributeValue("USE");
+            switch (use) {
+                case DEFAULT_FILEGROUP:
+                    if (!PRESENTATION_FILEGROUP.equals(ret) || downloadExternalImages) {
+                        ret = use;
+                    }
+                    break;
+                case PRESENTATION_FILEGROUP:
+                    if (!downloadExternalImages) {
+                        ret = use;
+                    }
+                    break;
+                case OBJECT_FILEGROUP:
+                    if (!PRESENTATION_FILEGROUP.equals(ret) || !DEFAULT_FILEGROUP.equals(ret)) {
+                        ret = use;
+                    }
+                    break;
+                default:
+                    if (StringUtils.isNotBlank(preferredImageFileGroup) && preferredImageFileGroup.equals(use)) {
+                        return preferredImageFileGroup;
+                    }
+                    break;
+            }
+        }
+
+        return ret;
     }
 
     /**
@@ -1059,6 +1099,7 @@ public class MetsIndexer extends Indexer {
      * @param writeStrategy
      * @param dataFolders
      * @param dataRepository
+     * @param downloadExternalImages
      * @return
      * @throws FatalIndexerException
      * @should add all basic fields
@@ -1103,7 +1144,6 @@ public class MetsIndexer extends Indexer {
 
         List<Element> eleFptrList =
                 eleStructMapPhysical.getChildren("fptr", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
-        String useFileGroup = null;
 
         // Create Solr document for this page
         SolrInputDocument doc = new SolrInputDocument();
@@ -1118,30 +1158,10 @@ public class MetsIndexer extends Indexer {
         // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
         String fileIdRoot = null;
         String useFileID = null;
-        boolean preferCurrentFileGroup = false;
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
-            if (StringUtils.isNotEmpty(preferredImageFileGroup) && fileID.contains(DEFAULT_FILEGROUP)) {
-                useFileGroup = preferredImageFileGroup;
-                useFileID = fileID;
-                preferCurrentFileGroup = true;
-            } else if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP)) {
-                // If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
-                // TODO
-                useFileGroup = DEFAULT_FILEGROUP;
-                useFileID = fileID;
-                preferCurrentFileGroup = true;
-            } else if (fileID.contains(PRESENTATION_FILEGROUP) && !preferCurrentFileGroup) {
-                // Always prefer PRESENTATION: override if already set to something else
-                useFileGroup = PRESENTATION_FILEGROUP;
-                useFileID = fileID;
-                preferCurrentFileGroup = true;
-            } else if (fileID.contains(DEFAULT_FILEGROUP) && !preferCurrentFileGroup) {
-                useFileGroup = DEFAULT_FILEGROUP;
-                useFileID = fileID;
-            } else if (fileID.contains(OBJECT_FILEGROUP) && !preferCurrentFileGroup) {
-                useFileGroup = OBJECT_FILEGROUP;
+            if (fileID.contains(useFileGroupGlobal)) {
                 useFileID = fileID;
             }
 
@@ -1171,8 +1191,8 @@ public class MetsIndexer extends Indexer {
                 }
             }
         }
-        if (useFileGroup != null && StringUtils.isEmpty(useFileID)) {
-            logger.warn("FILEID not found for file group {}", useFileGroup);
+        if (useFileGroupGlobal != null && StringUtils.isEmpty(useFileID)) {
+            logger.warn("FILEID not found for file group {}", useFileGroupGlobal);
             useFileID = "";
         }
 
@@ -1181,22 +1201,22 @@ public class MetsIndexer extends Indexer {
         char fileIdSeparator = '_'; // Separator character between the group name and the rest and the file ID
 
         // Remove the file group part from the file ID
-        if (useFileID != null && useFileGroup != null && useFileID.contains(useFileGroup)) {
-            if (useFileID.startsWith(useFileGroup + '_')) {
+        if (useFileID != null && useFileGroupGlobal != null && useFileID.contains(useFileGroupGlobal)) {
+            if (useFileID.startsWith(useFileGroupGlobal + '_')) {
                 fileGroupPrefix = true;
-            } else if (useFileID.startsWith(useFileGroup + '.')) {
+            } else if (useFileID.startsWith(useFileGroupGlobal + '.')) {
                 fileGroupPrefix = true;
                 fileIdSeparator = '.';
-            } else if (useFileID.endsWith('_' + useFileGroup)) {
+            } else if (useFileID.endsWith('_' + useFileGroupGlobal)) {
                 fileGroupSuffix = true;
-            } else if (useFileID.endsWith('.' + useFileGroup)) {
+            } else if (useFileID.endsWith('.' + useFileGroupGlobal)) {
                 fileGroupSuffix = true;
                 fileIdSeparator = '.';
             }
             if (fileGroupPrefix) {
-                fileIdRoot = useFileID.replace(useFileGroup + fileIdSeparator, "");
+                fileIdRoot = useFileID.replace(useFileGroupGlobal + fileIdSeparator, "");
             } else if (fileGroupSuffix) {
-                fileIdRoot = useFileID.replace(fileIdSeparator + useFileGroup, "");
+                fileIdRoot = useFileID.replace(fileIdSeparator + useFileGroupGlobal, "");
             }
             doc.addField(SolrConstants.FILEIDROOT, fileIdRoot);
         }
@@ -1243,16 +1263,6 @@ public class MetsIndexer extends Indexer {
             String fileGrpUse = eleFileGrp.getAttributeValue("USE");
             String fileGrpId = eleFileGrp.getAttributeValue("ID");
             logger.debug("Found file group: {}", fileGrpUse);
-            // If useFileGroup is still not set or not the configured preferred file group or PRESENTATION,
-            // check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if (!downloadExternalImages
-                    && (useFileGroup == null || !((StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(useFileGroup))
-                            || PRESENTATION_FILEGROUP.equals(useFileGroup)))
-                    && ((StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(fileGrpUse)) ||
-                            PRESENTATION_FILEGROUP.equals(fileGrpUse) || DEFAULT_FILEGROUP.equals(fileGrpUse)
-                            || OBJECT_FILEGROUP.equals(fileGrpUse))) {
-                useFileGroup = fileGrpUse;
-            }
             String fileId = null;
             if (fileGroupPrefix) {
                 fileId = fileGrpUse + fileIdSeparator + fileIdRoot;
@@ -1329,7 +1339,7 @@ public class MetsIndexer extends Indexer {
                 break;
             }
 
-            if (fileGrpUse.equals(useFileGroup)) {
+            if (fileGrpUse.equals(useFileGroupGlobal)) {
                 // The file name from the main file group (PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
@@ -1364,7 +1374,7 @@ public class MetsIndexer extends Indexer {
                     }
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
-                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroup)
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroupGlobal)
                             && !doc.containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
                         doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
                     }
@@ -1513,10 +1523,7 @@ public class MetsIndexer extends Indexer {
                 writeStrategy.addPageDoc(shapePageDoc);
             }
         }
-        // Set global useFileGroup value (used for mapping later), if not yet set
-        if (this.useFileGroupGlobal == null) {
-            this.useFileGroupGlobal = useFileGroup;
-        }
+
         return true;
     }
 

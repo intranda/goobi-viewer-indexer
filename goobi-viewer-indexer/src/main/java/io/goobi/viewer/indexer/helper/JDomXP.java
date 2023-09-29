@@ -42,7 +42,6 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
-import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 
 /**
  * <p>

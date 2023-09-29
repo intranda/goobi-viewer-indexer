@@ -657,7 +657,7 @@ public final class Configuration {
     }
     
     public String getMetsPreferredImageFileGroup() {
-        return getString("init.mets.preferredImageFileGroup");
+        return getString("init.mets.preferredImageFileGroup", "");
     }
 
     /**
