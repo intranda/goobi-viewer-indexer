@@ -120,7 +120,7 @@ public class MetsIndexer extends Indexer {
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
     private String preferredImageFileGroup = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroup();
-    private volatile String useFileGroupGlobal = null;
+    volatile String useFileGroupGlobal = null;
 
     /**
      * Constructor.
@@ -1120,6 +1120,9 @@ public class MetsIndexer extends Indexer {
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders != null && dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
+        }
+        if (useFileGroupGlobal == null) {
+            throw new IllegalStateException("useFileGroupGlobal not set");
         }
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
