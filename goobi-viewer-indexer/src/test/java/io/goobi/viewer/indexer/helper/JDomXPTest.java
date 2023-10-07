@@ -34,13 +34,24 @@ public class JDomXPTest extends AbstractTest {
 
     /**
      * @see JDomXP#determineFileFormat(File)
-     * @verifies detect mets files correctly
+     * @verifies detect mets mods files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectMetsFilesCorrectly() throws Exception {
+    public void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect mets marc files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.METS_MARC, JDomXP.determineFileFormat(file));
     }
 
     /**

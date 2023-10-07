@@ -55,6 +55,7 @@ public class JDomXP {
     public enum FileFormat {
         UNKNOWN,
         METS,
+        METS_MARC,
         LIDO,
         DENKXWEB,
         DUBLINCORE,
@@ -72,6 +73,8 @@ public class JDomXP {
             switch (name.toUpperCase()) {
                 case "METS":
                     return METS;
+                case "METS_MARC":
+                    return METS_MARC;
                 case "LIDO":
                     return LIDO;
                 case "DENKXWEB":
@@ -168,10 +171,9 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.ArrayList} or null
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return all values
      */
-    public List<Element> evaluateToElements(String expr, Object parent) throws FatalIndexerException {
+    public List<Element> evaluateToElements(String expr, Object parent) {
         if (parent == null) {
             parent = doc;
         }
@@ -415,8 +417,8 @@ public class JDomXP {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return mdWrap correctly
      */
-    public Element getMdWrap(String dmdId) throws FatalIndexerException {
-        List<Element> ret = evaluateToElements("mets:mets/mets:dmdSec[@ID='" + dmdId + "']/mets:mdWrap[@MDTYPE='MODS']", null);
+    public Element getMdWrap(String dmdId) {
+        List<Element> ret = evaluateToElements("mets:mets/mets:dmdSec[@ID='" + dmdId + "']/mets:mdWrap[@MDTYPE='MODS' or @MDTYPE='MARC']", null);
         if (ret != null && !ret.isEmpty()) {
             return ret.get(0);
         }
@@ -563,7 +565,8 @@ public class JDomXP {
      * @param file a {@link java.io.File} object.
      * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object.
      * @throws java.io.IOException
-     * @should detect mets files correctly
+     * @should detect mets mods files correctly
+     * @should detect mets marc files correctly
      * @should detect lido files correctly
      * @should detect denkxweb files correctly
      * @should detect dublin core files correctly
@@ -580,6 +583,10 @@ public class JDomXP {
             }
 
             if (xp.doc.getRootElement().getNamespace("mets") != null) {
+                List<Element> elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']", xp.doc.getRootElement());
+                if (elements != null && !elements.isEmpty()) {
+                    return FileFormat.METS_MARC;
+                }
                 return FileFormat.METS;
             }
             if (xp.doc.getRootElement().getNamespace("lido") != null) {

@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer.helper;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -611,6 +612,25 @@ public class Utils {
             throw new IOException("No JSON response");
         } catch (IOException | HTTPException e) {
             return "Could not clear viewer cache: " + e.getMessage();
+        }
+    }
+
+    /**
+     * 
+     * @param urlString URL to check
+     * @return true if valid; false otherwise
+     * @should return true if url starts with http
+     * @should return true if url starts with https
+     * @should return true if url starts with file
+     * @should return false if not url
+     */
+    public static boolean isValidURL(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            url.toURI();
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
