@@ -15,38 +15,23 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileTime;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
 
-import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
-import io.goobi.viewer.indexer.exceptions.HTTPException;
-import io.goobi.viewer.indexer.helper.DateTools;
-import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
-import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
-import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
@@ -74,117 +59,6 @@ public class MetsMarcIndexer extends MetsIndexer {
      */
     public MetsMarcIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(hotfolder, httpConnector);
-    }
-
-    /**
-     * Indexes the given METS file.
-     * 
-     * @param metsFile {@link File}
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
-    @Override
-    public void addToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
-        String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
-
-        // Check data folders in the hotfolder
-        Map<String, Path> dataFolders = checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
-
-        // Use existing folders for those missing in the hotfolder
-        checkReindexSettings(dataFolders, reindexSettings);
-
-        String[] resp = index(metsFile, fromReindexQueue, dataFolders, null,
-                SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
-                dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newMetsFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newMetsFileName);
-            Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
-            if (metsFile.equals(indexed)) {
-                return;
-            }
-
-            if (Files.exists(indexed)) {
-                // Add a timestamp to the old file name
-                String oldMetsFilename =
-                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.formatterBasicDateTime) + ".xml";
-                Path newFile = Paths.get(hotfolder.getUpdatedMets().toAbsolutePath().toString(), oldMetsFilename);
-                Files.copy(indexed, newFile);
-                logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
-            }
-            Files.copy(metsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
-            dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newMetsFileName, DataRepository.PARAM_INDEXED_METS,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
-
-            if (previousDataRepository != null) {
-                // Move non-repository data folders to the selected repository
-                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newMetsFileName));
-            }
-
-            // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
-                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
-                if (msg != null) {
-                    logger.info(msg);
-                }
-            }
-
-            // Copy data folders
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
-                    hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
-
-            // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
-
-            // success for goobi
-            Path successFile = Paths.get(hotfolder.getSuccessFolder().toAbsolutePath().toString(), metsFile.getFileName().toString());
-            try {
-                Files.createFile(successFile);
-                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
-            } catch (FileAlreadyExistsException e) {
-                Files.delete(successFile);
-                Files.createFile(successFile);
-                Files.setLastModifiedTime(successFile, FileTime.fromMillis(System.currentTimeMillis()));
-            }
-
-            try {
-                Files.delete(metsFile);
-            } catch (IOException e) {
-                logger.warn(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
-            }
-
-            // Update data repository cache map in the Goobi viewer
-            if (previousDataRepository != null) {
-                try {
-                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
-                } catch (HTTPException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
-            logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
-
-            // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(metsFile, resp[1], FileFormat.METS);
-            try {
-                Files.delete(metsFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
-            }
-        }
     }
 
     /**
