@@ -16,11 +16,9 @@
 package io.goobi.viewer.indexer;
 
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
@@ -28,10 +26,6 @@ import org.jdom2.Element;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
-import io.goobi.viewer.indexer.model.IndexObject;
-import io.goobi.viewer.indexer.model.SolrConstants;
-import io.goobi.viewer.indexer.model.config.FieldConfig;
-import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
@@ -69,80 +63,6 @@ public class MetsMarcIndexer extends MetsIndexer {
             int pageCountStart, boolean downloadExternalImages) {
         logger.trace("index (METS/MARC)");
         return super.index(metsFile, fromReindexQueue, dataFolders, writeStrategy, pageCountStart, downloadExternalImages);
-    }
-
-    /**
-     * 
-     * @param indexObj
-     * @param collections
-     * @return
-     */
-    @Override
-    protected boolean addVolumeCollectionsToAnchor(IndexObject indexObj, List<String> collections) {
-        boolean ret = false;
-        List<Element> eleDmdSecList =
-                xp.evaluateToElements(XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap @MDTYPE='MARC']", null);
-        if (eleDmdSecList != null && !eleDmdSecList.isEmpty()) {
-            Element eleDmdSec = eleDmdSecList.get(0);
-            List<Element> eleModsList = xp.evaluateToElements("TODO", eleDmdSec); // TODO
-            if (eleModsList != null && !eleModsList.isEmpty()) {
-                Element eleMods = eleModsList.get(0);
-                List<FieldConfig> collectionConfigFields =
-                        SolrIndexerDaemon.getInstance()
-                                .getConfiguration()
-                                .getMetadataConfigurationManager()
-                                .getConfigurationListForField(SolrConstants.DC);
-                if (collectionConfigFields != null) {
-                    logger.debug("Found {} config items for DC", collectionConfigFields.size());
-                    for (FieldConfig item : collectionConfigFields) {
-                        for (XPathConfig xPathConfig : item.getxPathConfigurations()) {
-                            List<Element> eleCollectionList = xp.evaluateToElements(xPathConfig.getxPath(), eleDmdSec);
-                            if (eleCollectionList != null && !eleCollectionList.isEmpty()) {
-                                logger.debug("XPath used for collections in this document: {}", xPathConfig.getxPath());
-                                for (Element eleCollection : eleCollectionList) {
-                                    String oldCollection = eleCollection.getTextTrim();
-                                    oldCollection = oldCollection.toLowerCase();
-                                    if (StringUtils.isNotEmpty(xPathConfig.getPrefix())) {
-                                        oldCollection = xPathConfig.getPrefix() + oldCollection;
-                                    }
-                                    if (StringUtils.isNotEmpty(xPathConfig.getSuffix())) {
-                                        oldCollection = oldCollection + xPathConfig.getSuffix();
-                                    }
-                                    if (!collections.contains(oldCollection)) {
-                                        collections.add(oldCollection);
-                                        logger.debug("Found anchor collection: {}", oldCollection);
-                                    }
-                                }
-                                Collections.sort(collections);
-                                if (collections.size() > eleCollectionList.size()) {
-                                    ret = true;
-                                }
-                                Element eleCollectionTemplate = eleCollectionList.get(0);
-                                // Remove old collection elements
-                                for (Element eleOldCollection : eleCollectionList) {
-                                    eleMods.removeContent(eleOldCollection);
-                                    logger.debug("Removing collection from the anchor: {}", eleOldCollection.getText());
-                                }
-                                // Add new collection elements
-                                for (String collection : collections) {
-                                    Element eleNewCollection = eleCollectionTemplate.clone();
-                                    eleNewCollection.setText(collection);
-                                    eleMods.addContent(eleNewCollection);
-                                    logger.debug("Adding collection to the anchor: {}", collection);
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            } else {
-                logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
-            }
-        } else {
-            logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
-        }
-
-        return ret;
     }
 
     /**

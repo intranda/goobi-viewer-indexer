@@ -1732,10 +1732,10 @@ public class MetsIndexer extends Indexer {
     protected boolean addVolumeCollectionsToAnchor(IndexObject indexObj, List<String> collections) {
         boolean ret = false;
         List<Element> eleDmdSecList =
-                xp.evaluateToElements(XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']", null);
+                xp.evaluateToElements(XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS' or @MDTYPE='MARC']", null);
         if (eleDmdSecList != null && !eleDmdSecList.isEmpty()) {
             Element eleDmdSec = eleDmdSecList.get(0);
-            List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec);
+            List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec); // TODO MARC
             if (eleModsList != null && !eleModsList.isEmpty()) {
                 Element eleMods = eleModsList.get(0);
                 List<FieldConfig> collectionConfigFields =
