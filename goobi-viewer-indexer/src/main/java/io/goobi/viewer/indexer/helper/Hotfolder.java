@@ -785,6 +785,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS) != null) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             FileFormat format = FileFormat.UNKNOWN;
             if (!Files.exists(actualXmlFile)) {
                 logger.warn("XML file '{}' not found.", actualXmlFile.getFileName());
@@ -824,10 +828,11 @@ public class Hotfolder {
 
             boolean success = false;
             switch (format) {
-                case METS:
-                case LIDO:
+                case CMS:
                 case DENKXWEB:
                 case DUBLINCORE:
+                case LIDO:
+                case METS:
                 case WORLDVIEWS:
                     if (trace) {
                         logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());
