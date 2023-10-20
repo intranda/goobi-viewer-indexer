@@ -822,7 +822,11 @@ public class Hotfolder {
                     }
                 }
             } else {
-                logger.error("Record '{}' not found in index.", baseFileName);
+                if (format.equals(FileFormat.CMS)) {
+                    logger.warn("CMS record '{}' not found in index.", baseFileName);
+                } else {
+                    logger.error("Record '{}' not found in index.", baseFileName);
+                }
                 return;
             }
 
