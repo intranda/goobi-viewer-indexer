@@ -1237,7 +1237,6 @@ public class MetsIndexer extends Indexer {
         if (StringUtils.isNotEmpty(orderLabel)) {
             doc.addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
-            // orderLabel = eleStructMapPhysical.getAttributeValue("LABEL");
             if (StringUtils.isNotEmpty(orderLabel)) {
                 doc.addField(SolrConstants.ORDERLABEL, orderLabel);
             } else {
