@@ -865,9 +865,8 @@ public class MetadataHelper {
      *
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
-    public static String getAnchorPi(JDomXP xp) throws FatalIndexerException {
+    public static String getAnchorPi(JDomXP xp) {
         String query =
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
