@@ -1558,65 +1558,11 @@ public class MetsIndexer extends Indexer {
         List<String> childrenInfoUnsorted = new ArrayList<>();
         List<String> collections = new ArrayList<>();
         boolean labelSort = false;
+        // Collect volume info
         for (SolrDocument doc : hits) {
-            String pi = null;
-            long num = 0;
-            if (doc.getFieldValue(SolrConstants.PI) != null) {
-                pi = (String) doc.getFieldValue(SolrConstants.PI);
-                if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
-                    try {
-                        if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) instanceof Integer) {
-                            // Compatibility mode with old indexes
-                            num = (int) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
-                        } else {
-                            num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
-                        }
-                        orderInfo.put(pi, num);
-                    } catch (ClassCastException e) {
-                        logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT));
-                    }
-                } else {
-                    childrenInfoUnsorted.add(pi);
-                }
-            } else {
-                throw new IndexerException("Volume PI could not be found!");
-            }
-
-            String label = "";
-            if (doc.getFieldValue(SolrConstants.LABEL) != null) {
-                label = doc.getFieldValue(SolrConstants.LABEL).toString();
-            } else {
-                label = "-";
-                logger.warn("Volume label for '{}' could not be found.", pi);
-            }
-
-            // Read URN
-            if (doc.getFieldValue(SolrConstants.URN) != null) {
-                urnInfo.put(pi, (String) doc.getFieldValue(SolrConstants.URN));
-            }
-            // Read TYPE
-            if (doc.getFieldValue(SolrConstants.DOCSTRCT) != null) {
-                typeInfo.put(pi, (String) doc.getFieldValue(SolrConstants.DOCSTRCT));
-            }
-
-            labelInfo.put(pi, label);
-            if (childrenInfoUnsorted.isEmpty()) {
-                childrenInfo.put(num, pi);
-            } else {
-                // sort by label
+            if (collectVolumeInfo(doc, orderInfo, urnInfo, typeInfo, labelInfo, childrenInfo, collections, childrenInfoUnsorted,
+                    hotfolder.isAddVolumeCollectionsToAnchor())) {
                 labelSort = true;
-            }
-
-            // Collect all volume collections
-            if (hotfolder.isAddVolumeCollectionsToAnchor() && doc.getFieldValues(SolrConstants.DC) != null) {
-                for (Object obj : doc.getFieldValues(SolrConstants.DC)) {
-                    String dc = (String) obj;
-                    dc = dc.replace(".", "#");
-                    if (!collections.contains(dc)) {
-                        logger.debug("Found volume colletion: {}", dc);
-                        collections.add(dc);
-                    }
-                }
             }
         }
 
@@ -1650,62 +1596,9 @@ public class MetsIndexer extends Indexer {
         // Generate volume elements
         Element firstChild = indexObj.getRootStructNode().getChildren().get(0);
         for (int j = 0; j < sortedChildrenMap.size(); j++) {
-            Element child = firstChild.clone();
             long currentNo = (Long) sortedChildrenMap.keySet().toArray()[j];
             String pi = sortedChildrenMap.get(currentNo);
-
-            // Set URN
-            if (urnInfo.get(pi) != null) {
-                child.setAttribute(ATTRIBUTE_CONTENTIDS, urnInfo.get(pi));
-            } else {
-                child.removeAttribute(ATTRIBUTE_CONTENTIDS);
-            }
-
-            // Normalize LOGID
-            String strIdTail = String.valueOf(j + 1);
-            String strId = strIdTail;
-            if (j < 10) {
-                strId = "000" + strIdTail;
-            } else if (j < 100) {
-                strId = "00" + strIdTail;
-            } else if (j < 1000) {
-                strId = "0" + strIdTail;
-            }
-
-            // Set ORDER
-            if (orderInfo.get(pi) != null) {
-                child.setAttribute("ORDER", String.valueOf(orderInfo.get(pi)));
-            }
-
-            // Set LOGID
-            child.setAttribute("ID", "LOG_" + strId);
-            // Set LABEL
-            child.setAttribute(SolrConstants.LABEL, labelInfo.get(pi));
-
-            // Set TYPE
-            if (typeInfo.get(pi) != null) {
-                child.setAttribute("TYPE", typeInfo.get(pi));
-            }
-
-            // URL
-            Namespace nsMets = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets");
-            Namespace nsXlink = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xlink");
-            Element mptr = child.getChild("mptr", nsMets);
-            String href = mptr.getAttribute("href", nsXlink).getValue();
-            if (href.contains("=")) {
-                // Resolver URL has a paramater name
-                int i = href.indexOf('=');
-                href = href.substring(0, i + 1);
-            } else {
-                // Resolver URL has no parameter name (/ppnresolver/?)
-                int i = href.indexOf('?');
-                href = href.substring(0, i + 1);
-            }
-            Attribute attr = new Attribute("href", href + pi, nsXlink);
-            mptr.setAttribute(attr);
-
-            childrenE.add(child);
-
+            childrenE.add(generateVolumeElement(firstChild, j, pi, orderInfo.get(pi), urnInfo.get(pi), labelInfo.get(pi), typeInfo.get(pi)));
         }
 
         // Remove old children
@@ -1715,16 +1608,169 @@ public class MetsIndexer extends Indexer {
         }
 
         // Write XML file
+        writeAnchorXmlFile(indexObj.getPi(), newAnchorCollections);
+    }
+
+    /**
+     * 
+     * @param doc
+     * @param orderInfo
+     * @param urnInfo
+     * @param typeInfo
+     * @param labelInfo
+     * @param childrenInfo
+     * @param collections
+     * @param childrenInfoUnsorted
+     * @param addVolumeCollectionsToAnchor
+     * @return
+     * @throws IndexerException
+     */
+    private static boolean collectVolumeInfo(SolrDocument doc, Map<String, Long> orderInfo, Map<String, String> urnInfo, Map<String, String> typeInfo,
+            Map<String, String> labelInfo, Map<Long, String> childrenInfo, List<String> collections, List<String> childrenInfoUnsorted,
+            boolean addVolumeCollectionsToAnchor) throws IndexerException {
+        boolean ret = false;
+
+        String pi = null;
+        long num = 0;
+        if (doc.getFieldValue(SolrConstants.PI) != null) {
+            pi = (String) doc.getFieldValue(SolrConstants.PI);
+            if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
+                try {
+                    if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) instanceof Integer) {
+                        // Compatibility mode with old indexes
+                        num = (int) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                    } else {
+                        num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                    }
+                    orderInfo.put(pi, num);
+                } catch (ClassCastException e) {
+                    logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT));
+                }
+            } else {
+                childrenInfoUnsorted.add(pi);
+            }
+        } else {
+            throw new IndexerException("Volume PI could not be found!");
+        }
+
+        String label = "";
+        if (doc.getFieldValue(SolrConstants.LABEL) != null) {
+            label = doc.getFieldValue(SolrConstants.LABEL).toString();
+        } else {
+            label = "-";
+            logger.warn("Volume label for '{}' could not be found.", pi);
+        }
+
+        // Read URN
+        if (doc.getFieldValue(SolrConstants.URN) != null) {
+            urnInfo.put(pi, (String) doc.getFieldValue(SolrConstants.URN));
+        }
+        // Read TYPE
+        if (doc.getFieldValue(SolrConstants.DOCSTRCT) != null) {
+            typeInfo.put(pi, (String) doc.getFieldValue(SolrConstants.DOCSTRCT));
+        }
+
+        labelInfo.put(pi, label);
+        if (childrenInfoUnsorted.isEmpty()) {
+            childrenInfo.put(num, pi);
+        } else {
+            // sort by label
+            ret = true;
+        }
+
+        // Collect all volume collections
+        if (addVolumeCollectionsToAnchor && doc.getFieldValues(SolrConstants.DC) != null) {
+            for (Object obj : doc.getFieldValues(SolrConstants.DC)) {
+                String dc = (String) obj;
+                dc = dc.replace(".", "#");
+                if (!collections.contains(dc)) {
+                    logger.debug("Found volume colletion: {}", dc);
+                    collections.add(dc);
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    /**
+     * 
+     * @param firstChild
+     * @param index
+     * @param pi
+     * @param order
+     * @param urn
+     * @param label
+     * @param type
+     * @return Volume element
+     */
+    private static Element generateVolumeElement(Element firstChild, int index, String pi, Long order, String urn, String label, String type) {
+        Element child = firstChild.clone();
+
+        // Set URN
+        if (urn != null) {
+            child.setAttribute(ATTRIBUTE_CONTENTIDS, urn);
+        } else {
+            child.removeAttribute(ATTRIBUTE_CONTENTIDS);
+        }
+
+        // Normalize LOGID
+        String strIdTail = String.valueOf(index + 1);
+        String strId = strIdTail;
+        if (index < 10) {
+            strId = "000" + strIdTail;
+        } else if (index < 100) {
+            strId = "00" + strIdTail;
+        } else if (index < 1000) {
+            strId = "0" + strIdTail;
+        }
+
+        // Set ORDER
+        if (order != null) {
+            child.setAttribute("ORDER", String.valueOf(order));
+        }
+
+        // Set LOGID
+        child.setAttribute("ID", "LOG_" + strId);
+        // Set LABEL
+        child.setAttribute(SolrConstants.LABEL, label);
+
+        // Set TYPE
+        if (type != null) {
+            child.setAttribute("TYPE", type);
+        }
+
+        // URL
+        Namespace nsMets = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets");
+        Namespace nsXlink = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xlink");
+        Element mptr = child.getChild("mptr", nsMets);
+        String href = mptr.getAttribute("href", nsXlink).getValue();
+        if (href.contains("=")) {
+            // Resolver URL has a paramater name
+            int i = href.indexOf('=');
+            href = href.substring(0, i + 1);
+        } else {
+            // Resolver URL has no parameter name (/ppnresolver/?)
+            int i = href.indexOf('?');
+            href = href.substring(0, i + 1);
+        }
+        Attribute attr = new Attribute("href", href + pi, nsXlink);
+        mptr.setAttribute(attr);
+
+        return child;
+    }
+
+    private void writeAnchorXmlFile(String pi, boolean newAnchorCollections) {
         String extension;
         if (newAnchorCollections) {
             extension = FileTools.XML_EXTENSION;
-            logger.info("Anchor document '{}' has received new collection entries and will be reindexed immediately.", indexObj.getPi());
+            logger.info("Anchor document '{}' has received new collection entries and will be reindexed immediately.", pi);
         } else {
             extension = ANCHOR_UPDATE_EXTENSION;
         }
 
         Path updatedAnchorFile =
-                Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolderPath().toAbsolutePath().toString(), indexObj.getPi(), "#", extension);
+                Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolderPath().toAbsolutePath().toString(), pi, "#", extension);
 
         xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
         if (Files.exists(updatedAnchorFile)) {
