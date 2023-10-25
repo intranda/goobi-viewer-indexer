@@ -27,10 +27,10 @@ import org.junit.Test;
 
 import io.goobi.viewer.indexer.helper.FileTools;
 
-public class PrimoDocumentTest {
+public class CitationXmlDocumentTest {
 
     /**
-     * @see PrimoDocument#build()
+     * @see CitationXmlDocument#build()
      * @verifies build document correctly
      */
     @Test
@@ -39,19 +39,19 @@ public class PrimoDocumentTest {
         Assert.assertTrue(file.isFile());
         String xml = FileTools.readFileToString(file, null);
         Assert.assertTrue(StringUtils.isNotEmpty(xml));
-        PrimoDocument pd = new PrimoDocument().setXml(xml).build();
+        CitationXmlDocument pd = new CitationXmlDocument().setXml(xml).build();
         Assert.assertNotNull(pd.getXp());
     }
 
     /**
-     * @see PrimoDocument#prepareURL(Map)
+     * @see CitationXmlDocument#prepareURL(Map)
      * @verifies find and replace identifier correctly
      */
     @Test
     public void prepare_shouldFindAndReplaceIdentifierCorrectly() throws Exception {
         Map<String, List<String>> values = new HashMap<>(1);
         values.put("MD_FOO", Collections.singletonList("123"));
-        PrimoDocument pd = new PrimoDocument("https://example.com?id=${MD_FOO}&format=xml");
+        CitationXmlDocument pd = new CitationXmlDocument("https://example.com?id=${MD_FOO}&format=xml");
         pd.prepareURL(values);
         Assert.assertEquals("https://example.com?id=123&format=xml", pd.getUrl());
     }
