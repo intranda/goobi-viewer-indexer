@@ -28,6 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -201,7 +202,7 @@ public abstract class Indexer {
     void handleError(Path dataFile, String error, FileFormat format) {
         logger.error("Failed to process '{}'.", dataFile.getFileName());
         // Error log file
-        if (FileFormat.METS.equals(format)) {
+        if (FileFormat.METS.equals(format) || FileFormat.METS_MARC.equals(format)) {
             File logFile = new File(hotfolder.getErrorMets().toFile(), FilenameUtils.getBaseName(dataFile.getFileName().toString()) + ".log");
             try (FileWriter fw = new FileWriter(logFile); BufferedWriter out = new BufferedWriter(fw)) {
                 Files.copy(dataFile, Paths.get(hotfolder.getErrorMets().toAbsolutePath().toString(), dataFile.getFileName().toString()),
@@ -1908,12 +1909,19 @@ public abstract class Indexer {
         }
 
         // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
-        if (!altoWritten && !foundCrowdsourcingData && altoURL != null && altoURL.startsWith("http")
+        if (!altoWritten && !foundCrowdsourcingData && altoURL != null && Utils.isValidURL(altoURL)
                 && SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl() != null
                 && !altoURL.startsWith(SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl())) {
             try {
-                logger.info("Downloading ALTO from {}", altoURL);
-                String alto = Utils.getWebContentGET(altoURL);
+                String alto = null;
+                if (StringUtils.startsWithIgnoreCase(altoURL, "http")) {
+                    // HTTP(S)
+                    logger.info("Downloading ALTO from {}", altoURL);
+                    alto = Utils.getWebContentGET(altoURL);
+                } else if (StringUtils.startsWithIgnoreCase(altoURL, "file:/")) {
+                    // FILE
+                    alto = FileTools.readFileToString(new File(URI.create(altoURL).toURL().getPath()), StandardCharsets.UTF_8.name());
+                }
                 if (StringUtils.isNotEmpty(alto)) {
                     Document altoDoc = XmlTools.getDocumentFromString(alto, null);
                     altoData = TextHelper.readAltoDoc(altoDoc);
@@ -1933,7 +1941,7 @@ public abstract class Indexer {
                                 // Write ALTO file
                                 File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
                                 FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
-                                logger.debug("Added ALTO from downloaded ALTO for page {}", order);
+                                logger.debug("Added ALTO from external URL for page {}", order);
                             } else {
                                 logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
                             }

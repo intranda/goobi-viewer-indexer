@@ -88,7 +88,7 @@ import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
- * Indexer implementation for METS documents.
+ * Indexer implementation for METS/MODS documents.
  */
 public class MetsIndexer extends Indexer {
 
@@ -110,16 +110,17 @@ public class MetsIndexer extends Indexer {
     /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
 
-    private static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
+    protected static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
 
-    private static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
-    private static final String XPATH_FILE = "mets:file";
-    private static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
+    protected static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
+    protected static final String XPATH_FILE = "mets:file";
+    protected static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
 
     /** */
-    private static List<Path> reindexedChildrenFileList = new ArrayList<>();
+    protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private volatile String useFileGroupGlobal = null;
+    private String preferredImageFileGroup = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroup();
+    volatile String useFileGroupGlobal = null;
 
     /**
      * Constructor.
@@ -132,6 +133,11 @@ public class MetsIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
+    /**
+     * 
+     * @param hotfolder
+     * @param httpConnector
+     */
     public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
@@ -230,7 +236,7 @@ public class MetsIndexer extends Indexer {
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
-            
+
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
         } else {
@@ -239,7 +245,7 @@ public class MetsIndexer extends Indexer {
                 // Delete all data folders for this record from the hotfolder
                 DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
             }
-            handleError(metsFile, resp[1], FileFormat.METS);
+            handleError(metsFile, resp[1], getSourceDocFormat());
             try {
                 Files.delete(metsFile);
             } catch (IOException e) {
@@ -300,9 +306,8 @@ public class MetsIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-            String preQuery = XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']/";
-            logger.debug("preQuery: {}", preQuery);
-            String pi = MetadataHelper.getPIFromXML(preQuery, xp);
+
+            String pi = MetadataHelper.getPIFromXML(getPiRootPath(indexObj.getDmdid()), xp);
             if (StringUtils.isBlank(pi)) {
                 ret[1] = "PI not found.";
                 throw new IndexerException(ret[1]);
@@ -356,7 +361,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.METS.name());
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, getSourceDocFormat().name());
             prepareUpdate(indexObj);
 
             int hierarchyLevel = 0; // depth of the docstrct that has ISWORK (volume or monograph)
@@ -364,9 +369,7 @@ public class MetsIndexer extends Indexer {
                 // Find anchor document for this volume
                 hierarchyLevel = 1;
                 StringBuilder sbXpath = new StringBuilder(170);
-                sbXpath.append(XPATH_DMDSEC)
-                        .append(structNode.getAttributeValue(SolrConstants.DMDID))
-                        .append("']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier");
+                sbXpath.append(XPATH_DMDSEC).append(structNode.getAttributeValue(SolrConstants.DMDID)).append(getAnchorPiXpath());
                 List<Element> piList = xp.evaluateToElements(sbXpath.toString(), null);
                 if (!piList.isEmpty()) {
                     String parentPi = piList.get(0).getText().trim();
@@ -638,7 +641,13 @@ public class MetsIndexer extends Indexer {
         return ret;
     }
 
-    private static String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) throws FatalIndexerException {
+    /**
+     * 
+     * @param xp
+     * @param filegroup
+     * @return
+     */
+    private static String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) {
         String filePathBanner = "";
         String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
         filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
@@ -650,7 +659,13 @@ public class MetsIndexer extends Indexer {
         return "";
     }
 
-    private static String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) throws FatalIndexerException {
+    /**
+     * 
+     * @param xp
+     * @param filegroup
+     * @return
+     */
+    private static String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) {
         String filePathBanner = "";
         String xpathFilePtr =
                 "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID"; //NOSONAR XPath, not URI
@@ -943,10 +958,8 @@ public class MetsIndexer extends Indexer {
     /**
      * 
      * @param indexObj
-     * @throws FatalIndexerException
      */
-    public void collectDownloadUrl(final IndexObject indexObj)
-            throws FatalIndexerException {
+    public void collectDownloadUrl(final IndexObject indexObj) {
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div[@TYPE=\"physSequence\"]"; //NOSONAR XPath expression, not URI...
         List<Element> eleStructMapPhysSequenceList = xp.evaluateToElements(xpath, null);
         if (!eleStructMapPhysSequenceList.isEmpty()) {
@@ -975,7 +988,7 @@ public class MetsIndexer extends Indexer {
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
+     * @param dataRepository a {@link io.goob4i.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
@@ -995,6 +1008,9 @@ public class MetsIndexer extends Indexer {
             logger.info("No pages found.");
             return;
         }
+
+        useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
+        logger.info("Image file group selected: {}", useFileGroupGlobal);
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
@@ -1028,13 +1044,50 @@ public class MetsIndexer extends Indexer {
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
                 if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi,
-                        order, writeStrategy,
-                        dataFolders, dataRepository, downloadExternalImages)) {
+                        order, writeStrategy, dataFolders, dataRepository, downloadExternalImages)) {
                     order++;
                 }
             }
         }
         logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
+    }
+
+    String selectImageFileGroup(boolean downloadExternalImages) {
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath, not URI
+        List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
+        if (eleFileGrpList.isEmpty()) {
+            logger.info("No file groups found.");
+            return "";
+        }
+
+        String ret = "";
+        for (Element eleFileGrp : eleFileGrpList) {
+            String use = eleFileGrp.getAttributeValue("USE");
+            switch (use) {
+                case DEFAULT_FILEGROUP:
+                    if (!PRESENTATION_FILEGROUP.equals(ret) || downloadExternalImages) {
+                        ret = use;
+                    }
+                    break;
+                case PRESENTATION_FILEGROUP:
+                    if (!downloadExternalImages) {
+                        ret = use;
+                    }
+                    break;
+                case OBJECT_FILEGROUP:
+                    if (!PRESENTATION_FILEGROUP.equals(ret) || !DEFAULT_FILEGROUP.equals(ret)) {
+                        ret = use;
+                    }
+                    break;
+                default:
+                    if (StringUtils.isNotBlank(preferredImageFileGroup) && preferredImageFileGroup.equals(use)) {
+                        return preferredImageFileGroup;
+                    }
+                    break;
+            }
+        }
+
+        return ret;
     }
 
     /**
@@ -1046,6 +1099,7 @@ public class MetsIndexer extends Indexer {
      * @param writeStrategy
      * @param dataFolders
      * @param dataRepository
+     * @param downloadExternalImages
      * @return
      * @throws FatalIndexerException
      * @should add all basic fields
@@ -1066,6 +1120,9 @@ public class MetsIndexer extends Indexer {
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders != null && dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
+        }
+        if (useFileGroupGlobal == null) {
+            throw new IllegalStateException("useFileGroupGlobal not set");
         }
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
@@ -1090,7 +1147,6 @@ public class MetsIndexer extends Indexer {
 
         List<Element> eleFptrList =
                 eleStructMapPhysical.getChildren("fptr", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
-        String useFileGroup = null;
 
         // Create Solr document for this page
         SolrInputDocument doc = new SolrInputDocument();
@@ -1105,25 +1161,10 @@ public class MetsIndexer extends Indexer {
         // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
         String fileIdRoot = null;
         String useFileID = null;
-        boolean preferCurrentFileGroup = false;
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
             logger.trace("fileID: {}", fileID);
-            if (downloadExternalImages && fileID.contains(DEFAULT_FILEGROUP)) {
-                //If images should be downloaded, do so from DEFAULT, overriding the preference for PRESENTATION
-                useFileGroup = DEFAULT_FILEGROUP;
-                useFileID = fileID;
-                preferCurrentFileGroup = true;
-            } else if (fileID.contains(PRESENTATION_FILEGROUP) && !preferCurrentFileGroup) {
-                // Always prefer PRESENTATION: override if already set to something else
-                useFileGroup = PRESENTATION_FILEGROUP;
-                useFileID = fileID;
-                preferCurrentFileGroup = true;
-            } else if (fileID.contains(DEFAULT_FILEGROUP) && !preferCurrentFileGroup) {
-                useFileGroup = DEFAULT_FILEGROUP;
-                useFileID = fileID;
-            } else if (fileID.contains(OBJECT_FILEGROUP) && !preferCurrentFileGroup) {
-                useFileGroup = OBJECT_FILEGROUP;
+            if (fileID.contains(useFileGroupGlobal)) {
                 useFileID = fileID;
             }
 
@@ -1153,8 +1194,8 @@ public class MetsIndexer extends Indexer {
                 }
             }
         }
-        if (useFileGroup != null && StringUtils.isEmpty(useFileID)) {
-            logger.warn("FILEID not found for file group {}", useFileGroup);
+        if (useFileGroupGlobal != null && StringUtils.isEmpty(useFileID)) {
+            logger.warn("FILEID not found for file group {}", useFileGroupGlobal);
             useFileID = "";
         }
 
@@ -1163,22 +1204,22 @@ public class MetsIndexer extends Indexer {
         char fileIdSeparator = '_'; // Separator character between the group name and the rest and the file ID
 
         // Remove the file group part from the file ID
-        if (useFileID != null && useFileGroup != null && useFileID.contains(useFileGroup)) {
-            if (useFileID.startsWith(useFileGroup + '_')) {
+        if (useFileID != null && useFileGroupGlobal != null && useFileID.contains(useFileGroupGlobal)) {
+            if (useFileID.startsWith(useFileGroupGlobal + '_')) {
                 fileGroupPrefix = true;
-            } else if (useFileID.startsWith(useFileGroup + '.')) {
+            } else if (useFileID.startsWith(useFileGroupGlobal + '.')) {
                 fileGroupPrefix = true;
                 fileIdSeparator = '.';
-            } else if (useFileID.endsWith('_' + useFileGroup)) {
+            } else if (useFileID.endsWith('_' + useFileGroupGlobal)) {
                 fileGroupSuffix = true;
-            } else if (useFileID.endsWith('.' + useFileGroup)) {
+            } else if (useFileID.endsWith('.' + useFileGroupGlobal)) {
                 fileGroupSuffix = true;
                 fileIdSeparator = '.';
             }
             if (fileGroupPrefix) {
-                fileIdRoot = useFileID.replace(useFileGroup + fileIdSeparator, "");
+                fileIdRoot = useFileID.replace(useFileGroupGlobal + fileIdSeparator, "");
             } else if (fileGroupSuffix) {
-                fileIdRoot = useFileID.replace(fileIdSeparator + useFileGroup, "");
+                fileIdRoot = useFileID.replace(fileIdSeparator + useFileGroupGlobal, "");
             }
             doc.addField(SolrConstants.FILEIDROOT, fileIdRoot);
         }
@@ -1191,12 +1232,16 @@ public class MetsIndexer extends Indexer {
             doc.addField(SolrConstants.BOOL_DOUBLE_IMAGE, doubleImage);
         }
 
-        // ORDERLABEL
+        // ORDERLABEL / LABEL
         String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
             doc.addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
-            doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
+            if (StringUtils.isNotEmpty(orderLabel)) {
+                doc.addField(SolrConstants.ORDERLABEL, orderLabel);
+            } else {
+                doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
+            }
         }
 
         String contentIDs = eleStructMapPhysical.getAttributeValue(ATTRIBUTE_CONTENTIDS);
@@ -1220,11 +1265,6 @@ public class MetsIndexer extends Indexer {
             String fileGrpUse = eleFileGrp.getAttributeValue("USE");
             String fileGrpId = eleFileGrp.getAttributeValue("ID");
             logger.debug("Found file group: {}", fileGrpUse);
-            // If useFileGroup is still not set or not PRESENTATION, check whether the current group is PRESENTATION or DEFAULT and set it to that
-            if (!downloadExternalImages && (useFileGroup == null || !PRESENTATION_FILEGROUP.equals(useFileGroup))
-                    && (PRESENTATION_FILEGROUP.equals(fileGrpUse) || DEFAULT_FILEGROUP.equals(fileGrpUse) || OBJECT_FILEGROUP.equals(fileGrpUse))) {
-                useFileGroup = fileGrpUse;
-            }
             String fileId = null;
             if (fileGroupPrefix) {
                 fileId = fileGrpUse + fileIdSeparator + fileIdRoot;
@@ -1301,13 +1341,19 @@ public class MetsIndexer extends Indexer {
                 break;
             }
 
-            if (fileGrpUse.equals(useFileGroup)) {
+            if (fileGrpUse.equals(useFileGroupGlobal)) {
                 // The file name from the main file group (PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     if (doc.containsKey(SolrConstants.FILENAME)) {
-                        logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, filePath,
-                                fileGrpUse);
+                        if (StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(fileGrpUse)) {
+                            // Preferred file group overrides any already added values
+                            doc.remove(SolrConstants.FILENAME);
+                        } else {
+                            logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc,
+                                    filePath,
+                                    fileGrpUse);
+                        }
                     }
 
                     String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
@@ -1330,7 +1376,7 @@ public class MetsIndexer extends Indexer {
                     }
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
-                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroup)
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroupGlobal)
                             && !doc.containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
                         doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
                     }
@@ -1348,6 +1394,11 @@ public class MetsIndexer extends Indexer {
                 }
 
                 // Add mime type
+                if (doc.containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(preferredImageFileGroup)
+                        && preferredImageFileGroup.equals(fileGrpUse)) {
+                    // Preferred file group overrides any already added values
+                    doc.removeField(SolrConstants.MIMETYPE);
+                }
                 doc.addField(SolrConstants.MIMETYPE, mimetype);
                 if (!shapePageDocs.isEmpty()) {
                     for (SolrInputDocument shapePageDoc : shapePageDocs) {
@@ -1463,7 +1514,7 @@ public class MetsIndexer extends Indexer {
             doc.addField(FIELD_IMAGEAVAILABLE, false);
         }
 
-        if (dataFolders != null) {
+        if (dataFolders != null || altoURL != null) {
             addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, altoURL);
         }
 
@@ -1474,10 +1525,7 @@ public class MetsIndexer extends Indexer {
                 writeStrategy.addPageDoc(shapePageDoc);
             }
         }
-        // Set global useFileGroup value (used for mapping later), if not yet set
-        if (this.useFileGroupGlobal == null) {
-            this.useFileGroupGlobal = useFileGroup;
-        }
+
         return true;
     }
 
@@ -1489,9 +1537,8 @@ public class MetsIndexer extends Indexer {
      * @throws IndexerException in case of errors.
      * @throws IOException in case of errors.
      * @throws SolrServerException
-     * @throws FatalIndexerException
      */
-    private void anchorMerge(IndexObject indexObj) throws IndexerException, IOException, SolrServerException, FatalIndexerException {
+    private void anchorMerge(IndexObject indexObj) throws IndexerException, IOException, SolrServerException {
         logger.debug("anchorMerge: {}", indexObj.getPi());
         SolrDocumentList hits =
                 SolrIndexerDaemon.getInstance()
@@ -1511,65 +1558,11 @@ public class MetsIndexer extends Indexer {
         List<String> childrenInfoUnsorted = new ArrayList<>();
         List<String> collections = new ArrayList<>();
         boolean labelSort = false;
+        // Collect volume info
         for (SolrDocument doc : hits) {
-            String pi = null;
-            long num = 0;
-            if (doc.getFieldValue(SolrConstants.PI) != null) {
-                pi = (String) doc.getFieldValue(SolrConstants.PI);
-                if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
-                    try {
-                        if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) instanceof Integer) {
-                            // Compatibility mode with old indexes
-                            num = (int) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
-                        } else {
-                            num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
-                        }
-                        orderInfo.put(pi, num);
-                    } catch (ClassCastException e) {
-                        logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT));
-                    }
-                } else {
-                    childrenInfoUnsorted.add(pi);
-                }
-            } else {
-                throw new IndexerException("Volume PI could not be found!");
-            }
-
-            String label = "";
-            if (doc.getFieldValue(SolrConstants.LABEL) != null) {
-                label = doc.getFieldValue(SolrConstants.LABEL).toString();
-            } else {
-                label = "-";
-                logger.warn("Volume label for '{}' could not be found.", pi);
-            }
-
-            // Read URN
-            if (doc.getFieldValue(SolrConstants.URN) != null) {
-                urnInfo.put(pi, (String) doc.getFieldValue(SolrConstants.URN));
-            }
-            // Read TYPE
-            if (doc.getFieldValue(SolrConstants.DOCSTRCT) != null) {
-                typeInfo.put(pi, (String) doc.getFieldValue(SolrConstants.DOCSTRCT));
-            }
-
-            labelInfo.put(pi, label);
-            if (childrenInfoUnsorted.isEmpty()) {
-                childrenInfo.put(num, pi);
-            } else {
-                // sort by label
+            if (collectVolumeInfo(doc, orderInfo, urnInfo, typeInfo, labelInfo, childrenInfo, collections, childrenInfoUnsorted,
+                    hotfolder.isAddVolumeCollectionsToAnchor())) {
                 labelSort = true;
-            }
-
-            // Collect all volume collections
-            if (hotfolder.isAddVolumeCollectionsToAnchor() && doc.getFieldValues(SolrConstants.DC) != null) {
-                for (Object obj : doc.getFieldValues(SolrConstants.DC)) {
-                    String dc = (String) obj;
-                    dc = dc.replace(".", "#");
-                    if (!collections.contains(dc)) {
-                        logger.debug("Found volume colletion: {}", dc);
-                        collections.add(dc);
-                    }
-                }
             }
         }
 
@@ -1597,128 +1590,15 @@ public class MetsIndexer extends Indexer {
         // Merge anchor and volume collections and add them all to the anchor
         boolean newAnchorCollections = false;
         if (hotfolder.isAddVolumeCollectionsToAnchor()) {
-            List<Element> eleDmdSecList =
-                    xp.evaluateToElements(XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS']", null);
-            if (eleDmdSecList != null && !eleDmdSecList.isEmpty()) {
-                Element eleDmdSec = eleDmdSecList.get(0);
-                List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec);
-                if (eleModsList != null && !eleModsList.isEmpty()) {
-                    Element eleMods = eleModsList.get(0);
-                    List<FieldConfig> collectionConfigFields =
-                            SolrIndexerDaemon.getInstance()
-                                    .getConfiguration()
-                                    .getMetadataConfigurationManager()
-                                    .getConfigurationListForField(SolrConstants.DC);
-                    if (collectionConfigFields != null) {
-                        logger.debug("Found {} config items for DC", collectionConfigFields.size());
-                        for (FieldConfig item : collectionConfigFields) {
-                            for (XPathConfig xPathConfig : item.getxPathConfigurations()) {
-                                List<Element> eleCollectionList = xp.evaluateToElements(xPathConfig.getxPath(), eleDmdSec);
-                                if (eleCollectionList != null && !eleCollectionList.isEmpty()) {
-                                    logger.debug("XPath used for collections in this document: {}", xPathConfig.getxPath());
-                                    for (Element eleCollection : eleCollectionList) {
-                                        String oldCollection = eleCollection.getTextTrim();
-                                        oldCollection = oldCollection.toLowerCase();
-                                        if (StringUtils.isNotEmpty(xPathConfig.getPrefix())) {
-                                            oldCollection = xPathConfig.getPrefix() + oldCollection;
-                                        }
-                                        if (StringUtils.isNotEmpty(xPathConfig.getSuffix())) {
-                                            oldCollection = oldCollection + xPathConfig.getSuffix();
-                                        }
-                                        if (!collections.contains(oldCollection)) {
-                                            collections.add(oldCollection);
-                                            logger.debug("Found anchor collection: {}", oldCollection);
-                                        }
-                                    }
-                                    Collections.sort(collections);
-                                    if (collections.size() > eleCollectionList.size()) {
-                                        newAnchorCollections = true;
-                                    }
-                                    Element eleCollectionTemplate = eleCollectionList.get(0);
-                                    // Remove old collection elements
-                                    for (Element eleOldCollection : eleCollectionList) {
-                                        eleMods.removeContent(eleOldCollection);
-                                        logger.debug("Removing collection from the anchor: {}", eleOldCollection.getText());
-                                    }
-                                    // Add new collection elements
-                                    for (String collection : collections) {
-                                        Element eleNewCollection = eleCollectionTemplate.clone();
-                                        eleNewCollection.setText(collection);
-                                        eleMods.addContent(eleNewCollection);
-                                        logger.debug("Adding collection to the anchor: {}", collection);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
-                }
-            } else {
-                logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
-            }
+            newAnchorCollections = addVolumeCollectionsToAnchor(indexObj, collections);
         }
 
         // Generate volume elements
         Element firstChild = indexObj.getRootStructNode().getChildren().get(0);
         for (int j = 0; j < sortedChildrenMap.size(); j++) {
-            Element child = firstChild.clone();
             long currentNo = (Long) sortedChildrenMap.keySet().toArray()[j];
             String pi = sortedChildrenMap.get(currentNo);
-
-            // Set URN
-            if (urnInfo.get(pi) != null) {
-                child.setAttribute(ATTRIBUTE_CONTENTIDS, urnInfo.get(pi));
-            } else {
-                child.removeAttribute(ATTRIBUTE_CONTENTIDS);
-            }
-
-            // Normalize LOGID
-            String strIdTail = String.valueOf(j + 1);
-            String strId = strIdTail;
-            if (j < 10) {
-                strId = "000" + strIdTail;
-            } else if (j < 100) {
-                strId = "00" + strIdTail;
-            } else if (j < 1000) {
-                strId = "0" + strIdTail;
-            }
-
-            // Set ORDER
-            if (orderInfo.get(pi) != null) {
-                child.setAttribute("ORDER", String.valueOf(orderInfo.get(pi)));
-            }
-
-            // Set LOGID
-            child.setAttribute("ID", "LOG_" + strId);
-            // Set LABEL
-            child.setAttribute(SolrConstants.LABEL, labelInfo.get(pi));
-
-            // Set TYPE
-            if (typeInfo.get(pi) != null) {
-                child.setAttribute("TYPE", typeInfo.get(pi));
-            }
-
-            // URL
-            Namespace nsMets = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets");
-            Namespace nsXlink = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xlink");
-            Element mptr = child.getChild("mptr", nsMets);
-            String href = mptr.getAttribute("href", nsXlink).getValue();
-            if (href.contains("=")) {
-                // Resolver URL has a paramater name
-                int i = href.indexOf('=');
-                href = href.substring(0, i + 1);
-            } else {
-                // Resolver URL has no parameter name (/ppnresolver/?)
-                int i = href.indexOf('?');
-                href = href.substring(0, i + 1);
-            }
-            Attribute attr = new Attribute("href", href + pi, nsXlink);
-            mptr.setAttribute(attr);
-
-            childrenE.add(child);
-
+            childrenE.add(generateVolumeElement(firstChild, j, pi, orderInfo.get(pi), urnInfo.get(pi), labelInfo.get(pi), typeInfo.get(pi)));
         }
 
         // Remove old children
@@ -1728,21 +1608,247 @@ public class MetsIndexer extends Indexer {
         }
 
         // Write XML file
+        writeAnchorXmlFile(indexObj.getPi(), newAnchorCollections);
+    }
+
+    /**
+     * 
+     * @param doc
+     * @param orderInfo
+     * @param urnInfo
+     * @param typeInfo
+     * @param labelInfo
+     * @param childrenInfo
+     * @param collections
+     * @param childrenInfoUnsorted
+     * @param addVolumeCollectionsToAnchor
+     * @return
+     * @throws IndexerException
+     */
+    private static boolean collectVolumeInfo(SolrDocument doc, Map<String, Long> orderInfo, Map<String, String> urnInfo, Map<String, String> typeInfo,
+            Map<String, String> labelInfo, Map<Long, String> childrenInfo, List<String> collections, List<String> childrenInfoUnsorted,
+            boolean addVolumeCollectionsToAnchor) throws IndexerException {
+        boolean ret = false;
+
+        String pi = null;
+        long num = 0;
+        if (doc.getFieldValue(SolrConstants.PI) != null) {
+            pi = (String) doc.getFieldValue(SolrConstants.PI);
+            if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) != null) {
+                try {
+                    if (doc.getFieldValue(SolrConstants.CURRENTNOSORT) instanceof Integer) {
+                        // Compatibility mode with old indexes
+                        num = (int) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                    } else {
+                        num = (long) doc.getFieldValue(SolrConstants.CURRENTNOSORT);
+                    }
+                    orderInfo.put(pi, num);
+                } catch (ClassCastException e) {
+                    logger.error("'{}' is not a numerical value.", doc.getFieldValue(SolrConstants.CURRENTNOSORT));
+                }
+            } else {
+                childrenInfoUnsorted.add(pi);
+            }
+        } else {
+            throw new IndexerException("Volume PI could not be found!");
+        }
+
+        String label = "";
+        if (doc.getFieldValue(SolrConstants.LABEL) != null) {
+            label = doc.getFieldValue(SolrConstants.LABEL).toString();
+        } else {
+            label = "-";
+            logger.warn("Volume label for '{}' could not be found.", pi);
+        }
+
+        // Read URN
+        if (doc.getFieldValue(SolrConstants.URN) != null) {
+            urnInfo.put(pi, (String) doc.getFieldValue(SolrConstants.URN));
+        }
+        // Read TYPE
+        if (doc.getFieldValue(SolrConstants.DOCSTRCT) != null) {
+            typeInfo.put(pi, (String) doc.getFieldValue(SolrConstants.DOCSTRCT));
+        }
+
+        labelInfo.put(pi, label);
+        if (childrenInfoUnsorted.isEmpty()) {
+            childrenInfo.put(num, pi);
+        } else {
+            // sort by label
+            ret = true;
+        }
+
+        // Collect all volume collections
+        if (addVolumeCollectionsToAnchor && doc.getFieldValues(SolrConstants.DC) != null) {
+            for (Object obj : doc.getFieldValues(SolrConstants.DC)) {
+                String dc = (String) obj;
+                dc = dc.replace(".", "#");
+                if (!collections.contains(dc)) {
+                    logger.debug("Found volume colletion: {}", dc);
+                    collections.add(dc);
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    /**
+     * 
+     * @param firstChild
+     * @param index
+     * @param pi
+     * @param order
+     * @param urn
+     * @param label
+     * @param type
+     * @return Volume element
+     */
+    private static Element generateVolumeElement(Element firstChild, int index, String pi, Long order, String urn, String label, String type) {
+        Element child = firstChild.clone();
+
+        // Set URN
+        if (urn != null) {
+            child.setAttribute(ATTRIBUTE_CONTENTIDS, urn);
+        } else {
+            child.removeAttribute(ATTRIBUTE_CONTENTIDS);
+        }
+
+        // Normalize LOGID
+        String strIdTail = String.valueOf(index + 1);
+        String strId = strIdTail;
+        if (index < 10) {
+            strId = "000" + strIdTail;
+        } else if (index < 100) {
+            strId = "00" + strIdTail;
+        } else if (index < 1000) {
+            strId = "0" + strIdTail;
+        }
+
+        // Set ORDER
+        if (order != null) {
+            child.setAttribute("ORDER", String.valueOf(order));
+        }
+
+        // Set LOGID
+        child.setAttribute("ID", "LOG_" + strId);
+        // Set LABEL
+        child.setAttribute(SolrConstants.LABEL, label);
+
+        // Set TYPE
+        if (type != null) {
+            child.setAttribute("TYPE", type);
+        }
+
+        // URL
+        Namespace nsMets = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets");
+        Namespace nsXlink = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xlink");
+        Element mptr = child.getChild("mptr", nsMets);
+        String href = mptr.getAttribute("href", nsXlink).getValue();
+        if (href.contains("=")) {
+            // Resolver URL has a paramater name
+            int i = href.indexOf('=');
+            href = href.substring(0, i + 1);
+        } else {
+            // Resolver URL has no parameter name (/ppnresolver/?)
+            int i = href.indexOf('?');
+            href = href.substring(0, i + 1);
+        }
+        Attribute attr = new Attribute("href", href + pi, nsXlink);
+        mptr.setAttribute(attr);
+
+        return child;
+    }
+
+    private void writeAnchorXmlFile(String pi, boolean newAnchorCollections) {
         String extension;
         if (newAnchorCollections) {
             extension = FileTools.XML_EXTENSION;
-            logger.info("Anchor document '{}' has received new collection entries and will be reindexed immediately.", indexObj.getPi());
+            logger.info("Anchor document '{}' has received new collection entries and will be reindexed immediately.", pi);
         } else {
             extension = ANCHOR_UPDATE_EXTENSION;
         }
 
         Path updatedAnchorFile =
-                Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolderPath().toAbsolutePath().toString(), indexObj.getPi(), "#", extension);
+                Utils.getCollisionFreeDataFilePath(hotfolder.getHotfolderPath().toAbsolutePath().toString(), pi, "#", extension);
 
         xp.writeDocumentToFile(updatedAnchorFile.toAbsolutePath().toString());
         if (Files.exists(updatedAnchorFile)) {
             hotfolder.getHighPriorityQueue().add(updatedAnchorFile);
         }
+    }
+
+    /**
+     * 
+     * @param indexObj
+     * @param collections
+     * @return
+     */
+    protected boolean addVolumeCollectionsToAnchor(IndexObject indexObj, List<String> collections) {
+        boolean ret = false;
+        List<Element> eleDmdSecList =
+                xp.evaluateToElements(XPATH_DMDSEC + indexObj.getDmdid() + "']/mets:mdWrap[@MDTYPE='MODS' or @MDTYPE='MARC']", null);
+        if (eleDmdSecList != null && !eleDmdSecList.isEmpty()) {
+            Element eleDmdSec = eleDmdSecList.get(0);
+            List<Element> eleModsList = xp.evaluateToElements("mets:xmlData/mods:mods", eleDmdSec); // TODO MARC
+            if (eleModsList != null && !eleModsList.isEmpty()) {
+                Element eleMods = eleModsList.get(0);
+                List<FieldConfig> collectionConfigFields =
+                        SolrIndexerDaemon.getInstance()
+                                .getConfiguration()
+                                .getMetadataConfigurationManager()
+                                .getConfigurationListForField(SolrConstants.DC);
+                if (collectionConfigFields != null) {
+                    logger.debug("Found {} config items for DC", collectionConfigFields.size());
+                    for (FieldConfig item : collectionConfigFields) {
+                        for (XPathConfig xPathConfig : item.getxPathConfigurations()) {
+                            List<Element> eleCollectionList = xp.evaluateToElements(xPathConfig.getxPath(), eleDmdSec);
+                            if (eleCollectionList != null && !eleCollectionList.isEmpty()) {
+                                logger.debug("XPath used for collections in this document: {}", xPathConfig.getxPath());
+                                for (Element eleCollection : eleCollectionList) {
+                                    String oldCollection = eleCollection.getTextTrim();
+                                    oldCollection = oldCollection.toLowerCase();
+                                    if (StringUtils.isNotEmpty(xPathConfig.getPrefix())) {
+                                        oldCollection = xPathConfig.getPrefix() + oldCollection;
+                                    }
+                                    if (StringUtils.isNotEmpty(xPathConfig.getSuffix())) {
+                                        oldCollection = oldCollection + xPathConfig.getSuffix();
+                                    }
+                                    if (!collections.contains(oldCollection)) {
+                                        collections.add(oldCollection);
+                                        logger.debug("Found anchor collection: {}", oldCollection);
+                                    }
+                                }
+                                Collections.sort(collections);
+                                if (collections.size() > eleCollectionList.size()) {
+                                    ret = true;
+                                }
+                                Element eleCollectionTemplate = eleCollectionList.get(0);
+                                // Remove old collection elements
+                                for (Element eleOldCollection : eleCollectionList) {
+                                    eleMods.removeContent(eleOldCollection);
+                                    logger.debug("Removing collection from the anchor: {}", eleOldCollection.getText());
+                                }
+                                // Add new collection elements
+                                for (String collection : collections) {
+                                    Element eleNewCollection = eleCollectionTemplate.clone();
+                                    eleNewCollection.setText(collection);
+                                    eleMods.addContent(eleNewCollection);
+                                    logger.debug("Adding collection to the anchor: {}", collection);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else {
+                logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
+            }
+        } else {
+            logger.error("Could not find the MODS section for '{}'", indexObj.getDmdid());
+        }
+
+        return ret;
     }
 
     /**
@@ -1779,7 +1885,7 @@ public class MetsIndexer extends Indexer {
      * @throws IOException -
      * @throws SolrServerException
      */
-    private void updateAnchorChildrenParentIddoc(IndexObject indexObj) throws IOException, SolrServerException {
+    protected void updateAnchorChildrenParentIddoc(IndexObject indexObj) throws IOException, SolrServerException {
         logger.debug("Scheduling all METS files that belong to this anchor for re-indexing...");
         SolrDocumentList hits = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
@@ -1821,7 +1927,7 @@ public class MetsIndexer extends Indexer {
      * @throws IOException
      * @throws FatalIndexerException
      */
-    private List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy)
+    protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy)
             throws IOException, FatalIndexerException {
         logger.trace("indexAllChildren");
         List<IndexObject> ret = new ArrayList<>();
@@ -2009,9 +2115,8 @@ public class MetsIndexer extends Indexer {
      * Sets DMDID, ID, TYPE and LABEL from the METS document.
      * 
      * @param indexObj {@link IndexObject}
-     * @throws FatalIndexerException
      */
-    private static void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
+    private static void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
         Element structNode = indexObj.getRootStructNode();
 
@@ -2054,9 +2159,8 @@ public class MetsIndexer extends Indexer {
      * top docstruct (ISWORK). TODO get from generated pages instead of METS.
      * 
      * @param indexObj The IndexObject to find URNs for.
-     * @throws FatalIndexerException
      */
-    private void generatePageUrns(IndexObject indexObj) throws FatalIndexerException {
+    private void generatePageUrns(IndexObject indexObj) {
         String query1 = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div/@CONTENTIDS";
         List<String> physUrnList = xp.evaluateToStringList(query1, null);
         if (physUrnList != null) {
@@ -2082,9 +2186,8 @@ public class MetsIndexer extends Indexer {
      * 
      * @param indexObj
      * @return
-     * @throws FatalIndexerException
      */
-    private String setUrn(IndexObject indexObj) throws FatalIndexerException {
+    private String setUrn(IndexObject indexObj) {
         String query = "/mets:mets/mets:structMap[@TYPE='LOGICAL']//mets:div[@ID='" + indexObj.getLogId() + "']/@CONTENTIDS";
         String urn = xp.evaluateToAttributeStringValue(query, null);
         if (Utils.isUrn(urn)) {
@@ -2100,10 +2203,9 @@ public class MetsIndexer extends Indexer {
      * 
      * @param indexObj
      * @return {@link Element} or null
-     * @throws FatalIndexerException
      * 
      */
-    private Element findStructNode(IndexObject indexObj) throws FatalIndexerException {
+    private Element findStructNode(IndexObject indexObj) {
         String query = "";
         if (!indexObj.isVolume()) {
             query = "//mets:mets/mets:structMap[@TYPE='LOGICAL']/mets:div[@DMDID and @ID]";
@@ -2137,9 +2239,8 @@ public class MetsIndexer extends Indexer {
      * Checks whether this is a volume of a multivolume work (should be false for monographs and anchors).
      * 
      * @return boolean
-     * @throws FatalIndexerException
      */
-    private boolean isVolume() throws FatalIndexerException {
+    protected boolean isVolume() {
         String query =
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
@@ -2240,5 +2341,32 @@ public class MetsIndexer extends Indexer {
             }
             logger.info("New anchor file copied to '{}'.", indexed.toAbsolutePath());
         }
+    }
+
+    /**
+     * 
+     * @return
+     */
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.METS;
+    }
+
+    /**
+     * 
+     * @param dmdId
+     * @return Root path for querying for PI
+     */
+    protected String getPiRootPath(String dmdId) {
+        String ret = XPATH_DMDSEC + dmdId + "']/mets:mdWrap[@MDTYPE='MODS']/";
+        logger.debug("preQuery: {}", ret);
+        return ret;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    protected String getAnchorPiXpath() {
+        return "']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
     }
 }

@@ -712,7 +712,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldWriteCmsPageTextsIntoIndex() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
+        new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
 
         {
             // CMS page content is not stored and must be searched for (and should have any HTML tags removed)
@@ -748,7 +748,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     public void index_shouldWriteShapeMetadataCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
+        new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
         Assert.assertEquals(1, SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0004 +" + SolrConstants.METADATATYPE + ":SHAPE",
@@ -960,6 +960,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertFalse(eleStructMapPhysicalList.isEmpty());
 
         int page = 1;
+        indexer.useFileGroupGlobal = MetsIndexer.DEFAULT_FILEGROUP;
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), "ppn750544996", page, writeStrategy, null,
@@ -1026,6 +1027,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         int page = 1;
+        indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
@@ -1053,6 +1055,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         int page = 1;
+        indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
@@ -1077,6 +1080,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         int page = 3;
+        indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
         Assert.assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, null,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], false));
@@ -1140,7 +1144,6 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(Files.isRegularFile(metsFile));
         MetsIndexer.anchorSuperupdate(metsFile, updatedMetsFolder, dataRepository);
 
-        Path oldMetsFile = Paths.get(updatedMetsFolder.toAbsolutePath().toString(), "PPN123.xml");
         String[] files = updatedMetsFolder.toFile().list();
         Assert.assertNotNull(files);
         Assert.assertEquals(1, files.length);

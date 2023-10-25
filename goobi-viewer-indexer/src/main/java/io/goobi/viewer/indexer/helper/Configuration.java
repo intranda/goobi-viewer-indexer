@@ -156,6 +156,7 @@ public final class Configuration {
         namespaces.put("xml", Namespace.getNamespace("xml", "http://www.w3.org/XML/1998/namespace"));
         namespaces.put("mets", Namespace.getNamespace("mets", "http://www.loc.gov/METS/"));
         namespaces.put("mods", Namespace.getNamespace("mods", "http://www.loc.gov/mods/v3"));
+        namespaces.put("marc", Namespace.getNamespace("marc", "http://www.loc.gov/MARC21/slim"));
         namespaces.put("gdz", Namespace.getNamespace("gdz", "http://gdz.sub.uni-goettingen.de/"));
         namespaces.put("xlink", Namespace.getNamespace("xlink", "http://www.w3.org/1999/xlink"));
         namespaces.put("dv", Namespace.getNamespace("dv", "http://dfg-viewer.de/"));
@@ -653,6 +654,10 @@ public final class Configuration {
      */
     public boolean isUseFirstPageAsDefaultRepresentative() {
         return getBoolean("init.representativeImage.useFirstPageAsDefault", true);
+    }
+    
+    public String getMetsPreferredImageFileGroup() {
+        return getString("init.mets.preferredImageFileGroup", "");
     }
 
     /**

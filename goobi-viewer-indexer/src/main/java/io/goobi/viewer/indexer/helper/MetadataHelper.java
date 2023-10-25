@@ -119,6 +119,10 @@ public class MetadataHelper {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());
         }
         for (String fieldName : fieldNamesList) {
+            // PI is processed separately
+            if (SolrConstants.PI.equals(fieldName)) {
+                continue;
+            }
             List<FieldConfig> configurationItemList =
                     SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
             if (configurationItemList == null || configurationItemList.isEmpty()) {
@@ -306,6 +310,14 @@ public class MetadataHelper {
                 }
 
                 for (String fieldValue : fieldValues) {
+                    // Apply string modifications configured for this field
+                    fieldValue = applyAllModifications(configurationItem, fieldValue);
+
+                    // If value is blank after modifications, skip
+                    if (StringUtils.isBlank(fieldValue)) {
+                        continue;
+                    }
+
                     // CURRENTNOSORT must be an integer value
                     if (fieldName.equals(SolrConstants.CURRENTNOSORT)) {
                         try {
@@ -314,13 +326,6 @@ public class MetadataHelper {
                             logger.error("{} cannot be written because it's not an integer value: {}", SolrConstants.CURRENTNOSORT, fieldValue);
                             continue;
                         }
-                    }
-                    // Apply string modifications configured for this field
-                    fieldValue = applyAllModifications(configurationItem, fieldValue);
-
-                    // If value is blank after modifications, skip
-                    if (StringUtils.isBlank(fieldValue)) {
-                        continue;
                     }
 
                     // Convert to geoJSON
@@ -451,7 +456,8 @@ public class MetadataHelper {
             String proxyUrl = null;
             int proxyPort = 0;
             try {
-                if (SolrIndexerDaemon.getInstance().getConfiguration().isProxyEnabled() && !SolrIndexerDaemon.getInstance().getConfiguration().isHostProxyWhitelisted(url)) {
+                if (SolrIndexerDaemon.getInstance().getConfiguration().isProxyEnabled()
+                        && !SolrIndexerDaemon.getInstance().getConfiguration().isHostProxyWhitelisted(url)) {
                     proxyUrl = SolrIndexerDaemon.getInstance().getConfiguration().getProxyUrl();
                     proxyPort = SolrIndexerDaemon.getInstance().getConfiguration().getProxyPort();
                 }
@@ -608,7 +614,10 @@ public class MetadataHelper {
                 }
                 if (duplicate) {
                     List<FieldConfig> fieldConfigList =
-                            SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(field.getField());
+                            SolrIndexerDaemon.getInstance()
+                                    .getConfiguration()
+                                    .getMetadataConfigurationManager()
+                                    .getConfigurationListForField(field.getField());
                     if (fieldConfigList == null || fieldConfigList.isEmpty() || !fieldConfigList.get(0).isAllowDuplicateValues()) {
                         logger.debug("Duplicate field found: {}:{}", field.getField(), field.getValue());
                         continue;
@@ -764,7 +773,8 @@ public class MetadataHelper {
         }
         String ret = pi.trim();
         // Apply replace rules defined for the field PI
-        List<FieldConfig> configItems = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
+        List<FieldConfig> configItems =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (configItems != null && !configItems.isEmpty()) {
             Map<Object, String> replaceRules = configItems.get(0).getReplaceRules();
             if (replaceRules != null && !replaceRules.isEmpty()) {
@@ -855,9 +865,8 @@ public class MetadataHelper {
      *
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
-    public static String getAnchorPi(JDomXP xp) throws FatalIndexerException {
+    public static String getAnchorPi(JDomXP xp) {
         String query =
                 "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
@@ -874,11 +883,11 @@ public class MetadataHelper {
      * @param prefix a {@link java.lang.String} object.
      * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return String or null
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should extract DenkXweb PI correctly
      */
-    public static String getPIFromXML(String prefix, JDomXP xp) throws FatalIndexerException {
-        List<FieldConfig> piConfig = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
+    public static String getPIFromXML(String prefix, JDomXP xp) {
+        List<FieldConfig> piConfig =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
             return null;
         }
@@ -887,8 +896,15 @@ public class MetadataHelper {
         for (XPathConfig xPathConfig : xPathConfigurations) {
             String query = prefix + xPathConfig.getxPath();
             query = query.replace("///", "/");
-            logger.trace(query);
+            logger.debug(query);
             String pi = xp.evaluateToString(query, null);
+            if (pi == null) {
+                // Attribute evaluation fallback
+                List<Attribute> childrenNodeList = xp.evaluateToAttributes(query, null);
+                if (childrenNodeList != null && !childrenNodeList.isEmpty()) {
+                    pi = childrenNodeList.get(0).getValue();
+                }
+            }
             if (StringUtils.isNotEmpty(pi)) {
                 return pi;
             }
@@ -1421,7 +1437,8 @@ public class MetadataHelper {
                 // Add text body
                 Element eleText = tei.getRootElement().getChild("text", null);
                 if (eleText != null && eleText.getChild("body", null) != null) {
-                    String language = eleText.getAttributeValue("lang", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xml"));
+                    String language =
+                            eleText.getAttributeValue("lang", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xml"));
                     String fileFieldName = SolrConstants.FILENAME_TEI;
                     if (language != null) {
                         String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();

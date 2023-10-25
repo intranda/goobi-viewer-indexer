@@ -52,6 +52,7 @@
 		<indexedLido>indexed_lido</indexedLido>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
+        <indexedCMS>indexed_cms</indexedCMS>
 
 		<!-- Misc folders -->
 		<successFolder>target/viewer/success/</successFolder>
@@ -317,14 +318,10 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]
-							</item>
-							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier
-							</item>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]
-							</item>
-							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID
-							</item>
+							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]</item>
+							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier</item>
+                            <item>/mets:mets/@OBJID</item>
+							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID</item>
                             <item>//denkxweb:recId</item>
                             <item>dc:identifier</item>
 						</list>
@@ -334,6 +331,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<replace string="replaceme/"></replace>
 					<replace string="/replacemetoo"></replace>
+                    <replace regex="https://hdl.handle.net/([0-9]+)/([0-9]+).([0-9]+)">$1_$2_$3</replace>
 				</item>
 			</list>
 		</PI>
@@ -356,8 +354,6 @@
 		</CURRENTNO>
 
 		<CURRENTNOSORT>
-			<!-- enthaelt die sortierbare Nummerierung (integer) z.B bei mehrbaendigen 
-				Werken // -->
 			<list>
 				<item>
 					<xpath>
@@ -452,6 +448,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title
 							</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue
 							</item>
 						</list>
@@ -498,6 +495,7 @@
 						<list>
 							<item>mets:xmlData/mods:mods/mods:originInfo/mods:publisher
 							</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="b"]</item>
 							<item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Verlag']/lido:actor/lido:nameActorSet/lido:appellationValue
 							</item>
 						</list>
@@ -514,6 +512,7 @@
                         <list>
                             <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]
                             </item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="a"]</item>
                         </list>
                     </xpath>
 					<addToDefault>true</addToDefault>
@@ -532,6 +531,7 @@
 							</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo/mods:dateIssued[not(@encoding)][not(@point)]
 							</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="c"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue
 							</item>
 						</list>
@@ -707,18 +707,20 @@
 				<item>
 					<xpath>
 						<list>
-							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm
-							</item>
+							<item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="100"][subfield[@code="e"] = "author."]</item>
 						</list>
 					</xpath>
 					<groupEntity type="PERSON">
 					    <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_VALUE">subfield[@code="a"]</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
 						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_LIFEPERIOD">subfield[@code="d"]</field>
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
 					</groupEntity>
 					<addSortField>true</addSortField>

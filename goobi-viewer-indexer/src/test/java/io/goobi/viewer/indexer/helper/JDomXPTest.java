@@ -28,20 +28,30 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 
 public class JDomXPTest extends AbstractTest {
 
     /**
      * @see JDomXP#determineFileFormat(File)
-     * @verifies detect mets files correctly
+     * @verifies detect mets mods files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectMetsFilesCorrectly() throws Exception {
+    public void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect mets marc files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.METS_MARC, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -108,6 +118,17 @@ public class JDomXPTest extends AbstractTest {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml");
         Assert.assertTrue(file.isFile());
         Assert.assertEquals(FileFormat.TEI, JDomXP.determineFileFormat(file));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect cms files correctly
+     */
+    @Test
+    public void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/indexed_cms/CMS123.xml");
+        Assert.assertTrue(file.isFile());
+        Assert.assertEquals(FileFormat.CMS, JDomXP.determineFileFormat(file));
     }
 
     /**

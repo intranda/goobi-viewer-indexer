@@ -15,6 +15,10 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,25 +46,25 @@ public class UtilsTest extends AbstractTest {
                 // filename.xml
                 Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
-                Assert.assertEquals("filename.xml", path.getFileName().toString());
+                assertEquals("filename.xml", path.getFileName().toString());
                 Files.createFile(path);
-                Assert.assertTrue(Files.exists(path));
+                assertTrue(Files.exists(path));
                 paths.add(path);
             }
             {
                 // filename#1.xml
                 Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
-                Assert.assertEquals("filename#0.xml", path.getFileName().toString());
+                assertEquals("filename#0.xml", path.getFileName().toString());
                 Files.createFile(path);
-                Assert.assertTrue(Files.exists(path));
+                assertTrue(Files.exists(path));
                 paths.add(path);
             }
             {
                 // filename#2.xml
                 Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
                 Assert.assertNotNull(path);
-                Assert.assertEquals("filename#1.xml", path.getFileName().toString());
+                assertEquals("filename#1.xml", path.getFileName().toString());
             }
         } finally {
             for (Path path : paths) {
@@ -76,10 +80,10 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void extractPiFromFileName_shouldExtractFileNameCorrectly() throws Exception {
-        Assert.assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123#0.delete")));
-        Assert.assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123#0.purge")));
-        Assert.assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123.UPDATED")));
-        Assert.assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123#0.UPDATED")));
+        assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123#0.delete")));
+        assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123#0.purge")));
+        assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123.UPDATED")));
+        assertEquals("PPN123", Utils.extractPiFromFileName(Paths.get("PPN123#0.UPDATED")));
     }
 
     /**
@@ -88,9 +92,9 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void getFileNameFromIiifUrl_shouldExtractFileNameCorrectly() throws Exception {
-        Assert.assertEquals("00000001.jpg",
+        assertEquals("00000001.jpg",
                 Utils.getFileNameFromIiifUrl("https://localhost:8080/viewer/rest/image/AC05725455/00000001.tif/full/!400,400/0/default.jpg"));
-        Assert.assertEquals("AFE_1284_1999-17-557-1_a.jpg", Utils
+        assertEquals("AFE_1284_1999-17-557-1_a.jpg", Utils
                 .getFileNameFromIiifUrl("https://pecunia2.zaw.uni-heidelberg.de:49200/iiif/2/AFE_1284_1999-17-557-1_a.jpg/full/full/0/default.jpg"));
     }
 
@@ -100,7 +104,7 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void getFileNameFromIiifUrl_shouldExtractEscapedFileNameCorrectly() throws Exception {
-        Assert.assertEquals("00000001.jpg",
+        assertEquals("00000001.jpg",
                 Utils.getFileNameFromIiifUrl(
                         "https://example.com/api/iiif/image/v2/dbbs_derivate_00041856%2fmax%2F00000001.jpg/full/!256,256/0/color.jpg"));
     }
@@ -111,12 +115,12 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void generateLongOrderNumber_shouldConstructNumberCorrectly() throws Exception {
-        Assert.assertEquals(10001, Utils.generateLongOrderNumber(1, 1));
-        Assert.assertEquals(100001, Utils.generateLongOrderNumber(10, 1));
-        Assert.assertEquals(110010, Utils.generateLongOrderNumber(11, 10));
-        Assert.assertEquals(1110100, Utils.generateLongOrderNumber(111, 100));
-        Assert.assertEquals(11111000, Utils.generateLongOrderNumber(1111, 1000));
-        Assert.assertEquals(111111000, Utils.generateLongOrderNumber(11111, 1000));
+        assertEquals(10001, Utils.generateLongOrderNumber(1, 1));
+        assertEquals(100001, Utils.generateLongOrderNumber(10, 1));
+        assertEquals(110010, Utils.generateLongOrderNumber(11, 10));
+        assertEquals(1110100, Utils.generateLongOrderNumber(111, 100));
+        assertEquals(11111000, Utils.generateLongOrderNumber(1111, 1000));
+        assertEquals(111111000, Utils.generateLongOrderNumber(11111, 1000));
     }
 
     /**
@@ -125,9 +129,9 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void isFileNameMatchesRegex_shouldMatchCorrectly() throws Exception {
-        Assert.assertTrue(Utils.isFileNameMatchesRegex("foo/bar/default.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
-        Assert.assertTrue(Utils.isFileNameMatchesRegex("foo/bar/color.png", Indexer.IIIF_IMAGE_FILE_NAMES));
-        Assert.assertFalse(Utils.isFileNameMatchesRegex("foo/bar/other.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
+        assertTrue(Utils.isFileNameMatchesRegex("foo/bar/default.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
+        assertTrue(Utils.isFileNameMatchesRegex("foo/bar/color.png", Indexer.IIIF_IMAGE_FILE_NAMES));
+        assertFalse(Utils.isFileNameMatchesRegex("foo/bar/other.jpg", Indexer.IIIF_IMAGE_FILE_NAMES));
     }
 
     /**
@@ -136,12 +140,12 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void adaptField_shouldApplyPrefixCorrectly() throws Exception {
-        Assert.assertEquals("SORT_DC", Utils.adaptField(SolrConstants.DC, "SORT_"));
-        Assert.assertEquals("SORT_FOO", Utils.adaptField("MD_FOO", "SORT_"));
-        Assert.assertEquals("SORT_FOO", Utils.adaptField("MD2_FOO", "SORT_"));
-        Assert.assertEquals("SORTNUM_FOO", Utils.adaptField("MDNUM_FOO", "SORT_"));
-        Assert.assertEquals("SORT_FOO", Utils.adaptField("NE_FOO", "SORT_"));
-        Assert.assertEquals("SORT_FOO", Utils.adaptField("BOOL_FOO", "SORT_"));
+        assertEquals("SORT_DC", Utils.adaptField(SolrConstants.DC, "SORT_"));
+        assertEquals("SORT_FOO", Utils.adaptField("MD_FOO", "SORT_"));
+        assertEquals("SORT_FOO", Utils.adaptField("MD2_FOO", "SORT_"));
+        assertEquals("SORTNUM_FOO", Utils.adaptField("MDNUM_FOO", "SORT_"));
+        assertEquals("SORT_FOO", Utils.adaptField("NE_FOO", "SORT_"));
+        assertEquals("SORT_FOO", Utils.adaptField("BOOL_FOO", "SORT_"));
     }
 
     /**
@@ -150,7 +154,7 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void adaptField_shouldNotApplyPrefixToRegularFieldsIfEmpty() throws Exception {
-        Assert.assertEquals("MD_FOO", Utils.adaptField("MD_FOO", ""));
+        assertEquals("MD_FOO", Utils.adaptField("MD_FOO", ""));
     }
 
     /**
@@ -159,7 +163,7 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void adaptField_shouldRemoveUntokenizedCorrectly() throws Exception {
-        Assert.assertEquals("SORT_FOO", Utils.adaptField("MD_FOO_UNTOKENIZED", "SORT_"));
+        assertEquals("SORT_FOO", Utils.adaptField("MD_FOO_UNTOKENIZED", "SORT_"));
     }
 
     /**
@@ -168,10 +172,10 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void adaptField_shouldNotApplyFacetPrefixToCalendarFields() throws Exception {
-        Assert.assertEquals(SolrConstants.YEAR, Utils.adaptField(SolrConstants.YEAR, "FACET_"));
-        Assert.assertEquals(SolrConstants.YEARMONTH, Utils.adaptField(SolrConstants.YEARMONTH, "FACET_"));
-        Assert.assertEquals(SolrConstants.YEARMONTHDAY, Utils.adaptField(SolrConstants.YEARMONTHDAY, "FACET_"));
-        Assert.assertEquals(SolrConstants.MONTHDAY, Utils.adaptField(SolrConstants.MONTHDAY, "FACET_"));
+        assertEquals(SolrConstants.YEAR, Utils.adaptField(SolrConstants.YEAR, "FACET_"));
+        assertEquals(SolrConstants.YEARMONTH, Utils.adaptField(SolrConstants.YEARMONTH, "FACET_"));
+        assertEquals(SolrConstants.YEARMONTHDAY, Utils.adaptField(SolrConstants.YEARMONTHDAY, "FACET_"));
+        assertEquals(SolrConstants.MONTHDAY, Utils.adaptField(SolrConstants.MONTHDAY, "FACET_"));
     }
 
     /**
@@ -180,10 +184,46 @@ public class UtilsTest extends AbstractTest {
      */
     @Test
     public void sortifyField_shouldSortifyCorrectly() throws Exception {
-        Assert.assertEquals("SORT_DC", Utils.sortifyField(SolrConstants.DC));
-        Assert.assertEquals("SORT_DOCSTRCT", Utils.sortifyField(SolrConstants.DOCSTRCT));
-        Assert.assertEquals("SORT_TITLE", Utils.sortifyField("MD_TITLE_UNTOKENIZED"));
-        Assert.assertEquals("SORTNUM_YEAR", Utils.sortifyField(SolrConstants.YEAR));
-        Assert.assertEquals("SORTNUM_FOO", Utils.sortifyField("MDNUM_FOO"));
+        assertEquals("SORT_DC", Utils.sortifyField(SolrConstants.DC));
+        assertEquals("SORT_DOCSTRCT", Utils.sortifyField(SolrConstants.DOCSTRCT));
+        assertEquals("SORT_TITLE", Utils.sortifyField("MD_TITLE_UNTOKENIZED"));
+        assertEquals("SORTNUM_YEAR", Utils.sortifyField(SolrConstants.YEAR));
+        assertEquals("SORTNUM_FOO", Utils.sortifyField("MDNUM_FOO"));
+    }
+
+    /**
+     * @see Utils#isValidURL(String)
+     * @verifies return true if url starts with http
+     */
+    @Test
+    public void isValidURL_shouldReturnTrueIfUrlStartsWithHttp() throws Exception {
+        assertTrue(Utils.isValidURL("http://example.com"));
+    }
+
+    /**
+     * @see Utils#isValidURL(String)
+     * @verifies return true if url starts with https
+     */
+    @Test
+    public void isValidURL_shouldReturnTrueIfUrlStartsWithHttps() throws Exception {
+        assertTrue(Utils.isValidURL("https://example.com"));
+    }
+
+    /**
+     * @see Utils#isValidURL(String)
+     * @verifies return true if url starts with file
+     */
+    @Test
+    public void isValidURL_shouldReturnTrueIfUrlStartsWithFile() throws Exception {
+        assertTrue(Utils.isValidURL("file://opt/digiverso/indexer/foo.xml"));
+    }
+
+    /**
+     * @see Utils#isValidURL(String)
+     * @verifies return false if not url
+     */
+    @Test
+    public void isValidURL_shouldReturnFalseIfNotUrl() throws Exception {
+        assertFalse(Utils.isValidURL("example.com/foo"));
     }
 }

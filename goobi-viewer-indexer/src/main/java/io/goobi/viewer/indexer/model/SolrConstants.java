@@ -31,7 +31,8 @@ public final class SolrConstants {
         EVENT,
         PAGE,
         SHAPE,
-        UGC;
+        UGC,
+        CMS;
     }
 
     public enum MetadataGroupType {
@@ -159,7 +160,7 @@ public final class SolrConstants {
     /** Constant <code>LOGID="LOGID"</code> */
     public static final String LOGID = "LOGID";
     /** Constant <code>MD_FIRSTNAME="MD_FIRSTNAME"</code> */
-    public static final String MD_FIRSTNAME ="MD_FIRSTNAME";
+    public static final String MD_FIRSTNAME = "MD_FIRSTNAME";
     /** Constant <code>MD_LASTNAME="MD_LASTNAME"</code> */
     public static final String MD_LASTNAME = "MD_LASTNAME";
     /** Constant <code>MD_VALUE="MD_VALUE"</code> */
@@ -244,15 +245,15 @@ public final class SolrConstants {
     public static final String PREFIX_SORT = "SORT_";
     /** Constant <code>PREFIX_SORTNUM="SORTNUM_"</code> */
     public static final String PREFIX_SORTNUM = "SORTNUM_";
-    
+
     /** Constant <code>MIXFIX_LANG="_LANG_"</code> */
     public static final String MIXFIX_LANG = "_LANG_";
-    
+
     /** Constant <code>SUFFIX_HTML_SANDBOXED="_HTML-SANDBOXED"</code> */
     public static final String SUFFIX_HTML_SANDBOXED = "_HTML-SANDBOXED";
     /** Constant <code>SUFFIX_UNTOKENIZED="_UNTOKENIZED"</code> */
     public static final String SUFFIX_UNTOKENIZED = "_UNTOKENIZED";
-    
+
     /** Constant <code>UGC_TYPE_PERSON="PERSON"</code> */
     public static final String UGC_TYPE_PERSON = "PERSON";
     /** Constant <code>UGC_TYPE_CORPORATION="CORPORATION"</code> */

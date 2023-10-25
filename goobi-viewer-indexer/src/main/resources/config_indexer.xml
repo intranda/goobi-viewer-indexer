@@ -53,6 +53,7 @@
 		<indexedLido>indexed_lido</indexedLido>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
+        <indexedCMS>indexed_cms</indexedCMS>
 
 		<!-- Misc folders -->
 		<successFolder>C:/opt/digiverso/viewer/success/</successFolder>
@@ -110,6 +111,12 @@
 		<!-- fulltextForceUTF8: If true, full-text files will automatically be converted to UTF-8
 		    if a different charset is detected. Default is true. -->
 		<fulltextForceUTF8>false</fulltextForceUTF8>
+        
+        <mets>
+            <!-- preferredImageFileGroup: If a name is configured and a group with that name exists,
+                it will be used for indexing image file paths. -->
+            <preferredImageFileGroup>BOOKVIEWER</preferredImageFileGroup>
+        </mets>
 
 		<lido>
 			<!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
@@ -242,9 +249,9 @@
 							<item>lido:lidoRecID</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]</item>
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier</item>
-							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier[@source="gbv-ppn"]</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
+                            <item>/mets:mets/@OBJID</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
 							<item>dc:identifier</item>
@@ -255,6 +262,7 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<replace string="rosdok/ppn"></replace>
 					<replace string="http://ld.zdb-services.de/resource/organisations/DE-MUS-814819/"></replace>
+                    <replace regex="https?://hdl.handle.net/([0-9]+)/([0-9]+).([0-9]+)">$1_$2_$3</replace>
 				</item>
 			</list>
 		</PI>
@@ -514,6 +522,7 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
 							<item>dc:title</item>
 						</list>
@@ -629,6 +638,7 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:publisher</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="b"]</item>
 							<item>lido:eventActor/lido:actorInRole[lido:roleActor/lido:term='Verlag']</item>
 						</list>
 					</xpath>
@@ -647,7 +657,12 @@
 		<MD_PLACEPUBLISH>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:place/mods:placeTerm[@type="text"]</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="a"]</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
                     <groupEntity type="LOCATION" addCoordsToDocstruct="true">
                         <field name="MD_VALUE">text()</field>
@@ -668,6 +683,7 @@
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[@keyDate="yes"][@encoding="iso8601"]</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@keyDate)][@encoding="iso8601"]</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@encoding)][not(@point)]</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="c"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue</item>
 						</list>
 					</xpath>
@@ -1011,7 +1027,12 @@
 		<MD_AUTHOR>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority='marcrelator'][@type='code']]/mods:displayForm</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="100"][subfield[@code="e"] = "author."]</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<replace string="&lt;&lt;"></replace>
@@ -1020,12 +1041,14 @@
 					<replace char="156"></replace>
 					<groupEntity type="PERSON">
 						<field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_VALUE">subfield[@code="a"]</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
 						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_LIFEPERIOD">subfield[@code="d"]</field>
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
 					</groupEntity>
 				</item>
@@ -1035,7 +1058,12 @@
 		<MD_CARTOGRAPHER>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="ctg"[@authority='marcrelator'][@type='code']]/mods:displayForm</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="ctg"[@authority='marcrelator'][@type='code']]/mods:displayForm</item>
+                            <item>mets:xmlData/bib/record/datafield[@tag="510"]</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<replace string="&lt;&lt;"></replace>
@@ -1044,6 +1072,7 @@
 					<replace char="156"></replace>
 					<groupEntity type="PERSON">
 						<field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_VALUE">subfield[@code="a"]</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
 						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
@@ -3652,517 +3681,6 @@
                 </item>
             </list>
         </MD_CONVENTIONDECLARATION>
-        <!-- ARTIST DICTIONARY -->
-        <MD_ROLE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:typeOfResource[@usage="role"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </MD_ROLE>
-
-        <MDNUM_IMPORTANCE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:typeOfResource[@usage="importance"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </MDNUM_IMPORTANCE>
-
-        <NORM_URI>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:identifier[@type="GND"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </NORM_URI>
-
-        <MD_BIRTHDATE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:birthdate</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <normalizeYear minYearDigits="4" field="MDNUM_BIRTHYEAR">true</normalizeYear>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">text()</field>
-                        <field name="MD_REFID">@ID</field>
-                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_BIRTHDATE>
-
-        <MD_BIRTHPLACE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:birthdate/luxArtDic:place</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="LOCATION">
-                        <field name="MD_VALUE">text()</field>
-                        <field name="NORM_URI">@valueURI</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_BIRTHPLACE>
-
-        <MD_DEATHDATE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:birthdate</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <normalizeYear minYearDigits="4" field="MDNUM_DEATHYEAR">true</normalizeYear>
-                </item>
-            </list>
-        </MD_DEATHDATE>
-
-        <MD_GENDER>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:gender</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <addUntokenizedVersion>false</addUntokenizedVersion>
-                </item>
-            </list>
-        </MD_GENDER>
-
-        <MD_PROFESSION>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:profession</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">@ID</field>
-                        <field name="MD_DATESTART">@start</field>
-                        <field name="MD_DATEEND">@end</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_PROFESSION>
-
-        <MD_DISCIPLINE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:discipline</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">luxArtDic:discipline</field>
-                        <field name="NORM_URI">luxArtDic:discipline/@valueURI</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_DISCIPLINE>
-
-        <MD_ARTISTIC_MOVEMENT>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:artisticmovement</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">luxArtDic:artisticmovement</field>
-                        <field name="NORM_URI">luxArtDic:artisticmovement/@valueURI</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_ARTISTIC_MOVEMENT>
-
-        <MD_BIOGRAPHY_EDUCATION>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:biography[@type="Education"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">luxArtDic:description[@xml:lang="fre"]</field>
-                        <field name="MD_DATESTART">@start</field>
-                        <field name="MD_DATEEND">@end</field>
-                        <field name="MD_LOCATION">luxArtDic:location</field>
-                        <field name="NORM_URI">luxArtDic:location/@valueURI</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_BIOGRAPHY_EDUCATION>
-
-        <MD_BIOGRAPHY_MARRIAGE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:biography[@type="Marriage"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">@ID</field>
-                        <field name="MD_DATESTART">@start</field>
-                        <field name="MD_DATEEND">@end</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_BIOGRAPHY_MARRIAGE>
-
-        <MD_BIOGRAPHY_JOURNEY>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:biography[@type="Journey"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">luxArtDic:description[@xml:lang="fre"]</field>
-                        <field name="MD_DATESTART">@start</field>
-                        <field name="MD_DATEEND">@end</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_BIOGRAPHY_JOURNEY>
-
-        <MD_DESCRIPTION_LANG_FR>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:description/luxArtDic:text[@xml:lang="fre"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                </item>
-            </list>
-        </MD_DESCRIPTION_LANG_FR>
-
-        <MD_DESCRIPTION_LANG_EN>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:description/luxArtDic:text[@xml:lang="eng"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                </item>
-            </list>
-        </MD_DESCRIPTION_LANG_EN>
-
-        <MD_DESCRIPTION_LANG_DE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:extension/luxArtDic:description/luxArtDic:text[@xml:lang="ger"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                </item>
-            </list>
-        </MD_DESCRIPTION_LANG_DE>
-
-        <MD_RELATIONSHIP>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="RELATIONSHIP">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_TYPE">@otherType</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATIONSHIP>
-
-        <MD_RELATIONSHIP_AWARD>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="received" or @otherType="was given to")]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="RELATIONSHIP">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATIONSHIP_AWARD>
-
-        <MD_RELATIONSHIP_EVENT>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="participated in"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="RELATIONSHIP">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATIONSHIP_EVENT>
-
-        <MD_RELATIONSHIP_GROUP>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="is member of" or @otherType="is president of")]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="RELATIONSHIP">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATIONSHIP_GROUP>
-
-        <MD_RELATIONSHIP_PERSON>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="is child of" or @otherType="is family member of" or @otherType="is parent of" or @otherType="is student of" or @otherType="is teacher of" or @otherType="was influenced by")]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="RELATIONSHIP">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_TYPE">@otherType</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATIONSHIP_PERSON>
-
-        <!--
-        <MD_RELATION_COLLABORATION>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and (@otherType="collaborates with" or @otherType="is collaborator of")]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATION_COLLABORATION>
-
-        <MD_RELATION_COLLECTION>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="Has works in the collection of"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATION_COLLECTION>
-
-        <MD_RELATION_GIVEN_BY>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="was given by"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATION_GIVEN_BY>
-
-        <MD_RELATION_GIVEN_TO>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="was given to"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DEGREE">mods:extension/luxArtDic:degree</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATION_GIVEN_TO>
-
-        <MD_RELATION_PARTNERSHIP>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="is partner of"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATION_PARTNERSHIP>
-
-        <MD_RELATION_REPRESENTATION_ACTIVE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="represents"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATION_REPRESENTATION_ACTIVE>
-
-        <MD_RELATION_REPRESENTATION_PASSIVE>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="is represented by"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATION_REPRESENTATION_PASSIVE>
-
-        <MD_RELATION_WORK_OWNERSHIP>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mods:mods/mods:relatedItem[@type="references" and @otherType="Owns works by"]</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER">
-                        <field name="MD_VALUE">mods:titleInfo/mods:title</field>
-                        <field name="MD_IDENTIFIER">mods:recordInfo/mods:recordIdentifier</field>
-                        <field name="MD_DATESTART">mods:extension/luxArtDic:date</field>
-                        <field name="MD_DATEEND">mods:extension/luxArtDic:endDate</field>
-                    </groupEntity>
-                </item>
-            </list>
-        </MD_RELATION_WORK_OWNERSHIP>
-        -->
 
 	</fields>
 </root>

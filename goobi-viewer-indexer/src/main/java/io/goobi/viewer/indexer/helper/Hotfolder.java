@@ -45,12 +45,14 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
+import io.goobi.viewer.indexer.CmsPageIndexer;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
 import io.goobi.viewer.indexer.DublinCoreIndexer;
 import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
+import io.goobi.viewer.indexer.MetsMarcIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.UsageStatisticsIndexer;
 import io.goobi.viewer.indexer.Version;
@@ -94,6 +96,8 @@ public class Hotfolder {
     private boolean dcEnabled = true;
     /** Constant <code>worldviewsEnabled=true</code> */
     private boolean worldviewsEnabled = true;
+    /** Constant <code>cmsEnabled=true</code> */
+    private boolean cmsEnabled = true;
 
     private int queueCapacity = 500;
     private int minStorageSpace = 2048;
@@ -128,7 +132,7 @@ public class Hotfolder {
      * @throws FatalIndexerException
      */
     Hotfolder() throws FatalIndexerException {
-        logger.info("Hotfolder()");
+        logger.trace("Hotfolder()");
         this.dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
     }
 
@@ -141,7 +145,7 @@ public class Hotfolder {
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public Hotfolder(String hotfolderPath) throws FatalIndexerException {
-        logger.info("Hotfolder({})", hotfolderPath);
+        logger.trace("Hotfolder({})", hotfolderPath);
         dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         initFolders(hotfolderPath, SolrIndexerDaemon.getInstance().getConfiguration());
@@ -205,48 +209,49 @@ public class Hotfolder {
      * @param hotfolderPathString
      * @param config
      * @throws FatalIndexerException
+     * @should throw FatalIndexerException if hotfolderPathString null
+     * @should throw FatalIndexerException if viewerHome not defined
+     * @should throw FatalIndexerException if tempFolder not defined
+     * @should throw FatalIndexerException if successFolder not defined
      */
-    private void initFolders(String hotfolderPathString, Configuration config) throws FatalIndexerException {
+    void initFolders(String hotfolderPathString, Configuration config) throws FatalIndexerException {
         try {
             minStorageSpace = Integer.valueOf(config.getConfiguration("minStorageSpace"));
         } catch (NumberFormatException e) {
             logger.error("<minStorageSpace> must contain a numerical value - using default ({}) instead.", minStorageSpace);
         }
-        try {
-            hotfolderPath = Paths.get(hotfolderPathString);
-            if (!Utils.checkAndCreateDirectory(hotfolderPath)) {
-                logger.error("Could not create folder '{}', exiting...", hotfolderPath);
-                throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
-            }
-        } catch (Exception e) {
-            logger.error("<hotFolder> not defined.");
+        if (StringUtils.isEmpty(hotfolderPathString)) {
+            logger.error("Given <hotFolder> not defined, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
+        hotfolderPath = Paths.get(hotfolderPathString);
+        if (!Utils.checkAndCreateDirectory(hotfolderPath)) {
+            logger.error("Could not create folder '{}', exiting...", hotfolderPath);
             throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
 
-        try {
-            String viewerHomePath = config.getViewerHome();
-            if (!Files.isDirectory(Paths.get(viewerHomePath))) {
-                logger.error("Path defined in <viewerHome> does not exist, exiting...");
-                throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
-            }
-        } catch (Exception e) {
+        String viewerHomePath = config.getViewerHome();
+        if (StringUtils.isEmpty(viewerHomePath)) {
             logger.error("<viewerHome> not defined, exiting...");
             throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
+        if (!Files.isDirectory(Paths.get(viewerHomePath))) {
+            logger.error("Path defined in <viewerHome> does not exist, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
 
-        try {
-            tempFolderPath = Paths.get(config.getConfiguration("tempFolder"));
-            if (!Utils.checkAndCreateDirectory(tempFolderPath)) {
-                logger.error("Could not create folder '{}', exiting...", tempFolderPath);
-                throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
-            }
-        } catch (Exception e) {
-            logger.error("<tempFolder> not defined.");
+        if (StringUtils.isEmpty(config.getConfiguration("tempFolder"))) {
+            logger.error("<tempFolder> not defined, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
+        tempFolderPath = Paths.get(config.getConfiguration("tempFolder"));
+        if (!Utils.checkAndCreateDirectory(tempFolderPath)) {
+            logger.error("Could not create folder '{}', exiting...", tempFolderPath);
             throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
 
         // METS folders
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_METS) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_METS))) {
             metsEnabled = false;
             logger.warn("<{}> not defined - METS indexing is disabled.", DataRepository.PARAM_INDEXED_METS);
         }
@@ -276,7 +281,7 @@ public class Hotfolder {
         }
 
         // LIDO folders
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_LIDO) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_LIDO))) {
             lidoEnabled = false;
             logger.warn("<{}> not defined - LIDO indexing is disabled.", DataRepository.PARAM_INDEXED_LIDO);
         }
@@ -291,7 +296,7 @@ public class Hotfolder {
         }
 
         // DenkXweb folders
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_DENKXWEB) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_DENKXWEB))) {
             denkxwebEnabled = false;
             logger.warn("<{}> not defined - DenkXweb indexing is disabled.", DataRepository.PARAM_INDEXED_DENKXWEB);
         }
@@ -306,18 +311,24 @@ public class Hotfolder {
         }
 
         // Dublin Core folder
-        if (config.getConfiguration(DataRepository.PARAM_INDEXED_DUBLINCORE) == null) {
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_DUBLINCORE))) {
             dcEnabled = false;
             logger.warn("<{}> not defined - Dublin Core indexing is disabled.", DataRepository.PARAM_INDEXED_DUBLINCORE);
         }
 
-        try {
-            successFolder = Paths.get(config.getConfiguration("successFolder"));
-            if (!Utils.checkAndCreateDirectory(successFolder)) {
-                throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + successFolder.toAbsolutePath().toString());
-            }
-        } catch (Exception e) {
-            throw new FatalIndexerException("<successFolder> not defined.");
+        // CMS page folder
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_CMS))) {
+            cmsEnabled = false;
+            logger.warn("<{}> not defined - CMS page indexing is disabled.", DataRepository.PARAM_INDEXED_CMS);
+        }
+
+        if (StringUtils.isEmpty(config.getConfiguration("successFolder"))) {
+            logger.error("<successFolder> not defined, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
+        successFolder = Paths.get(config.getConfiguration("successFolder"));
+        if (!Utils.checkAndCreateDirectory(successFolder)) {
+            throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + successFolder.toAbsolutePath().toString());
         }
     }
 
@@ -334,8 +345,15 @@ public class Hotfolder {
      * 
      * @param subject
      * @param body
+     * @should return false if body contains no error
+     * @should return false if recipients not configured
+     * @should return false if smtpServer not configured
+     * @should return false if smtpSenderAddress not configured
+     * @should return false if smtpSenderName not configured
+     * @should return false if smtpSecurity not configured
+     * @should return false if sending mail fails
      */
-    private static void checkAndSendErrorReport(String subject, String body) {
+    static boolean checkAndSendErrorReport(String subject, String body) {
         logger.debug("checkAndSendErrorReport");
         logger.trace("body:\n{}", body);
         if (StringUtils.isEmpty(body)) {
@@ -343,30 +361,30 @@ public class Hotfolder {
         }
         // Send report e-mail if the text body contains at least one ERROR level log message
         if (!body.contains(Indexer.STATUS_ERROR)) {
-            return;
+            return false;
         }
 
         String recipients = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.recipients");
         if (StringUtils.isEmpty(recipients)) {
-            return;
+            return false;
         }
         String smtpServer = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpServer");
         if (StringUtils.isEmpty(smtpServer)) {
-            return;
+            return false;
         }
         String smtpUser = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpUser");
         String smtpPassword = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpPassword");
         String smtpSenderAddress = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpSenderAddress");
         if (StringUtils.isEmpty(smtpSenderAddress)) {
-            return;
+            return false;
         }
         String smtpSenderName = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpSenderName");
         if (StringUtils.isEmpty(smtpSenderName)) {
-            return;
+            return false;
         }
         String smtpSecurity = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpSecurity");
         if (StringUtils.isEmpty(smtpSecurity)) {
-            return;
+            return false;
         }
         int smtpPort = SolrIndexerDaemon.getInstance().getConfiguration().getInt("init.email.smtpPort", -1);
         String[] recipientsSplit = recipients.split(";");
@@ -375,9 +393,12 @@ public class Hotfolder {
             Utils.postMail(Arrays.asList(recipientsSplit), subject, body, smtpServer, smtpUser, smtpPassword, smtpSenderAddress, smtpSenderName,
                     smtpSecurity, smtpPort);
             logger.info("Report e-mailed to configured recipients.");
+            return true;
         } catch (UnsupportedEncodingException | MessagingException e) {
             logger.error(e.getMessage(), e);
         }
+
+        return false;
     }
 
     /**
@@ -460,8 +481,10 @@ public class Hotfolder {
     /**
      * 
      * @param recordFile
-     * @return
+     * @return true if successful; false otherwise
      * @throws FatalIndexerException
+     * @should return false if recordFile null
+     * @should return true if successful
      */
     boolean doIndex(Path recordFile) throws FatalIndexerException {
         if (recordFile == null) {
@@ -577,6 +600,19 @@ public class Hotfolder {
                             Files.delete(sourceFile);
                         }
                         break;
+                    case METS_MARC:
+                        if (metsEnabled) {
+                            try {
+                                currentIndexer = new MetsMarcIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
+                        } else {
+                            logger.error("METS indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(sourceFile);
+                        }
+                        break;
                     case LIDO:
                         if (lidoEnabled) {
                             try {
@@ -626,6 +662,19 @@ public class Hotfolder {
                             }
                         } else {
                             logger.error("WorldViews indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(sourceFile);
+                        }
+                        break;
+                    case CMS:
+                        if (cmsEnabled) {
+                            try {
+                                currentIndexer = new CmsPageIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
+                        } else {
+                            logger.error("CMS page indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
                         }
                         break;
@@ -736,6 +785,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS) != null) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             FileFormat format = FileFormat.UNKNOWN;
             if (!Files.exists(actualXmlFile)) {
                 logger.warn("XML file '{}' not found.", actualXmlFile.getFileName());
@@ -769,16 +822,21 @@ public class Hotfolder {
                     }
                 }
             } else {
-                logger.error("Record '{}' not found in index.", baseFileName);
+                if (format.equals(FileFormat.CMS)) {
+                    logger.warn("CMS record '{}' not found in index.", baseFileName);
+                } else {
+                    logger.error("Record '{}' not found in index.", baseFileName);
+                }
                 return;
             }
 
             boolean success = false;
             switch (format) {
-                case METS:
-                case LIDO:
+                case CMS:
                 case DENKXWEB:
                 case DUBLINCORE:
+                case LIDO:
+                case METS:
                 case WORLDVIEWS:
                     if (trace) {
                         logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());

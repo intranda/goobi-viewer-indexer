@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
 
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
-import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -110,11 +109,9 @@ public class IndexObject {
     /**
      * Generates Solr fields for essential metadata.
      * 
-     * @throws FatalIndexerException
-     *
      * @should write all required fields
      */
-    public void pushSimpleDataToLuceneArray() throws FatalIndexerException {
+    public void pushSimpleDataToLuceneArray() {
         String iddocString = String.valueOf(iddoc);
         addToLucene(SolrConstants.IDDOC, iddocString);
         addToLucene(SolrConstants.GROUPFIELD, iddocString);
@@ -129,7 +126,10 @@ public class IndexObject {
             // Apply default modifications and replace rules to LABEL
             String moddedLabel = MetadataHelper.applyValueDefaultModifications(label);
             List<FieldConfig> configurationItemList =
-                    SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.LABEL);
+                    SolrIndexerDaemon.getInstance()
+                            .getConfiguration()
+                            .getMetadataConfigurationManager()
+                            .getConfigurationListForField(SolrConstants.LABEL);
             if (configurationItemList != null && !configurationItemList.isEmpty()) {
                 moddedLabel = MetadataHelper.applyReplaceRules(moddedLabel, configurationItemList.get(0).getReplaceRules());
             }
@@ -495,10 +495,9 @@ public class IndexObject {
     /**
      * Applies modifications that should happen that the very end, after all values have been collected.
      * 
-     * @throws FatalIndexerException
      * @should add existence booleans correctly
      */
-    public void applyFinalModifications() throws FatalIndexerException {
+    public void applyFinalModifications() {
         Set<String> existingFields = new HashSet<>(luceneFields.size());
         Set<String> alreadyFinishedFields = new HashSet<>();
 
