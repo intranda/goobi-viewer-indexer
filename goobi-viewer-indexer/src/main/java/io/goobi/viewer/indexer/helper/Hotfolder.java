@@ -931,8 +931,8 @@ public class Hotfolder {
         DataFolderSizeCounter counter = new DataFolderSizeCounter(recordFile.getFileName().toString());
 
         long total1 = 0;
-        try {
-            Files.newDirectoryStream(getHotfolderPath(), counter);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getHotfolderPath(), counter)) {
+
             total1 = counter.getTotal();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -948,8 +948,7 @@ public class Hotfolder {
 
         counter.resetTotal();
         long total2 = 0;
-        try {
-            Files.newDirectoryStream(getHotfolderPath(), counter);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getHotfolderPath(), counter)) {
             total2 = counter.getTotal();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
