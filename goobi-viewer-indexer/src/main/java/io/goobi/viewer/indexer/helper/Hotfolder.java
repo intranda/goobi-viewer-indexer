@@ -932,7 +932,6 @@ public class Hotfolder {
 
         long total1 = 0;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(getHotfolderPath(), counter)) {
-
             total1 = counter.getTotal();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

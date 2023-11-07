@@ -29,8 +29,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -84,9 +84,10 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
+     * @throws ConfigurationException 
      * @throws FatalIndexerException
      */
-    public SolrSearchIndex(SolrClient client) {
+    public SolrSearchIndex(SolrClient client) throws ConfigurationException {
         if (client == null) {
             this.client = getNewHttpSolrClient(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl(), true);
         } else {
@@ -102,11 +103,12 @@ public final class SolrSearchIndex {
      * @param solrUrl URL to the Solr server
      * @param allowCompression
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
+     * @throws ConfigurationException 
      * @should return null if solrUrl is empty
      */
-    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, boolean allowCompression) {
+    public static HttpSolrClient getNewHttpSolrClient(String solrUrl, boolean allowCompression) throws ConfigurationException {
         if (StringUtils.isEmpty(solrUrl)) {
-            return null;
+            throw new ConfigurationException("No Solr URL configured. Please check <solrUrl/>.");
         }
 
         HttpSolrClient server = new HttpSolrClient.Builder()
@@ -556,16 +558,15 @@ public final class SolrSearchIndex {
      *
      * @param confFilename
      * @return a {@link org.jdom2.Document} object.
+     * @throws ConfigurationException 
+     * @throws IOException 
+     * @throws JDOMException 
      */
-    public static Document getSolrSchemaDocument(String solrUrl) {
+    public static Document getSolrSchemaDocument(String solrUrl) throws IOException, JDOMException, ConfigurationException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
         String url = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl")
                 + "/admin/file/?contentType=text/xml;charset=utf-8&file=schema.xml";
         try (HttpSolrClient solrClient = getNewHttpSolrClient(solrUrl, false)) {
-            if (solrClient == null) {
-                return null;
-            }
-
             HttpClient client = solrClient.getHttpClient();
             HttpGet httpGet = new HttpGet(url);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -573,13 +574,7 @@ public final class SolrSearchIndex {
             try (StringReader sr = new StringReader(responseBody)) {
                 return XmlTools.getSAXBuilder().build(sr);
             }
-        } catch (ClientProtocolException | JDOMException e) {
-            logger.error(e.getMessage(), e);
-        } catch (IOException e) {
-            logger.error("{}; URL: {}", e.getMessage(), url, e);
         }
-
-        return null;
     }
 
     /**
