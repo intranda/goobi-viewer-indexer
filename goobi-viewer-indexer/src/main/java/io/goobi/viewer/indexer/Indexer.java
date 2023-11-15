@@ -1639,7 +1639,8 @@ public abstract class Indexer {
             List<String> iddocsToDelete = new ArrayList<>();
             hits = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
-                    .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc(), Collections.singletonList(SolrConstants.IDDOC));
+                    .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc() + " " + SolrConstants.IDDOC_PARENT + ":" + indexObj.getIddoc(),
+                            Collections.singletonList(SolrConstants.IDDOC));
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
