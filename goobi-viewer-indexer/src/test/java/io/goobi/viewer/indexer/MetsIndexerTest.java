@@ -1204,4 +1204,24 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
         ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00+01:00");
         Assert.assertNotNull(date);
     }
+
+    /**
+     * @see MetsIndexer#isVolume()
+     * @verifies return true if record is volume
+     */
+    @Test
+    public void isVolume_shouldReturnTrueIfRecordIsVolume() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
+
+    /**
+     * @see MetsIndexer#isVolume()
+     * @verifies return false if relatedItem not anchor
+     */
+    @Test
+    public void isVolume_shouldReturnFalseIfRelatedItemNotAnchor() throws Exception {
+        //TODO auto-generated
+        Assert.fail("Not yet implemented");
+    }
 }

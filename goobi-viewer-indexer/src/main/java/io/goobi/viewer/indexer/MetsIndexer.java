@@ -2239,10 +2239,12 @@ public class MetsIndexer extends Indexer {
      * Checks whether this is a volume of a multivolume work (should be false for monographs and anchors).
      * 
      * @return boolean
+     * @should return true if record is volume
+     * @should return false if relatedItem not anchor
      */
     protected boolean isVolume() {
         String query =
-                "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
+                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host' and not(@otherType)]/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
 
         return relatedItemList != null && !relatedItemList.isEmpty();
