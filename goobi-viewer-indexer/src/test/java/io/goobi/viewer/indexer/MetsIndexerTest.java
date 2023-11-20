@@ -1209,7 +1209,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @see MetsIndexer#isVolume()
      * @verifies return true if record is volume
      */
-    @Test
+    //@Test
     public void isVolume_shouldReturnTrueIfRecordIsVolume() throws Exception {
         //TODO auto-generated
         Assert.fail("Not yet implemented");
@@ -1219,7 +1219,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @see MetsIndexer#isVolume()
      * @verifies return false if relatedItem not anchor
      */
-    @Test
+    //@Test
     public void isVolume_shouldReturnFalseIfRelatedItemNotAnchor() throws Exception {
         //TODO auto-generated
         Assert.fail("Not yet implemented");
