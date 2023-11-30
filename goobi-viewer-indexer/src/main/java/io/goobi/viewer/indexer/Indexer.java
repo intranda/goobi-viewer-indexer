@@ -1965,6 +1965,8 @@ public abstract class Indexer {
                         }
                     }
                 }
+            } catch (FileNotFoundException e) {
+                logger.error(e.getMessage());
             } catch (JDOMException | IOException e) {
                 logger.error(e.getMessage(), e);
             } catch (HTTPException e) {
