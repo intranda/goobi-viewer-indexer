@@ -89,7 +89,7 @@ public final class SolrIndexerDaemon {
      * 
      * @throws FatalIndexerException
      * @return this
-     * @should throw FatalIndexerException  if solr schema name could not be checked
+     * @should throw FatalIndexerException if solr schema name could not be checked
      */
     public SolrIndexerDaemon init() throws FatalIndexerException {
         if (logger.isInfoEnabled()) {
@@ -366,9 +366,7 @@ public final class SolrIndexerDaemon {
      * @param searchIndex a {@link io.goobi.viewer.solr.SolrSearchIndex} object.
      */
     public void injectSearchIndex(SolrSearchIndex searchIndex) {
-        if (searchIndex != null) {
-            this.searchIndex = searchIndex;
-        }
+        this.searchIndex = searchIndex;
     }
 
     /**
