@@ -89,6 +89,7 @@ public final class SolrIndexerDaemon {
      * 
      * @throws FatalIndexerException
      * @return this
+     * @should throw FatalIndexerException  if solr schema name could not be checked
      */
     public SolrIndexerDaemon init() throws FatalIndexerException {
         if (logger.isInfoEnabled()) {
@@ -341,7 +342,7 @@ public final class SolrIndexerDaemon {
      * </p>
      *
      * @return the searchIndex
-     * @should created new instance if none exists
+     * @should create new instance if none exists
      */
     public SolrSearchIndex getSearchIndex() {
         if (this.searchIndex == null) {

@@ -18,7 +18,20 @@ package io.goobi.viewer.indexer;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+
 public class SolrIndexerDaemonTest {
+
+    /**
+     * @see SolrIndexerDaemon#init()
+     * @verifies throw FatalIndexerException if solr schema name could not be checked
+     */
+    @Test(expected = FatalIndexerException.class)
+    public void init_shouldThrowFatalIndexerExceptionIfSolrSchemaNameCouldNotBeChecked() throws Exception {
+        SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
+        instance.getConfiguration().overrideValue("init.solrUrl", "https://foo.bar/schema.xml");
+        instance.init();
+    }
 
     /**
      * @see SolrIndexerDaemon#stop()
@@ -59,6 +72,6 @@ public class SolrIndexerDaemonTest {
     public void getSearchIndex_shouldCreateNewInstanceIfNoneExists() throws Exception {
         SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
         instance.injectSearchIndex(null);
-        Assert.assertNotNull(SolrIndexerDaemon.getInstance().getSearchIndex());
+        Assert.assertNotNull(instance.getSearchIndex());
     }
 }
