@@ -925,8 +925,9 @@ public class Hotfolder {
      *
      * @param recordFile a {@link java.nio.file.Path} object.
      * @return a boolean.
+     * @should return true if hotfolder content not changing
      */
-    protected boolean isDataFolderExportDone(Path recordFile) {
+    boolean isDataFolderExportDone(Path recordFile) {
         logger.debug("isDataFolderExportDone: {}", recordFile.getFileName());
         DataFolderSizeCounter counter = new DataFolderSizeCounter(recordFile.getFileName().toString());
 

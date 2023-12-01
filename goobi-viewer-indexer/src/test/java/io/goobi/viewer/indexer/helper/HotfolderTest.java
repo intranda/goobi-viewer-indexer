@@ -278,4 +278,28 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
         Assert.assertTrue(Files.isRegularFile(destPath));
         assertTrue(hotfolder.doIndex(destPath));
     }
+
+    /**
+     * @see Hotfolder#isDataFolderExportDone(Path)
+     * @verifies return true if hotfolder content not changing
+     */
+    @Test
+    public void isDataFolderExportDone_shouldReturnTrueIfHotfolderContentNotChanging() throws Exception {
+        hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+        assertTrue(Files.isDirectory(Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath())));
+        Path recordFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
+        assertTrue(Files.isRegularFile(recordFile));
+
+        Path tempFile = null;
+        try {
+            tempFile =
+                    Files.copy(recordFile, Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), recordFile.getFileName().toString()));
+            assertTrue(Files.isRegularFile(tempFile));
+            assertTrue(hotfolder.isDataFolderExportDone(tempFile));
+        } finally {
+            if (tempFile != null) {
+                FileUtils.delete(tempFile.toFile());
+            }
+        }
+    }
 }
