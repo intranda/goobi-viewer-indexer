@@ -57,6 +57,7 @@ public class SolrIndexerDaemonTest {
      */
     @Test
     public void getSearchIndex_shouldCreatedNewInstanceIfNoneExists() throws Exception {
+        SolrIndexerDaemon.getInstance().injectSearchIndex(null);
         Assert.assertNotNull(SolrIndexerDaemon.getInstance().getSearchIndex());
     }
 }
