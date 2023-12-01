@@ -17,7 +17,6 @@ package io.goobi.viewer.indexer;
 
 import java.io.File;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -33,10 +32,6 @@ public abstract class AbstractTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         System.setProperty("log4j.configurationFile", TEST_LOG_CONFIG_PATH);
-    }
-
-    @Before
-    public void setUp() throws Exception {
         SolrIndexerDaemon.getInstance().injectConfiguration(new Configuration(TEST_CONFIG_PATH));
     }
 }
