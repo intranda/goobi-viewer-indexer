@@ -270,6 +270,7 @@ public final class SolrIndexerDaemon {
      * @param doc
      * @return
      * @should return false if doc null
+     * @should return true if schema compatible
      */
     static boolean checkSolrSchemaName(Document doc) {
         if (doc == null) {

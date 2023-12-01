@@ -15,12 +15,28 @@
  */
 package io.goobi.viewer.indexer;
 
+import org.jdom2.Document;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 
-public class SolrIndexerDaemonTest {
+public class SolrIndexerDaemonTest extends AbstractTest {
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        AbstractTest.setUpClass();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        // Reset config before every test
+        SolrIndexerDaemon.getInstance().injectConfiguration(new Configuration(TEST_CONFIG_PATH));
+    }
 
     /**
      * @see SolrIndexerDaemon#init()
@@ -52,6 +68,17 @@ public class SolrIndexerDaemonTest {
     @Test
     public void checkSolrSchemaName_shouldReturnFalseIfDocNull() throws Exception {
         Assert.assertFalse(SolrIndexerDaemon.checkSolrSchemaName(null));
+    }
+
+    /**
+     * @see SolrIndexerDaemon#checkSolrSchemaName(Document)
+     * @verifies return true if schema compatible
+     */
+    @Test
+    public void checkSolrSchemaName_shouldReturnTrueIfSchemaCompatible() throws Exception {
+        org.jdom2.Document doc = SolrSearchIndex.getSolrSchemaDocument(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
+        Assert.assertNotNull(doc);
+        Assert.assertTrue(SolrIndexerDaemon.checkSolrSchemaName(doc));
     }
 
     /**
