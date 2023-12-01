@@ -107,6 +107,17 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see SolrSearchIndex#getSolrSchemaDocument(String)
+     * @verifies return schema document correctly
+     */
+    @Test
+    public void getSolrSchemaDocument_shouldReturnSchemaDocumentCorrectly() throws Exception {
+        org.jdom2.Document doc = SolrSearchIndex.getSolrSchemaDocument(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
+        Assert.assertNotNull(doc);
+        Assert.assertEquals("schema", doc.getRootElement().getName());
+    }
+
+    /**
      * @see SolrSearchIndex#checkAndCreateGroupDoc(String,String,long)
      * @verifies create new document with all values if none exists
      */

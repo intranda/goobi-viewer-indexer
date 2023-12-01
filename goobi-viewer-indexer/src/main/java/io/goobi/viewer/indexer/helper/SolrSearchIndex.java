@@ -561,6 +561,7 @@ public final class SolrSearchIndex {
      * @throws ConfigurationException 
      * @throws IOException 
      * @throws JDOMException 
+     * @should return schema document correctly
      */
     public static Document getSolrSchemaDocument(String solrUrl) throws IOException, JDOMException, ConfigurationException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating
