@@ -1002,7 +1002,8 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
-        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\" or @TYPE=\"re:video\"]"; //NOSONAR XPath, not URI
+        String xpath =
+                "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\" or @TYPE=\"object\" @TYPE=\"audio\" @TYPE=\"video\" or @TYPE=\"re:video\"]"; //NOSONAR XPath, not URI
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
