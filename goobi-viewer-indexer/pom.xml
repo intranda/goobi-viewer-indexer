@@ -39,6 +39,7 @@
 		<normdataimporter.version>1.10.5</normdataimporter.version>
 
 		<!-- other libraries -->
+        <angus-mail.version>2.0.2</angus-mail.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<commons-configuration2.version>2.9.0</commons-configuration2.version>
 		<commons-io.version>2.15.1</commons-io.version>
@@ -54,7 +55,6 @@
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
         <jakarta.mail-api.version>2.1.2</jakarta.mail-api.version>
-        <angus.mail.version>2.0.2</angus.mail.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.17.2</jsoup.version>
 		<json.version>20231013</json.version>
@@ -164,7 +164,7 @@
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <version>${angus.mail.version}</version>
+            <version>${angus-mail.version}</version>
         </dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
@@ -318,6 +318,9 @@
 
                                 <!-- openjeg is used to read image dimensions from jp2 images during indexing -->
                                 <ignoredUnusedDeclaredDependency>de.digitalcollections.imageio:imageio-openjpeg</ignoredUnusedDeclaredDependency>
+
+                                <!-- angus-mail is the implementation of the jakarta.mail specification and used for sending emails -->
+                                <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-mail</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
