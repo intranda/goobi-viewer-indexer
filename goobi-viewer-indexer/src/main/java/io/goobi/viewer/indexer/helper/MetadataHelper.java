@@ -422,10 +422,9 @@ public class MetadataHelper {
      * @param replaceRules Optional metadata value replace rules
      * @param labelField Field name of the metadata group to which this authority data belongs
      * @return
-     * @throws FatalIndexerException
      */
     private static List<LuceneField> retrieveAuthorityData(String url, StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms,
-            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) throws FatalIndexerException {
+            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
         logger.info("retrieveAuthorityData: {}", url);
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
