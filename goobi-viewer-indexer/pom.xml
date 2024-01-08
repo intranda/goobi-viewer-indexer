@@ -39,6 +39,7 @@
 		<normdataimporter.version>1.10.5</normdataimporter.version>
 
 		<!-- other libraries -->
+        <angus-mail.version>2.0.2</angus-mail.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<commons-configuration2.version>2.9.0</commons-configuration2.version>
 		<commons-io.version>2.15.1</commons-io.version>
@@ -49,13 +50,13 @@
 		<httpcore.version>4.4.16</httpcore.version>
 		<icu.version>74.2</icu.version>
 		<imageio-openjpeg.version>0.6.7</imageio-openjpeg.version>
-		<log4j.version>2.22.0</log4j.version>
-		<jackson.version>2.16.0</jackson.version>
+		<log4j.version>2.22.1</log4j.version>
+		<jackson.version>2.16.1</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
-        <javax.mail.version>1.6.2</javax.mail.version>
+        <jakarta.mail-api.version>2.1.2</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
-		<jsoup.version>1.17.1</jsoup.version>
+		<jsoup.version>1.17.2</jsoup.version>
 		<json.version>20231013</json.version>
 		<junit.version>4.13.2</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
@@ -156,9 +157,14 @@
 			<version>${icu.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-			<version>${javax.mail.version}</version>
+			<groupId>jakarta.mail</groupId>
+			<artifactId>jakarta.mail-api</artifactId>
+			<version>${jakarta.mail-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>${angus-mail.version}</version>
         </dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
@@ -312,6 +318,9 @@
 
                                 <!-- openjeg is used to read image dimensions from jp2 images during indexing -->
                                 <ignoredUnusedDeclaredDependency>de.digitalcollections.imageio:imageio-openjpeg</ignoredUnusedDeclaredDependency>
+
+                                <!-- angus-mail is the implementation of the jakarta.mail specification and used for sending emails -->
+                                <ignoredUnusedDeclaredDependency>org.eclipse.angus:jakarta.mail</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
