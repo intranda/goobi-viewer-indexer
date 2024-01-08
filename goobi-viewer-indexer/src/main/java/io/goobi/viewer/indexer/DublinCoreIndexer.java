@@ -163,7 +163,7 @@ public class DublinCoreIndexer extends Indexer {
             }
             prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
             logger.info("Successfully finished indexing '{}'.", dcFile.getFileName());
-            
+
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
         } else {
@@ -219,52 +219,56 @@ public class DublinCoreIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-            String pi = MetadataHelper.getPIFromXML("/record/", xp);
-            if (StringUtils.isNotBlank(pi)) {
-                pi = MetadataHelper.applyIdentifierModifications(pi);
-                logger.info("Record PI: {}", pi);
-
-                // Do not allow identifiers with characters that cannot be used in file names
-                Pattern p = Pattern.compile("[^\\w|-]");
-                Matcher m = p.matcher(pi);
-                if (m.find()) {
-                    ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                    throw new IndexerException(ret[1]);
-                }
-                indexObj.setPi(pi);
-                indexObj.setTopstructPI(pi);
-                logger.debug("PI: {}", indexObj.getPi());
-
-                // Determine the data repository to use
-                DataRepository[] repositories =
-                        hotfolder.getDataRepositoryStrategy()
-                                .selectDataRepository(pi, dcFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                        SolrIndexerDaemon.getInstance().getOldSearchIndex());
-                dataRepository = repositories[0];
-                previousDataRepository = repositories[1];
-                if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                    indexObj.setDataRepository(dataRepository.getPath());
-                }
-
-                ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
-
-                // Check and use old data folders, if no new ones found
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
-            } else {
+            String[] foundPi = MetadataHelper.getPIFromXML("/record/", xp);
+            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
                 ret[1] = "PI not found.";
                 throw new IndexerException(ret[1]);
             }
+
+            String pi = MetadataHelper.applyIdentifierModifications(foundPi[0]);
+            logger.info("Record PI: {}", pi);
+
+            // Do not allow identifiers with characters that cannot be used in file names
+            Pattern p = Pattern.compile("[^\\w|-]");
+            Matcher m = p.matcher(pi);
+            if (m.find()) {
+                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
+                throw new IndexerException(ret[1]);
+            }
+            indexObj.setPi(pi);
+            indexObj.setTopstructPI(pi);
+
+            // Add PI to default
+            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
+                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
+            }
+
+            // Determine the data repository to use
+            DataRepository[] repositories =
+                    hotfolder.getDataRepositoryStrategy()
+                            .selectDataRepository(pi, dcFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
+                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
+            dataRepository = repositories[0];
+            previousDataRepository = repositories[1];
+            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+                indexObj.setDataRepository(dataRepository.getPath());
+            }
+
+            ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
+
+            // Check and use old data folders, if no new ones found
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy

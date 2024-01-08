@@ -15,6 +15,8 @@
  */
 package io.goobi.viewer.indexer.helper;
 
+import static org.junit.Assert.assertEquals;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,9 +63,9 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void getCentury_shouldDetectPositiveCenturyCorrectly() throws Exception {
-        Assert.assertEquals(1, MetadataHelper.getCentury(50));
-        Assert.assertEquals(9, MetadataHelper.getCentury(865));
-        Assert.assertEquals(20, MetadataHelper.getCentury(1901));
+        assertEquals(1, MetadataHelper.getCentury(50));
+        assertEquals(9, MetadataHelper.getCentury(865));
+        assertEquals(20, MetadataHelper.getCentury(1901));
     }
 
     /**
@@ -72,8 +74,8 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void getCentury_shouldDetectNegativeCenturyCorrectly() throws Exception {
-        Assert.assertEquals(-1, MetadataHelper.getCentury(-50));
-        Assert.assertEquals(-2, MetadataHelper.getCentury(-150));
+        assertEquals(-1, MetadataHelper.getCentury(-50));
+        assertEquals(-2, MetadataHelper.getCentury(-150));
     }
 
     /**
@@ -82,7 +84,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void getCentury_shouldDetectFirstCenturyCorrectly() throws Exception {
-        Assert.assertEquals(1, MetadataHelper.getCentury(7));
+        assertEquals(1, MetadataHelper.getCentury(7));
     }
 
     /**
@@ -91,7 +93,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void applyIdentifierModifications_shouldTrimIdentifier() throws Exception {
-        Assert.assertEquals("id", MetadataHelper.applyIdentifierModifications(" id "));
+        assertEquals("id", MetadataHelper.applyIdentifierModifications(" id "));
     }
 
     /**
@@ -100,7 +102,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void applyIdentifierModifications_shouldReplaceSpacesWithUnderscores() throws Exception {
-        Assert.assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID 10t"));
+        assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID 10t"));
     }
 
     /**
@@ -109,7 +111,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void applyIdentifierModifications_shouldApplyReplaceRules() throws Exception {
-        Assert.assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("replaceme/ID,10t/replacemetoo"));
+        assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("replaceme/ID,10t/replacemetoo"));
     }
 
     /**
@@ -118,7 +120,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void applyIdentifierModifications_shouldReplaceCommasWithUnderscores() throws Exception {
-        Assert.assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID,10t"));
+        assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID,10t"));
     }
 
     /**
@@ -130,7 +132,7 @@ public class MetadataHelperTest extends AbstractTest {
         List<FieldConfig> fieldConfigurations =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
         Assert.assertNotNull(fieldConfigurations);
-        Assert.assertEquals(1, fieldConfigurations.size());
+        assertEquals(1, fieldConfigurations.size());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
         Assert.assertNotNull(fieldConfig.getGroupEntity());
 
@@ -143,7 +145,7 @@ public class MetadataHelperTest extends AbstractTest {
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
                 new ArrayList<>());
         Assert.assertFalse(gmd.getFields().isEmpty());
-        Assert.assertEquals("Display_Form", gmd.getMainValue());
+        assertEquals("Display_Form", gmd.getMainValue());
         String label = null;
         String metadataType = null;
         String corporation = null;
@@ -188,18 +190,18 @@ public class MetadataHelperTest extends AbstractTest {
                     break;
             }
         }
-        Assert.assertEquals("MD_AUTHOR", label);
-        Assert.assertEquals(MetadataGroupType.PERSON.name(), metadataType);
-        Assert.assertEquals("Corporate_Name", corporation);
-        Assert.assertEquals("Last", lastName);
-        Assert.assertEquals(2, givenNameList.size());
-        Assert.assertEquals("First", givenNameList.get(0));
-        Assert.assertEquals("Second", givenNameList.get(1));
-        Assert.assertEquals("Display_Form", displayForm);
-        Assert.assertEquals("DATE", date);
-        Assert.assertEquals("Terms_Of_Address", termsOfAddress);
-        Assert.assertEquals("xlink", link);
-        Assert.assertEquals("MD_AUTHOR_Display_Form", groupField);
+        assertEquals("MD_AUTHOR", label);
+        assertEquals(MetadataGroupType.PERSON.name(), metadataType);
+        assertEquals("Corporate_Name", corporation);
+        assertEquals("Last", lastName);
+        assertEquals(2, givenNameList.size());
+        assertEquals("First", givenNameList.get(0));
+        assertEquals("Second", givenNameList.get(1));
+        assertEquals("Display_Form", displayForm);
+        assertEquals("DATE", date);
+        assertEquals("Terms_Of_Address", termsOfAddress);
+        assertEquals("xlink", link);
+        assertEquals("MD_AUTHOR_Display_Form", groupField);
     }
 
     /**
@@ -211,7 +213,7 @@ public class MetadataHelperTest extends AbstractTest {
         List<FieldConfig> fieldConfigurations =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
         Assert.assertNotNull(fieldConfigurations);
-        Assert.assertEquals(1, fieldConfigurations.size());
+        assertEquals(1, fieldConfigurations.size());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
         Assert.assertNotNull(fieldConfig.getGroupEntity());
         fieldConfig.setLowercase(true);
@@ -225,7 +227,7 @@ public class MetadataHelperTest extends AbstractTest {
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
                 new ArrayList<>());
         Assert.assertFalse(gmd.getFields().isEmpty());
-        Assert.assertEquals("display_form", gmd.getMainValue());
+        assertEquals("display_form", gmd.getMainValue());
         String label = null;
         String metadataType = null;
         String corporation = null;
@@ -270,18 +272,18 @@ public class MetadataHelperTest extends AbstractTest {
                     break;
             }
         }
-        Assert.assertEquals("MD_AUTHOR", label);
-        Assert.assertEquals(MetadataGroupType.PERSON.name(), metadataType);
-        Assert.assertEquals("corporate_name", corporation);
-        Assert.assertEquals("last", lastName);
-        Assert.assertEquals(2, givenNameList.size());
-        Assert.assertEquals("first", givenNameList.get(0));
-        Assert.assertEquals("second", givenNameList.get(1));
-        Assert.assertEquals("display_form", displayForm);
-        Assert.assertEquals("date", date);
-        Assert.assertEquals("terms_of_address", termsOfAddress);
-        Assert.assertEquals("xlink", link);
-        Assert.assertEquals("MD_AUTHOR_Display_Form", groupField);
+        assertEquals("MD_AUTHOR", label);
+        assertEquals(MetadataGroupType.PERSON.name(), metadataType);
+        assertEquals("corporate_name", corporation);
+        assertEquals("last", lastName);
+        assertEquals(2, givenNameList.size());
+        assertEquals("first", givenNameList.get(0));
+        assertEquals("second", givenNameList.get(1));
+        assertEquals("display_form", displayForm);
+        assertEquals("date", date);
+        assertEquals("terms_of_address", termsOfAddress);
+        assertEquals("xlink", link);
+        assertEquals("MD_AUTHOR_Display_Form", groupField);
     }
 
     /**
@@ -294,11 +296,11 @@ public class MetadataHelperTest extends AbstractTest {
         centuries.add(new LuceneField(SolrConstants.CENTURY, "-2"));
         centuries.add(new LuceneField(SolrConstants.CENTURY, "3"));
         List<LuceneField> newCenturies = MetadataHelper.completeCenturies(centuries);
-        Assert.assertEquals(3, newCenturies.size());
-        Assert.assertEquals(SolrConstants.CENTURY, newCenturies.get(0).getField());
-        Assert.assertEquals("-1", newCenturies.get(0).getValue());
-        Assert.assertEquals("1", newCenturies.get(1).getValue());
-        Assert.assertEquals("2", newCenturies.get(2).getValue());
+        assertEquals(3, newCenturies.size());
+        assertEquals(SolrConstants.CENTURY, newCenturies.get(0).getField());
+        assertEquals("-1", newCenturies.get(0).getValue());
+        assertEquals("1", newCenturies.get(1).getValue());
+        assertEquals("2", newCenturies.get(2).getValue());
     }
 
     /**
@@ -311,10 +313,10 @@ public class MetadataHelperTest extends AbstractTest {
         years.add(new LuceneField(SolrConstants.YEAR, "1990"));
         years.add(new LuceneField(SolrConstants.YEAR, "1993"));
         List<LuceneField> newYears = MetadataHelper.completeYears(years, SolrConstants.YEAR);
-        Assert.assertEquals(2, newYears.size());
-        Assert.assertEquals(SolrConstants.YEAR, newYears.get(0).getField());
-        Assert.assertEquals("1991", newYears.get(0).getValue());
-        Assert.assertEquals("1992", newYears.get(1).getValue());
+        assertEquals(2, newYears.size());
+        assertEquals(SolrConstants.YEAR, newYears.get(0).getField());
+        assertEquals("1991", newYears.get(0).getValue());
+        assertEquals("1992", newYears.get(1).getValue());
     }
 
     /**
@@ -327,7 +329,7 @@ public class MetadataHelperTest extends AbstractTest {
         replaceRules.put('<', "");
         replaceRules.put(">", "s");
         replaceRules.put("REGEX:[ ]*100[ ]*", "");
-        Assert.assertEquals("vase", MetadataHelper.applyReplaceRules(" 100 v<a>e", replaceRules));
+        assertEquals("vase", MetadataHelper.applyReplaceRules(" 100 v<a>e", replaceRules));
     }
 
     /**
@@ -346,7 +348,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void applyReplaceRules_shouldReturnUnmodifiedValueIfReplaceRulesIsNull() throws Exception {
-        Assert.assertEquals("v<a>e", MetadataHelper.applyReplaceRules("v<a>e", null));
+        assertEquals("v<a>e", MetadataHelper.applyReplaceRules("v<a>e", null));
     }
 
     /**
@@ -355,7 +357,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void getConcatenatedValue_shouldConcatenateValueTermsCorrectly() throws Exception {
-        Assert.assertEquals("foobar", MetadataHelper.getConcatenatedValue("foo-bar"));
+        assertEquals("foobar", MetadataHelper.getConcatenatedValue("foo-bar"));
     }
 
     /**
@@ -366,7 +368,7 @@ public class MetadataHelperTest extends AbstractTest {
     public void addValueToDefault_shouldAddValueCorrectly() throws Exception {
         StringBuilder sb = new StringBuilder(" bla blup ");
         MetadataHelper.addValueToDefault("foo bar", sb);
-        Assert.assertEquals(" bla blup  foo bar ", sb.toString());
+        assertEquals(" bla blup  foo bar ", sb.toString());
     }
 
     /**
@@ -377,8 +379,8 @@ public class MetadataHelperTest extends AbstractTest {
     public void addValueToDefault_shouldAddConcatenatedValueCorrectly() throws Exception {
         StringBuilder sb = new StringBuilder(" bla blup ");
         MetadataHelper.addValueToDefault("foo-bar", sb);
-        //        Assert.assertEquals(" bla blup  foo-bar  foobar ", sb.toString());
-        Assert.assertEquals(" bla blup  foo-bar ", sb.toString());
+        //        assertEquals(" bla blup  foo-bar  foobar ", sb.toString());
+        assertEquals(" bla blup  foo-bar ", sb.toString());
     }
 
     /**
@@ -407,9 +409,9 @@ public class MetadataHelperTest extends AbstractTest {
     public void addSortField_shouldAddRegularSortFieldsCorrectly() throws Exception {
         List<LuceneField> result = new ArrayList<>(1);
         MetadataHelper.addSortField("MD_TITLE", "Title", SolrConstants.PREFIX_SORT, null, null, result);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(SolrConstants.PREFIX_SORT + "TITLE", result.get(0).getField());
-        Assert.assertEquals("Title", result.get(0).getValue());
+        assertEquals(1, result.size());
+        assertEquals(SolrConstants.PREFIX_SORT + "TITLE", result.get(0).getField());
+        assertEquals("Title", result.get(0).getValue());
     }
 
     /**
@@ -420,9 +422,9 @@ public class MetadataHelperTest extends AbstractTest {
     public void addSortField_shouldAddNumericalSortFieldsCorrectly() throws Exception {
         List<LuceneField> result = new ArrayList<>(1);
         MetadataHelper.addSortField(SolrConstants.YEAR, "-100", SolrConstants.PREFIX_SORTNUM, null, null, result);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR, result.get(0).getField());
-        Assert.assertEquals("-100", result.get(0).getValue());
+        assertEquals(1, result.size());
+        assertEquals(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR, result.get(0).getField());
+        assertEquals("-100", result.get(0).getValue());
     }
 
     /**
@@ -434,9 +436,9 @@ public class MetadataHelperTest extends AbstractTest {
         List<LuceneField> result = new ArrayList<>(1);
         result.add(new LuceneField(SolrConstants.PREFIX_SORT + "TITLE", "other title"));
         MetadataHelper.addSortField("MD_TITLE", "Title", SolrConstants.PREFIX_SORT, null, null, result);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals(SolrConstants.PREFIX_SORT + "TITLE", result.get(0).getField());
-        Assert.assertEquals("other title", result.get(0).getValue());
+        assertEquals(1, result.size());
+        assertEquals(SolrConstants.PREFIX_SORT + "TITLE", result.get(0).getField());
+        assertEquals("other title", result.get(0).getValue());
     }
 
     /**
@@ -445,7 +447,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void extractLanguageCodeFromMetadataField_shouldExtractLanguageCodeCorrectly() throws Exception {
-        Assert.assertEquals("en", MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN"));
+        assertEquals("en", MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN"));
     }
 
     /**
@@ -463,8 +465,8 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void cleanUpName_shouldRemoveLeadingComma() throws Exception {
-        Assert.assertEquals("foo", MetadataHelper.cleanUpName(", foo"));
-        Assert.assertEquals("foo", MetadataHelper.cleanUpName(",foo"));
+        assertEquals("foo", MetadataHelper.cleanUpName(", foo"));
+        assertEquals("foo", MetadataHelper.cleanUpName(",foo"));
     }
 
     /**
@@ -473,8 +475,8 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void cleanUpName_shouldRemoveTrailingComma() throws Exception {
-        Assert.assertEquals("foo", MetadataHelper.cleanUpName("foo,"));
-        Assert.assertEquals("foo", MetadataHelper.cleanUpName("foo, "));
+        assertEquals("foo", MetadataHelper.cleanUpName("foo,"));
+        assertEquals("foo", MetadataHelper.cleanUpName("foo, "));
     }
 
     /**
@@ -504,7 +506,7 @@ public class MetadataHelperTest extends AbstractTest {
         String date = "2019-03-18";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, null);
-        Assert.assertEquals(5, result.size());
+        assertEquals(5, result.size());
         result.get(0).getField().equals(SolrConstants.YEAR);
         result.get(0).getValue().equals("2019");
         result.get(1).getField().equals(SolrConstants.YEARMONTH);
@@ -527,7 +529,7 @@ public class MetadataHelperTest extends AbstractTest {
         String date = "0190-03-18";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, null);
-        Assert.assertEquals(5, result.size());
+        assertEquals(5, result.size());
         result.get(0).getField().equals(SolrConstants.YEAR);
         result.get(0).getValue().equals("0190");
         result.get(1).getField().equals(SolrConstants.YEARMONTH);
@@ -547,7 +549,7 @@ public class MetadataHelperTest extends AbstractTest {
         String date = "2023-01-09";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, "MDNUM_CUSTOMYEAR");
-        Assert.assertEquals(6, result.size());
+        assertEquals(6, result.size());
         result.get(0).getField().equals(SolrConstants.YEAR);
         result.get(0).getValue().equals("2019");
         result.get(1).getField().equals("MDNUM_CUSTOMYEAR");
@@ -563,8 +565,10 @@ public class MetadataHelperTest extends AbstractTest {
         Path path = Paths.get("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assert.assertTrue(Files.isRegularFile(path));
         List<Document> docs = JDomXP.splitDenkXwebFile(path.toFile());
-        String pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));
-        Assert.assertEquals("30596824", pi);
+        String[] pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));
+        assertEquals(2, pi.length);
+        assertEquals("30596824", pi[0]);
+        assertEquals("addToDefault", pi[1]);
     }
 
     /**
@@ -578,15 +582,15 @@ public class MetadataHelperTest extends AbstractTest {
         authorityDataList.add(new NormData("NORM_OFFICIALNAME", new NormDataValue("two", null, null)));
         authorityDataList.add(new NormData("NORM_ALTNAME", new NormDataValue("three", null, null)));
         List<LuceneField> result = MetadataHelper.parseAuthorityMetadata(authorityDataList, null, null, null, null, "MD_FIELD");
-        Assert.assertEquals(13, result.size());
-        Assert.assertEquals("MD_FIELD_NAME_SEARCH", result.get(2).getField());
-        Assert.assertEquals("one", result.get(2).getValue());
-        Assert.assertEquals("MD_FIELD_NAME_SEARCH", result.get(6).getField());
-        Assert.assertEquals("two", result.get(6).getValue());
-        Assert.assertEquals("MD_FIELD_NAME_SEARCH", result.get(10).getField());
-        Assert.assertEquals("three", result.get(10).getValue());
-        Assert.assertEquals(MetadataHelper.FIELD_HAS_WKT_COORDS, result.get(12).getField());
-        Assert.assertEquals("false", result.get(12).getValue());
+        assertEquals(13, result.size());
+        assertEquals("MD_FIELD_NAME_SEARCH", result.get(2).getField());
+        assertEquals("one", result.get(2).getValue());
+        assertEquals("MD_FIELD_NAME_SEARCH", result.get(6).getField());
+        assertEquals("two", result.get(6).getValue());
+        assertEquals("MD_FIELD_NAME_SEARCH", result.get(10).getField());
+        assertEquals("three", result.get(10).getValue());
+        assertEquals(MetadataHelper.FIELD_HAS_WKT_COORDS, result.get(12).getField());
+        assertEquals("false", result.get(12).getValue());
     }
 
     /**
@@ -595,7 +599,7 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void toOneToken_shouldRemoveNonalphanumericalCharacters() throws Exception {
-        Assert.assertEquals("LoremIpsum", MetadataHelper.toOneToken("Lorem Ipsum!", null));
+        assertEquals("LoremIpsum", MetadataHelper.toOneToken("Lorem Ipsum!", null));
     }
 
     /**
@@ -604,6 +608,6 @@ public class MetadataHelperTest extends AbstractTest {
      */
     @Test
     public void toOneToken_shouldReplaceSplittingChar() throws Exception {
-        Assert.assertEquals("foo.bar", MetadataHelper.toOneToken("foo#bar", "#"));
+        assertEquals("foo.bar", MetadataHelper.toOneToken("foo#bar", "#"));
     }
 }

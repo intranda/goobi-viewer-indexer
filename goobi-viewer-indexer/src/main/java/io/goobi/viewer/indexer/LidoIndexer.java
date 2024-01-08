@@ -198,7 +198,7 @@ public class LidoIndexer extends Indexer {
                 }
                 prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
                 logger.info("Successfully finished indexing '{}'.", identifier);
-                
+
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
             } else {
@@ -254,54 +254,59 @@ public class LidoIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI
-            {
-                String preQuery = "/lido:lido/";
-                pi = MetadataHelper.getPIFromXML(preQuery, xp);
-                if (StringUtils.isBlank(pi)) {
-                    ret[1] = "PI not found.";
-                    throw new IndexerException(ret[1]);
-                }
-
-                // Remove prefix
-                if (pi.contains(":")) {
-                    pi = pi.substring(pi.lastIndexOf(':') + 1);
-                }
-                if (pi.contains("/")) {
-                    pi = pi.substring(pi.lastIndexOf('/') + 1);
-                }
-                pi = MetadataHelper.applyIdentifierModifications(pi);
-                // Do not allow identifiers with illegal characters
-                Pattern p = Pattern.compile("[^\\w|-]");
-                Matcher m = p.matcher(pi);
-                if (m.find()) {
-                    ret[1] = "PI contains illegal characters: " + pi;
-                    throw new IndexerException(ret[1]);
-                }
-                indexObj.setPi(pi);
-                indexObj.setTopstructPI(pi);
-                logger.info("Record PI: {}", pi);
-
-                // Determine the data repository to use
-                DataRepository[] repositories =
-                        hotfolder.getDataRepositoryStrategy()
-                                .selectDataRepository(pi, null, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                        SolrIndexerDaemon.getInstance().getOldSearchIndex());
-                dataRepository = repositories[0];
-                previousDataRepository = repositories[1];
-                if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                    indexObj.setDataRepository(dataRepository.getPath());
-                }
-
-                ret[0] = indexObj.getPi();
-
-                // Check and use old data folders, if no new ones found
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-                checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            String preQuery = "/lido:lido/";
+            String[] foundPi = MetadataHelper.getPIFromXML(preQuery, xp);
+            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
+                ret[1] = "PI not found.";
+                throw new IndexerException(ret[1]);
             }
+
+            pi = foundPi[0];
+            logger.info("Record PI: {}", pi);
+            
+            // Remove prefix
+            if (pi.contains(":")) {
+                pi = pi.substring(pi.lastIndexOf(':') + 1);
+            }
+            if (pi.contains("/")) {
+                pi = pi.substring(pi.lastIndexOf('/') + 1);
+            }
+            pi = MetadataHelper.applyIdentifierModifications(pi);
+            // Do not allow identifiers with illegal characters
+            Pattern p = Pattern.compile("[^\\w|-]");
+            Matcher m = p.matcher(pi);
+            if (m.find()) {
+                ret[1] = "PI contains illegal characters: " + pi;
+                throw new IndexerException(ret[1]);
+            }
+            indexObj.setPi(pi);
+            indexObj.setTopstructPI(pi);
+            
+            // Add PI to default
+            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
+                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
+            }
+
+            // Determine the data repository to use
+            DataRepository[] repositories =
+                    hotfolder.getDataRepositoryStrategy()
+                            .selectDataRepository(pi, null, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
+                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
+            dataRepository = repositories[0];
+            previousDataRepository = repositories[1];
+            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+                indexObj.setDataRepository(dataRepository.getPath());
+            }
+
+            ret[0] = indexObj.getPi();
+
+            // Check and use old data folders, if no new ones found
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
+            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy

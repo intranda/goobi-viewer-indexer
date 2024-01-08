@@ -306,14 +306,13 @@ public class MetsIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-
-            String pi = MetadataHelper.getPIFromXML(getPiRootPath(indexObj.getDmdid()), xp);
-            if (StringUtils.isBlank(pi)) {
+            String[] foundPi = MetadataHelper.getPIFromXML(getPiRootPath(indexObj.getDmdid()), xp);
+            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
                 ret[1] = "PI not found.";
                 throw new IndexerException(ret[1]);
             }
 
-            pi = MetadataHelper.applyIdentifierModifications(pi);
+            String pi = MetadataHelper.applyIdentifierModifications(foundPi[0]);
             logger.info("Record PI: {}", pi);
 
             // Do not allow identifiers with characters that cannot be used in file names
@@ -325,6 +324,11 @@ public class MetsIndexer extends Indexer {
             }
             indexObj.setPi(pi);
             indexObj.setTopstructPI(pi);
+            
+            // Add PI to default
+            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
+                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
+            }
 
             // Determine the data repository to use
             DataRepository[] repositories =

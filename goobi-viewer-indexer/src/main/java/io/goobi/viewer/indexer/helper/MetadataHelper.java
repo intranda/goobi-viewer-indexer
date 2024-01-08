@@ -884,7 +884,7 @@ public class MetadataHelper {
      * @return String or null
      * @should extract DenkXweb PI correctly
      */
-    public static String getPIFromXML(String prefix, JDomXP xp) {
+    public static String[] getPIFromXML(String prefix, JDomXP xp) {
         List<FieldConfig> piConfig =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
@@ -905,11 +905,14 @@ public class MetadataHelper {
                 }
             }
             if (StringUtils.isNotEmpty(pi)) {
-                return pi;
+                if (piConfig.get(0).isAddToDefault()) {
+                    return new String[] { pi, "addToDefault" };
+                }
+                return new String[] { pi };
             }
         }
 
-        return null;
+        return new String[] {};
     }
 
     /**
