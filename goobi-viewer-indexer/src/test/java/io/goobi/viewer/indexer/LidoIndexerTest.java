@@ -87,7 +87,7 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertEquals(1, docList.size());
         SolrDocument doc = docList.get(0);
         String docPi = (String) doc.getFieldValue(SolrConstants.PI);
-        Assertions.assertEquals("Document PI was expected to be " + videoPI + ", but was " + docPi, videoPI, docPi);
+        Assertions.assertEquals(videoPI, docPi, "Document PI was expected to be " + videoPI + ", but was " + docPi);
 
         docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()

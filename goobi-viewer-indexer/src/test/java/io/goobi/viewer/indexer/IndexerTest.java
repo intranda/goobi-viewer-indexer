@@ -166,7 +166,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
                 SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-        Assertions.assertEquals("ERROR: " + ret[1], pi, ret[0]);
+        Assertions.assertEquals(pi, ret[0], "ERROR: " + ret[1]);
         String iddoc;
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);

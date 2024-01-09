@@ -127,7 +127,7 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             // Update doc and check updated values
             Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
-            Assertions.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
+            Assertions.assertEquals(PI, ret[0], ret[0] + ": " + ret[1]);
             Assertions.assertNull(ret[1]);
             {
                 SolrDocumentList docList = SolrIndexerDaemon.getInstance()
@@ -188,7 +188,7 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
             Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
-            Assertions.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
+            Assertions.assertEquals(PI, ret[0], ret[0] + ": " + ret[1]);
             Assertions.assertNull(ret[1]);
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
