@@ -15,8 +15,8 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class SubfieldConfigTest {
 
@@ -32,11 +32,11 @@ public class SubfieldConfigTest {
         SubfieldConfig config2 = new SubfieldConfig("MD_FOO", true, false);
         config2.getXpaths().add("foo:bar");
 
-        Assert.assertEquals(1, config1.getXpaths().size());
+        Assertions.assertEquals(1, config1.getXpaths().size());
         config1.ingestXpaths(config2);
-        Assert.assertEquals(2, config1.getXpaths().size());
-        Assert.assertEquals("foo:foo", config1.getXpaths().get(0));
-        Assert.assertEquals("foo:bar", config1.getXpaths().get(1));
+        Assertions.assertEquals(2, config1.getXpaths().size());
+        Assertions.assertEquals("foo:foo", config1.getXpaths().get(0));
+        Assertions.assertEquals("foo:bar", config1.getXpaths().get(1));
     }
 
     /**
@@ -51,10 +51,10 @@ public class SubfieldConfigTest {
         SubfieldConfig config2 = new SubfieldConfig("MD_FOO", true, false);
         config2.getDefaultValues().put("foo:bar", "bar");
 
-        Assert.assertEquals(1, config1.getDefaultValues().size());
+        Assertions.assertEquals(1, config1.getDefaultValues().size());
         config1.ingestXpaths(config2);
-        Assert.assertEquals(2, config1.getDefaultValues().size());
-        Assert.assertEquals("foo", config1.getDefaultValues().get("foo:foo"));
-        Assert.assertEquals("bar", config1.getDefaultValues().get("foo:bar"));
+        Assertions.assertEquals(2, config1.getDefaultValues().size());
+        Assertions.assertEquals("foo", config1.getDefaultValues().get("foo:foo"));
+        Assertions.assertEquals("bar", config1.getDefaultValues().get("foo:bar"));
     }
 }

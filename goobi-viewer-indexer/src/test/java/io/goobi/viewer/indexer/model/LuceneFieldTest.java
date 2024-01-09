@@ -16,8 +16,8 @@
 package io.goobi.viewer.indexer.model;
 
 import org.apache.solr.common.SolrInputField;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -31,8 +31,8 @@ public class LuceneFieldTest extends AbstractTest {
     @Test
     public void LuceneField_shouldSetAttributesCorrectly() throws Exception {
         LuceneField field = new LuceneField("field_name", "field_value");
-        Assert.assertEquals("field_name", field.getField());
-        Assert.assertEquals("field_value", field.getValue());
+        Assertions.assertEquals("field_name", field.getField());
+        Assertions.assertEquals("field_value", field.getValue());
     }
 
     /**
@@ -43,8 +43,8 @@ public class LuceneFieldTest extends AbstractTest {
     public void generateField_shouldGenerateSolrInputFieldCorrectly() throws Exception {
         LuceneField field = new LuceneField("field_name", "field_value");
         SolrInputField solrInputField = field.generateField();
-        Assert.assertNotNull(solrInputField);
-        Assert.assertEquals("field_name", solrInputField.getName());
-        Assert.assertEquals("field_value", solrInputField.getValue());
+        Assertions.assertNotNull(solrInputField);
+        Assertions.assertEquals("field_name", solrInputField.getName());
+        Assertions.assertEquals("field_value", solrInputField.getValue());
     }
 }

@@ -15,9 +15,9 @@
  */
 package io.goobi.viewer.indexer.helper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,8 +25,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.Indexer;
@@ -45,7 +45,7 @@ public class UtilsTest extends AbstractTest {
             {
                 // filename.xml
                 Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
-                Assert.assertNotNull(path);
+                Assertions.assertNotNull(path);
                 assertEquals("filename.xml", path.getFileName().toString());
                 Files.createFile(path);
                 assertTrue(Files.exists(path));
@@ -54,7 +54,7 @@ public class UtilsTest extends AbstractTest {
             {
                 // filename#1.xml
                 Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
-                Assert.assertNotNull(path);
+                Assertions.assertNotNull(path);
                 assertEquals("filename#0.xml", path.getFileName().toString());
                 Files.createFile(path);
                 assertTrue(Files.exists(path));
@@ -63,7 +63,7 @@ public class UtilsTest extends AbstractTest {
             {
                 // filename#2.xml
                 Path path = Utils.getCollisionFreeDataFilePath("target", "filename", "#", ".xml");
-                Assert.assertNotNull(path);
+                Assertions.assertNotNull(path);
                 assertEquals("filename#1.xml", path.getFileName().toString());
             }
         } finally {

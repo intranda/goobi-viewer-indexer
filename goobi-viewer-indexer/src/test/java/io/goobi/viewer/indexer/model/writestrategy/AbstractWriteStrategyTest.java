@@ -16,8 +16,8 @@
 package io.goobi.viewer.indexer.model.writestrategy;
 
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.model.SolrConstants;
 
@@ -39,16 +39,16 @@ public class AbstractWriteStrategyTest {
         
         AbstractWriteStrategy.sanitizeDoc(doc);
         
-        Assert.assertNotNull(doc.getFieldValues("BOOL_FOO"));
-        Assert.assertEquals(1, doc.getFieldValues("BOOL_FOO").size());
-        Assert.assertFalse((boolean) doc.getFieldValue("BOOL_FOO"));
+        Assertions.assertNotNull(doc.getFieldValues("BOOL_FOO"));
+        Assertions.assertEquals(1, doc.getFieldValues("BOOL_FOO").size());
+        Assertions.assertFalse((boolean) doc.getFieldValue("BOOL_FOO"));
         
-        Assert.assertNotNull(doc.getFieldValues("MDNUM_YEARPUBLISH"));
-        Assert.assertEquals(1, doc.getFieldValues("MDNUM_YEARPUBLISH").size());
-        Assert.assertEquals("2000", doc.getFieldValue("MDNUM_YEARPUBLISH"));
+        Assertions.assertNotNull(doc.getFieldValues("MDNUM_YEARPUBLISH"));
+        Assertions.assertEquals(1, doc.getFieldValues("MDNUM_YEARPUBLISH").size());
+        Assertions.assertEquals("2000", doc.getFieldValue("MDNUM_YEARPUBLISH"));
         
-        Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATECREATED));
-        Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATECREATED).size());
-        Assert.assertEquals(123L, doc.getFieldValue(SolrConstants.DATECREATED));
+        Assertions.assertNotNull(doc.getFieldValues(SolrConstants.DATECREATED));
+        Assertions.assertEquals(1, doc.getFieldValues(SolrConstants.DATECREATED).size());
+        Assertions.assertEquals(123L, doc.getFieldValue(SolrConstants.DATECREATED));
     }
 }

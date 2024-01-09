@@ -26,9 +26,9 @@ import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 
@@ -36,7 +36,7 @@ public class XmlToolsTest extends AbstractTest {
 
     private File tempDir = new File("target/temp");
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (tempDir.exists()) {
             FileUtils.deleteQuietly(tempDir);
@@ -51,10 +51,10 @@ public class XmlToolsTest extends AbstractTest {
     public void getDocumentFromString_shouldBuildDocumentCorrectly() throws Exception {
         String xml = "<root><child>child1</child><child>child2</child></root>";
         Document doc = XmlTools.getDocumentFromString(xml, null);
-        Assert.assertNotNull(doc);
-        Assert.assertEquals("root", doc.getRootElement().getName());
-        Assert.assertNotNull(doc.getRootElement().getChildren("child"));
-        Assert.assertEquals(2, doc.getRootElement().getChildren("child").size());
+        Assertions.assertNotNull(doc);
+        Assertions.assertEquals("root", doc.getRootElement().getName());
+        Assertions.assertNotNull(doc.getRootElement().getChildren("child"));
+        Assertions.assertEquals(2, doc.getRootElement().getChildren("child").size());
     }
 
     /**
@@ -66,8 +66,8 @@ public class XmlToolsTest extends AbstractTest {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
         String xml = XmlTools.getStringFromElement(doc, null);
-        Assert.assertNotNull(xml);
-        Assert.assertTrue(xml.contains("<root></root>"));
+        Assertions.assertNotNull(xml);
+        Assertions.assertTrue(xml.contains("<root></root>"));
     }
 
     /**
@@ -77,8 +77,8 @@ public class XmlToolsTest extends AbstractTest {
     @Test
     public void getStringFromElement_shouldReturnXMLStringCorrectlyForElements() throws Exception {
         String xml = XmlTools.getStringFromElement(new Element("root"), null);
-        Assert.assertNotNull(xml);
-        Assert.assertTrue(xml.contains("<root></root>"));
+        Assertions.assertNotNull(xml);
+        Assertions.assertTrue(xml.contains("<root></root>"));
     }
 
     /**
@@ -90,27 +90,27 @@ public class XmlToolsTest extends AbstractTest {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
         File xmlFile = XmlTools.writeXmlFile(doc, filePath);
-        Assert.assertTrue(xmlFile.isFile());
+        Assertions.assertTrue(xmlFile.isFile());
     }
 
     /**
      * @see XmlTools#writeXmlFile(Document,String)
      * @verifies throw FileNotFoundException if file is directory
      */
-    @Test(expected = FileSystemException.class)
+    @Test
     public void writeXmlFile_shouldThrowFileNotFoundExceptionIfFileIsDirectory() throws Exception {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
-        XmlTools.writeXmlFile(doc, "target");
+        Assertions.assertThrows(FileSystemException.class, () -> XmlTools.writeXmlFile(doc, "target"));
     }
 
     /**
      * @see XmlTools#readXmlFile(String)
      * @verifies throw FileNotFoundException if file not found
      */
-    @Test(expected = FileNotFoundException.class)
+    @Test
     public void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
-        XmlTools.readXmlFile("notfound.xml");
+        Assertions.assertThrows(FileNotFoundException.class, () -> XmlTools.readXmlFile("notfound.xml"));
     }
 
     /**
@@ -120,17 +120,17 @@ public class XmlToolsTest extends AbstractTest {
     @Test
     public void readXmlFile_shouldBuildDocumentFromPathCorrectly() throws Exception {
         Path folder = Paths.get("src/test/resources/ALTO");
-        Assert.assertTrue(Files.isDirectory(folder));
+        Assertions.assertTrue(Files.isDirectory(folder));
         Document doc = XmlTools.readXmlFile(Paths.get(folder.toAbsolutePath().toString(), "birdsbeneficialt00froh_0031.xml"));
-        Assert.assertNotNull(doc);
+        Assertions.assertNotNull(doc);
     }
 
     /**
      * @see XmlTools#readXmlFile(Path)
      * @verifies throw IOException if file not found
      */
-    @Test(expected = IOException.class)
+    @Test
     public void readXmlFile_shouldThrowIOExceptionIfFileNotFound() throws Exception {
-        XmlTools.readXmlFile(Paths.get("filenotfound"));
+        Assertions.assertThrows(IOException.class, () -> XmlTools.readXmlFile(Paths.get("filenotfound")));
     }
 }

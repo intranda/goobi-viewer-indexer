@@ -19,8 +19,8 @@ import java.util.List;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
@@ -34,8 +34,8 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
      */
     @Test
     public void getLanguageMapping_shouldReturnCorrectMapping() throws Exception {
-        Assert.assertEquals("en", MetadataConfigurationManager.getLanguageMapping("eng"));
-        Assert.assertEquals("de", MetadataConfigurationManager.getLanguageMapping("ger"));
+        Assertions.assertEquals("en", MetadataConfigurationManager.getLanguageMapping("eng"));
+        Assertions.assertEquals("de", MetadataConfigurationManager.getLanguageMapping("ger"));
     }
 
     /**
@@ -44,7 +44,7 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
      */
     @Test
     public void getLanguageMapping_shouldReturnNullIfCodeNotConfigured() throws Exception {
-        Assert.assertNull(MetadataConfigurationManager.getLanguageMapping("epo"));
+        Assertions.assertNull(MetadataConfigurationManager.getLanguageMapping("epo"));
     }
 
     /**
@@ -55,9 +55,9 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
     public void getConfigurationListForField_shouldReturnCorrectFieldConfig() throws Exception {
         List<FieldConfig> result =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
-        Assert.assertNotNull(result);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals("MD_TESTFIELD", result.get(0).getFieldname());
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("MD_TESTFIELD", result.get(0).getFieldname());
     }
 
     /**
@@ -68,10 +68,10 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
     public void loadFieldConfiguration_shouldLoadAllFieldConfigsCorrectly() throws Exception {
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
-        Assert.assertNotNull(configItems);
-        Assert.assertEquals(1, configItems.size());
+        Assertions.assertNotNull(configItems);
+        Assertions.assertEquals(1, configItems.size());
 
-        Assert.assertTrue(SolrIndexerDaemon.getInstance()
+        Assertions.assertTrue(SolrIndexerDaemon.getInstance()
                 .getConfiguration()
                 .getMetadataConfigurationManager()
                 .getFieldsToAddToParents()
@@ -86,20 +86,20 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
     public void loadFieldConfiguration_shouldLoadNestedGroupEntitiesCorrectly() throws Exception {
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
-        Assert.assertNotNull(configItems);
-        Assert.assertEquals(1, configItems.size());
+        Assertions.assertNotNull(configItems);
+        Assertions.assertEquals(1, configItems.size());
         FieldConfig fieldConfig = configItems.get(0);
-        Assert.assertTrue(fieldConfig.isGroupEntity());
+        Assertions.assertTrue(fieldConfig.isGroupEntity());
 
-        Assert.assertNotNull(fieldConfig.getGroupEntity());
-        Assert.assertEquals(3, fieldConfig.getGroupEntity().getSubfields().size());
+        Assertions.assertNotNull(fieldConfig.getGroupEntity());
+        Assertions.assertEquals(3, fieldConfig.getGroupEntity().getSubfields().size());
 
-        Assert.assertEquals(3, fieldConfig.getGroupEntity().getChildren().size());
+        Assertions.assertEquals(3, fieldConfig.getGroupEntity().getChildren().size());
         GroupEntity child = fieldConfig.getGroupEntity().getChildren().get(0);
-        Assert.assertEquals("MD_ARTIST", child.getName());
-        Assert.assertEquals(MetadataGroupType.PERSON, child.getType());
-        Assert.assertEquals("intranda:actor[intranda:role='Künstler/-in']", child.getXpath());
-        Assert.assertEquals(8, child.getSubfields().size());
+        Assertions.assertEquals("MD_ARTIST", child.getName());
+        Assertions.assertEquals(MetadataGroupType.PERSON, child.getType());
+        Assertions.assertEquals("intranda:actor[intranda:role='Künstler/-in']", child.getXpath());
+        Assertions.assertEquals(8, child.getSubfields().size());
     }
 
     /**
@@ -113,13 +113,13 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
                         .getConfiguration()
                         .getMetadataConfigurationManager()
                         .getConfigurationListForField("MD_ACCESSLOCATIONS");
-        Assert.assertNotNull(configItems);
-        Assert.assertEquals(1, configItems.size());
+        Assertions.assertNotNull(configItems);
+        Assertions.assertEquals(1, configItems.size());
         FieldConfig fieldConfig = configItems.get(0);
-        Assert.assertTrue(fieldConfig.isGroupEntity());
-        Assert.assertEquals(4, fieldConfig.getGroupEntity().getSubfields().size());
-        Assert.assertTrue(fieldConfig.getGroupEntity().isAddAuthorityDataToDocstruct());
-        Assert.assertTrue(fieldConfig.getGroupEntity().isAddCoordsToDocstruct());
+        Assertions.assertTrue(fieldConfig.isGroupEntity());
+        Assertions.assertEquals(4, fieldConfig.getGroupEntity().getSubfields().size());
+        Assertions.assertTrue(fieldConfig.getGroupEntity().isAddAuthorityDataToDocstruct());
+        Assertions.assertTrue(fieldConfig.getGroupEntity().isAddCoordsToDocstruct());
     }
 
     /**
@@ -130,19 +130,19 @@ public class MetadataConfigurationManagerTest extends AbstractTest {
     public void readGroupEntity_shouldRecursivelyReadChildGroupEntities() throws Exception {
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
-        Assert.assertNotNull(configItems);
-        Assert.assertEquals(1, configItems.size());
+        Assertions.assertNotNull(configItems);
+        Assertions.assertEquals(1, configItems.size());
         FieldConfig fieldConfig = configItems.get(0);
-        Assert.assertTrue(fieldConfig.isGroupEntity());
+        Assertions.assertTrue(fieldConfig.isGroupEntity());
 
-        Assert.assertNotNull(fieldConfig.getGroupEntity());
-        Assert.assertEquals(3, fieldConfig.getGroupEntity().getSubfields().size());
+        Assertions.assertNotNull(fieldConfig.getGroupEntity());
+        Assertions.assertEquals(3, fieldConfig.getGroupEntity().getSubfields().size());
 
-        Assert.assertEquals(3, fieldConfig.getGroupEntity().getChildren().size());
+        Assertions.assertEquals(3, fieldConfig.getGroupEntity().getChildren().size());
         GroupEntity child = fieldConfig.getGroupEntity().getChildren().get(0);
-        Assert.assertEquals("MD_ARTIST", child.getName());
-        Assert.assertEquals(MetadataGroupType.PERSON, child.getType());
-        Assert.assertEquals("intranda:actor[intranda:role='Künstler/-in']", child.getXpath());
-        Assert.assertEquals(8, child.getSubfields().size());
+        Assertions.assertEquals("MD_ARTIST", child.getName());
+        Assertions.assertEquals(MetadataGroupType.PERSON, child.getType());
+        Assertions.assertEquals("intranda:actor[intranda:role='Künstler/-in']", child.getXpath());
+        Assertions.assertEquals(8, child.getSubfields().size());
     }
 }

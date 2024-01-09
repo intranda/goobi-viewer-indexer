@@ -23,10 +23,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
@@ -43,25 +43,26 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
 
     protected SolrClient client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
         logger = LogManager.getLogger(AbstractSolrEnabledTest.class);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         String solrUrl = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl");
 
         // Only allow localhost and default indexer test URL to avoid erasing production indexes
-        Assert.assertTrue("Only default or localhost Solr URLs are allowed for testing.",
-                solrUrl.startsWith("http://localhost:") || solrUrl.equals("https://viewer-testing-index.goobi.io/solr/indexer-testing"));
+        Assertions.assertTrue(
+                solrUrl.startsWith("http://localhost:") || solrUrl.equals("https://viewer-testing-index.goobi.io/solr/indexer-testing"),
+                "Only default or localhost Solr URLs are allowed for testing.");
 
         SolrIndexerDaemon.getInstance().injectSearchIndex(new SolrSearchIndex(client));
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         {
             Path indexerFolder = Paths.get("target/indexer");
@@ -69,16 +70,16 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
                 logger.info("Deleting {}...", indexerFolder);
                 FileUtils.deleteDirectory(indexerFolder.toFile());
             }
-            Assert.assertFalse(Files.isDirectory(indexerFolder));
+            Assertions.assertFalse(Files.isDirectory(indexerFolder));
         }
         {
             Path viewerRootFolder = Paths.get("target/viewer");
             if (Files.isDirectory(viewerRootFolder)) {
                 logger.info("Deleting {}...", viewerRootFolder);
                 FileUtils.deleteDirectory(viewerRootFolder.toFile());
-                Assert.assertFalse(Files.isDirectory(viewerRootFolder));
+                Assertions.assertFalse(Files.isDirectory(viewerRootFolder));
             }
-            Assert.assertFalse(Files.isDirectory(viewerRootFolder));
+            Assertions.assertFalse(Files.isDirectory(viewerRootFolder));
         }
 
         // Delete all data after every test
@@ -86,7 +87,7 @@ public abstract class AbstractSolrEnabledTest extends AbstractTest {
             SolrIndexerDaemon.getInstance().getSearchIndex().commit(false);
             logger.debug("Index cleared");
         }
-        
+
         if (client != null) {
             client.close();
         }

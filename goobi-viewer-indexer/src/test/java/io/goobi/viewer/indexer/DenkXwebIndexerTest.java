@@ -26,9 +26,9 @@ import java.util.Map;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.jdom2.Document;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -37,7 +37,7 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
-public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
+class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
     //    private static final Logger logger = LogManager.getLogger(DenkXwebIndexerTest.class);
@@ -48,23 +48,24 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
     private File denkxwebFile;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         denkxwebFile = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
-        Assert.assertTrue(denkxwebFile.isFile());
+        Assertions.assertTrue(denkxwebFile.isFile());
     }
 
     /**
      * @see DenkXwebIndexer#addToIndex(Path,boolean,Map)
      * @verifies throw IllegalArgumentException if denkxwebFile null
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void addToIndex_shouldThrowIllegalArgumentExceptionIfDenkxwebFileNull() throws Exception {
-        new DenkXwebIndexer(hotfolder).addToIndex(null, false, Collections.emptyMap());
+    @Test
+    void addToIndex_shouldThrowIllegalArgumentExceptionIfDenkxwebFileNull() throws Exception {
+        DenkXwebIndexer indexer = new DenkXwebIndexer(hotfolder);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.addToIndex(null, false, Collections.emptyMap()));
     }
 
     /**
@@ -73,32 +74,32 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void index_shouldIndexRecordCorrectly() throws Exception {
+    void index_shouldIndexRecordCorrectly() throws Exception {
         List<Document> recordDocs = JDomXP.splitDenkXwebFile(denkxwebFile);
-        Assert.assertEquals(2, recordDocs.size());
+        Assertions.assertEquals(2, recordDocs.size());
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document recordDoc : recordDocs) {
             String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
-            Assert.assertNotEquals(ret[1], "ERROR", ret[0]);
+            Assertions.assertNotEquals(ret[1], "ERROR", ret[0]);
         }
 
         // Top document
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             {
                 Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                Assert.assertNotNull(values);
-                Assert.assertEquals(1, values.size());
-                Assert.assertEquals("OPENACCESS", values.iterator().next());
+                Assertions.assertNotNull(values);
+                Assertions.assertEquals(1, values.size());
+                Assertions.assertEquals("OPENACCESS", values.iterator().next());
             }
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
-            Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
-            Assert.assertEquals(FileFormat.DENKXWEB.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
-            Assert.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT));
-            Assert.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
+            Assertions.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
+            Assertions.assertEquals(FileFormat.DENKXWEB.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
+            Assertions.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            Assertions.assertEquals("Baudenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
         }
     }
 
@@ -110,47 +111,49 @@ public class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void generatePageDocuments_shouldGeneratePagesCorrectly() throws Exception {
         File denkxwebFile = new File("src/test/resources/DenkXweb/" + PI2 + ".xml");
-        Assert.assertTrue(denkxwebFile.isFile());
+        Assertions.assertTrue(denkxwebFile.isFile());
         List<Document> recordDocs = JDomXP.splitDenkXwebFile(denkxwebFile);
-        Assert.assertEquals(1, recordDocs.size());
+        Assertions.assertEquals(1, recordDocs.size());
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document recordDoc : recordDocs) {
             String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
-            Assert.assertNotEquals(ret[1], "ERROR", ret[0]);
+            Assertions.assertNotEquals(ret[1], "ERROR", ret[0]);
         }
 
         // Top document
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI2, null);
-        Assert.assertEquals(1, docList.size());
+        Assertions.assertEquals(1, docList.size());
         SolrDocument topDoc = docList.get(0);
         {
             Collection<Object> values = (Collection<Object>) topDoc.getFieldValue(SolrConstants.ACCESSCONDITION);
-            Assert.assertNotNull(values);
-            Assert.assertEquals(1, values.size());
-            Assert.assertEquals("OPENACCESS", values.iterator().next());
+            Assertions.assertNotNull(values);
+            Assertions.assertEquals(1, values.size());
+            Assertions.assertEquals("OPENACCESS", values.iterator().next());
         }
-        Assert.assertNotNull(topDoc.getFieldValue(SolrConstants.DATECREATED));
-        Assert.assertNotNull(topDoc.getFieldValues(SolrConstants.DATEUPDATED));
-        Assert.assertEquals("https://example.com/10973880_2.jpg", topDoc.getFieldValue(SolrConstants.THUMBNAIL));
+        Assertions.assertNotNull(topDoc.getFieldValue(SolrConstants.DATECREATED));
+        Assertions.assertNotNull(topDoc.getFieldValues(SolrConstants.DATEUPDATED));
+        Assertions.assertEquals("https://example.com/10973880_2.jpg", topDoc.getFieldValue(SolrConstants.THUMBNAIL));
 
         // Pages
         {
             SolrDocumentList pageDocList =
-                    SolrIndexerDaemon.getInstance().getSearchIndex().search(" +" + SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " +" + SolrConstants.DOCTYPE + ":PAGE", null);
-            Assert.assertEquals(2, pageDocList.size());
+                    SolrIndexerDaemon.getInstance()
+                            .getSearchIndex()
+                            .search(" +" + SolrConstants.PI_TOPSTRUCT + ":" + PI2 + " +" + SolrConstants.DOCTYPE + ":PAGE", null);
+            Assertions.assertEquals(2, pageDocList.size());
             SolrDocument doc = pageDocList.get(0);
             {
                 Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                Assert.assertNotNull(values);
-                Assert.assertEquals(1, values.size());
-                Assert.assertEquals("OPENACCESS", values.iterator().next());
+                Assertions.assertNotNull(values);
+                Assertions.assertEquals(1, values.size());
+                Assertions.assertEquals("OPENACCESS", values.iterator().next());
             }
-            Assert.assertEquals("https://example.com/10973880_1.jpg", doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED"));
-            Assert.assertEquals("image/jpeg", doc.getFieldValue(SolrConstants.MIMETYPE));
-            Assert.assertEquals("foo bar", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_DESCRIPTION"));
-            Assert.assertEquals(topDoc.getFieldValue(SolrConstants.IDDOC), doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-            Assert.assertEquals("Flächendenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            Assertions.assertEquals("https://example.com/10973880_1.jpg", doc.getFieldValue(SolrConstants.FILENAME + "_HTML-SANDBOXED"));
+            Assertions.assertEquals("image/jpeg", doc.getFieldValue(SolrConstants.MIMETYPE));
+            Assertions.assertEquals("foo bar", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_DESCRIPTION"));
+            Assertions.assertEquals(topDoc.getFieldValue(SolrConstants.IDDOC), doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            Assertions.assertEquals("Flächendenkmal", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
         }
     }
 }

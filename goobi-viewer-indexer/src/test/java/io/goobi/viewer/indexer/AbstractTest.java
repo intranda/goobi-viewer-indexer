@@ -17,7 +17,7 @@ package io.goobi.viewer.indexer;
 
 import java.io.File;
 
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 
 import io.goobi.viewer.indexer.helper.Configuration;
 
@@ -29,7 +29,7 @@ public abstract class AbstractTest {
     public static final String TEST_CONFIG_PATH = new File("src/test/resources/config_indexer.test.xml").getAbsolutePath();
     public static final String TEST_LOG_CONFIG_PATH = new File("src/test/resources/log4j2.test.xml").getAbsolutePath();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         System.setProperty("log4j.configurationFile", TEST_LOG_CONFIG_PATH);
         SolrIndexerDaemon.getInstance().injectConfiguration(new Configuration(TEST_CONFIG_PATH));

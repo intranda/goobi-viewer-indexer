@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -38,9 +38,9 @@ public class RemainingSpaceStrategyTest extends AbstractTest {
         repositorySpaceMap.put(30L, new DataRepository("/opt/digiverso/viewer/data/3"));
         repositorySpaceMap.put(20L, new DataRepository("/opt/digiverso/viewer/data/2"));
         repositorySpaceMap.put(10L, new DataRepository("/opt/digiverso/viewer/data/1"));
-        Assert.assertEquals(repositorySpaceMap.get(20L), RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 11L));
-        Assert.assertEquals(repositorySpaceMap.get(30L), RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 22L));
-        Assert.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
+        Assertions.assertEquals(repositorySpaceMap.get(20L), RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 11L));
+        Assertions.assertEquals(repositorySpaceMap.get(30L), RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 22L));
+        Assertions.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
     }
 
     /**
@@ -53,7 +53,7 @@ public class RemainingSpaceStrategyTest extends AbstractTest {
         repositorySpaceMap.put(30L, new DataRepository("/opt/digiverso/viewer/data/3"));
         repositorySpaceMap.put(20L, new DataRepository("/opt/digiverso/viewer/data/2"));
         repositorySpaceMap.put(10L, new DataRepository("/opt/digiverso/viewer/data/1"));
-        Assert.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
+        Assertions.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
     }
 
     /**
@@ -65,7 +65,7 @@ public class RemainingSpaceStrategyTest extends AbstractTest {
         DummyDataRepository repo = new DummyDataRepository("/opt/digiverso/viewer/data/1", 30L, 3L);
 
         SortedMap<Long, DataRepository> repositorySpaceMap = RemainingSpaceStrategy.generateRepositorySpaceMap(Collections.singletonList(repo));
-        Assert.assertEquals(1, repositorySpaceMap.size());
-        Assert.assertEquals(repo, repositorySpaceMap.get(27L));
+        Assertions.assertEquals(1, repositorySpaceMap.size());
+        Assertions.assertEquals(repo, repositorySpaceMap.get(27L));
     }
 }

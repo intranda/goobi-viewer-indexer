@@ -33,10 +33,10 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.MetsIndexer;
@@ -55,7 +55,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     private SolrSearchIndex searchIndex;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -65,7 +65,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         {
             Path indexerFolder = Paths.get("target/indexer");
@@ -73,16 +73,16 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
                 logger.info("Deleting {}...", indexerFolder);
                 FileUtils.deleteDirectory(indexerFolder.toFile());
             }
-            Assert.assertFalse(Files.isDirectory(indexerFolder));
+            Assertions.assertFalse(Files.isDirectory(indexerFolder));
         }
         {
             Path viewerRootFolder = Paths.get("target/viewer");
             if (Files.isDirectory(viewerRootFolder)) {
                 logger.info("Deleting {}...", viewerRootFolder);
                 FileUtils.deleteDirectory(viewerRootFolder.toFile());
-                Assert.assertFalse(Files.isDirectory(viewerRootFolder));
+                Assertions.assertFalse(Files.isDirectory(viewerRootFolder));
             }
-            Assert.assertFalse(Files.isDirectory(viewerRootFolder));
+            Assertions.assertFalse(Files.isDirectory(viewerRootFolder));
         }
 
         // Delete all data after every test
@@ -103,7 +103,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     @Test
     public void deleteDocuments_shouldReturnFalseIfIdListEmpty() throws Exception {
         SolrSearchIndex sh = new SolrSearchIndex(client);
-        Assert.assertFalse(sh.deleteDocuments(Collections.emptyList()));
+        Assertions.assertFalse(sh.deleteDocuments(Collections.emptyList()));
     }
 
     /**
@@ -113,8 +113,8 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     @Test
     public void getSolrSchemaDocument_shouldReturnSchemaDocumentCorrectly() throws Exception {
         org.jdom2.Document doc = SolrSearchIndex.getSolrSchemaDocument(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
-        Assert.assertNotNull(doc);
-        Assert.assertEquals("schema", doc.getRootElement().getName());
+        Assertions.assertNotNull(doc);
+        Assertions.assertEquals("schema", doc.getRootElement().getName());
     }
 
     /**
@@ -127,16 +127,16 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
         SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
-        Assert.assertNotNull(doc);
-        Assert.assertEquals("123456", doc.getFieldValue(SolrConstants.IDDOC));
+        Assertions.assertNotNull(doc);
+        Assertions.assertEquals("123456", doc.getFieldValue(SolrConstants.IDDOC));
         Long timestamp = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
-        Assert.assertNotNull(timestamp);
-        Assert.assertEquals(timestamp, doc.getFieldValue(SolrConstants.DATEUPDATED));
-        Assert.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
-        Assert.assertEquals("id10T", doc.getFieldValue(SolrConstants.PI));
-        Assert.assertEquals(SolrConstants.PREFIX_GROUPID + "TEST", doc.getFieldValue(SolrConstants.GROUPTYPE));
-        Assert.assertEquals("shelfmark", doc.getFieldValue("MD_SHELFMARK"));
-        Assert.assertEquals("title", doc.getFieldValue("MD_TITLE"));
+        Assertions.assertNotNull(timestamp);
+        Assertions.assertEquals(timestamp, doc.getFieldValue(SolrConstants.DATEUPDATED));
+        Assertions.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
+        Assertions.assertEquals("id10T", doc.getFieldValue(SolrConstants.PI));
+        Assertions.assertEquals(SolrConstants.PREFIX_GROUPID + "TEST", doc.getFieldValue(SolrConstants.GROUPTYPE));
+        Assertions.assertEquals("shelfmark", doc.getFieldValue("MD_SHELFMARK"));
+        Assertions.assertEquals("title", doc.getFieldValue("MD_TITLE"));
     }
 
     /**
@@ -149,7 +149,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata.put("MD_SHELFMARK", "old_shelfmark");
         moreMetadata.put("MD_TITLE", "old_title");
         SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
-        Assert.assertNotNull(doc);
+        Assertions.assertNotNull(doc);
         searchIndex.writeToIndex(doc);
         searchIndex.commit(false);
 
@@ -157,15 +157,15 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata.put("MD_SHELFMARK", "new_shelfmark");
         moreMetadata.put("MD_TITLE", "new_title");
         SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
-        Assert.assertNotNull(doc2);
-        Assert.assertEquals(doc.getFieldValue(SolrConstants.IDDOC), doc2.getFieldValue(SolrConstants.IDDOC));
-        Assert.assertEquals(doc.getFieldValue(SolrConstants.DATECREATED), doc2.getFieldValue(SolrConstants.DATECREATED));
-        Assert.assertNotEquals(doc.getFieldValue(SolrConstants.DATEUPDATED), doc2.getFieldValue(SolrConstants.DATEUPDATED));
-        Assert.assertEquals(DocType.GROUP.name(), doc2.getFieldValue(SolrConstants.DOCTYPE));
-        Assert.assertEquals("id10T", doc2.getFieldValue(SolrConstants.PI));
-        Assert.assertEquals(SolrConstants.PREFIX_GROUPID + "TEST", doc2.getFieldValue(SolrConstants.GROUPTYPE));
-        Assert.assertEquals("new_shelfmark", doc2.getFieldValue("MD_SHELFMARK"));
-        Assert.assertEquals("new_title", doc2.getFieldValue("MD_TITLE"));
+        Assertions.assertNotNull(doc2);
+        Assertions.assertEquals(doc.getFieldValue(SolrConstants.IDDOC), doc2.getFieldValue(SolrConstants.IDDOC));
+        Assertions.assertEquals(doc.getFieldValue(SolrConstants.DATECREATED), doc2.getFieldValue(SolrConstants.DATECREATED));
+        Assertions.assertNotEquals(doc.getFieldValue(SolrConstants.DATEUPDATED), doc2.getFieldValue(SolrConstants.DATEUPDATED));
+        Assertions.assertEquals(DocType.GROUP.name(), doc2.getFieldValue(SolrConstants.DOCTYPE));
+        Assertions.assertEquals("id10T", doc2.getFieldValue(SolrConstants.PI));
+        Assertions.assertEquals(SolrConstants.PREFIX_GROUPID + "TEST", doc2.getFieldValue(SolrConstants.GROUPTYPE));
+        Assertions.assertEquals("new_shelfmark", doc2.getFieldValue("MD_SHELFMARK"));
+        Assertions.assertEquals("new_title", doc2.getFieldValue("MD_TITLE"));
     }
 
     /**
@@ -178,13 +178,13 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
         SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
-        Assert.assertNotNull(doc);
-        Assert.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
+        Assertions.assertNotNull(doc);
+        Assertions.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
         String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
-        Assert.assertNotNull(defaultValue);
-        Assert.assertTrue(defaultValue.contains("id10T"));
-        Assert.assertTrue(defaultValue.contains("shelfmark"));
-        Assert.assertTrue(defaultValue.contains("title"));
+        Assertions.assertNotNull(defaultValue);
+        Assertions.assertTrue(defaultValue.contains("id10T"));
+        Assertions.assertTrue(defaultValue.contains("shelfmark"));
+        Assertions.assertTrue(defaultValue.contains("title"));
     }
 
     /**
@@ -194,8 +194,8 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     @Test
     public void checkAndCreateGroupDoc_shouldAddAccessConditions() throws Exception {
         SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, 123456L);
-        Assert.assertNotNull(doc);
-        Assert.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
+        Assertions.assertNotNull(doc);
+        Assertions.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
     }
 
     /**
@@ -221,11 +221,11 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         {
             // Update doc
             SolrDocumentList ret = searchIndex.search(SolrConstants.IDDOC + ":" + iddoc, null);
-            Assert.assertNotNull(ret);
-            Assert.assertFalse(ret.isEmpty());
+            Assertions.assertNotNull(ret);
+            Assertions.assertFalse(ret.isEmpty());
             SolrDocument doc = ret.get(0);
-            Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
-            Assert.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
+            Assertions.assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
 
             Map<String, Map<String, Object>> partialUpdates = new HashMap<>();
             {
@@ -244,13 +244,13 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         {
             // Fetch and check updated doc
             SolrDocumentList ret = searchIndex.search(SolrConstants.IDDOC + ":" + iddoc, null);
-            Assert.assertNotNull(ret);
-            Assert.assertFalse(ret.isEmpty());
+            Assertions.assertNotNull(ret);
+            Assertions.assertFalse(ret.isEmpty());
             SolrDocument doc = ret.get(0);
-            Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
-            Assert.assertEquals("new fulltext", doc.getFieldValues("MD_FULLTEXT").iterator().next());
-            Assert.assertEquals(2, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
-            Assert.assertEquals("PPN123", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
+            Assertions.assertEquals("new fulltext", doc.getFieldValues("MD_FULLTEXT").iterator().next());
+            Assertions.assertEquals(2, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            Assertions.assertEquals("PPN123", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
         }
     }
 
@@ -266,9 +266,9 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         luceneFields.get(1).setSkip(true);
 
         SolrInputDocument doc = SolrSearchIndex.createDocument(luceneFields);
-        Assert.assertNotNull(doc);
-        Assert.assertEquals("bar", doc.getFieldValue("foo"));
-        Assert.assertFalse(doc.containsKey("skip"));
+        Assertions.assertNotNull(doc);
+        Assertions.assertEquals("bar", doc.getFieldValue("foo"));
+        Assertions.assertFalse(doc.containsKey("skip"));
     }
 
     /**
@@ -277,10 +277,10 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     public void getBooleanFieldName_shouldBoolifyFieldCorrectly() throws Exception {
-        Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("FOO"));
-        Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MD_FOO"));
-        Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MDNUM_FOO"));
-        Assert.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("SORT_FOO"));
+        Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("FOO"));
+        Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MD_FOO"));
+        Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MDNUM_FOO"));
+        Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("SORT_FOO"));
     }
 
     /**
@@ -293,16 +293,16 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
 
         String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
                 new HashMap<>(), null, 1, false);
-        Assert.assertNull(ret[1]);
+        Assertions.assertNull(ret[1]);
         ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
                 new HashMap<>(), null, 1, false);
-        Assert.assertNull(ret[1]);
+        Assertions.assertNull(ret[1]);
         Set<String> result = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .checkDuplicateFieldValues(Collections.singletonList(SolrConstants.PI_TOPSTRUCT), Arrays.asList("AC06736966", "H030001"), null);
-        Assert.assertEquals(2, result.size());
-        Assert.assertTrue(result.contains("H030001"));
-        Assert.assertTrue(result.contains("AC06736966"));
+        Assertions.assertEquals(2, result.size());
+        Assertions.assertTrue(result.contains("H030001"));
+        Assertions.assertTrue(result.contains("AC06736966"));
     }
 
     /**
@@ -315,15 +315,15 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
 
         String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
                 new HashMap<>(), null, 1, false);
-        Assert.assertNull(ret[1]);
+        Assertions.assertNull(ret[1]);
         ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
                 new HashMap<>(), null, 1, false);
-        Assert.assertNull(ret[1]);
+        Assertions.assertNull(ret[1]);
         Set<String> result = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .checkDuplicateFieldValues(Collections.singletonList(SolrConstants.PI_TOPSTRUCT), Arrays.asList("AC06736966", "H030001"),
                         "AC06736966");
-        Assert.assertEquals(1, result.size());
-        Assert.assertTrue(result.contains("H030001"));
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertTrue(result.contains("H030001"));
     }
 }

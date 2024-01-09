@@ -23,9 +23,9 @@ import java.util.Map;
 
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -42,14 +42,14 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     private Path metsFile;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assert.assertTrue(Files.isRegularFile(metsFile));
+        Assertions.assertTrue(Files.isRegularFile(metsFile));
     }
 
     /**
@@ -59,7 +59,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
     @Test
     public void DocUpdateIndexer_shouldSetAttributesCorrectly() throws Exception {
         DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
-        Assert.assertEquals(hotfolder, indexer.hotfolder);
+        Assertions.assertEquals(hotfolder, indexer.hotfolder);
     }
 
     /**
@@ -79,14 +79,14 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_alto"));
             dataFolders.put(DataRepository.PARAM_UGC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ugc"));
             String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
-            Assert.assertEquals(PI + ".xml", ret[0]);
-            Assert.assertNull(ret[1]);
+            Assertions.assertEquals(PI + ".xml", ret[0]);
+            Assertions.assertNull(ret[1]);
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.FULLTEXT + ":*", null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+            Assertions.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
             // TODO check new UGC docs
         }
 
@@ -100,7 +100,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Path updateCrowdsourcingAltoFolderHotfolderPath =
                     Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_altocrowd");
             Files.createDirectory(updateCrowdsourcingAltoFolderHotfolderPath);
-            Assert.assertEquals(1,
+            Assertions.assertEquals(1,
                     FileTools.copyDirectory(updateCrowdsourcingAltoFolderSourcePath, updateCrowdsourcingAltoFolderHotfolderPath));
             dataFolders.put(DataRepository.PARAM_ALTOCROWD, updateCrowdsourcingAltoFolderHotfolderPath);
 
@@ -110,7 +110,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Path updateCrowdsourcingTextFolderHotfolderPath =
                     Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_txtcrowd");
             Files.createDirectory(updateCrowdsourcingTextFolderHotfolderPath);
-            Assert.assertEquals(1,
+            Assertions.assertEquals(1,
                     FileTools.copyDirectory(updateCrowdsourcingTextFolderSourcePath, updateCrowdsourcingTextFolderHotfolderPath));
             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, updateCrowdsourcingTextFolderHotfolderPath);
 
@@ -120,35 +120,35 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             Path updateCrowdsourcingUgcFolderHotfolderPath =
                     Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "PPN517154005#1483455145198_ugc");
             Files.createDirectory(updateCrowdsourcingUgcFolderHotfolderPath);
-            Assert.assertEquals(1,
+            Assertions.assertEquals(1,
                     FileTools.copyDirectory(updateCrowdsourcingUgcFolderSourcePath, updateCrowdsourcingUgcFolderHotfolderPath));
             dataFolders.put(DataRepository.PARAM_UGC, updateCrowdsourcingUgcFolderHotfolderPath);
 
             // Update doc and check updated values
             Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
-            Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
-            Assert.assertNull(ret[1]);
+            Assertions.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
+            Assertions.assertNull(ret[1]);
             {
                 SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
                         .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.DOCTYPE + ":"
                                 + DocType.PAGE.name(), null);
-                Assert.assertEquals(1, docList.size());
+                Assertions.assertEquals(1, docList.size());
                 SolrDocument doc = docList.get(0);
 
                 // Check for updated ALTO file in file system
                 String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
-                Assert.assertNotNull(altoFileName);
+                Assertions.assertNotNull(altoFileName);
                 Path altoFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), altoFileName);
-                Assert.assertTrue("File not found at " + altoFile.toAbsolutePath().toString(), Files.isRegularFile(altoFile));
+                Assertions.assertTrue(Files.isRegularFile(altoFile), "File not found at " + altoFile.toAbsolutePath().toString());
                 String altoText = FileTools.readFileToString(altoFile.toFile(), null);
-                Assert.assertNotNull(altoText);
-                Assert.assertTrue(altoText.contains("Bollywood!"));
-                Assert.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+                Assertions.assertNotNull(altoText);
+                Assertions.assertTrue(altoText.contains("Bollywood!"));
+                Assertions.assertNull(doc.getFieldValue(SolrConstants.UGCTERMS));
             }
 
-            //Assert.assertTrue(((String) doc.getFieldValue(SolrConstants.UGCTERMS)).contains("Hütchenspieler"));
+            //Assertions.assertTrue(((String) doc.getFieldValue(SolrConstants.UGCTERMS)).contains("Hütchenspieler"));
 
             // Check for new UGC docs
             {
@@ -156,21 +156,21 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                         .getSearchIndex()
                         .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.DOCTYPE + ":"
                                 + DocType.UGC.name(), null);
-                Assert.assertEquals(2, docList.size());
+                Assertions.assertEquals(2, docList.size());
                 {
                     SolrDocument doc = docList.get(0);
-                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
-                    Assert.assertEquals(SolrConstants.UGC_TYPE_PERSON, doc.getFieldValue(SolrConstants.UGCTYPE));
-                    Assert.assertEquals("1290.0, 1384.0, 1930.0, 1523.0", doc.getFieldValue(SolrConstants.UGCCOORDS));
-                    Assert.assertEquals("Felix", doc.getFirstValue("MD_FIRSTNAME"));
-                    Assert.assertEquals("Klein", doc.getFirstValue("MD_LASTNAME"));
-                    Assert.assertEquals("Hütchenspieler", doc.getFirstValue("MD_OCCUPATION"));
+                    Assertions.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+                    Assertions.assertEquals(SolrConstants.UGC_TYPE_PERSON, doc.getFieldValue(SolrConstants.UGCTYPE));
+                    Assertions.assertEquals("1290.0, 1384.0, 1930.0, 1523.0", doc.getFieldValue(SolrConstants.UGCCOORDS));
+                    Assertions.assertEquals("Felix", doc.getFirstValue("MD_FIRSTNAME"));
+                    Assertions.assertEquals("Klein", doc.getFirstValue("MD_LASTNAME"));
+                    Assertions.assertEquals("Hütchenspieler", doc.getFirstValue("MD_OCCUPATION"));
                 }
                 {
                     SolrDocument doc = docList.get(1);
-                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
-                    Assert.assertEquals(SolrConstants.UGC_TYPE_COMMENT, doc.getFieldValue(SolrConstants.UGCTYPE));
-                    Assert.assertEquals("new comment text", doc.getFirstValue("MD_TEXT"));
+                    Assertions.assertNotNull(doc.getFieldValue(SolrConstants.UGCTERMS));
+                    Assertions.assertEquals(SolrConstants.UGC_TYPE_COMMENT, doc.getFieldValue(SolrConstants.UGCTYPE));
+                    Assertions.assertEquals("new comment text", doc.getFirstValue("MD_TEXT"));
                 }
             }
         }
@@ -188,23 +188,23 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
             Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
             String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
-            Assert.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
-            Assert.assertNull(ret[1]);
+            Assertions.assertEquals(ret[0] + ": " + ret[1], PI, ret[0]);
+            Assertions.assertNull(ret[1]);
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1  AND " + SolrConstants.DOCTYPE + ":"
                             + DocType.PAGE.name(), null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
 
             // Check for updated text file in file system
             String textFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
-            Assert.assertNotNull(textFileName);
+            Assertions.assertNotNull(textFileName);
             Path textFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), textFileName);
-            Assert.assertTrue(Files.isRegularFile(textFile));
+            Assertions.assertTrue(Files.isRegularFile(textFile));
             String altoText = FileTools.readFileToString(textFile.toFile(), null);
-            Assert.assertNotNull(altoText);
-            Assert.assertEquals("updated text file", altoText.trim());
+            Assertions.assertNotNull(altoText);
+            Assertions.assertEquals("updated text file", altoText.trim());
         }
 
     }

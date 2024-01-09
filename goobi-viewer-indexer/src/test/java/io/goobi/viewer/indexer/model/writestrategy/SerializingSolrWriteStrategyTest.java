@@ -25,10 +25,10 @@ import java.util.Map;
 
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.MetsIndexer;
@@ -48,18 +48,18 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
     private Path metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         Files.createDirectory(tempFolder);
-        Assert.assertTrue(Files.isDirectory(tempFolder));
+        Assertions.assertTrue(Files.isDirectory(tempFolder));
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
 
@@ -81,10 +81,10 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
                         null)[0],
                 "PPN517154005", 1, false);
         List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
-        Assert.assertEquals(3, docs.size());
-        Assert.assertEquals("PHYS_0001", docs.get(0).getFieldValue(SolrConstants.PHYSID));
-        Assert.assertEquals("PHYS_0002", docs.get(1).getFieldValue(SolrConstants.PHYSID));
-        Assert.assertEquals("PHYS_0003", docs.get(2).getFieldValue(SolrConstants.PHYSID));
+        Assertions.assertEquals(3, docs.size());
+        Assertions.assertEquals("PHYS_0001", docs.get(0).getFieldValue(SolrConstants.PHYSID));
+        Assertions.assertEquals("PHYS_0002", docs.get(1).getFieldValue(SolrConstants.PHYSID));
+        Assertions.assertEquals("PHYS_0003", docs.get(2).getFieldValue(SolrConstants.PHYSID));
     }
 
     /**
@@ -105,7 +105,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.DOCSTRCT.name(), null);
-        Assert.assertEquals(4, docList.size());
+        Assertions.assertEquals(4, docList.size());
     }
 
     /**
@@ -126,6 +126,6 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
-        Assert.assertEquals(16, docList.size());
+        Assertions.assertEquals(16, docList.size());
     }
 }

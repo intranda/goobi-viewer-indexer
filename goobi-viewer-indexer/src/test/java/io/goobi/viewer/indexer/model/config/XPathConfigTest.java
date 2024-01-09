@@ -15,8 +15,8 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
@@ -30,8 +30,8 @@ public class XPathConfigTest extends AbstractTest {
     @Test
     public void XPathConfig_shouldSetMembersCorrectly() throws Exception {
         XPathConfig xpc = new XPathConfig("path", "pre", "suf");
-        Assert.assertEquals("path", xpc.getxPath());
-        Assert.assertEquals("pre", xpc.getPrefix());
-        Assert.assertEquals("suf", xpc.getSuffix());
+        Assertions.assertEquals("path", xpc.getxPath());
+        Assertions.assertEquals("pre", xpc.getPrefix());
+        Assertions.assertEquals("suf", xpc.getSuffix());
     }
 }

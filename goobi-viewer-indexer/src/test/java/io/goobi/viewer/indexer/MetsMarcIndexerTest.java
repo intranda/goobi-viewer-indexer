@@ -15,9 +15,9 @@
  */
 package io.goobi.viewer.indexer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,9 +29,9 @@ import java.util.Map;
 
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -42,7 +42,7 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -63,7 +63,7 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         String[] ret = new MetsMarcIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
         assertEquals(pi + ".xml", ret[0]);
-        Assert.assertNull(ret[1]);
+        Assertions.assertNull(ret[1]);
 
         Map<String, Boolean> iddocMap = new HashMap<>();
         String iddoc;
@@ -94,8 +94,8 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
                 //                assertEquals("varia", mdList.get(0));
                 //                assertEquals("digiwunschbuch", mdList.get(1));
             }
-            Assert.assertTrue(doc.containsKey(SolrConstants.DEFAULT));
-            // Assert.assertTrue(doc.containsKey(SolrConstants.SUPERDEFAULT));
+            Assertions.assertTrue(doc.containsKey(SolrConstants.DEFAULT));
+            // Assertions.assertTrue(doc.containsKey(SolrConstants.SUPERDEFAULT));
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             assertNotNull(iddoc);
             iddocMap.put(iddoc, true);
@@ -113,21 +113,21 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
             assertEquals("ph418_b__bph_ok_962_(2)_002.tif", doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT)); // not really used
             assertEquals(2, doc.getFieldValue(SolrConstants.THUMBPAGENO)); // representative image should not affect the number
             assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
-            Assert.assertNull(doc.getFieldValue(SolrConstants.IMAGEURN_OAI)); // only docs representing deleted records should have this field
+            Assertions.assertNull(doc.getFieldValue(SolrConstants.IMAGEURN_OAI)); // only docs representing deleted records should have this field
             assertEquals(false, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR");
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
-                Assert.assertEquals("Suchten, Alexander von", mdList.get(0));
+                Assertions.assertNotNull(mdList);
+                Assertions.assertEquals(1, mdList.size());
+                Assertions.assertEquals("Suchten, Alexander von", mdList.get(0));
             }
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR" + SolrConstants.SUFFIX_UNTOKENIZED);
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
-                Assert.assertEquals("Suchten, Alexander von", mdList.get(0));
+                Assertions.assertNotNull(mdList);
+                Assertions.assertEquals(1, mdList.size());
+                Assertions.assertEquals("Suchten, Alexander von", mdList.get(0));
             }
-            Assert.assertEquals("Suchten, Alexander von", doc.getFieldValue("SORT_AUTHOR"));
+            Assertions.assertEquals("Suchten, Alexander von", doc.getFieldValue("SORT_AUTHOR"));
 
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEAR);
@@ -174,7 +174,7 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
                     assertNotNull(value);
-                    Assert.assertNull(iddocMap.get(value));
+                    Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                     assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
                 }
