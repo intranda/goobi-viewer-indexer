@@ -41,7 +41,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 
-public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
+class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
 
     private static Path tempFolder = Paths.get("target/temp");
 
@@ -71,7 +71,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
      * @verifies return all docs for the given physIdList
      */
     @Test
-    public void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
+    void getPageDocsForPhysIdList_shouldReturnAllDocsForTheGivenPhysIdList() throws Exception {
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex(), tempFolder);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
@@ -92,7 +92,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
      * @verifies write all structure docs correctly
      */
     @Test
-    public void writeDocs_shouldWriteAllStructureDocsCorrectly() throws Exception {
+    void writeDocs_shouldWriteAllStructureDocsCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
@@ -113,7 +113,7 @@ public class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
      * @verifies write all page docs correctly
      */
     @Test
-    public void writeDocs_shouldWriteAllPageDocsCorrectly() throws Exception {
+    void writeDocs_shouldWriteAllPageDocsCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));

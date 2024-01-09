@@ -32,14 +32,14 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
-public class TextHelperTest extends AbstractTest {
+class TextHelperTest extends AbstractTest {
 
     /**
      * @see TextHelper#readAltoFile(String,File)
      * @verifies read ALTO document correctly
      */
     @Test
-    public void readAltoFile_shouldReadALTODocumentCorrectly() throws Exception {
+    void readAltoFile_shouldReadALTODocumentCorrectly() throws Exception {
         File folder = new File("src/test/resources/ALTO");
         Assertions.assertTrue(folder.isDirectory());
         Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "birdsbeneficialt00froh_0031.xml"));
@@ -49,7 +49,7 @@ public class TextHelperTest extends AbstractTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void readAltoFile_shouldRetainTags() throws Exception {
+    void readAltoFile_shouldRetainTags() throws Exception {
         File origFile = new File("src/test/resources/ALTO/altoWithTags.xml");
         Assertions.assertTrue(origFile.isFile());
         Map<String, Object> result = TextHelper.readAltoFile(origFile);
@@ -67,7 +67,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies extract fulltext correctly
      */
     @Test
-    public void readAltoFile_shouldExtractFulltextCorrectly() throws Exception {
+    void readAltoFile_shouldExtractFulltextCorrectly() throws Exception {
         File folder = new File("src/test/resources/ALTO");
         Assertions.assertTrue(folder.isDirectory());
         {
@@ -107,7 +107,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies extract page dimensions correctly
      */
     @Test
-    public void readAltoFile_shouldExtractPageDimensionsCorrectly() throws Exception {
+    void readAltoFile_shouldExtractPageDimensionsCorrectly() throws Exception {
         File folder = new File("src/test/resources/ALTO");
         Assertions.assertTrue(folder.isDirectory());
         Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "AC04987957_00000124.xml"));
@@ -121,7 +121,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    public void readAltoFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void readAltoFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
         File folder = new File("src/test/resources/ALTO");
         Assertions.assertTrue(folder.isDirectory());
         Assertions.assertThrows(FileNotFoundException.class, () -> TextHelper.readAltoFile(new File(folder, "filenotfound")));
@@ -132,7 +132,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    public void readMix_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void readMix_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
         Assertions.assertThrows(FileNotFoundException.class, () -> TextHelper.readMix(new File("filenotfound")));
     }
 
@@ -141,7 +141,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies convert to ALTO correctly
      */
     @Test
-    public void readAbbyyToAlto_shouldConvertToALTOCorrectly() throws Exception {
+    void readAbbyyToAlto_shouldConvertToALTOCorrectly() throws Exception {
         Map<String, Object> result = TextHelper.readAbbyyToAlto(new File("src/test/resources/ABBYYXML/00000001.xml"));
         Assertions.assertNotNull(result);
         Assertions.assertNotNull(result.get(SolrConstants.ALTO));
@@ -152,7 +152,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies throw IOException given wrong document format
      */
     @Test
-    public void readAbbyyToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
+    void readAbbyyToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
         Assertions.assertThrows(IOException.class,
                 () -> TextHelper.readAbbyyToAlto(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml")));
     }
@@ -162,7 +162,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies convert to ALTO correctly
      */
     @Test
-    public void readTeiToAlto_shouldConvertToALTOCorrectly() throws Exception {
+    void readTeiToAlto_shouldConvertToALTOCorrectly() throws Exception {
         Map<String, Object> result =
                 TextHelper.readTeiToAlto(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
         Assertions.assertNotNull(result);
@@ -174,7 +174,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies throw IOException given wrong document format
      */
     @Test
-    public void readTeiToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
+    void readTeiToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
         Assertions.assertThrows(IOException.class, () -> TextHelper.readTeiToAlto(new File("src/test/resources/ABBYYXML/00000001.xml")));
     }
 
@@ -183,7 +183,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies return text if fulltext file exists
      */
     @Test
-    public void generateFulltext_shouldReturnTextIfFulltextFileExists() throws Exception {
+    void generateFulltext_shouldReturnTextIfFulltextFileExists() throws Exception {
         Path folder = Paths.get("src/test/resources");
         Assertions.assertTrue(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false, false);
@@ -195,7 +195,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies return null if fulltext folder exists but no file
      */
     @Test
-    public void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() throws Exception {
+    void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() throws Exception {
         Path folder = Paths.get("src/test/resources");
         Assertions.assertTrue(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("filenotfound.txt", folder, false, false);
@@ -207,7 +207,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies return null of fulltext folder does not exist
      */
     @Test
-    public void generateFulltext_shouldReturnNullOfFulltextFolderDoesNotExist() throws Exception {
+    void generateFulltext_shouldReturnNullOfFulltextFolderDoesNotExist() throws Exception {
         Path folder = Paths.get("src/test/resources/dirnotfound");
         Assertions.assertFalse(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false, false);
@@ -219,7 +219,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies clean up string correctly
      */
     @Test
-    public void cleanUpHtmlTags_shouldCleanUpStringCorrectly() throws Exception {
+    void cleanUpHtmlTags_shouldCleanUpStringCorrectly() throws Exception {
         Assertions.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("<p><b>foo</b></p><br/>bar"));
         Assertions.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("foo <bar"));
     }
@@ -229,7 +229,7 @@ public class TextHelperTest extends AbstractTest {
      * @verifies uppercase type
      */
     @Test
-    public void createSimpleNamedEntityTag_shouldUppercaseType() throws Exception {
+    void createSimpleNamedEntityTag_shouldUppercaseType() throws Exception {
         Element eleTag = new Element("NamedEntityTag");
         eleTag.setAttribute("TYPE", "location");
         eleTag.setAttribute("LABEL", "Göttingen");

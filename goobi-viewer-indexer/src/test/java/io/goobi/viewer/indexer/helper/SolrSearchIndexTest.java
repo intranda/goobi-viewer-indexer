@@ -45,7 +45,7 @@ import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
-public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
+class SolrSearchIndexTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(SolrSearchIndexTest.class);
@@ -101,7 +101,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies return false if id list empty
      */
     @Test
-    public void deleteDocuments_shouldReturnFalseIfIdListEmpty() throws Exception {
+    void deleteDocuments_shouldReturnFalseIfIdListEmpty() throws Exception {
         SolrSearchIndex sh = new SolrSearchIndex(client);
         Assertions.assertFalse(sh.deleteDocuments(Collections.emptyList()));
     }
@@ -111,7 +111,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies return schema document correctly
      */
     @Test
-    public void getSolrSchemaDocument_shouldReturnSchemaDocumentCorrectly() throws Exception {
+    void getSolrSchemaDocument_shouldReturnSchemaDocumentCorrectly() throws Exception {
         org.jdom2.Document doc = SolrSearchIndex.getSolrSchemaDocument(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
         Assertions.assertNotNull(doc);
         Assertions.assertEquals("schema", doc.getRootElement().getName());
@@ -122,7 +122,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies create new document with all values if none exists
      */
     @Test
-    public void checkAndCreateGroupDoc_shouldCreateNewDocumentWithAllValuesIfNoneExists() throws Exception {
+    void checkAndCreateGroupDoc_shouldCreateNewDocumentWithAllValuesIfNoneExists() throws Exception {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
@@ -144,7 +144,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies create updated document with all values if one already exists
      */
     @Test
-    public void checkAndCreateGroupDoc_shouldCreateUpdatedDocumentWithAllValuesIfOneAlreadyExists() throws Exception {
+    void checkAndCreateGroupDoc_shouldCreateUpdatedDocumentWithAllValuesIfOneAlreadyExists() throws Exception {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "old_shelfmark");
         moreMetadata.put("MD_TITLE", "old_title");
@@ -173,7 +173,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies add default field
      */
     @Test
-    public void checkAndCreateGroupDoc_shouldAddDefaultField() throws Exception {
+    void checkAndCreateGroupDoc_shouldAddDefaultField() throws Exception {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
@@ -192,7 +192,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies add access conditions
      */
     @Test
-    public void checkAndCreateGroupDoc_shouldAddAccessConditions() throws Exception {
+    void checkAndCreateGroupDoc_shouldAddAccessConditions() throws Exception {
         SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, 123456L);
         Assertions.assertNotNull(doc);
         Assertions.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
@@ -203,7 +203,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies update doc correctly
      */
     @Test
-    public void updateDoc_shouldUpdateDocCorrectly() throws Exception {
+    void updateDoc_shouldUpdateDocCorrectly() throws Exception {
         String iddoc = "12345";
 
         {
@@ -259,7 +259,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies skip fields correctly
      */
     @Test
-    public void createDocument_shouldSkipFieldsCorrectly() throws Exception {
+    void createDocument_shouldSkipFieldsCorrectly() throws Exception {
         List<LuceneField> luceneFields = new ArrayList<>(2);
         luceneFields.add(new LuceneField("foo", "bar"));
         luceneFields.add(new LuceneField("skip", "me"));
@@ -276,7 +276,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies boolify field correctly
      */
     @Test
-    public void getBooleanFieldName_shouldBoolifyFieldCorrectly() throws Exception {
+    void getBooleanFieldName_shouldBoolifyFieldCorrectly() throws Exception {
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("FOO"));
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MD_FOO"));
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MDNUM_FOO"));
@@ -288,7 +288,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies return correct identifiers
      */
     @Test
-    public void checkDuplicateFieldValues_shouldReturnCorrectIdentifiers() throws Exception {
+    void checkDuplicateFieldValues_shouldReturnCorrectIdentifiers() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
@@ -310,7 +310,7 @@ public class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies ignore records that match skipPi
      */
     @Test
-    public void checkDuplicateFieldValues_shouldIgnoreRecordsThatMatchSkipPi() throws Exception {
+    void checkDuplicateFieldValues_shouldIgnoreRecordsThatMatchSkipPi() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,

@@ -26,14 +26,14 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
-public class IndexObjectTest extends AbstractTest {
+class IndexObjectTest extends AbstractTest {
 
     /**
      * @see IndexObject#IndexObject(long,String)
      * @verifies set attributes correctly
      */
     @Test
-    public void IndexObject_shouldSetAttributesCorrectly() throws Exception {
+    void IndexObject_shouldSetAttributesCorrectly() throws Exception {
         IndexObject io = new IndexObject(123L);
         Assertions.assertEquals(123L, io.getIddoc());
     }
@@ -43,7 +43,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies return all fields with given name
      */
     @Test
-    public void getLuceneFieldsWithName_shouldReturnAllFieldsWithGivenName() throws Exception {
+    void getLuceneFieldsWithName_shouldReturnAllFieldsWithGivenName() throws Exception {
         IndexObject io = new IndexObject(1);
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE11"));
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE12"));
@@ -60,7 +60,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies return empty list if name not found
      */
     @Test
-    public void getLuceneFieldsWithName_shouldReturnEmptyListIfNameNotFound() throws Exception {
+    void getLuceneFieldsWithName_shouldReturnEmptyListIfNameNotFound() throws Exception {
         IndexObject io = new IndexObject(1);
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE11"));
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE12"));
@@ -77,7 +77,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies return first field with given name
      */
     @Test
-    public void getLuceneFieldWithName_shouldReturnFirstFieldWithGivenName() throws Exception {
+    void getLuceneFieldWithName_shouldReturnFirstFieldWithGivenName() throws Exception {
         IndexObject io = new IndexObject(1);
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE11"));
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE12"));
@@ -94,7 +94,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies return null if name not found
      */
     @Test
-    public void getLuceneFieldWithName_shouldReturnNullIfNameNotFound() throws Exception {
+    void getLuceneFieldWithName_shouldReturnNullIfNameNotFound() throws Exception {
         IndexObject io = new IndexObject(1);
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE11"));
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE12"));
@@ -110,7 +110,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies write all required fields
      */
     @Test
-    public void pushSimpleDataToLuceneArray_shouldWriteAllRequiredFields() throws Exception {
+    void pushSimpleDataToLuceneArray_shouldWriteAllRequiredFields() throws Exception {
         IndexObject io = new IndexObject(1);
         io.setType("MusicSupplies");
         io.setPi("PI");
@@ -180,7 +180,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies inherit access conditions from parent except OPENACCESS
      */
     @Test
-    public void writeAccessConditions_shouldInheritAccessConditionsFromParentExceptOPENACCESS() throws Exception {
+    void writeAccessConditions_shouldInheritAccessConditionsFromParentExceptOPENACCESS() throws Exception {
         IndexObject io = new IndexObject(1);
 
         IndexObject pio = new IndexObject(2);
@@ -202,7 +202,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies not inherit access conditions from parent if own access conditions exist
      */
     @Test
-    public void writeAccessConditions_shouldNotInheritAccessConditionsFromParentIfOwnAccessConditionsExist() throws Exception {
+    void writeAccessConditions_shouldNotInheritAccessConditionsFromParentIfOwnAccessConditionsExist() throws Exception {
         IndexObject io = new IndexObject(1);
         io.getAccessConditions().add("CONDITION1");
         io.getAccessConditions().add("CONDITION2");
@@ -225,7 +225,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add OPENACCESS if list empty
      */
     @Test
-    public void writeAccessConditions_shouldAddOPENACCESSIfListEmpty() throws Exception {
+    void writeAccessConditions_shouldAddOPENACCESSIfListEmpty() throws Exception {
         IndexObject io = new IndexObject(1);
 
         io.writeAccessConditions(null);
@@ -241,7 +241,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies set DATECREATED if not set
      */
     @Test
-    public void writeDateModified_shouldSetDATECREATEDIfNotSet() throws Exception {
+    void writeDateModified_shouldSetDATECREATEDIfNotSet() throws Exception {
         IndexObject io = new IndexObject(1);
 
         io.writeDateModified(false);
@@ -257,7 +257,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies not set DATECREATED if already set
      */
     @Test
-    public void writeDateModified_shouldNotSetDATECREATEDIfAlreadySet() throws Exception {
+    void writeDateModified_shouldNotSetDATECREATEDIfAlreadySet() throws Exception {
         IndexObject io = new IndexObject(1);
         long now = System.currentTimeMillis();
         io.setDateCreated(now);
@@ -272,7 +272,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies set DATEUPDATED if not set
      */
     @Test
-    public void writeDateModified_shouldSetDATEUPDATEDIfNotSet() throws Exception {
+    void writeDateModified_shouldSetDATEUPDATEDIfNotSet() throws Exception {
         IndexObject io = new IndexObject(1);
 
         io.writeDateModified(false);
@@ -291,7 +291,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies not set DATEUPDATED if already set
      */
     @Test
-    public void writeDateModified_shouldNotSetDATEUPDATEDIfAlreadySet() throws Exception {
+    void writeDateModified_shouldNotSetDATEUPDATEDIfAlreadySet() throws Exception {
         IndexObject io = new IndexObject(1);
         long now = System.currentTimeMillis();
         io.setDateCreated(now);
@@ -311,7 +311,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies set DATEUPDATED if update requested
      */
     @Test
-    public void writeDateModified_shouldSetDATEUPDATEDIfUpdateRequested() throws Exception {
+    void writeDateModified_shouldSetDATEUPDATEDIfUpdateRequested() throws Exception {
         IndexObject io = new IndexObject(1);
         long now = System.currentTimeMillis();
         io.setDateCreated(now);
@@ -332,7 +332,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies always set DATEINDEXED
      */
     @Test
-    public void writeDateModified_shouldAlwaysSetDATEINDEXED() throws Exception {
+    void writeDateModified_shouldAlwaysSetDATEINDEXED() throws Exception {
         IndexObject io = new IndexObject(1);
         long now = System.currentTimeMillis();
         io.setDateCreated(now);
@@ -353,7 +353,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add field to list correctly
      */
     @Test
-    public void addToLucene_shouldAddFieldToListCorrectly() throws Exception {
+    void addToLucene_shouldAddFieldToListCorrectly() throws Exception {
         IndexObject io = new IndexObject(1);
         Assertions.assertTrue(io.addToLucene("FIELD", "VALUE"));
         LuceneField field = io.getLuceneFieldWithName("FIELD");
@@ -366,7 +366,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add fields correctly
      */
     @Test
-    public void addAllToLucene_shouldAddFieldsCorrectly() throws Exception {
+    void addAllToLucene_shouldAddFieldsCorrectly() throws Exception {
         IndexObject io = new IndexObject(1);
 
         List<LuceneField> toAdd = new ArrayList<>(2);
@@ -392,7 +392,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies skip duplicates correctly
      */
     @Test
-    public void addAllToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
+    void addAllToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
         IndexObject io = new IndexObject(1);
         io.addToLucene("foo", "bar");
         {
@@ -424,7 +424,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add duplicates correctly
      */
     @Test
-    public void addAllToLucene_shouldAddDuplicatesCorrectly() throws Exception {
+    void addAllToLucene_shouldAddDuplicatesCorrectly() throws Exception {
         IndexObject io = new IndexObject(1);
         io.addToLucene("foo", "bar");
         {
@@ -455,7 +455,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies collect group id fields correctly
      */
     @Test
-    public void addToGroupIds_shouldCollectGroupIdFieldsCorrectly() throws Exception {
+    void addToGroupIds_shouldCollectGroupIdFieldsCorrectly() throws Exception {
         IndexObject io = new IndexObject(1);
         Assertions.assertTrue(io.getGroupIds().isEmpty());
         io.addToGroupIds(SolrConstants.PREFIX_GROUPID + "FIELD", "VALUE");
@@ -467,7 +467,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies remove duplicates correctly
      */
     @Test
-    public void removeDuplicateGroupedMetadata_shouldRemoveDuplicatesCorrectly() throws Exception {
+    void removeDuplicateGroupedMetadata_shouldRemoveDuplicatesCorrectly() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         {
             GroupedMetadata gmd = new GroupedMetadata();
@@ -491,7 +491,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies not remove allowed duplicates
      */
     @Test
-    public void removeDuplicateGroupedMetadata_shouldNotRemoveAllowedDuplicates() throws Exception {
+    void removeDuplicateGroupedMetadata_shouldNotRemoveAllowedDuplicates() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         {
             GroupedMetadata gmd = new GroupedMetadata();
@@ -517,7 +517,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies remove existing boolean fields
      */
     @Test
-    public void removeNonMultivaluedFields_shouldRemoveExistingBooleanFields() throws Exception {
+    void removeNonMultivaluedFields_shouldRemoveExistingBooleanFields() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         indexObj.addToLucene("BOOL_TEST", "false");
         Assertions.assertEquals(1, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
@@ -531,7 +531,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies remove existing sorting fields
      */
     @Test
-    public void removeNonMultivaluedFields_shouldRemoveExistingSortingFields() throws Exception {
+    void removeNonMultivaluedFields_shouldRemoveExistingSortingFields() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         indexObj.addToLucene("SORT_TEST", "false");
         Assertions.assertEquals(1, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
@@ -545,7 +545,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add languages from metadata fields
      */
     @Test
-    public void writeLanguages_shouldAddLanguagesFromMetadataFields() throws Exception {
+    void writeLanguages_shouldAddLanguagesFromMetadataFields() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         indexObj.getLuceneFields().add(new LuceneField("MD_TITLE_LANG_EN", "Title"));
         indexObj.getLuceneFields().add(new LuceneField("MD_TITLE_LANG_DE", "Titel"));
@@ -560,7 +560,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add regular metadata correctly
      */
     @Test
-    public void addChildMetadata_shouldAddRegularMetadataCorrectly() throws Exception {
+    void addChildMetadata_shouldAddRegularMetadataCorrectly() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         IndexObject childObj = new IndexObject(2);
         childObj.addToLucene("foo", "bar");
@@ -577,7 +577,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add grouped metadata correctly
      */
     @Test
-    public void addChildMetadata_shouldAddGroupedMetadataCorrectly() throws Exception {
+    void addChildMetadata_shouldAddGroupedMetadataCorrectly() throws Exception {
         IndexObject indexObj = new IndexObject(1);
 
         IndexObject childObj = new IndexObject(2);
@@ -597,7 +597,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies avoid regular metadata duplicates
      */
     @Test
-    public void addChildMetadata_shouldAvoidRegularMetadataDuplicates() throws Exception {
+    void addChildMetadata_shouldAvoidRegularMetadataDuplicates() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         indexObj.addToLucene("foo", "bar");
         IndexObject childObj = new IndexObject(2);
@@ -613,7 +613,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies avoid grouped metadata duplicates
      */
     @Test
-    public void addChildMetadata_shouldAvoidGroupedMetadataDuplicates() throws Exception {
+    void addChildMetadata_shouldAvoidGroupedMetadataDuplicates() throws Exception {
         IndexObject indexObj = new IndexObject(1);
         {
             GroupedMetadata gmd = new GroupedMetadata();
@@ -640,7 +640,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add existence booleans correctly
      */
     @Test
-    public void applyFinalModifications_shouldAddExistenceBooleansCorrectly() throws Exception {
+    void applyFinalModifications_shouldAddExistenceBooleansCorrectly() throws Exception {
         {
             // true
             IndexObject indexObject = new IndexObject(1L);
@@ -667,7 +667,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies set dateCreated only if not yet set
      */
     @Test
-    public void populateDateCreatedUpdated_shouldSetDateCreatedOnlyIfNotYetSet() throws Exception {
+    void populateDateCreatedUpdated_shouldSetDateCreatedOnlyIfNotYetSet() throws Exception {
         ZonedDateTime now = ZonedDateTime.now();
         IndexObject obj = new IndexObject(1);
 
@@ -683,7 +683,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add dateUpdated only if later
      */
     @Test
-    public void populateDateCreatedUpdated_shouldAddDateUpdatedOnlyIfLater() throws Exception {
+    void populateDateCreatedUpdated_shouldAddDateUpdatedOnlyIfLater() throws Exception {
         ZonedDateTime now = ZonedDateTime.now();
         IndexObject obj = new IndexObject(1);
 
@@ -705,7 +705,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies remove dateUpdated values later than given
      */
     @Test
-    public void populateDateCreatedUpdated_shouldRemoveDateUpdatedValuesLaterThanGiven() throws Exception {
+    void populateDateCreatedUpdated_shouldRemoveDateUpdatedValuesLaterThanGiven() throws Exception {
         ZonedDateTime now = ZonedDateTime.now();
         ZonedDateTime tomorrow = now.plusDays(1);
         IndexObject obj = new IndexObject(1);
@@ -726,7 +726,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies add fields correctly
      */
     @Test
-    public void addToLucene_shouldAddFieldsCorrectly() throws Exception {
+    void addToLucene_shouldAddFieldsCorrectly() throws Exception {
         IndexObject o = new IndexObject(1L);
         o.addToLucene(new LuceneField("title", "once upon..."), false);
         o.addToLucene(new LuceneField("foo", "bar"), false);
@@ -740,7 +740,7 @@ public class IndexObjectTest extends AbstractTest {
      * @verifies skip duplicates correctly
      */
     @Test
-    public void addToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
+    void addToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
         IndexObject o = new IndexObject(1L);
         o.addToLucene(new LuceneField("foo", "bar"), true);
         Assertions.assertEquals(1, o.getLuceneFields().size());

@@ -21,14 +21,14 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
 
-public class ValueNormalizerTest extends AbstractTest {
+class ValueNormalizerTest extends AbstractTest {
 
     /**
      * @see ValueNormalizer#normalize(String)
      * @verifies do nothing if length ok
      */
     @Test
-    public void normalize_shouldDoNothingIfLengthOk() throws Exception {
+    void normalize_shouldDoNothingIfLengthOk() throws Exception {
         ValueNormalizer vn = new ValueNormalizer().setTargetLength(3);
         Assertions.assertEquals("123", vn.normalize("123"));
     }
@@ -38,7 +38,7 @@ public class ValueNormalizerTest extends AbstractTest {
      * @verifies normalize too short strings correctly
      */
     @Test
-    public void normalize_shouldNormalizeTooShortStringsCorrectly() throws Exception {
+    void normalize_shouldNormalizeTooShortStringsCorrectly() throws Exception {
         {
             ValueNormalizer vn = new ValueNormalizer().setTargetLength(5);
             Assertions.assertEquals("00123", vn.normalize("123"));
@@ -54,7 +54,7 @@ public class ValueNormalizerTest extends AbstractTest {
      * @verifies normalize too long strings correctly
      */
     @Test
-    public void normalize_shouldNormalizeTooLongStringsCorrectly() throws Exception {
+    void normalize_shouldNormalizeTooLongStringsCorrectly() throws Exception {
         {
             ValueNormalizer vn = new ValueNormalizer().setTargetLength(3);
             Assertions.assertEquals("bar", vn.normalize("foobar"));
@@ -70,7 +70,7 @@ public class ValueNormalizerTest extends AbstractTest {
      * @verifies normalize regex groups correctly
      */
     @Test
-    public void normalize_shouldNormalizeRegexGroupsCorrectly() throws Exception {
+    void normalize_shouldNormalizeRegexGroupsCorrectly() throws Exception {
         {
             ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("[a-zA-Z]+[\\s]+([0-9]+)[.]([0-9]+).*$");
             Assertions.assertEquals("foo 00004173.00000001 bar", vn.normalize("foo 4173.1 bar"));
@@ -87,7 +87,7 @@ public class ValueNormalizerTest extends AbstractTest {
      * @verifies keep parts not matching regex unchanged
      */
     @Test
-    public void normalize_shouldKeepPartsNotMatchingRegexUnchanged() throws Exception {
+    void normalize_shouldKeepPartsNotMatchingRegexUnchanged() throws Exception {
         {
             // front, too short
             ValueNormalizer vn = new ValueNormalizer().setTargetLength(5).setRegex("[0-9]+");
@@ -124,7 +124,7 @@ public class ValueNormalizerTest extends AbstractTest {
      * @verifies convert roman numerals correctly
      */
     @Test
-    public void normalize_shouldConvertRomanNumeralsCorrectly() throws Exception {
+    void normalize_shouldConvertRomanNumeralsCorrectly() throws Exception {
         ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("foo ([C|I|M|V|X]+)(?:\\.| f\\.| ff\\.| i\\.| ii\\.)[0-9]+.*$").setConvertRoman(true);
         Assertions.assertEquals("foo 1 f.17", vn.normalize("foo I f.17"));
         Assertions.assertEquals("foo 8 ff.1", vn.normalize("foo VIII ff.1"));
@@ -138,7 +138,7 @@ public class ValueNormalizerTest extends AbstractTest {
      * @verifies convert correctly
      */
     @Test
-    public void convertRomanNumeral_shouldConvertCorrectly() throws Exception {
+    void convertRomanNumeral_shouldConvertCorrectly() throws Exception {
         Assertions.assertEquals(1, ValueNormalizer.convertRomanNumeral("i"));
         Assertions.assertEquals(2, ValueNormalizer.convertRomanNumeral("ii"));
         Assertions.assertEquals(3, ValueNormalizer.convertRomanNumeral("iii"));

@@ -41,7 +41,7 @@ import io.goobi.viewer.indexer.model.statistics.usage.StatisticsLuceneFields;
  * @author florian
  *
  */
-public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
+class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
 
     private Path statisticsFile1;
     private Path statisticsFile2;
@@ -64,7 +64,7 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
     }
     
     @Test
-    public void test_index() throws IOException, FatalIndexerException, SolrServerException {
+    void test_index() throws IOException, FatalIndexerException, SolrServerException {
         SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile1);
         assertNotNull(doc);
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
@@ -72,7 +72,7 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
     }
     
     @Test
-    public void test_delete() throws IOException, FatalIndexerException, SolrServerException {
+    void test_delete() throws IOException, FatalIndexerException, SolrServerException {
         {
             SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile1);
             assertNotNull(doc);
@@ -94,7 +94,7 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
     }
     
     @Test
-    public void test_date() {
+    void test_date() {
         LocalDate date = LocalDate.of(2022, Month.JULY, 19);
         String dateString = StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
         assertEquals("2022-07-19T00:00:00Z", dateString);

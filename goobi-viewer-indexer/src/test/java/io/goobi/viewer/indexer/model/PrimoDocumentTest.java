@@ -27,14 +27,14 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.FileTools;
 
-public class PrimoDocumentTest {
+class PrimoDocumentTest {
 
     /**
      * @see PrimoDocument#build()
      * @verifies build document correctly
      */
     @Test
-    public void build_shouldBuildDocumentCorrectly() throws Exception {
+    void build_shouldBuildDocumentCorrectly() throws Exception {
         File file = new File("src/test/resources/Primo/000110550.xml");
         Assertions.assertTrue(file.isFile());
         String xml = FileTools.readFileToString(file, null);
@@ -48,7 +48,7 @@ public class PrimoDocumentTest {
      * @verifies find and replace identifier correctly
      */
     @Test
-    public void prepare_shouldFindAndReplaceIdentifierCorrectly() throws Exception {
+    void prepare_shouldFindAndReplaceIdentifierCorrectly() throws Exception {
         Map<String, List<String>> values = new HashMap<>(1);
         values.put("MD_FOO", Collections.singletonList("123"));
         PrimoDocument pd = new PrimoDocument("https://example.com?id=${MD_FOO}&format=xml");

@@ -36,7 +36,7 @@ import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 
-public class DataRepositoryTest extends AbstractTest {
+class DataRepositoryTest extends AbstractTest {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(DataRepositoryTest.class);
@@ -72,7 +72,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies create dummy repository correctly
      */
     @Test
-    public void DataRepository_shouldCreateDummyRepositoryCorrectly() throws Exception {
+    void DataRepository_shouldCreateDummyRepositoryCorrectly() throws Exception {
         DataRepository dataRepository = new DataRepository(SolrIndexerDaemon.getInstance().getConfiguration().getString("init.viewerHome"), true);
         Assertions.assertTrue(dataRepository.isValid());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
@@ -101,7 +101,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies create real repository correctly
      */
     @Test
-    public void DataRepository_shouldCreateRealRepositoryCorrectly() throws Exception {
+    void DataRepository_shouldCreateRealRepositoryCorrectly() throws Exception {
         DataRepository dataRepository = new DataRepository("target/viewer/data/1", true);
         Assertions.assertTrue(dataRepository.isValid());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
@@ -130,7 +130,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies set rootDir to viewerHome path if empty string was given
      */
     @Test
-    public void DataRepository_shouldSetRootDirToViewerHomePathIfEmptyStringWasGiven() throws Exception {
+    void DataRepository_shouldSetRootDirToViewerHomePathIfEmptyStringWasGiven() throws Exception {
         DataRepository dataRepository = new DataRepository("", false);
         Assertions.assertEquals("", dataRepository.getPath());
         Assertions.assertEquals(Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome()), dataRepository.getRootDir());
@@ -141,7 +141,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies add each data directory to the dirMap of dummy repository
      */
     @Test
-    public void DataRepository_shouldAddEachDataDirectoryToTheDirMapOfDummyRepository() throws Exception {
+    void DataRepository_shouldAddEachDataDirectoryToTheDirMapOfDummyRepository() throws Exception {
         DataRepository dataRepository = new DataRepository("", false);
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO));
@@ -169,7 +169,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies add each data directory to the dirMap of real repository
      */
     @Test
-    public void DataRepository_shouldAddEachDataDirectoryToTheDirMapOfRealRepository() throws Exception {
+    void DataRepository_shouldAddEachDataDirectoryToTheDirMapOfRealRepository() throws Exception {
         DataRepository dataRepository = new DataRepository("1", false);
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO));
@@ -197,7 +197,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies calculate number correctly
      */
     @Test
-    public void getNumRecords_shouldCalculateNumberCorrectly() throws Exception {
+    void getNumRecords_shouldCalculateNumberCorrectly() throws Exception {
         DataRepository dataRepository = new DataRepository(SolrIndexerDaemon.getInstance().getConfiguration().getString("init.viewerHome"), true);
 
         File srcFile = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
@@ -238,7 +238,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete folder correctly
      */
     @Test
-    public void deleteFolder_shouldDeleteFolderCorrectly() throws Exception {
+    void deleteFolder_shouldDeleteFolderCorrectly() throws Exception {
         Path folder = Paths.get("target/folder");
         Files.createDirectory(folder);
         Assertions.assertTrue(Files.exists(folder));
@@ -251,7 +251,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete ALTO folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteALTOFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteALTOFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -265,7 +265,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete ALTO crowdsourcing folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteALTOCrowdsourcingFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteALTOCrowdsourcingFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -279,7 +279,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete fulltext folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteFulltextFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteFulltextFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -293,7 +293,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete fulltext crowdsourcing folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteFulltextCrowdsourcingFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteFulltextCrowdsourcingFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -307,7 +307,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete CMDI folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteCMDIFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteCMDIFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_CMDI).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -321,7 +321,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete TEI folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteTEIFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteTEIFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIMETADATA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -335,7 +335,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete word coords folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -349,7 +349,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete ABBYY folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteABBYYFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteABBYYFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -363,7 +363,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete media folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteMediaFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteMediaFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -377,7 +377,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete source folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteSourceFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteSourceFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_SOURCE).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -391,7 +391,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete user generated content folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteUserGeneratedContentFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteUserGeneratedContentFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_UGC).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -405,7 +405,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete MIX folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteMIXFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteMIXFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MIX).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -419,7 +419,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete page PDF folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeletePagePDFFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeletePagePDFFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_PAGEPDF).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -433,7 +433,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete CMS folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteCMSFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteCMSFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_CMS).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -447,7 +447,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete annotations folder correctly
      */
     @Test
-    public void deleteDataFoldersForRecord_shouldDeleteAnnotationsFolderCorrectly() throws Exception {
+    void deleteDataFoldersForRecord_shouldDeleteAnnotationsFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ANNOTATIONS).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -461,7 +461,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies move data folder correctly
      */
     @Test
-    public void moveDataFolderToRepository_shouldMoveDataFolderCorrectly() throws Exception {
+    void moveDataFolderToRepository_shouldMoveDataFolderCorrectly() throws Exception {
         DataRepository oldRepository = new DataRepository("target/viewer/data/old", true);
         File oldDataFolder = new File(oldRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(oldDataFolder.mkdirs());
@@ -487,7 +487,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies return correct path
      */
     @Test
-    public void getAbsolutePath_shouldReturnCorrectPath() throws Exception {
+    void getAbsolutePath_shouldReturnCorrectPath() throws Exception {
         Assertions.assertEquals("target/viewer/data/1", DataRepository.getAbsolutePath("1"));
     }
 
@@ -496,7 +496,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete folders correctly
      */
     @Test
-    public void deleteDataFolder_shouldDeleteFoldersCorrectly() throws Exception {
+    void deleteDataFolder_shouldDeleteFoldersCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -512,7 +512,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies not delete reindexed folders
      */
     @Test
-    public void deleteDataFolder_shouldNotDeleteReindexedFolders() throws Exception {
+    void deleteDataFolder_shouldNotDeleteReindexedFolders() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -529,7 +529,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete ALTO folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteALTOFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteALTOFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_ALTO);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -545,7 +545,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete ALTO crowdsourcing folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteALTOCrowdsourcingFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteALTOCrowdsourcingFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_ALTOCROWD);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -561,7 +561,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete fulltext folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteFulltextFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteFulltextFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_FULLTEXT);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -576,7 +576,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete fulltext crowdsourcing folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteFulltextCrowdsourcingFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteFulltextCrowdsourcingFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_FULLTEXTCROWD);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -592,7 +592,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete CMDI folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteCMDIFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteCMDIFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_CMDI);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -608,7 +608,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete TEI folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteTEIFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteTEIFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_TEIMETADATA);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -624,7 +624,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete word coords folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteWordCoordsFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_TEIWC);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -640,7 +640,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete ABBYY folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteABBYYFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteABBYYFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_ABBYY);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -656,7 +656,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete media folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteMediaFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteMediaFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_MEDIA);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -672,7 +672,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete source folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteSourceFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteSourceFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_SOURCE);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -688,7 +688,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete user generated content folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteUserGeneratedContentFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteUserGeneratedContentFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_UGC);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -704,7 +704,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete MIX folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteMIXFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteMIXFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_MIX);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -720,7 +720,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete page PDF folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeletePagePDFFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeletePagePDFFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_PAGEPDF);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -736,7 +736,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete CMS folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteCMSFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteCMSFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_CMS);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -752,7 +752,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete annotations folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteAnnotationsFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteAnnotationsFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_ANNOTATIONS);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -768,7 +768,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete download images trigger folder correctly
      */
     @Test
-    public void deleteDataFoldersFromHotfolder_shouldDeleteDownloadImagesTriggerFolderCorrectly() throws Exception {
+    void deleteDataFoldersFromHotfolder_shouldDeleteDownloadImagesTriggerFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER);
         Assertions.assertTrue(dataFolder.mkdirs());
@@ -784,7 +784,7 @@ public class DataRepositoryTest extends AbstractTest {
      * @verifies delete only misplaced files
      */
     @Test
-    public void checkOtherRepositoriesForRecordFileDuplicates_shouldDeleteOnlyMisplacedFiles() throws Exception {
+    void checkOtherRepositoriesForRecordFileDuplicates_shouldDeleteOnlyMisplacedFiles() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/1/", true);
         DataRepository otherRepository = new DataRepository("target/viewer/data/2/", true);
 

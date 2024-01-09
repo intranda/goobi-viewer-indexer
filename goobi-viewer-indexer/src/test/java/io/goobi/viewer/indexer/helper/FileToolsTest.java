@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 
-public class FileToolsTest extends AbstractTest {
+class FileToolsTest extends AbstractTest {
 
     private File tempDir = new File("target/temp");
 
@@ -48,7 +48,7 @@ public class FileToolsTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    public void compressGzipFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void compressGzipFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
         File file = new File("notfound.txt");
         Assertions.assertFalse(file.exists());
         Assertions.assertThrows(FileNotFoundException.class, () -> FileTools.compressGzipFile(file, new File("target/test.tar.gz")));
@@ -59,7 +59,7 @@ public class FileToolsTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    public void decompressGzipFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void decompressGzipFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
         File gzipFile = new File("notfound.tar.gz");
         Assertions.assertFalse(gzipFile.exists());
         Assertions.assertThrows(FileNotFoundException.class, () -> FileTools.decompressGzipFile(gzipFile, new File("target/target.bla")));
@@ -70,7 +70,7 @@ public class FileToolsTest extends AbstractTest {
      * @verifies write file correctly
      */
     @Test
-    public void getFileFromString_shouldWriteFileCorrectly() throws Exception {
+    void getFileFromString_shouldWriteFileCorrectly() throws Exception {
         Assertions.assertTrue(tempDir.mkdirs());
         File file = new File(tempDir, "temp.txt");
         String text = "Lorem ipsum dolor sit amet";
@@ -83,7 +83,7 @@ public class FileToolsTest extends AbstractTest {
      * @verifies detect charset correctly
      */
     @Test
-    public void getCharset_shouldDetectCharsetCorrectly() throws Exception {
+    void getCharset_shouldDetectCharsetCorrectly() throws Exception {
         File file = new File("src/test/resources/stopwords_de_en.txt");
         try (FileInputStream fis = new FileInputStream(file)) {
             Assertions.assertEquals("UTF-8", FileTools.getCharset(fis));
@@ -95,7 +95,7 @@ public class FileToolsTest extends AbstractTest {
      * @verifies read file correctly
      */
     @Test
-    public void readFileToString_shouldReadFileCorrectly() throws Exception {
+    void readFileToString_shouldReadFileCorrectly() throws Exception {
         File file = new File("src/test/resources/stopwords_de_en.txt");
         Assertions.assertTrue(file.isFile());
         String text = FileTools.readFileToString(file, null);
@@ -107,7 +107,7 @@ public class FileToolsTest extends AbstractTest {
      * @verifies throw IOException if file not found
      */
     @Test
-    public void readFileToString_shouldThrowIOExceptionIfFileNotFound() throws Exception {
+    void readFileToString_shouldThrowIOExceptionIfFileNotFound() throws Exception {
         File file = new File("src/test/resources/filenotfound.txt");
         Assertions.assertFalse(file.isFile());
         Assertions.assertThrows(IOException.class, () -> FileTools.readFileToString(file, null));
@@ -118,7 +118,7 @@ public class FileToolsTest extends AbstractTest {
      * @verifies only delete folders that match fileNameRoot
      */
     @Test
-    public void deleteUnsupportedDataFolders_shouldOnlyDeleteFoldersThatMatchFileNameRoot() throws Exception {
+    void deleteUnsupportedDataFolders_shouldOnlyDeleteFoldersThatMatchFileNameRoot() throws Exception {
         Assertions.assertTrue(tempDir.mkdirs());
         Path yes1 = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_foo"));
         Assertions.assertTrue(Files.isDirectory(yes1));

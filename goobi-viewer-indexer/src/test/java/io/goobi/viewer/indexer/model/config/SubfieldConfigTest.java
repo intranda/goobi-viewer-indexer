@@ -18,14 +18,14 @@ package io.goobi.viewer.indexer.model.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class SubfieldConfigTest {
+class SubfieldConfigTest {
 
     /**
      * @see SubfieldConfig#ingestXpaths(SubfieldConfig)
      * @verifies copy xpath expressions correctly
      */
     @Test
-    public void ingestXpaths_shouldCopyXpathExpressionsCorrectly() throws Exception {
+    void ingestXpaths_shouldCopyXpathExpressionsCorrectly() throws Exception {
         SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true, false);
         config1.getXpaths().add("foo:foo");
 
@@ -44,7 +44,7 @@ public class SubfieldConfigTest {
      * @verifies copy default values correctly
      */
     @Test
-    public void ingestXpaths_shouldCopyDefaultValuesCorrectly() throws Exception {
+    void ingestXpaths_shouldCopyDefaultValuesCorrectly() throws Exception {
         SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true, false);
         config1.getDefaultValues().put("foo:foo", "foo");
 

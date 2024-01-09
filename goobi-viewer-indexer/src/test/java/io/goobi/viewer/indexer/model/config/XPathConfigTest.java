@@ -21,14 +21,14 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
-public class XPathConfigTest extends AbstractTest {
+class XPathConfigTest extends AbstractTest {
 
     /**
      * @see XPathConfig#XPathConfig(String,String,String)
      * @verifies set members correctly
      */
     @Test
-    public void XPathConfig_shouldSetMembersCorrectly() throws Exception {
+    void XPathConfig_shouldSetMembersCorrectly() throws Exception {
         XPathConfig xpc = new XPathConfig("path", "pre", "suf");
         Assertions.assertEquals("path", xpc.getxPath());
         Assertions.assertEquals("pre", xpc.getPrefix());

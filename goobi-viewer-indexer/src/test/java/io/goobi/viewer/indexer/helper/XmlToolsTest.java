@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 
-public class XmlToolsTest extends AbstractTest {
+class XmlToolsTest extends AbstractTest {
 
     private File tempDir = new File("target/temp");
 
@@ -48,7 +48,7 @@ public class XmlToolsTest extends AbstractTest {
      * @verifies build document correctly
      */
     @Test
-    public void getDocumentFromString_shouldBuildDocumentCorrectly() throws Exception {
+    void getDocumentFromString_shouldBuildDocumentCorrectly() throws Exception {
         String xml = "<root><child>child1</child><child>child2</child></root>";
         Document doc = XmlTools.getDocumentFromString(xml, null);
         Assertions.assertNotNull(doc);
@@ -62,7 +62,7 @@ public class XmlToolsTest extends AbstractTest {
      * @verifies return XML string correctly for documents
      */
     @Test
-    public void getStringFromElement_shouldReturnXMLStringCorrectlyForDocuments() throws Exception {
+    void getStringFromElement_shouldReturnXMLStringCorrectlyForDocuments() throws Exception {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
         String xml = XmlTools.getStringFromElement(doc, null);
@@ -75,7 +75,7 @@ public class XmlToolsTest extends AbstractTest {
      * @verifies return XML string correctly for elements
      */
     @Test
-    public void getStringFromElement_shouldReturnXMLStringCorrectlyForElements() throws Exception {
+    void getStringFromElement_shouldReturnXMLStringCorrectlyForElements() throws Exception {
         String xml = XmlTools.getStringFromElement(new Element("root"), null);
         Assertions.assertNotNull(xml);
         Assertions.assertTrue(xml.contains("<root></root>"));
@@ -85,7 +85,7 @@ public class XmlToolsTest extends AbstractTest {
      * @see XmlTools#writeXmlFile(Document,String)
      * @verifies write file correctly
      */
-    public void writeXmlFile_shouldWriteFileCorrectly() throws Exception {
+    void writeXmlFile_shouldWriteFileCorrectly() throws Exception {
         String filePath = tempDir + "/test.xml";
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
@@ -98,7 +98,7 @@ public class XmlToolsTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file is directory
      */
     @Test
-    public void writeXmlFile_shouldThrowFileNotFoundExceptionIfFileIsDirectory() throws Exception {
+    void writeXmlFile_shouldThrowFileNotFoundExceptionIfFileIsDirectory() throws Exception {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
         Assertions.assertThrows(FileSystemException.class, () -> XmlTools.writeXmlFile(doc, "target"));
@@ -109,7 +109,7 @@ public class XmlToolsTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    public void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
         Assertions.assertThrows(FileNotFoundException.class, () -> XmlTools.readXmlFile("notfound.xml"));
     }
 
@@ -118,7 +118,7 @@ public class XmlToolsTest extends AbstractTest {
      * @verifies build document from path correctly
      */
     @Test
-    public void readXmlFile_shouldBuildDocumentFromPathCorrectly() throws Exception {
+    void readXmlFile_shouldBuildDocumentFromPathCorrectly() throws Exception {
         Path folder = Paths.get("src/test/resources/ALTO");
         Assertions.assertTrue(Files.isDirectory(folder));
         Document doc = XmlTools.readXmlFile(Paths.get(folder.toAbsolutePath().toString(), "birdsbeneficialt00froh_0031.xml"));
@@ -130,7 +130,7 @@ public class XmlToolsTest extends AbstractTest {
      * @verifies throw IOException if file not found
      */
     @Test
-    public void readXmlFile_shouldThrowIOExceptionIfFileNotFound() throws Exception {
+    void readXmlFile_shouldThrowIOExceptionIfFileNotFound() throws Exception {
         Assertions.assertThrows(IOException.class, () -> XmlTools.readXmlFile(Paths.get("filenotfound")));
     }
 }

@@ -30,14 +30,14 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 
-public class JDomXPTest extends AbstractTest {
+class JDomXPTest extends AbstractTest {
 
     /**
      * @see JDomXP#determineFileFormat(File)
      * @verifies detect mets mods files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
@@ -48,7 +48,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect mets marc files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.METS_MARC, JDomXP.determineFileFormat(file));
@@ -59,7 +59,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect lido files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectLidoFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectLidoFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/LIDO/khm_lido_export.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
@@ -70,7 +70,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect denkxweb files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.DENKXWEB, JDomXP.determineFileFormat(file));
@@ -81,7 +81,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect dublin core files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectDublinCoreFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectDublinCoreFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/DC/record.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.DUBLINCORE, JDomXP.determineFileFormat(file));
@@ -92,7 +92,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect worldviews files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectWorldviewsFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectWorldviewsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/WorldViews/gei_test_sthe_quelle_01.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.WORLDVIEWS, JDomXP.determineFileFormat(file));
@@ -103,7 +103,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect abbyy files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectAbbyyFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectAbbyyFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/ABBYYXML/00000001.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.ABBYYXML, JDomXP.determineFileFormat(file));
@@ -114,7 +114,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect tei files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectTeiFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectTeiFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.TEI, JDomXP.determineFileFormat(file));
@@ -125,7 +125,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect cms files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/indexed_cms/CMS123.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.CMS, JDomXP.determineFileFormat(file));
@@ -136,7 +136,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies split multi record documents correctly
      */
     @Test
-    public void splitLidoFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
+    void splitLidoFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
         File file = new File("src/test/resources/LIDO/khm_lido_export.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -148,7 +148,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies leave single record documents as is
      */
     @Test
-    public void splitLidoFile_shouldLeaveSingleRecordDocumentsAsIs() throws Exception {
+    void splitLidoFile_shouldLeaveSingleRecordDocumentsAsIs() throws Exception {
         File file = new File("src/test/resources/LIDO/V0011127.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -160,7 +160,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non lido documents
      */
     @Test
-    public void splitLidoFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -172,7 +172,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non-existing files
      */
     @Test
-    public void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
         File file = new File("nosuchfile.xml");
         Assertions.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -184,7 +184,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list given null
      */
     @Test
-    public void splitLidoFile_shouldReturnEmptyListGivenNull() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListGivenNull() throws Exception {
         List<Document> docs = JDomXP.splitLidoFile(null);
         Assertions.assertEquals(0, docs.size());
     }
@@ -194,7 +194,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies split multi record documents correctly
      */
     @Test
-    public void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
+    void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
         File file = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
@@ -206,7 +206,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non lido documents
      */
     @Test
-    public void splitDenkXwebFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
@@ -218,7 +218,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non-existing files
      */
     @Test
-    public void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
         File file = new File("nosuchfile.xml");
         Assertions.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
@@ -230,7 +230,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list given null
      */
     @Test
-    public void splitDenkXwebFile_shouldReturnEmptyListGivenNull() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListGivenNull() throws Exception {
         List<Document> docs = JDomXP.splitDenkXwebFile(null);
         Assertions.assertEquals(0, docs.size());
     }
@@ -240,7 +240,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies write xml file correctly
      */
     @Test
-    public void writeXmlFile_shouldWriteXmlFileCorrectly() throws Exception {
+    void writeXmlFile_shouldWriteXmlFileCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
 
@@ -270,7 +270,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return value correctly
      */
     @Test
-    public void evaluateToAttributeStringValue_shouldReturnValueCorrectly() throws Exception {
+    void evaluateToAttributeStringValue_shouldReturnValueCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assertions.assertTrue(file.isFile());
         JDomXP xp = new JDomXP(file);
@@ -284,7 +284,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return value correctly
      */
     @Test
-    public void evaluateToCdata_shouldReturnValueCorrectly() throws Exception {
+    void evaluateToCdata_shouldReturnValueCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assertions.assertTrue(file.isFile());
         JDomXP xp = new JDomXP(file);
@@ -299,7 +299,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return value correctly
      */
     @Test
-    public void evaluateToString_shouldReturnValueCorrectly() throws Exception {
+    void evaluateToString_shouldReturnValueCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assertions.assertTrue(file.isFile());
         JDomXP xp = new JDomXP(file);
@@ -314,7 +314,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return all values
      */
     @Test
-    public void evaluateToStringList_shouldReturnAllValues() throws Exception {
+    void evaluateToStringList_shouldReturnAllValues() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assertions.assertTrue(file.isFile(), "File not found: " + file.getAbsolutePath());
         JDomXP xp = new JDomXP(file);
@@ -328,7 +328,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies build document correctly
      */
     @Test
-    public void readXmlFile_shouldBuildDocumentCorrectly() throws Exception {
+    void readXmlFile_shouldBuildDocumentCorrectly() throws Exception {
         Document doc = JDomXP.readXmlFile(TEST_CONFIG_PATH);
         Assertions.assertNotNull(doc);
         Assertions.assertNotNull(doc.getRootElement());
@@ -339,7 +339,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    public void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
         Assertions.assertThrows(FileNotFoundException.class, () -> JDomXP.readXmlFile("notfound.xml"));
     }
 
@@ -348,7 +348,7 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return mdWrap correctly
      */
     @Test
-    public void getMdWrap_shouldReturnMdWrapCorrectly() throws Exception {
+    void getMdWrap_shouldReturnMdWrapCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Assertions.assertTrue(file.isFile(), "File not found: " + file.getAbsolutePath());
         JDomXP xp = new JDomXP(file);

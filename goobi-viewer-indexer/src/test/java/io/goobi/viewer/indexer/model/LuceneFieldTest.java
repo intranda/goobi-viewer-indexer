@@ -22,14 +22,14 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.LuceneField;
 
-public class LuceneFieldTest extends AbstractTest {
+class LuceneFieldTest extends AbstractTest {
 
     /**
      * @see LuceneField#LuceneField(String,String)
      * @verifies set attributes correctly
      */
     @Test
-    public void LuceneField_shouldSetAttributesCorrectly() throws Exception {
+    void LuceneField_shouldSetAttributesCorrectly() throws Exception {
         LuceneField field = new LuceneField("field_name", "field_value");
         Assertions.assertEquals("field_name", field.getField());
         Assertions.assertEquals("field_value", field.getValue());
@@ -40,7 +40,7 @@ public class LuceneFieldTest extends AbstractTest {
      * @verifies generate SolrInputField correctly
      */
     @Test
-    public void generateField_shouldGenerateSolrInputFieldCorrectly() throws Exception {
+    void generateField_shouldGenerateSolrInputFieldCorrectly() throws Exception {
         LuceneField field = new LuceneField("field_name", "field_value");
         SolrInputField solrInputField = field.generateField();
         Assertions.assertNotNull(solrInputField);

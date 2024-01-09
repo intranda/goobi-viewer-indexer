@@ -37,7 +37,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
-public class LidoIndexerTest extends AbstractSolrEnabledTest {
+class LidoIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
     //    private static final Logger logger = LogManager.getLogger(LidoIndexerTest.class);
@@ -62,13 +62,13 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    public void LidoIndexer_shouldSDataRepositoryetAttributesCorrectly() throws Exception {
+    void LidoIndexer_shouldSDataRepositoryetAttributesCorrectly() throws Exception {
         LidoIndexer indexer = new LidoIndexer(hotfolder);
         Assertions.assertEquals(hotfolder, indexer.hotfolder);
     }
 
     @Test
-    public void testIndexMimeType() throws Exception {
+    void testIndexMimeType() throws Exception {
         File lidoVideoFile = new File("src/test/resources/LIDO/1292624.xml");
         File lidoVideoMediaFolder = new File("src/test/resources/LIDO/1292624_media");
         String videoPI = "1292624";
@@ -106,7 +106,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void index_shouldIndexRecordCorrectly() throws Exception {
+    void index_shouldIndexRecordCorrectly() throws Exception {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile);
         Assertions.assertEquals(30, lidoDocs.size());
 
@@ -306,7 +306,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
      * @verifies update record correctly
      */
     @Test
-    public void index_shouldUpdateRecordCorrectly() throws Exception {
+    void index_shouldUpdateRecordCorrectly() throws Exception {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile);
         Assertions.assertEquals(30, lidoDocs.size());
 

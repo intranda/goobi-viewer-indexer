@@ -57,7 +57,7 @@ import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 
-public class IndexerTest extends AbstractSolrEnabledTest {
+class IndexerTest extends AbstractSolrEnabledTest {
 
     private Path metsFile;
     private Path lidoFile;
@@ -94,7 +94,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies write log file and copy of mets file into errorMets
      */
     @Test
-    public void handleError_shouldWriteLogFileAndCopyOfMetsFileIntoErrorMets() throws Exception {
+    void handleError_shouldWriteLogFileAndCopyOfMetsFileIntoErrorMets() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.handleError(metsFile, "lorem ipsum dolor sit amet", FileFormat.METS);
         Assertions.assertTrue(Files.isRegularFile(
@@ -107,7 +107,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if pi empty
      */
     @Test
-    public void delete_shouldThrowIllegalArgumentExceptionIfPiEmpty() throws Exception {
+    void delete_shouldThrowIllegalArgumentExceptionIfPiEmpty() throws Exception {
         SolrSearchIndex searchIndex = SolrIndexerDaemon.getInstance().getSearchIndex();
         Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.delete("", false, searchIndex));
     }
@@ -117,7 +117,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if searchIndex null
      */
     @Test
-    public void delete_shouldThrowIllegalArgumentExceptionIfSearchIndexNull() throws Exception {
+    void delete_shouldThrowIllegalArgumentExceptionIfSearchIndexNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.delete("foo", false, null));
     }
 
@@ -126,7 +126,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return false if pi not found
      */
     @Test
-    public void delete_shouldReturnFalseIfPiNotFound() throws Exception {
+    void delete_shouldReturnFalseIfPiNotFound() throws Exception {
         Assertions.assertFalse(Indexer.delete("foo", false, SolrIndexerDaemon.getInstance().getSearchIndex()));
     }
 
@@ -135,7 +135,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies delete METS record from index completely
      */
     @Test
-    public void delete_shouldDeleteMETSRecordFromIndexCompletely() throws Exception {
+    void delete_shouldDeleteMETSRecordFromIndexCompletely() throws Exception {
         String pi = "PPN517154005";
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
@@ -160,7 +160,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies delete LIDO record from index completely
      */
     @Test
-    public void delete_shouldDeleteLIDORecordFromIndexCompletely() throws Exception {
+    void delete_shouldDeleteLIDORecordFromIndexCompletely() throws Exception {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
@@ -196,7 +196,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies leave trace document for METS record if requested
      */
     @Test
-    public void delete_shouldLeaveTraceDocumentForMETSRecordIfRequested() throws Exception {
+    void delete_shouldLeaveTraceDocumentForMETSRecordIfRequested() throws Exception {
         String pi = "PPN517154005";
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
@@ -226,7 +226,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies leave trace document for LIDO record if requested
      */
     @Test
-    public void delete_shouldLeaveTraceDocumentForLIDORecordIfRequested() throws Exception {
+    void delete_shouldLeaveTraceDocumentForLIDORecordIfRequested() throws Exception {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
@@ -262,7 +262,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies replace irrelevant chars with spaces correctly
      */
     @Test
-    public void cleanUpDefaultField_shouldReplaceIrrelevantCharsWithSpacesCorrectly() throws Exception {
+    void cleanUpDefaultField_shouldReplaceIrrelevantCharsWithSpacesCorrectly() throws Exception {
         Assertions.assertEquals("A B C D", Indexer.cleanUpDefaultField(" A,B;C:D,  "));
     }
 
@@ -271,7 +271,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return null if field null
      */
     @Test
-    public void cleanUpDefaultField_shouldReturnNullIfFieldNull() throws Exception {
+    void cleanUpDefaultField_shouldReturnNullIfFieldNull() throws Exception {
         Assertions.assertNull(Indexer.cleanUpDefaultField(null));
     }
 
@@ -280,7 +280,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies clean up value correctly
      */
     @Test
-    public void cleanUpNamedEntityValue_shouldCleanUpValueCorrectly() throws Exception {
+    void cleanUpNamedEntityValue_shouldCleanUpValueCorrectly() throws Exception {
         Assertions.assertEquals("abcd", Indexer.cleanUpNamedEntityValue("\"(abcd,\""));
     }
 
@@ -298,7 +298,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return size correctly
      */
     @Test
-    public void getSize_shouldReturnSizeCorrectly() throws Exception {
+    void getSize_shouldReturnSizeCorrectly() throws Exception {
 
         String[] filenames = { "00000001.tif", "00225231.png", "test1.jp2" };
         Dimension[] imageSizes = { new Dimension(3192, 4790), new Dimension(2794, 3838), new Dimension(3448, 6499) };
@@ -332,7 +332,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return empty list if dataFolder null
      */
     @Test
-    public void generateAnnotationDocs_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+    void generateAnnotationDocs_shouldReturnEmptyListIfDataFolderNull() throws Exception {
         List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(Collections.emptyMap(), null, "PPN517154005", null, null);
         Assertions.assertTrue(docs.isEmpty());
     }
@@ -342,7 +342,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies create docs correctly
      */
     @Test
-    public void generateAnnotationDocs_shouldCreateDocsCorrectly() throws Exception {
+    void generateAnnotationDocs_shouldCreateDocsCorrectly() throws Exception {
         Map<Integer, SolrInputDocument> pageDocs = new HashMap<>(2);
         {
             SolrInputDocument pageDoc = new SolrInputDocument();
@@ -420,7 +420,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add docs correctly
      */
     @Test
-    public void addGroupedMetadataDocs_shouldAddDocsCorrectly() throws Exception {
+    void addGroupedMetadataDocs_shouldAddDocsCorrectly() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(1);
@@ -442,7 +442,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies set PI_TOPSTRUCT to child docstruct metadata
      */
     @Test
-    public void addGroupedMetadataDocs_shouldSetPI_TOPSTRUCTToChildDocstructMetadata() throws Exception {
+    void addGroupedMetadataDocs_shouldSetPI_TOPSTRUCTToChildDocstructMetadata() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(1);
@@ -462,7 +462,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies set DOCSTRCT_TOP
      */
     @Test
-    public void addGroupedMetadataDocs_shouldSetDOCSTRCT_TOP() throws Exception {
+    void addGroupedMetadataDocs_shouldSetDOCSTRCT_TOP() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(1);
@@ -482,7 +482,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies skip fields correctly
      */
     @Test
-    public void addGroupedMetadataDocs_shouldSkipFieldsCorrectly() throws Exception {
+    void addGroupedMetadataDocs_shouldSkipFieldsCorrectly() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(1);
@@ -513,7 +513,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add authority metadata to group metadata docs correctly
      */
     @Test
-    public void addGroupedMetadataDocs_shouldAddAuthorityMetadataToGroupMetadataDocsCorrectly() throws Exception {
+    void addGroupedMetadataDocs_shouldAddAuthorityMetadataToGroupMetadataDocsCorrectly() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(1);
@@ -545,7 +545,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add authority metadata to docstruct doc correctly except coordinates
      */
     @Test
-    public void addGroupedMetadataDocs_shouldAddAuthorityMetadataToDocstructDocCorrectlyExceptCoordinates() throws Exception {
+    void addGroupedMetadataDocs_shouldAddAuthorityMetadataToDocstructDocCorrectlyExceptCoordinates() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(1);
@@ -591,7 +591,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add coordinates to docstruct doc correctly
      */
     @Test
-    public void addGroupedMetadataDocs_shouldAddCoordinatesToDocstructDocCorrectly() throws Exception {
+    void addGroupedMetadataDocs_shouldAddCoordinatesToDocstructDocCorrectly() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(1);
@@ -621,7 +621,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies recursively add child metadata
      */
     @Test
-    public void addGroupedMetadataDocs_shouldRecursivelyAddChildMetadata() throws Exception {
+    void addGroupedMetadataDocs_shouldRecursivelyAddChildMetadata() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(1);
@@ -672,7 +672,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return false if altodata null
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldReturnFalseIfAltodataNull() throws Exception {
+    void addIndexFieldsFromAltoData_shouldReturnFalseIfAltodataNull() throws Exception {
         Assertions.assertFalse(
                 new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), null, Collections.emptyMap(),
                         DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
@@ -683,7 +683,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if doc null
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDocNull() throws Exception {
+    void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDocNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(null, Collections.emptyMap(), Collections.emptyMap(),
                         DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
@@ -694,7 +694,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if dataFolders null
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
+    void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(), null,
                         DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
@@ -705,7 +705,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if pi null
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfPiNull() throws Exception {
+    void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfPiNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(),
                         Collections.emptyMap(),
@@ -717,7 +717,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if baseFileName null
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfBaseFileNameNull() throws Exception {
+    void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfBaseFileNameNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(),
                         Collections.emptyMap(),
@@ -729,7 +729,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add filename for native alto file
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldAddFilenameForNativeAltoFile() throws Exception {
+    void addIndexFieldsFromAltoData_shouldAddFilenameForNativeAltoFile() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
         Map<String, Path> dataFolders = new HashMap<>();
@@ -749,7 +749,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add filename for crowdsourcing alto file
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldAddFilenameForCrowdsourcingAltoFile() throws Exception {
+    void addIndexFieldsFromAltoData_shouldAddFilenameForCrowdsourcingAltoFile() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
         Map<String, Path> dataFolders = new HashMap<>();
@@ -769,7 +769,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add filename for converted alto file
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldAddFilenameForConvertedAltoFile() throws Exception {
+    void addIndexFieldsFromAltoData_shouldAddFilenameForConvertedAltoFile() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.setDataRepository(new DataRepository("build/viewer", true));
         Map<String, Path> dataFolders = new HashMap<>();
@@ -789,7 +789,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add fulltext
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldAddFulltext() throws Exception {
+    void addIndexFieldsFromAltoData_shouldAddFulltext() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
         Map<String, Path> dataFolders = new HashMap<>();
@@ -809,7 +809,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add width and height
      */
     @Test
-    public void addIndexFieldsFromAltoData_shouldAddWidthAndHeight() throws Exception {
+    void addIndexFieldsFromAltoData_shouldAddWidthAndHeight() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
         Map<String, Path> dataFolders = new HashMap<>();
@@ -830,7 +830,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add field
      */
     @Test
-    public void addNamedEntitiesFields_shouldAddField() throws Exception {
+    void addNamedEntitiesFields_shouldAddField() throws Exception {
         Map<String, Object> altoData = new HashMap<>(1);
         altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION_Göttingen"));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
@@ -844,7 +844,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add untokenized field
      */
     @Test
-    public void addNamedEntitiesFields_shouldAddUntokenizedField() throws Exception {
+    void addNamedEntitiesFields_shouldAddUntokenizedField() throws Exception {
         Map<String, Object> altoData = new HashMap<>(1);
         altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION_Göttingen"));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
@@ -858,7 +858,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return empty list if dataFolder null
      */
     @Test
-    public void generateUserGeneratedContentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+    void generateUserGeneratedContentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         List<SolrInputDocument> result =
                 indexer.generateUserGeneratedContentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1,
@@ -871,7 +871,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if eleContent null
      */
     @Test
-    public void generateUserGeneratedContentDocForPage_shouldThrowIllegalArgumentExceptionIfEleContentNull() throws Exception {
+    void generateUserGeneratedContentDocForPage_shouldThrowIllegalArgumentExceptionIfEleContentNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> new MetsIndexer(hotfolder).generateUserGeneratedContentDocForPage(null, null, "foo", null, Collections.emptyMap(), 1));
     }
@@ -881,7 +881,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return empty list if dataFolder null
      */
     @Test
-    public void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+    void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         List<SolrInputDocument> result =
                 indexer.generateUserCommentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1);
@@ -893,7 +893,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies construct doc correctly
      */
     @Test
-    public void generateUserCommentDocsForPage_shouldConstructDocCorrectly() throws Exception {
+    void generateUserCommentDocsForPage_shouldConstructDocCorrectly() throws Exception {
         Path dataFolder = Paths.get("src/test/resources/ugc");
         Assertions.assertTrue(Files.isDirectory(dataFolder));
 
@@ -926,7 +926,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies parse mime type from mp4 file correctly
      */
     @Test
-    public void parseMimeType_shouldParseMimeTypeFromMp4FileCorrectly() throws Exception {
+    void parseMimeType_shouldParseMimeTypeFromMp4FileCorrectly() throws Exception {
         SolrInputDocument doc = new SolrInputDocument();
         Indexer.parseMimeType(doc, "src/text/resouces/LIDO/1292624_media/Film77.mp4");
 
@@ -939,7 +939,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if gmd null
      */
     @Test
-    public void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfGmdNull() throws Exception {
+    void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfGmdNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(2L);
         ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
@@ -952,7 +952,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException indexObj null
      */
     @Test
-    public void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIndexObjNull() throws Exception {
+    void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIndexObjNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         GroupedMetadata gmd = new GroupedMetadata();
         ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
@@ -965,7 +965,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if writeStrategy null
      */
     @Test
-    public void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfWriteStrategyNull() throws Exception {
+    void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfWriteStrategyNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(2L);
         GroupedMetadata gmd = new GroupedMetadata();
@@ -979,7 +979,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add BOOL_WKT_COORDINATES true to docstruct if WKT_COORDS found
      */
     @Test
-    public void addGroupedMetadataDocs_shouldAddBOOL_WKT_COORDINATESTrueToDocstructIfWKT_COORDSFound() throws Exception {
+    void addGroupedMetadataDocs_shouldAddBOOL_WKT_COORDINATESTrueToDocstructIfWKT_COORDSFound() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
 
@@ -1001,7 +1001,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if dataFolders null
      */
     @Test
-    public void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
+    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(null, DataRepository.PARAM_ALTO, "foo"));
     }
@@ -1011,7 +1011,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if paramName null
      */
     @Test
-    public void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfParamNameNull() throws Exception {
+    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfParamNameNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(Collections.emptyMap(), null, "foo"));
     }
@@ -1021,7 +1021,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if pi null
      */
     @Test
-    public void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfPiNull() throws Exception {
+    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfPiNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> indexer.checkOldDataFolder(Collections.emptyMap(), DataRepository.PARAM_ALTO, null));
@@ -1032,7 +1032,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add data folder paths correctly
      */
     @Test
-    public void checkDataFolders_shouldAddDataFolderPathsCorrectly() throws Exception {
+    void checkDataFolders_shouldAddDataFolderPathsCorrectly() throws Exception {
         String fileNameRoot = "foo";
         Assertions.assertTrue(Files
                 .isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_MEDIA))));
@@ -1082,7 +1082,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if dataFolders null
      */
     @Test
-    public void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
+    void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(null, Collections.emptyMap()));
     }
 
@@ -1091,7 +1091,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if reindexSettings null
      */
     @Test
-    public void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() throws Exception {
+    void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(Collections.emptyMap(), null));
     }
 
@@ -1100,7 +1100,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add reindex flags correctly if data folders missing
      */
     @Test
-    public void checkReindexSettings_shouldAddReindexFlagsCorrectlyIfDataFoldersMissing() throws Exception {
+    void checkReindexSettings_shouldAddReindexFlagsCorrectlyIfDataFoldersMissing() throws Exception {
         Map<String, Boolean> reindexSettings = new HashMap<>();
 
         Indexer.checkReindexSettings(Collections.emptyMap(), reindexSettings);
@@ -1123,7 +1123,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies not add reindex flags if data folders present
      */
     @Test
-    public void checkReindexSettings_shouldNotAddReindexFlagsIfDataFoldersPresent() throws Exception {
+    void checkReindexSettings_shouldNotAddReindexFlagsIfDataFoldersPresent() throws Exception {
         Map<String, Boolean> reindexSettings = new HashMap<>();
 
         Map<String, Path> dataFolders = new HashMap<>();
@@ -1161,7 +1161,7 @@ public class IndexerTest extends AbstractSolrEnabledTest {
     //     * @verifies fetch dimensions correctly
     //     */
     //    @Test
-    //    public void getImageDimensionsFromIIIF_shouldFetchDimensionsCorrectly() throws Exception {
+    //    void getImageDimensionsFromIIIF_shouldFetchDimensionsCorrectly() throws Exception {
     //        int[] dim = Indexer.getImageDimensionsFromIIIF("https://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn894068725%252Fphys_0001/info.json");
     //        Assertions.assertEquals(2, dim.length);
     //        Assertions.assertEquals(1427, dim[0]);

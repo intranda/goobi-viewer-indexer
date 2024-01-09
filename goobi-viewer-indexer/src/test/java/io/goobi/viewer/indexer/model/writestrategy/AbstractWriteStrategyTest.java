@@ -21,14 +21,14 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.model.SolrConstants;
 
-public class AbstractWriteStrategyTest {
+class AbstractWriteStrategyTest {
     
     /**
      * @see AbstractWriteStrategy#sanitizeDoc(SolrInputDocument)
      * @verifies trim to single value correctly
      */
     @Test
-    public void sanitizeDoc_shouldTrimToSingleValueCorrectly() throws Exception {
+    void sanitizeDoc_shouldTrimToSingleValueCorrectly() throws Exception {
         SolrInputDocument doc = new SolrInputDocument();
         doc.addField("BOOL_FOO", false);
         doc.addField("BOOL_FOO", true);

@@ -109,7 +109,7 @@ class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void generatePageDocuments_shouldGeneratePagesCorrectly() throws Exception {
+    void generatePageDocuments_shouldGeneratePagesCorrectly() throws Exception {
         File denkxwebFile = new File("src/test/resources/DenkXweb/" + PI2 + ".xml");
         Assertions.assertTrue(denkxwebFile.isFile());
         List<Document> recordDocs = JDomXP.splitDenkXwebFile(denkxwebFile);

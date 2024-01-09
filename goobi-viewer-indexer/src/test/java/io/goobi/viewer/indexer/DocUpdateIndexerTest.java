@@ -35,7 +35,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
 
-public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
+class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
     private static final String PI = "PPN517154005";
 
@@ -57,7 +57,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    public void DocUpdateIndexer_shouldSetAttributesCorrectly() throws Exception {
+    void DocUpdateIndexer_shouldSetAttributesCorrectly() throws Exception {
         DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
         Assertions.assertEquals(hotfolder, indexer.hotfolder);
     }
@@ -67,7 +67,7 @@ public class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
      * @verifies update document correctly
      */
     @Test
-    public void index_shouldUpdateDocumentCorrectly() throws Exception {
+    void index_shouldUpdateDocumentCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
         DataRepository dataRepository =

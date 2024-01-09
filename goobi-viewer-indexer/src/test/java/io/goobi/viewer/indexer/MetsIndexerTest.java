@@ -53,7 +53,7 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStra
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
-public class MetsIndexerTest extends AbstractSolrEnabledTest {
+class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
     //    private static final Logger logger = LogManager.getLogger(MetsIndexerTest.class);
@@ -97,7 +97,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    public void MetsIndexer_shouldSetAttributesCorrectly() throws Exception {
+    void MetsIndexer_shouldSetAttributesCorrectly() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         assertEquals(hotfolder, indexer.hotfolder);
     }
@@ -108,7 +108,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void index_shouldIndexRecordCorrectly() throws Exception {
+    void index_shouldIndexRecordCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
@@ -335,7 +335,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void index_shouldIndexMetadataGroupsCorrectly() throws Exception {
+    void index_shouldIndexMetadataGroupsCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         String[] ret = new MetsIndexer(hotfolder).index(metsFile2, false, dataFolders, null, 1, false);
         assertEquals(PI2 + ".xml", ret[0]);
@@ -425,7 +425,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies index multi volume records correctly
      */
     @Test
-    public void index_shouldIndexMultiVolumeRecordsCorrectly() throws Exception {
+    void index_shouldIndexMultiVolumeRecordsCorrectly() throws Exception {
         String piVol1 = "PPN612054551";
         String piVol2 = "PPN612060039";
         String piAnchor = "PPN559838239";
@@ -525,7 +525,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies update record correctly
      */
     @Test
-    public void index_shouldUpdateRecordCorrectly() throws Exception {
+    void index_shouldUpdateRecordCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
@@ -650,7 +650,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set access conditions correctly
      */
     @Test
-    public void index_shouldSetAccessConditionsCorrectly() throws Exception {
+    void index_shouldSetAccessConditionsCorrectly() throws Exception {
         String pi = "AC06736966";
         Map<String, Path> dataFolders = new HashMap<>();
         String[] ret = new MetsIndexer(hotfolder).index(metsFile3, false, dataFolders, null, 1, false);
@@ -712,7 +712,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies write cms page texts into index
      */
     @Test
-    public void index_shouldWriteCmsPageTextsIntoIndex() throws Exception {
+    void index_shouldWriteCmsPageTextsIntoIndex() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
         new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
@@ -748,7 +748,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies write shape metadata correctly
      */
     @Test
-    public void index_shouldWriteShapeMetadataCorrectly() throws Exception {
+    void index_shouldWriteShapeMetadataCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
         new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
@@ -795,7 +795,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     @Test
-    public void index_shouldWriteThumbnailCorrectly() throws Exception {
+    void index_shouldWriteThumbnailCorrectly() throws Exception {
         // WRITE THUMBNAIL FROM use="banner"
         {
             Map<String, Path> dataFolders = new HashMap<>();
@@ -832,7 +832,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies read datecreated from mets with correct time zone
      */
     @Test
-    public void index_shouldReadDatecreatedFromMetsWithCorrectTimeZone() throws Exception {
+    void index_shouldReadDatecreatedFromMetsWithCorrectTimeZone() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         String[] ret = new MetsIndexer(hotfolder).index(metsFile2, false, dataFolders, null, 1, false);
         assertEquals(PI2 + ".xml", ret[0]);
@@ -855,7 +855,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies not add dateupdated if value already exists
      */
     @Test
-    public void index_shouldNotAddDateupdatedIfValueAlreadyExists() throws Exception {
+    void index_shouldNotAddDateupdatedIfValueAlreadyExists() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         String[] ret = new MetsIndexer(hotfolder).index(metsFile2, false, dataFolders, null, 1, false);
         assertEquals(PI2 + ".xml", ret[0]);
@@ -892,7 +892,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies create documents for all mapped pages
      */
     @Test
-    public void generatePageDocuments_shouldCreateDocumentsForAllMappedPages() throws Exception {
+    void generatePageDocuments_shouldCreateDocumentsForAllMappedPages() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
         ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
@@ -908,7 +908,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set correct ORDER values
      */
     @Test
-    public void generatePageDocuments_shouldSetCorrectORDERValues() throws Exception {
+    void generatePageDocuments_shouldSetCorrectORDERValues() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
         ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
@@ -927,7 +927,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies return CREATEDATE value
      */
     @Test
-    public void getMetsCreateDate_shouldReturnCREATEDATEValue() throws Exception {
+    void getMetsCreateDate_shouldReturnCREATEDATEValue() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile2);
         ZonedDateTime dateCreated = indexer.getMetsCreateDate();
@@ -941,7 +941,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies return null if date does not exist in METS
      */
     @Test
-    public void getMetsCreateDate_shouldReturnNullIfDateDoesNotExistInMETS() throws Exception {
+    void getMetsCreateDate_shouldReturnNullIfDateDoesNotExistInMETS() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
         ZonedDateTime dateCreated = indexer.getMetsCreateDate();
@@ -953,7 +953,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies add FILENAME_HTML-SANDBOXED field for url paths
      */
     @Test
-    public void generatePageDocument_shouldAddFILENAME_HTMLSANDBOXEDFieldForUrlPaths() throws Exception {
+    void generatePageDocument_shouldAddFILENAME_HTMLSANDBOXEDFieldForUrlPaths() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(Paths.get("src/test/resources/METS/ppn750544996.dv.mets.xml"));
         ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
@@ -983,7 +983,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
     //     * @verifies create ALTO file from fileId if none provided in data folders
     //     */
     //    @Test
-    //    public void generatePageDocument_shouldCreateALTOFileFromFileIdIfNoneProvidedInDataFolders() throws Exception {
+    //    void generatePageDocument_shouldCreateALTOFileFromFileIdIfNoneProvidedInDataFolders() throws Exception {
     //        MetsIndexer indexer = new MetsIndexer(hotfolder);
     //        indexer.initJDomXP(Paths.get("src/test/resources/METS/ppn750542047_intrandatest.dv.mets.xml"));
     //        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
@@ -1013,7 +1013,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies create ALTO file from TEI correctly
      */
     @Test
-    public void generatePageDocument_shouldCreateALTOFileFromTEICorrectly() throws Exception {
+    void generatePageDocument_shouldCreateALTOFileFromTEICorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         Path altoPath = Paths.get("target/viewer/alto/PPN517154005");
         Utils.checkAndCreateDirectory(altoPath);
@@ -1046,7 +1046,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies add fulltext field correctly
      */
     @Test
-    public void generatePageDocument_shouldAddFulltextFieldCorrectly() throws Exception {
+    void generatePageDocument_shouldAddFulltextFieldCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
 
@@ -1074,7 +1074,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies add all basic fields
      */
     @Test
-    public void generatePageDocument_shouldAddAllBasicFields() throws Exception {
+    void generatePageDocument_shouldAddAllBasicFields() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
@@ -1105,7 +1105,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies copy new METS file correctly
      */
     @Test
-    public void anchorSuperupdate_shouldCopyNewMETSFileCorrectly() throws Exception {
+    void anchorSuperupdate_shouldCopyNewMETSFileCorrectly() throws Exception {
         Path viewerRootFolder = Paths.get("target/viewer");
         assertTrue(Files.isDirectory(viewerRootFolder));
         Path updatedMetsFolder = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "updated_mets");
@@ -1127,7 +1127,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies copy old METS file to updated mets folder if file already exists
      */
     @Test
-    public void anchorSuperupdate_shouldCopyOldMETSFileToUpdatedMetsFolderIfFileAlreadyExists() throws Exception {
+    void anchorSuperupdate_shouldCopyOldMETSFileToUpdatedMetsFolderIfFileAlreadyExists() throws Exception {
         Path viewerRootFolder = Paths.get("target/viewer");
         assertTrue(Files.isDirectory(viewerRootFolder));
         Path updatedMetsFolder = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "updated_mets");
@@ -1159,7 +1159,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies remove anti-collision name parts
      */
     @Test
-    public void anchorSuperupdate_shouldRemoveAnticollisionNameParts() throws Exception {
+    void anchorSuperupdate_shouldRemoveAnticollisionNameParts() throws Exception {
         Path viewerRootFolder = Paths.get("target/viewer");
         assertTrue(Files.isDirectory(viewerRootFolder));
         Path updatedMetsFolder = Paths.get(viewerRootFolder.toAbsolutePath().toString(), "updated_mets");
@@ -1183,7 +1183,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies parse iso instant correctly
      */
     @Test
-    public void parseCreateDate_shouldParseIsoInstantCorrectly() throws Exception {
+    void parseCreateDate_shouldParseIsoInstantCorrectly() throws Exception {
         ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00Z");
         Assertions.assertNotNull(date);
     }
@@ -1193,7 +1193,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies parse iso local dateTime correctly
      */
     @Test
-    public void parseCreateDate_shouldParseIsoLocalDateTimeCorrectly() throws Exception {
+    void parseCreateDate_shouldParseIsoLocalDateTimeCorrectly() throws Exception {
         ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00");
         Assertions.assertNotNull(date);
     }
@@ -1203,7 +1203,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies parse iso offset dateTime correctly
      */
     @Test
-    public void parseCreateDate_shouldParseIsoOffsetDateTimeCorrectly() throws Exception {
+    void parseCreateDate_shouldParseIsoOffsetDateTimeCorrectly() throws Exception {
         ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00+01:00");
         Assertions.assertNotNull(date);
     }
@@ -1213,7 +1213,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies return true if record is volume
      */
     @Test
-    public void isVolume_shouldReturnTrueIfRecordIsVolume() throws Exception {
+    void isVolume_shouldReturnTrueIfRecordIsVolume() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFileVol1);
         assertTrue(indexer.isVolume());
@@ -1224,7 +1224,7 @@ public class MetsIndexerTest extends AbstractSolrEnabledTest {
      * @verifies return false if relatedItem not anchor
      */
     @Test
-    public void isVolume_shouldReturnFalseIfRelatedItemNotAnchor() throws Exception {
+    void isVolume_shouldReturnFalseIfRelatedItemNotAnchor() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(Paths.get("src/test/resources/METS/oai5164685802946115306.xml"));
         Assertions.assertFalse(indexer.isVolume());

@@ -39,7 +39,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
-public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
+class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
 
     @Override
     @BeforeEach
@@ -55,7 +55,7 @@ public class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void index_shouldIndexRecordCorrectly() throws Exception {
+    void index_shouldIndexRecordCorrectly() throws Exception {
         Path metsFile = Paths.get("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
         assertTrue(Files.isRegularFile(metsFile));
 

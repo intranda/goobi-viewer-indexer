@@ -37,7 +37,7 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 /**
  * TODO "Connection pool closed" error if more than one test (Jenkins only)
  */
-public class HotfolderTest extends AbstractSolrEnabledTest {
+class HotfolderTest extends AbstractSolrEnabledTest {
 
     @Override
     @BeforeEach
@@ -65,7 +65,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies throw FatalIndexerException if hotfolderPathString null
      */
     @Test
-    public void initFolders_shouldThrowFatalIndexerExceptionIfHotfolderPathStringNull() throws Exception {
+    void initFolders_shouldThrowFatalIndexerExceptionIfHotfolderPathStringNull() throws Exception {
         // Create local hotfolder the default one has already been initialized
         hotfolder = new Hotfolder();
         Assertions.assertThrows(FatalIndexerException.class, () -> hotfolder.initFolders(null, SolrIndexerDaemon.getInstance().getConfiguration()));
@@ -76,7 +76,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies throw FatalIndexerException if viewerHome not defined
      */
     @Test
-    public void initFolders_shouldThrowFatalIndexerExceptionIfViewerHomeNotDefined() throws Exception {
+    void initFolders_shouldThrowFatalIndexerExceptionIfViewerHomeNotDefined() throws Exception {
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
         config.overrideValue("init.viewerHome", "");
 
@@ -90,7 +90,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies throw FatalIndexerException if tempFolder not defined
      */
     @Test
-    public void initFolders_shouldThrowFatalIndexerExceptionIfTempFolderNotDefined() throws Exception {
+    void initFolders_shouldThrowFatalIndexerExceptionIfTempFolderNotDefined() throws Exception {
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
         config.overrideValue("init.tempFolder", "");
 
@@ -104,7 +104,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies throw FatalIndexerException if successFolder not defined
      */
     @Test
-    public void initFolders_shouldThrowFatalIndexerExceptionIfSuccessFolderNotDefined() throws Exception {
+    void initFolders_shouldThrowFatalIndexerExceptionIfSuccessFolderNotDefined() throws Exception {
         // Disable indexed record file configurations for test coverage
         Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
         config.overrideValue("init." + DataRepository.PARAM_INDEXED_METS, "");
@@ -125,7 +125,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies count files correctly
      */
     @Test
-    public void countRecordFiles_shouldCountFilesCorrectly() throws Exception {
+    void countRecordFiles_shouldCountFilesCorrectly() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("performance.countHotfolderFiles", true);
         Assertions.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles());
@@ -182,7 +182,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if body contains no error
      */
     @Test
-    public void checkAndSendErrorReport_shouldReturnFalseIfBodyContainsNoError() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfBodyContainsNoError() throws Exception {
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "bar"));
     }
 
@@ -191,7 +191,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if recipients not configured
      */
     @Test
-    public void checkAndSendErrorReport_shouldReturnFalseIfRecipientsNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfRecipientsNotConfigured() throws Exception {
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
 
@@ -200,7 +200,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if smtpServer not configured
      */
     @Test
-    public void checkAndSendErrorReport_shouldReturnFalseIfSmtpServerNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSmtpServerNotConfigured() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "foo@bar.com");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
@@ -210,7 +210,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if smtpSenderAddress not configured
      */
     @Test
-    public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderAddressNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderAddressNotConfigured() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "foo@bar.com");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "bar.com");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
@@ -221,7 +221,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if smtpSenderName not configured
      */
     @Test
-    public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderNameNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderNameNotConfigured() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
@@ -233,7 +233,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if smtpSecurity not configured
      */
     @Test
-    public void checkAndSendErrorReport_shouldReturnFalseIfSmtpSecurityNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSecurityNotConfigured() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
@@ -246,7 +246,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if sending mail fails
      */
     @Test
-    public void checkAndSendErrorReport_shouldReturnFalseIfSendingMailFails() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSendingMailFails() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
@@ -260,7 +260,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if recordFile null
      */
     @Test
-    public void doIndex_shouldReturnFalseIfRecordFileNull() throws Exception {
+    void doIndex_shouldReturnFalseIfRecordFileNull() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
         assertFalse(hotfolder.doIndex(null));
     }
@@ -270,7 +270,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return true if successful
      */
     @Test
-    public void doIndex_shouldReturnTrueIfSuccessful() throws Exception {
+    void doIndex_shouldReturnTrueIfSuccessful() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
         Path srcPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
         Path destPath = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), "kleiuniv_PPN517154005.xml");
@@ -284,7 +284,7 @@ public class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return true if hotfolder content not changing
      */
     @Test
-    public void isDataFolderExportDone_shouldReturnTrueIfHotfolderContentNotChanging() throws Exception {
+    void isDataFolderExportDone_shouldReturnTrueIfHotfolderContentNotChanging() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
         assertTrue(Files.isDirectory(Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath())));
         Path recordFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");

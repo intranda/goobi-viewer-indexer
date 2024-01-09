@@ -22,14 +22,14 @@ import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Configuration;
 
-public class AbstractDataRepositoryStrategyTest extends AbstractTest {
+class AbstractDataRepositoryStrategyTest extends AbstractTest {
 
     /**
      * @see AbstractDataRepositoryStrategy#create(Configuration)
      * @verifies return correct type
      */
     @Test
-    public void create_shouldReturnCorrectType() throws Exception {
+    void create_shouldReturnCorrectType() throws Exception {
         String strategyName = SolrIndexerDaemon.getInstance().getConfiguration().getDataRepositoryStrategy();
         IDataRepositoryStrategy strategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
         Assertions.assertNotNull(strategy);

@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
-public class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
+class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
 
     @Override
     @BeforeEach
@@ -44,7 +44,7 @@ public class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    public void DublinCoreIndexer_shouldSetAttributesCorrectly() throws Exception {
+    void DublinCoreIndexer_shouldSetAttributesCorrectly() throws Exception {
         Assertions.assertNotNull(hotfolder);
         Indexer indexer = new DublinCoreIndexer(hotfolder);
         Assertions.assertEquals(hotfolder, indexer.hotfolder);
@@ -55,7 +55,7 @@ public class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
      * @verifies add record to index correctly
      */
     @Test
-    public void addToIndex_shouldAddRecordToIndexCorrectly() throws Exception {
+    void addToIndex_shouldAddRecordToIndexCorrectly() throws Exception {
         Path dcFile = Paths.get("src/test/resources/DC/record.xml");
         Assertions.assertTrue(Files.isRegularFile(dcFile));
 
