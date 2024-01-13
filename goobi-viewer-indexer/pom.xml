@@ -58,7 +58,7 @@
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.17.2</jsoup.version>
 		<json.version>20231013</json.version>
-		<junit.version>5.9.1</junit.version>
+		<junit.version>5.10.1</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
 		<solr.version>8.11.2</solr.version>
 		<sf-geojson.version>3.3.2</sf-geojson.version>
@@ -186,6 +186,12 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
         </dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -321,6 +327,9 @@
 
                                 <!-- angus-mail is the implementation of the jakarta.mail specification and used for sending emails -->
                                 <ignoredUnusedDeclaredDependency>org.eclipse.angus:jakarta.mail</ignoredUnusedDeclaredDependency>
+
+                                <!-- junit-jupiter is used to run the tests, otherwise it will fail in maven -->
+                                <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
