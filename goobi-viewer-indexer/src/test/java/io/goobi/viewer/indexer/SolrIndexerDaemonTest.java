@@ -15,21 +15,50 @@
  */
 package io.goobi.viewer.indexer;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.jdom2.Document;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-public class SolrIndexerDaemonTest {
+import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+
+class SolrIndexerDaemonTest extends AbstractTest {
+
+    @BeforeAll
+    public static void setUpClass() throws Exception {
+        AbstractTest.setUpClass();
+    }
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        // Reset config before every test
+        SolrIndexerDaemon.getInstance().injectConfiguration(new Configuration(TEST_CONFIG_PATH));
+    }
+
+    /**
+     * @see SolrIndexerDaemon#init()
+     * @verifies throw FatalIndexerException if solr schema name could not be checked
+     */
+    @Test
+    void init_shouldThrowFatalIndexerExceptionIfSolrSchemaNameCouldNotBeChecked() throws Exception {
+        SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
+        instance.getConfiguration().overrideValue("init.solrUrl", "https://foo.bar/schema.xml");
+        Assertions.assertThrows(FatalIndexerException.class, () -> instance.init());
+    }
 
     /**
      * @see SolrIndexerDaemon#stop()
      * @verifies set running to false
      */
     @Test
-    public void stop_shouldSetRunningToFalse() throws Exception {
+    void stop_shouldSetRunningToFalse() throws Exception {
         SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
         instance.running = true;
         instance.stop();
-        Assert.assertFalse(instance.running);
+        Assertions.assertFalse(instance.running);
     }
 
     /**
@@ -37,8 +66,19 @@ public class SolrIndexerDaemonTest {
      * @verifies return false if doc null
      */
     @Test
-    public void checkSolrSchemaName_shouldReturnFalseIfDocNull() throws Exception {
-        Assert.assertFalse(SolrIndexerDaemon.checkSolrSchemaName(null));
+    void checkSolrSchemaName_shouldReturnFalseIfDocNull() throws Exception {
+        Assertions.assertFalse(SolrIndexerDaemon.checkSolrSchemaName(null));
+    }
+
+    /**
+     * @see SolrIndexerDaemon#checkSolrSchemaName(Document)
+     * @verifies return true if schema compatible
+     */
+    @Test
+    void checkSolrSchemaName_shouldReturnTrueIfSchemaCompatible() throws Exception {
+        org.jdom2.Document doc = SolrSearchIndex.getSolrSchemaDocument(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
+        Assertions.assertNotNull(doc);
+        Assertions.assertTrue(SolrIndexerDaemon.checkSolrSchemaName(doc));
     }
 
     /**
@@ -46,17 +86,19 @@ public class SolrIndexerDaemonTest {
      * @verifies set confFileName correctly
      */
     @Test
-    public void setConfFileName_shouldSetConfFileNameCorrectly() throws Exception {
+    void setConfFileName_shouldSetConfFileNameCorrectly() throws Exception {
         SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance().setConfFileName("config_new.xml");
-        Assert.assertEquals("config_new.xml", instance.confFileName);
+        Assertions.assertEquals("config_new.xml", instance.confFileName);
     }
 
     /**
      * @see SolrIndexerDaemon#getSearchIndex()
-     * @verifies created new instance if none exists
+     * @verifies create new instance if none exists
      */
     @Test
-    public void getSearchIndex_shouldCreatedNewInstanceIfNoneExists() throws Exception {
-        Assert.assertNotNull(SolrIndexerDaemon.getInstance().getSearchIndex());
+    void getSearchIndex_shouldCreateNewInstanceIfNoneExists() throws Exception {
+        SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
+        instance.injectSearchIndex(null);
+        Assertions.assertNotNull(instance.getSearchIndex());
     }
 }

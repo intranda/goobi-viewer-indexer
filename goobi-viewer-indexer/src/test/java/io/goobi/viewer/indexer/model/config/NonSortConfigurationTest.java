@@ -15,22 +15,22 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 
-public class NonSortConfigurationTest extends AbstractTest {
+class NonSortConfigurationTest extends AbstractTest {
 
     /**
      * @see NonSortConfiguration#NonSortConfiguration(String,String)
      * @verifies set attributes correctly
      */
     @Test
-    public void NonSortConfiguration_shouldSetAttributesCorrectly() throws Exception {
+    void NonSortConfiguration_shouldSetAttributesCorrectly() throws Exception {
         NonSortConfiguration nsc = new NonSortConfiguration("prefix_value", "suffix_value");
-        Assert.assertEquals("prefix_value", nsc.getPrefix());
-        Assert.assertEquals("suffix_value", nsc.getSuffix());
+        Assertions.assertEquals("prefix_value", nsc.getPrefix());
+        Assertions.assertEquals("suffix_value", nsc.getSuffix());
     }
 }

@@ -18,23 +18,23 @@ package io.goobi.viewer.indexer.model;
 import java.sql.Date;
 import java.time.LocalDate;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.DateTools;
 
-public class PrimitiveDateTest {
+class PrimitiveDateTest {
 
     /**
      * @see PrimitiveDate#PrimitiveDate(Date)
      * @verifies set date correctly
      */
     @Test
-    public void PrimitiveDate_shouldSetDateCorrectly() throws Exception {
+    void PrimitiveDate_shouldSetDateCorrectly() throws Exception {
         LocalDate date = LocalDate.parse("2020-05-29", DateTools.formatterISO8601Date);
         PrimitiveDate pd = new PrimitiveDate(date);
-        Assert.assertEquals(Integer.valueOf(2020), pd.getYear());
-        Assert.assertEquals(Integer.valueOf(5), pd.getMonth());
-        Assert.assertEquals(Integer.valueOf(29), pd.getDay());
+        Assertions.assertEquals(Integer.valueOf(2020), pd.getYear());
+        Assertions.assertEquals(Integer.valueOf(5), pd.getMonth());
+        Assertions.assertEquals(Integer.valueOf(29), pd.getDay());
     }
 }

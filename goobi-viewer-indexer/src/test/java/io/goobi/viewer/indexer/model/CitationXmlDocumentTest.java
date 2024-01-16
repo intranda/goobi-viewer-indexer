@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.FileTools;
 
@@ -36,11 +36,11 @@ public class CitationXmlDocumentTest {
     @Test
     public void build_shouldBuildDocumentCorrectly() throws Exception {
         File file = new File("src/test/resources/Primo/000110550.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         String xml = FileTools.readFileToString(file, null);
-        Assert.assertTrue(StringUtils.isNotEmpty(xml));
+        Assertions.assertTrue(StringUtils.isNotEmpty(xml));
         CitationXmlDocument pd = new CitationXmlDocument().setXml(xml).build();
-        Assert.assertNotNull(pd.getXp());
+        Assertions.assertNotNull(pd.getXp());
     }
 
     /**
@@ -53,6 +53,6 @@ public class CitationXmlDocumentTest {
         values.put("MD_FOO", Collections.singletonList("123"));
         CitationXmlDocument pd = new CitationXmlDocument("https://example.com?id=${MD_FOO}&format=xml");
         pd.prepareURL(values);
-        Assert.assertEquals("https://example.com?id=123&format=xml", pd.getUrl());
+        Assertions.assertEquals("https://example.com?id=123&format=xml", pd.getUrl());
     }
 }

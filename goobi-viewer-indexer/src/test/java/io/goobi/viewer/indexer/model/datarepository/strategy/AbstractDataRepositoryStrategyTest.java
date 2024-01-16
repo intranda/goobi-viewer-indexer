@@ -15,24 +15,24 @@
  */
 package io.goobi.viewer.indexer.model.datarepository.strategy;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Configuration;
 
-public class AbstractDataRepositoryStrategyTest extends AbstractTest {
+class AbstractDataRepositoryStrategyTest extends AbstractTest {
 
     /**
      * @see AbstractDataRepositoryStrategy#create(Configuration)
      * @verifies return correct type
      */
     @Test
-    public void create_shouldReturnCorrectType() throws Exception {
+    void create_shouldReturnCorrectType() throws Exception {
         String strategyName = SolrIndexerDaemon.getInstance().getConfiguration().getDataRepositoryStrategy();
         IDataRepositoryStrategy strategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
-        Assert.assertNotNull(strategy);
-        Assert.assertEquals(strategyName, strategy.getClass().getSimpleName());
+        Assertions.assertNotNull(strategy);
+        Assertions.assertEquals(strategyName, strategy.getClass().getSimpleName());
     }
 }

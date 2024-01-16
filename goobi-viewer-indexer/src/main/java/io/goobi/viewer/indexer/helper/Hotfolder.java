@@ -33,7 +33,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -543,7 +543,7 @@ public class Hotfolder {
     private void checkFreeSpace() throws FatalIndexerException {
         // TODO alternate check if RemainingSpaceStrategy is selected
         int freeSpace = (int) (hotfolderPath.toFile().getFreeSpace() / 1048576);
-        logger.debug("Available storage space: {}M", freeSpace);
+        logger.debug("Available storage space in hotfolder: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
             if (secondaryAppender != null && emailConfigurationComplete) {
@@ -925,14 +925,14 @@ public class Hotfolder {
      *
      * @param recordFile a {@link java.nio.file.Path} object.
      * @return a boolean.
+     * @should return true if hotfolder content not changing
      */
-    protected boolean isDataFolderExportDone(Path recordFile) {
+    boolean isDataFolderExportDone(Path recordFile) {
         logger.debug("isDataFolderExportDone: {}", recordFile.getFileName());
         DataFolderSizeCounter counter = new DataFolderSizeCounter(recordFile.getFileName().toString());
 
         long total1 = 0;
-        try {
-            Files.newDirectoryStream(getHotfolderPath(), counter);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getHotfolderPath(), counter)) {
             total1 = counter.getTotal();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -948,8 +948,7 @@ public class Hotfolder {
 
         counter.resetTotal();
         long total2 = 0;
-        try {
-            Files.newDirectoryStream(getHotfolderPath(), counter);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(getHotfolderPath(), counter)) {
             total2 = counter.getTotal();
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

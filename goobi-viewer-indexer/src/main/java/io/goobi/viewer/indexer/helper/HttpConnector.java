@@ -65,10 +65,9 @@ public class HttpConnector {
         try (CloseableHttpResponse response = client.execute(request)) {
             if (response.getStatusLine().getStatusCode() >= 400) {
                 throw new IOException("Cannot resolve url '" + url + "' successfully. Status code = " + response.getStatusLine().getStatusCode());
-            } else {
-                try (InputStream inStream = response.getEntity().getContent()) {
-                    Files.copy(inStream, file, StandardCopyOption.REPLACE_EXISTING);
-                }
+            }
+            try (InputStream inStream = response.getEntity().getContent()) {
+                Files.copy(inStream, file, StandardCopyOption.REPLACE_EXISTING);
             }
         }
     }

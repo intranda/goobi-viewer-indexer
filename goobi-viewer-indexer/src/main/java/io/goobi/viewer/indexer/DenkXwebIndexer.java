@@ -169,7 +169,7 @@ public class DenkXwebIndexer extends Indexer {
                 }
                 prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
                 logger.info("Successfully finished indexing '{}'.", identifier);
-                
+
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
             } else {
@@ -223,11 +223,14 @@ public class DenkXwebIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI
-            pi = MetadataHelper.getPIFromXML("", xp);
-            if (StringUtils.isBlank(pi)) {
+            String[] foundPi = MetadataHelper.getPIFromXML("", xp);
+            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
                 ret[1] = "PI not found.";
                 throw new IndexerException(ret[1]);
             }
+
+            pi = foundPi[0];
+            logger.info("Record PI: {}", pi);
 
             // Remove prefix
             if (pi.contains(":")) {
@@ -246,7 +249,11 @@ public class DenkXwebIndexer extends Indexer {
             }
             indexObj.setPi(pi);
             indexObj.setTopstructPI(pi);
-            logger.debug("PI: {}", indexObj.getPi());
+
+            // Add PI to default
+            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
+                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
+            }
 
             // Determine the data repository to use
             DataRepository[] repositories =

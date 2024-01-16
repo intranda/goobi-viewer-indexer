@@ -15,9 +15,9 @@
  */
 package io.goobi.viewer.indexer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,9 +29,9 @@ import java.time.Month;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -41,7 +41,7 @@ import io.goobi.viewer.indexer.model.statistics.usage.StatisticsLuceneFields;
  * @author florian
  *
  */
-public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
+class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
 
     private Path statisticsFile1;
     private Path statisticsFile2;
@@ -49,22 +49,22 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
 
     
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         statisticsFile1 = Paths.get("src/test/resources/usage-statistics/statistics-usage-2022-07-04.json");
-        Assert.assertTrue(Files.isRegularFile(statisticsFile1));
+        Assertions.assertTrue(Files.isRegularFile(statisticsFile1));
         statisticsFile2 = Paths.get("src/test/resources/usage-statistics/statistics-usage-2022-07-05.json");
-        Assert.assertTrue(Files.isRegularFile(statisticsFile2));
+        Assertions.assertTrue(Files.isRegularFile(statisticsFile2));
         deleteFile1 = Paths.get("src/test/resources/usage-statistics/statistics-usage-2022-07-04.purge");
-        Assert.assertTrue(Files.isRegularFile(deleteFile1));
+        Assertions.assertTrue(Files.isRegularFile(deleteFile1));
     }
     
     @Test
-    public void test_index() throws IOException, FatalIndexerException, SolrServerException {
+    void test_index() throws IOException, FatalIndexerException, SolrServerException {
         SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile1);
         assertNotNull(doc);
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search("DOCTYPE:" + StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE, null);
@@ -72,7 +72,7 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
     }
     
     @Test
-    public void test_delete() throws IOException, FatalIndexerException, SolrServerException {
+    void test_delete() throws IOException, FatalIndexerException, SolrServerException {
         {
             SolrInputDocument doc = new UsageStatisticsIndexer(hotfolder).index(statisticsFile1);
             assertNotNull(doc);
@@ -94,7 +94,7 @@ public class UsageStatisticsIndexerTest extends  AbstractSolrEnabledTest {
     }
     
     @Test
-    public void test_date() {
+    void test_date() {
         LocalDate date = LocalDate.of(2022, Month.JULY, 19);
         String dateString = StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
         assertEquals("2022-07-19T00:00:00Z", dateString);

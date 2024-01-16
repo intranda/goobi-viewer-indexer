@@ -420,10 +420,9 @@ public class MetadataHelper {
      * @param replaceRules Optional metadata value replace rules
      * @param labelField Field name of the metadata group to which this authority data belongs
      * @return
-     * @throws FatalIndexerException
      */
     private static List<LuceneField> retrieveAuthorityData(String url, StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms,
-            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) throws FatalIndexerException {
+            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
         logger.info("retrieveAuthorityData: {}", url);
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
@@ -883,7 +882,7 @@ public class MetadataHelper {
      * @return String or null
      * @should extract DenkXweb PI correctly
      */
-    public static String getPIFromXML(String prefix, JDomXP xp) {
+    public static String[] getPIFromXML(String prefix, JDomXP xp) {
         List<FieldConfig> piConfig =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
@@ -904,11 +903,14 @@ public class MetadataHelper {
                 }
             }
             if (StringUtils.isNotEmpty(pi)) {
-                return pi;
+                if (piConfig.get(0).isAddToDefault()) {
+                    return new String[] { pi, "addToDefault" };
+                }
+                return new String[] { pi };
             }
         }
 
-        return null;
+        return new String[] {};
     }
 
     /**

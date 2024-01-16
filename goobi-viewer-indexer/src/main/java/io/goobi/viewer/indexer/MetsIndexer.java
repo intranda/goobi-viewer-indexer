@@ -306,14 +306,13 @@ public class MetsIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-
-            String pi = MetadataHelper.getPIFromXML(getPiRootPath(indexObj.getDmdid()), xp);
-            if (StringUtils.isBlank(pi)) {
+            String[] foundPi = MetadataHelper.getPIFromXML(getPiRootPath(indexObj.getDmdid()), xp);
+            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
                 ret[1] = "PI not found.";
                 throw new IndexerException(ret[1]);
             }
 
-            pi = MetadataHelper.applyIdentifierModifications(pi);
+            String pi = MetadataHelper.applyIdentifierModifications(foundPi[0]);
             logger.info("Record PI: {}", pi);
 
             // Do not allow identifiers with characters that cannot be used in file names
@@ -325,6 +324,11 @@ public class MetsIndexer extends Indexer {
             }
             indexObj.setPi(pi);
             indexObj.setTopstructPI(pi);
+            
+            // Add PI to default
+            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
+                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
+            }
 
             // Determine the data repository to use
             DataRepository[] repositories =
@@ -1002,7 +1006,8 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
-        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\" or @TYPE=\"re:video\"]"; //NOSONAR XPath, not URI
+        String xpath =
+                "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\" or @TYPE=\"object\" or @TYPE=\"audio\" or @TYPE=\"video\" or @TYPE=\"re:video\"]"; //NOSONAR XPath, not URI
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
@@ -2239,10 +2244,12 @@ public class MetsIndexer extends Indexer {
      * Checks whether this is a volume of a multivolume work (should be false for monographs and anchors).
      * 
      * @return boolean
+     * @should return true if record is volume
+     * @should return false if relatedItem not anchor
      */
     protected boolean isVolume() {
         String query =
-                "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
+                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host' and not(@otherType)]/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
 
         return relatedItemList != null && !relatedItemList.isEmpty();
