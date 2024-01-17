@@ -22,9 +22,9 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
@@ -36,14 +36,14 @@ import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
-public class ConfigurationTest extends AbstractTest {
+class ConfigurationTest extends AbstractTest {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(ConfigurationTest.class);
 
     private static Hotfolder hotfolder;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
 
@@ -51,127 +51,127 @@ public class ConfigurationTest extends AbstractTest {
     }
 
     @Test
-    public void folderTest() throws Exception {
-        Assert.assertTrue(Files.isDirectory(hotfolder.getHotfolderPath()));
-        Assert.assertTrue(new File(SolrIndexerDaemon.getInstance().getConfiguration().getString("init.viewerHome")).isDirectory());
-        Assert.assertTrue(Files.isDirectory(hotfolder.getSuccessFolder()));
-        Assert.assertTrue(Files.isDirectory(hotfolder.getUpdatedMets()));
-        Assert.assertTrue(Files.isDirectory(hotfolder.getDeletedMets()));
-        Assert.assertTrue(Files.isDirectory(hotfolder.getErrorMets()));
+    void folderTest() throws Exception {
+        Assertions.assertTrue(Files.isDirectory(hotfolder.getHotfolderPath()));
+        Assertions.assertTrue(new File(SolrIndexerDaemon.getInstance().getConfiguration().getString("init.viewerHome")).isDirectory());
+        Assertions.assertTrue(Files.isDirectory(hotfolder.getSuccessFolder()));
+        Assertions.assertTrue(Files.isDirectory(hotfolder.getUpdatedMets()));
+        Assertions.assertTrue(Files.isDirectory(hotfolder.getDeletedMets()));
+        Assertions.assertTrue(Files.isDirectory(hotfolder.getErrorMets()));
     }
 
     @Test
-    public void configItemTest() throws Exception {
+    void configItemTest() throws Exception {
         List<String> fieldNames = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames();
-        Assert.assertEquals(122, fieldNames.size());
+        Assertions.assertEquals(122, fieldNames.size());
         List<FieldConfig> fieldConfigList =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
-        Assert.assertNotNull(fieldConfigList);
-        Assert.assertEquals(1, fieldConfigList.size());
+        Assertions.assertNotNull(fieldConfigList);
+        Assertions.assertEquals(1, fieldConfigList.size());
         FieldConfig fieldConfig = fieldConfigList.get(0);
 
-        Assert.assertNotNull(fieldConfig.getxPathConfigurations());
-        Assert.assertEquals(2, fieldConfig.getxPathConfigurations().size());
-        Assert.assertEquals("all", fieldConfig.getParents());
-        Assert.assertEquals("false", fieldConfig.getChild());
-        Assert.assertEquals("first", fieldConfig.getNode());
-        Assert.assertTrue(fieldConfig.isOneToken());
-        Assert.assertTrue(fieldConfig.isOneField());
-        Assert.assertEquals(" , ", fieldConfig.getOneFieldSeparator());
-        Assert.assertEquals("XXX", fieldConfig.getConstantValue());
-        Assert.assertTrue(fieldConfig.isLowercase());
-        Assert.assertTrue(fieldConfig.isAddToDefault());
-        Assert.assertFalse(fieldConfig.isAddUntokenizedVersion());
-        Assert.assertTrue(fieldConfig.isAddSortField());
-        Assert.assertTrue(fieldConfig.isAddSortFieldToTopstruct());
-        Assert.assertTrue(fieldConfig.isAddExistenceBoolean());
-        Assert.assertEquals("#", fieldConfig.getSplittingCharacter());
-        Assert.assertTrue(fieldConfig.isNormalizeYear());
-        Assert.assertEquals(2, fieldConfig.getNormalizeYearMinDigits());
-        Assert.assertTrue(fieldConfig.isGroupEntity());
-        Assert.assertTrue(fieldConfig.isAllowDuplicateValues());
+        Assertions.assertNotNull(fieldConfig.getxPathConfigurations());
+        Assertions.assertEquals(2, fieldConfig.getxPathConfigurations().size());
+        Assertions.assertEquals("all", fieldConfig.getParents());
+        Assertions.assertEquals("false", fieldConfig.getChild());
+        Assertions.assertEquals("first", fieldConfig.getNode());
+        Assertions.assertTrue(fieldConfig.isOneToken());
+        Assertions.assertTrue(fieldConfig.isOneField());
+        Assertions.assertEquals(" , ", fieldConfig.getOneFieldSeparator());
+        Assertions.assertEquals("XXX", fieldConfig.getConstantValue());
+        Assertions.assertTrue(fieldConfig.isLowercase());
+        Assertions.assertTrue(fieldConfig.isAddToDefault());
+        Assertions.assertFalse(fieldConfig.isAddUntokenizedVersion());
+        Assertions.assertTrue(fieldConfig.isAddSortField());
+        Assertions.assertTrue(fieldConfig.isAddSortFieldToTopstruct());
+        Assertions.assertTrue(fieldConfig.isAddExistenceBoolean());
+        Assertions.assertEquals("#", fieldConfig.getSplittingCharacter());
+        Assertions.assertTrue(fieldConfig.isNormalizeYear());
+        Assertions.assertEquals(2, fieldConfig.getNormalizeYearMinDigits());
+        Assertions.assertTrue(fieldConfig.isGroupEntity());
+        Assertions.assertTrue(fieldConfig.isAllowDuplicateValues());
 
         GroupEntity groupEntity = fieldConfig.getGroupEntity();
-        Assert.assertNotNull(groupEntity);
-        Assert.assertEquals(MetadataGroupType.OTHER, groupEntity.getType());
-        Assert.assertEquals("https://example.com?param1=value1&param2=value2", groupEntity.getUrl());
+        Assertions.assertNotNull(groupEntity);
+        Assertions.assertEquals(MetadataGroupType.OTHER, groupEntity.getType());
+        Assertions.assertEquals("https://example.com?param1=value1&param2=value2", groupEntity.getUrl());
         {
             SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field1");
-            Assert.assertNotNull(fieldSubconfig);
-            Assert.assertEquals(2, fieldSubconfig.getXpaths().size());
-            Assert.assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
-            Assert.assertEquals("xpath2", fieldSubconfig.getXpaths().get(1));
-            Assert.assertTrue(fieldSubconfig.isMultivalued());
-            Assert.assertTrue(fieldSubconfig.isAddSortField());
-            Assert.assertEquals("def", fieldSubconfig.getDefaultValues().get("xpath2"));
+            Assertions.assertNotNull(fieldSubconfig);
+            Assertions.assertEquals(2, fieldSubconfig.getXpaths().size());
+            Assertions.assertEquals("xpath1", fieldSubconfig.getXpaths().get(0));
+            Assertions.assertEquals("xpath2", fieldSubconfig.getXpaths().get(1));
+            Assertions.assertTrue(fieldSubconfig.isMultivalued());
+            Assertions.assertTrue(fieldSubconfig.isAddSortField());
+            Assertions.assertEquals("def", fieldSubconfig.getDefaultValues().get("xpath2"));
         }
         {
             SubfieldConfig fieldSubconfig = groupEntity.getSubfields().get("field2");
-            Assert.assertNotNull(fieldSubconfig);
-            Assert.assertEquals(1, fieldSubconfig.getXpaths().size());
-            Assert.assertEquals("xpath3", fieldSubconfig.getXpaths().get(0));
-            Assert.assertFalse(fieldSubconfig.isMultivalued());
+            Assertions.assertNotNull(fieldSubconfig);
+            Assertions.assertEquals(1, fieldSubconfig.getXpaths().size());
+            Assertions.assertEquals("xpath3", fieldSubconfig.getXpaths().get(0));
+            Assertions.assertFalse(fieldSubconfig.isMultivalued());
         }
 
         Map<Object, String> replaceRules = fieldConfig.getReplaceRules();
-        Assert.assertNotNull(replaceRules);
-        Assert.assertEquals(2, replaceRules.size());
+        Assertions.assertNotNull(replaceRules);
+        Assertions.assertEquals(2, replaceRules.size());
         logger.info(replaceRules.keySet().toString());
-        Assert.assertEquals("replace1 ", replaceRules.get("stringToReplace1 "));
-        Assert.assertEquals("replace2", replaceRules.get("REGEX:[ ]*stringToReplace2[ ]*"));
+        Assertions.assertEquals("replace1 ", replaceRules.get("stringToReplace1 "));
+        Assertions.assertEquals("replace2", replaceRules.get("REGEX:[ ]*stringToReplace2[ ]*"));
 
         List<NonSortConfiguration> nonSortConfigurations = fieldConfig.getNonSortConfigurations();
-        Assert.assertNotNull(nonSortConfigurations);
-        Assert.assertEquals(1, nonSortConfigurations.size());
-        Assert.assertEquals("nonSortPrefix", nonSortConfigurations.get(0).getPrefix());
-        Assert.assertEquals("nonSortSuffix", nonSortConfigurations.get(0).getSuffix());
+        Assertions.assertNotNull(nonSortConfigurations);
+        Assertions.assertEquals(1, nonSortConfigurations.size());
+        Assertions.assertEquals("nonSortPrefix", nonSortConfigurations.get(0).getPrefix());
+        Assertions.assertEquals("nonSortSuffix", nonSortConfigurations.get(0).getSuffix());
     }
 
     @Test
-    public void metadataConfigTest() throws Exception {
-        Assert.assertEquals(122,
+    void metadataConfigTest() throws Exception {
+        Assertions.assertEquals(122,
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames().size());
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
-        Assert.assertNotNull(configItems);
-        Assert.assertEquals(1, configItems.size());
+        Assertions.assertNotNull(configItems);
+        Assertions.assertEquals(1, configItems.size());
 
         FieldConfig configItem = configItems.get(0);
-        Assert.assertEquals("MD_TESTFIELD", configItem.getFieldname());
-        Assert.assertEquals(2, configItem.getxPathConfigurations().size());
-        Assert.assertEquals("first", configItem.getNode());
-        Assert.assertEquals("all", configItem.getParents());
-        Assert.assertEquals("false", configItem.getChild());
-        Assert.assertTrue(configItem.isOneToken());
-        Assert.assertTrue(configItem.isOneField());
-        Assert.assertEquals("XXX", configItem.getConstantValue());
-        Assert.assertTrue(configItem.isLowercase());
-        Assert.assertTrue(configItem.isAddToDefault());
-        Assert.assertFalse(configItem.isAddUntokenizedVersion());
-        Assert.assertTrue(configItem.isAddSortField());
-        Assert.assertTrue(configItem.isAddSortFieldToTopstruct());
-        Assert.assertEquals("#", configItem.getSplittingCharacter());
-        Assert.assertTrue(configItem.isNormalizeYear());
-        Assert.assertTrue(configItem.isInterpolateYears());
-        Assert.assertEquals(2, configItem.getReplaceRules().size());
-        Assert.assertEquals("replace1 ", configItem.getReplaceRules().get("stringToReplace1 "));
-        Assert.assertEquals("replace2", configItem.getReplaceRules().get("REGEX:[ ]*stringToReplace2[ ]*"));
-        Assert.assertEquals(1, configItem.getNonSortConfigurations().size());
-        Assert.assertEquals("nonSortPrefix", configItem.getNonSortConfigurations().get(0).getPrefix());
-        Assert.assertEquals("nonSortSuffix", configItem.getNonSortConfigurations().get(0).getSuffix());
+        Assertions.assertEquals("MD_TESTFIELD", configItem.getFieldname());
+        Assertions.assertEquals(2, configItem.getxPathConfigurations().size());
+        Assertions.assertEquals("first", configItem.getNode());
+        Assertions.assertEquals("all", configItem.getParents());
+        Assertions.assertEquals("false", configItem.getChild());
+        Assertions.assertTrue(configItem.isOneToken());
+        Assertions.assertTrue(configItem.isOneField());
+        Assertions.assertEquals("XXX", configItem.getConstantValue());
+        Assertions.assertTrue(configItem.isLowercase());
+        Assertions.assertTrue(configItem.isAddToDefault());
+        Assertions.assertFalse(configItem.isAddUntokenizedVersion());
+        Assertions.assertTrue(configItem.isAddSortField());
+        Assertions.assertTrue(configItem.isAddSortFieldToTopstruct());
+        Assertions.assertEquals("#", configItem.getSplittingCharacter());
+        Assertions.assertTrue(configItem.isNormalizeYear());
+        Assertions.assertTrue(configItem.isInterpolateYears());
+        Assertions.assertEquals(2, configItem.getReplaceRules().size());
+        Assertions.assertEquals("replace1 ", configItem.getReplaceRules().get("stringToReplace1 "));
+        Assertions.assertEquals("replace2", configItem.getReplaceRules().get("REGEX:[ ]*stringToReplace2[ ]*"));
+        Assertions.assertEquals(1, configItem.getNonSortConfigurations().size());
+        Assertions.assertEquals("nonSortPrefix", configItem.getNonSortConfigurations().get(0).getPrefix());
+        Assertions.assertEquals("nonSortSuffix", configItem.getNonSortConfigurations().get(0).getSuffix());
 
         // Value normalizers
-        Assert.assertNotNull(configItem.getValueNormalizers());
-        Assert.assertEquals(2, configItem.getValueNormalizers().size());
-        Assert.assertTrue(configItem.getValueNormalizers().get(0).isConvertRoman());
-        Assert.assertEquals("foo ([C|I|M|V|X]+) .*$", configItem.getValueNormalizers().get(0).getRegex());
-        Assert.assertEquals(5, configItem.getValueNormalizers().get(1).getTargetLength());
-        Assert.assertEquals('a', configItem.getValueNormalizers().get(1).getFiller());
-        Assert.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizers().get(1).getPosition());
-        Assert.assertEquals("foo ([0-9]+) .*$", configItem.getValueNormalizers().get(1).getRegex());
+        Assertions.assertNotNull(configItem.getValueNormalizers());
+        Assertions.assertEquals(2, configItem.getValueNormalizers().size());
+        Assertions.assertTrue(configItem.getValueNormalizers().get(0).isConvertRoman());
+        Assertions.assertEquals("foo ([C|I|M|V|X]+) .*$", configItem.getValueNormalizers().get(0).getRegex());
+        Assertions.assertEquals(5, configItem.getValueNormalizers().get(1).getTargetLength());
+        Assertions.assertEquals('a', configItem.getValueNormalizers().get(1).getFiller());
+        Assertions.assertEquals(ValueNormalizerPosition.FRONT, configItem.getValueNormalizers().get(1).getPosition());
+        Assertions.assertEquals("foo ([0-9]+) .*$", configItem.getValueNormalizers().get(1).getRegex());
 
-        Assert.assertEquals("mods:coordinates/point", configItem.getGeoJSONSource());
-        Assert.assertEquals(" / ", configItem.getGeoJSONSourceSeparator());
+        Assertions.assertEquals("mods:coordinates/point", configItem.getGeoJSONSource());
+        Assertions.assertEquals(" / ", configItem.getGeoJSONSourceSeparator());
     }
 
     /**
@@ -179,8 +179,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getViewerUrl_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("http://localhost:8080/viewer", SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl());
+    void getViewerUrl_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals("http://localhost:8080/viewer", SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl());
     }
 
     /**
@@ -188,8 +188,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getPageCountStart_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals(0, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+    void getPageCountStart_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals(0, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
     }
 
     /**
@@ -197,10 +197,10 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies add custom namespaces correctly
      */
     @Test
-    public void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
+    void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().initNamespaces();
-        Assert.assertEquals(18, SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().size());
-        Assert.assertNotNull(SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("intranda"));
+        Assertions.assertEquals(19, SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().size());
+        Assertions.assertNotNull(SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("intranda"));
     }
 
     /**
@@ -208,8 +208,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getViewerHome_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("target/viewer/", SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome());
+    void getViewerHome_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals("target/viewer/", SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome());
     }
 
     /**
@@ -217,8 +217,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getEmptyOrderLabelReplacement_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("X", SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
+    void getEmptyOrderLabelReplacement_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals("X", SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
     }
 
     /**
@@ -226,15 +226,15 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return all items
      */
     @Test
-    public void getDataRepositoryConfigurations_shouldReturnAllItems() throws Exception {
+    void getDataRepositoryConfigurations_shouldReturnAllItems() throws Exception {
         List<DataRepository> resp = SolrIndexerDaemon.getInstance().getConfiguration().getDataRepositoryConfigurations();
-        Assert.assertEquals(3, resp.size());
-        Assert.assertEquals("target/viewer/data/1", resp.get(0).getPath());
-        Assert.assertEquals("target/viewer/data/2", resp.get(1).getPath());
-        Assert.assertEquals("target/viewer/data/3", resp.get(2).getPath());
-        Assert.assertEquals(10737418240L, resp.get(0).getBuffer());
-        Assert.assertEquals(104857600L, resp.get(1).getBuffer());
-        Assert.assertEquals(1000L, resp.get(2).getBuffer());
+        Assertions.assertEquals(3, resp.size());
+        Assertions.assertEquals("target/viewer/data/1", resp.get(0).getPath());
+        Assertions.assertEquals("target/viewer/data/2", resp.get(1).getPath());
+        Assertions.assertEquals("target/viewer/data/3", resp.get(2).getPath());
+        Assertions.assertEquals(10737418240L, resp.get(0).getBuffer());
+        Assertions.assertEquals(104857600L, resp.get(1).getBuffer());
+        Assertions.assertEquals(1000L, resp.get(2).getBuffer());
     }
 
     /**
@@ -242,8 +242,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getViewerAuthorizationToken_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("test", SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
+    void getViewerAuthorizationToken_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals("test", SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
     }
 
     /**
@@ -251,8 +251,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
-        Assert.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles());
+    void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles());
     }
 
     /**
@@ -260,8 +260,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void isAuthorityDataCacheEnabled_shouldReturnCorrectValue() throws Exception {
-        Assert.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isAuthorityDataCacheEnabled());
+    void isAuthorityDataCacheEnabled_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isAuthorityDataCacheEnabled());
     }
 
     /**
@@ -269,8 +269,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getAuthorityDataCacheSizeWarningThreshold_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals(100, SolrIndexerDaemon.getInstance().getConfiguration().getAuthorityDataCacheSizeWarningThreshold());
+    void getAuthorityDataCacheSizeWarningThreshold_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals(100, SolrIndexerDaemon.getInstance().getConfiguration().getAuthorityDataCacheSizeWarningThreshold());
     }
 
     /**
@@ -278,8 +278,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getAuthorityDataCacheRecordTTL_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals(12, SolrIndexerDaemon.getInstance().getConfiguration().getAuthorityDataCacheRecordTTL());
+    void getAuthorityDataCacheRecordTTL_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals(12, SolrIndexerDaemon.getInstance().getConfiguration().getAuthorityDataCacheRecordTTL());
     }
 
     /**
@@ -287,8 +287,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void isProxyEnabled_shouldReturnCorrectValue() throws Exception {
-        Assert.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isProxyEnabled());
+    void isProxyEnabled_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isProxyEnabled());
     }
 
     /**
@@ -296,8 +296,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getProxyUrl_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("my.proxy", SolrIndexerDaemon.getInstance().getConfiguration().getProxyUrl());
+    void getProxyUrl_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals("my.proxy", SolrIndexerDaemon.getInstance().getConfiguration().getProxyUrl());
     }
 
     /**
@@ -305,8 +305,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getProxyPort_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals(9999, SolrIndexerDaemon.getInstance().getConfiguration().getProxyPort());
+    void getProxyPort_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals(9999, SolrIndexerDaemon.getInstance().getConfiguration().getProxyPort());
     }
 
     /**
@@ -314,8 +314,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return true if host whitelisted
      */
     @Test
-    public void isHostProxyWhitelistedd_shouldReturnTrueIfHostWhitelisted() throws Exception {
-        Assert.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isHostProxyWhitelisted("http://localhost:1234"));
+    void isHostProxyWhitelistedd_shouldReturnTrueIfHostWhitelisted() throws Exception {
+        Assertions.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isHostProxyWhitelisted("http://localhost:1234"));
     }
 
     /**
@@ -323,18 +323,18 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return false until all values configured
      */
     @Test
-    public void checkEmailConfiguration_shouldReturnFalseUntilAllValuesConfigured() throws Exception {
-        Assert.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
+    void checkEmailConfiguration_shouldReturnFalseUntilAllValuesConfigured() throws Exception {
+        Assertions.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "recipient@example.com");
-        Assert.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
+        Assertions.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.com");
-        Assert.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
+        Assertions.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "sender@example.com");
-        Assert.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
+        Assertions.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderName", "Sender");
-        Assert.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
+        Assertions.assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSecurity", "NONE");
-        Assert.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
+        Assertions.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
     }
 
     /**
@@ -342,8 +342,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getHotfolderPath_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("target/viewer/hotfolder/", SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
+    void getHotfolderPath_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals("target/viewer/hotfolder/", SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
     }
 
     /**
@@ -351,8 +351,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return all values
      */
     @Test
-    public void getHotfolderPaths_shouldReturnAllValues() throws Exception {
-        Assert.assertEquals(2, SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPaths().size());
+    void getHotfolderPaths_shouldReturnAllValues() throws Exception {
+        Assertions.assertEquals(2, SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPaths().size());
     }
 
     /**
@@ -360,8 +360,8 @@ public class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    public void getOldSolrUrl_shouldReturnCorrectValue() throws Exception {
-        Assert.assertEquals("https://viewer-testing-index.goobi.io/solr/indexer-testing",
+    void getOldSolrUrl_shouldReturnCorrectValue() throws Exception {
+        Assertions.assertEquals("https://viewer-testing-index.goobi.io/solr/indexer-testing",
                 SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
     }
 }

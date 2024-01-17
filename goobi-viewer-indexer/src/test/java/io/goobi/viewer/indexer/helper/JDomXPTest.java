@@ -24,23 +24,23 @@ import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 
-public class JDomXPTest extends AbstractTest {
+class JDomXPTest extends AbstractTest {
 
     /**
      * @see JDomXP#determineFileFormat(File)
      * @verifies detect mets mods files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectMetsModsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -48,10 +48,10 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect mets marc files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectMetsMarcFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/VoorbeeldMETS_9940609919905131.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.METS_MARC, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.METS_MARC, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -59,10 +59,10 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect lido files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectLidoFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectLidoFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/LIDO/khm_lido_export.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -70,10 +70,10 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect denkxweb files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectDenkxwebFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.DENKXWEB, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.DENKXWEB, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -81,10 +81,10 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect dublin core files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectDublinCoreFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectDublinCoreFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/DC/record.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.DUBLINCORE, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.DUBLINCORE, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -92,10 +92,10 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect worldviews files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectWorldviewsFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectWorldviewsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/WorldViews/gei_test_sthe_quelle_01.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.WORLDVIEWS, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.WORLDVIEWS, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -103,10 +103,10 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect abbyy files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectAbbyyFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectAbbyyFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/ABBYYXML/00000001.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.ABBYYXML, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.ABBYYXML, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -114,10 +114,10 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect tei files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectTeiFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectTeiFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.TEI, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.TEI, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -125,10 +125,10 @@ public class JDomXPTest extends AbstractTest {
      * @verifies detect cms files correctly
      */
     @Test
-    public void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectCmsFilesCorrectly() throws Exception {
         File file = new File("src/test/resources/indexed_cms/CMS123.xml");
-        Assert.assertTrue(file.isFile());
-        Assert.assertEquals(FileFormat.CMS, JDomXP.determineFileFormat(file));
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.CMS, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -136,11 +136,11 @@ public class JDomXPTest extends AbstractTest {
      * @verifies split multi record documents correctly
      */
     @Test
-    public void splitLidoFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
+    void splitLidoFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
         File file = new File("src/test/resources/LIDO/khm_lido_export.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
-        Assert.assertEquals(30, docs.size());
+        Assertions.assertEquals(30, docs.size());
     }
 
     /**
@@ -148,11 +148,11 @@ public class JDomXPTest extends AbstractTest {
      * @verifies leave single record documents as is
      */
     @Test
-    public void splitLidoFile_shouldLeaveSingleRecordDocumentsAsIs() throws Exception {
+    void splitLidoFile_shouldLeaveSingleRecordDocumentsAsIs() throws Exception {
         File file = new File("src/test/resources/LIDO/V0011127.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
-        Assert.assertEquals(1, docs.size());
+        Assertions.assertEquals(1, docs.size());
     }
 
     /**
@@ -160,11 +160,11 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non lido documents
      */
     @Test
-    public void splitLidoFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
-        Assert.assertEquals(0, docs.size());
+        Assertions.assertEquals(0, docs.size());
     }
 
     /**
@@ -172,11 +172,11 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non-existing files
      */
     @Test
-    public void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
         File file = new File("nosuchfile.xml");
-        Assert.assertFalse(file.isFile());
+        Assertions.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
-        Assert.assertEquals(0, docs.size());
+        Assertions.assertEquals(0, docs.size());
     }
 
     /**
@@ -184,9 +184,9 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list given null
      */
     @Test
-    public void splitLidoFile_shouldReturnEmptyListGivenNull() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListGivenNull() throws Exception {
         List<Document> docs = JDomXP.splitLidoFile(null);
-        Assert.assertEquals(0, docs.size());
+        Assertions.assertEquals(0, docs.size());
     }
 
     /**
@@ -194,11 +194,11 @@ public class JDomXPTest extends AbstractTest {
      * @verifies split multi record documents correctly
      */
     @Test
-    public void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
+    void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
         File file = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
-        Assert.assertEquals(2, docs.size());
+        Assertions.assertEquals(2, docs.size());
     }
 
     /**
@@ -206,11 +206,11 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non lido documents
      */
     @Test
-    public void splitDenkXwebFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
-        Assert.assertEquals(0, docs.size());
+        Assertions.assertEquals(0, docs.size());
     }
 
     /**
@@ -218,11 +218,11 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non-existing files
      */
     @Test
-    public void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
         File file = new File("nosuchfile.xml");
-        Assert.assertFalse(file.isFile());
+        Assertions.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
-        Assert.assertEquals(0, docs.size());
+        Assertions.assertEquals(0, docs.size());
     }
 
     /**
@@ -230,9 +230,9 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return empty list given null
      */
     @Test
-    public void splitDenkXwebFile_shouldReturnEmptyListGivenNull() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListGivenNull() throws Exception {
         List<Document> docs = JDomXP.splitDenkXwebFile(null);
-        Assert.assertEquals(0, docs.size());
+        Assertions.assertEquals(0, docs.size());
     }
 
     /**
@@ -240,23 +240,23 @@ public class JDomXPTest extends AbstractTest {
      * @verifies write xml file correctly
      */
     @Test
-    public void writeXmlFile_shouldWriteXmlFileCorrectly() throws Exception {
+    void writeXmlFile_shouldWriteXmlFileCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
 
         File newFile = null;
         try (FileInputStream fis = new FileInputStream(file)) {
             SAXBuilder builder = new SAXBuilder();
             Document doc = builder.build(fis);
-            Assert.assertNotNull(doc);
+            Assertions.assertNotNull(doc);
             String path = "target/newmets.xml";
             JDomXP.writeXmlFile(doc, path);
             newFile = new File(path);
-            Assert.assertTrue(newFile.isFile());
+            Assertions.assertTrue(newFile.isFile());
             try (FileInputStream fis2 = new FileInputStream(newFile)) {
                 Document newDoc = builder.build(fis2);
-                Assert.assertNotNull(newDoc);
-                Assert.assertEquals(doc.getContentSize(), newDoc.getContentSize());
+                Assertions.assertNotNull(newDoc);
+                Assertions.assertEquals(doc.getContentSize(), newDoc.getContentSize());
             }
         } finally {
             if (newFile != null) {
@@ -270,13 +270,13 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return value correctly
      */
     @Test
-    public void evaluateToAttributeStringValue_shouldReturnValueCorrectly() throws Exception {
+    void evaluateToAttributeStringValue_shouldReturnValueCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         JDomXP xp = new JDomXP(file);
         String xpath = "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap/@MDTYPE";
         String value = xp.evaluateToAttributeStringValue(xpath, null);
-        Assert.assertEquals("OTHER", value);
+        Assertions.assertEquals("OTHER", value);
     }
 
     /**
@@ -284,14 +284,14 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return value correctly
      */
     @Test
-    public void evaluateToCdata_shouldReturnValueCorrectly() throws Exception {
+    void evaluateToCdata_shouldReturnValueCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         JDomXP xp = new JDomXP(file);
         String xpath =
                 "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()";
         String value = xp.evaluateToCdata(xpath, null);
-        Assert.assertEquals("http://opac.sub.uni-goettingen.de/DB=1/PPN?PPN=517154005", value);
+        Assertions.assertEquals("http://opac.sub.uni-goettingen.de/DB=1/PPN?PPN=517154005", value);
     }
 
     /**
@@ -299,14 +299,14 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return value correctly
      */
     @Test
-    public void evaluateToString_shouldReturnValueCorrectly() throws Exception {
+    void evaluateToString_shouldReturnValueCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         JDomXP xp = new JDomXP(file);
         String xpath =
                 "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:presentation/text()";
         String value = xp.evaluateToString(xpath, null);
-        Assert.assertEquals("http://resolver.sub.uni-goettingen.de/purl?PPN517154005", value);
+        Assertions.assertEquals("http://resolver.sub.uni-goettingen.de/purl?PPN517154005", value);
     }
 
     /**
@@ -314,13 +314,13 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return all values
      */
     @Test
-    public void evaluateToStringList_shouldReturnAllValues() throws Exception {
+    void evaluateToStringList_shouldReturnAllValues() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assert.assertTrue("File not found: " + file.getAbsolutePath(), file.isFile());
+        Assertions.assertTrue(file.isFile(), "File not found: " + file.getAbsolutePath());
         JDomXP xp = new JDomXP(file);
         String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='PRESENTATION']/mets:file";
         List<String> values = xp.evaluateToStringList(xpath, null);
-        Assert.assertEquals(16, values.size());
+        Assertions.assertEquals(16, values.size());
     }
 
     /**
@@ -328,19 +328,19 @@ public class JDomXPTest extends AbstractTest {
      * @verifies build document correctly
      */
     @Test
-    public void readXmlFile_shouldBuildDocumentCorrectly() throws Exception {
+    void readXmlFile_shouldBuildDocumentCorrectly() throws Exception {
         Document doc = JDomXP.readXmlFile(TEST_CONFIG_PATH);
-        Assert.assertNotNull(doc);
-        Assert.assertNotNull(doc.getRootElement());
+        Assertions.assertNotNull(doc);
+        Assertions.assertNotNull(doc.getRootElement());
     }
 
     /**
      * @see JDomXP#readXmlFile(String)
      * @verifies throw FileNotFoundException if file not found
      */
-    @Test(expected = FileNotFoundException.class)
-    public void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
-        JDomXP.readXmlFile("notfound.xml");
+    @Test
+    void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+        Assertions.assertThrows(FileNotFoundException.class, () -> JDomXP.readXmlFile("notfound.xml"));
     }
 
     /**
@@ -348,11 +348,11 @@ public class JDomXPTest extends AbstractTest {
      * @verifies return mdWrap correctly
      */
     @Test
-    public void getMdWrap_shouldReturnMdWrapCorrectly() throws Exception {
+    void getMdWrap_shouldReturnMdWrapCorrectly() throws Exception {
         File file = new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assert.assertTrue("File not found: " + file.getAbsolutePath(), file.isFile());
+        Assertions.assertTrue(file.isFile(), "File not found: " + file.getAbsolutePath());
         JDomXP xp = new JDomXP(file);
         Element eleMdWrap = xp.getMdWrap("DMDLOG_0003");
-        Assert.assertNotNull(eleMdWrap);
+        Assertions.assertNotNull(eleMdWrap);
     }
 }

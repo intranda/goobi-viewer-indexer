@@ -44,7 +44,7 @@ public class DummyDataRepository extends DataRepository {
     /**
      * @param usableSpace the usableSpace to set
      */
-    public void setUsableSpace(long usableSpace) {
+    void setUsableSpace(long usableSpace) {
         this.usableSpace = usableSpace;
     }
 }

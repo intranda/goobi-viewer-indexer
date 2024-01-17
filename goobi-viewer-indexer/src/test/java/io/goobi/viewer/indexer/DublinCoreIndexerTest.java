@@ -22,17 +22,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.solr.common.SolrDocumentList;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
-public class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
+class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -44,10 +44,10 @@ public class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    public void DublinCoreIndexer_shouldSetAttributesCorrectly() throws Exception {
-        Assert.assertNotNull(hotfolder);
+    void DublinCoreIndexer_shouldSetAttributesCorrectly() throws Exception {
+        Assertions.assertNotNull(hotfolder);
         Indexer indexer = new DublinCoreIndexer(hotfolder);
-        Assert.assertEquals(hotfolder, indexer.hotfolder);
+        Assertions.assertEquals(hotfolder, indexer.hotfolder);
     }
 
     /**
@@ -55,17 +55,17 @@ public class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
      * @verifies add record to index correctly
      */
     @Test
-    public void addToIndex_shouldAddRecordToIndexCorrectly() throws Exception {
+    void addToIndex_shouldAddRecordToIndexCorrectly() throws Exception {
         Path dcFile = Paths.get("src/test/resources/DC/record.xml");
-        Assert.assertTrue(Files.isRegularFile(dcFile));
+        Assertions.assertTrue(Files.isRegularFile(dcFile));
 
         Indexer indexer = new DublinCoreIndexer(hotfolder);
         indexer.addToIndex(dcFile, false, new HashMap<>());
 
         SolrDocumentList result =
                 SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":123e4567-e89b-12d3-a456-556642440000", null);
-        Assert.assertNotNull(result);
-        Assert.assertEquals(1, result.size());
-        Assert.assertEquals("123e4567-e89b-12d3-a456-556642440000", result.get(0).getFieldValue(SolrConstants.PI));
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.size());
+        Assertions.assertEquals("123e4567-e89b-12d3-a456-556642440000", result.get(0).getFieldValue(SolrConstants.PI));
     }
 }

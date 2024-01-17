@@ -15,21 +15,25 @@
  */
 package io.goobi.viewer.indexer.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.jdom2.Element;
-import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
 
 import de.intranda.digiverso.normdataimporter.NormDataImporter;
-import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 
 /**
@@ -131,10 +135,9 @@ public class GroupedMetadata {
      * @param ele Root of the XML (sub)tree
      * @param authorityDataEnabled
      * @param xpathReplacements
-     * @throws FatalIndexerException
      */
     public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, SubfieldConfig> groupEntityFields, Element ele,
-            boolean authorityDataEnabled, Map<String, String> xpathReplacements) throws FatalIndexerException {
+            boolean authorityDataEnabled, Map<String, String> xpathReplacements) {
         if (ele == null) {
             throw new IllegalArgumentException("element may not be null");
         }
@@ -153,7 +156,7 @@ public class GroupedMetadata {
                         xpath = xpath.replace(xpathReplacementsEntry.getKey(), xpathReplacementsEntry.getValue());
                     }
                 }
-                logger.debug("XPath: {}", xpath);
+                logger.info("XPath: {}", xpath);
                 List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
                 if (values == null || values.isEmpty()) {
                     // Use default value, if available
@@ -171,11 +174,11 @@ public class GroupedMetadata {
                 }
                 for (Object val : values) {
                     String fieldValue = JDomXP.objectToString(val);
-                    logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
                     if (StringUtils.isBlank(fieldValue)) {
                         continue;
                     }
                     fieldValue = fieldValue.trim();
+                    logger.info("found: {}:{}", subfield.getFieldname(), fieldValue);
 
                     if (authorityDataEnabled && subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI) && fieldValue.length() > 1) {
                         // Skip values that probably aren't real identifiers or URIs
@@ -203,6 +206,37 @@ public class GroupedMetadata {
                 }
             }
         }
+    }
+
+    /**
+     * 
+     * @param groupEntity
+     * @param collectedValues
+     */
+    public void harvestCitationMetadataFromUrl(GroupEntity groupEntity, Map<String, List<String>> collectedValues) {
+        if (groupEntity == null) {
+            throw new IllegalArgumentException("groupEntity may not be null");
+        }
+
+        if (collectedValues == null) {
+            throw new IllegalArgumentException("collectedValues may not be null");
+        }
+        if (StringUtils.isEmpty(groupEntity.getUrl())) {
+            logger.warn("Citation metadata field {} is missing a URL.", getLabel());
+            return;
+        }
+
+        try {
+            CitationXmlDocument xmlDoc = new CitationXmlDocument(groupEntity.getUrl())
+                    .prepareURL(collectedValues)
+                    .fetch()
+                    .build();
+            collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
+                    xmlDoc.getXp().getRootElement(), MetadataHelper.authorityDataEnabled, null);
+        } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
+            logger.error(e.getMessage(), e);
+        }
+
     }
 
     /**

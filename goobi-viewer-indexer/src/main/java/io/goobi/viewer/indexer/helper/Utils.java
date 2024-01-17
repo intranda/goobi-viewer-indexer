@@ -33,15 +33,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -463,7 +463,7 @@ public class Utils {
      * @param smtpSenderName a {@link java.lang.String} object.
      * @param smtpSecurity a {@link java.lang.String} object.
      * @param smtpPort
-     * @throws javax.mail.MessagingException
+     * @throws jakarta.mail.MessagingException
      * @throws java.io.UnsupportedEncodingException
      */
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
@@ -539,7 +539,7 @@ public class Utils {
         Session session;
         if (auth) {
             // with authentication
-            session = Session.getInstance(props, new javax.mail.Authenticator() {
+            session = Session.getInstance(props, new jakarta.mail.Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(smtpUser, smtpPassword);

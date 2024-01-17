@@ -17,92 +17,50 @@ package io.goobi.viewer.indexer.helper;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import io.goobi.viewer.indexer.model.PrimitiveDate;
 
-public class DateToolsTest {
+class DateToolsTest {
 
     /**
      * @see DateTools#convertDateStringForSolrField(String,boolean)
      * @verifies convert date correctly
      */
     @Test
-    public void convertDateStringForSolrField_shouldConvertDateCorrectly() throws Exception {
-        Assert.assertEquals("2016-11-02T00:00:00Z", DateTools.convertDateStringForSolrField("2016-11-02", true));
-        Assert.assertEquals("2016-11-01T00:00:00Z", DateTools.convertDateStringForSolrField("2016-11", true));
-        Assert.assertEquals("2016-01-01T00:00:00Z", DateTools.convertDateStringForSolrField("2016", true));
+    void convertDateStringForSolrField_shouldConvertDateCorrectly() throws Exception {
+        Assertions.assertEquals("2016-11-02T00:00:00Z", DateTools.convertDateStringForSolrField("2016-11-02", true));
+        Assertions.assertEquals("2016-11-01T00:00:00Z", DateTools.convertDateStringForSolrField("2016-11", true));
+        Assertions.assertEquals("2016-01-01T00:00:00Z", DateTools.convertDateStringForSolrField("2016", true));
     }
 
     /**
      * @see DateTools#normalizeDate(String,int)
-     * @verifies parse german date formats correctly
+     * @verifies parse international date formats correctly
      */
-    @Test
-    public void normalizeDate_shouldParseGermanDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("05.08.2014", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
+    @ParameterizedTest
+    @ValueSource(strings = { "2014-08-05", "05.08.2014", "2014-08-05", "08/05/2014", "2014.08.05", "2014/08/05" })
+    void normalizeDate_shouldParseInternationalDateFormatsCorrectly(String date) throws Exception {
+        List<PrimitiveDate> ret = DateTools.normalizeDate(date, 3);
+        Assertions.assertEquals(1, ret.size());
+        Assertions.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
+        Assertions.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
+        Assertions.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
     }
 
     /**
      * @see DateTools#normalizeDate(String,int)
-     * @verifies parse rfc date formats correctly
+     * @verifies parse yearmonth correctly
      */
     @Test
-    public void normalizeDate_shouldParseRfcDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("2014-08-05", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-
-        ret = DateTools.normalizeDate("0002-05", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getMonth());
-    }
-
-    /**
-     * @see DateTools#normalizeDate(String,int)
-     * @verifies parse american date formats correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseAmericanDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("08/05/2014", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-    }
-
-    /**
-     * @see DateTools#normalizeDate(String,int)
-     * @verifies parse chinese date formats correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseChineseDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("2014.08.05", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-    }
-
-    /**
-     * @see DateTools#normalizeDate(String,int)
-     * @verifies parse japanese date formats correctly
-     */
-    @Test
-    public void normalizeDate_shouldParseJapaneseDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("2014/08/05", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assert.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
+    void normalizeDate_shouldParseYearmonthCorrectly() throws Exception {
+        List<PrimitiveDate> ret = DateTools.normalizeDate("0002-05", 3);
+        Assertions.assertEquals(1, ret.size());
+        Assertions.assertEquals(Integer.valueOf(2), ret.get(0).getYear());
+        Assertions.assertEquals(Integer.valueOf(5), ret.get(0).getMonth());
     }
 
     /**
@@ -110,16 +68,16 @@ public class DateToolsTest {
      * @verifies parse year ranges correctly
      */
     @Test
-    public void normalizeDate_shouldParseYearRangesCorrectly() throws Exception {
+    void normalizeDate_shouldParseYearRangesCorrectly() throws Exception {
         List<PrimitiveDate> ret = DateTools.normalizeDate("2010-2014", 3);
-        Assert.assertEquals(2, ret.size());
-        Assert.assertEquals(Integer.valueOf(2010), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(2014), ret.get(1).getYear());
+        Assertions.assertEquals(2, ret.size());
+        Assertions.assertEquals(Integer.valueOf(2010), ret.get(0).getYear());
+        Assertions.assertEquals(Integer.valueOf(2014), ret.get(1).getYear());
 
         ret = DateTools.normalizeDate("10-20", 2);
-        Assert.assertEquals(2, ret.size());
-        Assert.assertEquals(Integer.valueOf(10), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(20), ret.get(1).getYear());
+        Assertions.assertEquals(2, ret.size());
+        Assertions.assertEquals(Integer.valueOf(10), ret.get(0).getYear());
+        Assertions.assertEquals(Integer.valueOf(20), ret.get(1).getYear());
     }
 
     /**
@@ -127,30 +85,30 @@ public class DateToolsTest {
      * @verifies parse single years correctly
      */
     @Test
-    public void normalizeDate_shouldParseSingleYearsCorrectly() throws Exception {
+    void normalizeDate_shouldParseSingleYearsCorrectly() throws Exception {
         List<PrimitiveDate> ret = DateTools.normalizeDate("-300 -30 -3", 2);
-        Assert.assertEquals(2, ret.size());
-        Assert.assertEquals(Integer.valueOf(-300), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(-30), ret.get(1).getYear());
+        Assertions.assertEquals(2, ret.size());
+        Assertions.assertEquals(Integer.valueOf(-300), ret.get(0).getYear());
+        Assertions.assertEquals(Integer.valueOf(-30), ret.get(1).getYear());
 
         ret = DateTools.normalizeDate("300 30 3", 3);
-        Assert.assertEquals(1, ret.size());
-        Assert.assertEquals(Integer.valueOf(300), ret.get(0).getYear());
+        Assertions.assertEquals(1, ret.size());
+        Assertions.assertEquals(Integer.valueOf(300), ret.get(0).getYear());
 
         ret = DateTools.normalizeDate("300 30 3", 1);
-        Assert.assertEquals(3, ret.size());
-        Assert.assertEquals(Integer.valueOf(300), ret.get(0).getYear());
-        Assert.assertEquals(Integer.valueOf(30), ret.get(1).getYear());
-        Assert.assertEquals(Integer.valueOf(3), ret.get(2).getYear());
+        Assertions.assertEquals(3, ret.size());
+        Assertions.assertEquals(Integer.valueOf(300), ret.get(0).getYear());
+        Assertions.assertEquals(Integer.valueOf(30), ret.get(1).getYear());
+        Assertions.assertEquals(Integer.valueOf(3), ret.get(2).getYear());
     }
 
     /**
      * @see DateTools#normalizeDate(String,int)
      * @verifies throw IllegalArgumentException if normalizeYearMinDigits less than 1
      */
-    @Test(expected = IllegalArgumentException.class)
-    public void normalizeDate_shouldThrowIllegalArgumentExceptionIfNormalizeYearMinDigitsLessThan1() throws Exception {
-        DateTools.normalizeDate("05.08.2014", 0);
+    @Test
+    void normalizeDate_shouldThrowIllegalArgumentExceptionIfNormalizeYearMinDigitsLessThan1() throws Exception {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> DateTools.normalizeDate("05.08.2014", 0));
     }
 
     /**
@@ -158,8 +116,8 @@ public class DateToolsTest {
      * @verifies format years correctly
      */
     @Test
-    public void normalizeDateFieldValue_shouldFormatYearsCorrectly() throws Exception {
-        Assert.assertEquals("2022-01-01T00:00:00Z", DateTools.normalizeDateFieldValue("2022"));
+    void normalizeDateFieldValue_shouldFormatYearsCorrectly() throws Exception {
+        Assertions.assertEquals("2022-01-01T00:00:00Z", DateTools.normalizeDateFieldValue("2022"));
     }
 
     /**
@@ -167,8 +125,8 @@ public class DateToolsTest {
      * @verifies format iso instant correctly
      */
     @Test
-    public void normalizeDateFieldValue_shouldFormatIsoInstantCorrectly() throws Exception {
-        Assert.assertEquals("2022-01-01T00:01:02Z", DateTools.normalizeDateFieldValue("2022-01-01T00:01:02Z"));
+    void normalizeDateFieldValue_shouldFormatIsoInstantCorrectly() throws Exception {
+        Assertions.assertEquals("2022-01-01T00:01:02Z", DateTools.normalizeDateFieldValue("2022-01-01T00:01:02Z"));
     }
 
     /**
@@ -176,7 +134,7 @@ public class DateToolsTest {
      * @verifies format iso local time correctly
      */
     @Test
-    public void normalizeDateFieldValue_shouldFormatIsoLocalTimeCorrectly() throws Exception {
-        Assert.assertEquals("2022-01-01T00:02:03Z", DateTools.normalizeDateFieldValue("2022-01-01T00:02:03"));
+    void normalizeDateFieldValue_shouldFormatIsoLocalTimeCorrectly() throws Exception {
+        Assertions.assertEquals("2022-01-01T00:02:03Z", DateTools.normalizeDateFieldValue("2022-01-01T00:02:03"));
     }
 }

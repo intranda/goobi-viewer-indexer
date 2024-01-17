@@ -15,21 +15,20 @@
  */
 package io.goobi.viewer.indexer.model.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
-import io.goobi.viewer.indexer.model.config.FieldConfig;
 
-public class FieldConfigTest extends AbstractTest {
+class FieldConfigTest extends AbstractTest {
 
     /**
      * @see FieldConfig#ConfigurationItem(String)
      * @verifies set attributes correctly
      */
     @Test
-    public void FieldConfig_shouldSetAttributesCorrectly() throws Exception {
+    void FieldConfig_shouldSetAttributesCorrectly() throws Exception {
         FieldConfig ci = new FieldConfig("field_name");
-        Assert.assertEquals("field_name", ci.getFieldname());
+        Assertions.assertEquals("field_name", ci.getFieldname());
     }
 }

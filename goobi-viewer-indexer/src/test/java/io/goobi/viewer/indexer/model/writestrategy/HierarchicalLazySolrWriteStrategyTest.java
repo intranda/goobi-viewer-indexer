@@ -15,21 +15,21 @@
  */
 package io.goobi.viewer.indexer.model.writestrategy;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 
-public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
+class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
 
     //    private Path metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -41,10 +41,10 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
      * @verifies set attributes correctly
      */
     @Test
-    public void HierarchicalLazySolrWriteStrategy_shouldSetAttributesCorrectly() throws Exception {
+    void HierarchicalLazySolrWriteStrategy_shouldSetAttributesCorrectly() throws Exception {
         SolrSearchIndex sh = new SolrSearchIndex(client);
         HierarchicalLazySolrWriteStrategy strat = new HierarchicalLazySolrWriteStrategy(sh);
-        Assert.assertEquals(sh, strat.searchIndex);
+        Assertions.assertEquals(sh, strat.searchIndex);
     }
 
     //    /**
@@ -52,7 +52,7 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     //     * @verifies write all structure docs correctly
     //     */
     //    @Test
-    //    public void writeDocs_shouldWriteAllStructureDocsCorrectly() throws Exception {
+    //    void writeDocs_shouldWriteAllStructureDocsCorrectly() throws Exception {
     //        Map<String, Path> dataFolders = new HashMap<>();
     //        SolrSearchIndex sh = new SolrSearchIndex(server);
     //        HierarchicalLazySolrWriteStrategy strat = new HierarchicalLazySolrWriteStrategy(sh);
@@ -61,7 +61,7 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     //        indexer.index(metsFile, false, dataFolders, strat, 1);
     //        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":"
     //                + DocType.DOCSTRCT.name(), null);
-    //        Assert.assertEquals(4, docList.size());
+    //        Assertions.assertEquals(4, docList.size());
     //    }
 
     //    /**
@@ -69,7 +69,7 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     //     * @verifies write all page docs correctly
     //     */
     //    @Test
-    //    public void writeDocs_shouldWriteAllPageDocsCorrectly() throws Exception {
+    //    void writeDocs_shouldWriteAllPageDocsCorrectly() throws Exception {
     //        Map<String, Path> dataFolders = new HashMap<>();
     //        SolrSearchIndex sh = new SolrSearchIndex(server);
     //        LazySolrWriteStrategy strat = new HierarchicalLazySolrWriteStrategy(sh);
@@ -78,6 +78,6 @@ public class HierarchicalLazySolrWriteStrategyTest extends AbstractSolrEnabledTe
     //        indexer.index(metsFile, false, dataFolders, strat, 1);
     //        SolrDocumentList docList = hotfolder.getSolrHelper().search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":"
     //                + DocType.PAGE.name(), null);
-    //        Assert.assertEquals(16, docList.size());
+    //        Assertions.assertEquals(16, docList.size());
     //    }
 }

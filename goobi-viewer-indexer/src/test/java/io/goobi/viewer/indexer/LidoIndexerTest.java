@@ -25,9 +25,9 @@ import java.util.Map;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.jdom2.Document;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -37,7 +37,7 @@ import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
-public class LidoIndexerTest extends AbstractSolrEnabledTest {
+class LidoIndexerTest extends AbstractSolrEnabledTest {
 
     /** Logger for this class. */
     //    private static final Logger logger = LogManager.getLogger(LidoIndexerTest.class);
@@ -47,14 +47,14 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
     private File lidoFile;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         lidoFile = new File("src/test/resources/LIDO/khm_lido_export.xml");
-        Assert.assertTrue(lidoFile.isFile());
+        Assertions.assertTrue(lidoFile.isFile());
     }
 
     /**
@@ -62,45 +62,42 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    public void LidoIndexer_shouldSDataRepositoryetAttributesCorrectly() throws Exception {
+    void LidoIndexer_shouldSDataRepositoryetAttributesCorrectly() throws Exception {
         LidoIndexer indexer = new LidoIndexer(hotfolder);
-        Assert.assertEquals(hotfolder, indexer.hotfolder);
+        Assertions.assertEquals(hotfolder, indexer.hotfolder);
     }
 
     @Test
-    public void testIndexMimeType() throws Exception {
+    void testIndexMimeType() throws Exception {
         File lidoVideoFile = new File("src/test/resources/LIDO/1292624.xml");
         File lidoVideoMediaFolder = new File("src/test/resources/LIDO/1292624_media");
         String videoPI = "1292624";
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoVideoFile);
-        Assert.assertEquals(1, lidoDocs.size());
+        Assertions.assertEquals(1, lidoDocs.size());
 
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_MEDIA, lidoVideoMediaFolder.getAbsoluteFile().toPath());
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-            Assert.assertNotEquals("ERROR", ret[0]);
+            Assertions.assertNotEquals("ERROR", ret[0]);
         }
 
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":*", null);
-        Assert.assertEquals(1, docList.size());
+        Assertions.assertEquals(1, docList.size());
         SolrDocument doc = docList.get(0);
         String docPi = (String) doc.getFieldValue(SolrConstants.PI);
-        Assert.assertEquals("Document PI was expected to be " + videoPI + ", but was " + docPi, videoPI, docPi);
+        Assertions.assertEquals(videoPI, docPi, "Document PI was expected to be " + videoPI + ", but was " + docPi);
 
         docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":" + videoPI + " AND " + SolrConstants.FILENAME + ":*", null);
-        Assert.assertEquals(
-                "video page not in doclist. Total page hits: "
-                        + SolrIndexerDaemon.getInstance().getSearchIndex().getNumHits(SolrConstants.FILENAME + ":*"),
-                1,
-                docList.size());
+        Assertions.assertEquals(1, docList.size(), "video page not in doclist. Total page hits: "
+                + SolrIndexerDaemon.getInstance().getSearchIndex().getNumHits(SolrConstants.FILENAME + ":*"));
         doc = docList.get(0);
 
-        Assert.assertEquals("video/mp4", doc.getFieldValue(SolrConstants.MIMETYPE));
-        Assert.assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
+        Assertions.assertEquals("video/mp4", doc.getFieldValue(SolrConstants.MIMETYPE));
+        Assertions.assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
     }
 
     /**
@@ -109,15 +106,15 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void index_shouldIndexRecordCorrectly() throws Exception {
+    void index_shouldIndexRecordCorrectly() throws Exception {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile);
-        Assert.assertEquals(30, lidoDocs.size());
+        Assertions.assertEquals(30, lidoDocs.size());
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-            Assert.assertNotEquals("ERROR", ret[0]);
+            Assertions.assertNotEquals("ERROR", ret[0]);
         }
 
         Map<String, Boolean> iddocMap = new HashMap<>();
@@ -126,52 +123,52 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         // Top document
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             {
                 Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                Assert.assertNotNull(values);
-                Assert.assertEquals(1, values.size());
-                Assert.assertEquals("OPENACCESS", values.iterator().next());
+                Assertions.assertNotNull(values);
+                Assertions.assertEquals(1, values.size());
+                Assertions.assertEquals("OPENACCESS", values.iterator().next());
             }
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
-            Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
+            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
+            Assertions.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
             {
                 List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
-                Assert.assertEquals("mmmsammlungen.200khmrostock.0750fotografien", mdList.get(0));
+                Assertions.assertNotNull(mdList);
+                Assertions.assertEquals(1, mdList.size());
+                Assertions.assertEquals("mmmsammlungen.200khmrostock.0750fotografien", mdList.get(0));
             }
-            Assert.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT));
-            Assert.assertTrue(doc.containsKey(SolrConstants.DEFAULT));
+            Assertions.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT));
+            Assertions.assertTrue(doc.containsKey(SolrConstants.DEFAULT));
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assert.assertNotNull(iddoc);
+            Assertions.assertNotNull(iddoc);
             iddocMap.put(iddoc, true);
-            Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
-            Assert.assertEquals(true, doc.getFieldValue(SolrConstants.ISWORK));
-            //            Assert.assertEquals("", doc.getFieldValue(SolrConstants.LABEL));
-            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.NUMPAGES));
-            Assert.assertEquals(PI, doc.getFieldValue(SolrConstants.PI));
-            Assert.assertEquals(PI, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assert.assertEquals(FileFormat.LIDO.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
-            Assert.assertEquals("PH_1.jpg", doc.getFieldValue(SolrConstants.THUMBNAIL));
-            Assert.assertEquals(1, doc.getFieldValue(SolrConstants.THUMBPAGENO));
-            Assert.assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
+            Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
+            Assertions.assertEquals(true, doc.getFieldValue(SolrConstants.ISWORK));
+            //            Assertions.assertEquals("", doc.getFieldValue(SolrConstants.LABEL));
+            Assertions.assertEquals(1, doc.getFieldValue(SolrConstants.NUMPAGES));
+            Assertions.assertEquals(PI, doc.getFieldValue(SolrConstants.PI));
+            Assertions.assertEquals(PI, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            Assertions.assertEquals(FileFormat.LIDO.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
+            Assertions.assertEquals("PH_1.jpg", doc.getFieldValue(SolrConstants.THUMBNAIL));
+            Assertions.assertEquals(1, doc.getFieldValue(SolrConstants.THUMBPAGENO));
+            Assertions.assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_TITLE");
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
-                Assert.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", mdList.get(0));
+                Assertions.assertNotNull(mdList);
+                Assertions.assertEquals(1, mdList.size());
+                Assertions.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", mdList.get(0));
             }
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_TITLE" + SolrConstants.SUFFIX_UNTOKENIZED);
-                Assert.assertNotNull(mdList);
-                Assert.assertEquals(1, mdList.size());
-                Assert.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", mdList.get(0));
+                Assertions.assertNotNull(mdList);
+                Assertions.assertEquals(1, mdList.size());
+                Assertions.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", mdList.get(0));
             }
-            Assert.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", doc.getFieldValue("SORT_TITLE"));
-            Assert.assertEquals("1900", doc.getFieldValue("SORT_" + SolrConstants.EVENTDATESTART));
-            Assert.assertFalse((boolean) doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
+            Assertions.assertEquals("Feldseite Kröpeliner Tor, Kinder im Vordergrund", doc.getFieldValue("SORT_TITLE"));
+            Assertions.assertEquals("1900", doc.getFieldValue("SORT_" + SolrConstants.EVENTDATESTART));
+            Assertions.assertFalse((boolean) doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
         }
 
         // Pages
@@ -180,7 +177,7 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
                     SolrIndexerDaemon.getInstance()
                             .getSearchIndex()
                             .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.FILENAME + ":*", null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
 
             Map<String, Boolean> filenameMap = new HashMap<>();
             Map<Integer, Boolean> orderMap = new HashMap<>();
@@ -188,37 +185,37 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 {
                     Integer value = (Integer) doc.getFieldValue(SolrConstants.ORDER);
-                    Assert.assertNotNull(value);
-                    Assert.assertNull(orderMap.get(value));
+                    Assertions.assertNotNull(value);
+                    Assertions.assertNull(orderMap.get(value));
                     orderMap.put(value, true);
                 }
                 {
                     Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                    Assert.assertNotNull(values);
-                    Assert.assertEquals(1, values.size());
-                    Assert.assertEquals("OPENACCESS", values.iterator().next());
+                    Assertions.assertNotNull(values);
+                    Assertions.assertEquals(1, values.size());
+                    Assertions.assertEquals("OPENACCESS", values.iterator().next());
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals("Page " + doc.getFieldValue(SolrConstants.ORDER) + ": " + mdList.toString(), 1, mdList.size());
-                    Assert.assertEquals("mmmsammlungen.200khmrostock.0750fotografien", mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size(), "Page " + doc.getFieldValue(SolrConstants.ORDER) + ": " + mdList.toString());
+                    Assertions.assertEquals("mmmsammlungen.200khmrostock.0750fotografien", mdList.get(0));
                 }
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.FILENAME);
-                    Assert.assertEquals("PH_1.jpg", value);
-                    Assert.assertNull(filenameMap.get(value));
+                    Assertions.assertEquals("PH_1.jpg", value);
+                    Assertions.assertNull(filenameMap.get(value));
                     filenameMap.put(value, true);
                 }
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assert.assertNotNull(value);
-                    Assert.assertNull(iddocMap.get(value));
+                    Assertions.assertNotNull(value);
+                    Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                 }
-                Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-                Assert.assertEquals("image/jpeg", doc.getFieldValue(SolrConstants.MIMETYPE));
-                Assert.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                Assertions.assertEquals("image/jpeg", doc.getFieldValue(SolrConstants.MIMETYPE));
+                Assertions.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }
         }
 
@@ -229,77 +226,77 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + iddoc + " AND " + SolrConstants.DOCTYPE + ":" + DocType.EVENT, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
 
             for (SolrDocument doc : docList) {
                 String eventType = (String) doc.getFieldValue(SolrConstants.EVENTTYPE);
-                Assert.assertNotNull(eventType);
+                Assertions.assertNotNull(eventType);
                 String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
-                Assert.assertNotNull(defaultValue);
-                Assert.assertTrue(defaultValue.startsWith(eventType));
+                Assertions.assertNotNull(defaultValue);
+                Assertions.assertTrue(defaultValue.startsWith(eventType));
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(1, mdList.size());
-                    Assert.assertEquals("mmmsammlungen.200khmrostock.0750fotografien", mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size());
+                    Assertions.assertEquals("mmmsammlungen.200khmrostock.0750fotografien", mdList.get(0));
                 }
                 {
                     List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.CENTURY);
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(1, mdList.size());
-                    Assert.assertEquals(Long.valueOf(20), mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size());
+                    Assertions.assertEquals(Long.valueOf(20), mdList.get(0));
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.EVENTDATE);
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(1, mdList.size());
-                    Assert.assertEquals("um 1910", mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size());
+                    Assertions.assertEquals("um 1910", mdList.get(0));
                 }
-                Assert.assertEquals("1920", doc.getFieldValue(SolrConstants.EVENTDATEEND));
-                Assert.assertEquals("1900", doc.getFieldValue(SolrConstants.EVENTDATESTART));
+                Assertions.assertEquals("1920", doc.getFieldValue(SolrConstants.EVENTDATEEND));
+                Assertions.assertEquals("1900", doc.getFieldValue(SolrConstants.EVENTDATESTART));
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assert.assertNotNull(value);
-                    Assert.assertNull(iddocMap.get(value));
+                    Assertions.assertNotNull(value);
+                    Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue("MD_EVENTNAME");
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(1, mdList.size());
-                    Assert.assertEquals("Herstellung", mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size());
+                    Assertions.assertEquals("Herstellung", mdList.get(0));
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue("MD_EVENTNAME" + SolrConstants.SUFFIX_UNTOKENIZED);
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(1, mdList.size());
-                    Assert.assertEquals("Herstellung", mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size());
+                    Assertions.assertEquals("Herstellung", mdList.get(0));
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue("MD_MATERIAL");
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(1, mdList.size());
-                    Assert.assertEquals("Papier, schwarz-weiß", mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size());
+                    Assertions.assertEquals("Papier, schwarz-weiß", mdList.get(0));
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue("MD_MATERIAL" + SolrConstants.SUFFIX_UNTOKENIZED);
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(1, mdList.size());
-                    Assert.assertEquals("Papier, schwarz-weiß", mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size());
+                    Assertions.assertEquals("Papier, schwarz-weiß", mdList.get(0));
                 }
                 {
                     List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEAR);
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(3, mdList.size());
-                    Assert.assertNotNull(doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(3, mdList.size());
+                    Assertions.assertNotNull(doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR));
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                    Assert.assertNotNull(mdList);
-                    Assert.assertEquals(1, mdList.size());
-                    Assert.assertEquals("OPENACCESS", mdList.get(0));
+                    Assertions.assertNotNull(mdList);
+                    Assertions.assertEquals(1, mdList.size());
+                    Assertions.assertEquals("OPENACCESS", mdList.get(0));
                 }
-                Assert.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+                Assertions.assertEquals("Abzug", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             }
         }
     }
@@ -309,15 +306,15 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
      * @verifies update record correctly
      */
     @Test
-    public void index_shouldUpdateRecordCorrectly() throws Exception {
+    void index_shouldUpdateRecordCorrectly() throws Exception {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile);
-        Assert.assertEquals(30, lidoDocs.size());
+        Assertions.assertEquals(30, lidoDocs.size());
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
             String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-            Assert.assertNotEquals("ERROR", ret[0]);
+            Assertions.assertNotEquals("ERROR", ret[0]);
         }
 
         Map<String, Boolean> iddocMap = new HashMap<>();
@@ -328,18 +325,18 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         // Top document
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
+            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
             dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
+            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
             dateUpdated = doc.getFieldValues(SolrConstants.DATEUPDATED);
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assert.assertNotNull(iddoc);
+            Assertions.assertNotNull(iddoc);
             iddocMap.put(iddoc, true);
-            Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
-            Assert.assertFalse((boolean) doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
-            Assert.assertEquals(Boolean.FALSE, doc.getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
+            Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
+            Assertions.assertFalse((boolean) doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
+            Assertions.assertEquals(Boolean.FALSE, doc.getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
         }
 
         // Pages
@@ -347,15 +344,15 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assert.assertNotNull(value);
-                    Assert.assertNull(iddocMap.get(value));
+                    Assertions.assertNotNull(value);
+                    Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                 }
-                Assert.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             }
         }
 
@@ -364,12 +361,12 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + iddoc + " AND " + SolrConstants.DOCTYPE + ":" + DocType.EVENT, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assert.assertNotNull(value);
-                    Assert.assertNull(iddocMap.get(value));
+                    Assertions.assertNotNull(value);
+                    Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                 }
             }
@@ -378,23 +375,23 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
         // Re-index
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
                 SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-        Assert.assertNotEquals("ERROR", ret[0]);
+        Assertions.assertNotEquals("ERROR", ret[0]);
 
         String newIddoc;
 
         // Top document
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assert.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
-            Assert.assertEquals(dateCreated, doc.getFieldValue(SolrConstants.DATECREATED));
-            Assert.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
-            Assert.assertEquals(dateUpdated.size() + 1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
+            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
+            Assertions.assertEquals(dateCreated, doc.getFieldValue(SolrConstants.DATECREATED));
+            Assertions.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
+            Assertions.assertEquals(dateUpdated.size() + 1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
             newIddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assert.assertNotNull(newIddoc);
-            Assert.assertNull(iddocMap.get(newIddoc));
-            Assert.assertEquals(Boolean.FALSE, doc.getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
+            Assertions.assertNotNull(newIddoc);
+            Assertions.assertNull(iddocMap.get(newIddoc));
+            Assertions.assertEquals(Boolean.FALSE, doc.getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
             iddocMap.put(newIddoc, true);
         }
 
@@ -403,16 +400,16 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
 
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assert.assertNotNull(value);
-                    Assert.assertNull(iddocMap.get(value));
+                    Assertions.assertNotNull(value);
+                    Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                 }
-                Assert.assertEquals(newIddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                Assertions.assertEquals(newIddoc, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
             }
         }
 
@@ -421,12 +418,12 @@ public class LidoIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + newIddoc + " AND " + SolrConstants.DOCTYPE + ":" + DocType.EVENT, null);
-            Assert.assertEquals(1, docList.size());
+            Assertions.assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assert.assertNotNull(value);
-                    Assert.assertNull(iddocMap.get(value));
+                    Assertions.assertNotNull(value);
+                    Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                 }
             }

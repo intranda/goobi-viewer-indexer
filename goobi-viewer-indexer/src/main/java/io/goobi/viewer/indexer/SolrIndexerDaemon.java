@@ -20,12 +20,14 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
@@ -87,24 +89,33 @@ public final class SolrIndexerDaemon {
      * 
      * @throws FatalIndexerException
      * @return this
+     * @should throw FatalIndexerException if solr schema name could not be checked
      */
     public SolrIndexerDaemon init() throws FatalIndexerException {
         if (logger.isInfoEnabled()) {
             logger.info(Version.asString());
         }
 
-        if (!checkSolrSchemaName(
-                SolrSearchIndex.getSolrSchemaDocument(getConfiguration().getSolrUrl()))) {
-            throw new FatalIndexerException("Incompatible Solr schema, exiting..");
+        try {
+            if (!checkSolrSchemaName(
+                    SolrSearchIndex.getSolrSchemaDocument(getConfiguration().getSolrUrl()))) {
+                throw new FatalIndexerException("Incompatible Solr schema, exiting..");
+            }
+        } catch (IOException | JDOMException | FatalIndexerException | ConfigurationException e) {
+            throw new FatalIndexerException("Could not check Solr schema: " + e.getMessage());
         }
 
         // Init old search index, if configured
-        HttpSolrClient oldClient = SolrSearchIndex.getNewHttpSolrClient(getConfiguration().getOldSolrUrl(), true);
-        if (oldClient != null) {
-            this.oldSearchIndex = new SolrSearchIndex(oldClient);
-            if (logger.isInfoEnabled()) {
-                logger.info("Also using old Solr server at {}", SolrIndexerDaemon.getInstance().getConfiguration().getOldSolrUrl());
+        try {
+            HttpSolrClient oldClient = SolrSearchIndex.getNewHttpSolrClient(getConfiguration().getOldSolrUrl(), true);
+            if (oldClient != null) {
+                this.oldSearchIndex = new SolrSearchIndex(oldClient);
+                if (logger.isInfoEnabled()) {
+                    logger.info("Also using old Solr server at {}", SolrIndexerDaemon.getInstance().getConfiguration().getOldSolrUrl());
+                }
             }
+        } catch (ConfigurationException e) {
+            // oldSolrUrl is optional
         }
 
         // create hotfolder(s)
@@ -166,7 +177,7 @@ public final class SolrIndexerDaemon {
         try {
             SolrIndexerDaemon.getInstance().init().start(cleanupAnchors);
         } catch (FatalIndexerException e) {
-            logger.error(e.getMessage());
+            logger.error("{}, exiting...", e.getMessage(), e);
             System.exit(-1);
         }
         System.exit(0);
@@ -259,6 +270,7 @@ public final class SolrIndexerDaemon {
      * @param doc
      * @return
      * @should return false if doc null
+     * @should return true if schema compatible
      */
     static boolean checkSolrSchemaName(Document doc) {
         if (doc == null) {
@@ -331,14 +343,18 @@ public final class SolrIndexerDaemon {
      * </p>
      *
      * @return the searchIndex
-     * @should created new instance if none exists
+     * @should create new instance if none exists
      */
     public SolrSearchIndex getSearchIndex() {
         if (this.searchIndex == null) {
             synchronized (lock) {
-                this.searchIndex = new SolrSearchIndex(null);
-                this.searchIndex.setOptimize(configuration.isAutoOptimize());
-                logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
+                try {
+                    this.searchIndex = new SolrSearchIndex(null);
+                    this.searchIndex.setOptimize(configuration.isAutoOptimize());
+                    logger.info("Auto-optimize: {}", this.searchIndex.isOptimize());
+                } catch (ConfigurationException e) {
+                    logger.error(e.getMessage());
+                }
             }
         }
 
@@ -351,9 +367,7 @@ public final class SolrIndexerDaemon {
      * @param searchIndex a {@link io.goobi.viewer.solr.SolrSearchIndex} object.
      */
     public void injectSearchIndex(SolrSearchIndex searchIndex) {
-        if (searchIndex != null) {
-            this.searchIndex = searchIndex;
-        }
+        this.searchIndex = searchIndex;
     }
 
     /**

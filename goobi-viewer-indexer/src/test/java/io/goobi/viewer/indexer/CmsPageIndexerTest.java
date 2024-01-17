@@ -15,9 +15,9 @@
  */
 package io.goobi.viewer.indexer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,18 +28,18 @@ import java.util.Map;
 
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
-public class CmsPageIndexerTest extends AbstractSolrEnabledTest {
+class CmsPageIndexerTest extends AbstractSolrEnabledTest {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -51,10 +51,10 @@ public class CmsPageIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    public void CmsPageIndexer_shouldSetAttributesCorrectly() throws Exception {
-        Assert.assertNotNull(hotfolder);
+    void CmsPageIndexer_shouldSetAttributesCorrectly() throws Exception {
+        Assertions.assertNotNull(hotfolder);
         Indexer indexer = new CmsPageIndexer(hotfolder);
-        Assert.assertEquals(hotfolder, indexer.hotfolder);
+        Assertions.assertEquals(hotfolder, indexer.hotfolder);
     }
 
     /**
@@ -62,7 +62,7 @@ public class CmsPageIndexerTest extends AbstractSolrEnabledTest {
      * @verifies add record to index correctly
      */
     @Test
-    public void addToIndex_shouldAddRecordToIndexCorrectly() throws Exception {
+    void addToIndex_shouldAddRecordToIndexCorrectly() throws Exception {
         Path cmsFile = Paths.get("src/test/resources/indexed_cms/CMS123.xml");
         assertTrue(Files.isRegularFile(cmsFile));
         Path indexFile = Paths.get(hotfolder.getHotfolderPath().toString(), "CMS123.xml");
@@ -73,8 +73,8 @@ public class CmsPageIndexerTest extends AbstractSolrEnabledTest {
         indexer.addToIndex(indexFile, false, new HashMap<>());
 
         SolrDocumentList result = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":CMS123", null);
-        Assert.assertNotNull(result);
-        Assert.assertEquals(1, result.size());
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(1, result.size());
         SolrDocument doc = result.get(0);
 
         assertEquals("CMS123", doc.getFieldValue(SolrConstants.PI));

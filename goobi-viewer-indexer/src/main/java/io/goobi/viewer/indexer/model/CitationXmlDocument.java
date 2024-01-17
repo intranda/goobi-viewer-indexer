@@ -33,9 +33,12 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
 
-public class PrimoDocument {
+/**
+ * Citation metadata in an externally fetched XML document.
+ */
+public class CitationXmlDocument {
 
-    private static final Logger logger = LogManager.getLogger(PrimoDocument.class);
+    private static final Logger logger = LogManager.getLogger(CitationXmlDocument.class);
 
     private static final String REGEX = "\\$\\{([^{}]+)\\}";
 
@@ -47,14 +50,14 @@ public class PrimoDocument {
     /**
      * Empty constructor.
      */
-    public PrimoDocument() {
+    public CitationXmlDocument() {
     }
 
     /**
      * 
      * @param url URL to resolve
      */
-    public PrimoDocument(String url) {
+    public CitationXmlDocument(String url) {
         this.url = url;
     }
 
@@ -64,7 +67,7 @@ public class PrimoDocument {
      * @return
      * @should find and replace identifier correctly
      */
-    public PrimoDocument prepareURL(Map<String, List<String>> collectedValues) {
+    public CitationXmlDocument prepareURL(Map<String, List<String>> collectedValues) {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException("url may not be null or empty");
         }
@@ -73,7 +76,7 @@ public class PrimoDocument {
             return this;
         }
 
-        Pattern p = Pattern.compile(REGEX); //NOSONAR   regex save and input controlled
+        Pattern p = Pattern.compile(REGEX); //NOSONAR regex safe and input controlled
         Matcher m = p.matcher(url);
 
         if (!m.find()) {
@@ -97,7 +100,7 @@ public class PrimoDocument {
      * @throws HTTPException
      * @throws IOException
      */
-    public PrimoDocument fetch() throws HTTPException, IOException {
+    public CitationXmlDocument fetch() throws HTTPException, IOException {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalStateException("url may not be null or empty");
         }
@@ -117,7 +120,7 @@ public class PrimoDocument {
      * @throws IOException
      * @should build document correctly
      */
-    public PrimoDocument build() throws JDOMException, IOException {
+    public CitationXmlDocument build() throws JDOMException, IOException {
         if (xml == null) {
             throw new IllegalStateException("Document not fetched");
         }
@@ -139,7 +142,7 @@ public class PrimoDocument {
      * @param url the url to set
      * @return this
      */
-    public PrimoDocument setUrl(String url) {
+    public CitationXmlDocument setUrl(String url) {
         this.url = url;
         return this;
     }
@@ -155,7 +158,7 @@ public class PrimoDocument {
      * @param xml the xml to set
      * @return this
      */
-    public PrimoDocument setXml(String xml) {
+    public CitationXmlDocument setXml(String xml) {
         this.xml = xml;
         return this;
     }

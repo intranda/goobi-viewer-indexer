@@ -44,14 +44,12 @@ import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
-import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
 import io.goobi.viewer.indexer.model.GeoCoords;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PrimitiveDate;
-import io.goobi.viewer.indexer.model.PrimoDocument;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
@@ -422,10 +420,9 @@ public class MetadataHelper {
      * @param replaceRules Optional metadata value replace rules
      * @param labelField Field name of the metadata group to which this authority data belongs
      * @return
-     * @throws FatalIndexerException
      */
     private static List<LuceneField> retrieveAuthorityData(String url, StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms,
-            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) throws FatalIndexerException {
+            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
         logger.info("retrieveAuthorityData: {}", url);
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
@@ -885,7 +882,7 @@ public class MetadataHelper {
      * @return String or null
      * @should extract DenkXweb PI correctly
      */
-    public static String getPIFromXML(String prefix, JDomXP xp) {
+    public static String[] getPIFromXML(String prefix, JDomXP xp) {
         List<FieldConfig> piConfig =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
@@ -906,11 +903,14 @@ public class MetadataHelper {
                 }
             }
             if (StringUtils.isNotEmpty(pi)) {
-                return pi;
+                if (piConfig.get(0).isAddToDefault()) {
+                    return new String[] { pi, "addToDefault" };
+                }
+                return new String[] { pi };
             }
         }
 
-        return null;
+        return new String[] {};
     }
 
     /**
@@ -1131,20 +1131,7 @@ public class MetadataHelper {
 
         // Query citation resource
         if (MetadataGroupType.CITATION.equals(groupEntity.getType())) {
-            if (StringUtils.isNotEmpty(groupEntity.getUrl())) {
-                try {
-                    PrimoDocument primo = new PrimoDocument(groupEntity.getUrl())
-                            .prepareURL(collectedValues)
-                            .fetch()
-                            .build();
-                    ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
-                            primo.getXp().getRootElement(), authorityDataEnabled, null);
-                } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
-                    logger.error(e.getMessage());
-                }
-            } else {
-                logger.warn("Citation metadata field {} is missing a URL.", groupLabel);
-            }
+            ret.harvestCitationMetadataFromUrl(groupEntity, collectedValues);
         }
 
         // Add single-valued field by which to group metadata search hits

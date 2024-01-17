@@ -26,40 +26,40 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Element;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
-public class TextHelperTest extends AbstractTest {
+class TextHelperTest extends AbstractTest {
 
     /**
      * @see TextHelper#readAltoFile(String,File)
      * @verifies read ALTO document correctly
      */
     @Test
-    public void readAltoFile_shouldReadALTODocumentCorrectly() throws Exception {
+    void readAltoFile_shouldReadALTODocumentCorrectly() throws Exception {
         File folder = new File("src/test/resources/ALTO");
-        Assert.assertTrue(folder.isDirectory());
+        Assertions.assertTrue(folder.isDirectory());
         Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "birdsbeneficialt00froh_0031.xml"));
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.get(SolrConstants.ALTO));
+        Assertions.assertNotNull(result);
+        Assertions.assertNotNull(result.get(SolrConstants.ALTO));
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void readAltoFile_shouldRetainTags() throws Exception {
+    void readAltoFile_shouldRetainTags() throws Exception {
         File origFile = new File("src/test/resources/ALTO/altoWithTags.xml");
-        Assert.assertTrue(origFile.isFile());
+        Assertions.assertTrue(origFile.isFile());
         Map<String, Object> result = TextHelper.readAltoFile(origFile);
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
+        Assertions.assertNotNull(result);
+        Assertions.assertNotNull(result.get(SolrConstants.FULLTEXT));
         String altoRead = (String) result.get(SolrConstants.ALTO);
         String altoOrig = FileTools.readFileToString(origFile, null);
-        Assert.assertTrue(altoRead.contains("NamedEntityTag") && altoRead.contains("TAGREFS"));
-        Assert.assertTrue("PERSON_Heinrich".equals(((List<String>) result.get(SolrConstants.NAMEDENTITIES)).get(0)));
-        //        Assert.assertEquals(altoOrig.replaceAll("\\s", "").toLowerCase(), altoRead.replaceAll("\\s", "").toLowerCase());
+        Assertions.assertTrue(altoRead.contains("NamedEntityTag") && altoRead.contains("TAGREFS"));
+        Assertions.assertTrue("PERSON_Heinrich".equals(((List<String>) result.get(SolrConstants.NAMEDENTITIES)).get(0)));
+        //        Assertions.assertEquals(altoOrig.replaceAll("\\s", "").toLowerCase(), altoRead.replaceAll("\\s", "").toLowerCase());
     }
 
     /**
@@ -67,38 +67,38 @@ public class TextHelperTest extends AbstractTest {
      * @verifies extract fulltext correctly
      */
     @Test
-    public void readAltoFile_shouldExtractFulltextCorrectly() throws Exception {
+    void readAltoFile_shouldExtractFulltextCorrectly() throws Exception {
         File folder = new File("src/test/resources/ALTO");
-        Assert.assertTrue(folder.isDirectory());
+        Assertions.assertTrue(folder.isDirectory());
         {
             Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "birdsbeneficialt00froh_0031.xml"));
-            Assert.assertNotNull(result);
-            Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
+            Assertions.assertNotNull(result);
+            Assertions.assertNotNull(result.get(SolrConstants.FULLTEXT));
             // Plain TextBlock
-            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Mus."));
+            Assertions.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Mus."));
             // TextBlock embedded in a ComposedBlock
-            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Stone-Curlew"));
+            Assertions.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Stone-Curlew"));
         }
         {
             Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "00000010.xml"));
-            Assert.assertNotNull(result);
-            Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
+            Assertions.assertNotNull(result);
+            Assertions.assertNotNull(result.get(SolrConstants.FULLTEXT));
             // SUBS_CONTENT
-            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Eheschliessungen"));
+            Assertions.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Eheschliessungen"));
         }
         {
             Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "00000005a.xml"));
-            Assert.assertNotNull(result);
-            Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
+            Assertions.assertNotNull(result);
+            Assertions.assertNotNull(result.get(SolrConstants.FULLTEXT));
             // SUBS_CONTENT
-            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("jeweilig"));
+            Assertions.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("jeweilig"));
         }
         {
             Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "0230L.xml"));
-            Assert.assertNotNull(result);
-            Assert.assertNotNull(result.get(SolrConstants.FULLTEXT));
+            Assertions.assertNotNull(result);
+            Assertions.assertNotNull(result.get(SolrConstants.FULLTEXT));
             // SUBS_CONTENT
-            Assert.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Wappen"));
+            Assertions.assertTrue(((String) result.get(SolrConstants.FULLTEXT)).contains("Wappen"));
         }
     }
 
@@ -107,33 +107,33 @@ public class TextHelperTest extends AbstractTest {
      * @verifies extract page dimensions correctly
      */
     @Test
-    public void readAltoFile_shouldExtractPageDimensionsCorrectly() throws Exception {
+    void readAltoFile_shouldExtractPageDimensionsCorrectly() throws Exception {
         File folder = new File("src/test/resources/ALTO");
-        Assert.assertTrue(folder.isDirectory());
+        Assertions.assertTrue(folder.isDirectory());
         Map<String, Object> result = TextHelper.readAltoFile(new File(folder, "AC04987957_00000124.xml"));
-        Assert.assertNotNull(result);
-        Assert.assertEquals("4898", result.get(SolrConstants.WIDTH));
-        Assert.assertEquals("6937", result.get(SolrConstants.HEIGHT));
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("4898", result.get(SolrConstants.WIDTH));
+        Assertions.assertEquals("6937", result.get(SolrConstants.HEIGHT));
     }
 
     /**
      * @see TextHelper#readAltoFile(String,File)
      * @verifies throw FileNotFoundException if file not found
      */
-    @Test(expected = FileNotFoundException.class)
-    public void readAltoFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    @Test
+    void readAltoFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
         File folder = new File("src/test/resources/ALTO");
-        Assert.assertTrue(folder.isDirectory());
-        TextHelper.readAltoFile(new File(folder, "filenotfound"));
+        Assertions.assertTrue(folder.isDirectory());
+        Assertions.assertThrows(FileNotFoundException.class, () -> TextHelper.readAltoFile(new File(folder, "filenotfound")));
     }
 
     /**
      * @see TextHelper#readMix(File)
      * @verifies throw FileNotFoundException if file not found
      */
-    @Test(expected = FileNotFoundException.class)
-    public void readMix_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
-        TextHelper.readMix(new File("filenotfound"));
+    @Test
+    void readMix_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+        Assertions.assertThrows(FileNotFoundException.class, () -> TextHelper.readMix(new File("filenotfound")));
     }
 
     /**
@@ -141,19 +141,20 @@ public class TextHelperTest extends AbstractTest {
      * @verifies convert to ALTO correctly
      */
     @Test
-    public void readAbbyyToAlto_shouldConvertToALTOCorrectly() throws Exception {
+    void readAbbyyToAlto_shouldConvertToALTOCorrectly() throws Exception {
         Map<String, Object> result = TextHelper.readAbbyyToAlto(new File("src/test/resources/ABBYYXML/00000001.xml"));
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.get(SolrConstants.ALTO));
+        Assertions.assertNotNull(result);
+        Assertions.assertNotNull(result.get(SolrConstants.ALTO));
     }
 
     /**
      * @see TextHelper#readAbbyyToAlto(File)
      * @verifies throw IOException given wrong document format
      */
-    @Test(expected = IOException.class)
-    public void readAbbyyToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
-        TextHelper.readAbbyyToAlto(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
+    @Test
+    void readAbbyyToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
+        Assertions.assertThrows(IOException.class,
+                () -> TextHelper.readAbbyyToAlto(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml")));
     }
 
     /**
@@ -161,20 +162,20 @@ public class TextHelperTest extends AbstractTest {
      * @verifies convert to ALTO correctly
      */
     @Test
-    public void readTeiToAlto_shouldConvertToALTOCorrectly() throws Exception {
+    void readTeiToAlto_shouldConvertToALTOCorrectly() throws Exception {
         Map<String, Object> result =
                 TextHelper.readTeiToAlto(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml"));
-        Assert.assertNotNull(result);
-        Assert.assertNotNull(result.get(SolrConstants.ALTO));
+        Assertions.assertNotNull(result);
+        Assertions.assertNotNull(result.get(SolrConstants.ALTO));
     }
 
     /**
      * @see TextHelper#readTeiToAlto(File)
      * @verifies throw IOException given wrong document format
      */
-    @Test(expected = IOException.class)
-    public void readTeiToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
-        TextHelper.readTeiToAlto(new File("src/test/resources/ABBYYXML/00000001.xml"));
+    @Test
+    void readTeiToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
+        Assertions.assertThrows(IOException.class, () -> TextHelper.readTeiToAlto(new File("src/test/resources/ABBYYXML/00000001.xml")));
     }
 
     /**
@@ -182,11 +183,11 @@ public class TextHelperTest extends AbstractTest {
      * @verifies return text if fulltext file exists
      */
     @Test
-    public void generateFulltext_shouldReturnTextIfFulltextFileExists() throws Exception {
+    void generateFulltext_shouldReturnTextIfFulltextFileExists() throws Exception {
         Path folder = Paths.get("src/test/resources");
-        Assert.assertTrue(Files.isDirectory(folder));
+        Assertions.assertTrue(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false, false);
-        Assert.assertTrue(StringUtils.isNotEmpty(text));
+        Assertions.assertTrue(StringUtils.isNotEmpty(text));
     }
 
     /**
@@ -194,11 +195,11 @@ public class TextHelperTest extends AbstractTest {
      * @verifies return null if fulltext folder exists but no file
      */
     @Test
-    public void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() throws Exception {
+    void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() throws Exception {
         Path folder = Paths.get("src/test/resources");
-        Assert.assertTrue(Files.isDirectory(folder));
+        Assertions.assertTrue(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("filenotfound.txt", folder, false, false);
-        Assert.assertNull(text);
+        Assertions.assertNull(text);
     }
 
     /**
@@ -206,11 +207,11 @@ public class TextHelperTest extends AbstractTest {
      * @verifies return null of fulltext folder does not exist
      */
     @Test
-    public void generateFulltext_shouldReturnNullOfFulltextFolderDoesNotExist() throws Exception {
+    void generateFulltext_shouldReturnNullOfFulltextFolderDoesNotExist() throws Exception {
         Path folder = Paths.get("src/test/resources/dirnotfound");
-        Assert.assertFalse(Files.isDirectory(folder));
+        Assertions.assertFalse(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false, false);
-        Assert.assertNull(text);
+        Assertions.assertNull(text);
     }
 
     /**
@@ -218,9 +219,9 @@ public class TextHelperTest extends AbstractTest {
      * @verifies clean up string correctly
      */
     @Test
-    public void cleanUpHtmlTags_shouldCleanUpStringCorrectly() throws Exception {
-        Assert.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("<p><b>foo</b></p><br/>bar"));
-        Assert.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("foo <bar"));
+    void cleanUpHtmlTags_shouldCleanUpStringCorrectly() throws Exception {
+        Assertions.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("<p><b>foo</b></p><br/>bar"));
+        Assertions.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("foo <bar"));
     }
 
     /**
@@ -228,11 +229,11 @@ public class TextHelperTest extends AbstractTest {
      * @verifies uppercase type
      */
     @Test
-    public void createSimpleNamedEntityTag_shouldUppercaseType() throws Exception {
+    void createSimpleNamedEntityTag_shouldUppercaseType() throws Exception {
         Element eleTag = new Element("NamedEntityTag");
         eleTag.setAttribute("TYPE", "location");
         eleTag.setAttribute("LABEL", "Göttingen");
         String tag = TextHelper.createSimpleNamedEntityTag(eleTag);
-        Assert.assertEquals("LOCATION_Göttingen", tag);
+        Assertions.assertEquals("LOCATION_Göttingen", tag);
     }
 }

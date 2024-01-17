@@ -22,37 +22,37 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.FileTools;
 
-public class PrimoDocumentTest {
+public class CitationXmlDocumentTest {
 
     /**
-     * @see PrimoDocument#build()
+     * @see CitationXmlDocument#build()
      * @verifies build document correctly
      */
     @Test
     public void build_shouldBuildDocumentCorrectly() throws Exception {
         File file = new File("src/test/resources/Primo/000110550.xml");
-        Assert.assertTrue(file.isFile());
+        Assertions.assertTrue(file.isFile());
         String xml = FileTools.readFileToString(file, null);
-        Assert.assertTrue(StringUtils.isNotEmpty(xml));
-        PrimoDocument pd = new PrimoDocument().setXml(xml).build();
-        Assert.assertNotNull(pd.getXp());
+        Assertions.assertTrue(StringUtils.isNotEmpty(xml));
+        CitationXmlDocument pd = new CitationXmlDocument().setXml(xml).build();
+        Assertions.assertNotNull(pd.getXp());
     }
 
     /**
-     * @see PrimoDocument#prepareURL(Map)
+     * @see CitationXmlDocument#prepareURL(Map)
      * @verifies find and replace identifier correctly
      */
     @Test
     public void prepare_shouldFindAndReplaceIdentifierCorrectly() throws Exception {
         Map<String, List<String>> values = new HashMap<>(1);
         values.put("MD_FOO", Collections.singletonList("123"));
-        PrimoDocument pd = new PrimoDocument("https://example.com?id=${MD_FOO}&format=xml");
+        CitationXmlDocument pd = new CitationXmlDocument("https://example.com?id=${MD_FOO}&format=xml");
         pd.prepareURL(values);
-        Assert.assertEquals("https://example.com?id=123&format=xml", pd.getUrl());
+        Assertions.assertEquals("https://example.com?id=123&format=xml", pd.getUrl());
     }
 }

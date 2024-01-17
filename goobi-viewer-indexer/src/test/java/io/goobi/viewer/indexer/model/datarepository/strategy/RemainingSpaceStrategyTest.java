@@ -19,28 +19,28 @@ import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.datarepository.DummyDataRepository;
 
-public class RemainingSpaceStrategyTest extends AbstractTest {
+class RemainingSpaceStrategyTest extends AbstractTest {
 
     /**
      * @see RemainingSpaceStrategy#selectRepository(SortedMap,long)
      * @verifies select repository with the smallest sufficient space
      */
     @Test
-    public void selectRepository_shouldSelectRepositoryWithTheSmallestSufficientSpace() throws Exception {
+    void selectRepository_shouldSelectRepositoryWithTheSmallestSufficientSpace() throws Exception {
         SortedMap<Long, DataRepository> repositorySpaceMap = new TreeMap<>();
         repositorySpaceMap.put(30L, new DataRepository("/opt/digiverso/viewer/data/3"));
         repositorySpaceMap.put(20L, new DataRepository("/opt/digiverso/viewer/data/2"));
         repositorySpaceMap.put(10L, new DataRepository("/opt/digiverso/viewer/data/1"));
-        Assert.assertEquals(repositorySpaceMap.get(20L), RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 11L));
-        Assert.assertEquals(repositorySpaceMap.get(30L), RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 22L));
-        Assert.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
+        Assertions.assertEquals(repositorySpaceMap.get(20L), RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 11L));
+        Assertions.assertEquals(repositorySpaceMap.get(30L), RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 22L));
+        Assertions.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
     }
 
     /**
@@ -48,12 +48,12 @@ public class RemainingSpaceStrategyTest extends AbstractTest {
      * @verifies return null if recordSize is larger than any available repository space
      */
     @Test
-    public void selectRepository_shouldReturnNullIfRecordSizeIsLargerThanAnyAvailableRepositorySpace() throws Exception {
+    void selectRepository_shouldReturnNullIfRecordSizeIsLargerThanAnyAvailableRepositorySpace() throws Exception {
         SortedMap<Long, DataRepository> repositorySpaceMap = new TreeMap<>();
         repositorySpaceMap.put(30L, new DataRepository("/opt/digiverso/viewer/data/3"));
         repositorySpaceMap.put(20L, new DataRepository("/opt/digiverso/viewer/data/2"));
         repositorySpaceMap.put(10L, new DataRepository("/opt/digiverso/viewer/data/1"));
-        Assert.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
+        Assertions.assertEquals(null, RemainingSpaceStrategy.selectRepository(repositorySpaceMap, 33L));
     }
 
     /**
@@ -61,11 +61,11 @@ public class RemainingSpaceStrategyTest extends AbstractTest {
      * @verifies subtract the buffer size from available space
      */
     @Test
-    public void generateRepositorySpaceMap_shouldSubtractTheBufferSizeFromAvailableSpace() throws Exception {
+    void generateRepositorySpaceMap_shouldSubtractTheBufferSizeFromAvailableSpace() throws Exception {
         DummyDataRepository repo = new DummyDataRepository("/opt/digiverso/viewer/data/1", 30L, 3L);
 
         SortedMap<Long, DataRepository> repositorySpaceMap = RemainingSpaceStrategy.generateRepositorySpaceMap(Collections.singletonList(repo));
-        Assert.assertEquals(1, repositorySpaceMap.size());
-        Assert.assertEquals(repo, repositorySpaceMap.get(27L));
+        Assertions.assertEquals(1, repositorySpaceMap.size());
+        Assertions.assertEquals(repo, repositorySpaceMap.get(27L));
     }
 }
