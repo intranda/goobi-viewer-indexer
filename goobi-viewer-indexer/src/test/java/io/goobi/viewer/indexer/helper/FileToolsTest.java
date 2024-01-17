@@ -24,24 +24,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import io.goobi.viewer.indexer.AbstractTest;
 
 class FileToolsTest extends AbstractTest {
-
-    private File tempDir = new File("target/temp");
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        if (tempDir.exists()) {
-            FileUtils.deleteQuietly(tempDir);
-        }
-    }
 
     /**
      * @see FileTools#compressGzipFile(File,File)
@@ -70,8 +60,8 @@ class FileToolsTest extends AbstractTest {
      * @verifies write file correctly
      */
     @Test
-    void getFileFromString_shouldWriteFileCorrectly() throws Exception {
-        Assertions.assertTrue(tempDir.mkdirs());
+    void getFileFromString_shouldWriteFileCorrectly(@TempDir File tempDir) throws Exception {
+        Assertions.assertTrue(tempDir.exists());
         File file = new File(tempDir, "temp.txt");
         String text = "Lorem ipsum dolor sit amet";
         FileTools.getFileFromString(text, file.getAbsolutePath(), null, false);
@@ -118,8 +108,8 @@ class FileToolsTest extends AbstractTest {
      * @verifies only delete folders that match fileNameRoot
      */
     @Test
-    void deleteUnsupportedDataFolders_shouldOnlyDeleteFoldersThatMatchFileNameRoot() throws Exception {
-        Assertions.assertTrue(tempDir.mkdirs());
+    void deleteUnsupportedDataFolders_shouldOnlyDeleteFoldersThatMatchFileNameRoot(@TempDir File tempDir) throws Exception {
+        Assertions.assertTrue(tempDir.isDirectory());
         Path yes1 = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_foo"));
         Assertions.assertTrue(Files.isDirectory(yes1));
         Path yes2 = Files.createDirectory(Paths.get(tempDir.getAbsolutePath(), "PPN123_foobar"));

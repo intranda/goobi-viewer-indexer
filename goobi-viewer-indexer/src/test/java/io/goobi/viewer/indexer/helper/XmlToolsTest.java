@@ -23,25 +23,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import io.goobi.viewer.indexer.AbstractTest;
 
 class XmlToolsTest extends AbstractTest {
-
-    private File tempDir = new File("target/temp");
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        if (tempDir.exists()) {
-            FileUtils.deleteQuietly(tempDir);
-        }
-    }
 
     /**
      * @see XmlTools#getDocumentFromString(String,String)
@@ -85,7 +75,7 @@ class XmlToolsTest extends AbstractTest {
      * @see XmlTools#writeXmlFile(Document,String)
      * @verifies write file correctly
      */
-    void writeXmlFile_shouldWriteFileCorrectly() throws Exception {
+    void writeXmlFile_shouldWriteFileCorrectly(@TempDir File tempDir) throws Exception {
         String filePath = tempDir + "/test.xml";
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
