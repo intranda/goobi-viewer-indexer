@@ -3239,12 +3239,13 @@
                 <item>
                     <xpath>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:relatedWorksWrap/lido:relatedWorkSet/lido:relatedWork/lido:object[lido:objectID[@lido:source="a-z.lu"]]</xpath>
                     <addToDefault>true</addToDefault>
-                    <groupEntity type="CITATION" url="https://a-z.lu/primo_library/libweb/webservices/rest/primo-explore/v1/pnxs/xml/L/ALEPH_LUX01${MD_VALUE}?vid=BIBNET\&amp;inst=BIBNET\&amp;showPnx=true">
+                    <groupEntity type="CITATION" urlType="oai"
+                        url="https://bibnet.alma.exlibrisgroup.com/view/oai/352LUX_BIBNET_NETWORK/request?verb=GetRecord&amp;identifier=oai:alma.352LUX_BIBNET_NETWORK:${MD_VALUE}&amp;metadataPrefix=marc21">
                         <field name="MD_VALUE">lido:objectID[@lido:source="a-z.lu"]</field>
-                        <field name="MD_CITATION_RECORDID">pnx:control/pnx:recordid</field>
-                        <field name="MD_CITATION_TITLE">pnx:display/pnx:title</field>
-                        <field name="MD_CITATION_CONTRIBUTOR">pnx:display/*[self::pnx:contributor or self::pnx:creator]</field>
-                        <field name="MD_CITATION_PUBLISHER">pnx:display/pnx:publisher</field>
+                        <field name="MD_CITATION_RECORDID">oai:GetRecord/oai:record/oai:metadata/marc:record/marc:controlfield[@tag="001"]</field>
+                        <field name="MD_CITATION_TITLE">oai:GetRecord/oai:record/oai:metadata/marc:record/marc:datafield[@tag="245"]/marc:subfield[@code="a"]</field>
+                        <field name="MD_CITATION_CONTRIBUTOR">oai:GetRecord/oai:record/oai:metadata/marc:record/marc:datafield[@tag="100"]/marc:subfield[@code="a"]</field>
+                        <field name="MD_CITATION_PUBLISHER">oai:GetRecord/oai:record/oai:metadata/marc:record/marc:datafield[@tag="264"]/marc:subfield[@code="b"]</field>
                         <field name="MD_CITATION_PAGE">lido:objectNote[@lido:type="page"]</field>
                         <field name="MD_CITATION_ILLUSTRATION">lido:objectNote[@lido:type="illustration"]</field>
                         <field name="MD_CITATION_CATALOGUE">lido:objectNote[@lido:type="catalogue"]</field>

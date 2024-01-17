@@ -27,31 +27,31 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.FileTools;
 
-class PrimoDocumentTest {
+public class CitationXmlDocumentTest {
 
     /**
-     * @see PrimoDocument#build()
+     * @see CitationXmlDocument#build()
      * @verifies build document correctly
      */
     @Test
-    void build_shouldBuildDocumentCorrectly() throws Exception {
+    public void build_shouldBuildDocumentCorrectly() throws Exception {
         File file = new File("src/test/resources/Primo/000110550.xml");
         Assertions.assertTrue(file.isFile());
         String xml = FileTools.readFileToString(file, null);
         Assertions.assertTrue(StringUtils.isNotEmpty(xml));
-        PrimoDocument pd = new PrimoDocument().setXml(xml).build();
+        CitationXmlDocument pd = new CitationXmlDocument().setXml(xml).build();
         Assertions.assertNotNull(pd.getXp());
     }
 
     /**
-     * @see PrimoDocument#prepareURL(Map)
+     * @see CitationXmlDocument#prepareURL(Map)
      * @verifies find and replace identifier correctly
      */
     @Test
-    void prepare_shouldFindAndReplaceIdentifierCorrectly() throws Exception {
+    public void prepare_shouldFindAndReplaceIdentifierCorrectly() throws Exception {
         Map<String, List<String>> values = new HashMap<>(1);
         values.put("MD_FOO", Collections.singletonList("123"));
-        PrimoDocument pd = new PrimoDocument("https://example.com?id=${MD_FOO}&format=xml");
+        CitationXmlDocument pd = new CitationXmlDocument("https://example.com?id=${MD_FOO}&format=xml");
         pd.prepareURL(values);
         Assertions.assertEquals("https://example.com?id=123&format=xml", pd.getUrl());
     }
