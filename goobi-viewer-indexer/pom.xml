@@ -23,6 +23,8 @@
 		<skipTests>true</skipTests>
 
         <!-- Sonar -->
+        <sonar.scanner.force-deprecated-java-version>true</sonar.scanner.force-deprecated-java-version>
+
         <sonar.projectKey>intranda_goobi-viewer-indexer</sonar.projectKey>
         <sonar.organization>intranda</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
