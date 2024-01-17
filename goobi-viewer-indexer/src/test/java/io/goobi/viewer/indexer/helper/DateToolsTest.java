@@ -20,16 +20,11 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import io.goobi.viewer.indexer.model.PrimitiveDate;
 
 class DateToolsTest {
-
-    /** Input data for normalizeDate_shouldParseInternationalDateFormatsCorrectly() */
-    private static String[] dates() {
-        return new String[] { "2014-08-05", "05.08.2014", "2014-08-05", "08/05/2014", "2014.08.05", "2014/08/05" };
-    }
 
     /**
      * @see DateTools#convertDateStringForSolrField(String,boolean)
@@ -47,7 +42,7 @@ class DateToolsTest {
      * @verifies parse international date formats correctly
      */
     @ParameterizedTest
-    @MethodSource(value = "dates")
+    @ValueSource(strings = { "2014-08-05", "05.08.2014", "2014-08-05", "08/05/2014", "2014.08.05", "2014/08/05" })
     void normalizeDate_shouldParseInternationalDateFormatsCorrectly(String date) throws Exception {
         List<PrimitiveDate> ret = DateTools.normalizeDate(date, 3);
         Assertions.assertEquals(1, ret.size());
