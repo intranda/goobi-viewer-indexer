@@ -79,11 +79,8 @@ public class DateTools {
      * @param dateString
      * @param normalizeYearMinDigits
      * @return List of parsed PrimitiveDates.
-     * @should parse german date formats correctly
-     * @should parse rfc date formats correctly
-     * @should parse american date formats correctly
-     * @should parse chinese date formats correctly
-     * @should parse japanese date formats correctly
+     * @should parse international date formats correctly
+     * @should parse yearmonth correctly
      * @should parse year ranges correctly
      * @should parse single years correctly
      * @should throw IllegalArgumentException if normalizeYearMinDigits less than 1

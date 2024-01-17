@@ -19,10 +19,17 @@ import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.goobi.viewer.indexer.model.PrimitiveDate;
 
 class DateToolsTest {
+
+    /** Input data for normalizeDate_shouldParseInternationalDateFormatsCorrectly() */
+    private static String[] dates() {
+        return new String[] { "2014-08-05", "05.08.2014", "2014-08-05", "08/05/2014", "2014.08.05", "2014/08/05" };
+    }
 
     /**
      * @see DateTools#convertDateStringForSolrField(String,boolean)
@@ -37,11 +44,12 @@ class DateToolsTest {
 
     /**
      * @see DateTools#normalizeDate(String,int)
-     * @verifies parse german date formats correctly
+     * @verifies parse international date formats correctly
      */
-    @Test
-    void normalizeDate_shouldParseGermanDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("05.08.2014", 3);
+    @ParameterizedTest
+    @MethodSource(value = "dates")
+    void normalizeDate_shouldParseInternationalDateFormatsCorrectly(String date) throws Exception {
+        List<PrimitiveDate> ret = DateTools.normalizeDate(date, 3);
         Assertions.assertEquals(1, ret.size());
         Assertions.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
         Assertions.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
@@ -50,59 +58,14 @@ class DateToolsTest {
 
     /**
      * @see DateTools#normalizeDate(String,int)
-     * @verifies parse rfc date formats correctly
+     * @verifies parse yearmonth correctly
      */
     @Test
-    void normalizeDate_shouldParseRfcDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("2014-08-05", 3);
-        Assertions.assertEquals(1, ret.size());
-        Assertions.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assertions.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assertions.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-
-        ret = DateTools.normalizeDate("0002-05", 3);
+    void normalizeDate_shouldParseYearmonthCorrectly() throws Exception {
+        List<PrimitiveDate> ret = DateTools.normalizeDate("0002-05", 3);
         Assertions.assertEquals(1, ret.size());
         Assertions.assertEquals(Integer.valueOf(2), ret.get(0).getYear());
         Assertions.assertEquals(Integer.valueOf(5), ret.get(0).getMonth());
-    }
-
-    /**
-     * @see DateTools#normalizeDate(String,int)
-     * @verifies parse american date formats correctly
-     */
-    @Test
-    void normalizeDate_shouldParseAmericanDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("08/05/2014", 3);
-        Assertions.assertEquals(1, ret.size());
-        Assertions.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assertions.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assertions.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-    }
-
-    /**
-     * @see DateTools#normalizeDate(String,int)
-     * @verifies parse chinese date formats correctly
-     */
-    @Test
-    void normalizeDate_shouldParseChineseDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("2014.08.05", 3);
-        Assertions.assertEquals(1, ret.size());
-        Assertions.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assertions.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assertions.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
-    }
-
-    /**
-     * @see DateTools#normalizeDate(String,int)
-     * @verifies parse japanese date formats correctly
-     */
-    @Test
-    void normalizeDate_shouldParseJapaneseDateFormatsCorrectly() throws Exception {
-        List<PrimitiveDate> ret = DateTools.normalizeDate("2014/08/05", 3);
-        Assertions.assertEquals(1, ret.size());
-        Assertions.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
-        Assertions.assertEquals(Integer.valueOf(8), ret.get(0).getMonth());
-        Assertions.assertEquals(Integer.valueOf(5), ret.get(0).getDay());
     }
 
     /**
