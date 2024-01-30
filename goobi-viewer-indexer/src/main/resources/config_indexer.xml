@@ -51,6 +51,7 @@
 
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
+        <indexedEad>indexed_ead</indexedEad>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
         <indexedCMS>indexed_cms</indexedCMS>
@@ -255,6 +256,7 @@
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
 							<item>dc:identifier</item>
+                            <item>ead:archdesc/ead:dsc/ead:c[@level="collection"]/@id</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>

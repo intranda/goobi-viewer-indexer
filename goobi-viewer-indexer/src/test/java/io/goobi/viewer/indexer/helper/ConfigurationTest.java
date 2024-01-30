@@ -199,7 +199,7 @@ class ConfigurationTest extends AbstractTest {
     @Test
     void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
         SolrIndexerDaemon.getInstance().getConfiguration().initNamespaces();
-        Assertions.assertEquals(19, SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().size());
+        Assertions.assertEquals(20, SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().size());
         Assertions.assertNotNull(SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("intranda"));
     }
 

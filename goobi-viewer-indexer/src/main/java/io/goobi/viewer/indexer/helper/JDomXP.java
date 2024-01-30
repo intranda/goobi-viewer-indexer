@@ -56,6 +56,7 @@ public class JDomXP {
         METS,
         METS_MARC,
         LIDO,
+        EAD,
         DENKXWEB,
         DUBLINCORE,
         WORLDVIEWS,
@@ -76,6 +77,8 @@ public class JDomXP {
                     return METS_MARC;
                 case "LIDO":
                     return LIDO;
+                case "EAD":
+                    return EAD;
                 case "DENKXWEB":
                     return DENKXWEB;
                 case "DUBLINCORE":
@@ -84,8 +87,7 @@ public class JDomXP {
                     return WORLDVIEWS;
                 case "CMS":
                     return CMS;
-                case "ABBYY":
-                case "ABBYYXML":
+                case "ABBYY", "ABBYYXML":
                     return ABBYYXML;
                 case "TEI":
                     return TEI;
@@ -98,7 +100,7 @@ public class JDomXP {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(JDomXP.class);
 
-    private static final String XPATH_TEXT = "/text()";
+    private static final String XPATH_TEXT = "/text()"; //NOSONAR XPath expression, not URI
 
     private Document doc;
 
@@ -195,8 +197,7 @@ public class JDomXP {
             return Collections.emptyList();
         }
         for (Object object : list) {
-            if (object instanceof Element) {
-                Element element = (Element) object;
+            if (object instanceof Element element) {
                 retList.add(element);
             }
         }
@@ -222,8 +223,7 @@ public class JDomXP {
             return Collections.emptyList();
         }
         for (Object object : list) {
-            if (object instanceof Attribute) {
-                Attribute attr = (Attribute) object;
+            if (object instanceof Attribute attr) {
                 retList.add(attr);
             }
         }
@@ -359,22 +359,22 @@ public class JDomXP {
      * @should convert string to NFC
      */
     public static String objectToString(Object object) {
-        if (object instanceof Element) {
-            return TextHelper.normalizeSequence(((Element) object).getText());
-        } else if (object instanceof Attribute) {
-            return TextHelper.normalizeSequence(((Attribute) object).getValue());
-        } else if (object instanceof Text) {
-            return TextHelper.normalizeSequence(((Text) object).getText());
-        } else if (object instanceof CDATA) {
-            return TextHelper.normalizeSequence(((CDATA) object).getText());
-        } else if (object instanceof Comment) {
-            return TextHelper.normalizeSequence(((Comment) object).getText());
+        if (object instanceof Element ele) {
+            return TextHelper.normalizeSequence(ele.getText());
+        } else if (object instanceof Attribute attr) {
+            return TextHelper.normalizeSequence(attr.getValue());
+        } else if (object instanceof Text text) {
+            return TextHelper.normalizeSequence(text.getText());
+        } else if (object instanceof CDATA cdata) {
+            return TextHelper.normalizeSequence(cdata.getText());
+        } else if (object instanceof Comment comment) {
+            return TextHelper.normalizeSequence(comment.getText());
         } else if (object instanceof Double) {
             return String.valueOf(object);
         } else if (object instanceof Boolean) {
             return String.valueOf(object);
-        } else if (object instanceof String) {
-            return TextHelper.normalizeSequence((String) object);
+        } else if (object instanceof String s) {
+            return TextHelper.normalizeSequence(s);
         } else if (object != null) {
             logger.error("Unknown object type: {}", object.getClass().getName());
             return null;
@@ -567,6 +567,7 @@ public class JDomXP {
      * @should detect mets mods files correctly
      * @should detect mets marc files correctly
      * @should detect lido files correctly
+     * @should detect ead files correctly
      * @should detect denkxweb files correctly
      * @should detect dublin core files correctly
      * @should detect worldviews files correctly
@@ -590,6 +591,10 @@ public class JDomXP {
             }
             if (xp.doc.getRootElement().getNamespace("lido") != null) {
                 return FileFormat.LIDO;
+            }
+            if (xp.doc.getRootElement().getNamespace() != null
+                    && xp.doc.getRootElement().getNamespace().getURI().equals("urn:isbn:1-931666-22-9")) {
+                return FileFormat.EAD;
             }
             if (xp.doc.getRootElement().getNamespace() != null
                     && xp.doc.getRootElement().getNamespace().getURI().equals("http://denkxweb.de/")) {

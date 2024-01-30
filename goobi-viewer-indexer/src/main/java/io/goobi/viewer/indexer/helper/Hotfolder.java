@@ -33,8 +33,6 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
-import jakarta.mail.MessagingException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +47,7 @@ import io.goobi.viewer.indexer.CmsPageIndexer;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
 import io.goobi.viewer.indexer.DublinCoreIndexer;
+import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
@@ -65,6 +64,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
+import jakarta.mail.MessagingException;
 
 /**
  * <p>
@@ -90,6 +90,8 @@ public class Hotfolder {
     private boolean metsEnabled = true;
     /** Constant <code>lidoEnabled=true</code> */
     private boolean lidoEnabled = true;
+    /** Constant <code>eadEnabled=true</code> */
+    private boolean eadEnabled = true;
     /** Constant <code>denkxwebEnabled=true</code> */
     private boolean denkxwebEnabled = true;
     /** If no indexedDC folder is configured, Dublin Core indexing will be automatically disabled via this flag. */
@@ -293,6 +295,12 @@ public class Hotfolder {
         } else {
             lidoEnabled = false;
             logger.warn("<origLido> not defined - LIDO indexing is disabled.");
+        }
+        
+        // EAD folder
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_EAD))) {
+            eadEnabled = false;
+            logger.warn("<{}> not defined - EAD indexing is disabled.", DataRepository.PARAM_INDEXED_EAD);
         }
 
         // DenkXweb folders
@@ -626,6 +634,19 @@ public class Hotfolder {
                             Files.delete(sourceFile);
                         }
                         break;
+                    case EAD:
+                        if (eadEnabled) {
+                            try {
+                                currentIndexer = new EadIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
+                        } else {
+                            logger.error("EAD indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(sourceFile);
+                        }
+                        break; 
                     case DENKXWEB:
                         if (denkxwebEnabled) {
                             try {

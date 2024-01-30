@@ -50,6 +50,7 @@
 		
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
+        <indexedEad>indexed_ead</indexedEad>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
         <indexedCMS>indexed_cms</indexedCMS>

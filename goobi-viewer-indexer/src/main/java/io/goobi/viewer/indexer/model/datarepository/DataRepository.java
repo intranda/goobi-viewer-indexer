@@ -58,6 +58,8 @@ public class DataRepository {
     public static final String PARAM_INDEXED_METS = "indexedMets";
     /** Constant <code>PARAM_INDEXED_LIDO="indexedLido"</code> */
     public static final String PARAM_INDEXED_LIDO = "indexedLido";
+    /** Constant <code>PARAM_INDEXED_EAD="indexedEad"</code> */
+    public static final String PARAM_INDEXED_EAD = "indexedEad";
     /** Constant <code>PARAM_INDEXED_DENKXWEB="indexedDenkXweb"</code> */
     public static final String PARAM_INDEXED_DENKXWEB = "indexedDenkXweb";
     /** Constant <code>PARAM_INDEXED_DC="indexedDC"</code> */
@@ -150,6 +152,7 @@ public class DataRepository {
 
         checkAndCreateDataSubdir(PARAM_INDEXED_METS, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_LIDO, createFolders);
+        checkAndCreateDataSubdir(PARAM_INDEXED_EAD, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DUBLINCORE, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_CMS, createFolders);
@@ -237,11 +240,7 @@ public class DataRepository {
         String config = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration(dataDirName);
         if (StringUtils.isEmpty(config)) {
             switch (dataDirName) {
-                case PARAM_INDEXED_METS:
-                case PARAM_INDEXED_LIDO:
-                case PARAM_INDEXED_DENKXWEB:
-                case PARAM_INDEXED_DUBLINCORE:
-                case PARAM_INDEXED_CMS:
+                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB, PARAM_INDEXED_DUBLINCORE, PARAM_INDEXED_CMS:
                     return;
                 default:
                     throw new FatalIndexerException("No configuration found for '" + dataDirName + "', exiting...");
@@ -329,6 +328,8 @@ public class DataRepository {
         logger.info("Data repository '{}' contains {} METS records.", path, metsRecords);
         int lidoRecords = countFiles(getDir(PARAM_INDEXED_LIDO));
         logger.info("Data repository '{}' contains {} LIDO records.", path, lidoRecords);
+        int eadRecords = countFiles(getDir(PARAM_INDEXED_EAD));
+        logger.info("Data repository '{}' contains {} EAD records.", path, eadRecords);
         int denkxwebRecords = countFiles(getDir(PARAM_INDEXED_DENKXWEB));
         logger.info("Data repository '{}' contains {} DenkXweb records.", path, denkxwebRecords);
         int dcRecords = countFiles(getDir(PARAM_INDEXED_DUBLINCORE));
@@ -336,7 +337,7 @@ public class DataRepository {
         int cmsRecords = countFiles(getDir(PARAM_INDEXED_CMS));
         logger.info("Data repository '{}' contains {} CMS page records.", path, cmsRecords);
 
-        return metsRecords + lidoRecords + denkxwebRecords + dcRecords + cmsRecords;
+        return metsRecords + lidoRecords + eadRecords + denkxwebRecords + dcRecords + cmsRecords;
     }
 
     /**
@@ -410,6 +411,18 @@ public class DataRepository {
                     logger.info("Deleted old repository LIDO file: {}", oldRecordFile.toAbsolutePath());
                 } catch (IOException e) {
                     logger.error("Could not delete old repository LIDO file: {}", oldRecordFile.toAbsolutePath());
+                }
+            }
+        }
+        // EAD
+        if (getDir(PARAM_INDEXED_EAD) != null) {
+            Path oldRecordFile = Paths.get(getDir(PARAM_INDEXED_EAD).toAbsolutePath().toString(), pi + ".xml");
+            if (Files.isRegularFile(oldRecordFile)) {
+                try {
+                    Files.delete(oldRecordFile);
+                    logger.info("Deleted old repository EAD file: {}", oldRecordFile.toAbsolutePath());
+                } catch (IOException e) {
+                    logger.error("Could not delete old repository EAD file: {}", oldRecordFile.toAbsolutePath());
                 }
             }
         }
@@ -796,10 +809,9 @@ public class DataRepository {
      *
      * @param dataRepository a {@link java.lang.String} object.
      * @return Absolute path to the given data repository name
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return correct path
      */
-    public static String getAbsolutePath(String dataRepository) throws FatalIndexerException {
+    public static String getAbsolutePath(String dataRepository) {
         if (dataRepository != null && !Paths.get(dataRepository).isAbsolute()) {
             logger.warn("Data repository value type is deprecated: {}", dataRepository);
             dataRepository = SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome() + "/data/" + dataRepository;
