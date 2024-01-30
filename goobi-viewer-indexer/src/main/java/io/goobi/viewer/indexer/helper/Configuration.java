@@ -302,6 +302,10 @@ public final class Configuration {
     public String getOldSolrUrl() {
         return getConfiguration("oldSolrUrl");
     }
+    
+    public boolean isSolrUseHttp2() {
+        return false;
+    }
 
     /**
      * <p>
