@@ -707,6 +707,7 @@
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateIssued[not(@encoding)][not(@point)]</item>
                             <item>mets:xmlData/bib/record/datafield[@tag="264"]/subfield[@code="c"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='function']/lido:descriptiveNoteValue</item>
+                            <item>ead:did/ead:unitdate</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2119,6 +2120,7 @@
 							<item>mets:dmdSec/mets:mdWrap/mets:xmlData/mods:mods/mods:location/mods:shelfLocator</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type='current']/lido:workID[@lido:type='inventor number']</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type='http://terminology.lido-schema.org/lido00475']/lido:workID[@lido:type="Inventarnummer"]</item>
+                            <item>ead:did/ead:unitid[@type="Registratursignatur"]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2132,6 +2134,7 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation[@type='former']</item>
+                            <item>ead:did/ead:unitid[@type="Altsignatur"]</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
