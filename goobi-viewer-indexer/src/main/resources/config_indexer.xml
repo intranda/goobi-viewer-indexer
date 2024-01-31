@@ -256,7 +256,7 @@
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
 							<item>dc:identifier</item>
-                            <item>ead:archdesc/ead:dsc/ead:c[@level="collection"]/@id</item>
+                            <item>ead:ead/ead:archdesc/ead:dsc/ead:c[@level="collection"]/@id</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -272,12 +272,31 @@
         <MD_ARCHIVE_ENTRY_ID>
             <list>
                 <item>
-                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</item>
+                            <item>@id</item>
+                        </list>
+                    </xpath>
                     <addToDefault>true</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                 </item>
             </list>
         </MD_ARCHIVE_ENTRY_ID>
+        
+        <MD_ARCHIVE_ENTRY_LEVEL>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>@level</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ARCHIVE_ENTRY_LEVEL>
 
         <!-- This field is important, see chapter 2.11 of the manual -->
         <LABEL>
@@ -527,6 +546,7 @@
                             <item>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
 							<item>dc:title</item>
+                            <item>ead:did/ead:unittitle</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2457,6 +2477,7 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent</item>
+                            <item>ead:did/ead:physdesc/ead:extent</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2901,7 +2922,12 @@
 		<MD_SUBJECTTOPIC>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:topic</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:topic</item>
+                            <item>ead:index/ead:indexentry/ead:subject</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>

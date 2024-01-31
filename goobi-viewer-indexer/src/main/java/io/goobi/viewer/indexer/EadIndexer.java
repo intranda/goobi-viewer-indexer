@@ -372,10 +372,10 @@ public class EadIndexer extends Indexer {
      */
     protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy)
             throws IOException, FatalIndexerException {
-        logger.trace("indexAllChildren");
+        logger.trace("indexAllChildren: {}", depth);
         List<IndexObject> ret = new ArrayList<>();
 
-        List<Element> childrenNodeList = xp.evaluateToElements("mets:div", parentIndexObject.getRootStructNode());
+        List<Element> childrenNodeList = xp.evaluateToElements("ead:c", parentIndexObject.getRootStructNode());
         for (int i = 0; i < childrenNodeList.size(); i++) {
             Element node = childrenNodeList.get(i);
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
@@ -389,7 +389,8 @@ public class EadIndexer extends Indexer {
             }
             setSimpleData(indexObj);
             indexObj.pushSimpleDataToLuceneArray();
-            setUrn(indexObj);
+
+            // TODO id, level, unitid, unittitle, physdesc, etc.
 
             // Set parent's DATEUPDATED value (needed for OAI)
             for (Long dateUpdated : parentIndexObject.getDateUpdated()) {
@@ -400,14 +401,8 @@ public class EadIndexer extends Indexer {
             }
 
             // write metadata
-            if (StringUtils.isNotEmpty(indexObj.getDmdid())) {
-                MetadataHelper.writeMetadataToObject(indexObj, xp.getMdWrap(indexObj.getDmdid()), "", xp);
-            }
+            MetadataHelper.writeMetadataToObject(indexObj, node, "", xp);
 
-            // Inherit PI_ANCHOR value
-            if (parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null) {
-                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR), false);
-            }
             // Inherit GROUPID_* fields
             if (!parentIndexObject.getGroupIds().isEmpty()) {
                 for (String groupId : parentIndexObject.getGroupIds().keySet()) {

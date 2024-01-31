@@ -169,21 +169,21 @@ public class MetadataHelper {
                         case "first":
                             if (parent.getDmdid() != null) {
                                 childrenAndAncestors.add(parent.getDmdid());
-                            } else {
+                            } else if (indexObj.getLogId() != null) {
                                 logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
                             }
                             break;
                         case "all":
                             if (parent.getDmdid() != null) {
                                 childrenAndAncestors.add(parent.getDmdid());
-                            } else {
+                            } else if (indexObj.getLogId() != null) {
                                 logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
                             }
                             while (parent.getParent() != null && !parent.getParent().isAnchor()) {
                                 parent = parent.getParent();
                                 if (parent.getDmdid() != null) {
                                     childrenAndAncestors.add(parent.getDmdid());
-                                } else {
+                                } else if (indexObj.getLogId() != null) {
                                     logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
                                 }
                             }
@@ -886,7 +886,7 @@ public class MetadataHelper {
         List<FieldConfig> piConfig =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
-            return null;
+            return new String[] {};
         }
 
         List<XPathConfig> xPathConfigurations = piConfig.get(0).getxPathConfigurations();
