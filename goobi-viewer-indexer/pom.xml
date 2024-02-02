@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>23.12</version>
+	<version>24.01-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -19,17 +19,15 @@
 
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release>
 		<skipTests>true</skipTests>
 
         <!-- Sonar -->
-        <sonar.scanner.force-deprecated-java-version>true</sonar.scanner.force-deprecated-java-version>
-
         <sonar.projectKey>intranda_goobi-viewer-indexer</sonar.projectKey>
         <sonar.organization>intranda</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.java.source>11</sonar.java.source>
-        <sonar.java.target>11</sonar.java.target>
+        <sonar.java.source>17</sonar.java.source>
+        <sonar.java.target>17</sonar.java.target>
 
         <!-- Manifest information -->
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
