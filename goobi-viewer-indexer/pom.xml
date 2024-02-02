@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>24.01-SNAPSHOT</version>
+	<version>24.02-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -20,7 +20,6 @@
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-        <maven.compiler.target>11</maven.compiler.target>
 		<skipTests>true</skipTests>
 
         <!-- Sonar -->
