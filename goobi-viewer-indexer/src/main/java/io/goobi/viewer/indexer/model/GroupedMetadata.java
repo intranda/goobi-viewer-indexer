@@ -156,7 +156,7 @@ public class GroupedMetadata {
                         xpath = xpath.replace(xpathReplacementsEntry.getKey(), xpathReplacementsEntry.getValue());
                     }
                 }
-                logger.info("XPath: {}", xpath);
+                logger.debug("XPath: {}", xpath);
                 List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
                 if (values == null || values.isEmpty()) {
                     // Use default value, if available
