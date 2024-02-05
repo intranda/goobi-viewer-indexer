@@ -547,6 +547,7 @@
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
 							<item>dc:title</item>
                             <item>ead:did/ead:unittitle</item>
+                            <item>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2261,6 +2262,7 @@
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[not(@encoding)][not(@point)]</item>
 							<item>dc:date</item>
                             <item>ead:did/ead:unitdate</item>
+                            <item>ead:eadheader/ead:profiledesc/ead:creation/ead:date/@normal</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>

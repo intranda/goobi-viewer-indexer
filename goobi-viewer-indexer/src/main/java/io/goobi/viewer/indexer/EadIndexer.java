@@ -20,16 +20,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +35,6 @@ import org.jdom2.Element;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
-import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
@@ -367,7 +360,7 @@ public class EadIndexer extends Indexer {
         logger.trace("indexAllChildren: {}", depth);
         List<IndexObject> ret = new ArrayList<>();
 
-        List<Element> childrenNodeList = xp.evaluateToElements("(ead:dsc/ead:c | ead:c)", parentIndexObject.getRootStructNode());
+        List<Element> childrenNodeList = xp.evaluateToElements("(ead:archdesc/ead:dsc/ead:c | ead:c)", parentIndexObject.getRootStructNode());
         for (int i = 0; i < childrenNodeList.size(); i++) {
             Element node = childrenNodeList.get(i);
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
@@ -626,42 +619,13 @@ public class EadIndexer extends Indexer {
      * 
      */
     private Element findStructNode() {
-        String query = "ead:ead/ead:archdesc";
+        String query = "ead:ead";
         List<Element> elements = xp.evaluateToElements(query, null);
         if (!elements.isEmpty()) {
             return elements.get(0);
         }
 
         return null;
-    }
-
-    /**
-     * 
-     * @param dateString Date string to parse
-     * @return {@link ZonedDateTime} parsed from the given string
-     * @should parse iso instant correctly
-     * @should parse iso local dateTime correctly
-     * @should parse iso offset dateTime correctly
-     */
-    static ZonedDateTime parseCreateDate(String dateString) {
-        if (StringUtils.isEmpty(dateString)) {
-            return null;
-        }
-
-        try {
-            return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeInstant);
-        } catch (DateTimeParseException e) {
-            try {
-                return LocalDateTime.parse(dateString, DateTools.formatterISO8601LocalDateTime).atZone(ZoneId.systemDefault());
-            } catch (DateTimeParseException e1) {
-                try {
-                    return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeWithOffset);
-                } catch (DateTimeParseException e2) {
-                    logger.error(e2.getMessage());
-                    return null;
-                }
-            }
-        }
     }
 
     /**
