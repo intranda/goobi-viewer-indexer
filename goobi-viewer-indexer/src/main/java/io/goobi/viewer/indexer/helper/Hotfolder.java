@@ -296,7 +296,7 @@ public class Hotfolder {
             lidoEnabled = false;
             logger.warn("<origLido> not defined - LIDO indexing is disabled.");
         }
-        
+
         // EAD folder
         if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_EAD))) {
             eadEnabled = false;
@@ -571,11 +571,11 @@ public class Hotfolder {
      * @throws FatalIndexerException
      */
     private boolean handleSourceFile(Path sourceFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
-        logger.trace("handleSourceFile: {}", sourceFile);
+        logger.info("handleSourceFile: {}", sourceFile);
         // Always unselect repository
         String filename = sourceFile.getFileName().toString();
         try {
-            if (filename.endsWith(".xml")) {
+            if (StringUtils.endsWithIgnoreCase(filename, FileTools.XML_EXTENSION)) {
                 // INPUT o. UPDATE
                 if (Files.size(sourceFile) == 0) {
                     // Check whether the file is actually empty or just hasn't finished copying yet
@@ -646,7 +646,7 @@ public class Hotfolder {
                             logger.error("EAD indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
                         }
-                        break; 
+                        break;
                     case DENKXWEB:
                         if (denkxwebEnabled) {
                             try {
