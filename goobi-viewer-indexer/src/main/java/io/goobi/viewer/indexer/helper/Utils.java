@@ -100,6 +100,8 @@ public class Utils {
     private static final String MAIL_PROPERTY_SMTP_HOST = "mail.smtp.host";
     private static final String MAIL_PROPERTY_SMTP_PORT = "mail.smtp.port";
 
+    private static final char[] PI_ILLEGAL_CHARS = { '!', '?', '/', '\\', ':', ';', '(', ')', '@', '"', '\'' };
+
     /**
      * Private constructor.
      */
@@ -849,5 +851,24 @@ public class Utils {
                 fieldName = fieldName.replace(SolrConstants.SUFFIX_UNTOKENIZED, "");
                 return fieldName;
         }
+    }
+
+    /**
+     * <p>
+     * validatePi.
+     * </p>
+     *
+     * @param pi a {@link java.lang.String} object.
+     * @should return true if pi good
+     * @should return false if pi empty, blank or null
+     * @should return false if pi contains illegal characters
+     * @return a boolean.
+     */
+    public static boolean validatePi(String pi) {
+        if (StringUtils.isBlank(pi)) {
+            return false;
+        }
+
+        return !StringUtils.containsAny(pi, PI_ILLEGAL_CHARS);
     }
 }

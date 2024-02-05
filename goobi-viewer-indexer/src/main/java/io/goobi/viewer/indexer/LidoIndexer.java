@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -263,7 +261,7 @@ public class LidoIndexer extends Indexer {
 
             pi = foundPi[0];
             logger.info("Record PI: {}", pi);
-            
+
             // Remove prefix
             if (pi.contains(":")) {
                 pi = pi.substring(pi.lastIndexOf(':') + 1);
@@ -273,15 +271,13 @@ public class LidoIndexer extends Indexer {
             }
             pi = MetadataHelper.applyIdentifierModifications(pi);
             // Do not allow identifiers with illegal characters
-            Pattern p = Pattern.compile("[^\\w|-]");
-            Matcher m = p.matcher(pi);
-            if (m.find()) {
+            if (!Utils.validatePi(pi)) {
                 ret[1] = "PI contains illegal characters: " + pi;
                 throw new IndexerException(ret[1]);
             }
             indexObj.setPi(pi);
             indexObj.setTopstructPI(pi);
-            
+
             // Add PI to default
             if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
                 indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);

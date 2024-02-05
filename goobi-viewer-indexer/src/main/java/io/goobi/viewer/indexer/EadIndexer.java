@@ -198,7 +198,7 @@ public class EadIndexer extends Indexer {
             initJDomXP(eadFile);
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
-            Element structNode = findStructNode(indexObj);
+            Element structNode = findStructNode();
             if (structNode == null) {
                 throw new IndexerException("STRUCT NODE not found.");
             }
@@ -209,20 +209,12 @@ public class EadIndexer extends Indexer {
             setSimpleData(indexObj);
             setUrn(indexObj);
 
-            // Set PI
-            String[] foundPi = MetadataHelper.getPIFromXML("", xp);
-            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            String pi = MetadataHelper.applyIdentifierModifications(foundPi[0]);
+            // Set PI (from file name)
+            String pi = MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString()));
             logger.info("Record PI: {}", pi);
 
             // Do not allow identifiers with characters that cannot be used in file names
-            Pattern p = Pattern.compile("[^\\w|-]");
-            Matcher m = p.matcher(pi);
-            if (m.find()) {
+            if (!Utils.validatePi(pi)) {
                 ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
                 throw new IndexerException(ret[1]);
             }
@@ -230,7 +222,10 @@ public class EadIndexer extends Indexer {
             indexObj.setTopstructPI(pi);
 
             // Add PI to default
-            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
+            if (MetadataHelper.isPiAddToDefault(SolrIndexerDaemon.getInstance()
+                    .getConfiguration()
+                    .getMetadataConfigurationManager()
+                    .getConfigurationListForField(SolrConstants.PI))) {
                 indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
             }
 
@@ -272,9 +267,6 @@ public class EadIndexer extends Indexer {
 
             // Set access conditions
             indexObj.writeAccessConditions(null);
-
-            // Read DATECREATED/DATEUPDATED from METS
-            indexObj.populateDateCreatedUpdated(getMetsCreateDate());
 
             // Write created/updated timestamps
             indexObj.writeDateModified(false);
@@ -375,7 +367,7 @@ public class EadIndexer extends Indexer {
         logger.trace("indexAllChildren: {}", depth);
         List<IndexObject> ret = new ArrayList<>();
 
-        List<Element> childrenNodeList = xp.evaluateToElements("ead:c", parentIndexObject.getRootStructNode());
+        List<Element> childrenNodeList = xp.evaluateToElements("(ead:dsc/ead:c | ead:c)", parentIndexObject.getRootStructNode());
         for (int i = 0; i < childrenNodeList.size(); i++) {
             Element node = childrenNodeList.get(i);
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
@@ -630,32 +622,17 @@ public class EadIndexer extends Indexer {
     /**
      * Returns the logical root node.
      * 
-     * @param indexObj
      * @return {@link Element} or null
      * 
      */
-    private Element findStructNode(IndexObject indexObj) {
-        String query = "//ead:archdesc/ead:dsc/ead:c";
+    private Element findStructNode() {
+        String query = "ead:ead/ead:archdesc";
         List<Element> elements = xp.evaluateToElements(query, null);
         if (!elements.isEmpty()) {
             return elements.get(0);
         }
 
         return null;
-    }
-
-    /**
-     * <p>
-     * getMetsCreateDate.
-     * </p>
-     *
-     * @return a {@link java.time.LocalDateTime} object.
-     * @should return CREATEDATE value
-     * @should return null if date does not exist in METS
-     */
-    protected ZonedDateTime getMetsCreateDate() {
-        String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
-        return parseCreateDate(dateString);
     }
 
     /**

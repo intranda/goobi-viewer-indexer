@@ -32,8 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -229,9 +227,7 @@ public class DublinCoreIndexer extends Indexer {
             logger.info("Record PI: {}", pi);
 
             // Do not allow identifiers with characters that cannot be used in file names
-            Pattern p = Pattern.compile("[^\\w|-]");
-            Matcher m = p.matcher(pi);
-            if (m.find()) {
+            if (!Utils.validatePi(pi)) {
                 ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
                 throw new IndexerException(ret[1]);
             }

@@ -178,7 +178,7 @@ public class GroupedMetadata {
                         continue;
                     }
                     fieldValue = fieldValue.trim();
-                    logger.info("found: {}:{}", subfield.getFieldname(), fieldValue);
+                    logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
 
                     if (authorityDataEnabled && subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI) && fieldValue.length() > 1) {
                         // Skip values that probably aren't real identifiers or URIs

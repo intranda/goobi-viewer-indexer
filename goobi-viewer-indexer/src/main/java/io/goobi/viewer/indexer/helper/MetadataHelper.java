@@ -757,14 +757,12 @@ public class MetadataHelper {
      * </p>
      *
      * @param pi a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @return a {@link java.lang.String} object.
      * @should trim identifier
      * @should apply replace rules
-     * @should replace spaces with underscores
-     * @should replace commas with underscores
-     * @return a {@link java.lang.String} object.
+     * @should replace illegal characters with underscores
      */
-    public static String applyIdentifierModifications(String pi) throws FatalIndexerException {
+    public static String applyIdentifierModifications(String pi) {
         if (StringUtils.isEmpty(pi)) {
             return pi;
         }
@@ -778,9 +776,7 @@ public class MetadataHelper {
                 ret = MetadataHelper.applyReplaceRules(ret, replaceRules);
             }
         }
-        ret = ret.replace(" ", "_");
-        ret = ret.replace(",", "_");
-        ret = ret.replace(":", "_");
+        ret = ret.replaceAll("[ ,:()]", "_");
 
         return ret;
     }
@@ -903,7 +899,7 @@ public class MetadataHelper {
                 }
             }
             if (StringUtils.isNotEmpty(pi)) {
-                if (piConfig.get(0).isAddToDefault()) {
+                if (isPiAddToDefault(piConfig)) {
                     return new String[] { pi, "addToDefault" };
                 }
                 return new String[] { pi };
@@ -911,6 +907,19 @@ public class MetadataHelper {
         }
 
         return new String[] {};
+    }
+    
+    /**
+     * 
+     * @param piConfig
+     * @return true if PI is configured to be added to DEFAULT; false otherwise
+     */
+    public static boolean isPiAddToDefault(List<FieldConfig> piConfig) {
+        if (piConfig == null || piConfig.isEmpty()) {
+            return false;
+        }
+        
+        return piConfig.get(0).isAddToDefault();
     }
 
     /**

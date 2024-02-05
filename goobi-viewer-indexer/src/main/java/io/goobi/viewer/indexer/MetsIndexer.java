@@ -47,8 +47,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -316,15 +314,13 @@ public class MetsIndexer extends Indexer {
             logger.info("Record PI: {}", pi);
 
             // Do not allow identifiers with characters that cannot be used in file names
-            Pattern p = Pattern.compile("[^\\w|-]");
-            Matcher m = p.matcher(pi);
-            if (m.find()) {
+            if (!Utils.validatePi(pi)) {
                 ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
                 throw new IndexerException(ret[1]);
             }
             indexObj.setPi(pi);
             indexObj.setTopstructPI(pi);
-            
+
             // Add PI to default
             if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
                 indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);

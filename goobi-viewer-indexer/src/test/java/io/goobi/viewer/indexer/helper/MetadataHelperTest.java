@@ -98,11 +98,13 @@ class MetadataHelperTest extends AbstractTest {
 
     /**
      * @see MetadataHelper#applyIdentifierModifications(String)
-     * @verifies replace spaces with underscores
+     * @verifies replace illegal characters with underscores
      */
     @Test
-    void applyIdentifierModifications_shouldReplaceSpacesWithUnderscores() throws Exception {
+    void applyIdentifierModifications_shouldReplaceIllegalCharactersWithUnderscores() throws Exception {
         assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID 10t"));
+        assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID,10t"));
+        assertEquals("ID_10t_", MetadataHelper.applyIdentifierModifications("ID(10t)"));
     }
 
     /**
@@ -112,15 +114,6 @@ class MetadataHelperTest extends AbstractTest {
     @Test
     void applyIdentifierModifications_shouldApplyReplaceRules() throws Exception {
         assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("replaceme/ID,10t/replacemetoo"));
-    }
-
-    /**
-     * @see MetadataHelper#applyIdentifierModifications(String)
-     * @verifies replace commas with underscores
-     */
-    @Test
-    void applyIdentifierModifications_shouldReplaceCommasWithUnderscores() throws Exception {
-        assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID,10t"));
     }
 
     /**
