@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
 
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -53,6 +54,7 @@ public class IndexObject {
     /** Timestamps of each indexing of this record. */
     private final List<Long> dateIndexed = new ArrayList<>();
 
+    private FileFormat sourceDocFormat;
     private String dmdId;
     private String logId;
     private String type;
@@ -165,6 +167,9 @@ public class IndexObject {
             addToLucene(SolrConstants.DOCSTRCT_TOP, getType());
         }
         addToLucene(SolrConstants.DATAREPOSITORY, getDataRepository());
+        if (sourceDocFormat != null) {
+            addToLucene(SolrConstants.SOURCEDOCFORMAT, sourceDocFormat.name());
+        }
     }
 
     /**
@@ -654,6 +659,20 @@ public class IndexObject {
      */
     public IndexObject getParent() {
         return parent;
+    }
+
+    /**
+     * @return the sourceDocFormat
+     */
+    public FileFormat getSourceDocFormat() {
+        return sourceDocFormat;
+    }
+
+    /**
+     * @param sourceDocFormat the sourceDocFormat to set
+     */
+    public void setSourceDocFormat(FileFormat sourceDocFormat) {
+        this.sourceDocFormat = sourceDocFormat;
     }
 
     /**

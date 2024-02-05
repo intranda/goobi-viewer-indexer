@@ -2117,8 +2117,9 @@ public class MetsIndexer extends Indexer {
      * 
      * @param indexObj {@link IndexObject}
      */
-    private static void setSimpleData(IndexObject indexObj) {
+    private void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
+        indexObj.setSourceDocFormat(getSourceDocFormat());
         Element structNode = indexObj.getRootStructNode();
 
         // DMDID

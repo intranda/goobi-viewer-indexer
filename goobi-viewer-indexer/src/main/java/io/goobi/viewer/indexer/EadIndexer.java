@@ -200,7 +200,6 @@ public class EadIndexer extends Indexer {
 
             // set some simple data in den indexObject
             setSimpleData(indexObj);
-            setUrn(indexObj);
 
             // Set PI (from file name)
             String pi = MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString()));
@@ -245,8 +244,6 @@ public class EadIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
 
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, getSourceDocFormat().name());
             prepareUpdate(indexObj);
 
             // put some simple data in lucene array
@@ -269,9 +266,6 @@ public class EadIndexer extends Indexer {
 
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
-
-            // write all page URNs sequentially into one field
-            generatePageUrns(indexObj);
 
             indexObj.addToLucene(SolrConstants.ISWORK, "true");
 
@@ -530,23 +524,23 @@ public class EadIndexer extends Indexer {
      * 
      * @param indexObj {@link IndexObject}
      */
-    private static void setSimpleData(IndexObject indexObj) {
+    private void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
+        
+        indexObj.setSourceDocFormat(getSourceDocFormat());
+        
         Element structNode = indexObj.getRootStructNode();
 
-        // DMDID
-        indexObj.setDmdid(TextHelper.normalizeSequence(structNode.getAttributeValue(SolrConstants.DMDID)));
-        logger.trace("DMDID: {}", indexObj.getDmdid());
-
-        // LOGID
-        String value = TextHelper.normalizeSequence(structNode.getAttributeValue("ID"));
+        // LOGID / DMDID
+        String value = TextHelper.normalizeSequence(structNode.getAttributeValue("id"));
         if (value != null) {
             indexObj.setLogId(value);
+            indexObj.setDmdid(value);
         }
         logger.trace("LOGID: {}", indexObj.getLogId());
 
-        // TYPE
-        value = TextHelper.normalizeSequence(structNode.getAttributeValue("TYPE"));
+        // TYPE 
+        value = xp.evaluateToAttributeStringValue("ead:archdesc/@type", structNode);
         if (value != null) {
             indexObj.setType(value);
         }
@@ -566,50 +560,6 @@ public class EadIndexer extends Indexer {
             indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
-    }
-
-    /**
-     * Finds all physical page URNs for the given IndexObject and adds them to its metadata sequentially as one string. Should only be used with the
-     * top docstruct (ISWORK). TODO get from generated pages instead of METS.
-     * 
-     * @param indexObj The IndexObject to find URNs for.
-     */
-    private void generatePageUrns(IndexObject indexObj) {
-        String query1 = "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div/@CONTENTIDS";
-        List<String> physUrnList = xp.evaluateToStringList(query1, null);
-        if (physUrnList != null) {
-            StringBuilder sbPageUrns = new StringBuilder();
-            List<String> imageUrns = new ArrayList<>(physUrnList.size());
-            for (String pageUrn : physUrnList) {
-                String urn = null;
-                if (Utils.isUrn(pageUrn)) {
-                    urn = pageUrn.replace("\\\\", "");
-                }
-                if (StringUtils.isEmpty(urn)) {
-                    urn = "NOURN";
-                }
-                sbPageUrns.append(urn).append(' ');
-                imageUrns.add(urn);
-            }
-            indexObj.setImageUrns(imageUrns);
-        }
-    }
-
-    /**
-     * Retrieves and sets the URN for mets:structMap[@TYPE='LOGICAL'] elements.
-     * 
-     * @param indexObj
-     * @return
-     */
-    private String setUrn(IndexObject indexObj) {
-        String query = "/mets:mets/mets:structMap[@TYPE='LOGICAL']//mets:div[@ID='" + indexObj.getLogId() + "']/@CONTENTIDS";
-        String urn = xp.evaluateToAttributeStringValue(query, null);
-        if (Utils.isUrn(urn)) {
-            indexObj.setUrn(urn);
-            indexObj.addToLucene(SolrConstants.URN, urn);
-        }
-
-        return urn;
     }
 
     /**

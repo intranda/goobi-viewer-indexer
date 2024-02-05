@@ -713,10 +713,11 @@ public class DublinCoreIndexer extends Indexer {
      * Sets DMDID, ID, TYPE and LABEL from the METS document.
      * 
      * @param indexObj {@link IndexObject}
-     * @throws FatalIndexerException
      */
-    private static void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
+    private static void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
+
+        indexObj.setSourceDocFormat(FileFormat.DUBLINCORE);
 
         // LOGID
         indexObj.setLogId("LOD_0000");
@@ -751,7 +752,7 @@ public class DublinCoreIndexer extends Indexer {
      * @return
      * @throws FatalIndexerException
      */
-    private String setUrn(IndexObject indexObj) throws FatalIndexerException {
+    private String setUrn(IndexObject indexObj) {
         String query = "/mets:mets/mets:structMap[@TYPE='LOGICAL']//mets:div[@ID='" + indexObj.getLogId() + "']/@CONTENTIDS";
         String urn = xp.evaluateToAttributeStringValue(query, null);
         if (Utils.isUrn(urn)) {

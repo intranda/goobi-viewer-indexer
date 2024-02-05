@@ -278,9 +278,6 @@ public class DenkXwebIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
 
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DENKXWEB.name());
-
             prepareUpdate(indexObj);
 
             // Process TEI files
@@ -588,6 +585,8 @@ public class DenkXwebIndexer extends Indexer {
      * @throws FatalIndexerException
      */
     private static void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
+        indexObj.setSourceDocFormat(FileFormat.DUBLINCORE);
+
         Element structNode = indexObj.getRootStructNode();
 
         // Set type

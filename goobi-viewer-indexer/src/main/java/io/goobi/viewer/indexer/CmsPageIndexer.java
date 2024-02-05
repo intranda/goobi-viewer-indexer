@@ -45,7 +45,6 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
 import io.goobi.viewer.indexer.model.IndexObject;
-import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
@@ -175,6 +174,8 @@ public class CmsPageIndexer extends Indexer {
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
+            indexObj.setSourceDocFormat(FileFormat.CMS);
+
             // LOGID
             indexObj.setLogId("LOG0000");
 
@@ -222,8 +223,6 @@ public class CmsPageIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
 
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.CMS.name());
             prepareUpdate(indexObj);
 
             // Set title

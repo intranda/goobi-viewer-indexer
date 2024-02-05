@@ -44,6 +44,7 @@ import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
 import io.goobi.viewer.indexer.model.GeoCoords;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
@@ -169,21 +170,24 @@ public class MetadataHelper {
                         case "first":
                             if (parent.getDmdid() != null) {
                                 childrenAndAncestors.add(parent.getDmdid());
-                            } else if (indexObj.getLogId() != null) {
-                                logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
+                            } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
+                                    || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
+                                logger.warn(LOG_DMDID_NOT_FOUND, indexObj.getLogId());
                             }
                             break;
                         case "all":
                             if (parent.getDmdid() != null) {
                                 childrenAndAncestors.add(parent.getDmdid());
-                            } else if (indexObj.getLogId() != null) {
-                                logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
+                            } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
+                                    || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
+                                logger.warn(LOG_DMDID_NOT_FOUND, indexObj.getLogId());
                             }
                             while (parent.getParent() != null && !parent.getParent().isAnchor()) {
                                 parent = parent.getParent();
                                 if (parent.getDmdid() != null) {
                                     childrenAndAncestors.add(parent.getDmdid());
-                                } else if (indexObj.getLogId() != null) {
+                                } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
+                                        || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
                                     logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
                                 }
                             }
@@ -195,7 +199,8 @@ public class MetadataHelper {
                     Element eleMdWrap = xp.getMdWrap(dmdId);
                     if (eleMdWrap != null) {
                         elementsToIterateOver.add(eleMdWrap);
-                    } else {
+                    } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
+                            || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
                         logger.warn("Field {}: mets:mdWrap section not found for DMDID {}", fieldName, dmdId);
                     }
                 }
@@ -908,7 +913,7 @@ public class MetadataHelper {
 
         return new String[] {};
     }
-    
+
     /**
      * 
      * @param piConfig
@@ -918,7 +923,7 @@ public class MetadataHelper {
         if (piConfig == null || piConfig.isEmpty()) {
             return false;
         }
-        
+
         return piConfig.get(0).isAddToDefault();
     }
 

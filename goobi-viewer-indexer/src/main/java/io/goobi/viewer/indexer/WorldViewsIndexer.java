@@ -255,6 +255,8 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.setTopstructPI(pi);
             logger.debug("PI: {}", indexObj.getPi());
 
+            indexObj.setSourceDocFormat(FileFormat.WORLDVIEWS);
+
             // Determine the data repository to use
             DataRepository[] repositories =
                     hotfolder.getDataRepositoryStrategy()
@@ -289,9 +291,6 @@ public class WorldViewsIndexer extends Indexer {
             } else {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
-
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.WORLDVIEWS.name());
 
             prepareUpdate(indexObj);
 
