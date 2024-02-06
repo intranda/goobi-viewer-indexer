@@ -24,6 +24,7 @@ package io.goobi.viewer.indexer.model;
 public final class SolrConstants {
 
     public enum DocType {
+        ARCHIVE,
         DOCSTRCT,
         FILE,
         GROUP,

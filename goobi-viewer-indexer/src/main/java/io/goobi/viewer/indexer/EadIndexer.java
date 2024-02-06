@@ -47,6 +47,7 @@ import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
@@ -532,6 +533,7 @@ public class EadIndexer extends Indexer {
     private void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
         
+        indexObj.setDocType(DocType.ARCHIVE);
         indexObj.setSourceDocFormat(getSourceDocFormat());
         
         Element structNode = indexObj.getRootStructNode();

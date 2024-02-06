@@ -54,6 +54,7 @@ public class IndexObject {
     /** Timestamps of each indexing of this record. */
     private final List<Long> dateIndexed = new ArrayList<>();
 
+    private DocType docType = DocType.DOCSTRCT;
     private FileFormat sourceDocFormat;
     private String dmdId;
     private String logId;
@@ -117,7 +118,7 @@ public class IndexObject {
         String iddocString = String.valueOf(iddoc);
         addToLucene(SolrConstants.IDDOC, iddocString);
         addToLucene(SolrConstants.GROUPFIELD, iddocString);
-        addToLucene(SolrConstants.DOCTYPE, DocType.DOCSTRCT.name());
+        addToLucene(SolrConstants.DOCTYPE, docType.name());
         addToLucene(SolrConstants.PI, pi);
         addToLucene(SolrConstants.PI_TOPSTRUCT, topstructPI);
         if (StringUtils.isNotEmpty(parentPI)) {
@@ -659,6 +660,20 @@ public class IndexObject {
      */
     public IndexObject getParent() {
         return parent;
+    }
+
+    /**
+     * @return the docType
+     */
+    public DocType getDocType() {
+        return docType;
+    }
+
+    /**
+     * @param docType the docType to set
+     */
+    public void setDocType(DocType docType) {
+        this.docType = docType;
     }
 
     /**
