@@ -585,7 +585,7 @@ public class DenkXwebIndexer extends Indexer {
      * @throws FatalIndexerException
      */
     private static void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
-        indexObj.setSourceDocFormat(FileFormat.DUBLINCORE);
+        indexObj.setSourceDocFormat(FileFormat.DENKXWEB);
 
         Element structNode = indexObj.getRootStructNode();
 
