@@ -274,6 +274,9 @@ public class EadIndexer extends Indexer {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
                 indexObj.setDefaultValue("");
             }
+            
+            // Add mime type
+            indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
             for (String groupIdField : indexObj.getGroupIds().keySet()) {
@@ -368,6 +371,8 @@ public class EadIndexer extends Indexer {
             }
             setSimpleData(indexObj);
             indexObj.pushSimpleDataToLuceneArray();
+            
+            indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
 
             // TODO id, level, unitid, unittitle, physdesc, etc.
 
@@ -545,7 +550,7 @@ public class EadIndexer extends Indexer {
             indexObj.setType(value);
         }
         logger.trace("TYPE: {}", indexObj.getType());
-
+        
         // LABEL
         value = TextHelper.normalizeSequence(structNode.getAttributeValue("LABEL"));
         if (value != null) {

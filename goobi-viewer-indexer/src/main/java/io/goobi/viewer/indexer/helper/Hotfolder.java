@@ -798,6 +798,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD) != null) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
@@ -828,6 +832,8 @@ public class Hotfolder {
                         format = FileFormat.METS;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO))) {
                         format = FileFormat.LIDO;
+                    } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD))) {
+                        format = FileFormat.EAD;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB))) {
                         format = FileFormat.DENKXWEB;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE))) {
@@ -853,12 +859,7 @@ public class Hotfolder {
 
             boolean success = false;
             switch (format) {
-                case CMS:
-                case DENKXWEB:
-                case DUBLINCORE:
-                case LIDO:
-                case METS:
-                case WORLDVIEWS:
+                case CMS, DENKXWEB, DUBLINCORE, EAD, LIDO, METS, WORLDVIEWS:
                     if (trace) {
                         logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());
                     } else {
