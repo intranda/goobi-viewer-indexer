@@ -273,8 +273,6 @@ public class DublinCoreIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
 
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DUBLINCORE.name());
             prepareUpdate(indexObj);
 
             // Process TEI files

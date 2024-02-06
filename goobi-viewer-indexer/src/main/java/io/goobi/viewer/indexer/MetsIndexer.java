@@ -360,8 +360,6 @@ public class MetsIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
 
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, getSourceDocFormat().name());
             prepareUpdate(indexObj);
 
             int hierarchyLevel = 0; // depth of the docstrct that has ISWORK (volume or monograph)
