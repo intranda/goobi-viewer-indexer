@@ -190,7 +190,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     public List<SolrInputDocument> getPageDocsForPhysIdList(List<String> physIdList) {
         List<SolrInputDocument> ret = new ArrayList<>();
 
-        Collections.sort(physIdList);
         for (String physId : physIdList) {
             SolrInputDocument doc = physIdPageMap.get(physId);
             if (doc != null) {
