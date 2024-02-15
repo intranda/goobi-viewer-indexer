@@ -81,6 +81,7 @@ import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
+import io.goobi.viewer.indexer.model.SolrInputDocPageOrderComparator;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -324,7 +325,7 @@ public class MetsIndexer extends Indexer {
             }
             indexObj.setPi(pi);
             indexObj.setTopstructPI(pi);
-            
+
             // Add PI to default
             if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
                 indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
@@ -716,6 +717,7 @@ public class MetsIndexer extends Indexer {
         if (pageDocs.isEmpty()) {
             logger.warn("No pages found for {}", indexObj.getLogId());
         }
+        Collections.sort(pageDocs, new SolrInputDocPageOrderComparator()); // Mapping order may be shuffled, so restore page order
 
         // If this is a top struct element, look for a representative image
         String filePathBanner = null;

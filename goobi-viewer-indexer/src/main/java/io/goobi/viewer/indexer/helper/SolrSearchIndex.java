@@ -84,7 +84,7 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param server a {@link org.apache.solr.client.solrj.SolrServer} object.
-     * @throws ConfigurationException 
+     * @throws ConfigurationException
      * @throws FatalIndexerException
      */
     public SolrSearchIndex(SolrClient client) throws ConfigurationException {
@@ -103,7 +103,7 @@ public final class SolrSearchIndex {
      * @param solrUrl URL to the Solr server
      * @param allowCompression
      * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
-     * @throws ConfigurationException 
+     * @throws ConfigurationException
      * @should return null if solrUrl is empty
      */
     public static HttpSolrClient getNewHttpSolrClient(String solrUrl, boolean allowCompression) throws ConfigurationException {
@@ -558,9 +558,9 @@ public final class SolrSearchIndex {
      *
      * @param confFilename
      * @return a {@link org.jdom2.Document} object.
-     * @throws ConfigurationException 
-     * @throws IOException 
-     * @throws JDOMException 
+     * @throws ConfigurationException
+     * @throws IOException
+     * @throws JDOMException
      * @should return schema document correctly
      */
     public static Document getSolrSchemaDocument(String solrUrl) throws IOException, JDOMException, ConfigurationException {
@@ -720,14 +720,15 @@ public final class SolrSearchIndex {
     /**
      * 
      * @param fieldValue
-     * @return
+     * @return {@link Integer}
+     * @should return null if fieldValue null
      */
-    static Integer getAsInt(Object fieldValue) {
+    public static Integer getAsInt(Object fieldValue) {
         if (fieldValue == null) {
             return null;
         }
-        if (fieldValue instanceof Integer) {
-            return (Integer) fieldValue;
+        if (fieldValue instanceof Integer integer) {
+            return integer;
         }
         try {
             return Integer.parseInt(fieldValue.toString());
@@ -745,8 +746,8 @@ public final class SolrSearchIndex {
         if (fieldValue == null) {
             return null;
         }
-        if (fieldValue instanceof Long) {
-            return (Long) fieldValue;
+        if (fieldValue instanceof Long lng) {
+            return lng;
         }
         try {
             return Long.parseLong(fieldValue.toString());
