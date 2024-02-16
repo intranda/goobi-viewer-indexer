@@ -120,7 +120,8 @@ public class MetsIndexer extends Indexer {
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private String preferredImageFileGroup = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroup();
+    private String selectedPreferredImageFileGroup = null;
+    private List<String> availablePreferredImageFileGroups = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
     volatile String useFileGroupGlobal = null;
 
     /**
@@ -1059,6 +1060,11 @@ public class MetsIndexer extends Indexer {
         logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
     }
 
+    /**
+     * 
+     * @param downloadExternalImages
+     * @return Selected file group name
+     */
     String selectImageFileGroup(boolean downloadExternalImages) {
         String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath, not URI
         List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
@@ -1087,8 +1093,10 @@ public class MetsIndexer extends Indexer {
                     }
                     break;
                 default:
-                    if (StringUtils.isNotBlank(preferredImageFileGroup) && preferredImageFileGroup.equals(use)) {
-                        return preferredImageFileGroup;
+                    for (String g : availablePreferredImageFileGroups) {
+                        if (g.equals(use)) {
+                            return g;
+                        }
                     }
                     break;
             }
@@ -1353,7 +1361,7 @@ public class MetsIndexer extends Indexer {
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     if (doc.containsKey(SolrConstants.FILENAME)) {
-                        if (StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(fileGrpUse)) {
+                        if (StringUtils.isNotEmpty(selectedPreferredImageFileGroup) && selectedPreferredImageFileGroup.equals(fileGrpUse)) {
                             // Preferred file group overrides any already added values
                             doc.remove(SolrConstants.FILENAME);
                         } else {
@@ -1401,8 +1409,8 @@ public class MetsIndexer extends Indexer {
                 }
 
                 // Add mime type
-                if (doc.containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(preferredImageFileGroup)
-                        && preferredImageFileGroup.equals(fileGrpUse)) {
+                if (doc.containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(selectedPreferredImageFileGroup)
+                        && selectedPreferredImageFileGroup.equals(fileGrpUse)) {
                     // Preferred file group overrides any already added values
                     doc.removeField(SolrConstants.MIMETYPE);
                 }
