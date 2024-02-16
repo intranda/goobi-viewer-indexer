@@ -752,14 +752,15 @@ public final class SolrSearchIndex {
     /**
      * 
      * @param fieldValue
-     * @return
+     * @return {@link Integer}
+     * @should return null if fieldValue null
      */
-    static Integer getAsInt(Object fieldValue) {
+    public static Integer getAsInt(Object fieldValue) {
         if (fieldValue == null) {
             return null;
         }
-        if (fieldValue instanceof Integer) {
-            return (Integer) fieldValue;
+        if (fieldValue instanceof Integer integer) {
+            return integer;
         }
         try {
             return Integer.parseInt(fieldValue.toString());
@@ -777,8 +778,8 @@ public final class SolrSearchIndex {
         if (fieldValue == null) {
             return null;
         }
-        if (fieldValue instanceof Long) {
-            return (Long) fieldValue;
+        if (fieldValue instanceof Long lng) {
+            return lng;
         }
         try {
             return Long.parseLong(fieldValue.toString());

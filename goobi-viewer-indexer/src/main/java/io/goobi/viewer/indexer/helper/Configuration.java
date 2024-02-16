@@ -661,8 +661,13 @@ public final class Configuration {
         return getBoolean("init.representativeImage.useFirstPageAsDefault", true);
     }
     
-    public String getMetsPreferredImageFileGroup() {
-        return getString("init.mets.preferredImageFileGroup", "");
+    /**
+     * 
+     * @return Configured preferredImageFileGroup values or empty list
+     * @should return configured values
+     */
+    public List<String> getMetsPreferredImageFileGroups() {
+        return getStringList("init.mets.preferredImageFileGroup");
     }
 
     /**

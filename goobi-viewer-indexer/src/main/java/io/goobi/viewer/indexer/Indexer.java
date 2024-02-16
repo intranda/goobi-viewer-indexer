@@ -2137,9 +2137,8 @@ public abstract class Indexer {
      * 
      * @param pi The identifier of the process to create pdfs for
      * @param hasNewMediaFiles if the data repository has been updated with new media files
-     * @throws FatalIndexerException
      */
-    void prerenderPagePdfsIfRequired(String pi, boolean hasNewMediaFiles) throws FatalIndexerException {
+    void prerenderPagePdfsIfRequired(String pi, boolean hasNewMediaFiles) {
         try {
             if (hasNewMediaFiles) {
                 logger.debug("New media files found: Trigger prerenderPDFs task in viewer and force update");
