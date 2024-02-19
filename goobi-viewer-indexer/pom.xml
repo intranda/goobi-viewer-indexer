@@ -287,8 +287,8 @@
                                 <requireReleaseDeps>
                                     <message>No Snapshots Allowed!</message>
                                 </requireReleaseDeps>
-                                <fail>${failOnSnapshot}</fail>
 							</rules>
+                            <fail>${failOnSnapshot}</fail>
 						</configuration>
 					</execution>
 				</executions>
