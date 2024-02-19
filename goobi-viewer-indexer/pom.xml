@@ -20,7 +20,8 @@
 	<properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>17</maven.compiler.release>
-		<skipTests>true</skipTests>
+        <skipTests>true</skipTests>
+        <failOnSnapshot>false</failOnSnapshot>
 
         <!-- Sonar -->
         <sonar.projectKey>intranda_goobi-viewer-indexer</sonar.projectKey>
@@ -282,7 +283,11 @@
 							<rules>
 								<requireMavenVersion>
 									<version>3.8.8</version>
-								</requireMavenVersion>
+                                </requireMavenVersion>
+                                <requireReleaseDeps>
+                                    <message>No Snapshots Allowed!</message>
+                                </requireReleaseDeps>
+                                <fail>${failOnSnapshot}</fail>
 							</rules>
 						</configuration>
 					</execution>
