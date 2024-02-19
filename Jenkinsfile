@@ -34,7 +34,7 @@ pipeline {
         stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
       }
     }
-  stages {
+
     stage('build release') {
       when {
         anyOf {
