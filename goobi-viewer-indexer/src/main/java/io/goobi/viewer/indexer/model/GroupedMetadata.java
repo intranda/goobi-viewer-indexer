@@ -156,7 +156,7 @@ public class GroupedMetadata {
                         xpath = xpath.replace(xpathReplacementsEntry.getKey(), xpathReplacementsEntry.getValue());
                     }
                 }
-                logger.info("XPath: {}", xpath);
+                logger.debug("XPath: {}", xpath);
                 List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
                 if (values == null || values.isEmpty()) {
                     // Use default value, if available
@@ -169,7 +169,7 @@ public class GroupedMetadata {
                 }
                 // Trim down to the first value if subfield is not multivalued
                 if (!subfield.isMultivalued() && values.size() > 1) {
-                    logger.info("{} is not multivalued", subfield.getFieldname());
+                    logger.debug("{} is not multivalued", subfield.getFieldname());
                     values = values.subList(0, 1);
                 }
                 for (Object val : values) {
@@ -178,7 +178,7 @@ public class GroupedMetadata {
                         continue;
                     }
                     fieldValue = fieldValue.trim();
-                    logger.info("found: {}:{}", subfield.getFieldname(), fieldValue);
+                    logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
 
                     if (authorityDataEnabled && subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI) && fieldValue.length() > 1) {
                         // Skip values that probably aren't real identifiers or URIs
