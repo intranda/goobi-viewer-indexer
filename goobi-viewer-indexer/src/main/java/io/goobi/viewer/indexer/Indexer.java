@@ -872,13 +872,12 @@ public abstract class Indexer {
             }
 
             // Value
-            if (annotation.getBody() instanceof TextualResource) {
+            if (annotation.getBody() instanceof TextualResource textualResource) {
                 doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_COMMENT);
-                doc.addField(FIELD_TEXT, ((TextualResource) annotation.getBody()).getText());
-            } else if (annotation.getBody() instanceof GeoLocation) {
+                doc.addField(FIELD_TEXT, textualResource.getText());
+            } else if (annotation.getBody() instanceof GeoLocation geoLocation) {
                 doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 // Add searchable coordinates
-                GeoLocation geoLocation = (GeoLocation) annotation.getBody();
                 if (geoLocation.getGeometry() != null) {
                     double[] coords = geoLocation.getGeometry().getCoordinates();
                     if (coords.length == 2) {
@@ -896,11 +895,11 @@ public abstract class Indexer {
                 doc.addField("MD_BODY", annotation.getBody().toString());
             }
 
-            if (annotation.getTarget() instanceof SpecificResource) {
+            if (annotation.getTarget() instanceof SpecificResource specificResource) {
                 // Coords
-                ISelector selector = ((SpecificResource) annotation.getTarget()).getSelector();
-                if (selector instanceof FragmentSelector) {
-                    String coords = ((FragmentSelector) selector).getValue();
+                ISelector selector = specificResource.getSelector();
+                if (selector instanceof FragmentSelector fragmentSelector) {
+                    String coords = fragmentSelector.getValue();
                     doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
                     doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 }
@@ -2011,8 +2010,7 @@ public abstract class Indexer {
                 logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
                 String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
                 switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
+                    case "_tif", FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
                         dataFolders.put(DataRepository.PARAM_MEDIA, path);
                         break;
                     case "_txt":

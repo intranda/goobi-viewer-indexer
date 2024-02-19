@@ -32,10 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
@@ -588,12 +584,11 @@ public final class SolrSearchIndex {
      *
      * @param confFilename
      * @return a {@link org.jdom2.Document} object.
-     * @throws ConfigurationException
      * @throws IOException
      * @throws JDOMException
      * @should return schema document correctly
      */
-    public static Document getSolrSchemaDocument(String solrUrl) throws IOException, JDOMException, ConfigurationException {
+    public static Document getSolrSchemaDocument(String solrUrl) throws IOException, JDOMException {
         // Set timeout to less than the server default, otherwise it will wait 5 minutes before terminating        
         try {
             String responseBody = Utils.getWebContentGET(

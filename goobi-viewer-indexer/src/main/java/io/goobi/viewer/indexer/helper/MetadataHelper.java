@@ -647,10 +647,9 @@ public class MetadataHelper {
      * 
      * @param configurationItem
      * @param fieldValue
-     * @return
-     * @throws FatalIndexerException
+     * @return Modified value
      */
-    private static String applyAllModifications(FieldConfig configurationItem, String fieldValue) throws FatalIndexerException {
+    private static String applyAllModifications(FieldConfig configurationItem, String fieldValue) {
         if (StringUtils.isEmpty(fieldValue)) {
             return fieldValue;
         }
@@ -718,12 +717,12 @@ public class MetadataHelper {
                 StringBuilder sb = new StringBuilder();
                 sb.append(entry.getKey());
                 ret = ret.replace(sb.toString(), entry.getValue());
-            } else if (entry.getKey() instanceof String) {
-                logger.trace("replace rule: {} -> {}", entry.getKey(), entry.getValue());
-                if (((String) entry.getKey()).startsWith("REGEX:")) {
-                    ret = ret.replaceAll(((String) entry.getKey()).substring(6), entry.getValue());
+            } else if (entry.getKey() instanceof String s) {
+                logger.trace("replace rule: {} -> {}", s, entry.getValue());
+                if (s.startsWith("REGEX:")) {
+                    ret = ret.replaceAll(s.substring(6), entry.getValue());
                 } else {
-                    ret = ret.replace((String) entry.getKey(), entry.getValue());
+                    ret = ret.replace(s, entry.getValue());
                 }
             } else {
                 logger.error("Unknown replacement key type of '{}: {}", entry.getKey(), entry.getKey().getClass().getName());
@@ -757,14 +756,13 @@ public class MetadataHelper {
      * </p>
      *
      * @param pi a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @return a {@link java.lang.String} object.
      * @should trim identifier
      * @should apply replace rules
      * @should replace spaces with underscores
      * @should replace commas with underscores
-     * @return a {@link java.lang.String} object.
      */
-    public static String applyIdentifierModifications(String pi) throws FatalIndexerException {
+    public static String applyIdentifierModifications(String pi) {
         if (StringUtils.isEmpty(pi)) {
             return pi;
         }

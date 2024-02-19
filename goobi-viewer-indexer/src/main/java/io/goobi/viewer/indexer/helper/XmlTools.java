@@ -186,10 +186,10 @@ public class XmlTools {
         outputter.setFormat(xmlFormat);
 
         String docString = null;
-        if (element instanceof Document) {
-            docString = outputter.outputString((Document) element);
-        } else if (element instanceof Element) {
-            docString = outputter.outputString((Element) element);
+        if (element instanceof Document doc) {
+            docString = outputter.outputString(doc);
+        } else if (element instanceof Element e) {
+            docString = outputter.outputString(e);
         }
 
         return docString;
@@ -212,8 +212,8 @@ public class XmlTools {
             return retList;
         }
         for (Object object : list) {
-            if (object instanceof Element) {
-                retList.add((Element) object);
+            if (object instanceof Element e) {
+                retList.add(e);
             }
         }
         
