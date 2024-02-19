@@ -186,6 +186,11 @@
                 Default is 1000. -->
             <sizeWarningThreshold>1000</sizeWarningThreshold>
         </authorityDataCache>
+        
+        <solr>
+            <!-- useHttp2: If false, the old HTTP1 client will be used for backwards compatibility with Solr 8. Default is true. -->
+            <useHttp2>true</useHttp2>
+        </solr>
     </performance>
 
 

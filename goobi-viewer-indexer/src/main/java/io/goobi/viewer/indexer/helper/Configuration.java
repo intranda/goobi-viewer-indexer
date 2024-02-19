@@ -303,8 +303,13 @@ public final class Configuration {
         return getConfiguration("oldSolrUrl");
     }
     
+    /**
+     * 
+     * @return a boolean 
+     * @should return correct value
+     */
     public boolean isSolrUseHttp2() {
-        return true;
+        return getBoolean("performance.solr.useHttp2", true);
     }
 
     /**
