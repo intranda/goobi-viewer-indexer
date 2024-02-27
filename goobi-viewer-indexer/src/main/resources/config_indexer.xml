@@ -114,9 +114,10 @@
 		<fulltextForceUTF8>false</fulltextForceUTF8>
         
         <mets>
-            <!-- preferredImageFileGroup: If a name is configured and a group with that name exists,
+            <!-- preferredImageFileGroup (0-n): If file group names are configured and a group with that name exists,
                 it will be used for indexing image file paths. -->
             <preferredImageFileGroup>BOOKVIEWER</preferredImageFileGroup>
+            <preferredImageFileGroup>ZOOMIFY</preferredImageFileGroup>
         </mets>
 
 		<lido>
@@ -186,6 +187,11 @@
                 Default is 1000. -->
             <sizeWarningThreshold>1000</sizeWarningThreshold>
         </authorityDataCache>
+        
+        <solr>
+            <!-- useHttp2: If false, the old HTTP1 client will be used for backwards compatibility with Solr 8. Default is true. -->
+            <useHttp2>true</useHttp2>
+        </solr>
     </performance>
 
 

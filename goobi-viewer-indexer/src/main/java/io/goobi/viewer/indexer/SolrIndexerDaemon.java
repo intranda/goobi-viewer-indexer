@@ -24,7 +24,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.SolrClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -107,7 +107,7 @@ public final class SolrIndexerDaemon {
 
         // Init old search index, if configured
         try {
-            HttpSolrClient oldClient = SolrSearchIndex.getNewHttpSolrClient(getConfiguration().getOldSolrUrl(), true);
+            SolrClient oldClient = SolrSearchIndex.getNewSolrClient(getConfiguration().getOldSolrUrl());
             if (oldClient != null) {
                 this.oldSearchIndex = new SolrSearchIndex(oldClient);
                 if (logger.isInfoEnabled()) {
