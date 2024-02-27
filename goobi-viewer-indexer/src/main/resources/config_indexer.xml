@@ -296,6 +296,7 @@
                     <xpath>
                         <list>
                             <item>@level</item>
+                            <item>ead:archdesc/@level</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
