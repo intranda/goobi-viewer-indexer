@@ -3561,12 +3561,26 @@
                             <item>ead:did/ead:unitid[not(@type)][1]</item>
                         </list>
                     </xpath>
-                    <addToDefault>true</addToDefault>
+                    <addToDefault>false</addToDefault>
                     <addSortField>true</addSortField>
                     <addUntokenizedVersion>true</addUntokenizedVersion>
                 </item>
             </list>
         </MD_UNITID>
+        <MD_UNITID_NUMBER>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>ead:did/ead:unitid[@type="Vorl. Nr."][1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_UNITID_NUMBER>
         <MD_RECORDID>
             <list>
                 <item>
@@ -3812,8 +3826,8 @@
                     <xpath>
                         <list>
                             <item>mets:xmlData/mods:mods/mods:note[@type='source note']</item>
-                            <item>ead:archdesc/ead:dsc/ead:odd[1]</item>
-                            <item>ead:dsc/ead:odd[1]</item>
+                            <item>ead:archdesc/ead:odd[1]</item>
+                            <item>ead:odd[1]</item>
                         </list>
                     </xpath>
                     <addToDefault>true</addToDefault>
@@ -3822,6 +3836,36 @@
                 </item>
             </list>
         </MD_ODD>
+        <MD_ODD_HEAD>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>ead:archdesc/ead:odd[1]/ead:head</item>
+                            <item>ead:odd[1]/ead:head</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ODD_HEAD>
+        <MD_ODD_P>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>ead:archdesc/ead:odd[1]/ead:p</item>
+                            <item>ead:odd[1]/ead:p</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ODD_P>
         <MD_CONVENTIONDECLARATION>
             <list>
                 <item>
