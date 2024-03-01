@@ -1357,7 +1357,7 @@ public class MetsIndexer extends Indexer {
             }
 
             if (fileGrpUse.equals(useFileGroupGlobal)) {
-                // The file name from the main file group (PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
+                // The file name from the main file group (usually PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     if (doc.containsKey(SolrConstants.FILENAME)) {
@@ -1456,7 +1456,6 @@ public class MetsIndexer extends Indexer {
                         default:
                             doc.addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
                     }
-
                 }
             }
 
