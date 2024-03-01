@@ -78,6 +78,11 @@ class DateToolsTest {
         Assertions.assertEquals(2, ret.size());
         Assertions.assertEquals(Integer.valueOf(10), ret.get(0).getYear());
         Assertions.assertEquals(Integer.valueOf(20), ret.get(1).getYear());
+        
+        ret = DateTools.normalizeDate("-300 - -200", 3);
+        Assertions.assertEquals(2, ret.size());
+        Assertions.assertEquals(Integer.valueOf(-300), ret.get(0).getYear());
+        Assertions.assertEquals(Integer.valueOf(-200), ret.get(1).getYear());
     }
 
     /**

@@ -1796,6 +1796,14 @@ public abstract class Indexer {
 
         Map<String, Object> altoData = null;
         String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
+        // If main image file is a IIIF URL or anything with no unique file name, look for alternatives
+        if (!isBaseFileNameUsable(baseFileName)) {
+            if (doc.getFieldValue("FILENAME_JPEG") != null) {
+                baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue("FILENAME_JPEG"));
+            } else if (doc.getFieldValue("FILENAME_TIFF") != null) {
+                baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue("FILENAME_TIFF"));
+            }
+        }
 
         // Add complete crowdsourcing ALTO document and full-text generated from ALTO, if available
         boolean foundCrowdsourcingData = false;
@@ -1835,24 +1843,25 @@ public abstract class Indexer {
 
         // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
         if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
-                && dataFolders.get(DataRepository.PARAM_ALTO) != null && !"info".equals(baseFileName) && !"native".equals(baseFileName)) {
-            File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION);
-            try {
-                altoData = TextHelper.readAltoFile(altoFile);
-                altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, pi, baseFileName, order, false);
-            } catch (IOException | JDOMException e) {
-                if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
-                    logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
+                && dataFolders.get(DataRepository.PARAM_ALTO) != null && isBaseFileNameUsable(baseFileName)) {
+                File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION);
+                try {
+                    altoData = TextHelper.readAltoFile(altoFile);
+                    altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, pi, baseFileName, order, false);
+                } catch (IOException | JDOMException e) {
+                    if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
+                        logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
+                    }
                 }
-            }
+                // logger.info("regular alto " + altoFile.getAbsolutePath() + " written: " + altoWritten);
         }
 
         // If FULLTEXT is still empty, look for a plain full-text
         if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null
-                && !"info".equals(baseFileName)) {
-            String fulltext = TextHelper.generateFulltext(baseFileName + FileTools.TXT_EXTENSION,
-                    dataFolders.get(DataRepository.PARAM_FULLTEXT), true,
-                    SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.fulltextForceUTF8", true));
+                && isBaseFileNameUsable(baseFileName)) {
+            String fulltext =
+                    TextHelper.generateFulltext(baseFileName + FileTools.TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true,
+                            SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.fulltextForceUTF8", true));
             if (fulltext != null) {
                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                 doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepo
@@ -1865,7 +1874,7 @@ public abstract class Indexer {
         }
 
         // Convert ABBYY XML to ALTO
-        if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null && !"info".equals(baseFileName)) {
+        if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null && isBaseFileNameUsable(baseFileName)) {
             try {
                 altoData = TextHelper.readAbbyyToAlto(
                         new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
@@ -1880,7 +1889,7 @@ public abstract class Indexer {
         }
 
         // Convert TEI to ALTO
-        if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null && !"info".equals(baseFileName)) {
+        if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null && isBaseFileNameUsable(baseFileName)) {
             try {
                 altoData = TextHelper.readTeiToAlto(
                         new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION));
@@ -1891,7 +1900,7 @@ public abstract class Indexer {
             }
         }
 
-        if (dataFolders.get(DataRepository.PARAM_MIX) != null && !"info".equals(baseFileName)) {
+        if (dataFolders.get(DataRepository.PARAM_MIX) != null && isBaseFileNameUsable(baseFileName)) {
             try {
                 Map<String, String> mixData = TextHelper
                         .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
@@ -1992,6 +2001,15 @@ public abstract class Indexer {
         } else {
             doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
         }
+    }
+
+    /**
+     * 
+     * @param baseFileName
+     * @return true if baseFileName is not one of the keywords; false otherwise
+     */
+    static boolean isBaseFileNameUsable(String baseFileName) {
+        return !("default".equals(baseFileName) || "info".equals(baseFileName) || "native".equals(baseFileName));
     }
 
     /**
