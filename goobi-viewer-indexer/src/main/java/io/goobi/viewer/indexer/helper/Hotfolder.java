@@ -859,7 +859,13 @@ public class Hotfolder {
 
             boolean success = false;
             switch (format) {
-                case CMS, DENKXWEB, DUBLINCORE, EAD, LIDO, METS, WORLDVIEWS:
+                case CMS:
+                case DENKXWEB:
+                case DUBLINCORE:
+                case LIDO:
+                case METS:
+                case METS_MARC:
+                case WORLDVIEWS:
                     if (trace) {
                         logger.info("Deleting {} file '{}'...", format.name(), actualXmlFile.getFileName());
                     } else {
