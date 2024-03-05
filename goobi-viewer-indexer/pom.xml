@@ -40,7 +40,7 @@
 		<normdataimporter.version>1.10.6</normdataimporter.version>
 
 		<!-- other libraries -->
-        <angus-mail.version>2.0.2</angus-mail.version>
+        <angus-mail.version>2.0.3</angus-mail.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<commons-configuration2.version>2.9.0</commons-configuration2.version>
 		<commons-io.version>2.15.1</commons-io.version>
