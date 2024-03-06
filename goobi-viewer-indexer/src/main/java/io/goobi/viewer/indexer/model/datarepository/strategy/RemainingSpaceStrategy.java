@@ -66,47 +66,41 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
             throw new FatalIndexerException("No data repositories found, exiting...");
         }
 
-        try {
-            viewerHomePath = Paths.get(config.getConfiguration("viewerHome"));
-            if (!Files.isDirectory(viewerHomePath)) {
-                logger.error("Path defined in <viewerHome> does not exist, exiting...");
-                throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
-            }
-        } catch (Exception e) {
+        String viewerHome = config.getConfiguration("viewerHome");
+        if (StringUtils.isEmpty(viewerHome)) {
             logger.error("<viewerHome> not defined, exiting...");
+            throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
+        }
+        viewerHomePath = Paths.get(viewerHome);
+        if (!Files.isDirectory(viewerHomePath)) {
+            logger.error("Path defined in <viewerHome> does not exist, exiting...");
             throw new FatalIndexerException(StringConstants.ERROR_CONFIG);
         }
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#getAllDataRepositories()
-     */
     /** {@inheritDoc} */
     @Override
     public List<DataRepository> getAllDataRepositories() {
         return dataRepositories;
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, io.goobi.viewer.indexer.helper.searchIndex)
-     */
     /** {@inheritDoc} */
     @Override
-    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders,
-            final SolrSearchIndex searchIndex,
-            final SolrSearchIndex oldSearchIndex)
-            throws FatalIndexerException {
+    public DataRepository[] selectDataRepository(final String pi, final Path dataFile, final Map<String, Path> dataFolders,
+            final SolrSearchIndex searchIndex, final SolrSearchIndex oldSearchIndex) throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
+        String usePi = pi;
+
         // Extract PI from the file name, if not value was passed (e.g. when deleting a record)
-        if (StringUtils.isEmpty(pi) && dataFile != null) {
+        if (StringUtils.isEmpty(usePi) && dataFile != null) {
             String fileExtension = FilenameUtils.getExtension(dataFile.getFileName().toString());
             if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals("." + fileExtension) || "delete".equals(fileExtension) || "purge".equals(fileExtension)) {
-                pi = Utils.extractPiFromFileName(dataFile);
+                usePi = Utils.extractPiFromFileName(dataFile);
             }
         }
 
-        if (StringUtils.isBlank(pi)) {
+        if (StringUtils.isBlank(usePi)) {
             if (dataFile != null) {
                 logger.error("Could not parse PI from '{}'", dataFile.getFileName());
             }
@@ -130,9 +124,9 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
         String previousRepository = null;
         try {
             // Look up previous repository in the index
-            previousRepository = searchIndex.findCurrentDataRepository(pi);
+            previousRepository = searchIndex.findCurrentDataRepository(usePi);
             if (previousRepository == null && oldSearchIndex != null) {
-                previousRepository = oldSearchIndex.findCurrentDataRepository(pi);
+                previousRepository = oldSearchIndex.findCurrentDataRepository(usePi);
                 if (previousRepository != null) {
                     logger.info("Data repository found in old index: {}", previousRepository);
                 }
@@ -145,7 +139,8 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
                 // Record is already indexed, but not in a data repository
                 ret[1] = new DataRepository("", false);
                 logger.info(
-                        "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
+                        "This record is already indexed, but its data files are not in a repository."
+                                + " The data files will be moved to the selected repository.");
             } else {
                 // Make sure previous repository name is converted to an absolute path
                 previousRepository = DataRepository.getAbsolutePath(previousRepository);
@@ -156,7 +151,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
                         found = true;
                         // Use this repository if its remaining space (minus the reserved buffer) is larger than the record size
                         if (recordSize < repository.getUsableSpace() - repository.getBuffer()) {
-                            logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
+                            logger.info("Using previous data repository for '{}': {}", usePi, previousRepository);
                             ret[0] = repository;
                             return ret;
                         }
@@ -167,7 +162,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
                     }
                 }
                 if (!found) {
-                    logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
+                    logger.warn("Previous data repository for '{}' does not exist: {}", usePi, previousRepository);
                 }
             }
         }
@@ -175,7 +170,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
         // Record not yet indexed; find available repository
         DataRepository repository = selectRepository(repositorySpaceMap, recordSize);
         if (repository != null) {
-            logger.info("Repository selected for '{}': {} ({} Bytes available).", pi, repository.getPath(), repository.getUsableSpace());
+            logger.info("Repository selected for '{}': {} ({} Bytes available).", usePi, repository.getPath(), repository.getUsableSpace());
             ret[0] = repository;
             return ret;
         }
@@ -186,8 +181,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
 
     /**
      * @param dataRepositories
-     * @return Map
-     * @should
+     * @return SortedMap<Long, DataRepository>
      * @should subtract the buffer size from available space
      */
     static SortedMap<Long, DataRepository> generateRepositorySpaceMap(List<DataRepository> dataRepositories) {
@@ -206,7 +200,7 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
      * 
      * @param repositorySpaceMap
      * @param recordSize
-     * @return
+     * @return Selected {@link DataRepository}
      * @should select repository with the smallest sufficient space
      * @should return null if recordSize is larger than any available repository space
      */

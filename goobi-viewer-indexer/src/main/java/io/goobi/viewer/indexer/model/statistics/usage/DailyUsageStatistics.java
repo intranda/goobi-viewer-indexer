@@ -25,17 +25,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import io.goobi.viewer.indexer.helper.DateTools;
+
 /**
  * @author florian
  *
  */
 public class DailyUsageStatistics {
 
-    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    
     private final LocalDate date;
     private final String viewerName;
     private final Map<String, DailyRequestCounts> requestCounts;
+
     /**
      * @param date
      * @param viewerName
@@ -47,21 +48,21 @@ public class DailyUsageStatistics {
         this.viewerName = viewerName;
         this.requestCounts = requestCounts;
     }
-    
+
     public DailyUsageStatistics(JSONObject json) {
-        try {            
+        try {
             String dateString = json.getString("date");
-            this.date = LocalDate.parse(dateString, dateFormatter);
+            this.date = LocalDate.parse(dateString, DateTools.formatterISO8601Date);
             this.viewerName = json.getString("viewer-name");
             JSONArray records = json.getJSONArray("records");
             requestCounts = new HashMap<>();
-            for(int i = 0; i < records.length(); i++) {
+            for (int i = 0; i < records.length(); i++) {
                 JSONObject jsonRecord = records.getJSONObject(i);
                 String pi = jsonRecord.getString("pi");
                 JSONArray counts = jsonRecord.getJSONArray("counts");
                 requestCounts.put(pi, new DailyRequestCounts(counts));
             }
-        } catch(JSONException | DateTimeParseException e) {
+        } catch (JSONException | DateTimeParseException e) {
             throw new IllegalArgumentException("Error parsing json as DailyUsageStatistics: " + e.toString());
         }
     }
@@ -70,7 +71,7 @@ public class DailyUsageStatistics {
      * @return the dateformatter
      */
     public static DateTimeFormatter getDateformatter() {
-        return dateFormatter;
+        return DateTools.formatterISO8601Date;
     }
 
     /**
@@ -93,7 +94,5 @@ public class DailyUsageStatistics {
     public Map<String, DailyRequestCounts> getRequestCounts() {
         return requestCounts;
     }
-    
-    
-    
+
 }

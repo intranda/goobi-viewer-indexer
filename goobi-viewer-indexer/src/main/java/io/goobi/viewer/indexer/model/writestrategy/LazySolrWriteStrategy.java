@@ -60,9 +60,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         this.searchIndex = searchIndex;
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#setRootDoc(org.apache.solr.common.SolrInputDocument)
-     */
     /** {@inheritDoc} */
     @Override
     public void setRootDoc(SolrInputDocument doc) {
@@ -80,14 +77,13 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     /**
      * For unit testing purposes.
+     * 
+     * @return the docsToAdd
      */
     public List<SolrInputDocument> getDocsToAdd() {
         return docsToAdd;
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDoc(org.apache.solr.common.SolrInputDocument)
-     */
     /** {@inheritDoc} */
     @Override
     public void addDoc(SolrInputDocument doc) {
@@ -95,9 +91,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDocs(java.util.List)
-     */
     /** {@inheritDoc} */
     @Override
     public void addDocs(List<SolrInputDocument> docs) {
@@ -116,9 +109,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         }
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addPageDoc(org.apache.solr.common.SolrInputDocument)
-     */
     /** {@inheritDoc} */
     @Override
     public void addPageDoc(SolrInputDocument doc) {
@@ -140,27 +130,19 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         }
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#updateDoc(org.apache.solr.common.SolrInputDocument)
-     */
     /** {@inheritDoc} */
     @Override
     public void updateDoc(SolrInputDocument doc) {
         // This implementation doesn't need to do anything, since all docs are kept in memory
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#getPageDocsSize()
-     */
     /** {@inheritDoc} */
     @Override
     public int getPageDocsSize() {
         return pageOrderMap.size();
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageOrderNumbers()
-     */
+    /** {@inheritDoc} */
     @Override
     public List<Integer> getPageOrderNumbers() {
         List<Integer> ret = new ArrayList<>(pageOrderMap.keySet());

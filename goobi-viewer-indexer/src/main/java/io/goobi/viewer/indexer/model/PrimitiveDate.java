@@ -24,7 +24,12 @@ public class PrimitiveDate {
     private Integer month;
     private Integer day;
 
-    /** Individual values constructor. */
+    /** Individual values constructor.
+     * 
+     * @param year
+     * @param month
+     * @param day
+     */
     public PrimitiveDate(Integer year, Integer month, Integer day) {
         this.year = year;
         this.month = month;

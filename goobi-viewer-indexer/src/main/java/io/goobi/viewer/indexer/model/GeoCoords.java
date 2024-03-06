@@ -18,7 +18,17 @@ package io.goobi.viewer.indexer.model;
 public class GeoCoords {
 
     private final String geoJSON;
-    private final String WKT;
+    private final String wkt;
+    
+    /**
+     * 
+     * @param geoJSON
+     * @param wkt
+     */
+    public GeoCoords(String geoJSON, String wkt) {
+        this.geoJSON = geoJSON;
+        this.wkt = wkt;
+    }
 
     /**
      * @return the geoJSON
@@ -28,14 +38,9 @@ public class GeoCoords {
     }
 
     /**
-     * @return the wKT
+     * @return the wkt
      */
-    public String getWKT() {
-        return WKT;
-    }
-
-    public GeoCoords(String geoJSON, String WKT) {
-        this.geoJSON = geoJSON;
-        this.WKT = WKT;
+    public String getWkt() {
+        return wkt;
     }
 }

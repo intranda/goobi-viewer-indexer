@@ -39,9 +39,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -196,7 +198,7 @@ public class DublinCoreIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path dcFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
+    public String[] index(Path dcFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
         String[] ret = { null, null };
 
@@ -208,7 +210,14 @@ public class DublinCoreIndexer extends Indexer {
         }
 
         logger.debug("Indexing Dublin Core file '{}'...", dcFile.getFileName());
+        ISolrWriteStrategy useWriteStrategy = writeStrategy;
         try {
+            if (useWriteStrategy == null) {
+                // Request appropriate write strategy
+                useWriteStrategy = AbstractWriteStrategy.create(dcFile, dataFolders, hotfolder);
+            } else {
+                logger.info("Solr write strategy injected by caller: {}", useWriteStrategy.getClass().getName());
+            }
             initJDomXP(dcFile);
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
@@ -270,13 +279,6 @@ public class DublinCoreIndexer extends Indexer {
             checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
             checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
 
-            if (writeStrategy == null) {
-                // Request appropriate write strategy
-                writeStrategy = AbstractWriteStrategy.create(dcFile, dataFolders, hotfolder);
-            } else {
-                logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
-            }
-
             // Set source doc format
             indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DUBLINCORE.name());
             prepareUpdate(indexObj);
@@ -325,7 +327,7 @@ public class DublinCoreIndexer extends Indexer {
             indexObj.writeDateModified(true);
 
             // Generate docs for all pages and add to the write strategy
-            generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
+            generatePageDocuments(useWriteStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
 
             // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
             indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
@@ -333,8 +335,9 @@ public class DublinCoreIndexer extends Indexer {
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
-            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
+            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(),
+            // writeAccessConditions() and generatePageDocuments()!)
+            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, useWriteStrategy);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
@@ -391,7 +394,7 @@ public class DublinCoreIndexer extends Indexer {
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
                                 getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (doc != null) {
-                    writeStrategy.addDoc(doc);
+                    useWriteStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 } else {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -399,7 +402,7 @@ public class DublinCoreIndexer extends Indexer {
             }
 
             // Add grouped metadata as separate documents
-            addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
+            addGroupedMetadataDocs(useWriteStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
             if (indexObj.getNumPages() > 0) {
                 // Write number of pages
@@ -416,24 +419,24 @@ public class DublinCoreIndexer extends Indexer {
                 }
 
                 // Add used-generated content docs
-                writeUserGeneratedContents(writeStrategy, dataFolders, indexObj);
+                writeUserGeneratedContents(useWriteStrategy, dataFolders, indexObj);
             }
 
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
-            writeStrategy.setRootDoc(rootDoc);
+            useWriteStrategy.setRootDoc(rootDoc);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
-            writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Finished writing data for '{}' to Solr.", pi);
-        } catch (Exception e) {
+        } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
-            if (writeStrategy != null) {
-                writeStrategy.cleanup();
+            if (useWriteStrategy != null) {
+                useWriteStrategy.cleanup();
             }
         }
 
@@ -444,7 +447,7 @@ public class DublinCoreIndexer extends Indexer {
      * 
      * @param indexObj
      * @param writeStrategy
-     * @return
+     * @return List<LuceneField>
      * @throws FatalIndexerException
      */
     private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
@@ -626,10 +629,9 @@ public class DublinCoreIndexer extends Indexer {
         // Generate pages sequentially
         int order = pageCountStart;
         for (final Element eleImage : eleImageList) {
-            if (generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
-                    writeStrategy, dataFolders)) {
-                order++;
-            }
+            generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
+                    writeStrategy, dataFolders);
+            order++;
         }
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
     }
@@ -642,12 +644,10 @@ public class DublinCoreIndexer extends Indexer {
      * @param order
      * @param writeStrategy
      * @param dataFolders
-     * @return
      * @throws FatalIndexerException
      */
-    boolean generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders)
-            throws FatalIndexerException {
+    void generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, ISolrWriteStrategy writeStrategy,
+            Map<String, Path> dataFolders) throws FatalIndexerException {
         if (eleImage == null) {
             throw new IllegalArgumentException("eleImage may not be null");
         }
@@ -656,6 +656,7 @@ public class DublinCoreIndexer extends Indexer {
         }
         if (order == null) {
             // TODO page order within the metadata
+            order = 1;
         }
 
         // Create Solr document for this page
@@ -710,7 +711,6 @@ public class DublinCoreIndexer extends Indexer {
 
         addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, null);
         writeStrategy.addPageDoc(doc);
-        return true;
     }
 
     /**
@@ -752,10 +752,9 @@ public class DublinCoreIndexer extends Indexer {
      * Retrieves and sets the URN for mets:structMap[@TYPE='LOGICAL'] elements.
      * 
      * @param indexObj
-     * @return
-     * @throws FatalIndexerException
+     * @return The set URN value
      */
-    private String setUrn(IndexObject indexObj) throws FatalIndexerException {
+    private String setUrn(IndexObject indexObj) {
         String query = "/mets:mets/mets:structMap[@TYPE='LOGICAL']//mets:div[@ID='" + indexObj.getLogId() + "']/@CONTENTIDS";
         String urn = xp.evaluateToAttributeStringValue(query, null);
         if (Utils.isUrn(urn)) {
@@ -794,7 +793,8 @@ public class DublinCoreIndexer extends Indexer {
         if (sbNewFilename.length() > 0) {
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
             try {
-                // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems. Instead, move the file.
+                // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems.
+                // Instead, move the file.
                 Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed);
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
