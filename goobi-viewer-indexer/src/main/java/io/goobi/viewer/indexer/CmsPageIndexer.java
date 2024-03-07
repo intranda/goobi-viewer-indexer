@@ -227,8 +227,6 @@ public class CmsPageIndexer extends Indexer {
                 throw new IndexerException(ret[1]);
             }
 
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.CMS.name());
             prepareUpdate(indexObj);
 
             // Set title
