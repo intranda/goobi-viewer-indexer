@@ -36,7 +36,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
-import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
 
@@ -79,7 +78,7 @@ public final class MetadataConfigurationManager {
     /**
      * 
      * @param config
-     * @return
+     * @return Map<String, List<FieldConfig>>
      * @should load all field configs correctly
      * @should load nested group entities correctly
      */
@@ -281,8 +280,7 @@ public final class MetadataConfigurationManager {
     /**
      * 
      * @param config
-     * @param fieldname
-     * @return
+     * @return {@link GroupEntity}
      * @should read group entity correctly
      * @should recursively read child group entities
      */
@@ -345,7 +343,7 @@ public final class MetadataConfigurationManager {
     /**
      * 
      * @param sub
-     * @return
+     * @return {@link SubfieldConfig}
      * @should read subfield config correctly
      */
     static SubfieldConfig readSubfield(HierarchicalConfiguration<ImmutableNode> sub) {
@@ -405,12 +403,11 @@ public final class MetadataConfigurationManager {
      * </p>
      *
      * @param code a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return correct mapping
      * @should return null if code not configured
      * @return a {@link java.lang.String} object.
      */
-    public static String getLanguageMapping(String code) throws FatalIndexerException {
+    public static String getLanguageMapping(String code) {
         return SolrIndexerDaemon.getInstance().getConfiguration().getString("languageMapping." + code);
     }
 
@@ -420,14 +417,14 @@ public final class MetadataConfigurationManager {
      * @param string a {@link java.lang.String} object.
      * @return The mapped replacement name, if available; default docstruct name, if configured to be used; the original name (without spaces)
      *         otherwise.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public static String mapDocStrct(String string) throws FatalIndexerException {
+    public static String mapDocStrct(String string) {
         String ret = string.replace(" ", "_");
         Map<String, String> docStructMap = SolrIndexerDaemon.getInstance().getConfiguration().getListConfiguration("docstructmapping");
         if (docStructMap.containsKey(ret)) {
             return docStructMap.get(ret);
-        } else if (Boolean.TRUE.equals(Boolean.valueOf(SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("docstructmapping.useDefaultDocstruct")))) {
+        } else if (Boolean.TRUE.equals(
+                Boolean.valueOf(SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("docstructmapping.useDefaultDocstruct")))) {
             return docStructMap.get("_default");
         } else {
             return ret;
@@ -466,5 +463,4 @@ public final class MetadataConfigurationManager {
     public Set<String> getFieldsToAddToPages() {
         return fieldsToAddToPages;
     }
-
 }

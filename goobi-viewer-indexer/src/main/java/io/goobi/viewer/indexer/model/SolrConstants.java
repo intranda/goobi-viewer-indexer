@@ -52,13 +52,12 @@ public final class SolrConstants {
         /**
          * 
          * @param name
-         * @return
+         * @return {@link MetadataGroupType} matching name
          */
-        public static MetadataGroupType getByName(String name) {
+        public static MetadataGroupType getByName(final String name) {
             if (name != null) {
-                name = name.toUpperCase();
                 for (MetadataGroupType type : MetadataGroupType.values()) {
-                    if (type.name().equals(name)) {
+                    if (type.name().equalsIgnoreCase(name)) {
                         return type;
                     }
                 }
@@ -271,5 +270,9 @@ public final class SolrConstants {
 
     public static final String SOLR_QUERY_AND = " AND ";
     public static final String SOLR_QUERY_TRUE = ":true";
+    
+    /** Private constructor. */
+    private SolrConstants() {
+    }
 
 }

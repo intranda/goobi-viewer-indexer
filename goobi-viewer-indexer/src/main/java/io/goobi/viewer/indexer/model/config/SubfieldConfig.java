@@ -32,11 +32,10 @@ public class SubfieldConfig {
     private final Map<String, String> defaultValues = new HashMap<>();
 
     /**
-     * <p>
-     * Getter for the field <code>xpaths</code>.
-     * </p>
      *
-     * @return the xpaths
+     * @param fieldname
+     * @param multivalued
+     * @param addSortField
      */
     public SubfieldConfig(String fieldname, boolean multivalued, boolean addSortField) {
         this.fieldname = fieldname;

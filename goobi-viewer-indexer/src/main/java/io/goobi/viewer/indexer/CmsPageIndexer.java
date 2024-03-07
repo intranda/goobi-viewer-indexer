@@ -30,9 +30,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -157,7 +159,7 @@ public class CmsPageIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path cmsFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
+    public String[] index(Path cmsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
         String[] ret = { null, null };
 
@@ -169,7 +171,16 @@ public class CmsPageIndexer extends Indexer {
         }
 
         logger.debug("Indexing CMS page file '{}'...", cmsFile.getFileName());
+        ISolrWriteStrategy useWriteStrategy = writeStrategy;
         try {
+
+            if (useWriteStrategy == null) {
+                // Request appropriate write strategy
+                useWriteStrategy = AbstractWriteStrategy.create(cmsFile, dataFolders, hotfolder);
+            } else {
+                logger.info("Solr write strategy injected by caller: {}", useWriteStrategy.getClass().getName());
+            }
+
             Document doc = XmlTools.readXmlFile(cmsFile);
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
@@ -216,13 +227,8 @@ public class CmsPageIndexer extends Indexer {
                 throw new IndexerException(ret[1]);
             }
 
-            if (writeStrategy == null) {
-                // Request appropriate write strategy
-                writeStrategy = AbstractWriteStrategy.create(cmsFile, dataFolders, hotfolder);
-            } else {
-                logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
-            }
-
+            // Set source doc format
+            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.CMS.name());
             prepareUpdate(indexObj);
 
             // Set title
@@ -283,20 +289,20 @@ public class CmsPageIndexer extends Indexer {
             }
 
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
-            writeStrategy.setRootDoc(rootDoc);
+            useWriteStrategy.setRootDoc(rootDoc);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
             logger.debug("Writing document to index...");
-            writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
+            useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Successfully finished indexing '{}'.", cmsFile.getFileName());
-        } catch (Exception e) {
+        } catch (IOException | IndexerException | FatalIndexerException | SolrServerException | JDOMException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", cmsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
-            if (writeStrategy != null) {
-                writeStrategy.cleanup();
+            if (useWriteStrategy != null) {
+                useWriteStrategy.cleanup();
             }
         }
 

@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
  * </p>
  *
  */
-public class WebAnnotationTools {
+public final class WebAnnotationTools {
 
     static final String TARGET_REGEX = "/iiif/manifests/([^?/]+)";
     static final String TARGET_REGEX_CANVAS = "/records/([^/]+)/pages/(\\d+)/canvas";

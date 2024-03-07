@@ -138,7 +138,7 @@ public class UsageStatisticsIndexer extends Indexer {
         indexObj.addToLucene(SolrConstants.GROUPFIELD, Long.toString(indexObj.getIddoc()));
         indexObj.addToLucene(SolrConstants.DOCTYPE, StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE);
         indexObj.addToLucene(StatisticsLuceneFields.VIEWER_NAME, stats.getViewerName());
-        indexObj.addToLucene(StatisticsLuceneFields.DATE, StatisticsLuceneFields.solrDateFormatter.format(stats.getDate().atStartOfDay()));
+        indexObj.addToLucene(StatisticsLuceneFields.DATE, StatisticsLuceneFields.FORMATTER_SOLR_DATE.format(stats.getDate().atStartOfDay()));
         for (Entry<String, DailyRequestCounts> entry : stats.getRequestCounts().entrySet()) {
             String pi = entry.getKey();
             DailyRequestCounts counts = entry.getValue();
@@ -184,6 +184,6 @@ public class UsageStatisticsIndexer extends Indexer {
     private static String getStatisticsDate(Path sourceFile) {
         String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
         LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
-        return StatisticsLuceneFields.solrDateFormatter.format(date.atStartOfDay());
+        return StatisticsLuceneFields.FORMATTER_SOLR_DATE.format(date.atStartOfDay());
     }
 }

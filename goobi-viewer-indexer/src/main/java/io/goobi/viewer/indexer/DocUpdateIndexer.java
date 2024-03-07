@@ -309,8 +309,8 @@ public class DocUpdateIndexer extends Indexer {
                 List<Object> values = getFileContents(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD));
                 if (!values.isEmpty()) {
                     Object o = values.get(0);
-                    if (o instanceof String) {
-                        String fulltext = ((String) o).trim();
+                    if (o instanceof String s) {
+                        String fulltext = s.trim();
                         if (!partialUpdates.containsKey(SolrConstants.FULLTEXT)) {
                             Map<String, Object> update = new HashMap<>();
                             update.put("set", Jsoup.parse(fulltext).text());
@@ -369,27 +369,26 @@ public class DocUpdateIndexer extends Indexer {
                 SolrInputDocument dummyDoc = new SolrInputDocument();
                 dummyDoc.setField(SolrConstants.IDDOC_OWNER, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
                 dummyDoc.setField(SolrConstants.DOCSTRCT_TOP, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-                {
-                    // Add new UGC docs
-                    List<SolrInputDocument> newUgcDocList =
-                            generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                                    pi, anchorPi, groupIds, order, pageFileBaseName);
-                    if (!newUgcDocList.isEmpty()) {
-                        SolrIndexerDaemon.getInstance().getSearchIndex().writeToIndex(newUgcDocList);
-                    } else {
-                        logger.warn("No user generated content values found for page {}.", order);
-                    }
+
+                // Add new UGC docs
+                List<SolrInputDocument> newUgcDocList =
+                        generateUserGeneratedContentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                                pi, anchorPi, groupIds, order, pageFileBaseName);
+                if (!newUgcDocList.isEmpty()) {
+                    SolrIndexerDaemon.getInstance().getSearchIndex().writeToIndex(newUgcDocList);
+                } else {
+                    logger.warn("No user generated content values found for page {}.", order);
                 }
-                {
-                    // Add comments
-                    List<SolrInputDocument> newCommentDocList = generateUserCommentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
-                            pi, anchorPi, groupIds, order);
-                    if (!newCommentDocList.isEmpty()) {
-                        SolrIndexerDaemon.getInstance().getSearchIndex().writeToIndex(newCommentDocList);
-                    } else {
-                        logger.warn("No user comments found for page {}.", order);
-                    }
+
+                // Add comments
+                List<SolrInputDocument> newCommentDocList = generateUserCommentDocsForPage(dummyDoc, dataFolders.get(DataRepository.PARAM_UGC),
+                        pi, anchorPi, groupIds, order);
+                if (!newCommentDocList.isEmpty()) {
+                    SolrIndexerDaemon.getInstance().getSearchIndex().writeToIndex(newCommentDocList);
+                } else {
+                    logger.warn("No user comments found for page {}.", order);
                 }
+
             }
 
             if (!partialUpdates.isEmpty()) {
@@ -416,7 +415,7 @@ public class DocUpdateIndexer extends Indexer {
     /**
      * 
      * @param folder
-     * @return
+     * @return List<Object>
      */
     static List<Object> getFileContents(Path folder) {
         if (folder == null) {

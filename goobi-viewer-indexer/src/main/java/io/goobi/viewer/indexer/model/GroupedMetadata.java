@@ -86,9 +86,6 @@ public class GroupedMetadata {
         }
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
@@ -100,31 +97,36 @@ public class GroupedMetadata {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         GroupedMetadata other = (GroupedMetadata) obj;
-        if (fields.size() != other.fields.size())
+        if (fields.size() != other.fields.size()) {
             return false;
+        }
         if (label == null) {
-            if (other.label != null)
+            if (other.label != null) {
                 return false;
-        } else if (!label.equals(other.label))
+            }
+        } else if (!label.equals(other.label)) {
             return false;
+        }
         if (mainValue == null) {
-            if (other.mainValue != null)
+            if (other.mainValue != null) {
                 return false;
-        } else if (!mainValue.equals(other.mainValue))
+            }
+        } else if (!mainValue.equals(other.mainValue)) {
             return false;
+        }
         return true;
     }
 
@@ -150,7 +152,8 @@ public class GroupedMetadata {
             }
 
             SubfieldConfig subfield = entry.getValue();
-            for (String xpath : subfield.getXpaths()) {
+            for (final String xp : subfield.getXpaths()) {
+                String xpath = xp;
                 if (xpathReplacements != null) {
                     for (Entry<String, String> xpathReplacementsEntry : xpathReplacements.entrySet()) {
                         xpath = xpath.replace(xpathReplacementsEntry.getKey(), xpathReplacementsEntry.getValue());
@@ -232,7 +235,7 @@ public class GroupedMetadata {
                     .fetch()
                     .build();
             collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
-                    xmlDoc.getXp().getRootElement(), MetadataHelper.authorityDataEnabled, null);
+                    xmlDoc.getXp().getRootElement(), MetadataHelper.isAuthorityDataEnabled(), null);
         } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
             logger.error(e.getMessage(), e);
         }

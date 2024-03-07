@@ -86,9 +86,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         this.tempFolder = tempFolder;
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#setRootDoc(org.apache.solr.common.SolrInputDocument)
-     */
     /** {@inheritDoc} */
     @Override
     public void setRootDoc(SolrInputDocument doc) {
@@ -108,18 +105,12 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDoc(org.apache.solr.common.SolrInputDocument)
-     */
     /** {@inheritDoc} */
     @Override
     public void addDoc(SolrInputDocument doc) {
         addDocs(Collections.singletonList(doc));
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addDocs(java.util.List)
-     */
     /** {@inheritDoc} */
     @Override
     public void addDocs(List<SolrInputDocument> docs) {
@@ -142,9 +133,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         logger.debug("Docs added: {}", docsCounter);
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#addPageDoc(java.util.List)
-     */
     /** {@inheritDoc} */
     @Override
     public void addPageDoc(SolrInputDocument doc) {
@@ -184,9 +172,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#updateDoc(org.apache.solr.common.SolrInputDocument)
-     */
     /** {@inheritDoc} */
     @Override
     public void updateDoc(SolrInputDocument doc) {
@@ -196,18 +181,12 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#getPageDocsSize()
-     */
     /** {@inheritDoc} */
     @Override
     public int getPageDocsSize() {
         return pageDocsCounter.get();
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageOrderNumbers()
-     */
     @Override
     public List<Integer> getPageOrderNumbers() {
         List<Integer> ret = new ArrayList<>(pageDocOrderIddocMap.keySet());
@@ -450,7 +429,12 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
     }
 
-    private SolrInputDocument load(String fileName) throws FatalIndexerException {
+    /**
+     * 
+     * @param fileName
+     * @return {@link SolrInputDocument}
+     */
+    private SolrInputDocument load(String fileName) {
         logger.debug("Loading '{}'...", fileName);
         Path file = Paths.get(tempFolder.toAbsolutePath().toString(), fileName);
         try (FileInputStream fis = new FileInputStream(file.toFile()); ObjectInputStream ois = new ObjectInputStream(fis)) {
@@ -459,7 +443,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             logger.error(e.getMessage(), e);
         } catch (FileNotFoundException e) {
             logger.error(e.getMessage());
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | IOException e) {
             logger.error(e.getMessage(), e);
             copyFailedFile(file);
         }
@@ -467,6 +451,12 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         return null; //NOSONAR Returning empty map would complicate things
     }
 
+    /**
+     * 
+     * @param doc
+     * @param fileName
+     * @return true if save successful; false otherwise
+     */
     private boolean save(SolrInputDocument doc, String fileName) {
         logger.debug("Writing '{}'...", fileName);
         File file = new File(tempFolder.toFile(), fileName);
@@ -480,7 +470,11 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
     }
 
-    private static void copyFailedFile(Path file) throws FatalIndexerException {
+    /**
+     * 
+     * @param file
+     */
+    private static void copyFailedFile(Path file) {
         try {
             Files.copy(file, Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome(), file.getFileName().toString()),
                     StandardCopyOption.REPLACE_EXISTING);

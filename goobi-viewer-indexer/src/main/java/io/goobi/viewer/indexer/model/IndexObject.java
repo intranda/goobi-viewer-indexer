@@ -355,7 +355,7 @@ public class IndexObject {
      * 
      * @param luceneFields
      * @param skipDuplicates
-     * @return
+     * @return Number of added fields
      * @should add fields correctly
      * @should skip duplicates correctly
      * @should add duplicates correctly
@@ -465,35 +465,32 @@ public class IndexObject {
             }
 
             // Add child element's regular metadata fields
-            {
-                for (LuceneField field : childObj.getLuceneFields()) {
-                    if (!childObj.getFieldsToInheritToParents().contains(field.getField())) {
-                        continue;
-                    }
-                    addToLucene(new LuceneField(field), true);
-                    // Pass the info about inheritance up the hierarchy
-                    fieldsToInheritToParents.add(field.getField());
-                    logger.debug("Added field: {}", field);
+            for (LuceneField field : childObj.getLuceneFields()) {
+                if (!childObj.getFieldsToInheritToParents().contains(field.getField())) {
+                    continue;
                 }
+                addToLucene(new LuceneField(field), true);
+                // Pass the info about inheritance up the hierarchy
+                fieldsToInheritToParents.add(field.getField());
+                logger.debug("Added field: {}", field);
             }
+
             // Add child element's grouped metadata fields
-            {
-                int count = 0;
-                for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
-                    if (!childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
-                        continue;
-                    }
-                    // Only add new instance if not a duplicate
-                    if (!groupedMetadataFields.contains(field)) {
-                        groupedMetadataFields.add(new GroupedMetadata(field));
-                        count++;
-                    }
-                    // Pass the info about inheritance up the hierarchy
-                    fieldsToInheritToParents.add(field.getLabel());
+            int count = 0;
+            for (GroupedMetadata field : childObj.getGroupedMetadataFields()) {
+                if (!childObj.getFieldsToInheritToParents().contains(field.getLabel())) {
+                    continue;
                 }
-                if (count > 0) {
-                    logger.debug("Added {} grouped field(s)", count);
+                // Only add new instance if not a duplicate
+                if (!groupedMetadataFields.contains(field)) {
+                    groupedMetadataFields.add(new GroupedMetadata(field));
+                    count++;
                 }
+                // Pass the info about inheritance up the hierarchy
+                fieldsToInheritToParents.add(field.getLabel());
+            }
+            if (count > 0) {
+                logger.debug("Added {} grouped field(s)", count);
             }
         }
     }

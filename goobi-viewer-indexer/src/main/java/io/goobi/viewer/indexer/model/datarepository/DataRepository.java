@@ -195,18 +195,23 @@ public class DataRepository {
     /** {@inheritDoc} */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         DataRepository other = (DataRepository) obj;
         if (path == null) {
-            if (other.path != null)
+            if (other.path != null) {
                 return false;
-        } else if (!path.equals(other.path))
+            }
+        } else if (!path.equals(other.path)) {
             return false;
+        }
         return true;
     }
 
@@ -508,6 +513,7 @@ public class DataRepository {
      * </p>
      *
      * @param dataFolders a {@link java.util.Map} object.
+     * @param reindexSettings
      * @should delete ALTO folder correctly
      * @should delete ALTO crowdsourcing folder correctly
      * @should delete fulltext folder correctly
@@ -811,15 +817,16 @@ public class DataRepository {
      * @return Absolute path to the given data repository name
      * @should return correct path
      */
-    public static String getAbsolutePath(String dataRepository) {
-        if (dataRepository != null && !Paths.get(dataRepository).isAbsolute()) {
-            logger.warn("Data repository value type is deprecated: {}", dataRepository);
-            dataRepository = SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome() + "/data/" + dataRepository;
-            dataRepository = dataRepository.replace("//", "/");
-            logger.warn("Assuming absolute path to be: {}", dataRepository);
+    public static String getAbsolutePath(final String dataRepository) {
+        String ret = dataRepository;
+        if (ret != null && !Paths.get(ret).isAbsolute()) {
+            logger.warn("Data repository value type is deprecated: {}", ret);
+            ret = SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome() + "/data/" + ret;
+            ret = ret.replace("//", "/");
+            logger.warn("Assuming absolute path to be: {}", ret);
         }
 
-        return dataRepository;
+        return ret;
     }
 
     /**

@@ -56,9 +56,9 @@ class SolrIndexerDaemonTest extends AbstractTest {
     @Test
     void stop_shouldSetRunningToFalse() throws Exception {
         SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
-        instance.running = true;
+        instance.setRunning(true);
         instance.stop();
-        Assertions.assertFalse(instance.running);
+        Assertions.assertFalse(instance.isRunning());
     }
 
     /**
@@ -88,7 +88,7 @@ class SolrIndexerDaemonTest extends AbstractTest {
     @Test
     void setConfFileName_shouldSetConfFileNameCorrectly() throws Exception {
         SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance().setConfFileName("config_new.xml");
-        Assertions.assertEquals("config_new.xml", instance.confFileName);
+        Assertions.assertEquals("config_new.xml", instance.getConfFileName());
     }
 
     /**

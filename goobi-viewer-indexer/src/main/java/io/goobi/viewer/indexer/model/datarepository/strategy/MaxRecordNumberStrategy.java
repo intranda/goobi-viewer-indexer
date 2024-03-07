@@ -59,35 +59,31 @@ public class MaxRecordNumberStrategy extends AbstractDataRepositoryStrategy {
         dataRepositoriesMaxRecords = config.getInt("init.dataRepositories.maxRecords", 10000);
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#getAllDataRepositories()
-     */
     /** {@inheritDoc} */
     @Override
     public List<DataRepository> getAllDataRepositories() {
         return dataRepositories;
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, io.goobi.viewer.indexer.helper.searchIndex)
-     */
     /** {@inheritDoc} */
     @Override
-    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders,
+    public DataRepository[] selectDataRepository(final String pi, final Path dataFile, final Map<String, Path> dataFolders,
             final SolrSearchIndex searchIndex,
             final SolrSearchIndex oldSearchIndex)
             throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
+        String usePi = pi;
+
         // Extract PI from the file name, if not value was passed (e.g. when deleting a record)
-        if (StringUtils.isEmpty(pi) && dataFile != null) {
+        if (StringUtils.isEmpty(usePi) && dataFile != null) {
             String fileExtension = FilenameUtils.getExtension(dataFile.getFileName().toString());
             if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals("." + fileExtension) || "delete".equals(fileExtension) || "purge".equals(fileExtension)) {
-                pi = Utils.extractPiFromFileName(dataFile);
+                usePi = Utils.extractPiFromFileName(dataFile);
             }
         }
 
-        if (StringUtils.isBlank(pi)) {
+        if (StringUtils.isBlank(usePi)) {
             if (dataFile != null) {
                 logger.error("Could not parse PI from '{}'", dataFile.getFileName());
             }
@@ -97,9 +93,9 @@ public class MaxRecordNumberStrategy extends AbstractDataRepositoryStrategy {
         String previousRepository = null;
         try {
             // Look up previous repository in the index
-            previousRepository = searchIndex.findCurrentDataRepository(pi);
+            previousRepository = searchIndex.findCurrentDataRepository(usePi);
             if (previousRepository == null && oldSearchIndex != null) {
-                previousRepository = oldSearchIndex.findCurrentDataRepository(pi);
+                previousRepository = oldSearchIndex.findCurrentDataRepository(usePi);
                 if (previousRepository != null) {
                     logger.info("Data repository found in old index: {}", previousRepository);
                 }
@@ -112,19 +108,20 @@ public class MaxRecordNumberStrategy extends AbstractDataRepositoryStrategy {
                 // Record is already indexed, but not in a data repository
                 ret[1] = new DataRepository("", false);
                 logger.info(
-                        "This record is already indexed, but its data files are not in a repository. The data files will be moved to the selected repository.");
+                        "This record is already indexed, but its data files are not in a repository."
+                                + " The data files will be moved to the selected repository.");
             } else {
                 // Make sure previous repository name is converted to an absolute path
                 previousRepository = DataRepository.getAbsolutePath(previousRepository);
                 // Find previous repository
                 for (DataRepository repository : dataRepositories) {
                     if (Paths.get(previousRepository).equals(Paths.get(repository.getPath()))) {
-                        logger.info("Using previous data repository for '{}': {}", pi, previousRepository);
+                        logger.info("Using previous data repository for '{}': {}", usePi, previousRepository);
                         ret[0] = repository;
                         return ret;
                     }
                 }
-                logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
+                logger.warn("Previous data repository for '{}' does not exist: {}", usePi, previousRepository);
             }
         }
 
@@ -133,7 +130,7 @@ public class MaxRecordNumberStrategy extends AbstractDataRepositoryStrategy {
             for (DataRepository repository : dataRepositories) {
                 int records = repository.getNumRecords();
                 if (records < dataRepositoriesMaxRecords) {
-                    logger.info("Repository selected for '{}': {} (currently contains {} records)", pi, repository.getPath(), records);
+                    logger.info("Repository selected for '{}': {} (currently contains {} records)", usePi, repository.getPath(), records);
                     ret[0] = repository;
                     return ret;
                 } else if (records > dataRepositoriesMaxRecords) {

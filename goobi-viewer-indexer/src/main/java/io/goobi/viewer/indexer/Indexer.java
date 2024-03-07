@@ -245,7 +245,7 @@ public abstract class Indexer {
             SolrDocumentList hits = searchIndex.search(new StringBuilder(SolrConstants.PI).append(":").append(pi).toString(),
                     Collections.singletonList(SolrConstants.ISANCHOR));
             if (!hits.isEmpty() && hits.get(0).getFieldValue(SolrConstants.ISANCHOR) != null
-                    && (Boolean) hits.get(0).getFieldValue(SolrConstants.ISANCHOR)) {
+                    && Boolean.TRUE.equals(hits.get(0).getFieldValue(SolrConstants.ISANCHOR))) {
                 hits = searchIndex.search(SolrConstants.PI_PARENT + ":" + pi, Collections.singletonList(SolrConstants.PI));
                 if (hits.getNumFound() > 0) {
                     // Only empty anchors may be deleted
@@ -306,7 +306,8 @@ public abstract class Indexer {
             logger.info("Removing previous instance of this volume from the index...");
         } else {
             logger.warn(
-                    "{} previous instances of this volume have been found in the index. This shouldn't ever be the case. Check whether there is more than one indexer instance running! All instances will be removed...",
+                    "{} previous instances of this volume have been found in the index. This shouldn't ever be the case."
+                            + " Check whether there is more than one indexer instance running! All instances will be removed...",
                     hits.getNumFound());
         }
         String queryPageUrns = new StringBuilder(SolrConstants.PI_TOPSTRUCT).append(":")
@@ -369,7 +370,8 @@ public abstract class Indexer {
      * @param urn
      * @param pageUrns
      * @param dateDeleted
-     * @param dateCreated
+     * @param dateUpdated
+     * @param searchIndex
      * @throws NumberFormatException
      * @throws FatalIndexerException
      */
@@ -494,6 +496,7 @@ public abstract class Indexer {
      * @param dataFolder
      * @param pi
      * @param anchorPi
+     * @param groupIds
      * @param order
      * @param fileNameRoot
      * @return List of Solr input documents for the UGC contents
@@ -685,6 +688,7 @@ public abstract class Indexer {
      * @param dataFolder
      * @param pi
      * @param anchorPi
+     * @param groupIds
      * @param order
      * @return List of Solr input documents for the comment annotations
      * @throws FatalIndexerException
@@ -771,8 +775,7 @@ public abstract class Indexer {
      * @param pi
      * @param anchorPi
      * @param groupIds
-     * @param order
-     * @return
+     * @return List<SolrInputDocument>
      * @throws FatalIndexerException
      * @should return empty list if dataFolder null
      * @should create docs correctly
@@ -872,13 +875,12 @@ public abstract class Indexer {
             }
 
             // Value
-            if (annotation.getBody() instanceof TextualResource) {
+            if (annotation.getBody() instanceof TextualResource tr) {
                 doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_COMMENT);
-                doc.addField(FIELD_TEXT, ((TextualResource) annotation.getBody()).getText());
-            } else if (annotation.getBody() instanceof GeoLocation) {
+                doc.addField(FIELD_TEXT, tr.getText());
+            } else if (annotation.getBody() instanceof GeoLocation geoLocation) {
                 doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 // Add searchable coordinates
-                GeoLocation geoLocation = (GeoLocation) annotation.getBody();
                 if (geoLocation.getGeometry() != null) {
                     double[] coords = geoLocation.getGeometry().getCoordinates();
                     if (coords.length == 2) {
@@ -896,11 +898,11 @@ public abstract class Indexer {
                 doc.addField("MD_BODY", annotation.getBody().toString());
             }
 
-            if (annotation.getTarget() instanceof SpecificResource) {
+            if (annotation.getTarget() instanceof SpecificResource sr) {
                 // Coords
-                ISelector selector = ((SpecificResource) annotation.getTarget()).getSelector();
-                if (selector instanceof FragmentSelector) {
-                    String coords = ((FragmentSelector) selector).getValue();
+                ISelector selector = sr.getSelector();
+                if (selector instanceof FragmentSelector fs) {
+                    String coords = fs.getValue();
                     doc.addField(SolrConstants.UGCCOORDS, MetadataHelper.applyValueDefaultModifications(coords));
                     doc.setField(SolrConstants.UGCTYPE, SolrConstants.UGC_TYPE_ADDRESS);
                 }
@@ -993,9 +995,9 @@ public abstract class Indexer {
      * Retrieves the image size (width/height) for the image referenced in the given page document The image sizes are retrieved from image metadata.
      * if this doesn't work, no image sizes are set
      * 
-     * @param dataFolders The data folders which must include the {@link DataRepository#PARAM_MEDIA} folder containing the image
-     * @param doc the page document pertaining to the image
-     * @return
+     * @param mediaFolder
+     * @param filename
+     * @return Optional<Dimension>
      * @should return size correctly
      */
     static Optional<Dimension> getSize(Path mediaFolder, String filename) {
@@ -1015,7 +1017,7 @@ public abstract class Indexer {
     /**
      * 
      * @param imageFile
-     * @return
+     * @return Optional<Dimension>
      */
     static Optional<Dimension> readDimension(File imageFile) {
         Dimension imageSize = new Dimension(0, 0);
@@ -1427,7 +1429,8 @@ public abstract class Indexer {
      * @param pi Record identifier
      * @param baseFileName Base name of the page data file
      * @param order Page order
-     * @return
+     * @param converted
+     * @return true if any fields were added; false otherwise
      * @throws IOException
      * @should return false if altodata null
      * @should throw IllegalArgumentException if doc null
@@ -1518,28 +1521,29 @@ public abstract class Indexer {
      * @throws IOException
      * @throws MalformedURLException
      */
-    protected String downloadExternalImage(String fileUrl, Path targetPath, String targetFileName) throws URISyntaxException, IOException {
-        if (Files.isDirectory(targetPath)) {
+    protected String downloadExternalImage(String fileUrl, final Path targetPath, String targetFileName) throws URISyntaxException, IOException {
+        Path useTargetPath = targetPath;
+        if (Files.isDirectory(useTargetPath)) {
             if (StringUtils.isNotEmpty(targetFileName)) {
-                targetPath = targetPath.resolve(targetFileName);
+                useTargetPath = useTargetPath.resolve(targetFileName);
             } else {
                 String fileName = Path.of(URI.create(fileUrl).getPath()).getFileName().toString();
-                targetPath = targetPath.resolve(fileName);
+                useTargetPath = useTargetPath.resolve(fileName);
             }
         }
-        httpConnector.downloadFile(new URI(fileUrl), targetPath);
-        if (Files.isRegularFile(targetPath)) {
-            logger.info("Downloaded {}", targetPath);
-            return targetPath.toAbsolutePath().toString();
+        httpConnector.downloadFile(new URI(fileUrl), useTargetPath);
+        if (Files.isRegularFile(useTargetPath)) {
+            logger.info("Downloaded {}", useTargetPath);
+            return useTargetPath.toAbsolutePath().toString();
         }
 
-        throw new IOException("Failed to write file '" + targetPath + "' from url '" + fileUrl + "'");
+        throw new IOException("Failed to write file '" + useTargetPath + "' from url '" + fileUrl + "'");
     }
 
     /**
      * 
      * @param url
-     * @return
+     * @return int[]
      * @should fetch dimensions correctly
      */
     protected static int[] getImageDimensionsFromIIIF(String url) {
@@ -1665,10 +1669,9 @@ public abstract class Indexer {
      * @param downloadExternalImages
      * @param useOldImageFolderIfAvailable
      * @param representative
-     * @throws FatalIndexerException
      */
     protected void handleImageUrl(String url, SolrInputDocument doc, String fileName, Path mediaTargetPath, StringBuilder sbImgFileNames,
-            boolean downloadExternalImages, boolean useOldImageFolderIfAvailable, boolean representative) throws FatalIndexerException {
+            boolean downloadExternalImages, boolean useOldImageFolderIfAvailable, boolean representative) {
         if (StringUtils.isEmpty(url)) {
             return;
         }
@@ -1844,16 +1847,16 @@ public abstract class Indexer {
         // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
         if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
                 && dataFolders.get(DataRepository.PARAM_ALTO) != null && isBaseFileNameUsable(baseFileName)) {
-                File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION);
-                try {
-                    altoData = TextHelper.readAltoFile(altoFile);
-                    altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, pi, baseFileName, order, false);
-                } catch (IOException | JDOMException e) {
-                    if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
-                        logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
-                    }
+            File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION);
+            try {
+                altoData = TextHelper.readAltoFile(altoFile);
+                altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, pi, baseFileName, order, false);
+            } catch (IOException | JDOMException e) {
+                if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
+                    logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                 }
-                // logger.info("regular alto " + altoFile.getAbsolutePath() + " written: " + altoWritten);
+            }
+            // logger.info("regular alto " + altoFile.getAbsolutePath() + " written: " + altoWritten);
         }
 
         // If FULLTEXT is still empty, look for a plain full-text
@@ -1930,6 +1933,7 @@ public abstract class Indexer {
                     alto = Utils.getWebContentGET(altoURL);
                 } else if (StringUtils.startsWithIgnoreCase(altoURL, "file:/")) {
                     // FILE
+                    logger.info("Reading ALTO from {}", altoURL);
                     alto = FileTools.readFileToString(new File(URI.create(altoURL).toURL().getPath()), StandardCharsets.UTF_8.name());
                 }
                 if (StringUtils.isNotEmpty(alto)) {
@@ -1951,15 +1955,19 @@ public abstract class Indexer {
                                 // Write ALTO file
                                 File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
                                 FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
-                                logger.debug("Added ALTO from external URL for page {}", order);
+                                logger.info("Added ALTO from external URL for page {}", order);
                             } else {
                                 logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
                             }
+                        } else {
+                            logger.warn("No ALTO found");
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
                                 && doc.getField(SolrConstants.FULLTEXT) == null) {
                             doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                            logger.debug("Added FULLTEXT from downloaded ALTO for page {}", order);
+                            logger.info("Added FULLTEXT from downloaded ALTO for page {}", order);
+                        } else {
+                            logger.warn("No FULLTEXT found");
                         }
                         if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
                             doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
@@ -2016,7 +2024,7 @@ public abstract class Indexer {
      * 
      * @param hotfolderPath
      * @param fileNameRoot
-     * @return
+     * @return Map<String, Path>
      * @throws IOException
      * @should add data folder paths correctly
      */

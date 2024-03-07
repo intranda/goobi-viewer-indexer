@@ -180,7 +180,7 @@ public class ValueNormalizer {
     /**
      * 
      * @param s
-     * @return
+     * @return {@link String}
      */
     String applyFiller(String s) {
         if (s == null || s.length() >= targetLength) {
@@ -197,6 +197,8 @@ public class ValueNormalizer {
                 return sb.toString() + s;
             case REAR:
                 return s + sb.toString();
+            default:
+                break;
         }
 
         return s;

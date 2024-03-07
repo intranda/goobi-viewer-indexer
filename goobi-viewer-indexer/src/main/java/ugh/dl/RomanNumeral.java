@@ -209,18 +209,19 @@ public class RomanNumeral extends Number {
      * 
      * @param number the int value to convert to a Roman numeral
      **************************************************************************/
-    private void convertIntArchaic(int number) {
+    private void convertIntArchaic(final int number) {
 
         int div;
         this.num = new StringBuilder();
 
-        for (int i = 0; i < NUM_DIVISORS && number > 0; i++) {
-            div = number / DIVISORS[i];
+        int n = number;
+        for (int i = 0; i < NUM_DIVISORS && n > 0; i++) {
+            div = n / DIVISORS[i];
             for (int j = 0; j < div; j++) {
                 this.num.append(ROMAN_DIGITS[i]);
             }
 
-            number = number - DIVISORS[i] * div;
+            n = n - DIVISORS[i] * div;
         }
     }
 
@@ -388,12 +389,15 @@ public class RomanNumeral extends Number {
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         RomanNumeral other = (RomanNumeral) obj;
         return intValue == other.intValue;
     }

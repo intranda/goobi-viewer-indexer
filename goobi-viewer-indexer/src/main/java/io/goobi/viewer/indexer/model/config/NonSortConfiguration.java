@@ -46,7 +46,7 @@ public class NonSortConfiguration {
      * @param s a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      */
-    public String apply(String s) {
+    public String apply(final String s) {
         // remove non-sort characters and anything between them
         StringBuilder regex = new StringBuilder();
         if (prefix != null) {
@@ -56,9 +56,8 @@ public class NonSortConfiguration {
         if (suffix != null) {
             regex.append(suffix);
         }
-        s = s.replaceAll(regex.toString(), "").trim();
 
-        return s;
+        return s.replaceAll(regex.toString(), "").trim();
     }
 
     /**

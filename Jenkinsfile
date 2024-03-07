@@ -28,9 +28,7 @@ pipeline {
       }
       steps {
         sh 'git clean -fdx'
-        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean verify -U'
-        recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
-        dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
+        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DskipDependencyCheck=true -DskipCheckstyle=false clean verify -U'
         stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
       }
     }
@@ -53,8 +51,7 @@ pipeline {
       }
       steps {
         sh 'git clean -fdx'
-        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DfailOnSnapshot=true clean verify -U'
-        recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
+        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DskipDependencyCheck=false -DskipCheckstyle=false -DfailOnSnapshot=true clean verify -U'
         dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
         stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
       }
@@ -214,6 +211,10 @@ pipeline {
           sourcePattern    : 'goobi-viewer-indexer/src/main/java',
           exclusionPattern : '**/*Test.class'
         ])
+        recordIssues (
+          enabledForFailure: true, aggregatingResults: false,
+          tools: [checkStyle(pattern: '**/target/checkstyle-result.xml', reportEncoding: 'UTF-8')]
+        )
       }
     }
     success {
