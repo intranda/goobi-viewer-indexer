@@ -1789,10 +1789,9 @@ public abstract class Indexer {
      * @param pi Record identifier
      * @param order Page number
      * @param altoURL Optional URL for ALTO download
-     * @throws FatalIndexerException
      */
     protected void addFullTextToPageDoc(SolrInputDocument doc, Map<String, Path> dataFolders, DataRepository dataRepo, String pi, int order,
-            String altoURL) throws FatalIndexerException {
+            String altoURL) {
         if (doc == null || dataFolders == null) {
             return;
         }
