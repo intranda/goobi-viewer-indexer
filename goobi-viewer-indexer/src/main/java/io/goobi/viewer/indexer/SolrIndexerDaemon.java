@@ -101,7 +101,7 @@ public final class SolrIndexerDaemon {
                     SolrSearchIndex.getSolrSchemaDocument(getConfiguration().getSolrUrl()))) {
                 throw new FatalIndexerException("Incompatible Solr schema, exiting..");
             }
-        } catch (IOException | JDOMException | FatalIndexerException | ConfigurationException e) {
+        } catch (IOException | JDOMException | FatalIndexerException e) {
             throw new FatalIndexerException("Could not check Solr schema: " + e.getMessage());
         }
 

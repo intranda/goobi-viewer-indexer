@@ -2036,8 +2036,7 @@ public abstract class Indexer {
                 logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
                 String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
                 switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
+                    case "_tif", FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
                         dataFolders.put(DataRepository.PARAM_MEDIA, path);
                         break;
                     case "_txt":
