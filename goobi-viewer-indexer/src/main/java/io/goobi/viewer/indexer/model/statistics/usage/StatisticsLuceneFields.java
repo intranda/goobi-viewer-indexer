@@ -21,9 +21,9 @@ import java.time.format.DateTimeFormatter;
  * @author florian
  *
  */
-public class StatisticsLuceneFields {
+public final class StatisticsLuceneFields {
 
-    public static final DateTimeFormatter solrDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    public static final DateTimeFormatter FORMATTER_SOLR_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     
     public static final String USAGE_STATISTICS_DOCTYPE = "STATISTICS_USAGE";

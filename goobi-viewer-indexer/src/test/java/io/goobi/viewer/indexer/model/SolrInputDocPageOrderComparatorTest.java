@@ -15,32 +15,25 @@
  */
 package io.goobi.viewer.indexer.model;
 
-public class GeoCoords {
+import org.apache.solr.common.SolrInputDocument;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    private final String geoJSON;
-    private final String wkt;
-    
-    /**
-     * 
-     * @param geoJSON
-     * @param wkt
-     */
-    public GeoCoords(String geoJSON, String wkt) {
-        this.geoJSON = geoJSON;
-        this.wkt = wkt;
-    }
+class SolrInputDocPageOrderComparatorTest {
 
     /**
-     * @return the geoJSON
+     * @see SolrInputDocPageOrderComparator#compare(SolrInputDocument,SolrInputDocument)
+     * @verifies compareCorrectly
      */
-    public String getGeoJSON() {
-        return geoJSON;
-    }
-
-    /**
-     * @return the wkt
-     */
-    public String getWkt() {
-        return wkt;
+    @Test
+    void compare_shouldCompareCorrectly() throws Exception {
+        SolrInputDocument doc1 = new SolrInputDocument();
+        doc1.setField(SolrConstants.ORDER, 1);
+        SolrInputDocument doc2 = new SolrInputDocument();
+        doc2.setField(SolrConstants.ORDER, 2);
+        
+        Assertions.assertEquals(-1, new SolrInputDocPageOrderComparator().compare(doc1, doc2));
+        Assertions.assertEquals(0, new SolrInputDocPageOrderComparator().compare(doc2, doc2));
+        Assertions.assertEquals(1, new SolrInputDocPageOrderComparator().compare(doc2, doc1));
     }
 }

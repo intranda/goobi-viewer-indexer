@@ -109,9 +109,9 @@ class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
             assertEquals(pi, doc.getFieldValue(SolrConstants.PI));
             assertEquals(pi, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
             assertEquals(FileFormat.METS_MARC.name(), doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
-            assertEquals("ph418_b__bph_ok_962_(2)_002.tif", doc.getFieldValue(SolrConstants.THUMBNAIL)); // representative image is set
-            assertEquals("ph418_b__bph_ok_962_(2)_002.tif", doc.getFieldValue(SolrConstants.THUMBNAILREPRESENT)); // not really used
-            assertEquals(2, doc.getFieldValue(SolrConstants.THUMBPAGENO)); // representative image should not affect the number
+            assertEquals("https://images.uba.uva.nl/iiif/2/default!1!3!1!9940609919905131!ph418_b__bph_ok_962_(2)_001.jpg/info.json",
+                    doc.getFieldValue(SolrConstants.THUMBNAIL)); // preferred file groups override representative image
+            assertEquals(1, doc.getFieldValue(SolrConstants.THUMBPAGENO)); // representative image should not affect the number
             assertEquals("X", doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
             Assertions.assertNull(doc.getFieldValue(SolrConstants.IMAGEURN_OAI)); // only docs representing deleted records should have this field
             assertEquals(false, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));

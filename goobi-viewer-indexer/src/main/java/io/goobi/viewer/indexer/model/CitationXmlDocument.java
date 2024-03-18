@@ -64,7 +64,7 @@ public class CitationXmlDocument {
     /**
      * 
      * @param collectedValues Metadata values collected so far; one of the fields must match the placeholder field name in the URL
-     * @return
+     * @return {@link CitationXmlDocument}
      * @should find and replace identifier correctly
      */
     public CitationXmlDocument prepareURL(Map<String, List<String>> collectedValues) {
@@ -96,7 +96,7 @@ public class CitationXmlDocument {
 
     /**
      * 
-     * @return
+     * @return {@link CitationXmlDocument}
      * @throws HTTPException
      * @throws IOException
      */

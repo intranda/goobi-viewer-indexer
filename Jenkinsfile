@@ -8,7 +8,15 @@ pipeline {
   }
 
   stages {
-    stage('build') {
+    stage('build develop') {
+      when {
+        not {
+          anyOf {
+            branch 'master';
+            tag "v*"
+          }
+        }
+      }
       agent {
         docker {
           label 'controller'
@@ -20,12 +28,36 @@ pipeline {
       }
       steps {
         sh 'git clean -fdx'
-        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false clean verify -U'
-        recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
+        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DskipDependencyCheck=true -DskipCheckstyle=false clean verify -U'
+        stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
+      }
+    }
+
+    stage('build release') {
+      when {
+        anyOf {
+          branch 'master';
+          tag "v*"
+        }
+      }
+      agent {
+        docker {
+          label 'controller'
+          image 'nexus.intranda.com:4443/goobi-viewer-testing-index:latest'
+          args '-v $HOME/.m2:/var/maven/.m2:z -v $HOME/.config:/var/maven/.config -v $HOME/.sonar:/var/maven/.sonar -u 1000 -ti -e _JAVA_OPTIONS=-Duser.home=/var/maven -e MAVEN_CONFIG=/var/maven/.m2'
+          registryUrl 'https://nexus.intranda.com:4443/'
+          registryCredentialsId 'jenkins-docker'
+        }
+      }
+      steps {
+        sh 'git clean -fdx'
+        sh 'mvn -f goobi-viewer-indexer/pom.xml -DskipTests=false -DskipDependencyCheck=false -DskipCheckstyle=false -DfailOnSnapshot=true clean verify -U'
         dependencyCheckPublisher pattern: '**/target/dependency-check-report.xml'
         stash includes: '**/target/*.jar, */src/main/resources/*.xml, */src/main/resources/other/schema.xml', name:  'app'
       }
     }
+
+
     stage('sonarcloud') {
       when {
         anyOf {
@@ -179,6 +211,10 @@ pipeline {
           sourcePattern    : 'goobi-viewer-indexer/src/main/java',
           exclusionPattern : '**/*Test.class'
         ])
+        recordIssues (
+          enabledForFailure: true, aggregatingResults: false,
+          tools: [checkStyle(pattern: '**/target/checkstyle-result.xml', reportEncoding: 'UTF-8')]
+        )
       }
     }
     success {

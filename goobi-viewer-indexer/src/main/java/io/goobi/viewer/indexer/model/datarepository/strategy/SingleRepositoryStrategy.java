@@ -54,34 +54,30 @@ public class SingleRepositoryStrategy extends AbstractDataRepositoryStrategy {
         dataRepositories = DataRepository.loadDataRepositories(config, false);
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#getAllDataRepositories()
-     */
     /** {@inheritDoc} */
     @Override
     public List<DataRepository> getAllDataRepositories() {
         return dataRepositories;
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy#selectDataRepository(java.lang.String, java.nio.file.Path, java.util.Map, io.goobi.viewer.indexer.helper.searchIndex)
-     */
     /** {@inheritDoc} */
     @Override
-    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders,
+    public DataRepository[] selectDataRepository(final String pi, final Path dataFile, final Map<String, Path> dataFolders,
             final SolrSearchIndex searchIndex,
             final SolrSearchIndex oldSearchIndex)
             throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
+        String usePi = pi;
+
         // Extract PI from the file name, if not value was passed (e.g. when deleting a record)
-        if (StringUtils.isEmpty(pi) && dataFile != null) {
+        if (StringUtils.isEmpty(usePi) && dataFile != null) {
             String fileExtension = FilenameUtils.getExtension(dataFile.getFileName().toString());
             if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals("." + fileExtension) || "delete".equals(fileExtension) || "purge".equals(fileExtension)) {
-                pi = Utils.extractPiFromFileName(dataFile);
+                usePi = Utils.extractPiFromFileName(dataFile);
             }
         }
-        if (StringUtils.isBlank(pi)) {
+        if (StringUtils.isBlank(usePi)) {
             if (dataFile != null) {
                 logger.error("Could not parse PI from '{}'", dataFile.getFileName());
             }
@@ -91,9 +87,9 @@ public class SingleRepositoryStrategy extends AbstractDataRepositoryStrategy {
         String previousRepository = null;
         try {
             // Look up previous repository in the index
-            previousRepository = searchIndex.findCurrentDataRepository(pi);
+            previousRepository = searchIndex.findCurrentDataRepository(usePi);
             if (previousRepository == null && oldSearchIndex != null) {
-                previousRepository = oldSearchIndex.findCurrentDataRepository(pi);
+                previousRepository = oldSearchIndex.findCurrentDataRepository(usePi);
                 if (previousRepository != null) {
                     logger.info("Data repository found in old index: {}", previousRepository);
                 }
@@ -113,14 +109,15 @@ public class SingleRepositoryStrategy extends AbstractDataRepositoryStrategy {
             for (DataRepository repository : dataRepositories) {
                 if (Paths.get(previousRepository).equals(Paths.get(repository.getPath()))) {
                     logger.info(
-                            "'{}' is currently indexed in data repository '{}'. Since 'SingleRepositoryStrategy' is configured, the record will be moved to out of the repository.",
-                            pi, previousRepository);
+                            "'{}' is currently indexed in data repository '{}'. Since 'SingleRepositoryStrategy' is configured,"
+                                    + " the record will be moved to out of the repository.",
+                            usePi, previousRepository);
                     ret[0] = new DataRepository("", true);
                     ret[1] = repository;
                     return ret;
                 }
             }
-            logger.warn("Previous data repository for '{}' does not exist: {}", pi, previousRepository);
+            logger.warn("Previous data repository for '{}' does not exist: {}", usePi, previousRepository);
         }
 
         ret[0] = new DataRepository("", true);

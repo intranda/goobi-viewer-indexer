@@ -24,7 +24,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.SolrClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -48,11 +48,11 @@ public final class SolrIndexerDaemon {
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
-    private static final Object lock = new Object();
+    private static final Object LOCK = new Object();
     private static SolrIndexerDaemon instance = null;
 
-    String confFileName = "src/main/resources/config_indexer.xml";
-    volatile boolean running = false;
+    private String confFileName = "src/main/resources/config_indexer.xml";
+    private volatile boolean running = false;
     private boolean initialized = false;
 
     private Configuration configuration;
@@ -72,7 +72,7 @@ public final class SolrIndexerDaemon {
     public static SolrIndexerDaemon getInstance() {
         SolrIndexerDaemon indexer = instance;
         if (indexer == null) {
-            synchronized (lock) {
+            synchronized (LOCK) {
                 // Another thread might have initialized instance by now
                 indexer = instance;
                 if (indexer == null) {
@@ -101,13 +101,13 @@ public final class SolrIndexerDaemon {
                     SolrSearchIndex.getSolrSchemaDocument(getConfiguration().getSolrUrl()))) {
                 throw new FatalIndexerException("Incompatible Solr schema, exiting..");
             }
-        } catch (IOException | JDOMException | FatalIndexerException | ConfigurationException e) {
+        } catch (IOException | JDOMException | FatalIndexerException e) {
             throw new FatalIndexerException("Could not check Solr schema: " + e.getMessage());
         }
 
         // Init old search index, if configured
         try {
-            HttpSolrClient oldClient = SolrSearchIndex.getNewHttpSolrClient(getConfiguration().getOldSolrUrl(), true);
+            SolrClient oldClient = SolrSearchIndex.getNewSolrClient(getConfiguration().getOldSolrUrl());
             if (oldClient != null) {
                 this.oldSearchIndex = new SolrSearchIndex(oldClient);
                 if (logger.isInfoEnabled()) {
@@ -268,7 +268,7 @@ public final class SolrIndexerDaemon {
     /**
      * 
      * @param doc
-     * @return
+     * @return true if schema up to date; false otherwise
      * @should return false if doc null
      * @should return true if schema compatible
      */
@@ -307,7 +307,7 @@ public final class SolrIndexerDaemon {
      */
     public Configuration getConfiguration() {
         if (configuration == null) {
-            synchronized (lock) {
+            synchronized (LOCK) {
                 configuration = new Configuration(confFileName);
             }
         }
@@ -327,12 +327,40 @@ public final class SolrIndexerDaemon {
     }
 
     /**
+     * For unit tests only.
+     * 
+     * @return the running
+     */
+    boolean isRunning() {
+        return running;
+    }
+
+    /**
+     * For unit tests only.
+     * 
+     * @param running the running to set
+     */
+    void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    /**
+     * For unit tests only.
+     * 
+     * @return the confFileName
+     */
+    String getConfFileName() {
+        return confFileName;
+    }
+
+    /**
+     * For unit tests only.
      * 
      * @param confFileName
      * @return this
      * @should set confFileName correctly
      */
-    public SolrIndexerDaemon setConfFileName(String confFileName) {
+    SolrIndexerDaemon setConfFileName(String confFileName) {
         this.confFileName = confFileName;
         return this;
     }
@@ -347,7 +375,7 @@ public final class SolrIndexerDaemon {
      */
     public SolrSearchIndex getSearchIndex() {
         if (this.searchIndex == null) {
-            synchronized (lock) {
+            synchronized (LOCK) {
                 try {
                     this.searchIndex = new SolrSearchIndex(null);
                     this.searchIndex.setOptimize(configuration.isAutoOptimize());

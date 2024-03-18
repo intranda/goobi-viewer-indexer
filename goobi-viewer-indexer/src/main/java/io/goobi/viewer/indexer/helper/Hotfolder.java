@@ -174,13 +174,13 @@ public class Hotfolder {
             logger.info("Content files will be PRESERVED in the hotfolder in case of indexing errors.");
         }
 
-        MetadataHelper.authorityDataEnabled = SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.authorityData[@enabled]", true);
-        if (MetadataHelper.authorityDataEnabled) {
+        MetadataHelper.setAuthorityDataEnabled(SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.authorityData[@enabled]", true));
+        if (MetadataHelper.isAuthorityDataEnabled()) {
             // Authority data fields to be added to DEFAULT
-            MetadataHelper.addAuthorityDataFieldsToDefault =
-                    SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.authorityData.addFieldsToDefault.field");
-            if (MetadataHelper.addAuthorityDataFieldsToDefault != null) {
-                for (String field : MetadataHelper.addAuthorityDataFieldsToDefault) {
+            MetadataHelper.setAddAuthorityDataFieldsToDefault(
+                    SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.authorityData.addFieldsToDefault.field"));
+            if (MetadataHelper.getAddAuthorityDataFieldsToDefault() != null) {
+                for (String field : MetadataHelper.getAddAuthorityDataFieldsToDefault()) {
                     logger.info("{} values will be added to DEFAULT", field);
                 }
             }

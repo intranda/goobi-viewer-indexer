@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -81,6 +80,7 @@ import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
+import io.goobi.viewer.indexer.model.SolrInputDocPageOrderComparator;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -119,7 +119,8 @@ public class MetsIndexer extends Indexer {
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private String preferredImageFileGroup = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroup();
+    private String selectedPreferredImageFileGroup = null;
+    private List<String> availablePreferredImageFileGroups = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
     volatile String useFileGroupGlobal = null;
 
     /**
@@ -324,7 +325,7 @@ public class MetsIndexer extends Indexer {
             }
             indexObj.setPi(pi);
             indexObj.setTopstructPI(pi);
-            
+
             // Add PI to default
             if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
                 indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
@@ -673,7 +674,7 @@ public class MetsIndexer extends Indexer {
         String filePathBanner = "";
         String xpathFilePtr =
                 "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID"; //NOSONAR XPath, not URI
-        List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).collect(Collectors.toList());
+        List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).toList();
         for (String fileId : fileIds) {
             String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@ID='" + fileId + "']/mets:FLocat/@xlink:href";
             filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
@@ -716,6 +717,7 @@ public class MetsIndexer extends Indexer {
         if (pageDocs.isEmpty()) {
             logger.warn("No pages found for {}", indexObj.getLogId());
         }
+        Collections.sort(pageDocs, new SolrInputDocPageOrderComparator()); // Mapping order may be shuffled, so restore page order
 
         // If this is a top struct element, look for a representative image
         String filePathBanner = null;
@@ -1057,6 +1059,11 @@ public class MetsIndexer extends Indexer {
         logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
     }
 
+    /**
+     * 
+     * @param downloadExternalImages
+     * @return Selected file group name
+     */
     String selectImageFileGroup(boolean downloadExternalImages) {
         String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath, not URI
         List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
@@ -1085,8 +1092,10 @@ public class MetsIndexer extends Indexer {
                     }
                     break;
                 default:
-                    if (StringUtils.isNotBlank(preferredImageFileGroup) && preferredImageFileGroup.equals(use)) {
-                        return preferredImageFileGroup;
+                    for (String g : availablePreferredImageFileGroups) {
+                        if (g.equals(use)) {
+                            return g;
+                        }
                     }
                     break;
             }
@@ -1347,11 +1356,11 @@ public class MetsIndexer extends Indexer {
             }
 
             if (fileGrpUse.equals(useFileGroupGlobal)) {
-                // The file name from the main file group (PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
+                // The file name from the main file group (usually PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     if (doc.containsKey(SolrConstants.FILENAME)) {
-                        if (StringUtils.isNotEmpty(preferredImageFileGroup) && preferredImageFileGroup.equals(fileGrpUse)) {
+                        if (StringUtils.isNotEmpty(selectedPreferredImageFileGroup) && selectedPreferredImageFileGroup.equals(fileGrpUse)) {
                             // Preferred file group overrides any already added values
                             doc.remove(SolrConstants.FILENAME);
                         } else {
@@ -1399,8 +1408,8 @@ public class MetsIndexer extends Indexer {
                 }
 
                 // Add mime type
-                if (doc.containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(preferredImageFileGroup)
-                        && preferredImageFileGroup.equals(fileGrpUse)) {
+                if (doc.containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(selectedPreferredImageFileGroup)
+                        && selectedPreferredImageFileGroup.equals(fileGrpUse)) {
                     // Preferred file group overrides any already added values
                     doc.removeField(SolrConstants.MIMETYPE);
                 }
@@ -1446,7 +1455,6 @@ public class MetsIndexer extends Indexer {
                         default:
                             doc.addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
                     }
-
                 }
             }
 

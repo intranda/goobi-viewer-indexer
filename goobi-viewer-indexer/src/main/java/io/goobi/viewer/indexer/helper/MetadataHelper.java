@@ -64,7 +64,7 @@ import io.goobi.viewer.indexer.model.config.XPathConfig;
  * </p>
  *
  */
-public class MetadataHelper {
+public final class MetadataHelper {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(MetadataHelper.class);
@@ -86,10 +86,10 @@ public class MetadataHelper {
     /** Constant <code>FORMAT_EIGHT_DIGITS</code> */
     public static final ThreadLocal<DecimalFormat> FORMAT_EIGHT_DIGITS = ThreadLocal.withInitial(() -> new DecimalFormat("00000000"));
 
-    public static boolean authorityDataEnabled = true;
+    private static boolean authorityDataEnabled = true;
 
     /** Constant <code>addNormDataFieldsToDefault</code> */
-    public static List<String> addAuthorityDataFieldsToDefault;
+    private static List<String> addAuthorityDataFieldsToDefault;
 
     /** Private constructor. */
     private MetadataHelper() {
@@ -307,9 +307,9 @@ public class MetadataHelper {
                     }
                 }
 
-                for (String fieldValue : fieldValues) {
+                for (final String fv : fieldValues) {
                     // Apply string modifications configured for this field
-                    fieldValue = applyAllModifications(configurationItem, fieldValue);
+                    String fieldValue = applyAllModifications(configurationItem, fv);
 
                     // If value is blank after modifications, skip
                     if (StringUtils.isBlank(fieldValue)) {
@@ -334,8 +334,8 @@ public class MetadataHelper {
                             fieldValue = coords.getGeoJSON();
                         }
                         // Add WKT search field
-                        if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
-                            ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                        if (configurationItem.isGeoJSONAddSearchField() && coords.getWkt() != null) {
+                            ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWkt()));
                         }
                     }
 
@@ -413,20 +413,23 @@ public class MetadataHelper {
 
     /**
      * 
-     * @param url URL to query
+     * @param authorityUrl URL to query
      * @param sbDefaultMetadataValues StringBuilder for collecting
      * @param sbNormDataTerms
      * @param addToDefaultFields Optional list of fields whose values should be added to DEFAULT
      * @param replaceRules Optional metadata value replace rules
      * @param labelField Field name of the metadata group to which this authority data belongs
-     * @return
+     * @return List<LuceneField>
      */
-    private static List<LuceneField> retrieveAuthorityData(String url, StringBuilder sbDefaultMetadataValues, StringBuilder sbNormDataTerms,
+    private static List<LuceneField> retrieveAuthorityData(final String authorityUrl, StringBuilder sbDefaultMetadataValues,
+            StringBuilder sbNormDataTerms,
             List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
-        logger.info("retrieveAuthorityData: {}", url);
-        if (url == null) {
-            throw new IllegalArgumentException("url may not be null");
+        logger.info("retrieveAuthorityData: {}", authorityUrl);
+        if (authorityUrl == null) {
+            throw new IllegalArgumentException("authorityUrl may not be null");
         }
+
+        String url = authorityUrl;
 
         // If it's just an identifier, assume it's GND
         if (!url.startsWith("http")) {
@@ -492,7 +495,7 @@ public class MetadataHelper {
      * @param replaceRules Optional metadata value replace rules
      * @param labelField Field name of the metadata group to which this authority data belongs
      * @should add name search field correctly
-     * @return
+     * @return List<LuceneField>
      */
     static List<LuceneField> parseAuthorityMetadata(List<NormData> authorityDataList, StringBuilder sbDefaultMetadataValues,
             StringBuilder sbNormDataTerms, List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
@@ -567,7 +570,7 @@ public class MetadataHelper {
                     GeoCoords coords = GeoJSONTools.convert(textValue, type, " ");
 
                     // Add searchable WKT lon-lat coordinates
-                    ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                    ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWkt()));
                     hasWktCoords = true;
 
                     // Add geoJSON
@@ -646,16 +649,15 @@ public class MetadataHelper {
     /**
      * 
      * @param configurationItem
-     * @param fieldValue
-     * @return
-     * @throws FatalIndexerException
+     * @param fieldVal
+     * @return Modified fieldValue
      */
-    private static String applyAllModifications(FieldConfig configurationItem, String fieldValue) throws FatalIndexerException {
-        if (StringUtils.isEmpty(fieldValue)) {
-            return fieldValue;
+    private static String applyAllModifications(FieldConfig configurationItem, final String fieldVal) {
+        if (StringUtils.isEmpty(fieldVal)) {
+            return fieldVal;
         }
 
-        fieldValue = applyReplaceRules(fieldValue, configurationItem.getReplaceRules());
+        String fieldValue = applyReplaceRules(fieldVal, configurationItem.getReplaceRules());
         fieldValue = applyValueDefaultModifications(fieldValue);
 
         if (configurationItem.getFieldname().startsWith("DATE_")) {
@@ -718,12 +720,12 @@ public class MetadataHelper {
                 StringBuilder sb = new StringBuilder();
                 sb.append(entry.getKey());
                 ret = ret.replace(sb.toString(), entry.getValue());
-            } else if (entry.getKey() instanceof String) {
-                logger.trace("replace rule: {} -> {}", entry.getKey(), entry.getValue());
-                if (((String) entry.getKey()).startsWith("REGEX:")) {
-                    ret = ret.replaceAll(((String) entry.getKey()).substring(6), entry.getValue());
+            } else if (entry.getKey() instanceof String s) {
+                logger.trace("replace rule: {} -> {}", s, entry.getValue());
+                if (s.startsWith("REGEX:")) {
+                    ret = ret.replaceAll(s.substring(6), entry.getValue());
                 } else {
-                    ret = ret.replace((String) entry.getKey(), entry.getValue());
+                    ret = ret.replace(s, entry.getValue());
                 }
             } else {
                 logger.error("Unknown replacement key type of '{}: {}", entry.getKey(), entry.getKey().getClass().getName());
@@ -757,14 +759,13 @@ public class MetadataHelper {
      * </p>
      *
      * @param pi a {@link java.lang.String} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @return a {@link java.lang.String} object.
      * @should trim identifier
      * @should apply replace rules
      * @should replace spaces with underscores
      * @should replace commas with underscores
-     * @return a {@link java.lang.String} object.
      */
-    public static String applyIdentifierModifications(String pi) throws FatalIndexerException {
+    public static String applyIdentifierModifications(String pi) {
         if (StringUtils.isEmpty(pi)) {
             return pi;
         }
@@ -789,22 +790,22 @@ public class MetadataHelper {
      * Adds a SORT_* version of the given field, but only if no field by that name exists yet.
      *
      * @param fieldName a {@link java.lang.String} object.
-     * @param fieldValue a {@link java.lang.String} object.
+     * @param fieldVal a {@link java.lang.String} object.
+     * @param sortFieldPrefix a {@link java.lang.String} object.
      * @param nonSortConfigurations a {@link java.util.List} object.
+     * @param valueNormalizers
      * @param retList a {@link java.util.List} object.
      * @should add regular sort fields correctly
      * @should add numerical sort fields correctly
      * @should not add existing fields
-     * @param sortFieldPrefix a {@link java.lang.String} object.
-     * @param valueNormalizer a {@link io.goobi.viewer.indexer.model.config.ValueNormalizer} object.
      */
-    public static void addSortField(String fieldName, String fieldValue, String sortFieldPrefix, List<NonSortConfiguration> nonSortConfigurations,
+    public static void addSortField(String fieldName, final String fieldVal, String sortFieldPrefix, List<NonSortConfiguration> nonSortConfigurations,
             List<ValueNormalizer> valueNormalizers, List<LuceneField> retList) {
         if (fieldName == null) {
             throw new IllegalArgumentException("fieldName may not be null");
         }
-        if (fieldValue == null) {
-            throw new IllegalArgumentException("fieldValue may not be null");
+        if (fieldVal == null) {
+            throw new IllegalArgumentException("fieldVal may not be null");
         }
         if (sortFieldPrefix == null) {
             throw new IllegalArgumentException("sortFieldPrefix may not be null");
@@ -817,6 +818,7 @@ public class MetadataHelper {
                 return;
             }
         }
+        String fieldValue = fieldVal;
         if (nonSortConfigurations != null && !nonSortConfigurations.isEmpty()) {
             for (NonSortConfiguration nonSortConfig : nonSortConfigurations) {
                 // remove non-sort characters and anything between them
@@ -865,7 +867,8 @@ public class MetadataHelper {
      */
     public static String getAnchorPi(JDomXP xp) {
         String query =
-                "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
+                "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/"
+                        + "mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
         if ((relatedItemList != null) && (!relatedItemList.isEmpty())) {
             return relatedItemList.get(0).getText();
@@ -966,7 +969,7 @@ public class MetadataHelper {
      * Returns the number of the century to which the given year belongs.
      * 
      * @param year
-     * @return
+     * @return Century extracted from year
      * @should detect positive century correctly
      * @should detect negative century correctly
      * @should detect first century correctly
@@ -1000,7 +1003,7 @@ public class MetadataHelper {
      * Adds additional CENTURY fields if there is a gap (e.g. 15th and 17th century implies 16th).
      * 
      * @param fields
-     * @return
+     * @return List<LuceneField>
      * @should complete centuries correctly
      */
     static List<LuceneField> completeCenturies(List<LuceneField> fields) {
@@ -1012,7 +1015,7 @@ public class MetadataHelper {
      * 
      * @param fields
      * @param fieldName
-     * @return
+     * @return List<LuceneField>
      * @should complete years correctly
      *
      */
@@ -1024,8 +1027,8 @@ public class MetadataHelper {
      * 
      * @param fields
      * @param fieldName
-     * @param
-     * @return
+     * @param skipValues
+     * @return List<LuceneField>
      */
     private static List<LuceneField> completeIntegerValues(List<LuceneField> fields, String fieldName, Set<Integer> skipValues) {
         if (StringUtils.isEmpty(fieldName)) {
@@ -1229,8 +1232,8 @@ public class MetadataHelper {
                         moddedValue = coords.getGeoJSON();
                     }
                     // Add WKT search field
-                    if (configurationItem.isGeoJSONAddSearchField() && coords.getWKT() != null) {
-                        luceneFields.add(new LuceneField(FIELD_WKT_COORDS, coords.getWKT()));
+                    if (configurationItem.isGeoJSONAddSearchField() && coords.getWkt() != null) {
+                        luceneFields.add(new LuceneField(FIELD_WKT_COORDS, coords.getWkt()));
                     }
                 } catch (NumberFormatException e) {
                     logger.error("Cannot convert to geoJSON: {}", e.getMessage());
@@ -1301,24 +1304,24 @@ public class MetadataHelper {
     /**
      * 
      * @param value
-     * @return
+     * @return Modified value
      * @should remove leading comma
      * @should remove trailing comma
      */
-    static String cleanUpName(String value) {
+    static String cleanUpName(final String value) {
         if (value == null) {
             return value;
         }
-        value = value.trim();
+        String ret = value.trim();
         // Hack to remove the comma if a person has no first or last name (e.g when using concat() in XPath)
-        if (value.endsWith(",") && value.length() > 1) {
-            value = value.substring(0, value.length() - 1);
+        if (ret.endsWith(",") && ret.length() > 1) {
+            ret = ret.substring(0, ret.length() - 1);
         }
-        if (value.startsWith(",") && value.length() > 1) {
-            value = value.substring(1).trim();
+        if (ret.startsWith(",") && ret.length() > 1) {
+            ret = ret.substring(1).trim();
         }
 
-        return value;
+        return ret;
     }
 
     /**
@@ -1453,5 +1456,33 @@ public class MetadataHelper {
         if (sbFulltext.length() > 0) {
             indexObj.addToLucene(SolrConstants.FULLTEXT, sbFulltext.toString());
         }
+    }
+
+    /**
+     * @return the authorityDataEnabled
+     */
+    public static boolean isAuthorityDataEnabled() {
+        return authorityDataEnabled;
+    }
+
+    /**
+     * @param authorityDataEnabled the authorityDataEnabled to set
+     */
+    public static void setAuthorityDataEnabled(boolean authorityDataEnabled) {
+        MetadataHelper.authorityDataEnabled = authorityDataEnabled;
+    }
+
+    /**
+     * @return the addAuthorityDataFieldsToDefault
+     */
+    public static List<String> getAddAuthorityDataFieldsToDefault() {
+        return addAuthorityDataFieldsToDefault;
+    }
+
+    /**
+     * @param addAuthorityDataFieldsToDefault the addAuthorityDataFieldsToDefault to set
+     */
+    public static void setAddAuthorityDataFieldsToDefault(List<String> addAuthorityDataFieldsToDefault) {
+        MetadataHelper.addAuthorityDataFieldsToDefault = addAuthorityDataFieldsToDefault;
     }
 }

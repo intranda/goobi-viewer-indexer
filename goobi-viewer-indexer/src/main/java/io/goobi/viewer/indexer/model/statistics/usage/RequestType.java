@@ -17,61 +17,65 @@ package io.goobi.viewer.indexer.model.statistics.usage;
 
 import java.util.Arrays;
 
-import com.ibm.icu.impl.UResource.Array;
-
 /**
  * @author florian
  *
- *A list of types of requets to count independently for usage statistics. 
- * When recording a request in {@link UsageStatisticsRecorder} you need to pass an appropriate type. 
- * Statistics for each type are recorded independently
+ *         A list of types of requets to count independently for usage statistics. When recording a request in {@link UsageStatisticsRecorder} you
+ *         need to pass an appropriate type. Statistics for each type are recorded independently
  */
 public enum RequestType {
 
     /**
      * Call of a viewer html page belonging to a record
      */
-    RECORD_VIEW(0,1),
+    RECORD_VIEW(0, 1),
     /**
      * Download of a file (pdf, epub) belonging to a record
      */
-    FILE_DOWNLOAD(2,3),
+    FILE_DOWNLOAD(2, 3),
     /**
      * REST-call to an image or other media resource of a record
      */
-    MEDIA_RESOURCE(4,5);
-    
+    MEDIA_RESOURCE(4, 5);
+
     private final int totalCountIndex;
     private final int uniqueCountIndex;
-    
+
     private RequestType(int totalCountIndex, int uniqueCountIndex) {
         this.totalCountIndex = totalCountIndex;
         this.uniqueCountIndex = uniqueCountIndex;
     }
+
     /**
      * Index of the total request count within the array of values of the SOLR-field recording requests for a record
+     * 
      * @return the totalCountIndex
      */
     public int getTotalCountIndex() {
         return totalCountIndex;
     }
+
     /**
      * Index of the count of requests by a unique http session within the array of values of the SOLR-field recording requests for a record
+     * 
      * @return the uniqueCountIndex
      */
     public int getUniqueCountIndex() {
         return uniqueCountIndex;
     }
+
     /**
      * Index of the count for this type in {@link RequestType} within {@link SessionUsageStatistics}
+     * 
      * @return the ordinal of the instance
      */
     public int getSessionCountIndex() {
         return this.ordinal();
     }
-    
+
     /**
      * Get the RequestType for the given index of the count array in {@link RequestType} within {@link SessionUsageStatistics}
+     * 
      * @param index
      * @return the type
      */
@@ -79,9 +83,10 @@ public enum RequestType {
         RequestType[] types = RequestType.values();
         return Arrays.stream(types).filter(t -> t.getSessionCountIndex() == index).findAny().orElse(null);
     }
-    
+
     /**
      * Get the RequestType for the given index of the count array for total count in the SOLR field for the counts of a record identifier
+     * 
      * @param index
      * @return the type
      */
@@ -89,9 +94,10 @@ public enum RequestType {
         RequestType[] types = RequestType.values();
         return Arrays.stream(types).filter(t -> t.getTotalCountIndex() == index).findAny().orElse(null);
     }
-    
+
     /**
      * Get the RequestType for the given index of the count array for unique count in the SOLR field for the counts of a record identifier
+     * 
      * @param index
      * @return the type
      */

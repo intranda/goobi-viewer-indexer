@@ -302,6 +302,15 @@ public final class Configuration {
     public String getOldSolrUrl() {
         return getConfiguration("oldSolrUrl");
     }
+    
+    /**
+     * 
+     * @return a boolean 
+     * @should return correct value
+     */
+    public boolean isSolrUseHttp2() {
+        return getBoolean("performance.solr.useHttp2", true);
+    }
 
     /**
      * <p>
@@ -657,8 +666,13 @@ public final class Configuration {
         return getBoolean("init.representativeImage.useFirstPageAsDefault", true);
     }
     
-    public String getMetsPreferredImageFileGroup() {
-        return getString("init.mets.preferredImageFileGroup", "");
+    /**
+     * 
+     * @return Configured preferredImageFileGroup values or empty list
+     * @should return configured values
+     */
+    public List<String> getMetsPreferredImageFileGroups() {
+        return getStringList("init.mets.preferredImageFileGroup");
     }
 
     /**

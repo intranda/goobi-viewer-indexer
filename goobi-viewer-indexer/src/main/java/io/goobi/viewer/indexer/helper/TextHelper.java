@@ -38,19 +38,18 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.output.XMLOutputter;
 import org.jsoup.Jsoup;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import de.intranda.digiverso.ocr.alto.model.structureclasses.logical.AltoDocument;
 import de.intranda.digiverso.ocr.alto.utils.HyphenationLinker;
 import de.intranda.digiverso.ocr.conversion.ConvertAbbyyToAltoStaX;
 import de.intranda.digiverso.ocr.conversion.ConvertTeiToAlto;
-import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
@@ -395,14 +394,13 @@ public final class TextHelper {
      * Extracts image width, height and color space attributes from the given MIX file.
      *
      * @param file a {@link java.io.File} object.
+     * @return a {@link java.util.Map} object.
      * @throws java.io.IOException
      * @throws org.jdom2.JDOMException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return correct values
      * @should throw FileNotFoundException if file not found
-     * @return a {@link java.util.Map} object.
      */
-    public static Map<String, String> readMix(File file) throws IOException, JDOMException, FatalIndexerException {
+    public static Map<String, String> readMix(File file) throws IOException, JDOMException {
         Map<String, String> ret = new HashMap<>();
 
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -451,10 +449,10 @@ public final class TextHelper {
      * @param folder a {@link java.nio.file.Path} object.
      * @param warnIfMissing a boolean.
      * @param forceDefaultCharset If true, files will be force converted to UTF-8, if different charset detected
+     * @return a {@link java.lang.String} object.
      * @should return text if fulltext file exists
      * @should return null if fulltext folder exists but no file
      * @should return null of fulltext folder does not exist
-     * @return a {@link java.lang.String} object.
      */
     public static String generateFulltext(String fileName, Path folder, boolean warnIfMissing, boolean forceDefaultCharset) {
         if (!Files.isDirectory(folder)) {
@@ -480,15 +478,16 @@ public final class TextHelper {
      * Strips the given string of HTML tags, etc.
      *
      * @param text a {@link java.lang.String} object.
-     * @should clean up string correctly
      * @return a {@link java.lang.String} object.
+     * @should clean up string correctly
      */
-    public static String cleanUpHtmlTags(String text) {
+    public static String cleanUpHtmlTags(final String text) {
+        String ret = text;
         // Workaround for strings containing just opening brackets because JSoup cuts off everything that comes after
-        if (text.contains("<") && !text.contains(">")) {
-            text = text.replace("<", "");
+        if (ret.contains("<") && !ret.contains(">")) {
+            ret = ret.replace("<", "");
         }
 
-        return Jsoup.parse(text).text();
+        return Jsoup.parse(ret).text();
     }
 }
