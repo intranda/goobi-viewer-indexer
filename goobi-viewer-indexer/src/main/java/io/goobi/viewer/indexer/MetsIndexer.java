@@ -669,7 +669,7 @@ public class MetsIndexer extends Indexer {
         String filePathBanner = "";
         String xpathFilePtr =
                 "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID"; //NOSONAR XPath, not URI
-        List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).collect(Collectors.toList());
+        List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).toList();
         for (String fileId : fileIds) {
             String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@ID='" + fileId + "']/mets:FLocat/@xlink:href";
             filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);

@@ -726,7 +726,7 @@ public final class MetadataHelper {
                 sb.append(entry.getKey());
                 ret = ret.replace(sb.toString(), entry.getValue());
             } else if (entry.getKey() instanceof String s) {
-                logger.trace("replace rule: {} -> {}", entry.getKey(), entry.getValue());
+                logger.trace("replace rule: {} -> {}", s, entry.getValue());
                 if (s.startsWith("REGEX:")) {
                     ret = ret.replaceAll(s.substring(6), entry.getValue());
                 } else {

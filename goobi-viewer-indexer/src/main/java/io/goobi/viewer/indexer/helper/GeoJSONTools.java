@@ -79,18 +79,15 @@ public class GeoJSONTools {
         }
 
         GeoJsonObject geometry = featureCollection.getFeatures().get(0).getGeometry();
-        if (geometry instanceof Point) {
+        if (geometry instanceof Point point) {
             // Point
-            Point point = (Point) geometry;
             return convertToWKT(Collections.singletonList(point.getPosition()));
         }
-        if (geometry instanceof Polygon) {
+        if (geometry instanceof Polygon polygon) {
             // Polygon
-            Polygon polygon = (Polygon) geometry;
             if (polygon.getCoordinates().isEmpty()) {
                 return null;
             }
-
             return convertToWKT(polygon.getCoordinates().get(0));
         }
 

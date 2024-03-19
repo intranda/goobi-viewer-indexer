@@ -1789,10 +1789,9 @@ public abstract class Indexer {
      * @param pi Record identifier
      * @param order Page number
      * @param altoURL Optional URL for ALTO download
-     * @throws FatalIndexerException
      */
     protected void addFullTextToPageDoc(SolrInputDocument doc, Map<String, Path> dataFolders, DataRepository dataRepo, String pi, int order,
-            String altoURL) throws FatalIndexerException {
+            String altoURL) {
         if (doc == null || dataFolders == null) {
             return;
         }
@@ -2037,8 +2036,7 @@ public abstract class Indexer {
                 logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
                 String fileNameSansRoot = path.getFileName().toString().substring(fileNameRoot.length());
                 switch (fileNameSansRoot) {
-                    case "_tif":
-                    case FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
+                    case "_tif", FOLDER_SUFFIX_MEDIA: // GBVMETSAdapter uses _media folders
                         dataFolders.put(DataRepository.PARAM_MEDIA, path);
                         break;
                     case "_txt":
