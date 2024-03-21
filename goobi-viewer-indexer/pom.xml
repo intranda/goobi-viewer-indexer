@@ -47,7 +47,7 @@
 		<!-- other libraries -->
         <angus-mail.version>2.0.3</angus-mail.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
-		<commons-configuration2.version>2.10.0</commons-configuration2.version>
+		<commons-configuration2.version>2.10.1</commons-configuration2.version>
 		<commons-io.version>2.15.1</commons-io.version>
 		<commons-jxpath.version>1.3</commons-jxpath.version>
 		<commons-lang3.version>3.14.0</commons-lang3.version>
