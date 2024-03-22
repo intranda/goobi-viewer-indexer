@@ -550,7 +550,7 @@ public class Hotfolder {
      */
     private void checkFreeSpace() throws FatalIndexerException {
         // TODO alternate check if RemainingSpaceStrategy is selected
-        int freeSpace = (int) (hotfolderPath.toFile().getFreeSpace() / 1048576);
+        long freeSpace = hotfolderPath.toFile().getFreeSpace() / 1048576;
         logger.debug("Available storage space in hotfolder: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
