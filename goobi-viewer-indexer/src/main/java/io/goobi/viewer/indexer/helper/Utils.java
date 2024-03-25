@@ -20,7 +20,9 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -586,7 +588,7 @@ public class Utils {
      * @return a {@link java.lang.String} object.
      */
     public static String removeRecordImagesFromCache(String pi) {
-        if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
+        if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken()) || pi == null) {
             return null;
         }
 
@@ -600,7 +602,7 @@ public class Utils {
             sbUrl.append('/');
         }
         sbUrl.append("api/v1/cache/")
-                .append(pi)
+                .append(URLEncoder.encode(pi, StandardCharsets.UTF_8))
                 .append("?content=true&thumbs=true&pdf=true")
                 .append("&token=")
                 .append(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
