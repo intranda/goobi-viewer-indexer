@@ -268,7 +268,7 @@ public class EadIndexer extends Indexer {
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
-            indexObj.addToLucene(SolrConstants.ISWORK, "true");
+            indexObj.addToLucene(SolrConstants.ISWORK, "false");
 
             // Add DEFAULT field
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
