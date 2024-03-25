@@ -862,6 +862,7 @@ public class Hotfolder {
                 case CMS:
                 case DENKXWEB:
                 case DUBLINCORE:
+                case EAD:
                 case LIDO:
                 case METS:
                 case METS_MARC:
