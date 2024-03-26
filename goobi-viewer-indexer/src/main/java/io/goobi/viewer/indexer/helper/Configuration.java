@@ -675,6 +675,15 @@ public final class Configuration {
     public List<String> getMetsPreferredImageFileGroups() {
         return getStringList("init.mets.preferredImageFileGroup");
     }
+    
+    /**
+     * 
+     * @return Configured physicalElementTypes/type values or empty list
+     * @should return configured values
+     */
+    public List<String> getMetsAllowedPhysicalTypes() {
+        return getStringList("init.mets.physicalElementTypes.type");
+    }
 
     /**
      * Overrides values in the config file (for unit test purposes).

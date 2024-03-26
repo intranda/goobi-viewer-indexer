@@ -317,6 +317,31 @@ class ConfigurationTest extends AbstractTest {
     void isHostProxyWhitelistedd_shouldReturnTrueIfHostWhitelisted() throws Exception {
         Assertions.assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isHostProxyWhitelisted("http://localhost:1234"));
     }
+    
+    /**
+     * @see Configuration#getMetsPreferredImageFileGroups()
+     * @verifies return configured values
+     */
+    @Test
+    void getMetsPreferredImageFileGroups_shouldReturnConfiguredValues() throws Exception {
+        List<String> resp = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
+        Assertions.assertEquals(2, resp.size());
+        Assertions.assertEquals("BOOKVIEWER", resp.get(0));
+        Assertions.assertEquals("ZOOMIFY", resp.get(1));
+    }
+
+    /**
+     * @see Configuration#getMetsAllowedPhysicalTypes()
+     * @verifies return configured values
+     */
+    @Test
+    void getMetsAllowedPhysicalTypes_shouldReturnConfiguredValues() throws Exception {
+        List<String> resp = SolrIndexerDaemon.getInstance().getConfiguration().getMetsAllowedPhysicalTypes();
+        Assertions.assertEquals(3, resp.size());
+        Assertions.assertEquals("object", resp.get(0));
+        Assertions.assertEquals("audio", resp.get(1));
+        Assertions.assertEquals("video", resp.get(2));
+    }
 
     /**
      * @see Configuration#checkEmailConfiguration()

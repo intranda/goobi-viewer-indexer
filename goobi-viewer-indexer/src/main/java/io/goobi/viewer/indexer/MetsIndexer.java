@@ -47,7 +47,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1003,8 +1002,7 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
-        String xpath =
-                "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\" or @TYPE=\"object\" or @TYPE=\"audio\" or @TYPE=\"video\" or @TYPE=\"re:video\"]"; //NOSONAR XPath, not URI
+        String xpath = buildPagesXpathExpresson();
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
@@ -1052,6 +1050,23 @@ public class MetsIndexer extends Indexer {
             }
         }
         logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
+    }
+
+    /**
+     * Builds XPath expression for physical elements.
+     * 
+     * @return Constructed expression
+     * @should build expression correctly
+     */
+    static String buildPagesXpathExpresson() {
+        StringBuilder sb = new StringBuilder("/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"");
+        List<String> allowedTypes = SolrIndexerDaemon.getInstance().getConfiguration().getMetsAllowedPhysicalTypes();
+        for (String type : allowedTypes) {
+            sb.append(" or @TYPE=\"").append(type).append('"');
+        }
+        sb.append(']');
+
+        return sb.toString();
     }
 
     /**

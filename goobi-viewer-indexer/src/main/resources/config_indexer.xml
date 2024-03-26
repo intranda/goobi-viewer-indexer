@@ -118,6 +118,13 @@
 				it will be used for indexing image file paths. -->
 			<preferredImageFileGroup>BOOKVIEWER</preferredImageFileGroup>
 			<preferredImageFileGroup>ZOOMIFY</preferredImageFileGroup>
+            <!-- physicalElementTypes/type (0-n): Values of mets:div/@TYPE that shall be processed as pages. Type "page" is always allowed,
+                others must be configured here. -->
+            <physicalElementTypes>
+                <type>object</type>
+                <type>audio</type>
+                <type>video</type>
+            </physicalElementTypes>
 		</mets>
 
 		<lido>
