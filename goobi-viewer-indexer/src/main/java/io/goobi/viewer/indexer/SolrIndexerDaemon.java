@@ -108,7 +108,7 @@ public final class SolrIndexerDaemon {
         // Init old search index, if configured
         try {
             SolrClient oldClient = SolrSearchIndex.getNewSolrClient(getConfiguration().getOldSolrUrl());
-            if (oldClient != null) {
+            if (StringUtils.isNotEmpty(getConfiguration().getOldSolrUrl()) && oldClient != null) {
                 this.oldSearchIndex = new SolrSearchIndex(oldClient);
                 if (logger.isInfoEnabled()) {
                     logger.info("Also using old Solr server at {}", SolrIndexerDaemon.getInstance().getConfiguration().getOldSolrUrl());

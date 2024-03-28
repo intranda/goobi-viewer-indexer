@@ -3907,6 +3907,66 @@
                 </item>
             </list>
         </MD_ABSTRACT>
+    
+        <!-- Image copyright (grouped; hardcoded in HTML, do not change field names!) -->
+        <MD_COPYRIGHT_IMAGE_LANG_FR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[normalize-space(lido:resourceType/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q1250322"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">lido:rightsResource/lido:creditLine[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_COPYRIGHT">lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_ORDER">@lido:sortorder</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_COPYRIGHT_IMAGE_LANG_FR>
+        <MD_COPYRIGHT_IMAGE_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[normalize-space(lido:resourceType/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q1250322"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">lido:rightsResource/lido:creditLine[@xml:lang="de"]</field>
+                        <field name="MD_COPYRIGHT">lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="de"]</field>
+                        <field name="MD_ORDER">@lido:sortorder</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_COPYRIGHT_IMAGE_LANG_DE>
+        <MD_COPYRIGHT_IMAGE_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[normalize-space(lido:resourceType/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q1250322"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">lido:rightsResource/lido:creditLine[@xml:lang="en"]</field>
+                        <field name="MD_COPYRIGHT">lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="en"]</field>
+                        <field name="MD_ORDER">@lido:sortorder</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_COPYRIGHT_IMAGE_LANG_EN>
 
-	</fields>
+    </fields>
+
 </root>
