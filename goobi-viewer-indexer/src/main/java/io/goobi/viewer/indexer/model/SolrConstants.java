@@ -109,6 +109,8 @@ public final class SolrConstants {
     public static final String DOCTYPE = "DOCTYPE";
     /** Constant <code>DOWNLOAD_URL_EXTERNAL="MD2_DOWNLOAD_URL"</code> */
     public static final String DOWNLOAD_URL_EXTERNAL = "MD2_DOWNLOAD_URL";
+    /** Constant <code>EAD_NODE_ID="EAD_NODE_ID"</code> */
+    public static final String EAD_NODE_ID = "EAD_NODE_ID";
     /** Constant <code>EVENTDATE="EVENTDATE"</code> */
     public static final String EVENTDATE = "EVENTDATE";
     /** Constant <code>EVENTDATEEND="EVENTDATEEND"</code> */

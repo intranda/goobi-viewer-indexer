@@ -282,7 +282,7 @@
 			</list>
 		</PI>
 
-        <MD_ARCHIVE_ENTRY_ID>
+        <EAD_NODE_ID>
             <list>
                 <item>
                     <xpath>
@@ -295,7 +295,7 @@
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                 </item>
             </list>
-        </MD_ARCHIVE_ENTRY_ID>
+        </EAD_NODE_ID>
         
         <MD_ARCHIVE_ENTRY_LEVEL>
             <list>
@@ -405,6 +405,7 @@
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='moving wall']/@type</item>
 							<item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="restriction"]/lido:conceptID[@lido:type="http://terminology.lido-schema.org/identifier_type/local_identifier"]</item>
 							<item>dc:rights[not(contains(text(),'http'))]</item>
+                            <item>ead:did/ead:accesscondition</item>
 						</list>
 					</xpath>
 
@@ -1077,7 +1078,6 @@
 					<replace char="152"></replace>
 					<replace char="156"></replace>
 					<groupEntity type="PERSON">
-						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_VALUE">subfield[@code="a"]</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
