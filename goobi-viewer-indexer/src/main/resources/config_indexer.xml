@@ -1078,6 +1078,7 @@
 					<replace char="152"></replace>
 					<replace char="156"></replace>
 					<groupEntity type="PERSON">
+                        <field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_VALUE">subfield[@code="a"]</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
