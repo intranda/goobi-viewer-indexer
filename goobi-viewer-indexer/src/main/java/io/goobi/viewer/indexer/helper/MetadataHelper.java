@@ -1105,6 +1105,9 @@ public final class MetadataHelper {
         Map<String, List<String>> collectedValues = new HashMap<>();
         ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null);
 
+        if (!groupEntity.getSubfields().containsKey(SolrConstants.MD_VALUE)) {
+            logger.warn("'{}' not configured for grouped metadata field '{}'.", SolrConstants.MD_VALUE, groupLabel);
+        }
         String mdValue = null;
 
         Map<String, String> additionalFieldsFromParent = new HashMap<>();
