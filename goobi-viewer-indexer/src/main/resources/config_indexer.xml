@@ -51,6 +51,7 @@
 
 		<indexedMets>indexed_mets</indexedMets>
 		<indexedLido>indexed_lido</indexedLido>
+        <indexedEad>indexed_ead</indexedEad>
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
 		<indexedCMS>indexed_cms</indexedCMS>
@@ -117,6 +118,13 @@
 				it will be used for indexing image file paths. -->
 			<preferredImageFileGroup>BOOKVIEWER</preferredImageFileGroup>
 			<preferredImageFileGroup>ZOOMIFY</preferredImageFileGroup>
+            <!-- physicalElementTypes/type (0-n): Values of mets:div/@TYPE that shall be processed as pages. Type "page" is always allowed,
+                others must be configured here. -->
+            <physicalElementTypes>
+                <type>object</type>
+                <type>audio</type>
+                <type>video</type>
+            </physicalElementTypes>
 		</mets>
 
 		<lido>
@@ -261,6 +269,7 @@
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
 							<item>dc:identifier</item>
+                            <item>ead:ead/ead:archdesc/ead:dsc/ead:c[@level="collection"]/@id</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -273,15 +282,35 @@
 			</list>
 		</PI>
 
-		<MD_ARCHIVE_ENTRY_ID>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</xpath>
-					<addToDefault>true</addToDefault>
-					<addUntokenizedVersion>false</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_ARCHIVE_ENTRY_ID>
+        <EAD_NODE_ID>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</item>
+                            <item>@id</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </EAD_NODE_ID>
+        
+        <MD_ARCHIVE_ENTRY_LEVEL>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>@level</item>
+                            <item>ead:archdesc/@level</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ARCHIVE_ENTRY_LEVEL>
 
 		<!-- This field is important, see chapter 2.11 of the manual -->
 		<LABEL>
@@ -376,6 +405,7 @@
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='moving wall']/@type</item>
 							<item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="restriction"]/lido:conceptID[@lido:type="http://terminology.lido-schema.org/identifier_type/local_identifier"]</item>
 							<item>dc:rights[not(contains(text(),'http'))]</item>
+                            <item>ead:did/ead:accesscondition</item>
 						</list>
 					</xpath>
 
@@ -531,6 +561,8 @@
 							<item>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
 							<item>dc:title</item>
+                            <item>ead:did/ead:unittitle</item>
+                            <item>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -1046,7 +1078,7 @@
 					<replace char="152"></replace>
 					<replace char="156"></replace>
 					<groupEntity type="PERSON">
-						<field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_VALUE">subfield[@code="a"]</field>
 						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
@@ -1756,33 +1788,33 @@
 			</list>
 		</MD_SCREENWRITER>
 
-		<MD_SUBJECTPERSON>
-			<list>
-				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="personal"]/mods:displayForm
-							</item>
-						</list>
-					</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<replace string="&lt;&lt;"></replace>
-					<replace string="&gt;&gt;"></replace>
-					<replace char="152"></replace>
-					<replace char="156"></replace>
-					<groupEntity type="PERSON">
-						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_LINK">@xlink:href</field>
-						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
-						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
-						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
-						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
-						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_SUBJECTPERSON>
+        <MD_SUBJECTPERSON>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:name[@type="personal"]/mods:displayForm</item>
+                            <item>ead:index/ead:indexentry/ead:persname</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <replace string="&lt;&lt;"></replace>
+                    <replace string="&gt;&gt;"></replace>
+                    <replace char="152"></replace>
+                    <replace char="156"></replace>
+                    <groupEntity type="PERSON">
+                        <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_SUBJECTPERSON>
 
 		<MD_TRANSCRIBER>
 			<list>
@@ -2103,6 +2135,7 @@
 							<item>mets:dmdSec/mets:mdWrap/mets:xmlData/mods:mods/mods:location/mods:shelfLocator</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type='current']/lido:workID[@lido:type='inventor number']</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type='http://terminology.lido-schema.org/lido00475']/lido:workID[@lido:type="Inventarnummer"]</item>
+                            <item>ead:did/ead:unitid[@type="Altsignatur"]</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2243,6 +2276,8 @@
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[@encoding='iso8601']</item>
 							<item>mets:xmlData/mods:mods/mods:originInfo[not(mods:edition[text() = '[Electronic ed.]'])]/mods:dateCreated[not(@encoding)][not(@point)]</item>
 							<item>dc:date</item>
+                            <item>ead:did/ead:unitdate</item>
+                            <item>ead:eadheader/ead:profiledesc/ead:creation/ead:date/@normal</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2461,6 +2496,7 @@
 					<xpath>
 						<list>
 							<item>mets:xmlData/mods:mods/mods:physicalDescription/mods:extent</item>
+                            <item>ead:did/ead:physdesc/ead:extent</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
@@ -2892,7 +2928,12 @@
 		<MD_SUBJECTGEOGRAPHIC>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject/mods:geographic</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:subject/mods:geographic</item>
+                            <item>ead:index/ead:indexentry/ead:geogname</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 					<groupEntity type="LOCATION" addCoordsToDocstruct="true">
 						<field name="MD_VALUE">text()</field>
@@ -2905,27 +2946,16 @@
 		<MD_SUBJECTTOPIC>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:topic</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:subject[@authority="gnd"]/mods:topic</item>
+                            <item>ead:index/ead:indexentry/ead:subject</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
 		</MD_SUBJECTTOPIC>
-
-
-		<MD_RECORDID>
-			<list>
-				<item>
-					<xpath>
-						<list>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="record"]</item>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="record-id"]</item>
-						</list>
-					</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-				</item>
-			</list>
-		</MD_RECORDID>
 
 		<MD_OCCUPATION>
 			<list>
@@ -3488,206 +3518,456 @@
 <!-- archive -->
 
 
-		<MD_PROVENIENCE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type='ownership']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_PROVENIENCE>
-		<MD_NODEID>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_NODEID>
-		<MD_EADID>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-id"]</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_EADID>
-		<MD_UNITID>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:identifier[@type="unit-id"]</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_UNITID>
-		<MD_BIOGRAPHICALINFORMATION>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type='bibliography']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_BIOGRAPHICALINFORMATION>
-		<MD_INVENTORYHISTORY>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type='bibliographic history']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_INVENTORYHISTORY>
-		<MD_AQUISITIONINFORMATION>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type='acquisition']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_AQUISITIONINFORMATION>
-		<MD_APPRAISALINFORMATION>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:appraisal</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_APPRAISALINFORMATION>
-		<MD_ADDITIONS>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:additions</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_ADDITIONS>
-		<MD_ARRANGEMENT>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:classification[@displayLabel='arrangement']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_ARRANGEMENT>
-		<MD_USERESTRICTION>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='condition']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_USERESTRICTION>
-		<MD_FONTTYPE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:language/mods:scriptTerm</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_FONTTYPE>
-		<MD_PHYSTECH>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='physical description']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_PHYSTECH>
-		<MD_OTHERFINDAID>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:otherFindAid</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_OTHERFINDAID>
-		<MD_ORIGINALSLOCATION>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:location/mods:physicalLocation</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_ORIGINALSLOCATION>
-		<MD_ALTERNATIVEFORMAVAILABLE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='additional physical form']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_ALTERNATIVEFORMAVAILABLE>
-		<MD_SEPARATEDMATERIAL>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type='original version']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_SEPARATEDMATERIAL>
-		<MD_DIDNOTE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type='source identifier']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_DIDNOTE>
-		<MD_ODD>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type='source note']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_ODD>
-		<MD_CONVENTIONDECLARATION>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='organization']</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<addUntokenizedVersion>true</addUntokenizedVersion>
-				</item>
-			</list>
-		</MD_CONVENTIONDECLARATION>
+        <MD_PROVENIENCE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:note[@type='ownership']</item>
+                            <item>ead:archdesc/ead:did/ead:origination[1]</item>
+                            <item>ead:did/ead:origination[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_PROVENIENCE>
+        <MD_NODEID>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_NODEID>
+        <MD_EADID>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="archive-id"]</item>
+                            <item>ead:eadheader/ead:eadid</item>
+                        </list>
+                    </xpath> 
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_EADID>
+        <MD_UNITID>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="unit-id"]</item>
+                            <item>ead:archdesc/ead:did/ead:unitid[not(@type)][1]</item>
+                            <item>ead:did/ead:unitid[not(@type)][1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_UNITID>
+        <MD_UNITID_NUMBER>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>ead:did/ead:unitid[@type="Vorl. Nr."][1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_UNITID_NUMBER>
+        <MD_RECORDID>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="record"]</item>
+                            <item>mets:xmlData/mods:mods/mods:identifier[@type="record-id"]</item>
+                            <item>ead:control/ead:recordid</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                </item>
+            </list>
+        </MD_RECORDID>
+        <MD_BIOGRAPHICALINFORMATION>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:note[@type='bibliography']</item>
+                            <item>ead:archdesc/ead:dsc/ead:bibliography[1]</item>
+                            <item>ead:dsc/ead:bibliography[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_BIOGRAPHICALINFORMATION>
+        <MD_INVENTORYHISTORY>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:note[@type='bibliographic history']</item>
+                            <item>ead:archdesc/ead:dsc/ead:custodhist[1]</item>
+                            <item>ead:dsc/ead:custodhist[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_INVENTORYHISTORY>
+        <MD_AQUISITIONINFORMATION>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:note[@type='acquisition']</item>
+                            <item>ead:archdesc/ead:dsc/ead:acqinfo[1]</item>
+                            <item>ead:dsc/ead:acqinfo[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_AQUISITIONINFORMATION>
+        <MD_APPRAISALINFORMATION>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/intranda:appraisal</item>
+                            <item>ead:archdesc/ead:dsc/ead:appraisal[1]</item>
+                            <item>ead:dsc/ead:appraisal[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_APPRAISALINFORMATION>
+        <MD_ADDITIONS>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/intranda:additions</item>
+                            <item>ead:archdesc/ead:dsc/ead:accruals[1]</item>
+                            <item>ead:dsc/ead:accruals[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ADDITIONS>
+        <MD_ARRANGEMENT>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:classification[@displayLabel='arrangement']</item>
+                            <item>ead:archdesc/ead:dsc/ead:arrangement[1]</item>
+                            <item>ead:dsc/ead:arrangement[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ARRANGEMENT>
+        <MD_USERESTRICTION>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='condition']</item>
+                            <item>ead:archdesc/ead:dsc/ead:userestrict[1]</item>
+                            <item>ead:dsc/ead:userestrict[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_USERESTRICTION>
+        <MD_FONTTYPE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:language/mods:scriptTerm</item>
+                            <item>ead:archdesc/ead:did/ead:langmaterial[@label='font'][1]</item>
+                            <item>ead:did/ead:langmaterial[@label='font'][1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_FONTTYPE>
+        <MD_PHYSTECH>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='physical description']</item>
+                            <item>ead:archdesc/ead:dsc/ead:phystech[1]</item>
+                            <item>ead:dsc/ead:phystech[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_PHYSTECH>
+        <MD_OTHERFINDAID>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/intranda:otherFindAid</item>
+                            <item>ead:archdesc/ead:dsc/ead:otherfindaid[1]</item>
+                            <item>ead:dsc/ead:otherfindaid[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_OTHERFINDAID>
+        <MD_ORIGINALSLOCATION>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:location/mods:physicalLocation</item>
+                            <item>ead:archdesc/ead:dsc/ead:originalsloc[1]</item>
+                            <item>ead:dsc/ead:originalsloc[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ORIGINALSLOCATION>
+        <MD_ALTERNATIVEFORMAVAILABLE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='additional physical form']</item>
+                            <item>ead:archdesc/ead:dsc/ead:altformavail[1]</item>
+                            <item>ead:dsc/ead:altformavail[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ALTERNATIVEFORMAVAILABLE>
+        <MD_SEPARATEDMATERIAL>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:note[@type='original version']</item>
+                            <item>ead:archdesc/ead:dsc/ead:relatedmaterial/ead:separatedmaterial[1]</item>
+                            <item>ead:dsc/ead:relatedmaterial/ead:separatedmaterial[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_SEPARATEDMATERIAL>
+        <MD_DIDNOTE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:note[@type='source identifier']</item>
+                            <item>ead:archdesc/ead:did/ead:didnote[1]</item>
+                            <item>ead:did/ead:didnote[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_DIDNOTE>
+        <MD_ODD>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:note[@type='source note']</item>
+                            <item>ead:archdesc/ead:odd[1]</item>
+                            <item>ead:odd[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ODD>
+        <MD_ODD_HEAD>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>ead:archdesc/ead:odd[1]/ead:head</item>
+                            <item>ead:odd[1]/ead:head</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ODD_HEAD>
+        <MD_ODD_P>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>ead:archdesc/ead:odd[1]/ead:p</item>
+                            <item>ead:odd[1]/ead:p</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ODD_P>
+        <MD_CONVENTIONDECLARATION>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:physicalDescription/mods:note[@type='organization']</item>
+                            <item>ead:control/ead:conventiondeclaration[1]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addSortField>true</addSortField>
+                    <addUntokenizedVersion>true</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_CONVENTIONDECLARATION>
 
-	</fields>
+        <MD_ABSTRACT>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:abstract[not(@type)]</item>
+                            <item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type='Orginaletikett' or @lido:type='description']/lido:descriptiveNoteValue</item>
+                            <item>ead:did/ead:abstract</item>
+                        </list>
+                    </xpath>
+                    <onefield>false</onefield>
+                    <addToDefault>true</addToDefault>
+                    <replace char="10">&lt;br /&gt;</replace>
+                    <replace char="10">&lt;br /&gt;</replace>
+                    <replace char="10">&lt;br /&gt;</replace>
+                </item>
+            </list>
+        </MD_ABSTRACT>
+    
+        <!-- Image copyright (grouped; hardcoded in HTML, do not change field names!) -->
+        <MD_COPYRIGHT_IMAGE_LANG_FR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[normalize-space(lido:resourceType/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q1250322"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">lido:rightsResource/lido:creditLine[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_COPYRIGHT">lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[not(@xml:lang) or @xml:lang="fr"]</field>
+                        <field name="MD_ORDER">@lido:sortorder</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_COPYRIGHT_IMAGE_LANG_FR>
+        <MD_COPYRIGHT_IMAGE_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[normalize-space(lido:resourceType/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q1250322"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">lido:rightsResource/lido:creditLine[@xml:lang="de"]</field>
+                        <field name="MD_COPYRIGHT">lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="de"]</field>
+                        <field name="MD_ORDER">@lido:sortorder</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_COPYRIGHT_IMAGE_LANG_DE>
+        <MD_COPYRIGHT_IMAGE_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <!-- LIDO 1.1 -->
+                            <item>lido:administrativeMetadata[@xml:lang="fr"]/lido:resourceWrap/lido:resourceSet[normalize-space(lido:resourceType/skos:Concept/@rdf:about)="https://www.wikidata.org/wiki/Q1250322"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">lido:rightsResource/lido:creditLine[@xml:lang="en"]</field>
+                        <field name="MD_COPYRIGHT">lido:rightsResource/lido:rightsType/skos:Concept/skos:prefLabel[@xml:lang="en"]</field>
+                        <field name="MD_ORDER">@lido:sortorder</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_COPYRIGHT_IMAGE_LANG_EN>
+
+    </fields>
+
 </root>

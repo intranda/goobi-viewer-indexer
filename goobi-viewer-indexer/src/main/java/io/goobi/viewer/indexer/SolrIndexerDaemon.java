@@ -44,7 +44,7 @@ public final class SolrIndexerDaemon {
     private static final Logger logger = LogManager.getLogger(SolrIndexerDaemon.class);
 
     /** Constant <code>VERSION</code> */
-    private static final int MIN_SCHEMA_VERSION = 20220614;
+    private static final int MIN_SCHEMA_VERSION = 20240403;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
@@ -108,7 +108,7 @@ public final class SolrIndexerDaemon {
         // Init old search index, if configured
         try {
             SolrClient oldClient = SolrSearchIndex.getNewSolrClient(getConfiguration().getOldSolrUrl());
-            if (oldClient != null) {
+            if (StringUtils.isNotEmpty(getConfiguration().getOldSolrUrl()) && oldClient != null) {
                 this.oldSearchIndex = new SolrSearchIndex(oldClient);
                 if (logger.isInfoEnabled()) {
                     logger.info("Also using old Solr server at {}", SolrIndexerDaemon.getInstance().getConfiguration().getOldSolrUrl());

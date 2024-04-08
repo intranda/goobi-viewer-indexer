@@ -32,8 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -238,9 +236,7 @@ public class DublinCoreIndexer extends Indexer {
             logger.info("Record PI: {}", pi);
 
             // Do not allow identifiers with characters that cannot be used in file names
-            Pattern p = Pattern.compile("[^\\w|-]");
-            Matcher m = p.matcher(pi);
-            if (m.find()) {
+            if (!Utils.validatePi(pi)) {
                 ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
                 throw new IndexerException(ret[1]);
             }
@@ -278,9 +274,7 @@ public class DublinCoreIndexer extends Indexer {
             checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
             checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
             checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
-
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.DUBLINCORE.name());
+            
             prepareUpdate(indexObj);
 
             // Process TEI files
@@ -717,10 +711,11 @@ public class DublinCoreIndexer extends Indexer {
      * Sets DMDID, ID, TYPE and LABEL from the METS document.
      * 
      * @param indexObj {@link IndexObject}
-     * @throws FatalIndexerException
      */
-    private static void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
+    private static void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
+
+        indexObj.setSourceDocFormat(FileFormat.DUBLINCORE);
 
         // LOGID
         indexObj.setLogId("LOD_0000");

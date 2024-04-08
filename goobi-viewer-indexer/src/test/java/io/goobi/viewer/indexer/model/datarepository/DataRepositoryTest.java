@@ -77,6 +77,7 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertTrue(dataRepository.isValid());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
+        Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toFile().isDirectory());
@@ -106,6 +107,7 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertTrue(dataRepository.isValid());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toFile().isDirectory());
+        Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toFile().isDirectory());
@@ -145,6 +147,7 @@ class DataRepositoryTest extends AbstractTest {
         DataRepository dataRepository = new DataRepository("", false);
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO));
+        Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS));
@@ -173,6 +176,7 @@ class DataRepositoryTest extends AbstractTest {
         DataRepository dataRepository = new DataRepository("1", false);
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO));
+        Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS));
@@ -214,6 +218,11 @@ class DataRepositoryTest extends AbstractTest {
         destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), srcFile.getName());
         FileUtils.copyFile(srcFile, destFile);
         Assertions.assertTrue(destFile.isFile());
+        
+        srcFile = new File("src/test/resources/EAD/Akte_Koch.xml");
+        destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toAbsolutePath().toString(), srcFile.getName());
+        FileUtils.copyFile(srcFile, destFile);
+        Assertions.assertTrue(destFile.isFile());
 
         srcFile = new File("src/test/resources/DenkXweb/10973880.xml");
         destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), srcFile.getName());
@@ -230,7 +239,7 @@ class DataRepositoryTest extends AbstractTest {
         FileUtils.copyFile(srcFile, destFile);
         Assertions.assertTrue(destFile.isFile());
 
-        Assertions.assertEquals(6, dataRepository.getNumRecords());
+        Assertions.assertEquals(7, dataRepository.getNumRecords());
     }
 
     /**

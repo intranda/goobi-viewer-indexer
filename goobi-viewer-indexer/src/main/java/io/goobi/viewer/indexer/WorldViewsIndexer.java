@@ -38,8 +38,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -255,15 +253,15 @@ public class WorldViewsIndexer extends Indexer {
             logger.info("Record PI: {}", pi);
 
             // Do not allow identifiers with characters that cannot be used in file names
-            Pattern p = Pattern.compile("[^\\w|-]");
-            Matcher m = p.matcher(pi);
-            if (m.find()) {
+            if (!Utils.validatePi(pi)) {
                 ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
                 throw new IndexerException(ret[1]);
             }
             indexObj.setPi(pi);
             indexObj.setTopstructPI(pi);
             logger.debug("PI: {}", indexObj.getPi());
+
+            indexObj.setSourceDocFormat(FileFormat.WORLDVIEWS);
 
             // Determine the data repository to use
             DataRepository[] repositories =
@@ -292,9 +290,6 @@ public class WorldViewsIndexer extends Indexer {
             checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
             checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
             checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
-
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.WORLDVIEWS.name());
 
             prepareUpdate(indexObj);
 

@@ -47,8 +47,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -317,9 +315,7 @@ public class MetsIndexer extends Indexer {
             logger.info("Record PI: {}", pi);
 
             // Do not allow identifiers with characters that cannot be used in file names
-            Pattern p = Pattern.compile("[^\\w|-]");
-            Matcher m = p.matcher(pi);
-            if (m.find()) {
+            if (!Utils.validatePi(pi)) {
                 ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
                 throw new IndexerException(ret[1]);
             }
@@ -365,8 +361,6 @@ public class MetsIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", writeStrategy.getClass().getName());
             }
 
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, getSourceDocFormat().name());
             prepareUpdate(indexObj);
 
             int hierarchyLevel = 0; // depth of the docstrct that has ISWORK (volume or monograph)
@@ -1008,8 +1002,7 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
-        String xpath =
-                "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\" or @TYPE=\"object\" or @TYPE=\"audio\" or @TYPE=\"video\" or @TYPE=\"re:video\"]"; //NOSONAR XPath, not URI
+        String xpath = buildPagesXpathExpresson();
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
         if (eleStructMapPhysicalList.isEmpty()) {
             logger.info("No pages found.");
@@ -1057,6 +1050,23 @@ public class MetsIndexer extends Indexer {
             }
         }
         logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
+    }
+
+    /**
+     * Builds XPath expression for physical elements.
+     * 
+     * @return Constructed expression
+     * @should build expression correctly
+     */
+    static String buildPagesXpathExpresson() {
+        StringBuilder sb = new StringBuilder("/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"");
+        List<String> allowedTypes = SolrIndexerDaemon.getInstance().getConfiguration().getMetsAllowedPhysicalTypes();
+        for (String type : allowedTypes) {
+            sb.append(" or @TYPE=\"").append(type).append('"');
+        }
+        sb.append(']');
+
+        return sb.toString();
     }
 
     /**
@@ -2129,8 +2139,9 @@ public class MetsIndexer extends Indexer {
      * 
      * @param indexObj {@link IndexObject}
      */
-    private static void setSimpleData(IndexObject indexObj) {
+    private void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
+        indexObj.setSourceDocFormat(getSourceDocFormat());
         Element structNode = indexObj.getRootStructNode();
 
         // DMDID

@@ -185,6 +185,8 @@ public class CmsPageIndexer extends Indexer {
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
+            indexObj.setSourceDocFormat(FileFormat.CMS);
+
             // LOGID
             indexObj.setLogId("LOG0000");
 
@@ -224,9 +226,7 @@ public class CmsPageIndexer extends Indexer {
                 ret[1] = "PI not found.";
                 throw new IndexerException(ret[1]);
             }
-            
-            // Set source doc format
-            indexObj.addToLucene(SolrConstants.SOURCEDOCFORMAT, FileFormat.CMS.name());
+
             prepareUpdate(indexObj);
 
             // Set title

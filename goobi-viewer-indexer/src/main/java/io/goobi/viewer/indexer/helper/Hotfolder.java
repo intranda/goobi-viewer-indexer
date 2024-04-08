@@ -33,8 +33,6 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
-import jakarta.mail.MessagingException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +47,7 @@ import io.goobi.viewer.indexer.CmsPageIndexer;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
 import io.goobi.viewer.indexer.DublinCoreIndexer;
+import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
 import io.goobi.viewer.indexer.MetsIndexer;
@@ -65,6 +64,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.datarepository.strategy.AbstractDataRepositoryStrategy;
 import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStrategy;
+import jakarta.mail.MessagingException;
 
 /**
  * <p>
@@ -90,6 +90,8 @@ public class Hotfolder {
     private boolean metsEnabled = true;
     /** Constant <code>lidoEnabled=true</code> */
     private boolean lidoEnabled = true;
+    /** Constant <code>eadEnabled=true</code> */
+    private boolean eadEnabled = true;
     /** Constant <code>denkxwebEnabled=true</code> */
     private boolean denkxwebEnabled = true;
     /** If no indexedDC folder is configured, Dublin Core indexing will be automatically disabled via this flag. */
@@ -293,6 +295,12 @@ public class Hotfolder {
         } else {
             lidoEnabled = false;
             logger.warn("<origLido> not defined - LIDO indexing is disabled.");
+        }
+
+        // EAD folder
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_EAD))) {
+            eadEnabled = false;
+            logger.warn("<{}> not defined - EAD indexing is disabled.", DataRepository.PARAM_INDEXED_EAD);
         }
 
         // DenkXweb folders
@@ -542,7 +550,7 @@ public class Hotfolder {
      */
     private void checkFreeSpace() throws FatalIndexerException {
         // TODO alternate check if RemainingSpaceStrategy is selected
-        int freeSpace = (int) (hotfolderPath.toFile().getFreeSpace() / 1048576);
+        long freeSpace = hotfolderPath.toFile().getFreeSpace() / 1048576;
         logger.debug("Available storage space in hotfolder: {}M", freeSpace);
         if (freeSpace < minStorageSpace) {
             logger.error("Insufficient free space: {} / {} MB available. Indexer will now shut down.", freeSpace, minStorageSpace);
@@ -563,11 +571,11 @@ public class Hotfolder {
      * @throws FatalIndexerException
      */
     private boolean handleSourceFile(Path sourceFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
-        logger.trace("handleSourceFile: {}", sourceFile);
+        logger.info("handleSourceFile: {}", sourceFile);
         // Always unselect repository
         String filename = sourceFile.getFileName().toString();
         try {
-            if (filename.endsWith(".xml")) {
+            if (StringUtils.endsWithIgnoreCase(filename, FileTools.XML_EXTENSION)) {
                 // INPUT o. UPDATE
                 if (Files.size(sourceFile) == 0) {
                     // Check whether the file is actually empty or just hasn't finished copying yet
@@ -623,6 +631,19 @@ public class Hotfolder {
                             }
                         } else {
                             logger.error("LIDO indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(sourceFile);
+                        }
+                        break;
+                    case EAD:
+                        if (eadEnabled) {
+                            try {
+                                currentIndexer = new EadIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
+                        } else {
+                            logger.error("EAD indexing is disabled - please make sure all folders are configured.");
                             Files.delete(sourceFile);
                         }
                         break;
@@ -777,6 +798,10 @@ public class Hotfolder {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), baseFileName + ".xml");
             }
+            if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD) != null) {
+                actualXmlFile =
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toAbsolutePath().toString(), baseFileName + ".xml");
+            }
             if (!Files.exists(actualXmlFile) && dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB) != null) {
                 actualXmlFile =
                         Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB).toAbsolutePath().toString(), baseFileName + ".xml");
@@ -807,6 +832,8 @@ public class Hotfolder {
                         format = FileFormat.METS;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO))) {
                         format = FileFormat.LIDO;
+                    } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD))) {
+                        format = FileFormat.EAD;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DENKXWEB))) {
                         format = FileFormat.DENKXWEB;
                     } else if (deleteFile.getParent().equals(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE))) {
@@ -835,6 +862,7 @@ public class Hotfolder {
                 case CMS:
                 case DENKXWEB:
                 case DUBLINCORE:
+                case EAD:
                 case LIDO:
                 case METS:
                 case METS_MARC:

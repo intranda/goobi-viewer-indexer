@@ -20,7 +20,9 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -99,6 +101,8 @@ public class Utils {
     private static final String MAIL_PROPERTY_PROTOCOL = "mail.transport.protocol";
     private static final String MAIL_PROPERTY_SMTP_HOST = "mail.smtp.host";
     private static final String MAIL_PROPERTY_SMTP_PORT = "mail.smtp.port";
+
+    private static final char[] PI_ILLEGAL_CHARS = { '!', '?', '/', '\\', ':', ';', '(', ')', '@', '"', '\'' };
 
     /**
      * Private constructor.
@@ -584,7 +588,7 @@ public class Utils {
      * @return a {@link java.lang.String} object.
      */
     public static String removeRecordImagesFromCache(String pi) {
-        if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
+        if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken()) || pi == null) {
             return null;
         }
 
@@ -598,7 +602,7 @@ public class Utils {
             sbUrl.append('/');
         }
         sbUrl.append("api/v1/cache/")
-                .append(pi)
+                .append(URLEncoder.encode(pi, StandardCharsets.UTF_8))
                 .append("?content=true&thumbs=true&pdf=true")
                 .append("&token=")
                 .append(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
@@ -849,5 +853,24 @@ public class Utils {
                 fieldName = fieldName.replace(SolrConstants.SUFFIX_UNTOKENIZED, "");
                 return fieldName;
         }
+    }
+
+    /**
+     * <p>
+     * validatePi.
+     * </p>
+     *
+     * @param pi a {@link java.lang.String} object.
+     * @should return true if pi good
+     * @should return false if pi empty, blank or null
+     * @should return false if pi contains illegal characters
+     * @return a boolean.
+     */
+    public static boolean validatePi(String pi) {
+        if (StringUtils.isBlank(pi)) {
+            return false;
+        }
+
+        return !StringUtils.containsAny(pi, PI_ILLEGAL_CHARS);
     }
 }

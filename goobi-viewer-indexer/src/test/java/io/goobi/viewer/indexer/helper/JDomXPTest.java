@@ -64,6 +64,17 @@ class JDomXPTest extends AbstractTest {
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
     }
+    
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect ead files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectEadFilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/EAD/Akte_Koch.xml");
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.EAD, JDomXP.determineFileFormat(file));
+    }
 
     /**
      * @see JDomXP#determineFileFormat(File)

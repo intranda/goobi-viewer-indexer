@@ -170,6 +170,7 @@ public final class Configuration {
         namespaces.put("rdf", Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
         namespaces.put("skos", Namespace.getNamespace("skos", "http://www.w3.org/2004/02/skos/core#"));
         namespaces.put("oai", Namespace.getNamespace("oai", "http://www.openarchives.org/OAI/2.0/"));
+        namespaces.put("ead", Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9"));
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         for (Entry<String, String> entry : additionalNamespaces.entrySet()) {
@@ -673,6 +674,15 @@ public final class Configuration {
      */
     public List<String> getMetsPreferredImageFileGroups() {
         return getStringList("init.mets.preferredImageFileGroup");
+    }
+    
+    /**
+     * 
+     * @return Configured physicalElementTypes/type values or empty list
+     * @should return configured values
+     */
+    public List<String> getMetsAllowedPhysicalTypes() {
+        return getStringList("init.mets.physicalElementTypes.type");
     }
 
     /**

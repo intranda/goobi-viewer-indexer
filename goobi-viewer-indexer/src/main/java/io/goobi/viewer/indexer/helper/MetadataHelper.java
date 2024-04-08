@@ -44,6 +44,7 @@ import de.intranda.digiverso.normdataimporter.model.NormDataValue;
 import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.language.LanguageHelper;
 import io.goobi.viewer.indexer.model.GeoCoords;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
@@ -169,21 +170,24 @@ public final class MetadataHelper {
                         case "first":
                             if (parent.getDmdid() != null) {
                                 childrenAndAncestors.add(parent.getDmdid());
-                            } else {
-                                logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
+                            } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
+                                    || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
+                                logger.warn(LOG_DMDID_NOT_FOUND, indexObj.getLogId());
                             }
                             break;
                         case "all":
                             if (parent.getDmdid() != null) {
                                 childrenAndAncestors.add(parent.getDmdid());
-                            } else {
-                                logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
+                            } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
+                                    || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
+                                logger.warn(LOG_DMDID_NOT_FOUND, indexObj.getLogId());
                             }
                             while (parent.getParent() != null && !parent.getParent().isAnchor()) {
                                 parent = parent.getParent();
                                 if (parent.getDmdid() != null) {
                                     childrenAndAncestors.add(parent.getDmdid());
-                                } else {
+                                } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
+                                        || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
                                     logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
                                 }
                             }
@@ -195,7 +199,8 @@ public final class MetadataHelper {
                     Element eleMdWrap = xp.getMdWrap(dmdId);
                     if (eleMdWrap != null) {
                         elementsToIterateOver.add(eleMdWrap);
-                    } else {
+                    } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
+                            || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
                         logger.warn("Field {}: mets:mdWrap section not found for DMDID {}", fieldName, dmdId);
                     }
                 }
@@ -762,8 +767,7 @@ public final class MetadataHelper {
      * @return a {@link java.lang.String} object.
      * @should trim identifier
      * @should apply replace rules
-     * @should replace spaces with underscores
-     * @should replace commas with underscores
+     * @should replace illegal characters with underscores
      */
     public static String applyIdentifierModifications(String pi) {
         if (StringUtils.isEmpty(pi)) {
@@ -779,9 +783,7 @@ public final class MetadataHelper {
                 ret = MetadataHelper.applyReplaceRules(ret, replaceRules);
             }
         }
-        ret = ret.replace(" ", "_");
-        ret = ret.replace(",", "_");
-        ret = ret.replace(":", "_");
+        ret = ret.replaceAll("[ ,:()]", "_");
 
         return ret;
     }
@@ -889,7 +891,7 @@ public final class MetadataHelper {
         List<FieldConfig> piConfig =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(SolrConstants.PI);
         if (piConfig == null) {
-            return null;
+            return new String[] {};
         }
 
         List<XPathConfig> xPathConfigurations = piConfig.get(0).getxPathConfigurations();
@@ -906,7 +908,7 @@ public final class MetadataHelper {
                 }
             }
             if (StringUtils.isNotEmpty(pi)) {
-                if (piConfig.get(0).isAddToDefault()) {
+                if (isPiAddToDefault(piConfig)) {
                     return new String[] { pi, "addToDefault" };
                 }
                 return new String[] { pi };
@@ -914,6 +916,19 @@ public final class MetadataHelper {
         }
 
         return new String[] {};
+    }
+
+    /**
+     * 
+     * @param piConfig
+     * @return true if PI is configured to be added to DEFAULT; false otherwise
+     */
+    public static boolean isPiAddToDefault(List<FieldConfig> piConfig) {
+        if (piConfig == null || piConfig.isEmpty()) {
+            return false;
+        }
+
+        return piConfig.get(0).isAddToDefault();
     }
 
     /**
@@ -1090,6 +1105,9 @@ public final class MetadataHelper {
         Map<String, List<String>> collectedValues = new HashMap<>();
         ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null);
 
+        if (!groupEntity.getSubfields().containsKey(SolrConstants.MD_VALUE)) {
+            logger.warn("'{}' not configured for grouped metadata field '{}'.", SolrConstants.MD_VALUE, groupLabel);
+        }
         String mdValue = null;
 
         Map<String, String> additionalFieldsFromParent = new HashMap<>();

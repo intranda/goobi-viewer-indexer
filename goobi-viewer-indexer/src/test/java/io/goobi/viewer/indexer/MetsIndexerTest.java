@@ -904,6 +904,18 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
+     * @see MetsIndexer#buildPagesXpathExpresson()
+     * @verifies build expression correctly
+     */
+    @Test
+    void buildPagesXpathExpresson_shouldBuildExpressionCorrectly() throws Exception {
+        assertEquals(
+                "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div"
+                        + "[@TYPE=\"page\" or @TYPE=\"object\" or @TYPE=\"audio\" or @TYPE=\"video\"]",
+                MetsIndexer.buildPagesXpathExpresson());
+    }
+
+    /**
      * @see MetsIndexer#generatePageDocuments(JDomXP)
      * @verifies set correct ORDER values
      */
