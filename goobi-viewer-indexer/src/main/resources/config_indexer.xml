@@ -405,7 +405,8 @@
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='moving wall']/@type</item>
 							<item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="restriction"]/lido:conceptID[@lido:type="http://terminology.lido-schema.org/identifier_type/local_identifier"]</item>
 							<item>dc:rights[not(contains(text(),'http'))]</item>
-                            <item>ead:did/ead:accesscondition</item>
+                            <item>ead:archdesc/ead:dsc/ead:accessrestrict</item>
+                            <item>ead:dsc/ead:accessrestrict[1]</item>
 						</list>
 					</xpath>
 
@@ -765,6 +766,8 @@
 							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='iso639-2b']</item>
 							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='rfc3066']</item>
 							<item>dc:language</item>
+                            <item>ead:archdesc/ead:did/ead:langmaterial[@label='Language']/ead:language[1]</item>
+                            <item>ead:did/ead:langmaterial[@label='Language']/ead:language[1]</item>
 						</list>
 					</xpath>
 					<onefield>false</onefield>
@@ -3415,8 +3418,13 @@
 		<MD_SCOPECONTENT>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:ScopeContent
-					</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:ScopeContent</item>
+                            <item>ead:archdesc/ead:dsc/ead:scopecontent[1]</item>
+                            <item>ead:dsc/ead:scopecontent[1]</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>
