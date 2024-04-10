@@ -749,6 +749,17 @@ public class MetsIndexer extends Indexer {
         }
         for (SolrInputDocument pageDoc : pageDocs) {
             String pageFileName = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
+            if (!FileTools.isImageFile(pageFileName)) {
+                String filenameTiffField = SolrConstants.FILENAME + "_TIFF";
+                String filenameJpegField = SolrConstants.FILENAME + "_JPEG";
+                if (pageDoc.getFieldValue(filenameTiffField) != null) {
+                    pageFileName = (String) pageDoc.getFieldValue(filenameTiffField);
+                    logger.info("Using {}:{}", filenameTiffField, pageFileName);
+                } else if (pageDoc.getFieldValue(filenameJpegField) != null) {
+                    pageFileName = (String) pageDoc.getFieldValue(filenameJpegField);
+                    logger.info("Using {}:{}", filenameJpegField, pageFileName);
+                }
+            }
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && filePathBanner.equals(pageFileName)) {
