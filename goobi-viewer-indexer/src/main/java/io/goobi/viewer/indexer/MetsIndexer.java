@@ -2269,7 +2269,7 @@ public class MetsIndexer extends Indexer {
      */
     protected boolean isVolume() {
         String query =
-                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host' and not(@otherType)]/mods:recordInfo/mods:recordIdentifier";
+                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
 
         return relatedItemList != null && !relatedItemList.isEmpty();
