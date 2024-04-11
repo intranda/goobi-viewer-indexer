@@ -2179,4 +2179,27 @@ public abstract class Indexer {
             logger.error(e.getMessage());
         }
     }
+
+    /**
+     * 
+     * @param fileName File name to check
+     * @param pageDoc
+     * @return Alternative file name if fileName not image and alternatives available; otherwise fileName
+     */
+    static String checkThumbnailFileName(String fileName, SolrInputDocument pageDoc) {
+        String ret = fileName;
+        if (!FileTools.isImageFile(fileName)) {
+            String filenameTiffField = SolrConstants.FILENAME + "_TIFF";
+            String filenameJpegField = SolrConstants.FILENAME + "_JPEG";
+            if (pageDoc.getFieldValue(filenameTiffField) != null) {
+                ret = (String) pageDoc.getFieldValue(filenameTiffField);
+                logger.info("Using {}:{} for {}", filenameTiffField, ret, SolrConstants.THUMBNAIL);
+            } else if (pageDoc.getFieldValue(filenameJpegField) != null) {
+                ret = (String) pageDoc.getFieldValue(filenameJpegField);
+                logger.info("Using {}:{} for {}", filenameJpegField, ret, SolrConstants.THUMBNAIL);
+            }
+        }
+
+        return ret;
+    }
 }

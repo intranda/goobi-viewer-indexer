@@ -736,7 +736,8 @@ public class MetsIndexer extends Indexer {
         if (StringUtils.isEmpty(filePathBanner) && SolrIndexerDaemon.getInstance().getConfiguration().isUseFirstPageAsDefaultRepresentative()
                 && firstPageDoc != null) {
             // Add thumbnail information from the first page
-            String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
+            String thumbnailFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
+            logger.info("thumbnailFileName: {}", thumbnailFileName);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue("ORDER_PARENT"))));
@@ -748,18 +749,7 @@ public class MetsIndexer extends Indexer {
             thumbnailSet = true;
         }
         for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
-            if (!FileTools.isImageFile(pageFileName)) {
-                String filenameTiffField = SolrConstants.FILENAME + "_TIFF";
-                String filenameJpegField = SolrConstants.FILENAME + "_JPEG";
-                if (pageDoc.getFieldValue(filenameTiffField) != null) {
-                    pageFileName = (String) pageDoc.getFieldValue(filenameTiffField);
-                    logger.info("Using {}:{}", filenameTiffField, pageFileName);
-                } else if (pageDoc.getFieldValue(filenameJpegField) != null) {
-                    pageFileName = (String) pageDoc.getFieldValue(filenameJpegField);
-                    logger.info("Using {}:{}", filenameJpegField, pageFileName);
-                }
-            }
+            String pageFileName = checkThumbnailFileName((String) pageDoc.getFieldValue(SolrConstants.FILENAME), pageDoc);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && filePathBanner.equals(pageFileName)) {
@@ -940,7 +930,7 @@ public class MetsIndexer extends Indexer {
         if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && firstPageDoc != null) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
-            String pageFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
+            String pageFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
             // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
             ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
