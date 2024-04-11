@@ -2185,10 +2185,13 @@ public abstract class Indexer {
      * @param fileName File name to check
      * @param pageDoc
      * @return Alternative file name if fileName not image and alternatives available; otherwise fileName
+     * @should replace value correctly
+     * @should return fileName if image
+     * @should return fileNAme if url
      */
     static String checkThumbnailFileName(String fileName, SolrInputDocument pageDoc) {
         String ret = fileName;
-        if (!FileTools.isImageFile(fileName)) {
+        if (!Utils.isValidURL(fileName) && !FileTools.isImageFile(fileName) && pageDoc != null) {
             String filenameTiffField = SolrConstants.FILENAME + "_TIFF";
             String filenameJpegField = SolrConstants.FILENAME + "_JPEG";
             if (pageDoc.getFieldValue(filenameTiffField) != null) {
