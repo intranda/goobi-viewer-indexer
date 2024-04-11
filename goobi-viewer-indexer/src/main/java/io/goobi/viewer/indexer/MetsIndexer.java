@@ -737,7 +737,6 @@ public class MetsIndexer extends Indexer {
                 && firstPageDoc != null) {
             // Add thumbnail information from the first page
             String thumbnailFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
-            logger.info("thumbnailFileName: {}", thumbnailFileName);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue("ORDER_PARENT"))));
@@ -2280,12 +2279,11 @@ public class MetsIndexer extends Indexer {
      * getMetsCreateDate.
      * </p>
      *
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a {@link java.time.LocalDateTime} object.
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS
      */
-    protected ZonedDateTime getMetsCreateDate() throws FatalIndexerException {
+    protected ZonedDateTime getMetsCreateDate() {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
         return parseCreateDate(dateString);
     }
