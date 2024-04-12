@@ -118,6 +118,9 @@
                 <type>audio</type>
                 <type>video</type>
             </physicalElementTypes>
+            <!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
+            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host'][not(@otherType) or @otherType='hierarchical']/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
+
         </mets>
         
         <lido>

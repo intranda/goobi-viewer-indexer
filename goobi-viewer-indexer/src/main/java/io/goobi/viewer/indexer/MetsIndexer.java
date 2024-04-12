@@ -2267,8 +2267,7 @@ public class MetsIndexer extends Indexer {
      * @should return false if relatedItem not anchor
      */
     protected boolean isVolume() {
-        String query =
-                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
+        String query = SolrIndexerDaemon.getInstance().getConfiguration().getMetsVolumeCheckXPath();
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
 
         return relatedItemList != null && !relatedItemList.isEmpty();

@@ -303,10 +303,10 @@ public final class Configuration {
     public String getOldSolrUrl() {
         return getConfiguration("oldSolrUrl");
     }
-    
+
     /**
      * 
-     * @return a boolean 
+     * @return a boolean
      * @should return correct value
      */
     public boolean isSolrUseHttp2() {
@@ -666,7 +666,7 @@ public final class Configuration {
     public boolean isUseFirstPageAsDefaultRepresentative() {
         return getBoolean("init.representativeImage.useFirstPageAsDefault", true);
     }
-    
+
     /**
      * 
      * @return Configured preferredImageFileGroup values or empty list
@@ -675,7 +675,7 @@ public final class Configuration {
     public List<String> getMetsPreferredImageFileGroups() {
         return getStringList("init.mets.preferredImageFileGroup");
     }
-    
+
     /**
      * 
      * @return Configured physicalElementTypes/type values or empty list
@@ -683,6 +683,16 @@ public final class Configuration {
      */
     public List<String> getMetsAllowedPhysicalTypes() {
         return getStringList("init.mets.physicalElementTypes.type");
+    }
+
+    /**
+     * 
+     * @return Configured XPath expression or default value
+     * @should return correct value
+     */
+    public String getMetsVolumeCheckXPath() {
+        return getString("init.mets.volumeCheckXPath",
+                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier");
     }
 
     /**
