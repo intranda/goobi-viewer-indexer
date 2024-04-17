@@ -1469,7 +1469,8 @@ public class MetsIndexer extends Indexer {
             }
 
             // Width + height (from IIIF)
-            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
+            if (SolrIndexerDaemon.getInstance().getConfiguration().isReadImageDimensionsFromIIIF() && doc.getField(SolrConstants.WIDTH) == null
+                    && doc.getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
                     && filePath.endsWith("info.json")) {
                 int[] dim = getImageDimensionsFromIIIF(filePath);
                 if (dim.length == 2) {

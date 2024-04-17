@@ -188,6 +188,10 @@
 			Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
 		<countHotfolderFiles>true</countHotfolderFiles>
 
+		<!-- If true, allow the indexer to read file information of external image urls in order to index image width and heights.
+		This is usefull to cache information about image dimensions for IIIF resources and image downloads, but requires additional time and possibly resources from the targeted server -->
+		<loadExternalImageInfos>true</loadExternalImageInfos>
+
 		<!-- authorityDataCache/@enabled: If true, previously retrieved authority data records will be cached within the application
 			for the duration of its lifetime. Default is true. -->
 		<authorityDataCache enabled="true">

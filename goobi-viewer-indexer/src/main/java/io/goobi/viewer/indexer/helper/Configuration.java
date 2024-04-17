@@ -736,4 +736,8 @@ public final class Configuration {
         return true;
     }
 
+    public boolean isReadImageDimensionsFromIIIF() {
+        return getBoolean("performance.loadExternalImageInfos", true);
+    }
+
 }
