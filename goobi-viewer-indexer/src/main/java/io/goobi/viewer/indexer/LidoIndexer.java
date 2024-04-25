@@ -714,6 +714,12 @@ public class LidoIndexer extends Indexer {
             }
         }
 
+        // Do not create pages for resourceSet elements that have no relation to images
+        if (StringUtils.isEmpty(filePath)) {
+            logger.debug("No file path found for this resource set.");
+            return false;
+        }
+
         String fileName;
         if (StringUtils.isNotEmpty(filePath) && filePath.contains("/")) {
             if (Utils.isFileNameMatchesRegex(filePath, IIIF_IMAGE_FILE_NAMES)) {
@@ -733,7 +739,7 @@ public class LidoIndexer extends Indexer {
         }
 
         // Add file size
-        if (dataFolders != null) {
+        if (dataFolders != null && fileName != null) {
             try {
                 Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
                 // TODO other mime types/folders

@@ -132,7 +132,7 @@
 
 		<lido>
 			<!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
-			<imageXPath>lido:resourceRepresentation[@lido:type='image_master']/lido:linkResource</imageXPath>
+			<imageXPath>lido:resourceRepresentation[@lido:type='image_master' or @lido:type='PRESENTATION']/lido:linkResource</imageXPath>
 			<imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/resourceRepresentation_type/provided_representation']/lido:linkResource</imageXPath>
 			<imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/lido00464']/lido:linkResource</imageXPath>
 			<imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
@@ -2871,6 +2871,7 @@
 					<xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:objectMeasurements</xpath>
 					<addToDefault>false</addToDefault>
 					<groupEntity type="OTHER">
+                        <field name="MD_VALUE">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementValue</field>
 						<field name="MD_DIAMETER">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementValue</field>
 						<field name="MD_DIAMETERUNIT">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementUnit</field>
 						<field name="MD_WEIGHT">lido:measurementsSet[lido:measurementType="weight"]/lido:measurementValue</field>
