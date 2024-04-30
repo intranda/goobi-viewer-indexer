@@ -67,7 +67,7 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
         boolean useSerializingStrategy = false;
         long size = sourceFile != null ? Files.size(sourceFile) : 0;
         if (size >= hotfolder.getMetsFileSizeThreshold()) {
-            useSerializingStrategy = true;
+            useSerializingStrategy = false;
             logger.info("Source file '{}' is {} bytes, using a slower Solr write strategy to avoid memory overflows.", sourceFile.getFileName(),
                     size);
         } else {

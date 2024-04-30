@@ -509,7 +509,7 @@ public class IndexObject {
             existingFields.add(field.getField());
         }
         // Check each field configuration where additional modifications might be configured
-        List<String> fieldNamesList = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames();
+        List<String> fieldNamesList = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames(sourceDocFormat);
         for (String fieldName : fieldNamesList) {
             List<FieldConfig> fieldConfigList =
                     SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(fieldName);

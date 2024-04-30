@@ -21,9 +21,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,6 +64,8 @@ public class EadIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(EadIndexer.class);
+
+    private ForkJoinPool pool;
 
     /**
      * Constructor.
@@ -275,7 +282,7 @@ public class EadIndexer extends Indexer {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
                 indexObj.setDefaultValue("");
             }
-            
+
             // Add mime type
             indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
 
@@ -312,7 +319,8 @@ public class EadIndexer extends Indexer {
             }
 
             // Index all child elements recursively
-            List<IndexObject> childObjectList = indexAllChildren(indexObj, 1, writeStrategy);
+            List<IndexObject> childObjectList =
+                    indexAllChildren(indexObj, 1, writeStrategy, SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1);
             indexObj.addChildMetadata(childObjectList);
 
             // Add grouped metadata as separate documents
@@ -349,180 +357,251 @@ public class EadIndexer extends Indexer {
      * @param parentIndexObject {@link IndexObject}
      * @param depth OBSOLETE
      * @param writeStrategy
+     * @param allowParallelProcessing If true, this node's immediate children may be processed in parallel
      * @return List of <code>LuceneField</code>s to inherit up the hierarchy.
      * @throws IOException
      * @throws FatalIndexerException
      */
-    protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy)
-            throws IOException, FatalIndexerException {
-        logger.trace("indexAllChildren: {}", depth);
+    protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
+            boolean allowParallelProcessing) throws IOException, FatalIndexerException {
+        logger.debug("indexAllChildren: {}", depth);
         List<IndexObject> ret = new ArrayList<>();
 
-        List<Element> childrenNodeList = xp.evaluateToElements("(ead:archdesc/ead:dsc/ead:c | ead:c)", parentIndexObject.getRootStructNode());
-        for (int i = 0; i < childrenNodeList.size(); i++) {
-            Element node = childrenNodeList.get(i);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
-            indexObj.setRootStructNode(node);
-            indexObj.setParent(parentIndexObject);
-            indexObj.setTopstructPI(parentIndexObject.getTopstructPI());
-            indexObj.getParentLabels().add(parentIndexObject.getLabel());
-            indexObj.getParentLabels().addAll(parentIndexObject.getParentLabels());
-            if (StringUtils.isNotEmpty(parentIndexObject.getDataRepository())) {
-                indexObj.setDataRepository(parentIndexObject.getDataRepository());
-            }
-            setSimpleData(indexObj);
-            indexObj.pushSimpleDataToLuceneArray();
-            
-            indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
+        List<Element> childrenNodeList;
+        if ("c".equals(parentIndexObject.getRootStructNode().getName())) {
+            childrenNodeList = parentIndexObject.getRootStructNode()
+                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+        } else if ("ead".equals(parentIndexObject.getRootStructNode().getName())) {
+            // ead:archdesc/ead:dsc/ead:c
+            childrenNodeList = parentIndexObject.getRootStructNode()
+                    .getChild("archdesc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
+                    .getChild("dsc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
+                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+        } else {
+            logger.warn("Unknown node name: {}", parentIndexObject.getRootStructNode().getName());
+            return Collections.emptyList();
+        }
+        if (!childrenNodeList.isEmpty()) {
+            logger.info("{} child elements found", childrenNodeList.size());
+        }
 
-            // TODO id, level, unitid, unittitle, physdesc, etc.
-
-            // Set parent's DATEUPDATED value (needed for OAI)
-            for (Long dateUpdated : parentIndexObject.getDateUpdated()) {
-                if (!indexObj.getDateUpdated().contains(dateUpdated)) {
-                    indexObj.getDateUpdated().add(dateUpdated);
-                    indexObj.addToLucene(SolrConstants.DATEUPDATED, String.valueOf(dateUpdated));
-                }
-            }
-
-            // write metadata
-            MetadataHelper.writeMetadataToObject(indexObj, node, "", xp);
-
-            // Inherit GROUPID_* fields
-            if (!parentIndexObject.getGroupIds().isEmpty()) {
-                for (String groupId : parentIndexObject.getGroupIds().keySet()) {
-                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
-                }
-            }
-
-            // Add parent's metadata and SORT_* fields to this docstruct
-            for (LuceneField field : parentIndexObject.getLuceneFields()) {
-                if (SolrIndexerDaemon.getInstance()
-                        .getConfiguration()
-                        .getMetadataConfigurationManager()
-                        .getFieldsToAddToChildren()
-                        .contains(field.getField())) {
-                    // Avoid duplicates (same field name + value)
-                    indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
-
-                    logger.debug("Added {}:{} to child element {}", field.getField(), field.getValue(), indexObj.getLogId());
-                } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
-                    // Only one instance of each SORT_ field may exist
-                    indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
-                }
-            }
-
-            indexObj.writeAccessConditions(parentIndexObject);
-
-            // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
-            if (StringUtils.isNotEmpty(indexObj.getLogId())) {
-                // Write number of pages and first/last page labels for this docstruct
-                if (indexObj.getNumPages() > 0) {
-                    indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
-                    if (indexObj.getFirstPageLabel() != null) {
-                        indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
+        if (allowParallelProcessing && pool == null && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
+            // Generate each page document in its own thread
+            logger.info("Processing {} nodes in parallel in {} threads (node depth={})...", childrenNodeList.size(),
+                    SolrIndexerDaemon.getInstance().getConfiguration().getThreads(), depth);
+            pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
+            try {
+                pool.submit(() -> childrenNodeList.parallelStream().forEach(node -> {
+                    try {
+                        // Do not use parallel processing in recursion
+                        IndexObject obj = indexChild(node, parentIndexObject, depth, writeStrategy, false);
+                        if (obj != null) {
+                            ret.add(obj);
+                        }
+                    } catch (FatalIndexerException e) {
+                        logger.error("Should be exiting here now...");
+                    } catch (IOException e) {
+                        logger.error(e.getMessage());
                     }
-                    if (indexObj.getLastPageLabel() != null) {
-                        indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
-                    }
-                    if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
-                        indexObj.addToLucene("MD_ORDERLABELRANGE",
-                                new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
-                    }
+                })).get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
+            } catch (ExecutionException e) {
+                logger.error(e.getMessage(), e);
+                SolrIndexerDaemon.getInstance().stop();
+            } catch (InterruptedException | TimeoutException e) {
+                logger.error(e.getMessage());
+            } finally {
+                pool.shutdown();
+                pool = null;
+            }
+        } else {
+            for (final Element node : childrenNodeList) {
+                IndexObject obj = indexChild(node, parentIndexObject, depth, writeStrategy, allowParallelProcessing);
+                if (obj != null) {
+                    ret.add(obj);
                 }
             }
-
-            // Add own and all ancestor LABEL values to the DEFAULT field
-            StringBuilder sbDefaultValue = new StringBuilder();
-            sbDefaultValue.append(indexObj.getDefaultValue());
-            String labelWithSpaces = new StringBuilder(" ").append(indexObj.getLabel()).append(' ').toString();
-            if (StringUtils.isNotEmpty(indexObj.getLabel()) && !sbDefaultValue.toString().contains(labelWithSpaces)) {
-                sbDefaultValue.append(labelWithSpaces);
-            }
-            if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
-                for (String label : indexObj.getParentLabels()) {
-                    String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
-                    if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
-                        sbDefaultValue.append(parentLabelWithSpaces);
-                    }
-                }
-            }
-
-            indexObj.setDefaultValue(sbDefaultValue.toString());
-
-            // Add DEFAULT field
-            if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-                indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
-                // Add default value to parent doc
-                indexObj.setDefaultValue("");
-            }
-
-            // Recursively index child elements 
-            List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy);
-
-            // METADATA UPWARD INHERITANCE
-
-            // Add recursively collected child metadata fields that are configured to be inherited up
-            indexObj.addChildMetadata(childObjectList);
-
-            // Add fields configured to be inherited up to the return list (after adding child metadata first!)
-            for (LuceneField field : indexObj.getLuceneFields()) {
-                if (SolrIndexerDaemon.getInstance()
-                        .getConfiguration()
-                        .getMetadataConfigurationManager()
-                        .getFieldsToAddToParents()
-                        .contains(field.getField())) {
-                    // Add only to topstruct
-                    indexObj.getFieldsToInheritToParents().add(field.getField());
-                    field.setSkip(true);
-                } else if (SolrIndexerDaemon.getInstance()
-                        .getConfiguration()
-                        .getMetadataConfigurationManager()
-                        .getFieldsToAddToParents()
-                        .contains("!" + field.getField())) {
-                    // Add to entire hierarchy
-                    indexObj.getFieldsToInheritToParents().add(field.getField());
-                }
-            }
-            // Add grouped fields configured to be inherited up to the return list (after adding child metadata first!)
-            for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
-                if (SolrIndexerDaemon.getInstance()
-                        .getConfiguration()
-                        .getMetadataConfigurationManager()
-                        .getFieldsToAddToParents()
-                        .contains(field.getLabel())) {
-                    // Add only to topstruct
-                    indexObj.getFieldsToInheritToParents().add(field.getLabel());
-                    field.setSkip(true);
-                } else if (SolrIndexerDaemon.getInstance()
-                        .getConfiguration()
-                        .getMetadataConfigurationManager()
-                        .getFieldsToAddToParents()
-                        .contains("!" + field.getLabel())) {
-                    // Add to entire hierarchy
-                    indexObj.getFieldsToInheritToParents().add(field.getLabel());
-                }
-            }
-
-            // If there are fields to inherit up the hierarchy, add this index object to the return list
-            if (!indexObj.getFieldsToInheritToParents().isEmpty()) {
-                ret.add(indexObj);
-            }
-
-            // The following steps must be performed after adding child metadata and marking own metadata for skipping
-
-            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
-            addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
-
-            // Apply field modifications that should happen at the very end
-            indexObj.applyFinalModifications();
-
-            // Write to Solr
-            logger.debug("Writing child document '{}'...", indexObj.getIddoc());
-            writeStrategy.addDoc(SolrSearchIndex.createDocument(indexObj.getLuceneFields()));
         }
 
         return ret;
+    }
+
+    /**
+     * 
+     * @param node
+     * @param parentIndexObject
+     * @param depth
+     * @param writeStrategy
+     * @param allowParallelProcessing
+     * @return Created {@link IndexObject} if it has metadata fields to inherit upwards; otherwise null
+     * @throws FatalIndexerException
+     * @throws IOException
+     */
+    public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
+            boolean allowParallelProcessing)
+            throws FatalIndexerException, IOException {
+        IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+        indexObj.setRootStructNode(node);
+        indexObj.setParent(parentIndexObject);
+        indexObj.setTopstructPI(parentIndexObject.getTopstructPI());
+        indexObj.getParentLabels().add(parentIndexObject.getLabel());
+        indexObj.getParentLabels().addAll(parentIndexObject.getParentLabels());
+        if (StringUtils.isNotEmpty(parentIndexObject.getDataRepository())) {
+            indexObj.setDataRepository(parentIndexObject.getDataRepository());
+        }
+        setSimpleData(indexObj);
+        indexObj.pushSimpleDataToLuceneArray();
+
+        indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
+
+        // TODO id, level, unitid, unittitle, physdesc, etc.
+
+        // Set parent's DATEUPDATED value (needed for OAI)
+        for (Long dateUpdated : parentIndexObject.getDateUpdated()) {
+            if (!indexObj.getDateUpdated().contains(dateUpdated)) {
+                indexObj.getDateUpdated().add(dateUpdated);
+                indexObj.addToLucene(SolrConstants.DATEUPDATED, String.valueOf(dateUpdated));
+            }
+        }
+
+        // write metadata
+        logger.debug("Writing metadata");
+        MetadataHelper.writeMetadataToObject(indexObj, node, "", xp);
+
+        // Inherit GROUPID_* fields
+        if (!parentIndexObject.getGroupIds().isEmpty()) {
+            for (String groupId : parentIndexObject.getGroupIds().keySet()) {
+                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
+            }
+        }
+
+        // Add parent's metadata and SORT_* fields to this docstruct
+        for (LuceneField field : parentIndexObject.getLuceneFields()) {
+            if (SolrIndexerDaemon.getInstance()
+                    .getConfiguration()
+                    .getMetadataConfigurationManager()
+                    .getFieldsToAddToChildren()
+                    .contains(field.getField())) {
+                // Avoid duplicates (same field name + value)
+                indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
+
+                logger.debug("Added {}:{} to child element {}", field.getField(), field.getValue(), indexObj.getLogId());
+            } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
+                // Only one instance of each SORT_ field may exist
+                indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
+            }
+        }
+
+        indexObj.writeAccessConditions(parentIndexObject);
+
+        // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
+        if (StringUtils.isNotEmpty(indexObj.getLogId())) {
+            // Write number of pages and first/last page labels for this docstruct
+            if (indexObj.getNumPages() > 0) {
+                indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
+                if (indexObj.getFirstPageLabel() != null) {
+                    indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
+                }
+                if (indexObj.getLastPageLabel() != null) {
+                    indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
+                }
+                if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
+                    indexObj.addToLucene("MD_ORDERLABELRANGE",
+                            new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
+                }
+            }
+        }
+
+        // Add own and all ancestor LABEL values to the DEFAULT field
+        StringBuilder sbDefaultValue = new StringBuilder();
+        sbDefaultValue.append(indexObj.getDefaultValue());
+        String labelWithSpaces = new StringBuilder(" ").append(indexObj.getLabel()).append(' ').toString();
+        if (StringUtils.isNotEmpty(indexObj.getLabel()) && !sbDefaultValue.toString().contains(labelWithSpaces)) {
+            sbDefaultValue.append(labelWithSpaces);
+        }
+        if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
+            logger.info("Adding label to children");
+            for (String label : indexObj.getParentLabels()) {
+                String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
+                if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
+                    sbDefaultValue.append(parentLabelWithSpaces);
+                }
+            }
+        }
+
+        indexObj.setDefaultValue(sbDefaultValue.toString());
+
+        // Add DEFAULT field
+        if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
+            indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+            // Add default value to parent doc
+            indexObj.setDefaultValue("");
+        }
+
+        // Recursively index child elements 
+        List<IndexObject> childObjectList = indexAllChildren(indexObj, depth + 1, writeStrategy, allowParallelProcessing);
+
+        // METADATA UPWARD INHERITANCE
+
+        // Add recursively collected child metadata fields that are configured to be inherited up
+        indexObj.addChildMetadata(childObjectList);
+
+        // Add fields configured to be inherited up to the return list (after adding child metadata first!)
+        for (LuceneField field : indexObj.getLuceneFields()) {
+            if (SolrIndexerDaemon.getInstance()
+                    .getConfiguration()
+                    .getMetadataConfigurationManager()
+                    .getFieldsToAddToParents()
+                    .contains(field.getField())) {
+                // Add only to topstruct
+                indexObj.getFieldsToInheritToParents().add(field.getField());
+                field.setSkip(true);
+            } else if (SolrIndexerDaemon.getInstance()
+                    .getConfiguration()
+                    .getMetadataConfigurationManager()
+                    .getFieldsToAddToParents()
+                    .contains("!" + field.getField())) {
+                // Add to entire hierarchy
+                indexObj.getFieldsToInheritToParents().add(field.getField());
+            }
+        }
+        // Add grouped fields configured to be inherited up to the return list (after adding child metadata first!)
+        for (GroupedMetadata field : indexObj.getGroupedMetadataFields()) {
+            if (SolrIndexerDaemon.getInstance()
+                    .getConfiguration()
+                    .getMetadataConfigurationManager()
+                    .getFieldsToAddToParents()
+                    .contains(field.getLabel())) {
+                // Add only to topstruct
+                indexObj.getFieldsToInheritToParents().add(field.getLabel());
+                field.setSkip(true);
+            } else if (SolrIndexerDaemon.getInstance()
+                    .getConfiguration()
+                    .getMetadataConfigurationManager()
+                    .getFieldsToAddToParents()
+                    .contains("!" + field.getLabel())) {
+                // Add to entire hierarchy
+                indexObj.getFieldsToInheritToParents().add(field.getLabel());
+            }
+        }
+
+        // The following steps must be performed after adding child metadata and marking own metadata for skipping
+
+        // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
+        addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
+
+        // Apply field modifications that should happen at the very end
+        indexObj.applyFinalModifications();
+
+        // Write to Solr
+        logger.debug("Writing child document '{}'...", indexObj.getIddoc());
+        writeStrategy.addDoc(SolrSearchIndex.createDocument(indexObj.getLuceneFields()));
+
+        // If there are fields to inherit up the hierarchy, add this index object to the return list
+        if (!indexObj.getFieldsToInheritToParents().isEmpty()) {
+            return indexObj;
+        }
+
+        return null;
     }
 
     /**
@@ -532,10 +611,10 @@ public class EadIndexer extends Indexer {
      */
     private void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
-        
+
         indexObj.setDocType(DocType.ARCHIVE);
         indexObj.setSourceDocFormat(getSourceDocFormat());
-        
+
         Element structNode = indexObj.getRootStructNode();
 
         // LOGID / DMDID
@@ -552,7 +631,7 @@ public class EadIndexer extends Indexer {
             indexObj.setType(value);
         }
         logger.trace("TYPE: {}", indexObj.getType());
-        
+
         // LABEL
         value = TextHelper.normalizeSequence(structNode.getAttributeValue("LABEL"));
         if (value != null) {

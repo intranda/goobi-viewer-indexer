@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
@@ -66,7 +67,8 @@ class ConfigurationTest extends AbstractTest {
 
     @Test
     void configItemTest() throws Exception {
-        List<String> fieldNames = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames();
+        List<String> fieldNames =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames(FileFormat.METS);
         assertEquals(122, fieldNames.size());
         List<FieldConfig> fieldConfigList =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
@@ -134,7 +136,11 @@ class ConfigurationTest extends AbstractTest {
     @Test
     void metadataConfigTest() throws Exception {
         assertEquals(122,
-                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames().size());
+                SolrIndexerDaemon.getInstance()
+                        .getConfiguration()
+                        .getMetadataConfigurationManager()
+                        .getListWithAllFieldNames(FileFormat.METS)
+                        .size());
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assertions.assertNotNull(configItems);

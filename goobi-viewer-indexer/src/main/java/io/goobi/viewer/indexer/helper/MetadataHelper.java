@@ -112,7 +112,10 @@ public final class MetadataHelper {
         List<LuceneField> ret = new ArrayList<>();
 
         Set<Integer> centuries = new HashSet<>();
-        List<String> fieldNamesList = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames();
+        List<String> fieldNamesList = SolrIndexerDaemon.getInstance()
+                .getConfiguration()
+                .getMetadataConfigurationManager()
+                .getListWithAllFieldNames(indexObj.getSourceDocFormat());
         StringBuilder sbDefaultMetadataValues = new StringBuilder();
         if (indexObj.getDefaultValue() != null) {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());

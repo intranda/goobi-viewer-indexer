@@ -57,6 +57,7 @@ public class FieldConfig {
     private String geoJSONSource;
     private String geoJSONSourceSeparator;
     private boolean geoJSONAddSearchField;
+    private boolean hasEadConfig = false;
 
     /**
      * Constructor.
@@ -671,5 +672,19 @@ public class FieldConfig {
      */
     public void setGeoJSONAddSearchField(boolean geoJSONAddSearchField) {
         this.geoJSONAddSearchField = geoJSONAddSearchField;
+    }
+
+    /**
+     * @return the hasEadConfig
+     */
+    public boolean isHasEadConfig() {
+        return hasEadConfig;
+    }
+
+    /**
+     * @param hasEadConfig the hasEadConfig to set
+     */
+    public void setHasEadConfig(boolean hasEadConfig) {
+        this.hasEadConfig = hasEadConfig;
     }
 }
