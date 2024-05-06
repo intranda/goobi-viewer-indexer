@@ -3,7 +3,7 @@
 <root>
 	<init>
 		<!-- Hotfolder pause between scans (milliseconds) -->
-		<sleep>1000</sleep>
+		<sleep>500</sleep>
 
 		<!-- Minimum required free space to index (MB) -->
 		<minStorageSpace>2048</minStorageSpace>
