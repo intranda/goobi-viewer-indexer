@@ -16,9 +16,13 @@
 package io.goobi.viewer.indexer.model.config;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 
 /**
  * Configuration object for a single metadata field configuration.
@@ -57,7 +61,7 @@ public class FieldConfig {
     private String geoJSONSource;
     private String geoJSONSourceSeparator;
     private boolean geoJSONAddSearchField;
-    private boolean hasEadConfig = false;
+    private final Set<FileFormat> supportedFormats = new HashSet<>();
 
     /**
      * Constructor.
@@ -675,16 +679,9 @@ public class FieldConfig {
     }
 
     /**
-     * @return the hasEadConfig
+     * @return the supportedFormats
      */
-    public boolean isHasEadConfig() {
-        return hasEadConfig;
-    }
-
-    /**
-     * @param hasEadConfig the hasEadConfig to set
-     */
-    public void setHasEadConfig(boolean hasEadConfig) {
-        this.hasEadConfig = hasEadConfig;
+    public Set<FileFormat> getSupportedFormats() {
+        return supportedFormats;
     }
 }

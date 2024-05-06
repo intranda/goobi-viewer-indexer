@@ -118,9 +118,29 @@ public final class MetadataConfigurationManager {
                         String prefix = xpathNode.getString(XML_PATH_ATTRIBUTE_PREFIX);
                         String suffix = xpathNode.getString(XML_PATH_ATTRIBUTE_SUFFIX);
                         fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix));
+                        if (xpath.contains("mods:")) {
+                            fieldConfig.getSupportedFormats().add(FileFormat.METS);
+                            logger.debug("Field {} has METS/MODS config.", fieldname);
+                        }
+                        if (xpath.contains("marc:")) {
+                            fieldConfig.getSupportedFormats().add(FileFormat.METS_MARC);
+                            logger.debug("Field {} has METS/MARC config.", fieldname);
+                        }
                         if (xpath.contains("ead:")) {
-                            fieldConfig.setHasEadConfig(true);
+                            fieldConfig.getSupportedFormats().add(FileFormat.EAD);
                             logger.debug("Field {} has EAD config.", fieldname);
+                        }
+                        if (xpath.contains("lido:")) {
+                            fieldConfig.getSupportedFormats().add(FileFormat.LIDO);
+                            logger.debug("Field {} has LIDO config.", fieldname);
+                        }
+                        if (xpath.contains("dc:")) {
+                            fieldConfig.getSupportedFormats().add(FileFormat.DUBLINCORE);
+                            logger.debug("Field {} has Dublin Core config.", fieldname);
+                        }
+                        if (xpath.contains("denkxweb:")) {
+                            fieldConfig.getSupportedFormats().add(FileFormat.DENKXWEB);
+                            logger.debug("Field {} has DenkXWeb config.", fieldname);
                         }
                     }
                 } else if (config.getMaxIndex(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath") > -1) {
@@ -395,21 +415,16 @@ public final class MetadataConfigurationManager {
      */
     public List<String> getListWithAllFieldNames(FileFormat format) {
         List<String> retArray = new ArrayList<>();
-
         for (Entry<String, List<FieldConfig>> entry : fieldConfigurations.entrySet()) {
-            if (FileFormat.EAD.equals(format)) {
-                for (FieldConfig config : entry.getValue()) {
-                    if (config.isHasEadConfig()) {
-                        retArray.add(entry.getKey());
-                        break;
-                    }
+            for (FieldConfig config : entry.getValue()) {
+                if (config.getSupportedFormats().contains(format)) {
+                    retArray.add(entry.getKey());
+                    break;
                 }
-            } else {
-                retArray.add(entry.getKey());
             }
         }
-        return retArray;
 
+        return retArray;
     }
 
     /**
