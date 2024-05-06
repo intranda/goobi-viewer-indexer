@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 
 class FieldConfigTest extends AbstractTest {
 
@@ -30,5 +31,26 @@ class FieldConfigTest extends AbstractTest {
     void FieldConfig_shouldSetAttributesCorrectly() throws Exception {
         FieldConfig ci = new FieldConfig("field_name");
         Assertions.assertEquals("field_name", ci.getFieldname());
+    }
+
+    /**
+     * @see FieldConfig#checkXpathSupportedFormats(String)
+     * @verifies @should add FileFormats correctly
+     */
+    @Test
+    void checkXpathSupportedFormats_should_add_FileFormats_correctly() throws Exception {
+        FieldConfig ci = new FieldConfig("field_name");
+        ci.checkXpathSupportedFormats("mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]");
+        Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.METS));
+        ci.checkXpathSupportedFormats("mets:xmlData/bib/record/datafield[@tag='245']/subfield[@code='a']");
+        Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.METS_MARC));
+        ci.checkXpathSupportedFormats("lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue");
+        Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.LIDO));
+        ci.checkXpathSupportedFormats("ead:did/ead:unittitle");
+        Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.EAD));
+        ci.checkXpathSupportedFormats("dc:titlee");
+        Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.DUBLINCORE));
+        ci.checkXpathSupportedFormats("denkxweb:description");
+        Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.DENKXWEB));
     }
 }
