@@ -50,6 +50,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.FileWriterWithEncoding;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -436,4 +437,38 @@ public class FileTools {
             }
         }
     }
+    
+    /**
+     * <p>
+     * isImageUrl.
+     * </p>
+     *
+     * @param fileName
+     * @return true if this is an image file name; false otherwise
+     * @should return true for image file names
+     */
+    public static boolean isImageFile(String fileName) {
+        if (StringUtils.isEmpty(fileName)) {
+            return false;
+        }
+
+        String extension = FilenameUtils.getExtension(fileName);
+        if (StringUtils.isEmpty(extension)) {
+            return false;
+        }
+
+        switch (extension.toLowerCase()) {
+            case "tif":
+            case "tiff":
+            case "jpg":
+            case "jpeg":
+            case "gif":
+            case "png":
+            case "jp2":
+                return true;
+            default:
+                return false;
+        }
+    }
+
 }

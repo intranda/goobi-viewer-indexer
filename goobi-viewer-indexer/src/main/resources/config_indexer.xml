@@ -3,7 +3,7 @@
 <root>
 	<init>
 		<!-- Hotfolder pause between scans (milliseconds) -->
-		<sleep>1000</sleep>
+		<sleep>500</sleep>
 
 		<!-- Minimum required free space to index (MB) -->
 		<minStorageSpace>2048</minStorageSpace>
@@ -125,15 +125,19 @@
                 <type>audio</type>
                 <type>video</type>
             </physicalElementTypes>
+            
+            <!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
+            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host'][not(@otherType) or @otherType='hierarchical']/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
 		</mets>
 
 		<lido>
 			<!-- imageXPath: XPath expressions for image names/URLs relative to lido:resourceSet -->
-			<imageXPath>lido:resourceRepresentation[@lido:type='image_master']/lido:linkResource</imageXPath>
+			<imageXPath>lido:resourceRepresentation[@lido:type='image_master' or @lido:type='PRESENTATION']/lido:linkResource</imageXPath>
 			<imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/resourceRepresentation_type/provided_representation']/lido:linkResource</imageXPath>
 			<imageXPath>lido:resourceRepresentation[@lido:type='http://terminology.lido-schema.org/lido00464']/lido:linkResource</imageXPath>
 			<imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
-			<imageXPath>lido:resourceID</imageXPath>
+            <imageXPath>lido:resourceRepresentation[@lido:type='PRESENTATION']/lido:linkResource</imageXPath>
+            <imageXPath>lido:resourceID</imageXPath>
 		</lido>
 
 		<email>
@@ -184,6 +188,10 @@
 		<!-- If true, the indexer will report the remaining number of record files in the hotfolder to the viewer REST API after every indexed record.
 			Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
 		<countHotfolderFiles>true</countHotfolderFiles>
+
+		<!-- If true, allow the indexer to read file information of external image urls in order to index image width and heights.
+		This is usefull to cache information about image dimensions for IIIF resources and image downloads, but requires additional time and possibly resources from the targeted server -->
+		<loadExternalImageInfos>true</loadExternalImageInfos>
 
 		<!-- authorityDataCache/@enabled: If true, previously retrieved authority data records will be cached within the application
 			for the duration of its lifetime. Default is true. -->
@@ -263,8 +271,6 @@
 							<item>lido:lidoRecID</item>
 							<item>mets:xmlData/mods:mods/mods:identifier[@type="ppn" or @type="PPN"]</item>
 							<item>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier</item>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="kuni"]</item>
-							<item>mets:xmlData/mods:mods/mods:identifier[@type="rosdok_document_id"]</item>
 							<item>/mets:mets/@OBJID</item>
 							<item>lido:administrativeMetadata/lido:recordWrap/lido:recordID	</item>
 							<item>//denkxweb:recId</item>
@@ -275,7 +281,6 @@
 					<getnode>first</getnode>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
-					<replace string="rosdok/ppn"></replace>
 					<replace string="http://ld.zdb-services.de/resource/organisations/DE-MUS-814819/"></replace>
 					<replace regex="https?://hdl.handle.net/([0-9]+)/([0-9]+).([0-9]+)">$1_$2_$3</replace>
 				</item>
@@ -405,7 +410,8 @@
 							<item>mets:xmlData/mods:mods/mods:accessCondition[@type='moving wall']/@type</item>
 							<item>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="restriction"]/lido:conceptID[@lido:type="http://terminology.lido-schema.org/identifier_type/local_identifier"]</item>
 							<item>dc:rights[not(contains(text(),'http'))]</item>
-                            <item>ead:did/ead:accesscondition</item>
+                            <item>ead:archdesc/ead:dsc/ead:accessrestrict</item>
+                            <item>ead:dsc/ead:accessrestrict[1]</item>
 						</list>
 					</xpath>
 
@@ -765,6 +771,8 @@
 							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='iso639-2b']</item>
 							<item>mets:xmlData/mods:mods/mods:language/mods:languageTerm[@type='code'][@authority='rfc3066']</item>
 							<item>dc:language</item>
+                            <item>ead:archdesc/ead:did/ead:langmaterial[@label='Language']/ead:language[1]</item>
+                            <item>ead:did/ead:langmaterial[@label='Language']/ead:language[1]</item>
 						</list>
 					</xpath>
 					<onefield>false</onefield>
@@ -2864,6 +2872,7 @@
 					<xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectMeasurementsWrap/lido:objectMeasurementsSet/lido:objectMeasurements</xpath>
 					<addToDefault>false</addToDefault>
 					<groupEntity type="OTHER">
+                        <field name="MD_VALUE">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementValue</field>
 						<field name="MD_DIAMETER">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementValue</field>
 						<field name="MD_DIAMETERUNIT">lido:measurementsSet[lido:measurementType="diameter"]/lido:measurementUnit</field>
 						<field name="MD_WEIGHT">lido:measurementsSet[lido:measurementType="weight"]/lido:measurementValue</field>
@@ -3415,8 +3424,13 @@
 		<MD_SCOPECONTENT>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:ScopeContent
-					</xpath>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:ScopeContent</item>
+                            <item>ead:archdesc/ead:dsc/ead:scopecontent[1]</item>
+                            <item>ead:dsc/ead:scopecontent[1]</item>
+                        </list>
+                    </xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 				</item>

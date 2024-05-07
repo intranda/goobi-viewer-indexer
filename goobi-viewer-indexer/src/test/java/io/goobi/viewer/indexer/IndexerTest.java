@@ -1167,4 +1167,40 @@ class IndexerTest extends AbstractSolrEnabledTest {
     //        Assertions.assertEquals(1427, dim[0]);
     //        Assertions.assertEquals(2220, dim[1]);
     //    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies return alt value correctly
+     */
+    @Test
+    void checkThumbnailFileName_shouldReturnAltValueCorrectly() throws Exception {
+        SolrInputDocument doc = new SolrInputDocument();
+        doc.setField("FILENAME_JPEG", "001.jpg");
+        Assertions.assertEquals("001.jpg", Indexer.checkThumbnailFileName("001.ogg", doc));
+
+        doc.setField("FILENAME_TIFF", "001.tif");
+        Assertions.assertEquals("001.tif", Indexer.checkThumbnailFileName("001.ogg", doc));
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies return fileName if image
+     */
+    @Test
+    void checkThumbnailFileName_shouldReturnFileNameIfImage() throws Exception {
+        SolrInputDocument doc = new SolrInputDocument();
+        doc.setField("FILENAME_JPEG", "001.jpg");
+        Assertions.assertEquals("001.png", Indexer.checkThumbnailFileName("001.png", doc));
+    }
+    
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies return fileName if url
+     */
+    @Test
+    void checkThumbnailFileName_shouldReturnFileNameIfUrl() throws Exception {
+        SolrInputDocument doc = new SolrInputDocument();
+        doc.setField("FILENAME_JPEG", "001.jpg");
+        Assertions.assertEquals("https://foo.bar/info.json", Indexer.checkThumbnailFileName("https://foo.bar/info.json", doc));
+    }
 }

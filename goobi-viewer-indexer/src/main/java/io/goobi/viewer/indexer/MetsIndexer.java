@@ -736,7 +736,7 @@ public class MetsIndexer extends Indexer {
         if (StringUtils.isEmpty(filePathBanner) && SolrIndexerDaemon.getInstance().getConfiguration().isUseFirstPageAsDefaultRepresentative()
                 && firstPageDoc != null) {
             // Add thumbnail information from the first page
-            String thumbnailFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
+            String thumbnailFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue("ORDER_PARENT"))));
@@ -748,7 +748,7 @@ public class MetsIndexer extends Indexer {
             thumbnailSet = true;
         }
         for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = (String) pageDoc.getFieldValue(SolrConstants.FILENAME);
+            String pageFileName = checkThumbnailFileName((String) pageDoc.getFieldValue(SolrConstants.FILENAME), pageDoc);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && filePathBanner.equals(pageFileName)) {
@@ -929,7 +929,7 @@ public class MetsIndexer extends Indexer {
         if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && firstPageDoc != null) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
-            String pageFileName = (String) firstPageDoc.getFieldValue(SolrConstants.FILENAME);
+            String pageFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
             // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
             ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
@@ -1469,7 +1469,8 @@ public class MetsIndexer extends Indexer {
             }
 
             // Width + height (from IIIF)
-            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
+            if (SolrIndexerDaemon.getInstance().getConfiguration().isReadImageDimensionsFromIIIF() && doc.getField(SolrConstants.WIDTH) == null
+                    && doc.getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
                     && filePath.endsWith("info.json")) {
                 int[] dim = getImageDimensionsFromIIIF(filePath);
                 if (dim.length == 2) {
@@ -2267,8 +2268,7 @@ public class MetsIndexer extends Indexer {
      * @should return false if relatedItem not anchor
      */
     protected boolean isVolume() {
-        String query =
-                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host' and not(@otherType)]/mods:recordInfo/mods:recordIdentifier";
+        String query = SolrIndexerDaemon.getInstance().getConfiguration().getMetsVolumeCheckXPath();
         List<Element> relatedItemList = xp.evaluateToElements(query, null);
 
         return relatedItemList != null && !relatedItemList.isEmpty();
@@ -2279,12 +2279,11 @@ public class MetsIndexer extends Indexer {
      * getMetsCreateDate.
      * </p>
      *
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @return a {@link java.time.LocalDateTime} object.
      * @should return CREATEDATE value
      * @should return null if date does not exist in METS
      */
-    protected ZonedDateTime getMetsCreateDate() throws FatalIndexerException {
+    protected ZonedDateTime getMetsCreateDate() {
         String dateString = xp.evaluateToAttributeStringValue("/mets:mets/mets:metsHdr/@CREATEDATE", null);
         return parseCreateDate(dateString);
     }
