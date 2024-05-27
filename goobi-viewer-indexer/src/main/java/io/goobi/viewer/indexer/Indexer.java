@@ -454,7 +454,7 @@ public abstract class Indexer {
         }
 
         for (String ne : neList) {
-            String[] splitString = ne.split("_", 2);
+            String[] splitString = ne.split("###", 3);
             if (splitString[1] != null) {
                 splitString[1] = cleanUpNamedEntityValue(splitString[1]);
                 String fieldName = new StringBuilder("NE_").append(splitString[0]).toString();

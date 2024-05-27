@@ -274,12 +274,13 @@ public final class TextHelper {
     static String createSimpleNamedEntityTag(Element eleTag) {
         String neLabel = eleTag.getAttributeValue("LABEL");
         String neType = eleTag.getAttributeValue("TYPE");
+        String neUri = eleTag.getAttributeValue("URI");
 
         if (neType == null || neLabel == null) {
             return null;
         }
 
-        return neType.toUpperCase() + "_" + neLabel;
+        return neType.toUpperCase() + "###" + neLabel + (neUri != null ? "###" + neUri : "");
     }
 
     /**

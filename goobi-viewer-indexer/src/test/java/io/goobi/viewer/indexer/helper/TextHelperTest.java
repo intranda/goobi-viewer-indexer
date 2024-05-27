@@ -233,7 +233,8 @@ class TextHelperTest extends AbstractTest {
         Element eleTag = new Element("NamedEntityTag");
         eleTag.setAttribute("TYPE", "location");
         eleTag.setAttribute("LABEL", "Göttingen");
+        eleTag.setAttribute("URI", "https://www.geonames.org/2918632");
         String tag = TextHelper.createSimpleNamedEntityTag(eleTag);
-        Assertions.assertEquals("LOCATION_Göttingen", tag);
+        Assertions.assertEquals("LOCATION###Göttingen###https://www.geonames.org/2918632", tag);
     }
 }
