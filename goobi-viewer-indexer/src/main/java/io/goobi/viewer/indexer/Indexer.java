@@ -1272,11 +1272,15 @@ public abstract class Indexer {
                             indexObj.getLuceneFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "true"));
                         }
                         break;
+                    case "NORM_TYPE":
+                        // Fields to add to the metadata doc anyway
+                        fieldsToAddToGroupDoc.add(field);
+                        continue;
                     default:
                         break;
                 }
                 indexObj.getLuceneFields().add(field);
-                logger.debug("added field: {}:{}", field.getField(), field.getValue());
+                logger.info("added field: {}:{}", field.getField(), field.getValue());
             }
         } else {
             fieldsToAddToGroupDoc.addAll(gmd.getAuthorityDataFields());

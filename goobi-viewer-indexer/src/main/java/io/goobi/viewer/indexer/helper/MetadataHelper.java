@@ -430,8 +430,7 @@ public final class MetadataHelper {
      * @return List<LuceneField>
      */
     private static List<LuceneField> retrieveAuthorityData(final String authorityUrl, StringBuilder sbDefaultMetadataValues,
-            StringBuilder sbNormDataTerms,
-            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
+            StringBuilder sbNormDataTerms, List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
         logger.info("retrieveAuthorityData: {}", authorityUrl);
         if (authorityUrl == null) {
             throw new IllegalArgumentException("authorityUrl may not be null");
