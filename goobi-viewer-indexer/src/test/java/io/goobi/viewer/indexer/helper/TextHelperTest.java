@@ -56,9 +56,9 @@ class TextHelperTest extends AbstractTest {
         Assertions.assertNotNull(result);
         Assertions.assertNotNull(result.get(SolrConstants.FULLTEXT));
         String altoRead = (String) result.get(SolrConstants.ALTO);
-        String altoOrig = FileTools.readFileToString(origFile, null);
+        // String altoOrig = FileTools.readFileToString(origFile, null);
         Assertions.assertTrue(altoRead.contains("NamedEntityTag") && altoRead.contains("TAGREFS"));
-        Assertions.assertTrue("PERSON_Heinrich".equals(((List<String>) result.get(SolrConstants.NAMEDENTITIES)).get(0)));
+        Assertions.assertEquals("PERSON###Heinrich", ((List<String>) result.get(SolrConstants.NAMEDENTITIES)).get(0));
         //        Assertions.assertEquals(altoOrig.replaceAll("\\s", "").toLowerCase(), altoRead.replaceAll("\\s", "").toLowerCase());
     }
 
