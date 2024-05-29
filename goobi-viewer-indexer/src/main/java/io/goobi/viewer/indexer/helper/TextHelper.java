@@ -146,6 +146,7 @@ public final class TextHelper {
         HyphenationLinker linker = new HyphenationLinker();
         linker.linkWords(altoDoc);
         Document doc = new Document(altoDoc.writeToDom());
+
         return readAltoDoc(doc);
     }
 
@@ -280,7 +281,7 @@ public final class TextHelper {
             return null;
         }
 
-        return neType.toUpperCase() + "###" + neLabel + (neUri != null ? "###" + neUri : "");
+        return neType.toUpperCase() + "###" + neLabel + (StringUtils.isNotEmpty(neUri) ? "###" + neUri : "");
     }
 
     /**
