@@ -454,12 +454,17 @@ public abstract class Indexer {
         }
 
         for (String ne : neList) {
-            String[] splitString = ne.split("_", 2);
-            if (splitString[1] != null) {
+            String[] splitString = ne.split("###", 3);
+            if (splitString.length > 1 && splitString[1] != null) {
                 splitString[1] = cleanUpNamedEntityValue(splitString[1]);
                 String fieldName = new StringBuilder("NE_").append(splitString[0]).toString();
                 doc.addField(fieldName, splitString[1]);
                 doc.addField(new StringBuilder(fieldName).append(SolrConstants.SUFFIX_UNTOKENIZED).toString(), splitString[1]);
+            }
+            // Extract NORM_IDENTIFIER from URI for searches
+            if (splitString.length > 2 && splitString[2] != null) {
+                String identifier = de.intranda.digiverso.normdataimporter.Utils.getIdentifierFromURI( splitString[2]);
+                doc.addField("NORM_IDENTIFIER", identifier);
             }
         }
     }

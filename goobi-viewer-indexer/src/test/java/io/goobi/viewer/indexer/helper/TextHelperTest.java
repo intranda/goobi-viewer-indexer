@@ -56,9 +56,9 @@ class TextHelperTest extends AbstractTest {
         Assertions.assertNotNull(result);
         Assertions.assertNotNull(result.get(SolrConstants.FULLTEXT));
         String altoRead = (String) result.get(SolrConstants.ALTO);
-        String altoOrig = FileTools.readFileToString(origFile, null);
+        // String altoOrig = FileTools.readFileToString(origFile, null);
         Assertions.assertTrue(altoRead.contains("NamedEntityTag") && altoRead.contains("TAGREFS"));
-        Assertions.assertTrue("PERSON_Heinrich".equals(((List<String>) result.get(SolrConstants.NAMEDENTITIES)).get(0)));
+        Assertions.assertEquals("PERSON###Heinrich", ((List<String>) result.get(SolrConstants.NAMEDENTITIES)).get(0));
         //        Assertions.assertEquals(altoOrig.replaceAll("\\s", "").toLowerCase(), altoRead.replaceAll("\\s", "").toLowerCase());
     }
 
@@ -233,7 +233,8 @@ class TextHelperTest extends AbstractTest {
         Element eleTag = new Element("NamedEntityTag");
         eleTag.setAttribute("TYPE", "location");
         eleTag.setAttribute("LABEL", "Göttingen");
+        eleTag.setAttribute("URI", "https://www.geonames.org/2918632");
         String tag = TextHelper.createSimpleNamedEntityTag(eleTag);
-        Assertions.assertEquals("LOCATION_Göttingen", tag);
+        Assertions.assertEquals("LOCATION###Göttingen###https://www.geonames.org/2918632", tag);
     }
 }

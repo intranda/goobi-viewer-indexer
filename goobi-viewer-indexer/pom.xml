@@ -40,7 +40,7 @@
 		<buildDate>${maven.build.timestamp}</buildDate>
 
 		<!-- intranda libraries -->
-		<alto.version>1.5.15</alto.version>
+		<alto.version>1.6.0</alto.version>
 		<iiif-api-model.version>2.6.3</iiif-api-model.version>
 		<normdataimporter.version>1.11.0-SNAPSHOT</normdataimporter.version>
 
@@ -480,7 +480,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>10.16.0</version>
+						<version>10.17.0</version>
 					</dependency>
 				</dependencies>
 				<executions>

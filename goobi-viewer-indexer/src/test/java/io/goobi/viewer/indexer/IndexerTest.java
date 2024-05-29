@@ -832,7 +832,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void addNamedEntitiesFields_shouldAddField() throws Exception {
         Map<String, Object> altoData = new HashMap<>(1);
-        altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION_Göttingen"));
+        altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION###Göttingen###https://www.geonames.org/2918632"));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
 
         Indexer.addNamedEntitiesFields(altoData, doc);
@@ -846,7 +846,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void addNamedEntitiesFields_shouldAddUntokenizedField() throws Exception {
         Map<String, Object> altoData = new HashMap<>(1);
-        altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION_Göttingen"));
+        altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION###Göttingen###https://www.geonames.org/2918632"));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
 
         Indexer.addNamedEntitiesFields(altoData, doc);
