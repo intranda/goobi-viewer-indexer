@@ -407,7 +407,10 @@ public class EadIndexer extends Indexer {
             } catch (ExecutionException e) {
                 logger.error(e.getMessage(), e);
                 SolrIndexerDaemon.getInstance().stop();
-            } catch (InterruptedException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+                Thread.currentThread().interrupt();
+            } catch (TimeoutException e) {
                 logger.error(e.getMessage());
             } finally {
                 pool.shutdown();
