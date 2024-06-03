@@ -1124,8 +1124,9 @@ public final class MetadataHelper {
             }
         }
 
-        logger.trace("Collecting source metadata");
+
         if (!additionalFieldsFromParent.isEmpty()) {
+            logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());
             ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele.getParentElement(), authorityDataEnabled,
                     additionalFieldsFromParent);
         }

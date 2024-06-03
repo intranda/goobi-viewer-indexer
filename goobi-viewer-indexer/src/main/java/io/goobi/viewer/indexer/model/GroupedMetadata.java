@@ -154,12 +154,20 @@ public class GroupedMetadata {
             SubfieldConfig subfield = entry.getValue();
             for (final String xp : subfield.getXpaths()) {
                 String xpath = xp;
-                if (xpathReplacements != null) {
+                if (xpathReplacements != null && !xpathReplacements.isEmpty()) {
+                    boolean replacementKeyFound = false;
                     for (Entry<String, String> xpathReplacementsEntry : xpathReplacements.entrySet()) {
                         xpath = xpath.replace(xpathReplacementsEntry.getKey(), xpathReplacementsEntry.getValue());
+                        if (!xpath.equals(xp)) {
+                            replacementKeyFound = true;
+                        }
+                    }
+                    if (!replacementKeyFound) {
+                        // Skip XPath expressions that don't contain placeholders
+                        continue;
                     }
                 }
-                logger.debug("XPath: {}", xpath);
+                logger.trace("XPath: {} (relative to {})", xpath, ele.getName());
                 List<String> values = JDomXP.evaluateToStringListStatic(xpath, ele);
                 if (values == null || values.isEmpty()) {
                     // Use default value, if available
