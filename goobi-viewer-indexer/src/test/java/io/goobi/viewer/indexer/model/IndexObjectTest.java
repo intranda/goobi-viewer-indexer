@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
 class IndexObjectTest extends AbstractTest {
@@ -644,6 +645,7 @@ class IndexObjectTest extends AbstractTest {
         {
             // true
             IndexObject indexObject = new IndexObject(1L);
+            indexObject.setSourceDocFormat(FileFormat.METS);
             indexObject.addToLucene("MD_TESTFIELD", "foo");
             indexObject.applyFinalModifications();
             Assertions.assertEquals(2, indexObject.getLuceneFields().size());
@@ -654,6 +656,7 @@ class IndexObjectTest extends AbstractTest {
         {
             // false
             IndexObject indexObject = new IndexObject(1L);
+            indexObject.setSourceDocFormat(FileFormat.METS);
             indexObject.applyFinalModifications();
             Assertions.assertEquals(1, indexObject.getLuceneFields().size());
             LuceneField boolField = indexObject.getLuceneFields().get(0);

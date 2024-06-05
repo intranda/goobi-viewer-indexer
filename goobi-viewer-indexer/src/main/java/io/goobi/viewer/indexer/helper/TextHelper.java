@@ -146,6 +146,7 @@ public final class TextHelper {
         HyphenationLinker linker = new HyphenationLinker();
         linker.linkWords(altoDoc);
         Document doc = new Document(altoDoc.writeToDom());
+
         return readAltoDoc(doc);
     }
 
@@ -274,12 +275,13 @@ public final class TextHelper {
     static String createSimpleNamedEntityTag(Element eleTag) {
         String neLabel = eleTag.getAttributeValue("LABEL");
         String neType = eleTag.getAttributeValue("TYPE");
+        String neUri = eleTag.getAttributeValue("URI");
 
         if (neType == null || neLabel == null) {
             return null;
         }
 
-        return neType.toUpperCase() + "_" + neLabel;
+        return neType.toUpperCase() + "###" + neLabel + (StringUtils.isNotEmpty(neUri) ? "###" + neUri : "");
     }
 
     /**

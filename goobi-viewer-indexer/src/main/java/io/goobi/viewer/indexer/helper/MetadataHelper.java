@@ -112,7 +112,10 @@ public final class MetadataHelper {
         List<LuceneField> ret = new ArrayList<>();
 
         Set<Integer> centuries = new HashSet<>();
-        List<String> fieldNamesList = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames();
+        List<String> fieldNamesList = SolrIndexerDaemon.getInstance()
+                .getConfiguration()
+                .getMetadataConfigurationManager()
+                .getListWithAllFieldNames(indexObj.getSourceDocFormat());
         StringBuilder sbDefaultMetadataValues = new StringBuilder();
         if (indexObj.getDefaultValue() != null) {
             sbDefaultMetadataValues.append(indexObj.getDefaultValue());
@@ -427,8 +430,7 @@ public final class MetadataHelper {
      * @return List<LuceneField>
      */
     private static List<LuceneField> retrieveAuthorityData(final String authorityUrl, StringBuilder sbDefaultMetadataValues,
-            StringBuilder sbNormDataTerms,
-            List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
+            StringBuilder sbNormDataTerms, List<String> addToDefaultFields, Map<Object, String> replaceRules, String labelField) {
         logger.info("retrieveAuthorityData: {}", authorityUrl);
         if (authorityUrl == null) {
             throw new IllegalArgumentException("authorityUrl may not be null");
@@ -1122,8 +1124,9 @@ public final class MetadataHelper {
             }
         }
 
-        logger.trace("Collecting source metadata");
+
         if (!additionalFieldsFromParent.isEmpty()) {
+            logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());
             ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele.getParentElement(), authorityDataEnabled,
                     additionalFieldsFromParent);
         }

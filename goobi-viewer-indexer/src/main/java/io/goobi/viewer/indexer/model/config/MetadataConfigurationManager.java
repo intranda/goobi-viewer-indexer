@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer.ValueNormalizerPosition;
 
@@ -116,9 +118,11 @@ public final class MetadataConfigurationManager {
                         String prefix = xpathNode.getString(XML_PATH_ATTRIBUTE_PREFIX);
                         String suffix = xpathNode.getString(XML_PATH_ATTRIBUTE_SUFFIX);
                         fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix));
+                        fieldConfig.checkXpathSupportedFormats(xpath);
                     }
                 } else if (config.getMaxIndex(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath") > -1) {
                     // Single XPath item
+                    // TODO multiple item variant only
                     HierarchicalConfiguration<ImmutableNode> xpathNode =
                             config.configurationAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath");
                     String xpath = xpathNode.getString(".");
@@ -128,6 +132,7 @@ public final class MetadataConfigurationManager {
                         String prefix = xpathNode.getString(XML_PATH_ATTRIBUTE_PREFIX);
                         String suffix = xpathNode.getString(XML_PATH_ATTRIBUTE_SUFFIX);
                         fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix));
+                        fieldConfig.checkXpathSupportedFormats(xpath);
                     }
                 }
 
@@ -387,13 +392,17 @@ public final class MetadataConfigurationManager {
      *
      * @return a {@link java.util.List} object.
      */
-    public List<String> getListWithAllFieldNames() {
+    public List<String> getListWithAllFieldNames(FileFormat format) {
         List<String> retArray = new ArrayList<>();
-
-        Set<String> keys = fieldConfigurations.keySet();
-        for (String string : keys) {
-            retArray.add(string);
+        for (Entry<String, List<FieldConfig>> entry : fieldConfigurations.entrySet()) {
+            for (FieldConfig config : entry.getValue()) {
+                if (config.getSupportedFormats().contains(format)) {
+                    retArray.add(entry.getKey());
+                    break;
+                }
+            }
         }
+
         return retArray;
     }
 

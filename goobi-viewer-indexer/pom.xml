@@ -6,67 +6,67 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>24.04</version>
+	<version>24.05-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
 	<url>https://github.com/intranda/goobi-viewer-indexer</url>
-	
-    <scm>
-        <url>scm:git:https://github.com/intranda/goobi-viewer-indexer/</url>
-        <connection>scm:git:https://github.com/intranda/goobi-viewer-indexer/</connection>
-    </scm>
+
+	<scm>
+		<url>scm:git:https://github.com/intranda/goobi-viewer-indexer/</url>
+		<connection>scm:git:https://github.com/intranda/goobi-viewer-indexer/</connection>
+	</scm>
 
 	<properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
-        <skipTests>true</skipTests>
-        <skipDependencyCheck>true</skipDependencyCheck>
-        <failOnSnapshot>false</failOnSnapshot>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>17</maven.compiler.release>
+		<skipTests>true</skipTests>
+		<skipDependencyCheck>true</skipDependencyCheck>
+		<failOnSnapshot>false</failOnSnapshot>
 
-        <!-- Sonar -->
-        <sonar.projectKey>intranda_goobi-viewer-indexer</sonar.projectKey>
-        <sonar.organization>intranda</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.java.source>17</sonar.java.source>
-        <sonar.java.target>17</sonar.java.target>
+		<!-- Sonar -->
+		<sonar.projectKey>intranda_goobi-viewer-indexer</sonar.projectKey>
+		<sonar.organization>intranda</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.java.source>17</sonar.java.source>
+		<sonar.java.target>17</sonar.java.target>
 
-        <!-- Checkstyle -->
-        <checkstyle.max.violations>180</checkstyle.max.violations>
-        <skipCheckstyle>true</skipCheckstyle>
+		<!-- Checkstyle -->
+		<checkstyle.max.violations>180</checkstyle.max.violations>
+		<skipCheckstyle>true</skipCheckstyle>
 
-        <!-- Manifest information -->
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-        <buildDate>${maven.build.timestamp}</buildDate>
+		<!-- Manifest information -->
+		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+		<buildDate>${maven.build.timestamp}</buildDate>
 
 		<!-- intranda libraries -->
-		<alto.version>1.5.15</alto.version>
+		<alto.version>1.6.0</alto.version>
 		<iiif-api-model.version>2.6.3</iiif-api-model.version>
-		<normdataimporter.version>1.10.9</normdataimporter.version>
+		<normdataimporter.version>1.11.0</normdataimporter.version>
 
 		<!-- other libraries -->
-        <angus-mail.version>2.0.3</angus-mail.version>
-        <commons-beanutils.version>1.9.4</commons-beanutils.version>
+		<angus-mail.version>2.0.3</angus-mail.version>
+		<commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<commons-configuration2.version>2.10.1</commons-configuration2.version>
 		<commons-io.version>2.16.1</commons-io.version>
 		<commons-jxpath.version>1.3</commons-jxpath.version>
 		<commons-lang3.version>3.14.0</commons-lang3.version>
-        <commons-text.version>1.12.0</commons-text.version>
+		<commons-text.version>1.12.0</commons-text.version>
 		<httpclient.version>4.5.14</httpclient.version>
 		<httpcore.version>4.4.16</httpcore.version>
 		<icu.version>75.1</icu.version>
-		<imageio-openjpeg.version>0.6.7</imageio-openjpeg.version>
+		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
 		<log4j.version>2.23.1</log4j.version>
 		<jackson.version>2.17.1</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
-        <jakarta.mail-api.version>2.1.3</jakarta.mail-api.version>
+		<jakarta.mail-api.version>2.1.3</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.17.2</jsoup.version>
 		<json.version>20240303</json.version>
 		<junit.version>5.10.2</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
-		<solr.version>9.6.0</solr.version>
+		<solr.version>9.6.1</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
 	</properties>
 
@@ -117,16 +117,16 @@
 		</dependency>
 
 		<!-- other libraries -->
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>${commons-beanutils.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-configuration2</artifactId>
-            <version>${commons-configuration2.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>${commons-beanutils.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-configuration2</artifactId>
+			<version>${commons-configuration2.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
@@ -166,12 +166,12 @@
 			<groupId>jakarta.mail</groupId>
 			<artifactId>jakarta.mail-api</artifactId>
 			<version>${jakarta.mail-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.angus</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>${angus-mail.version}</version>
-        </dependency>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.angus</groupId>
+			<artifactId>jakarta.mail</artifactId>
+			<version>${angus-mail.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom2</artifactId>
@@ -187,24 +187,24 @@
 			<artifactId>json</artifactId>
 			<version>${json.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
-        </dependency>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
@@ -220,11 +220,11 @@
 			<artifactId>metadata-extractor</artifactId>
 			<version>${metadata-extractor.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>mil.nga.sf</groupId>
-            <artifactId>sf-geojson</artifactId>
-            <version>${sf-geojson.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>mil.nga.sf</groupId>
+			<artifactId>sf-geojson</artifactId>
+			<version>${sf-geojson.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
@@ -277,7 +277,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<id>enforce-maven</id>
@@ -288,12 +288,12 @@
 							<rules>
 								<requireMavenVersion>
 									<version>3.8.8</version>
-                                </requireMavenVersion>
-                                <requireReleaseDeps>
-                                    <message>No Snapshots Allowed!</message>
-                                </requireReleaseDeps>
+								</requireMavenVersion>
+								<requireReleaseDeps>
+									<message>No Snapshots Allowed!</message>
+								</requireReleaseDeps>
 							</rules>
-                            <fail>${failOnSnapshot}</fail>
+							<fail>${failOnSnapshot}</fail>
 						</configuration>
 					</execution>
 				</executions>
@@ -301,9 +301,11 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.13.0</version>
-                <configuration>
-                    <compilerArgument>-Xlint:deprecation</compilerArgument>
-                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+				<configuration>
+					<compilerArgs>
+						<arg>-Xlint:deprecation</arg>
+						<arg>-Xlint:unchecked</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -313,84 +315,84 @@
 				<configuration>
 					<skipTests>${skipTests}</skipTests>
 				</configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.6.1</version>
-                <executions>
-                    <execution>
-                        <id>analyze</id>
-                        <goals>
-                            <goal>analyze-only</goal>
-                        </goals>
-                        <configuration>
-                            <failOnWarning>true</failOnWarning>
-                            <ignoredUnusedDeclaredDependencies>
-                                <!-- commons-beanutils is required for commons-configuration2 -->
-                                <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils</ignoredUnusedDeclaredDependency>
-                            
-                                <!-- JXPath is used at XPathExpressionEngine from org.apache.commons.configuration2, i.e. LanguageHelper -->
-                                <ignoredUnusedDeclaredDependency>commons-jxpath:commons-jxpath</ignoredUnusedDeclaredDependency>
-
-                                <!-- jaxen is needed by jdom2 -->
-                                <ignoredUnusedDeclaredDependency>jaxen:jaxen</ignoredUnusedDeclaredDependency>
-
-                                <!-- imageio is used to read image dimensions during indexing -->
-                                <ignoredUnusedDeclaredDependency>com.github.jai-imageio:jai-imageio-core</ignoredUnusedDeclaredDependency>
-
-                                <!-- openjeg is used to read image dimensions from jp2 images during indexing -->
-                                <ignoredUnusedDeclaredDependency>de.digitalcollections.imageio:imageio-openjpeg</ignoredUnusedDeclaredDependency>
-
-                                <!-- angus-mail is the implementation of the jakarta.mail specification and used for sending emails -->
-                                <ignoredUnusedDeclaredDependency>org.eclipse.angus:jakarta.mail</ignoredUnusedDeclaredDependency>
-
-                                <!-- junit-jupiter is used to run the tests, otherwise it will fail in maven -->
-                                <ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- get git version number -->
-            <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>4.9.10</version>
-                <configuration>
-                    <commitIdGenerationMode>flat</commitIdGenerationMode>
-                    <gitDescribe>
-                        <skip>true</skip>
-                    </gitDescribe>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>revision</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <shortRevisionLength>7</shortRevisionLength>
-                    <doCheck>false</doCheck>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			</plugin>
 			<plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.6.1</version>
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<goals>
+							<goal>analyze-only</goal>
+						</goals>
+						<configuration>
+							<failOnWarning>true</failOnWarning>
+							<ignoredUnusedDeclaredDependencies>
+								<!-- commons-beanutils is required for commons-configuration2 -->
+								<ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils</ignoredUnusedDeclaredDependency>
+
+								<!-- JXPath is used at XPathExpressionEngine from org.apache.commons.configuration2, i.e. LanguageHelper -->
+								<ignoredUnusedDeclaredDependency>commons-jxpath:commons-jxpath</ignoredUnusedDeclaredDependency>
+
+								<!-- jaxen is needed by jdom2 -->
+								<ignoredUnusedDeclaredDependency>jaxen:jaxen</ignoredUnusedDeclaredDependency>
+
+								<!-- imageio is used to read image dimensions during indexing -->
+								<ignoredUnusedDeclaredDependency>com.github.jai-imageio:jai-imageio-core</ignoredUnusedDeclaredDependency>
+
+								<!-- openjeg is used to read image dimensions from jp2 images during indexing -->
+								<ignoredUnusedDeclaredDependency>de.digitalcollections.imageio:imageio-openjpeg</ignoredUnusedDeclaredDependency>
+
+								<!-- angus-mail is the implementation of the jakarta.mail specification and used for sending emails -->
+								<ignoredUnusedDeclaredDependency>org.eclipse.angus:jakarta.mail</ignoredUnusedDeclaredDependency>
+
+								<!-- junit-jupiter is used to run the tests, otherwise it will fail in maven -->
+								<ignoredUnusedDeclaredDependency>org.junit.jupiter:junit-jupiter</ignoredUnusedDeclaredDependency>
+							</ignoredUnusedDeclaredDependencies>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- get git version number -->
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>4.9.10</version>
+				<configuration>
+					<commitIdGenerationMode>flat</commitIdGenerationMode>
+					<gitDescribe>
+						<skip>true</skip>
+					</gitDescribe>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<shortRevisionLength>7</shortRevisionLength>
+					<doCheck>false</doCheck>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.7.1</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -409,16 +411,16 @@
 						<manifest>
 							<mainClass>io.goobi.viewer.indexer.SolrIndexerDaemon</mainClass>
 						</manifest>
-                        <manifestEntries>
-                            <ApplicationName>Goobi viewer Indexer</ApplicationName>
-                            <version>${project.version}</version>
-                            <Implementation-Version>${buildNumber}</Implementation-Version>
-                            <Implementation-Build-Date>${buildDate}</Implementation-Build-Date>
-                        </manifestEntries>
+						<manifestEntries>
+							<ApplicationName>Goobi viewer Indexer</ApplicationName>
+							<version>${project.version}</version>
+							<Implementation-Version>${buildNumber}</Implementation-Version>
+							<Implementation-Build-Date>${buildDate}</Implementation-Build-Date>
+						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
-            <!-- used for test coverage report in Jenkins -->
+			<!-- used for test coverage report in Jenkins -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -437,7 +439,7 @@
 						</goals>
 					</execution>
 				</executions>
-            </plugin>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
@@ -445,60 +447,61 @@
 				<configuration>
 					<rulesUri>file://${basedir}/version-number-rules.xml</rulesUri>
 				</configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>7.4.4</version>
-                <configuration>
-                    <!--failBuildOnCVSS>5.0</failBuildOnCVSS-->
-                    <skipProvidedScope>true</skipProvidedScope>
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <skipTestScope>true</skipTestScope>
-                    <skip>${skipDependencyCheck}</skip>
-                    <suppressionFiles>
-                        <suppressionFile>file://${basedir}/dependency-suppression.xml</suppressionFile>
-                    </suppressionFiles>
-                    <format>ALL</format>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.3.1</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>10.16.0</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>checkstyle-check</id>
-                        <phase>verify</phase>
-                        <configuration>
-                            <skip>${skipCheckstyle}</skip>
-                            <failOnViolation>true</failOnViolation>
-                            <failsOnError>false</failsOnError>
-                            <logViolationsToConsole>true</logViolationsToConsole>
-                            <maxAllowedViolations>${checkstyle.max.violations}</maxAllowedViolations>
-                            <violationSeverity>warning</violationSeverity>
-                            <configLocation>checkstyle.xml</configLocation>
-                        </configuration>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			</plugin>
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>9.2.0</version>
+				<configuration>
+					<!--failBuildOnCVSS>5.0</failBuildOnCVSS-->
+					<skipProvidedScope>true</skipProvidedScope>
+					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+					<knownExploitedEnabled>false</knownExploitedEnabled>
+					<skipTestScope>true</skipTestScope>
+					<format>ALL</format>
+					<skip>${skipDependencyCheck}</skip>
+					<suppressionFiles>
+						<suppressionFile>file://${basedir}/dependency-suppression.xml</suppressionFile>
+					</suppressionFiles>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.3.1</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>10.17.0</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>checkstyle-check</id>
+						<phase>verify</phase>
+						<configuration>
+							<skip>${skipCheckstyle}</skip>
+							<failOnViolation>true</failOnViolation>
+							<failsOnError>false</failsOnError>
+							<logViolationsToConsole>true</logViolationsToConsole>
+							<maxAllowedViolations>${checkstyle.max.violations}</maxAllowedViolations>
+							<violationSeverity>warning</violationSeverity>
+							<configLocation>checkstyle.xml</configLocation>
+						</configuration>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

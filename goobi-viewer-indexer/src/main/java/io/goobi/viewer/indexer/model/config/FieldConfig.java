@@ -16,14 +16,24 @@
 package io.goobi.viewer.indexer.model.config;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 
 /**
  * Configuration object for a single metadata field configuration.
  */
 public class FieldConfig {
+    
+    /** Logger for this class. */
+    private static final Logger logger = LogManager.getLogger(FieldConfig.class);
 
     static final String DEFAULT_MULTIVALUE_SEPARATOR = " ; ";
 
@@ -57,6 +67,7 @@ public class FieldConfig {
     private String geoJSONSource;
     private String geoJSONSourceSeparator;
     private boolean geoJSONAddSearchField;
+    private final Set<FileFormat> supportedFormats = new HashSet<>();
 
     /**
      * Constructor.
@@ -68,6 +79,34 @@ public class FieldConfig {
         super();
         this.fieldname = fieldname;
     }
+    
+    /**
+     * 
+     * @param xpath XPath exression to check
+     * @should add FileFormats correctly
+     */
+    public void checkXpathSupportedFormats(String xpath) {
+        if (xpath.contains("mods:")) {
+            supportedFormats.add(FileFormat.METS);
+            logger.debug("Field {} has METS/MODS config.", fieldname);
+        } else if (xpath.contains("@tag=")) {
+            supportedFormats.add(FileFormat.METS_MARC);
+            logger.debug("Field {} has METS/MARC config.", fieldname);
+        } else if (xpath.contains("ead:")) {
+            supportedFormats.add(FileFormat.EAD);
+            logger.debug("Field {} has EAD config.", fieldname);
+        } else if (xpath.contains("lido:")) {
+            supportedFormats.add(FileFormat.LIDO);
+            logger.debug("Field {} has LIDO config.", fieldname);
+        } else if (xpath.contains("dc:")) {
+            supportedFormats.add(FileFormat.DUBLINCORE);
+            logger.debug("Field {} has Dublin Core config.", fieldname);
+        } else if (xpath.contains("denkxweb:")) {
+            supportedFormats.add(FileFormat.DENKXWEB);
+            logger.debug("Field {} has DenkXWeb config.", fieldname);
+        }
+    }
+    
 
     /**
      * <p>
@@ -671,5 +710,12 @@ public class FieldConfig {
      */
     public void setGeoJSONAddSearchField(boolean geoJSONAddSearchField) {
         this.geoJSONAddSearchField = geoJSONAddSearchField;
+    }
+
+    /**
+     * @return the supportedFormats
+     */
+    public Set<FileFormat> getSupportedFormats() {
+        return supportedFormats;
     }
 }
