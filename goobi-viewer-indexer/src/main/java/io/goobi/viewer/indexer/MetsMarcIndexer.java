@@ -19,12 +19,14 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
+import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
@@ -35,6 +37,10 @@ public class MetsMarcIndexer extends MetsIndexer {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(MetsMarcIndexer.class);
+
+    private static final String[] ANCHOR_PI_XPATHS = { "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/anchorIdentifier",
+            "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']/mets:xmlData/"
+                    + "marc:bib/marc:record/marc:datafield[@tag='773']/marc:subfield[@code='w']" };;
 
     /**
      * Constructor.
@@ -72,17 +78,7 @@ public class MetsMarcIndexer extends MetsIndexer {
      */
     @Override
     protected boolean isVolume() {
-        String[] xpaths = { "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/anchorIdentifier",
-                "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']/mets:xmlData/"
-                        + "marc:bib/marc:record/marc:datafield[@tag='773']/marc:subfield[@code='w']" };
-        for (String xpath : xpaths) {
-            List<Element> relatedItemList = xp.evaluateToElements(xpath, null);
-            if (relatedItemList != null && !relatedItemList.isEmpty()) {
-                return true;
-            }
-        }
-
-        return false;
+        return StringUtils.isNotEmpty(getAnchorPi());
     }
 
     @Override
@@ -95,8 +91,23 @@ public class MetsMarcIndexer extends MetsIndexer {
         return "";
     }
 
+    /**
+     * <p>
+     * getAnchorPi.
+     * </p>
+     *
+     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
+     * @return a {@link java.lang.String} object.
+     */
     @Override
-    protected String getAnchorPiXpath() {
-        return "']/mets:mdWrap[@MDTYPE='MARC']/mets:xmlData/marc:bib/marc:record/marc:datafield[@tag='773']/marc:subfield[@code='w']";
+    public String getAnchorPi() {
+        for (String xpath : ANCHOR_PI_XPATHS) {
+            List<Element> relatedItemList = xp.evaluateToElements(xpath, null);
+            if (relatedItemList != null && !relatedItemList.isEmpty()) {
+                return relatedItemList.get(0).getText();
+            }
+        }
+
+        return null;
     }
 }

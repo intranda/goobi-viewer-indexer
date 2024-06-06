@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -34,7 +33,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -287,22 +285,6 @@ public class DenkXwebIndexer extends Indexer {
 
             indexObj.pushSimpleDataToLuceneArray();
             MetadataHelper.writeMetadataToObject(indexObj, indexObj.getRootStructNode(), "", xp);
-
-            // If this is a volume (= has an anchor) that has already been indexed, copy access conditions from the anchor element
-            if (indexObj.isVolume()) {
-                String anchorPi = MetadataHelper.getAnchorPi(xp);
-                if (anchorPi != null) {
-                    SolrDocumentList hits = SolrIndexerDaemon.getInstance()
-                            .getSearchIndex()
-                            .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
-                    if (hits != null && hits.getNumFound() > 0) {
-                        Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
-                        for (Object o : fields) {
-                            indexObj.getAccessConditions().add(o.toString());
-                        }
-                    }
-                }
-            }
 
             // Add LABEL value
             if (StringUtils.isEmpty(indexObj.getLabel())) {

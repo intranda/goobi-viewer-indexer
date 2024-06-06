@@ -113,6 +113,8 @@ public class MetsIndexer extends Indexer {
     protected static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
     protected static final String XPATH_FILE = "mets:file";
     protected static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
+    private static final String XPATH_ANCHOR_PI_PART =
+            "/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
 
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
@@ -367,27 +369,25 @@ public class MetsIndexer extends Indexer {
             if (indexObj.isVolume()) {
                 // Find anchor document for this volume
                 hierarchyLevel = 1;
-                StringBuilder sbXpath = new StringBuilder(170);
-                sbXpath.append(XPATH_DMDSEC).append(structNode.getAttributeValue(SolrConstants.DMDID)).append(getAnchorPiXpath());
-                List<Element> piList = xp.evaluateToElements(sbXpath.toString(), null);
-                if (!piList.isEmpty()) {
-                    String parentPi = piList.get(0).getText().trim();
-                    parentPi = MetadataHelper.applyIdentifierModifications(parentPi);
-                    indexObj.setParentPI(parentPi);
+                String anchorPi = getAnchorPi();
+                if (StringUtils.isNotEmpty(anchorPi)) {
+                    anchorPi = MetadataHelper.applyIdentifierModifications(anchorPi);
+                    indexObj.setParentPI(anchorPi);
+                    indexObj.setAnchorPI(anchorPi);
                     String[] fields = { SolrConstants.IDDOC, SolrConstants.DOCSTRCT };
                     String parentIddoc = null;
                     String parentDocstrct = null;
                     SolrDocumentList hits = SolrIndexerDaemon.getInstance()
                             .getSearchIndex()
-                            .search(new StringBuilder().append(SolrConstants.PI).append(":").append(parentPi).toString(), Arrays.asList(fields));
+                            .search(new StringBuilder().append(SolrConstants.PI).append(":").append(anchorPi).toString(), Arrays.asList(fields));
                     if (hits != null && hits.getNumFound() > 0) {
                         parentIddoc = (String) hits.get(0).getFieldValue(SolrConstants.IDDOC);
                         parentDocstrct = (String) hits.get(0).getFieldValue(SolrConstants.DOCSTRCT);
                     }
                     // Create parent IndexObject
-                    if (parentPi != null && parentIddoc != null) {
-                        logger.debug("Creating anchor for '{}' (PI:{}, IDDOC:{})", indexObj.getIddoc(), parentPi, parentIddoc);
-                        IndexObject anchor = new IndexObject(Long.valueOf(parentIddoc), parentPi);
+                    if (anchorPi != null && parentIddoc != null) {
+                        logger.debug("Creating anchor for '{}' (PI:{}, IDDOC:{})", indexObj.getIddoc(), anchorPi, parentIddoc);
+                        IndexObject anchor = new IndexObject(Long.valueOf(parentIddoc), anchorPi);
                         if (anchor.getIddoc() == indexObj.getIddoc()) {
                             throw new IndexerException("Anchor and volume have the same IDDOC: " + indexObj.getIddoc());
                         }
@@ -431,24 +431,21 @@ public class MetsIndexer extends Indexer {
             MetadataHelper.writeMetadataToObject(indexObj, xp.getRootElement(), "", xp);
 
             // If this is a volume (= has an anchor) that has already been indexed, copy access conditions from the anchor element
-            if (indexObj.isVolume() && indexObj.getAccessConditions().isEmpty()) {
-                String anchorPi = MetadataHelper.getAnchorPi(xp);
-                if (anchorPi != null) {
-                    indexObj.setAnchorPI(anchorPi);
-                    SolrDocumentList hits = SolrIndexerDaemon.getInstance()
-                            .getSearchIndex()
-                            .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
-                    if (hits != null && !hits.isEmpty()) {
-                        Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
-                        if (fields != null) {
-                            for (Object o : fields) {
-                                indexObj.getAccessConditions().add(o.toString());
-                            }
-                        } else {
-                            logger.error(
-                                    "Anchor document '{}' has no ACCESSCONDITION values. Please check whether it is a proper anchor and not a group!",
-                                    anchorPi);
+            if (indexObj.isVolume() && indexObj.getAccessConditions().isEmpty() && StringUtils.isNotEmpty(indexObj.getAnchorPI())) {
+                indexObj.setAnchorPI(indexObj.getAnchorPI());
+                SolrDocumentList hits = SolrIndexerDaemon.getInstance()
+                        .getSearchIndex()
+                        .search(SolrConstants.PI + ":" + indexObj.getAnchorPI(), Collections.singletonList(SolrConstants.ACCESSCONDITION));
+                if (hits != null && !hits.isEmpty()) {
+                    Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
+                    if (fields != null) {
+                        for (Object o : fields) {
+                            indexObj.getAccessConditions().add(o.toString());
                         }
+                    } else {
+                        logger.error(
+                                "Anchor document '{}' has no ACCESSCONDITION values. Please check whether it is a proper anchor and not a group!",
+                                indexObj.getAnchorPI());
                     }
                 }
             }
@@ -2388,10 +2385,21 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @return
+     * <p>
+     * getAnchorPi.
+     * </p>
+     *
+     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
+     * @return a {@link java.lang.String} object.
      */
-    protected String getAnchorPiXpath() {
-        return "']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
+    public String getAnchorPi() {
+        String query =
+                "/mets:mets/mets:dmdSec" + XPATH_ANCHOR_PI_PART;
+        List<Element> relatedItemList = xp.evaluateToElements(query, null);
+        if (relatedItemList != null && !relatedItemList.isEmpty()) {
+            return relatedItemList.get(0).getText();
+        }
+
+        return null;
     }
 }

@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +37,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -274,7 +272,7 @@ public class DublinCoreIndexer extends Indexer {
             checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
             checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
             checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
-            
+
             prepareUpdate(indexObj);
 
             // Process TEI files
@@ -290,29 +288,6 @@ public class DublinCoreIndexer extends Indexer {
 
             // Write root metadata (outside of MODS sections)
             MetadataHelper.writeMetadataToObject(indexObj, xp.getRootElement(), "", xp);
-
-            // If this is a volume (= has an anchor) that has already been indexed, copy access conditions from the anchor element
-            if (indexObj.isVolume() && indexObj.getAccessConditions().isEmpty()) {
-                String anchorPi = MetadataHelper.getAnchorPi(xp);
-                if (anchorPi != null) {
-                    indexObj.setAnchorPI(anchorPi);
-                    SolrDocumentList hits = SolrIndexerDaemon.getInstance()
-                            .getSearchIndex()
-                            .search(SolrConstants.PI + ":" + anchorPi, Collections.singletonList(SolrConstants.ACCESSCONDITION));
-                    if (hits != null && !hits.isEmpty()) {
-                        Collection<Object> fields = hits.get(0).getFieldValues(SolrConstants.ACCESSCONDITION);
-                        if (fields != null) {
-                            for (Object o : fields) {
-                                indexObj.getAccessConditions().add(o.toString());
-                            }
-                        } else {
-                            logger.error(
-                                    "Anchor document '{}' has no ACCESSCONDITION values. Please check whether it is a proper anchor and not a group!",
-                                    anchorPi);
-                        }
-                    }
-                }
-            }
 
             // Set access conditions
             indexObj.writeAccessConditions(null);
