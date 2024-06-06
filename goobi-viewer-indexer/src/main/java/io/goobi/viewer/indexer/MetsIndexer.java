@@ -379,7 +379,7 @@ public class MetsIndexer extends Indexer {
                     String parentDocstrct = null;
                     SolrDocumentList hits = SolrIndexerDaemon.getInstance()
                             .getSearchIndex()
-                            .search(new StringBuilder().append(SolrConstants.PI).append(":").append(anchorPi).toString(), Arrays.asList(fields));
+                            .search(new StringBuilder().append(SolrConstants.PI).append(":\"").append(anchorPi).append('"').toString(), Arrays.asList(fields));
                     if (hits != null && hits.getNumFound() > 0) {
                         parentIddoc = (String) hits.get(0).getFieldValue(SolrConstants.IDDOC);
                         parentDocstrct = (String) hits.get(0).getFieldValue(SolrConstants.DOCSTRCT);
