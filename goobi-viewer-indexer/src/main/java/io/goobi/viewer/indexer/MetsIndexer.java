@@ -379,7 +379,8 @@ public class MetsIndexer extends Indexer {
                     String parentDocstrct = null;
                     SolrDocumentList hits = SolrIndexerDaemon.getInstance()
                             .getSearchIndex()
-                            .search(new StringBuilder().append(SolrConstants.PI).append(":\"").append(anchorPi).append('"').toString(), Arrays.asList(fields));
+                            .search(new StringBuilder().append(SolrConstants.PI).append(":\"").append(anchorPi).append('"').toString(),
+                                    Arrays.asList(fields));
                     if (hits != null && hits.getNumFound() > 0) {
                         parentIddoc = (String) hits.get(0).getFieldValue(SolrConstants.IDDOC);
                         parentDocstrct = (String) hits.get(0).getFieldValue(SolrConstants.DOCSTRCT);
@@ -406,7 +407,8 @@ public class MetsIndexer extends Indexer {
 
             // write opac url
             String opacXpath =
-                    "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']/mets:xmlData/dv:links/dv:reference/text()"; //NOSONAR XPath, not URI
+                    "/mets:mets/mets:amdSec/mets:digiprovMD[@ID='DIGIPROV']/mets:mdWrap[@OTHERMDTYPE='DVLINKS']"
+                            + "/mets:xmlData/dv:links/dv:reference/text()"; //NOSONAR XPath, not URI
             String opacUrl = xp.evaluateToString(opacXpath, null);
             if (StringUtils.isEmpty(opacUrl)) {
                 opacUrl = xp.evaluateToCdata(opacXpath, null);
@@ -488,7 +490,8 @@ public class MetsIndexer extends Indexer {
                 // write all page URNs sequentially into one field
                 generatePageUrns(indexObj);
 
-                // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
+                // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL
+                // (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
                 List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, null, true, writeStrategy, hierarchyLevel);
                 if (thumbnailFields != null) {
                     indexObj.getLuceneFields().addAll(thumbnailFields);
@@ -537,7 +540,9 @@ public class MetsIndexer extends Indexer {
                         // Add title/label
                         moreMetadata.put("SORT_TITLE", field.getValue());
                     } else if (field.getField().endsWith(groupSuffix)
-                            && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
+                            && (field.getField().startsWith("MD_")
+                                    || field.getField().startsWith("MD2_")
+                                    || field.getField().startsWith("MDNUM_"))) {
                         // Add any MD_*_GROUPSUFFIX field to the group doc
                         moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                     }
@@ -664,7 +669,8 @@ public class MetsIndexer extends Indexer {
     private static String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) {
         String filePathBanner = "";
         String xpathFilePtr =
-                "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID"; //NOSONAR XPath, not URI
+                "/mets:mets/mets:structMap[@TYPE='PHYSICAL']/mets:div[@TYPE='physSequence']"
+                        + "/mets:div[@xlink:label=\"START_PAGE\"]/mets:fptr/@FILEID"; //NOSONAR XPath, not URI
         List<String> fileIds = xp.evaluateToAttributes(xpathFilePtr, null).stream().map(Attribute::getValue).toList();
         for (String fileId : fileIds) {
             String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@ID='" + fileId + "']/mets:FLocat/@xlink:href";
@@ -750,7 +756,8 @@ public class MetsIndexer extends Indexer {
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && filePathBanner.equals(pageFileName)) {
                 ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-                // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
+                // THUMBNAILREPRESENT is just used to identify the presence of a custom
+                // representation thumbnail to the indexer, it is not used in the viewer
                 ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(pageDoc.getFieldValue(SolrConstants.ORDER))));
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) pageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
@@ -1305,7 +1312,8 @@ public class MetsIndexer extends Indexer {
             }
             logger.debug("fileId: {}", fileId);
 
-            // If fileId is not null, use an XPath expression for the appropriate file element; otherwise get all file elements and get the one with the index of the page order
+            // If fileId is not null, use an XPath expression for the appropriate file element;
+            // otherwise get all file elements and get the one with the index of the page order
             String fileIdXPathCondition = "";
             if (fileId != null) {
                 if (fileIdAlt != null) {
