@@ -72,11 +72,17 @@ public class MetsMarcIndexer extends MetsIndexer {
      */
     @Override
     protected boolean isVolume() {
-        String query =
-                "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']/mets:xmlData/marc:bib/marc:record/marc:datafield[@tag='773']/marc:subfield[@code='w']";
-        List<Element> relatedItemList = xp.evaluateToElements(query, null);
+        String[] xpaths = { "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/anchorIdentifier",
+                "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']/mets:xmlData/"
+                        + "marc:bib/marc:record/marc:datafield[@tag='773']/marc:subfield[@code='w']" };
+        for (String xpath : xpaths) {
+            List<Element> relatedItemList = xp.evaluateToElements(xpath, null);
+            if (relatedItemList != null && !relatedItemList.isEmpty()) {
+                return true;
+            }
+        }
 
-        return relatedItemList != null && !relatedItemList.isEmpty();
+        return false;
     }
 
     @Override
