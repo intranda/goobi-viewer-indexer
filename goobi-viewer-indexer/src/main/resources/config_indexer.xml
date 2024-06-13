@@ -282,7 +282,8 @@
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 					<replace string="http://ld.zdb-services.de/resource/organisations/DE-MUS-814819/"></replace>
-					<replace regex="https?://hdl.handle.net/([0-9]+)/([0-9]+).([0-9]+)">$1_$2_$3</replace>
+                    <replace regex="https?:\/\/hdl.handle.net\/"></replace>
+                    <replace regex="[./]">_</replace>
 				</item>
 			</list>
 		</PI>
@@ -4012,7 +4013,7 @@
                 </item>
             </list>
         </MD_COPYRIGHT_IMAGE_LANG_EN>
-
+        
     </fields>
 
 </root>
