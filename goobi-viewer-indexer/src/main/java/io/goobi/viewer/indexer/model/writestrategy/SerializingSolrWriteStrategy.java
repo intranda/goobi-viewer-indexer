@@ -458,7 +458,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
      * @return true if save successful; false otherwise
      */
     private boolean save(SolrInputDocument doc, String fileName) {
-        logger.info("Writing '{}'...", fileName);
+        logger.debug("Writing '{}'...", fileName);
         File file = new File(tempFolder.toFile(), fileName);
         try (FileOutputStream fos = new FileOutputStream(file); ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(doc);
