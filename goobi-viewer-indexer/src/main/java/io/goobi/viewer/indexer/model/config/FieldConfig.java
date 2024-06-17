@@ -89,7 +89,8 @@ public class FieldConfig {
         if (xpath.contains("mods:")) {
             supportedFormats.add(FileFormat.METS);
             logger.debug("Field {} has METS/MODS config.", fieldname);
-        } else if (xpath.contains("@tag=")) {
+        } else if (xpath.contains("mets:xmlData")) {
+            // METS/MARC records can contain metadata outside of a MARCXML block
             supportedFormats.add(FileFormat.METS_MARC);
             logger.debug("Field {} has METS/MARC config.", fieldname);
         } else if (xpath.contains("ead:")) {
