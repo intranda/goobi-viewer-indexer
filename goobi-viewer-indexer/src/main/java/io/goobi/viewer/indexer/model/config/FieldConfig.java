@@ -31,7 +31,7 @@ import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
  * Configuration object for a single metadata field configuration.
  */
 public class FieldConfig {
-    
+
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(FieldConfig.class);
 
@@ -79,21 +79,18 @@ public class FieldConfig {
         super();
         this.fieldname = fieldname;
     }
-    
+
     /**
      * 
      * @param xpath XPath exression to check
      * @should add FileFormats correctly
      */
     public void checkXpathSupportedFormats(String xpath) {
-        if (xpath.contains("mods:")) {
+        if (xpath.contains("mets:xmlData") || xpath.startsWith("@OBJID")) {
             supportedFormats.add(FileFormat.METS);
-            logger.debug("Field {} has METS/MODS config.", fieldname);
-        } else if (xpath.contains("mets:xmlData")) {
-            // METS/MARC records can contain metadata outside of a MARCXML block
             supportedFormats.add(FileFormat.METS_MARC);
-            logger.debug("Field {} has METS/MARC config.", fieldname);
-        } else if (xpath.contains("ead:")) {
+            logger.debug("Field {} has METS/MODS and METS/MARC config.", fieldname);
+        } else if (xpath.contains("ead:") || xpath.equals("@otherlevel")) {
             supportedFormats.add(FileFormat.EAD);
             logger.debug("Field {} has EAD config.", fieldname);
         } else if (xpath.contains("lido:")) {
@@ -107,7 +104,6 @@ public class FieldConfig {
             logger.debug("Field {} has DenkXWeb config.", fieldname);
         }
     }
-    
 
     /**
      * <p>

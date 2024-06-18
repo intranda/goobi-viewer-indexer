@@ -143,6 +143,12 @@ class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
                 assertEquals(Long.valueOf(16), mdList.get(0));
                 assertEquals(Long.valueOf(16), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.CENTURY));
             }
+            {
+                List<String> mdList = (List<String>) doc.getFieldValue("MD_SHELFMARK");
+                assertNotNull(mdList);
+                assertEquals(1, mdList.size());
+                assertEquals("PH418 A", mdList.get(0));
+            }
         }
 
         // Pages

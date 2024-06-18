@@ -1078,6 +1078,7 @@
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:repositoryWrap/lido:repositorySet[@lido:type='current']/lido:workID[@lido:type='inventory
 								number']
 							</item>
+                            <item>mets:dmdSec/mets:mdWrap[@MDTYPE="OTHER"]/mets:xmlData/shelfmark</item>
 						</list>
 					</xpath>
 					<addToDefault>true</addToDefault>
