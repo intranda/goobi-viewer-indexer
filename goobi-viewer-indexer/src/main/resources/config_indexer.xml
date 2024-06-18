@@ -317,6 +317,20 @@
                 </item>
             </list>
         </MD_ARCHIVE_ENTRY_LEVEL>
+        
+        <MD_ARCHIVE_ENTRY_OTHERLEVEL>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>@otherlevel</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </MD_ARCHIVE_ENTRY_OTHERLEVEL>
 
 		<!-- This field is important, see chapter 2.11 of the manual -->
 		<LABEL>
