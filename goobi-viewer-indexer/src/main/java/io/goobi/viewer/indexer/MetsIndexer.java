@@ -648,15 +648,17 @@ public class MetsIndexer extends Indexer {
      * 
      * @param xp
      * @param filegroup
-     * @return
+     * @return File name or path where USE="banner"; empty string if none found
      */
     private static String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) {
         String filePathBanner = "";
         String xpath = XPATH_FILEGRP + filegroup + "\"]/mets:file[@USE=\"banner\"]/mets:FLocat/@xlink:href";
         filePathBanner = xp.evaluateToAttributeStringValue(xpath, null);
         if (StringUtils.isNotEmpty(filePathBanner)) {
-            // Add thumbnail information from the representative page
-            filePathBanner = FilenameUtils.getName(filePathBanner);
+            // Only extract file name if not URL
+            if (!filePathBanner.startsWith("https://") && !filePathBanner.startsWith("http://")) {
+                filePathBanner = FilenameUtils.getName(filePathBanner);
+            }
             return filePathBanner;
         }
         return "";
@@ -723,7 +725,7 @@ public class MetsIndexer extends Indexer {
         if (isWork) {
             filePathBanner = getFilePathBannerFromFileSec(xp, useFileGroupGlobal);
             if (StringUtils.isNotBlank(filePathBanner)) {
-                logger.debug("Found representation thumbnail for {} in METS filesec: {}", indexObj.getLogId(), filePathBanner);
+                logger.info("Found representation thumbnail for {} in METS filesec: {}", indexObj.getLogId(), filePathBanner);
             } else {
                 filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroupGlobal);
                 if (StringUtils.isNotBlank(filePathBanner)) {
@@ -741,6 +743,7 @@ public class MetsIndexer extends Indexer {
         if (StringUtils.isEmpty(filePathBanner) && SolrIndexerDaemon.getInstance().getConfiguration().isUseFirstPageAsDefaultRepresentative()
                 && firstPageDoc != null) {
             // Add thumbnail information from the first page
+            logger.info("THUMBNAIL from first page");
             String thumbnailFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
