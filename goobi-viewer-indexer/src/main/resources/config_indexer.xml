@@ -368,7 +368,6 @@
 					<getnode>first</getnode>
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
-					<normalizeYear minYearDigits="4">true</normalizeYear>
 				</item>
 			</list>
 		</CURRENTNO>
