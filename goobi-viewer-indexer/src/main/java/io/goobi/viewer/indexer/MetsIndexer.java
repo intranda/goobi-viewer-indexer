@@ -427,9 +427,11 @@ public class MetsIndexer extends Indexer {
             indexObj.pushSimpleDataToLuceneArray();
 
             // Write metadata relative to the mdWrap
+            logger.debug("'Collecting DMDSEC metadata");
             MetadataHelper.writeMetadataToObject(indexObj, xp.getMdWrap(indexObj.getDmdid()), "", xp);
 
             // Write root metadata (outside of MODS sections)
+            logger.debug("Collecting root metadata");
             MetadataHelper.writeMetadataToObject(indexObj, xp.getRootElement(), "", xp);
 
             // If this is a volume (= has an anchor) that has already been indexed, copy access conditions from the anchor element

@@ -1937,11 +1937,11 @@ public abstract class Indexer {
                 String alto = null;
                 if (StringUtils.startsWithIgnoreCase(altoURL, "http")) {
                     // HTTP(S)
-                    logger.info("Downloading ALTO from {}", altoURL);
+                    logger.debug("Downloading ALTO from {}", altoURL);
                     alto = Utils.getWebContentGET(altoURL);
                 } else if (StringUtils.startsWithIgnoreCase(altoURL, "file:/")) {
                     // FILE
-                    logger.info("Reading ALTO from {}", altoURL);
+                    logger.debug("Reading ALTO from {}", altoURL);
                     alto = FileTools.readFileToString(new File(URI.create(altoURL).toURL().getPath()), StandardCharsets.UTF_8.name());
                 }
                 if (StringUtils.isNotEmpty(alto)) {
