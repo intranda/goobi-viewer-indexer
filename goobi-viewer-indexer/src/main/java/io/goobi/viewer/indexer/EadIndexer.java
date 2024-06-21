@@ -173,16 +173,8 @@ public class EadIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
-     * @should index metadata groups correctly
-     * @should index multi volume records correctly
      * @should update record correctly
      * @should set access conditions correctly
-     * @should write cms page texts into index
-     * @should write shape metadata correctly
-     * @should keep volume count up to date in anchor
-     * @should read datecreated from mets with correct time zone
-     * @should not add dateupdated if value already exists
-     * 
      */
     public String[] index(Path eadFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy) {
         String[] ret = { null, null };
@@ -391,10 +383,11 @@ public class EadIndexer extends Indexer {
                     SolrIndexerDaemon.getInstance().getConfiguration().getThreads(), depth);
             pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
             try {
-                pool.submit(() -> childrenNodeList.parallelStream().forEach(node -> {
+                pool.submit(() -> childrenNodeList.parallelStream().forEachOrdered(node -> {
+                    int order = childrenNodeList.indexOf(node); // TODO This is expensive (O(n))
                     try {
                         // Do not use parallel processing in recursion
-                        IndexObject obj = indexChild(node, parentIndexObject, depth, writeStrategy, false);
+                        IndexObject obj = indexChild(node, parentIndexObject, depth, order, writeStrategy, false);
                         if (obj != null) {
                             ret.add(obj);
                         }
@@ -417,8 +410,9 @@ public class EadIndexer extends Indexer {
                 pool = null;
             }
         } else {
+            int order = 0;
             for (final Element node : childrenNodeList) {
-                IndexObject obj = indexChild(node, parentIndexObject, depth, writeStrategy, allowParallelProcessing);
+                IndexObject obj = indexChild(node, parentIndexObject, depth, order++, writeStrategy, allowParallelProcessing);
                 if (obj != null) {
                     ret.add(obj);
                 }
@@ -433,13 +427,14 @@ public class EadIndexer extends Indexer {
      * @param node
      * @param parentIndexObject
      * @param depth
+     * @param order
      * @param writeStrategy
      * @param allowParallelProcessing
      * @return Created {@link IndexObject} if it has metadata fields to inherit upwards; otherwise null
      * @throws FatalIndexerException
      * @throws IOException
      */
-    public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
+    public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, int order, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing)
             throws FatalIndexerException, IOException {
         IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
@@ -455,6 +450,8 @@ public class EadIndexer extends Indexer {
         indexObj.pushSimpleDataToLuceneArray();
 
         indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
+
+        indexObj.addToLucene(SolrConstants.PREFIX_SORTNUM + "ARCHIVE_ORDER", String.valueOf(order));
 
         // TODO id, level, unitid, unittitle, physdesc, etc.
 
