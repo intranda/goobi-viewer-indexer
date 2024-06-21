@@ -605,6 +605,8 @@
 							<item>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</item>
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
 							<item>dc:title</item>
+                            <item>ead:did/ead:unittitle</item>
+                            <item>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</item>
 						</list>
 					</xpath>
 					<getnode>first</getnode>
@@ -613,6 +615,22 @@
 				</item>
 			</list>
 		</SORT_TITLE>
+        
+        <!-- Required for archive tree node sorting -->
+        <SORT_TITLE_ARCHIVE_NODE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>ead:did/ead:unittitle</item>
+                            <item>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</item>
+                        </list>
+                    </xpath>
+                    <getnode>first</getnode>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </SORT_TITLE_ARCHIVE_NODE>
 
 			<MD_TITLE_LANG_FR>
 				<list>
