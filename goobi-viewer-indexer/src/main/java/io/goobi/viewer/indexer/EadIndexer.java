@@ -485,7 +485,7 @@ public class EadIndexer extends Indexer {
                 indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
 
                 logger.debug("Added {}:{} to child element {}", field.getField(), field.getValue(), indexObj.getLogId());
-            } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !"SORT_TITLE_ARCHIVE_NODE".equals(field.getField())) {
+            } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                 // Only one instance of each SORT_ field may exist
                 indexObj.addToLucene(new LuceneField(field.getField(), field.getValue()), true);
             }
