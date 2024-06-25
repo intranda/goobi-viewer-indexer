@@ -269,9 +269,9 @@ public class EadIndexer extends Indexer {
 
             indexObj.addToLucene(SolrConstants.ISWORK, "false");
 
-            // Add DEFAULT field
+            // Add SEARCHTERMS_ARCHIVE field (instead of DEFAULT)
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-                indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+                indexObj.addToLucene(SolrConstants.SEARCHTERMS_ARCHIVE, cleanUpDefaultField(indexObj.getDefaultValue()));
                 indexObj.setDefaultValue("");
             }
 
@@ -373,8 +373,8 @@ public class EadIndexer extends Indexer {
             logger.warn("Unknown node name: {}", parentIndexObject.getRootStructNode().getName());
             return Collections.emptyList();
         }
-        if (!childrenNodeList.isEmpty()) {
-            logger.info("{} child elements found", childrenNodeList.size());
+        if (logger.isDebugEnabled() && !childrenNodeList.isEmpty()) {
+            logger.debug("{} child elements found", childrenNodeList.size());
         }
 
         if (allowParallelProcessing && pool == null && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
@@ -519,7 +519,7 @@ public class EadIndexer extends Indexer {
             sbDefaultValue.append(labelWithSpaces);
         }
         if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
-            logger.info("Adding label to children");
+            logger.debug("Adding label to children");
             for (String label : indexObj.getParentLabels()) {
                 String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
                 if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
@@ -530,9 +530,9 @@ public class EadIndexer extends Indexer {
 
         indexObj.setDefaultValue(sbDefaultValue.toString());
 
-        // Add DEFAULT field
+        // Add SEARCHTERMS_ARCHIVE field (instead of DEFAULT)
         if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-            indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+            indexObj.addToLucene(SolrConstants.SEARCHTERMS_ARCHIVE, cleanUpDefaultField(indexObj.getDefaultValue()));
             // Add default value to parent doc
             indexObj.setDefaultValue("");
         }

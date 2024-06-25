@@ -201,6 +201,8 @@ public final class SolrConstants {
     public static final String PI_PARENT = "PI_PARENT";
     /** Constant <code>PI_TOPSTRUCT="PI_TOPSTRUCT"</code> */
     public static final String PI_TOPSTRUCT = "PI_TOPSTRUCT";
+    /** Constant <code>SEARCHTERMS_ARCHIVE="SEARCHTERMS_ARCHIVE"</code> */
+    public static final String SEARCHTERMS_ARCHIVE = "SEARCHTERMS_ARCHIVE";
     /** Constant <code>SOURCEDOCFORMAT="SOURCEDOCFORMAT"</code> */
     public static final String SOURCEDOCFORMAT = "SOURCEDOCFORMAT";
     /** Constant <code>SUPERDEFAULT="SUPERDEFAULT"</code> */
