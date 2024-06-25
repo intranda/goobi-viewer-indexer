@@ -42,17 +42,6 @@ class EadIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see DublinCoreIndexer#DublinCoreIndexer(Hotfolder)
-     * @verifies set attributes correctly
-     */
-    @Test
-    void DublinCoreIndexer_shouldSetAttributesCorrectly() throws Exception {
-        Assertions.assertNotNull(hotfolder);
-        Indexer indexer = new DublinCoreIndexer(hotfolder);
-        Assertions.assertEquals(hotfolder, indexer.hotfolder);
-    }
-
-    /**
      * @see DublinCoreIndexer#addToIndex(Path,boolean,Map)
      * @verifies add record to index correctly
      */
@@ -60,8 +49,8 @@ class EadIndexerTest extends AbstractSolrEnabledTest {
     void addToIndex_shouldAddRecordToIndexCorrectly(@TempDir Path tempDir) throws Exception {
         Path eadFile = Paths.get("src/test/resources/EAD/Akte_Koch.xml");
         Assertions.assertTrue(Files.isRegularFile(eadFile));
-        
-        Path eadFileCopy = Paths.get(tempDir.toAbsolutePath().toString(), "record.xml");
+
+        Path eadFileCopy = Paths.get(tempDir.toAbsolutePath().toString(), "Akte_Koch.xml");
         Files.copy(eadFile, eadFileCopy, StandardCopyOption.REPLACE_EXISTING);
         Assertions.assertTrue(Files.isRegularFile(eadFileCopy));
 
