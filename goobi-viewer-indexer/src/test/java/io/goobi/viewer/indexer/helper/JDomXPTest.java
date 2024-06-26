@@ -84,7 +84,7 @@ class JDomXPTest extends AbstractTest {
     void determineFileFormat_shouldDetectEad3FilesCorrectly() throws Exception {
         File file = new File("src/test/resources/EAD/EAD3_example.xml");
         Assertions.assertTrue(file.isFile());
-        Assertions.assertEquals(FileFormat.EAD, JDomXP.determineFileFormat(file));
+        Assertions.assertEquals(FileFormat.EAD3, JDomXP.determineFileFormat(file));
     }
 
     /**
