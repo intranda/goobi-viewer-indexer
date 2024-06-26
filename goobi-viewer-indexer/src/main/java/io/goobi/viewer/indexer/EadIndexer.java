@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -65,7 +66,11 @@ public class EadIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(EadIndexer.class);
 
+    public static final Namespace NAMESPACE_EAD2 = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
+
     private ForkJoinPool pool;
+
+    protected Namespace eadNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead3");
 
     /**
      * Constructor.
@@ -76,6 +81,7 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
+        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
@@ -86,6 +92,7 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
+        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
@@ -362,13 +369,13 @@ public class EadIndexer extends Indexer {
         List<Element> childrenNodeList;
         if ("c".equals(parentIndexObject.getRootStructNode().getName())) {
             childrenNodeList = parentIndexObject.getRootStructNode()
-                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+                    .getChildren("c", eadNamespace);
         } else if ("ead".equals(parentIndexObject.getRootStructNode().getName())) {
             // ead:archdesc/ead:dsc/ead:c
             childrenNodeList = parentIndexObject.getRootStructNode()
-                    .getChild("archdesc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
-                    .getChild("dsc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
-                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+                    .getChild("archdesc", eadNamespace)
+                    .getChild("dsc", eadNamespace)
+                    .getChildren("c", eadNamespace);
         } else {
             logger.warn("Unknown node name: {}", parentIndexObject.getRootStructNode().getName());
             return Collections.emptyList();
@@ -609,7 +616,7 @@ public class EadIndexer extends Indexer {
      * 
      * @param indexObj {@link IndexObject}
      */
-    private void setSimpleData(IndexObject indexObj) {
+    protected void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
 
         indexObj.setDocType(DocType.ARCHIVE);

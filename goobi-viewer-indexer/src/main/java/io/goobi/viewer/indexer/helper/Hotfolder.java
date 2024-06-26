@@ -47,6 +47,7 @@ import io.goobi.viewer.indexer.CmsPageIndexer;
 import io.goobi.viewer.indexer.DenkXwebIndexer;
 import io.goobi.viewer.indexer.DocUpdateIndexer;
 import io.goobi.viewer.indexer.DublinCoreIndexer;
+import io.goobi.viewer.indexer.Ead3Indexer;
 import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.Indexer;
 import io.goobi.viewer.indexer.LidoIndexer;
@@ -638,6 +639,19 @@ public class Hotfolder {
                         if (eadEnabled) {
                             try {
                                 currentIndexer = new EadIndexer(this);
+                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                            } finally {
+                                currentIndexer = null;
+                            }
+                        } else {
+                            logger.error("EAD indexing is disabled - please make sure all folders are configured.");
+                            Files.delete(sourceFile);
+                        }
+                        break;
+                    case EAD3:
+                        if (eadEnabled) {
+                            try {
+                                currentIndexer = new Ead3Indexer(this);
                                 currentIndexer.addToIndex(sourceFile, false, reindexSettings);
                             } finally {
                                 currentIndexer = null;

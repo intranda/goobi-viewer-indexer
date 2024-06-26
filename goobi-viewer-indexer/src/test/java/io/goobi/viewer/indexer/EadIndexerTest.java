@@ -42,7 +42,7 @@ class EadIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see DublinCoreIndexer#addToIndex(Path,boolean,Map)
+     * @see EadIndexer#addToIndex(Path,boolean,Map)
      * @verifies add record to index correctly
      */
     @Test

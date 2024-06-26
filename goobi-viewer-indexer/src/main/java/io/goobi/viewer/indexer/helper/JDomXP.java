@@ -57,6 +57,7 @@ public class JDomXP {
         METS_MARC,
         LIDO,
         EAD,
+        EAD3,
         DENKXWEB,
         DUBLINCORE,
         WORLDVIEWS,
@@ -159,7 +160,7 @@ public class JDomXP {
         // Add all namespaces
         for (String key : SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().keySet()) {
             Namespace value = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get(key);
-            builder.setNamespace(key, value.getURI());
+            builder.setNamespace(value.getPrefix(), value.getURI());
         }
         XPathExpression<Object> xpath = builder.compileWith(XPathFactory.instance());
         return xpath.evaluate(parent);
@@ -594,10 +595,13 @@ public class JDomXP {
                 return FileFormat.LIDO;
             }
             if (xp.doc.getRootElement().getNamespace() != null
-                    && (xp.doc.getRootElement().getNamespace().getURI().equals("urn:isbn:1-931666-22-9")
-                            || xp.doc.getRootElement().getNamespace().getURI().equals("http://ead3.archivists.org/schema/")
-                            || xp.doc.getRootElement().getNamespace().getURI().equals("https://archivists.org/ns/ead/v4"))) {
+                    && (xp.doc.getRootElement().getNamespace().getURI().equals("urn:isbn:1-931666-22-9"))) {
                 return FileFormat.EAD;
+            }
+            if (xp.doc.getRootElement().getNamespace() != null
+                    && (xp.doc.getRootElement().getNamespace().getURI().equals("http://ead3.archivists.org/schema/")
+                            || xp.doc.getRootElement().getNamespace().getURI().equals("https://archivists.org/ns/ead/v4"))) {
+                return FileFormat.EAD3;
             }
             if (xp.doc.getRootElement().getNamespace() != null
                     && xp.doc.getRootElement().getNamespace().getURI().equals("http://denkxweb.de/")) {
