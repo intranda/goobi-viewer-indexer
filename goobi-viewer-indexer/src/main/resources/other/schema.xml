@@ -36,7 +36,7 @@
 
 <!-- PLEASE ADD A CHECKBOX IN THE TICKET TO REMEMBER TO UPDATE THIS FILE IN THE
      GOOBI-VIEWER-DOCKER-SOLR REPOSITORY AS WELL -->
-<schema name="goobi_viewer-20240625" version="1.6">
+<schema name="goobi_viewer-20240626" version="1.6">
 
 
 
@@ -244,7 +244,7 @@
     <dynamicField name="CMS_TEXT_*" type="text_general_rev" indexed="true" stored="false" multiValued="true" />
     <dynamicField name="WKT_*" type="location_rpt" indexed="true" stored="true" multiValued="true" />
     <dynamicField name="SEARCHTERMS_*" type="search_field_rev" indexed="true" stored="true" />
-    <dynamicField name="SUPERSEARCHTERMS_*" type="search_field_rev" indexed="true" stored="true" />
+    <dynamicField name="SUPERSEARCHTERMS_*" type="search_field_rev" indexed="true" stored="true" multiValued="true" />
 
 	<dynamicField name="random_*" type="random" />
 
