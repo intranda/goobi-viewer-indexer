@@ -625,10 +625,18 @@ public class EadIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // LOGID / DMDID
+
         String value = TextHelper.normalizeSequence(structNode.getAttributeValue("id"));
         if (value != null) {
             indexObj.setLogId(value);
             indexObj.setDmdid(value);
+        } else {
+            // Root element
+            value = xp.evaluateToAttributeStringValue("ead:archdesc/@id", structNode);
+            if (value != null) {
+                indexObj.setLogId(value);
+                indexObj.setDmdid(value);
+            }
         }
         logger.trace("LOGID: {}", indexObj.getLogId());
 
