@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -65,7 +66,11 @@ public class EadIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(EadIndexer.class);
 
+    public static final Namespace NAMESPACE_EAD2 = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
+
     private ForkJoinPool pool;
+
+    protected Namespace eadNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead3");
 
     /**
      * Constructor.
@@ -76,6 +81,7 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
+        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
@@ -86,6 +92,7 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
+        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
@@ -267,11 +274,11 @@ public class EadIndexer extends Indexer {
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
-            indexObj.addToLucene(SolrConstants.ISWORK, "false");
+            indexObj.addToLucene(SolrConstants.ISWORK, "true");
 
-            // Add DEFAULT field
+            // Add SEARCHTERMS_ARCHIVE field (instead of DEFAULT)
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-                indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+                indexObj.addToLucene(SolrConstants.SEARCHTERMS_ARCHIVE, cleanUpDefaultField(indexObj.getDefaultValue()));
                 indexObj.setDefaultValue("");
             }
 
@@ -362,19 +369,19 @@ public class EadIndexer extends Indexer {
         List<Element> childrenNodeList;
         if ("c".equals(parentIndexObject.getRootStructNode().getName())) {
             childrenNodeList = parentIndexObject.getRootStructNode()
-                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+                    .getChildren("c", eadNamespace);
         } else if ("ead".equals(parentIndexObject.getRootStructNode().getName())) {
             // ead:archdesc/ead:dsc/ead:c
             childrenNodeList = parentIndexObject.getRootStructNode()
-                    .getChild("archdesc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
-                    .getChild("dsc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
-                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+                    .getChild("archdesc", eadNamespace)
+                    .getChild("dsc", eadNamespace)
+                    .getChildren("c", eadNamespace);
         } else {
             logger.warn("Unknown node name: {}", parentIndexObject.getRootStructNode().getName());
             return Collections.emptyList();
         }
-        if (!childrenNodeList.isEmpty()) {
-            logger.info("{} child elements found", childrenNodeList.size());
+        if (logger.isDebugEnabled() && !childrenNodeList.isEmpty()) {
+            logger.debug("{} child elements found", childrenNodeList.size());
         }
 
         if (allowParallelProcessing && pool == null && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
@@ -519,7 +526,7 @@ public class EadIndexer extends Indexer {
             sbDefaultValue.append(labelWithSpaces);
         }
         if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
-            logger.info("Adding label to children");
+            logger.debug("Adding label to children");
             for (String label : indexObj.getParentLabels()) {
                 String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
                 if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
@@ -530,9 +537,9 @@ public class EadIndexer extends Indexer {
 
         indexObj.setDefaultValue(sbDefaultValue.toString());
 
-        // Add DEFAULT field
+        // Add SEARCHTERMS_ARCHIVE field (instead of DEFAULT)
         if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-            indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+            indexObj.addToLucene(SolrConstants.SEARCHTERMS_ARCHIVE, cleanUpDefaultField(indexObj.getDefaultValue()));
             // Add default value to parent doc
             indexObj.setDefaultValue("");
         }
@@ -609,7 +616,7 @@ public class EadIndexer extends Indexer {
      * 
      * @param indexObj {@link IndexObject}
      */
-    private void setSimpleData(IndexObject indexObj) {
+    protected void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
 
         indexObj.setDocType(DocType.ARCHIVE);
@@ -618,10 +625,18 @@ public class EadIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // LOGID / DMDID
+
         String value = TextHelper.normalizeSequence(structNode.getAttributeValue("id"));
         if (value != null) {
             indexObj.setLogId(value);
             indexObj.setDmdid(value);
+        } else {
+            // Root element
+            value = xp.evaluateToAttributeStringValue("ead:archdesc/@id", structNode);
+            if (value != null) {
+                indexObj.setLogId(value);
+                indexObj.setDmdid(value);
+            }
         }
         logger.trace("LOGID: {}", indexObj.getLogId());
 
