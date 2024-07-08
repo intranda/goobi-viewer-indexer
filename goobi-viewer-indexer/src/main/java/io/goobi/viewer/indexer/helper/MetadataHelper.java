@@ -862,26 +862,6 @@ public final class MetadataHelper {
     }
 
     /**
-     * <p>
-     * getAnchorPi.
-     * </p>
-     *
-     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
-     * @return a {@link java.lang.String} object.
-     */
-    public static String getAnchorPi(JDomXP xp) {
-        String query =
-                "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/"
-                        + "mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
-        List<Element> relatedItemList = xp.evaluateToElements(query, null);
-        if ((relatedItemList != null) && (!relatedItemList.isEmpty())) {
-            return relatedItemList.get(0).getText();
-        }
-
-        return null;
-    }
-
-    /**
      * Retrieves the PI value from the given METS document object.
      *
      * @param prefix a {@link java.lang.String} object.

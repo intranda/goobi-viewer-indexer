@@ -31,7 +31,7 @@ import org.junit.jupiter.api.io.TempDir;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
-class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
+class Ead3IndexerTest extends AbstractSolrEnabledTest {
 
     @Override
     @BeforeEach
@@ -42,37 +42,27 @@ class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see DublinCoreIndexer#DublinCoreIndexer(Hotfolder)
-     * @verifies set attributes correctly
-     */
-    @Test
-    void DublinCoreIndexer_shouldSetAttributesCorrectly() throws Exception {
-        Assertions.assertNotNull(hotfolder);
-        Indexer indexer = new DublinCoreIndexer(hotfolder);
-        Assertions.assertEquals(hotfolder, indexer.hotfolder);
-    }
-
-    /**
-     * @see DublinCoreIndexer#addToIndex(Path,boolean,Map)
+     * @see Ead3Indexer#addToIndex(Path,boolean,Map)
      * @verifies add record to index correctly
      */
     @Test
     void addToIndex_shouldAddRecordToIndexCorrectly(@TempDir Path tempDir) throws Exception {
-        Path dcFile = Paths.get("src/test/resources/DC/record.xml");
-        Assertions.assertTrue(Files.isRegularFile(dcFile));
-        
-        Path dcFileCopy = Paths.get(tempDir.toAbsolutePath().toString(), "record.xml");
-        Files.copy(dcFile, dcFileCopy, StandardCopyOption.REPLACE_EXISTING);
-        Assertions.assertTrue(Files.isRegularFile(dcFileCopy));
+        Path eadFile = Paths.get("src/test/resources/EAD/EAD3_example.xml");
+        Assertions.assertTrue(Files.isRegularFile(eadFile));
 
-        Indexer indexer = new DublinCoreIndexer(hotfolder);
-        indexer.addToIndex(dcFileCopy, false, new HashMap<>());
+        Path eadFileCopy = Paths.get(tempDir.toAbsolutePath().toString(), "EAD3_example.xml");
+        Files.copy(eadFile, eadFileCopy, StandardCopyOption.REPLACE_EXISTING);
+        Assertions.assertTrue(Files.isRegularFile(eadFileCopy));
+
+        Indexer indexer = new Ead3Indexer(hotfolder);
+        indexer.addToIndex(eadFileCopy, false, new HashMap<>());
 
         SolrDocumentList result =
-                SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":123e4567-e89b-12d3-a456-556642440000", null);
+                SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":EAD3_example", null);
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals("123e4567-e89b-12d3-a456-556642440000", result.get(0).getFieldValue(SolrConstants.PI));
-        Assertions.assertTrue(Files.isRegularFile(dcFile)); // Original file didn't get deleted
+        Assertions.assertEquals("EAD3_example", result.get(0).getFieldValue(SolrConstants.PI));
+        Assertions.assertNotNull(result.get(0).getFieldValue(SolrConstants.SEARCHTERMS_ARCHIVE));
+        Assertions.assertTrue(Files.isRegularFile(eadFile)); // Original file didn't get deleted
     }
 }

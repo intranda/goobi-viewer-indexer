@@ -42,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Namespace;
 
+import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -170,7 +171,7 @@ public final class Configuration {
         namespaces.put("rdf", Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
         namespaces.put("skos", Namespace.getNamespace("skos", "http://www.w3.org/2004/02/skos/core#"));
         namespaces.put("oai", Namespace.getNamespace("oai", "http://www.openarchives.org/OAI/2.0/"));
-        namespaces.put("ead", Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9"));
+        namespaces.put("ead", EadIndexer.NAMESPACE_EAD2);
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         for (Entry<String, String> entry : additionalNamespaces.entrySet()) {

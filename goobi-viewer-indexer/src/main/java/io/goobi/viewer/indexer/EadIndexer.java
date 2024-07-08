@@ -36,6 +36,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -65,7 +66,11 @@ public class EadIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(EadIndexer.class);
 
+    public static final Namespace NAMESPACE_EAD2 = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
+
     private ForkJoinPool pool;
+
+    protected Namespace eadNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead3");
 
     /**
      * Constructor.
@@ -76,6 +81,7 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
+        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
@@ -86,6 +92,7 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
+        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
@@ -173,16 +180,8 @@ public class EadIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
-     * @should index metadata groups correctly
-     * @should index multi volume records correctly
      * @should update record correctly
      * @should set access conditions correctly
-     * @should write cms page texts into index
-     * @should write shape metadata correctly
-     * @should keep volume count up to date in anchor
-     * @should read datecreated from mets with correct time zone
-     * @should not add dateupdated if value already exists
-     * 
      */
     public String[] index(Path eadFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy) {
         String[] ret = { null, null };
@@ -275,11 +274,11 @@ public class EadIndexer extends Indexer {
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
-            indexObj.addToLucene(SolrConstants.ISWORK, "false");
+            indexObj.addToLucene(SolrConstants.ISWORK, "true");
 
-            // Add DEFAULT field
+            // Add SEARCHTERMS_ARCHIVE field (instead of DEFAULT)
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-                indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+                indexObj.addToLucene(SolrConstants.SEARCHTERMS_ARCHIVE, cleanUpDefaultField(indexObj.getDefaultValue()));
                 indexObj.setDefaultValue("");
             }
 
@@ -370,19 +369,19 @@ public class EadIndexer extends Indexer {
         List<Element> childrenNodeList;
         if ("c".equals(parentIndexObject.getRootStructNode().getName())) {
             childrenNodeList = parentIndexObject.getRootStructNode()
-                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+                    .getChildren("c", eadNamespace);
         } else if ("ead".equals(parentIndexObject.getRootStructNode().getName())) {
             // ead:archdesc/ead:dsc/ead:c
             childrenNodeList = parentIndexObject.getRootStructNode()
-                    .getChild("archdesc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
-                    .getChild("dsc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
-                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+                    .getChild("archdesc", eadNamespace)
+                    .getChild("dsc", eadNamespace)
+                    .getChildren("c", eadNamespace);
         } else {
             logger.warn("Unknown node name: {}", parentIndexObject.getRootStructNode().getName());
             return Collections.emptyList();
         }
-        if (!childrenNodeList.isEmpty()) {
-            logger.info("{} child elements found", childrenNodeList.size());
+        if (logger.isDebugEnabled() && !childrenNodeList.isEmpty()) {
+            logger.debug("{} child elements found", childrenNodeList.size());
         }
 
         if (allowParallelProcessing && pool == null && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
@@ -391,10 +390,11 @@ public class EadIndexer extends Indexer {
                     SolrIndexerDaemon.getInstance().getConfiguration().getThreads(), depth);
             pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
             try {
-                pool.submit(() -> childrenNodeList.parallelStream().forEach(node -> {
+                pool.submit(() -> childrenNodeList.parallelStream().forEachOrdered(node -> {
+                    int order = childrenNodeList.indexOf(node); // TODO This is expensive (O(n))
                     try {
                         // Do not use parallel processing in recursion
-                        IndexObject obj = indexChild(node, parentIndexObject, depth, writeStrategy, false);
+                        IndexObject obj = indexChild(node, parentIndexObject, depth, order, writeStrategy, false);
                         if (obj != null) {
                             ret.add(obj);
                         }
@@ -417,8 +417,9 @@ public class EadIndexer extends Indexer {
                 pool = null;
             }
         } else {
+            int order = 0;
             for (final Element node : childrenNodeList) {
-                IndexObject obj = indexChild(node, parentIndexObject, depth, writeStrategy, allowParallelProcessing);
+                IndexObject obj = indexChild(node, parentIndexObject, depth, order++, writeStrategy, allowParallelProcessing);
                 if (obj != null) {
                     ret.add(obj);
                 }
@@ -433,13 +434,14 @@ public class EadIndexer extends Indexer {
      * @param node
      * @param parentIndexObject
      * @param depth
+     * @param order
      * @param writeStrategy
      * @param allowParallelProcessing
      * @return Created {@link IndexObject} if it has metadata fields to inherit upwards; otherwise null
      * @throws FatalIndexerException
      * @throws IOException
      */
-    public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
+    public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, int order, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing)
             throws FatalIndexerException, IOException {
         IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
@@ -455,6 +457,8 @@ public class EadIndexer extends Indexer {
         indexObj.pushSimpleDataToLuceneArray();
 
         indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
+
+        indexObj.addToLucene(SolrConstants.PREFIX_SORTNUM + "ARCHIVE_ORDER", String.valueOf(order));
 
         // TODO id, level, unitid, unittitle, physdesc, etc.
 
@@ -522,7 +526,7 @@ public class EadIndexer extends Indexer {
             sbDefaultValue.append(labelWithSpaces);
         }
         if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
-            logger.info("Adding label to children");
+            logger.debug("Adding label to children");
             for (String label : indexObj.getParentLabels()) {
                 String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
                 if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
@@ -533,9 +537,9 @@ public class EadIndexer extends Indexer {
 
         indexObj.setDefaultValue(sbDefaultValue.toString());
 
-        // Add DEFAULT field
+        // Add SEARCHTERMS_ARCHIVE field (instead of DEFAULT)
         if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-            indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+            indexObj.addToLucene(SolrConstants.SEARCHTERMS_ARCHIVE, cleanUpDefaultField(indexObj.getDefaultValue()));
             // Add default value to parent doc
             indexObj.setDefaultValue("");
         }
@@ -612,7 +616,7 @@ public class EadIndexer extends Indexer {
      * 
      * @param indexObj {@link IndexObject}
      */
-    private void setSimpleData(IndexObject indexObj) {
+    protected void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
 
         indexObj.setDocType(DocType.ARCHIVE);
@@ -621,10 +625,18 @@ public class EadIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // LOGID / DMDID
+
         String value = TextHelper.normalizeSequence(structNode.getAttributeValue("id"));
         if (value != null) {
             indexObj.setLogId(value);
             indexObj.setDmdid(value);
+        } else {
+            // Root element
+            value = xp.evaluateToAttributeStringValue("ead:archdesc/@id", structNode);
+            if (value != null) {
+                indexObj.setLogId(value);
+                indexObj.setDmdid(value);
+            }
         }
         logger.trace("LOGID: {}", indexObj.getLogId());
 

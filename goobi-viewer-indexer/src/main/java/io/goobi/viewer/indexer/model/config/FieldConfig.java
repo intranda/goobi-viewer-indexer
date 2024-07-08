@@ -26,12 +26,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**
  * Configuration object for a single metadata field configuration.
  */
 public class FieldConfig {
-    
+
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(FieldConfig.class);
 
@@ -79,34 +80,31 @@ public class FieldConfig {
         super();
         this.fieldname = fieldname;
     }
-    
+
     /**
      * 
      * @param xpath XPath exression to check
      * @should add FileFormats correctly
      */
     public void checkXpathSupportedFormats(String xpath) {
-        if (xpath.contains("mods:")) {
-            supportedFormats.add(FileFormat.METS);
-            logger.debug("Field {} has METS/MODS config.", fieldname);
-        } else if (xpath.contains("@tag=")) {
-            supportedFormats.add(FileFormat.METS_MARC);
-            logger.debug("Field {} has METS/MARC config.", fieldname);
-        } else if (xpath.contains("ead:")) {
-            supportedFormats.add(FileFormat.EAD);
+        if (xpath.contains("mets:xmlData") || xpath.startsWith("@OBJID")) {
+            getSupportedFormats().add(FileFormat.METS);
+            getSupportedFormats().add(FileFormat.METS_MARC);
+            logger.debug("Field {} has METS/MODS and METS/MARC config.", fieldname);
+        } else if (SolrConstants.EAD_NODE_ID.equals(fieldname) || xpath.contains("ead:") || xpath.equals("@otherlevel")) {
+            getSupportedFormats().add(FileFormat.EAD);
             logger.debug("Field {} has EAD config.", fieldname);
         } else if (xpath.contains("lido:")) {
-            supportedFormats.add(FileFormat.LIDO);
+            getSupportedFormats().add(FileFormat.LIDO);
             logger.debug("Field {} has LIDO config.", fieldname);
         } else if (xpath.contains("dc:")) {
-            supportedFormats.add(FileFormat.DUBLINCORE);
+            getSupportedFormats().add(FileFormat.DUBLINCORE);
             logger.debug("Field {} has Dublin Core config.", fieldname);
         } else if (xpath.contains("denkxweb:")) {
-            supportedFormats.add(FileFormat.DENKXWEB);
+            getSupportedFormats().add(FileFormat.DENKXWEB);
             logger.debug("Field {} has DenkXWeb config.", fieldname);
         }
     }
-    
 
     /**
      * <p>
