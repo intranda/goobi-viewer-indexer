@@ -1334,10 +1334,12 @@ public class MetsIndexer extends Indexer {
             xpath = XPATH_FILE + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
             logger.debug(xpath);
             List<Attribute> filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-            logger.trace(xpath);
             if (filepathAttrList == null || filepathAttrList.size() <= attrListIndex) {
-                // Skip silently
-                logger.debug("Skipping file group {}", fileGrpUse);
+                if (useFileGroupGlobal.equals(fileGrpUse)) {
+                    logger.warn("Skipping selected file group {} - nothing found at: {}", fileGrpUse, xpath);
+                } else {
+                    logger.debug("Skipping file group {}", fileGrpUse);
+                }
                 continue;
             }
 
