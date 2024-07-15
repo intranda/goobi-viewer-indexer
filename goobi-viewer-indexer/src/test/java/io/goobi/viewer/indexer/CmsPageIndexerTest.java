@@ -79,7 +79,8 @@ class CmsPageIndexerTest extends AbstractSolrEnabledTest {
 
         assertEquals("CMS123", doc.getFieldValue(SolrConstants.PI));
         assertEquals("CMS Page Title", doc.getFieldValue(SolrConstants.LABEL));
-        assertEquals("CMS Page Title", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TITLE"));
+        assertEquals("CMS Page Title", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TITLE_LANG_EN"));
+        assertEquals("CMS Seitentitel", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TITLE_LANG_DE"));
 
         Collection<Object> categories = doc.getFieldValues("MD_CATEGORY");
         assertNotNull(categories);

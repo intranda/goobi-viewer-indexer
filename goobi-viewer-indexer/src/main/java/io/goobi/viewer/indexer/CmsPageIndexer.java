@@ -230,9 +230,20 @@ public class CmsPageIndexer extends Indexer {
             prepareUpdate(indexObj);
 
             // Set title
-            String title = doc.getRootElement().getChildText("title");
-            indexObj.setLabel(title);
-            indexObj.addToLucene("MD_TITLE", title);
+            List<Element> eleListTitle = doc.getRootElement().getChildren("title");
+            if (eleListTitle != null) {
+                for (Element eleTitle : eleListTitle) {
+                    if (StringUtils.isEmpty(indexObj.getLabel())) {
+                        indexObj.setLabel(eleTitle.getTextTrim());
+                    }
+                    if (eleTitle.getAttribute("lang") != null) {
+                        indexObj.addToLucene("MD_TITLE" + SolrConstants.MIXFIX_LANG + eleTitle.getAttributeValue("lang").toUpperCase(),
+                                eleTitle.getTextTrim());
+                    } else {
+                        indexObj.addToLucene("MD_TITLE", eleTitle.getTextTrim());
+                    }
+                }
+            }
 
             // Categories
             List<Element> eleListCategories = doc.getRootElement().getChild("categories").getChildren("category");
