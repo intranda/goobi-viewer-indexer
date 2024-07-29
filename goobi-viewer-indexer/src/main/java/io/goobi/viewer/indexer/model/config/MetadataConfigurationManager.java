@@ -65,7 +65,7 @@ public final class MetadataConfigurationManager {
      * Constructor for MetadataConfigurationManager.
      * </p>
      *
-     * @param config a {@link org.apache.commons.configuration.XMLConfiguration} object.
+     * @param config a {@link org.apache.commons.configuration2.XMLConfiguration} object.
      * @throws ConfigurationException
      */
     public MetadataConfigurationManager(XMLConfiguration config) throws ConfigurationException {

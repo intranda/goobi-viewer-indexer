@@ -318,7 +318,7 @@ public final class SolrIndexerDaemon {
     /**
      * Sets custom Configuration object (used for unit testing).
      *
-     * @param configuration a {@link io.goobi.viewer.controller.Configuration} object.
+     * @param configuration a {@link io.goobi.viewer.indexer.helper.Configuration} object.
      */
     public void injectConfiguration(Configuration configuration) {
         if (configuration != null) {
@@ -392,7 +392,7 @@ public final class SolrIndexerDaemon {
     /**
      * Sets custom SolrSearchIndex object (used for unit testing).
      *
-     * @param searchIndex a {@link io.goobi.viewer.solr.SolrSearchIndex} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      */
     public void injectSearchIndex(SolrSearchIndex searchIndex) {
         this.searchIndex = searchIndex;

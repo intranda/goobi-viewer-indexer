@@ -307,7 +307,7 @@ public class Utils {
      * @param params a {@link java.util.Map} object.
      * @param cookies a {@link java.util.Map} object.
      * @param body Optional entity content.
-     * @param contentType Optional mime type.
+     * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
      * @throws java.io.IOException if any.
      * @throws io.goobi.viewer.exceptions.HTTPException if any.
@@ -326,7 +326,7 @@ public class Utils {
      * @param params a {@link java.util.Map} object.
      * @param cookies a {@link java.util.Map} object.
      * @param body Optional entity content.
-     * @param contentType Optional mime type.
+     * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
      * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
@@ -346,7 +346,7 @@ public class Utils {
      * @param params a {@link java.util.Map} object.
      * @param cookies a {@link java.util.Map} object.
      * @param body Optional entity content.
-     * @param contentType Optional mime type.
+     * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
      * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
@@ -769,7 +769,7 @@ public class Utils {
     /**
      * 
      * @param prefix
-     * @param order
+     * @param count
      * @return
      * @should construct number correctly
      */
