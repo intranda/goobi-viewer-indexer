@@ -1047,18 +1047,20 @@
 					<replace char="156"></replace>
 					<groupEntity type="PERSON">
 						<field name="MD_VALUE">mods:displayForm</field>
-						<field name="MD_DISPLAYFORM">mods:displayForm</field>
 						<field name="MD_LINK">@xlink:href</field>
 						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                        <field name="MD_PERSON_QUALIFIER">mods:name/mods:namePart[@type="qualifier"]</field>
+                        <field name="MD_PLACE_NAME">mods:extension/intranda:place</field>
+                        <field name="MD_PLACE_QUALIFIER">mods:extension/intranda:placeQualifier</field>
 					</groupEntity>
 				</item>
 			</list>
 		</MD_ARTIST>
-
+        
 		<MD_ASSOCIATEDPERSON>
 			<list>
 				<item>
@@ -1953,8 +1955,6 @@
 				</item>
 			</list>
 		</MD_WOODENGRAVER>
-
-
 
 		<MD_CORPORATIONSEARCH>
 			<list>
@@ -3069,23 +3069,6 @@
 				</item>
 			</list>
 		</MD_NEXT_VERSION>
-
-		<MD_ARTIST_GROUP>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:subject[mods:name[@type="personal"]/mods:role/mods:roleTerm[@type="code"]/text() = "art"]</xpath>
-					<addToDefault>true</addToDefault>
-					<addSortField>true</addSortField>
-					<groupEntity type="PERSON">
-						<field name="MD_VALUE">mods:name/mods:namePart[@type="family"]</field>
-						<field name="MD_PERSON_NAME">mods:name/mods:namePart[@type="family"]</field>
-						<field name="MD_PERSON_QUALIFIER">mods:name/mods:namePart[@type="qualifier"]</field>
-						<field name="MD_PLACE_NAME">mods:extension/intranda:place</field>
-						<field name="MD_PLACE_QUALIFIER">mods:extension/intranda:placeQualifier</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_ARTIST_GROUP>
 
 		<BOOL_HIDE>
 			<list>
