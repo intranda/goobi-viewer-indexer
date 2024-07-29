@@ -997,7 +997,7 @@ public class MetsIndexer extends Indexer {
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param dataRepository a {@link io.goob4i.viewer.indexer.model.datarepository.DataRepository} object.
+     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
@@ -2404,7 +2404,6 @@ public class MetsIndexer extends Indexer {
      * getAnchorPi.
      * </p>
      *
-     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.lang.String} object.
      */
     public String getAnchorPi() {

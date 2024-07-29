@@ -173,10 +173,9 @@ public class EadIndexer extends Indexer {
     /**
      * Indexes the given METS file.
      *
-     * @param metsFile {@link java.nio.file.Path}
+     * @param eadFile {@link java.nio.file.Path}
      * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param pageCountStart Order number for the first page.
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
