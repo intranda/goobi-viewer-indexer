@@ -501,7 +501,38 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <doclint>none</doclint>
+                    <failOnWarnings>true</failOnWarnings>
+                    <!-- Specifies the tags to be fixed automatically when running the mvn javadox:fix command, see:
+                         https://maven.apache.org/plugins/maven-javadoc-plugin/fix-mojo.html#fixTags
+                    -->
+                    <fixTags>link,throws,return,param</fixTags>
+                    <tags>
+                        <tag>
+                            <!-- Disables custom @should tag in Javadoc see:
+                                 https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#tags
+                            -->
+                            <name>should</name>
+                            <placement>X</placement>
+                        </tag>
+                    </tags>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-javadoc</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                 </executions>
+            </plugin>
 		</plugins>
 	</build>
 </project>
