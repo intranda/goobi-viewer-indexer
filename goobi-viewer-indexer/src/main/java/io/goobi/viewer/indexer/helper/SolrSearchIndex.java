@@ -82,7 +82,7 @@ public final class SolrSearchIndex {
      * Constructor for SolrSearchIndex.
      * </p>
      *
-     * @param client a {@link org.apache.solr.client.solrj.SolrServer} object.
+     * @param client a {@link org.apache.solr.client.solrj.SolrClient} object.
      * @throws ConfigurationException
      * @throws FatalIndexerException
      */
@@ -307,7 +307,7 @@ public final class SolrSearchIndex {
      * any changes to other fields.
      *
      * @param doc a {@link org.apache.solr.common.SolrDocument} object.
-     * @param partialUpdates Map of update operations (usage: Map<field, Map<operation, value>>)
+     * @param partialUpdates Map of update operations (usage: Map&lt;field, Map&lt;operation, value&gt;&gt;)
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should update doc correctly
      * @should add GROUPFIELD if original doc doesn't have it
@@ -582,7 +582,7 @@ public final class SolrSearchIndex {
      * getSolrSchemaDocument.
      * </p>
      *
-     * @param confFilename
+     * @param solrUrl
      * @return a {@link org.jdom2.Document} object.
      * @throws IOException
      * @throws JDOMException

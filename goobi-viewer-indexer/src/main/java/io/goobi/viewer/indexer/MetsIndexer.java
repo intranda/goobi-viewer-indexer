@@ -743,7 +743,7 @@ public class MetsIndexer extends Indexer {
         if (StringUtils.isEmpty(filePathBanner) && SolrIndexerDaemon.getInstance().getConfiguration().isUseFirstPageAsDefaultRepresentative()
                 && firstPageDoc != null) {
             // Add thumbnail information from the first page
-            logger.info("THUMBNAIL from first page");
+            logger.debug("THUMBNAIL from first page");
             String thumbnailFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
             if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
@@ -997,7 +997,7 @@ public class MetsIndexer extends Indexer {
      *
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param dataRepository a {@link io.goob4i.viewer.indexer.model.datarepository.DataRepository} object.
+     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
@@ -1334,10 +1334,12 @@ public class MetsIndexer extends Indexer {
             xpath = XPATH_FILE + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
             logger.debug(xpath);
             List<Attribute> filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-            logger.trace(xpath);
             if (filepathAttrList == null || filepathAttrList.size() <= attrListIndex) {
-                // Skip silently
-                logger.debug("Skipping file group {}", fileGrpUse);
+                if (useFileGroupGlobal.equals(fileGrpUse)) {
+                    logger.warn("Skipping selected file group {} - nothing found at: {}", fileGrpUse, xpath);
+                } else {
+                    logger.debug("Skipping file group {}", fileGrpUse);
+                }
                 continue;
             }
 
@@ -2402,7 +2404,6 @@ public class MetsIndexer extends Indexer {
      * getAnchorPi.
      * </p>
      *
-     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.lang.String} object.
      */
     public String getAnchorPi() {

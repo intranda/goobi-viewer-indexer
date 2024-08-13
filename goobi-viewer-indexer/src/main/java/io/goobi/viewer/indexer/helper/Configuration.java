@@ -181,7 +181,7 @@ public final class Configuration {
     }
 
     /**
-     * Returns param of < init >< elementName > param < /elementName >< /init > if exists otherwise returns question
+     * Returns param of &lt;init&gt;&lt;elementName&gt; param &lt;/elementName&gt;&lt;/init&gt; if exists otherwise returns question
      *
      * @param elementName the element name
      * @return param if exists, element name otherwise

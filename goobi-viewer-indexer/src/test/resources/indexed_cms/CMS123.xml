@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cmsPage id="CMS123">
-	<title>CMS Page Title</title>
+	<title lang="en">CMS Page Title</title>
+    <title lang="de">CMS Seitentitel</title>
 	<categories>
 		<category>cat1</category>
         <category>cat2</category>

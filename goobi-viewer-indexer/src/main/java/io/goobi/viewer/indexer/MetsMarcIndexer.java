@@ -95,7 +95,6 @@ public class MetsMarcIndexer extends MetsIndexer {
      * getAnchorPi.
      * </p>
      *
-     * @param xp a {@link io.goobi.viewer.indexer.helper.JDomXP} object.
      * @return a {@link java.lang.String} object.
      */
     @Override
