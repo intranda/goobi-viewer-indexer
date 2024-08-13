@@ -1285,7 +1285,7 @@ public abstract class Indexer {
                         break;
                 }
                 indexObj.getLuceneFields().add(field);
-                logger.info("added field: {}:{}", field.getField(), field.getValue());
+                logger.debug("added field: {}:{}", field.getField(), field.getValue());
             }
         } else {
             fieldsToAddToGroupDoc.addAll(gmd.getAuthorityDataFields());
