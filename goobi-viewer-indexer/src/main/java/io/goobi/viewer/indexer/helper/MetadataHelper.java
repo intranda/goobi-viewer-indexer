@@ -109,9 +109,6 @@ public final class MetadataHelper {
     @SuppressWarnings("rawtypes")
     public static List<LuceneField> retrieveElementMetadata(Element element, String queryPrefix, IndexObject indexObj, JDomXP xp)
             throws FatalIndexerException {
-        if (element == null) {
-            throw new IllegalArgumentException("element may not be null");
-        }
         if (indexObj == null) {
             throw new IllegalArgumentException("indexObj may not be null");
         }
@@ -157,7 +154,7 @@ public final class MetadataHelper {
                 }
 
                 List<Element> elementsToIterateOver = new ArrayList<>();
-                elementsToIterateOver.add(element);
+                elementsToIterateOver.add(element); // element being null is ok here
 
                 // If a field needs child and/or parent values, add those elements to the iteration list
                 Set<String> childrenAndAncestors = new HashSet<>();
