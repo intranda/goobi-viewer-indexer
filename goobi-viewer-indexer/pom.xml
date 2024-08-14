@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>24.07</version>
+	<version>24.08-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -32,7 +32,7 @@
 		<sonar.java.target>17</sonar.java.target>
 
 		<!-- Checkstyle -->
-		<checkstyle.max.violations>180</checkstyle.max.violations>
+		<checkstyle.max.violations>165</checkstyle.max.violations>
 		<skipCheckstyle>true</skipCheckstyle>
 
 		<!-- Manifest information -->

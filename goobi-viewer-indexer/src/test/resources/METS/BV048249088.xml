@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets xmlns:mets="http://www.loc.gov/METS/" xmlns:dv="http://dfg-viewer.de/" xmlns:intranda="https://intranda.com/MODS/" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OBJID="9068" xsi:schemaLocation="http://www.loc.gov/standards/premis/ http://www.loc.gov/standards/premis/v2/premis-v2-0.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.loc.gov/standards/mix/ http://www.loc.gov/standards/mix/mix.xsd">
+  <mets:metsHdr CREATEDATE="2023-11-16T19:08:09Z">
+    <mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+      <mets:name>Goobi - 447dc - 2021-09-30 22:06:02+0000</mets:name>
+      <mets:note>Goobi</mets:note>
+    </mets:agent>
+  </mets:metsHdr>
+  <mets:dmdSec ID="DMDLOG_0000">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods>
+          <mods:originInfo>
+            <mods:publisher>Im Verlage des Geographischen Instituts</mods:publisher>
+            <mods:place>
+              <mods:placeTerm type="text">Weimar</mods:placeTerm>
+            </mods:place>
+            <mods:dateIssued>1804</mods:dateIssued>
+            <mods:dateIssued encoding="w3cdtf" keyDate="yes">1804</mods:dateIssued>
+          </mods:originInfo>
+          <mods:titleInfo>
+            <mods:title>Persien</mods:title>
+          </mods:titleInfo>
+          <mods:titleInfo type="uniform">
+            <mods:title>Persien</mods:title>
+          </mods:titleInfo>
+          <mods:identifier type="PPNanalog">BV047844658</mods:identifier>
+          <mods:recordInfo>
+            <mods:recordIdentifier source="gbv-ppn">BV048249088</mods:recordIdentifier>
+          </mods:recordInfo>
+          <mods:classification authority="GDZ">Historische Geographische Sammlung#Karten#Asien</mods:classification>
+          <mods:subject>
+            <mods:topic>Kartographie</mods:topic>
+            <mods:genre authority="gnd" valueURI="http://d-nb.info/gnd/4611904-8">Altkarte</mods:genre>
+            <mods:geographic type="text" valueURI="http://d-nb.info/gnd/4027653-3">Iran.</mods:geographic>
+            <mods:geographic type="text" valueURI="http://d-nb.info/gnd/4060036-1">Tibet.</mods:geographic>
+            <mods:geographic type="text" valueURI="http://d-nb.info/gnd/4026722-2">Indien.</mods:geographic>
+            <mods:geographic type="text" valueURI="http://d-nb.info/gnd/4079487-8">Zentralasien.</mods:geographic>
+            <mods:cartographics>
+              <mods:scale>Circa 1:4 600 000</mods:scale>
+            </mods:cartographics>
+          </mods:subject>
+          <mods:language>
+            <mods:languageTerm authority="iso639-2b" type="code">ger</mods:languageTerm>
+          </mods:language>
+          <mods:accessCondition xlink:href="https://creativecommons.org/licenses/by/4.0/" type="use and reproduction">Attribution 4.0 International (CC BY 4.0)</mods:accessCondition>
+          <mods:location>
+            <mods:physicalLocation type="shelfmark">A 423-10</mods:physicalLocation>
+          </mods:location>
+          <mods:name authority="gnd" authorityURI="http://d-nb.info/gnd/" type="personal" valueURI="http://d-nb.info/gnd/116397284">
+            <mods:role>
+              <mods:roleTerm authority="marcrelator" type="code">ctg</mods:roleTerm>
+            </mods:role>
+            <mods:namePart type="family">Reichard</mods:namePart>
+            <mods:namePart type="given">Christian Gottlieb</mods:namePart>
+            <mods:displayForm>Reichard, Christian Gottlieb</mods:displayForm>
+          </mods:name>
+          <mods:abstract type="additional">Format des Originals: 50 x 84 cm. - Maßstab in graphischer Form (Indische Koss, Persische Farsang, Englische Meile, Französische Lieues und Armenische Farsang, Geogr. Meilen). - Nullmeridian: Ferro. - Titelkartusche und Maßstab unten links. - Mit Bergstrichen. - Kupferstich mit Grenzkolorit. - Die eigentliche, gedruckte Karte von Persien (50 x 67 cm) ist im Osten handschriftlich um Tibet und Teilen von Indien erweitert</mods:abstract>
+          <mods:extension>
+            <intranda:viewerinstance>digitalanddigihub</intranda:viewerinstance>
+          </mods:extension>
+          <mods:originInfo>
+            <mods:place>
+              <mods:placeTerm type="text">Berlin</mods:placeTerm>
+            </mods:place>
+            <mods:dateCaptured encoding="iso8601">2022</mods:dateCaptured>
+            <mods:publisher>Universitätsbibliothek der Humboldt-Universität zu Berlin</mods:publisher>
+            <mods:edition>[Electronic ed.]</mods:edition>
+          </mods:originInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+    <mets:mdWrap MDTYPE="MARC">
+      <mets:xmlData>
+        <marc xmlns="http://www.loc.gov/MARC21/slim">
+          <leader>02341cem a2200457 i 4500</leader>
+          <controlfield tag="001">9949298816502882</controlfield>
+          <controlfield tag="005">00000000000000.0</controlfield>
+          <controlfield tag="007">au#|||||</controlfield>
+          <controlfield tag="007">cr#|||||||||||</controlfield>
+          <controlfield tag="008">220531|2022####xx######o#|###|#|#0#ger#u</controlfield>
+          <datafield ind1="7" ind2=" " tag="016">
+            <subfield code="a">1322800764</subfield>
+            <subfield code="2">OCoLC</subfield>
+          </datafield>
+          <datafield ind1="7" ind2=" " tag="024">
+            <subfield code="a">urn:nbn:de:kobv:11-d-</subfield>
+            <subfield code="2">urn</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="035">
+            <subfield code="a">BV048249088</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="035">
+            <subfield code="a">(DE-599)BVBBV048249088</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="035">
+            <subfield code="a">(DE-604)BV048249088</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="040">
+            <subfield code="c">DE-604</subfield>
+            <subfield code="e">rda</subfield>
+            <subfield code="a">DE-11</subfield>
+          </datafield>
+          <datafield ind1=" " ind2="7" tag="041">
+            <subfield code="a">ger</subfield>
+            <subfield code="2">ISO 639-2</subfield>
+          </datafield>
+          <datafield ind1="1" ind2=" " tag="100">
+            <subfield code="a">Reichard, Christian Gottlieb,</subfield>
+            <subfield code="d">1758-1837,</subfield>
+            <subfield code="4">ctg</subfield>
+            <subfield code="0">(DE-588)116397284</subfield>
+          </datafield>
+          <datafield ind1="1" ind2="0" tag="245">
+            <subfield code="a">Persien /</subfield>
+            <subfield code="c">nach seinem neuesten Zustande in das Oestliche Und Westliche Reich eingetheilt und entworfen von C. G. Reichard.</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="255">
+            <subfield code="a">Circa 1:4 600 000</subfield>
+          </datafield>
+          <datafield ind1=" " ind2="1" tag="264">
+            <subfield code="a">Berlin :</subfield>
+            <subfield code="b">Humboldt-Universität zu Berlin, Universitätsbibliothek,</subfield>
+            <subfield code="c">2022.</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="300">
+            <subfield code="a">1 Online-Ressource (1 Karte) :</subfield>
+            <subfield code="b">farbig.</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="336">
+            <subfield code="b">cri</subfield>
+            <subfield code="2">rdacontent</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="337">
+            <subfield code="b">c</subfield>
+            <subfield code="2">rdamedia</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="338">
+            <subfield code="b">cr</subfield>
+            <subfield code="2">rdacarrier</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="500">
+            <subfield code="a">Format des Originals: 50 x 84 cm. - Maßstab in graphischer Form (Indische Koss, Persische Farsang, Englische Meile, Französische Lieues und Armenische Farsang, Geogr. Meilen). - Nullmeridian: Ferro. - Titelkartusche und Maßstab unten links. - Mit Bergstrichen. - Kupferstich mit Grenzkolorit. - Die eigentliche, gedruckte Karte von Persien (50 x 67 cm) ist im Osten handschriftlich um Tibet und Teilen von Indien erweitert</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="534">
+            <subfield code="c">1804</subfield>
+          </datafield>
+          <datafield ind1=" " ind2="7" tag="651">
+            <subfield code="a">Iran.</subfield>
+            <subfield code="0">(DE-588)4027653-3</subfield>
+            <subfield code="2">gnd</subfield>
+            <subfield code="9">rswk-swf</subfield>
+          </datafield>
+          <datafield ind1=" " ind2="7" tag="651">
+            <subfield code="a">Tibet.</subfield>
+            <subfield code="0">(DE-588)4060036-1</subfield>
+            <subfield code="2">gnd</subfield>
+            <subfield code="9">rswk-swf</subfield>
+          </datafield>
+          <datafield ind1=" " ind2="7" tag="651">
+            <subfield code="a">Indien.</subfield>
+            <subfield code="0">(DE-588)4026722-2</subfield>
+            <subfield code="2">gnd</subfield>
+            <subfield code="9">rswk-swf</subfield>
+          </datafield>
+          <datafield ind1=" " ind2="7" tag="651">
+            <subfield code="a">Zentralasien.</subfield>
+            <subfield code="0">(DE-588)4079487-8</subfield>
+            <subfield code="2">gnd</subfield>
+            <subfield code="9">rswk-swf</subfield>
+          </datafield>
+          <datafield ind1=" " ind2="7" tag="655">
+            <subfield code="a">Altkarte</subfield>
+            <subfield code="0">(DE-588)4611904-8</subfield>
+            <subfield code="2">gnd-content</subfield>
+          </datafield>
+          <datafield ind1="0" ind2="0" tag="689">
+            <subfield code="g">Iran</subfield>
+            <subfield code="0">(DE-588)4027653-3</subfield>
+            <subfield code="2">gnd</subfield>
+          </datafield>
+          <datafield ind1="0" ind2="1" tag="689">
+            <subfield code="g">Tibet</subfield>
+            <subfield code="0">(DE-588)4060036-1</subfield>
+            <subfield code="2">gnd</subfield>
+          </datafield>
+          <datafield ind1="0" ind2="2" tag="689">
+            <subfield code="g">Indien</subfield>
+            <subfield code="0">(DE-588)4026722-2</subfield>
+            <subfield code="2">gnd</subfield>
+          </datafield>
+          <datafield ind1="1" ind2="0" tag="689">
+            <subfield code="g">Zentralasien</subfield>
+            <subfield code="0">(DE-588)4079487-8</subfield>
+            <subfield code="2">gnd</subfield>
+          </datafield>
+          <datafield ind1="0" ind2="8" tag="776">
+            <subfield code="i">Elektronische Reproduktion von</subfield>
+            <subfield code="a">Reichard, Christian Gottlieb</subfield>
+            <subfield code="t">Persien</subfield>
+            <subfield code="d">Weimar</subfield>
+            <subfield code="e">Im Verlage des Geographischen Instituts</subfield>
+            <subfield code="f">1804</subfield>
+            <subfield code="h">1 Karte</subfield>
+            <subfield code="n">Nach einem Exemplar der Humboldt-Universität zu Berlin, Universitätsbibliothek mit der Signatur: A 423-10</subfield>
+            <subfield code="w">BV047844658</subfield>
+          </datafield>
+          <datafield ind1="4" ind2=" " tag="856">
+            <subfield code="u">http://www.ub.hu-berlin.de/de/bibliothek-benutzen/digitalisierung-eod/digitalisierung-in-bearbeitung</subfield>
+            <subfield code="x">Digitalisierung</subfield>
+            <subfield code="z">kostenfrei</subfield>
+            <subfield code="3">Volltext</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="912">
+            <subfield code="a">digit</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="940">
+            <subfield code="a">RDA-Aufnahme</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="942">
+            <subfield code="a">05</subfield>
+          </datafield>
+          <datafield ind1="0" ind2="0" tag="967">
+            <subfield code="g">Iran</subfield>
+          </datafield>
+          <datafield ind1="0" ind2="1" tag="967">
+            <subfield code="g">Tibet</subfield>
+          </datafield>
+          <datafield ind1="0" ind2="2" tag="967">
+            <subfield code="g">Indien</subfield>
+          </datafield>
+          <datafield ind1="1" ind2="0" tag="967">
+            <subfield code="g">Zentralasien</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="969">
+            <subfield code="a">BV048249088</subfield>
+          </datafield>
+          <datafield ind1="b" ind2=" " tag="980">
+            <subfield code="a">Historische Geographische Sammlung</subfield>
+            <subfield code="2">OR010</subfield>
+          </datafield>
+          <datafield ind1="g" ind2=" " tag="995">
+            <subfield code="a">Kartographie</subfield>
+            <subfield code="2">OR010</subfield>
+          </datafield>
+          <datafield ind1=" " ind2=" " tag="AVE">
+            <subfield code="8">53752332690002882</subfield>
+            <subfield code="c">61639769230002882</subfield>
+            <subfield code="e">Available</subfield>
+            <subfield code="l">OR010</subfield>
+            <subfield code="m">HU Digitalisate E-Books</subfield>
+            <subfield code="a">49KOBV_HUB</subfield>
+            <subfield code="0">9949298816502882</subfield>
+          </datafield>
+        </marc>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:amdSec ID="AMD">
+    <mets:rightsMD ID="RIGHTS">
+      <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+        <mets:xmlData>
+          <dv:rights>
+            <dv:owner>Universitätsbibliothek / Humboldt-Universität zu Berlin</dv:owner>
+            <dv:ownerLogo>https://sammlungen-digital.hu-berlin.de/viewer/resources/themes/hu_new/images/template/header_hu_logo.png</dv:ownerLogo>
+            <dv:ownerSiteURL>https://www.ub.hu-berlin.de</dv:ownerSiteURL>
+            <dv:ownerContact>ub.digitalisierung@ub.hu-berlin.de</dv:ownerContact>
+            <dv:license>cc-by-nc-sa</dv:license>
+          </dv:rights>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:rightsMD>
+    <mets:digiprovMD ID="DIGIPROV">
+      <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVLINKS">
+        <mets:xmlData>
+          <dv:links>
+            <dv:reference>https://primus.ub.hu-berlin.de/remote/search/id?BV048249088</dv:reference>
+            <dv:presentation>https://sammlungen-digital.hu-berlin.de/viewer/ppnresolver?id=BV048249088</dv:presentation>
+          </dv:links>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:digiprovMD>
+  </mets:amdSec>
+  <mets:fileSec>
+    <mets:fileGrp USE="DEFAULT">
+      <mets:file ID="FILE_0001_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat LOCTYPE="URL" xlink:href="https://sammlungen-digital.hu-berlin.de/viewer/content/BV048249088/800/0/00000001.jpg" />
+      </mets:file>
+      <mets:file ID="FILE_0002_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat LOCTYPE="URL" xlink:href="https://sammlungen-digital.hu-berlin.de/viewer/content/BV048249088/800/0/00000002.jpg" />
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="MIN">
+      <mets:file ID="FILE_0001_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat LOCTYPE="URL" xlink:href="https://sammlungen-digital.hu-berlin.de/viewer/content/BV048249088/600/0/00000001.jpg" />
+      </mets:file>
+      <mets:file ID="FILE_0002_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat LOCTYPE="URL" xlink:href="https://sammlungen-digital.hu-berlin.de/viewer/content/BV048249088/600/0/00000002.jpg" />
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="PRESENTATION">
+      <mets:file ID="FILE_0001_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/BV048249088/00000001.tif" />
+      </mets:file>
+      <mets:file ID="FILE_0002_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/BV048249088/00000002.tif" />
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="MAX">
+      <mets:file ID="FILE_0001_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat LOCTYPE="URL" xlink:href="https://sammlungen-digital.hu-berlin.de/viewer/content/BV048249088/1000/0/00000001.jpg" />
+      </mets:file>
+      <mets:file ID="FILE_0002_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat LOCTYPE="URL" xlink:href="https://sammlungen-digital.hu-berlin.de/viewer/content/BV048249088/1000/0/00000002.jpg" />
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="THUMBS">
+      <mets:file ID="FILE_0001_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat LOCTYPE="URL" xlink:href="https://sammlungen-digital.hu-berlin.de/viewer/content/BV048249088/150/0/00000001.jpg" />
+      </mets:file>
+      <mets:file ID="FILE_0002_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat LOCTYPE="URL" xlink:href="https://sammlungen-digital.hu-berlin.de/viewer/content/BV048249088/150/0/00000002.jpg" />
+      </mets:file>
+    </mets:fileGrp>
+  </mets:fileSec>
+  <mets:structMap TYPE="LOGICAL">
+    <mets:div ADMID="AMD" CONTENTIDS="urn:nbn:de:kobv:11-715499" DMDID="DMDLOG_0000" ID="LOG_0000" LABEL="Persien" TYPE="SingleMap" />
+  </mets:structMap>
+  <mets:structMap TYPE="PHYSICAL">
+    <mets:div ID="PHYS_0000" TYPE="physSequence">
+      <mets:div ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0001_DEFAULT" />
+        <mets:fptr FILEID="FILE_0001_MIN" />
+        <mets:fptr FILEID="FILE_0001_PRESENTATION" />
+        <mets:fptr FILEID="FILE_0001_MAX" />
+        <mets:fptr FILEID="FILE_0001_THUMBS" />
+      </mets:div>
+      <mets:div ID="PHYS_0002" ORDER="2" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0002_DEFAULT" />
+        <mets:fptr FILEID="FILE_0002_MIN" />
+        <mets:fptr FILEID="FILE_0002_PRESENTATION" />
+        <mets:fptr FILEID="FILE_0002_MAX" />
+        <mets:fptr FILEID="FILE_0002_THUMBS" />
+      </mets:div>
+    </mets:div>
+  </mets:structMap>
+  <mets:structLink>
+    <mets:smLink xlink:to="PHYS_0001" xlink:from="LOG_0000" />
+    <mets:smLink xlink:to="PHYS_0002" xlink:from="LOG_0000" />
+  </mets:structLink>
+</mets:mets>
