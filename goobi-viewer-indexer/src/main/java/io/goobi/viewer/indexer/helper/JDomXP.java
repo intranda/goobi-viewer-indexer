@@ -585,7 +585,12 @@ public class JDomXP {
             }
 
             if (xp.doc.getRootElement().getNamespace("mets") != null) {
-                List<Element> elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']", xp.doc.getRootElement());
+                // Records containing both MODS and MARC should be treated as METS/MODS
+                List<Element> elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MODS']", xp.doc.getRootElement());
+                if (elements != null && !elements.isEmpty()) {
+                    return FileFormat.METS;
+                }
+                elements = evaluateToElementsStatic("mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']", xp.doc.getRootElement());
                 if (elements != null && !elements.isEmpty()) {
                     return FileFormat.METS_MARC;
                 }
