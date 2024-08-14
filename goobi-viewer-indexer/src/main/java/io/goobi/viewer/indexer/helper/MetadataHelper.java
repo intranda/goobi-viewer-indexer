@@ -109,6 +109,13 @@ public final class MetadataHelper {
     @SuppressWarnings("rawtypes")
     public static List<LuceneField> retrieveElementMetadata(Element element, String queryPrefix, IndexObject indexObj, JDomXP xp)
             throws FatalIndexerException {
+        if (element == null) {
+            throw new IllegalArgumentException("element may not be null");
+        }
+        if (indexObj == null) {
+            throw new IllegalArgumentException("indexObj may not be null");
+        }
+
         List<LuceneField> ret = new ArrayList<>();
 
         Set<Integer> centuries = new HashSet<>();
@@ -233,7 +240,7 @@ public final class MetadataHelper {
                         query = xpath.replace(XPATH_ROOT_PLACEHOLDER, queryPrefix);
                     } else {
                         // User prefix as prefix
-                        query = queryPrefix + xpath;
+                        query = (queryPrefix != null ? queryPrefix : "") + xpath;
                     }
                     for (Element currentElement : elementsToIterateOver) {
                         List list = xp.evaluate(query, currentElement);
@@ -1103,7 +1110,6 @@ public final class MetadataHelper {
                 additionalFieldsFromParent.put("{0}", field.getValue());
             }
         }
-
 
         if (!additionalFieldsFromParent.isEmpty()) {
             logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());

@@ -80,7 +80,8 @@
 		<namespaces>
 			<list>
 				<intranda>http://intranda.com/MODS/</intranda>
-				<gml>http://www.opengis.net/gml/3.2</gml>
+                <pd>https//intranda.com/prosopographicDatabase</pd>
+                <gml>http://www.opengis.net/gml/3.2</gml>
 			</list>
 		</namespaces>
 
@@ -3262,6 +3263,37 @@
 				</item>
 			</list>
 		</MD2_ALLPERSONS>
+        
+        <MD_ACCESSPERSONS>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessPersons[not(starts-with(@valueURI, "https://yerusha.intranda.com"))]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <groupEntity type="OTHER" addAuthorityDataToDocstruct="true">
+                        <field name="MD_VALUE" addSortField="true">text()</field>
+                        <field name="NORM_URI_VIAF">@valueURI</field>
+                    </groupEntity>
+                </item>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessPersons[starts-with(@valueURI, "https://yerusha.intranda.com")]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <groupEntity type="OTHER" addAuthorityDataToDocstruct="true">
+                        <field name="MD_VALUE" addSortField="true">text()</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_ACCESSPERSONS>
+        <MD_ACCESSPERSONS_NAME_SEARCH>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/intranda:intranda/intranda:AccessPersons</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                </item>
+            </list>
+        </MD_ACCESSPERSONS_NAME_SEARCH>
 
 		<MD_ACCESSLOCATIONS>
 			<list>
@@ -3271,7 +3303,6 @@
 					<onefield>false</onefield>
 					<groupEntity type="LOCATION" addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
 						<field name="MD_VALUE" addSortField="true">text()</field>
-						<field name="MD_DISPLAYFORM">text()</field>
 						<field name="NORM_URI">@valueURI</field>
 						<field name="NORM_IDENTIFIER_GEONAMES">substring-after(@valueURI, 'http://www.geonames.org/')</field>
 					</groupEntity>
@@ -4009,6 +4040,32 @@
             </list>
         </MD_COPYRIGHT_IMAGE_LANG_EN>
         
+        <MD_TECH_FORMAT_NAME>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mix:mix/mix:BasicDigitalObjectInformation/mix:FormatDesignation/mix:formatName</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </MD_TECH_FORMAT_NAME>
+        
+        <MD_TECH_BYTE_ORDER>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mix:mix/mix:BasicDigitalObjectInformation/mix:byteOrder</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </MD_TECH_BYTE_ORDER>
+        
     </fields>
-
+ 
 </root>
