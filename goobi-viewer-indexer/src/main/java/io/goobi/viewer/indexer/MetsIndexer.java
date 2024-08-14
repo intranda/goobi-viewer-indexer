@@ -1554,6 +1554,14 @@ public class MetsIndexer extends Indexer {
             addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, altoURL);
         }
 
+        // Page metadata
+        String amdId = eleStructMapPhysical.getAttributeValue("AMDID");
+        if (StringUtils.isNotEmpty(amdId)) {
+            String techXpath = "mets:amdSec/mets:techMD[@ID='" + amdId + "']/mets:mdWrap[@MDTYPE='OTHER']";
+            
+            MetadataHelper.retrieveElementMetadata(eleStructMapPhysical, xpath, null, xp);
+        }
+
         writeStrategy.addPageDoc(doc);
         // Add prepared shape page docs
         if (!shapePageDocs.isEmpty()) {
