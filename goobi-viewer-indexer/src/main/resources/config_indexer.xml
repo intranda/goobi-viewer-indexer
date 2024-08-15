@@ -582,6 +582,7 @@
 							<item>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</item>
 							<item>dc:title</item>
                             <item>ead:did/ead:unittitle</item>
+                            <item>ead:archdesc/ead:did/ead:unittitle</item>
                             <item>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</item>
 						</list>
 					</xpath>
