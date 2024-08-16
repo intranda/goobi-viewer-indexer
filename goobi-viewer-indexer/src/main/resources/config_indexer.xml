@@ -4067,44 +4067,63 @@
             </list>
         </MD_TECH_BYTE_ORDER>
         
-        <MD_TECH_IMAGE_WIDTH>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageWidth</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                </item>
-            </list>
-        </MD_TECH_IMAGE_WIDTH>
+<!--         <MD_TECH_IMAGE_WIDTH> -->
+<!--             <list> -->
+<!--                 <item> -->
+<!--                     <xpath> -->
+<!--                         <list> -->
+<!--                             <item>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageWidth</item> -->
+<!--                         </list> -->
+<!--                     </xpath> -->
+<!--                     <addToDefault>false</addToDefault> -->
+<!--                 </item> -->
+<!--             </list> -->
+<!--         </MD_TECH_IMAGE_WIDTH> -->
         
-        <MD_TECH_IMAGE_HEIGHT>
-            <list>
-                <item>
-                    <xpath>
-                        <list>
-                            <item>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageHeight</item>
-                        </list>
-                    </xpath>
-                    <addToDefault>false</addToDefault>
-                </item>
-            </list>
-        </MD_TECH_IMAGE_HEIGHT>
+<!--         <MD_TECH_IMAGE_HEIGHT> -->
+<!--             <list> -->
+<!--                 <item> -->
+<!--                     <xpath> -->
+<!--                         <list> -->
+<!--                             <item>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:imageHeight</item> -->
+<!--                         </list> -->
+<!--                     </xpath> -->
+<!--                     <addToDefault>false</addToDefault> -->
+<!--                 </item> -->
+<!--             </list> -->
+<!--         </MD_TECH_IMAGE_HEIGHT> -->
         
-        <MD_TECH_IMAGE_COLOR_SPACE>
+        <MD_TECH_BASIC_IMAGE_INFO>
             <list>
                 <item>
                     <xpath>
                         <list>
-                            <item>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:PhotometricInterpretation/mix:colorSpace</item>
+                            <item>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics</item>
                         </list>
                     </xpath>
                     <addToDefault>false</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">concat(mix:imageWidth, ' x ', mix:imageHeight)</field>
+                        <field name="MD_TECH_IMAGE_WIDTH">mix:imageWidth</field>
+                        <field name="MD_TECH_IMAGE_HEIGHT">mix:imageHeight</field>
+                        <field name="MD_TECH_IMAGE_COLOR_SPACE">mix:PhotometricInterpretation/mix:colorSpace</field>
+                    </groupEntity>
                 </item>
             </list>
-        </MD_TECH_IMAGE_COLOR_SPACE>
+        </MD_TECH_BASIC_IMAGE_INFO>
+        
+<!--         <MD_TECH_IMAGE_COLOR_SPACE> -->
+<!--             <list> -->
+<!--                 <item> -->
+<!--                     <xpath> -->
+<!--                         <list> -->
+<!--                             <item>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics/mix:PhotometricInterpretation/mix:colorSpace</item> -->
+<!--                         </list> -->
+<!--                     </xpath> -->
+<!--                     <addToDefault>false</addToDefault> -->
+<!--                 </item> -->
+<!--             </list> -->
+<!--         </MD_TECH_IMAGE_COLOR_SPACE> -->
         
         <MD_TECH_IMAGE_DATETIME_CREATED>
             <list>

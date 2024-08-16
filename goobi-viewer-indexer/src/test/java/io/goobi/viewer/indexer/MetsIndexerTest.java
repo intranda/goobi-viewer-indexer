@@ -977,9 +977,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         int page = 1;
         indexer.useFileGroupGlobal = MetsIndexer.DEFAULT_FILEGROUP;
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
-        assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), "ppn750544996", page,
-                writeStrategy, null,
+        Assertions.assertNotNull(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), "ppn750544996", page, null,
                 dataRepositoryStrategy.selectDataRepository("ppn750544996", metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(),
                         null)[0],
                 false));
@@ -1044,8 +1043,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
-        assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, dataFolders,
+        Assertions.assertNotNull(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
                 false));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
@@ -1072,8 +1071,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
-        assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, dataFolders,
+        Assertions.assertNotNull(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
                 false));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
@@ -1097,8 +1096,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 3;
         indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
-        assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, null,
+        Assertions.assertNotNull(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, null,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], false));
         SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
         Assertions.assertNotNull(doc);
