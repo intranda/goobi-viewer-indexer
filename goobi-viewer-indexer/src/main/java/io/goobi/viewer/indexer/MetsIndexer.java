@@ -481,7 +481,7 @@ public class MetsIndexer extends Indexer {
                 collectDownloadUrl(indexObj);
 
                 // Generate docs for all pages and add to the write strategy
-                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj, pageCountStart, downloadExternalImages);
+                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
                 // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
                 indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
@@ -998,7 +998,7 @@ public class MetsIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
      * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
-     * @param indexObj
+     * @param pi
      * @param pageCountStart a int.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
@@ -1008,7 +1008,7 @@ public class MetsIndexer extends Indexer {
      * @should maintain page order after parallel processing
      */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
-            final DataRepository dataRepository, final IndexObject indexObj, int pageCountStart, boolean downloadExternalImages)
+            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
         String xpath = buildPagesXpathExpresson();
@@ -1033,7 +1033,7 @@ public class MetsIndexer extends Indexer {
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), indexObj, null, writeStrategy, dataFolders, dataRepository,
+                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository,
                                 downloadExternalImages);
                         map.put(iddoc, true);
                     } catch (FatalIndexerException e) {
@@ -1044,7 +1044,7 @@ public class MetsIndexer extends Indexer {
                 logger.error(e.getMessage(), e);
                 SolrIndexerDaemon.getInstance().stop();
             } catch (TimeoutException e) {
-                throw new InterruptedException("Generating page documents timed out for object " + indexObj.getPi());
+                throw new InterruptedException("Generating page documents timed out for object " + pi);
             } finally {
                 pool.shutdown();
             }
@@ -1053,8 +1053,7 @@ public class MetsIndexer extends Indexer {
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
                 if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())),
-                        indexObj,
-                        order, writeStrategy, dataFolders, dataRepository, downloadExternalImages)) {
+                        pi, order, writeStrategy, dataFolders, dataRepository, downloadExternalImages)) {
                     order++;
                 }
             }
@@ -1128,7 +1127,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param eleStructMapPhysical
      * @param iddoc
-     * @param indexObj
+     * @param pi
      * @param order
      * @param writeStrategy
      * @param dataFolders
@@ -1150,7 +1149,7 @@ public class MetsIndexer extends Indexer {
      * @should add page metadata correctly
      * @should add shape metadata as page documents
      */
-    boolean generatePageDocument(Element eleStructMapPhysical, String iddoc, IndexObject indexObj, Integer order,
+    boolean generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, Integer order,
             final ISolrWriteStrategy writeStrategy,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders != null && dataRepository == null) {
@@ -1553,7 +1552,7 @@ public class MetsIndexer extends Indexer {
         }
 
         if (dataFolders != null || altoURL != null) {
-            addFullTextToPageDoc(doc, dataFolders, dataRepository, indexObj.getPi(), order, altoURL);
+            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, altoURL);
         }
 
         // Page metadata
@@ -1563,15 +1562,16 @@ public class MetsIndexer extends Indexer {
                     + "']/mets:mdWrap/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/mets:mdWrap[@MDTYPE='OTHER']"; // TODO check whether METS correct
             List<Element> eletechMdList = xp.evaluateToElements(techXpath, null);
             if (!eletechMdList.isEmpty()) {
+                IndexObject indexObj = new IndexObject(1L, pi);
+                indexObj.setSourceDocFormat(FileFormat.MIX);
                 List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eletechMdList.get(0), "", indexObj, xp);
                 for (LuceneField field : fields) {
                     if (!MetadataHelper.FIELD_HAS_WKT_COORDS.equals(field.getField())) {
                         doc.addField(field.getField(), field.getValue());
-                        logger.info("Added techMD field: {}", field);
+                        logger.debug("Added techMD field: {}", field);
                     }
                 }
             }
-
         }
 
         writeStrategy.addPageDoc(doc);

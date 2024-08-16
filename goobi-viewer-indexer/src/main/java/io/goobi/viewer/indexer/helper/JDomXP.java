@@ -64,7 +64,8 @@ public class JDomXP {
         CMS,
         ALTO,
         ABBYYXML,
-        TEI;
+        TEI,
+        MIX;
 
         public static FileFormat getByName(String name) {
             if (name == null) {
@@ -92,6 +93,8 @@ public class JDomXP {
                     return ABBYYXML;
                 case "TEI":
                     return TEI;
+                case "MIX":
+                    return MIX;
                 default:
                     return UNKNOWN;
             }

@@ -33,7 +33,6 @@ import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
-import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -75,7 +74,7 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         indexer.generatePageDocuments(strat, null,
                 dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(),
                         null)[0],
-                new IndexObject(1L, "PPN517154005"), 1, false);
+                "PPN517154005", 1, false);
         List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
         Assertions.assertEquals(3, docs.size());
         Assertions.assertEquals("PHYS_0001", docs.get(0).getFieldValue(SolrConstants.PHYSID));
