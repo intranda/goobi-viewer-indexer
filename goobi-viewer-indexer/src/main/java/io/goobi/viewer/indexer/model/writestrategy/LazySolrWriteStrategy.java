@@ -113,11 +113,10 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     /** {@inheritDoc} */
     @Override
     public void addPage(PhysicalElement page) {
-        int order = (Integer) page.getDoc().getFieldValue(SolrConstants.ORDER);
-        if (pageOrderMap.get(order) != null) {
-            logger.error("Collision for page order {}", order);
+        if (pageOrderMap.get(page.getOrder()) != null) {
+            logger.error("Collision for page order {}", page.getOrder());
         }
-        pageOrderMap.put(order, page);
+        pageOrderMap.put(page.getOrder(), page);
         String key = (String) page.getDoc().getFieldValue(SolrConstants.PHYSID);
         physIdPageMap.put(key, page);
 

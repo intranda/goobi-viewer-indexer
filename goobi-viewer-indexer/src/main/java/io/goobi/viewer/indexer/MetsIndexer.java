@@ -928,10 +928,6 @@ public class MetsIndexer extends Indexer {
                     parentIndexObject = parentIndexObject.getParent();
                 }
                 logger.debug("Mapped SHAPE document {} to {}", shapeDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
-
-                if (page.getOrder() == firstPage.getOrder()) {
-                    ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(shapeDoc.getFieldValue("ORDER_PARENT"))));
-                }
             }
 
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
@@ -949,6 +945,7 @@ public class MetsIndexer extends Indexer {
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPage.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
+            logger.info("THUMBPAGENO: " + String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER)));
         }
 
         // Add the number of assigned pages and the labels of the first and last page to this structure element
