@@ -76,7 +76,7 @@ public final class MetadataHelper {
     private static final String FIELD_NORM_NAME = "NORM_NAME";
     private static final String SPLIT_PLACEHOLDER = "{SPLIT}";
 
-    private static final String LOG_DMDID_NOT_FOUND = "DMDID for Parent element '{}' not found.";
+    private static final String LOG_DMDID_NOT_FOUND = "DMDID for Parent element '{}' of '{}' not found.";
 
     protected static Map<String, Record> authorityDataCache = new HashMap<>();
 
@@ -183,7 +183,7 @@ public final class MetadataHelper {
                                 childrenAndAncestors.add(parent.getDmdid());
                             } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
                                     || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
-                                logger.warn(LOG_DMDID_NOT_FOUND, indexObj.getLogId());
+                                logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId(), indexObj.getLogId());
                             }
                             while (parent.getParent() != null && !parent.getParent().isAnchor()) {
                                 parent = parent.getParent();
@@ -191,7 +191,7 @@ public final class MetadataHelper {
                                     childrenAndAncestors.add(parent.getDmdid());
                                 } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
                                         || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
-                                    logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
+                                    logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId(), indexObj.getLogId());
                                 }
                             }
                             break;
@@ -1103,7 +1103,6 @@ public final class MetadataHelper {
                 additionalFieldsFromParent.put("{0}", field.getValue());
             }
         }
-
 
         if (!additionalFieldsFromParent.isEmpty()) {
             logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());
