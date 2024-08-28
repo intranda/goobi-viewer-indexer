@@ -650,7 +650,6 @@ public class MetsIndexer extends Indexer {
      * 
      * @param xp
      * @param filegroup
-     * @return {@link String}
      * @return File name or path where USE="banner"; empty string if none found
      */
     private static String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) {
@@ -671,7 +670,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param xp
      * @param filegroup
-     * @return
+     * @return {@link String}
      */
     private static String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) {
         String filePathBanner = "";

@@ -68,8 +68,8 @@ public interface ISolrWriteStrategy {
     public void addPage(PhysicalElement page);
 
     /**
-     * If a page document has been updated, it may have to be updated internally. The implementation of this interface must make sure the changes to the
-     * doc are not lost.
+     * If a page document has been updated, it may have to be updated internally. The implementation of this interface must make sure the changes to
+     * the doc are not lost.
      *
      * @param page a {@link io.goobi.viewer.indexer.model.PhysicalElement} object.
      */
