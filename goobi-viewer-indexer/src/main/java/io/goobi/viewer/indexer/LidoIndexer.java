@@ -789,8 +789,7 @@ public class LidoIndexer extends Indexer {
 
     /**
      * @param indexObj IndexObject of the parent docstruct (usually the top level docstruct).
-     * @param mh MetadataHelper instance.
-     * @return
+     * @return List<SolrInputDocument>
      * @throws FatalIndexerException
      */
     private List<SolrInputDocument> generateEvents(IndexObject indexObj) throws FatalIndexerException {
@@ -861,7 +860,8 @@ public class LidoIndexer extends Indexer {
                                 doc.getFieldValue(SolrConstants.LABEL));
                         doc.addField(SolrConstants.GROUPFIELD, iddoc);
                     }
-                    // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped. Since child docstructs are added recursively, this should be the case without further conditions.
+                    // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped.
+                    // Since child docstructs are added recursively, this should be the case without further conditions.
                     doc.addField(SolrConstants.IDDOC_OWNER, iddocEvent);
                     doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
                     doc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());

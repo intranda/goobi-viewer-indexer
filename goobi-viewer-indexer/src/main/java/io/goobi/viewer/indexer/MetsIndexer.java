@@ -933,6 +933,12 @@ public class MetsIndexer extends Indexer {
                 logger.debug("Mapped SHAPE document {} to {}", page.getDoc().getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
 
+            // Add Solr docs for grouped page metadata
+            int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+            if (docsAdded > 0) {
+                logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+            }
+
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
             writeStrategy.updatePage(page);
         }
@@ -1180,8 +1186,8 @@ public class MetsIndexer extends Indexer {
         }
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
-        int order = inOrder;
-        if (inOrder == null) {
+        Integer order = inOrder;
+        if (order == null) {
             String orderValue = eleStructMapPhysical.getAttributeValue("ORDER");
             if (StringUtils.isNotEmpty(orderValue)) {
                 order = Integer.parseInt(orderValue);
