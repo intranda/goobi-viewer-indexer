@@ -746,7 +746,11 @@ public class MetsIndexer extends Indexer {
             logger.debug("THUMBNAIL from first page");
             String thumbnailFileName = checkThumbnailFileName((String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME), firstPage.getDoc());
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
+            if (DocType.SHAPE.name().equals(firstPage.getDoc().getFieldValue(SolrConstants.DOCTYPE))) {
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue("ORDER_PARENT"))));
+            } else {
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
+            }
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPage.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
             thumbnailSet = true;
@@ -902,22 +906,18 @@ public class MetsIndexer extends Indexer {
             }
 
             // For shape page docs, create grouped metadata docs for their mapped docstruct
-            for (SolrInputDocument shapeDoc : page.getShapeDocs()) {
-                if (!DocType.SHAPE.name().equals(shapeDoc.getFieldValue(SolrConstants.DOCTYPE))) {
-                    continue;
-                }
-
+            if (DocType.SHAPE.name().equals(page.getDoc().getFieldValue(SolrConstants.DOCTYPE))) {
                 GroupedMetadata shapeGmd = new GroupedMetadata();
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.METADATATYPE, DocType.SHAPE.name()));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, String.valueOf(shapeDoc.getFieldValue(SolrConstants.IDDOC))));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) shapeDoc.getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, String.valueOf(page.getDoc().getFieldValue(SolrConstants.IDDOC))));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) page.getDoc().getFieldValue(FIELD_COORDS)));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.LOGID, indexObj.getLogId()));
-                shapeGmd.getFields().add(new LuceneField(FIELD_COORDS, (String) shapeDoc.getFieldValue(FIELD_COORDS)));
-                shapeGmd.getFields().add(new LuceneField(FIELD_SHAPE, (String) shapeDoc.getFieldValue(FIELD_SHAPE)));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, (String) shapeDoc.getFieldValue(FIELD_COORDS)));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.ORDER, String.valueOf(shapeDoc.getFieldValue("ORDER_PARENT"))));
+                shapeGmd.getFields().add(new LuceneField(FIELD_COORDS, (String) page.getDoc().getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(FIELD_SHAPE, (String) page.getDoc().getFieldValue(FIELD_SHAPE)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, (String) page.getDoc().getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.ORDER, String.valueOf(page.getDoc().getFieldValue("ORDER_PARENT"))));
                 // Add main value, otherwise the document will be skipped
-                shapeGmd.setMainValue((String) shapeDoc.getFieldValue(FIELD_COORDS));
+                shapeGmd.setMainValue((String) page.getDoc().getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
                 // Make sure the shape metadata is on the lowest docstruct
                 while (parentIndexObject != null) {
@@ -927,7 +927,7 @@ public class MetsIndexer extends Indexer {
                     }
                     parentIndexObject = parentIndexObject.getParent();
                 }
-                logger.debug("Mapped SHAPE document {} to {}", shapeDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
+                logger.debug("Mapped SHAPE document {} to {}", page.getDoc().getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
 
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
@@ -945,7 +945,6 @@ public class MetsIndexer extends Indexer {
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
             ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPage.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
-            logger.info("THUMBPAGENO: " + String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER)));
         }
 
         // Add the number of assigned pages and the labels of the first and last page to this structure element
@@ -999,7 +998,7 @@ public class MetsIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
      * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
-     * @param pi
+     * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
@@ -1026,17 +1025,26 @@ public class MetsIndexer extends Indexer {
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
             ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
-            ConcurrentHashMap<Long, Boolean> map = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Long, Boolean> usedIddocsMap = new ConcurrentHashMap<>();
             try {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
                         long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
-                        if (map.containsKey(iddoc)) {
+                        if (usedIddocsMap.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
-                                downloadExternalImages);
-                        map.put(iddoc, true);
+                        PhysicalElement page =
+                                generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
+                                        downloadExternalImages);
+                        if (page != null) {
+                            writeStrategy.addPage(page);
+                            // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
+                            for (PhysicalElement shape : page.getShapes()) {
+                                writeStrategy.addPage(shape);
+                            }
+                            page.getShapes().clear();
+                        }
+                        usedIddocsMap.put(iddoc, true);
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
                     }
@@ -1058,11 +1066,16 @@ public class MetsIndexer extends Indexer {
                                 pi, order, dataFolders, dataRepository, downloadExternalImages);
                 if (page != null) {
                     writeStrategy.addPage(page);
+                    // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
+                    for (PhysicalElement shape : page.getShapes()) {
+                        writeStrategy.addPage(shape);
+                    }
+                    page.getShapes().clear();
                     order++;
                 }
             }
         }
-        logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
+        logger.info("Generated {} pages.", writeStrategy.getPageDocsSize());
     }
 
     /**
@@ -1202,7 +1215,7 @@ public class MetsIndexer extends Indexer {
                 useFileID = fileID;
             }
 
-            // Add shape metadata
+            // Piggyback shape metadata on fake page documents to ensure their mapping to corresponding shape docstructs
             if (eleFptr.getChild("seq", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets")) != null) {
                 List<Element> eleListArea = eleFptr.getChild("seq", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"))
                         .getChildren("area", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
@@ -1212,17 +1225,18 @@ public class MetsIndexer extends Indexer {
                         String coords = eleArea.getAttributeValue("COORDS");
                         String physId = eleArea.getAttributeValue("ID");
                         String shape = eleArea.getAttributeValue(DocType.SHAPE.name());
-                        SolrInputDocument shapePageDoc = new SolrInputDocument();
-                        shapePageDoc.addField(SolrConstants.IDDOC, getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
-                        shapePageDoc.setField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
-                        shapePageDoc.addField(SolrConstants.ORDER, Utils.generateLongOrderNumber(order, count));
-                        shapePageDoc.addField(SolrConstants.PHYSID, physId);
-                        shapePageDoc.addField(FIELD_COORDS, coords);
-                        shapePageDoc.addField(FIELD_SHAPE, shape);
-                        shapePageDoc.addField("ORDER_PARENT", order);
-                        ret.getShapeDocs().add(shapePageDoc);
+
+                        PhysicalElement shapePage = new PhysicalElement(Utils.generateLongOrderNumber(order, count));
+                        shapePage.getDoc().addField(SolrConstants.IDDOC, getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        shapePage.getDoc().setField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
+                        shapePage.getDoc().addField(SolrConstants.ORDER, shapePage.getOrder());
+                        shapePage.getDoc().addField(SolrConstants.PHYSID, physId);
+                        shapePage.getDoc().addField(FIELD_COORDS, coords);
+                        shapePage.getDoc().addField(FIELD_SHAPE, shape);
+                        shapePage.getDoc().addField("ORDER_PARENT", order);
+                        ret.getShapes().add(shapePage);
                         count++;
-                        logger.debug("Added SHAPE page document: {}", shapePageDoc.getFieldValue(SolrConstants.ORDER));
+                        logger.debug("Added SHAPE page document: {}", shapePage.getOrder());
                     }
                 }
             }
@@ -1405,9 +1419,9 @@ public class MetsIndexer extends Indexer {
                         }
                     }
                     ret.getDoc().addField(SolrConstants.FILENAME, filePath);
-                    if (!ret.getShapeDocs().isEmpty()) {
-                        for (SolrInputDocument shapePageDoc : ret.getShapeDocs()) {
-                            shapePageDoc.addField(SolrConstants.FILENAME, filePath);
+                    if (!ret.getShapes().isEmpty()) {
+                        for (PhysicalElement shape : ret.getShapes()) {
+                            shape.getDoc().addField(SolrConstants.FILENAME, filePath);
                         }
                     }
                     // RosDok IIIF
@@ -1422,9 +1436,9 @@ public class MetsIndexer extends Indexer {
                                 fileGrpUse);
                     }
                     ret.getDoc().addField(SolrConstants.FILENAME, fileName);
-                    if (!ret.getShapeDocs().isEmpty()) {
-                        for (SolrInputDocument shapePageDoc : ret.getShapeDocs()) {
-                            shapePageDoc.addField(SolrConstants.FILENAME, fileName);
+                    if (!ret.getShapes().isEmpty()) {
+                        for (PhysicalElement shape : ret.getShapes()) {
+                            shape.getDoc().addField(SolrConstants.FILENAME, fileName);
                         }
                     }
                 }
@@ -1436,9 +1450,9 @@ public class MetsIndexer extends Indexer {
                     ret.getDoc().removeField(SolrConstants.MIMETYPE);
                 }
                 ret.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
-                if (!ret.getShapeDocs().isEmpty()) {
-                    for (SolrInputDocument shapePageDoc : ret.getShapeDocs()) {
-                        shapePageDoc.addField(SolrConstants.MIMETYPE, mimetype);
+                if (!ret.getShapes().isEmpty()) {
+                    for (PhysicalElement shape : ret.getShapes()) {
+                        shape.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
                     }
                 }
                 // Add file size

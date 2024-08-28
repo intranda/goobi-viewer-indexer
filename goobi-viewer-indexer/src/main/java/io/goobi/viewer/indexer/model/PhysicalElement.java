@@ -22,18 +22,18 @@ import java.util.Objects;
 
 import org.apache.solr.common.SolrInputDocument;
 
-public class PhysicalElement implements Serializable, Comparable<PhysicalElement>  {
+public class PhysicalElement implements Serializable, Comparable<PhysicalElement> {
 
     private static final long serialVersionUID = -5701506008633643945L;
 
     private final int order;
     private final SolrInputDocument doc = new SolrInputDocument();
-    private final List<SolrInputDocument> shapeDocs = new ArrayList<>();
+    private final List<PhysicalElement> shapes = new ArrayList<>();
     private final List<GroupedMetadata> groupedMetadata = new ArrayList<>();
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupedMetadata, order, shapeDocs);
+        return Objects.hash(groupedMetadata, order, shapes);
     }
 
     @Override
@@ -45,9 +45,9 @@ public class PhysicalElement implements Serializable, Comparable<PhysicalElement
         if (getClass() != obj.getClass())
             return false;
         PhysicalElement other = (PhysicalElement) obj;
-        return Objects.equals(groupedMetadata, other.groupedMetadata) && order == other.order && Objects.equals(shapeDocs, other.shapeDocs);
+        return Objects.equals(groupedMetadata, other.groupedMetadata) && order == other.order && Objects.equals(shapes, other.shapes);
     }
-    
+
     @Override
     public int compareTo(PhysicalElement page) {
         return Integer.compare(order, page.order);
@@ -69,10 +69,10 @@ public class PhysicalElement implements Serializable, Comparable<PhysicalElement
     }
 
     /**
-     * @return the shapeDocs
+     * @return the shapes
      */
-    public List<SolrInputDocument> getShapeDocs() {
-        return shapeDocs;
+    public List<PhysicalElement> getShapes() {
+        return shapes;
     }
 
     /**
