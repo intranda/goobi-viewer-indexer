@@ -261,8 +261,9 @@ public class MetsIndexer extends Indexer {
      * @param metsFile {@link java.nio.file.Path}
      * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
+     * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart Order number for the first page.
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param downloadExternalImages
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should index metadata groups correctly
@@ -276,7 +277,7 @@ public class MetsIndexer extends Indexer {
      * @should not add dateupdated if value already exists
      * 
      */
-    public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
+    public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
             int pageCountStart, boolean downloadExternalImages) {
         String[] ret = { null, null };
 
@@ -288,6 +289,7 @@ public class MetsIndexer extends Indexer {
         }
 
         logger.debug("Indexing METS file '{}'...", metsFile.getFileName());
+        ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             initJDomXP(metsFile);
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
@@ -648,6 +650,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param xp
      * @param filegroup
+     * @return {@link String}
      * @return File name or path where USE="banner"; empty string if none found
      */
     private static String getFilePathBannerFromFileSec(JDomXP xp, String filegroup) {
@@ -699,7 +702,7 @@ public class MetsIndexer extends Indexer {
      * @throws IndexerException -
      * @throws FatalIndexerException
      */
-    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, IndexObject parentIndexObject, boolean isWork,
+    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, final IndexObject parentIndexObject, boolean isWork,
             ISolrWriteStrategy writeStrategy, int depth) throws IndexerException, FatalIndexerException {
         if (StringUtils.isEmpty(indexObj.getLogId())) {
             throw new IndexerException("Object has no LOG_ID.");
@@ -920,12 +923,13 @@ public class MetsIndexer extends Indexer {
                 shapeGmd.setMainValue((String) page.getDoc().getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
                 // Make sure the shape metadata is on the lowest docstruct
-                while (parentIndexObject != null) {
-                    if (parentIndexObject.getGroupedMetadataFields().contains(shapeGmd)) {
-                        parentIndexObject.getGroupedMetadataFields().remove(shapeGmd);
-                        logger.debug("removed shape metadata {} from {}", shapeGmd.getMainValue(), parentIndexObject.getLogId());
+                IndexObject useParentIndexObject = parentIndexObject;
+                while (useParentIndexObject != null) {
+                    if (useParentIndexObject.getGroupedMetadataFields().contains(shapeGmd)) {
+                        useParentIndexObject.getGroupedMetadataFields().remove(shapeGmd);
+                        logger.debug("removed shape metadata {} from {}", shapeGmd.getMainValue(), useParentIndexObject.getLogId());
                     }
-                    parentIndexObject = parentIndexObject.getParent();
+                    useParentIndexObject = useParentIndexObject.getParent();
                 }
                 logger.debug("Mapped SHAPE document {} to {}", page.getDoc().getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
@@ -940,7 +944,8 @@ public class MetsIndexer extends Indexer {
                     filePathBanner);
             String pageFileName = checkThumbnailFileName((String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME), firstPage.getDoc());
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
+            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer,
+            // it is not used in the viewer
             ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
@@ -1000,6 +1005,7 @@ public class MetsIndexer extends Indexer {
      * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
+     * @param downloadExternalImages
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
@@ -1145,7 +1151,7 @@ public class MetsIndexer extends Indexer {
      * @param eleStructMapPhysical
      * @param iddoc
      * @param pi
-     * @param order
+     * @param inOrder
      * @param dataFolders
      * @param dataRepository
      * @param downloadExternalImages
@@ -1165,7 +1171,7 @@ public class MetsIndexer extends Indexer {
      * @should add page metadata correctly
      * @should add shape metadata as page documents
      */
-    PhysicalElement generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, Integer order,
+    PhysicalElement generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders != null && dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
@@ -1175,7 +1181,8 @@ public class MetsIndexer extends Indexer {
         }
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
-        if (order == null) {
+        int order = inOrder;
+        if (inOrder == null) {
             String orderValue = eleStructMapPhysical.getAttributeValue("ORDER");
             if (StringUtils.isNotEmpty(orderValue)) {
                 order = Integer.parseInt(orderValue);
@@ -1685,7 +1692,7 @@ public class MetsIndexer extends Indexer {
      * @param collections
      * @param childrenInfoUnsorted
      * @param addVolumeCollectionsToAnchor
-     * @return
+     * @return true if volumes are sorted by label; false otherwise
      * @throws IndexerException
      */
     private static boolean collectVolumeInfo(SolrDocument doc, Map<String, Long> orderInfo, Map<String, String> urnInfo, Map<String, String> typeInfo,
@@ -1845,7 +1852,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param indexObj
      * @param collections
-     * @return
+     * @return true if new collections were added; false otherwise
      */
     protected boolean addVolumeCollectionsToAnchor(IndexObject indexObj, List<String> collections) {
         boolean ret = false;
@@ -2160,7 +2167,8 @@ public class MetsIndexer extends Indexer {
 
             // The following steps must be performed after adding child metadata and marking own metadata for skipping
 
-            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
+            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct
+            // and after adding grouped metadata from child elements)
             addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
             // Apply field modifications that should happen at the very end
@@ -2249,7 +2257,7 @@ public class MetsIndexer extends Indexer {
      * Retrieves and sets the URN for mets:structMap[@TYPE='LOGICAL'] elements.
      * 
      * @param indexObj
-     * @return
+     * @return The URN
      */
     private String setUrn(IndexObject indexObj) {
         String query = "/mets:mets/mets:structMap[@TYPE='LOGICAL']//mets:div[@ID='" + indexObj.getLogId() + "']/@CONTENTIDS";
@@ -2389,7 +2397,8 @@ public class MetsIndexer extends Indexer {
         if (sbNewFilename.length() > 0) {
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
             try {
-                // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems. Instead, move the file.
+                // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems.
+                // Instead, move the file.
                 Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed);
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
@@ -2409,7 +2418,7 @@ public class MetsIndexer extends Indexer {
 
     /**
      * 
-     * @return
+     * @return {@link FileFormat}
      */
     protected FileFormat getSourceDocFormat() {
         return FileFormat.METS;

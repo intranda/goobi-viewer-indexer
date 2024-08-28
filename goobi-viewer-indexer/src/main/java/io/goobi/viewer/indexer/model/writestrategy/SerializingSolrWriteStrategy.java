@@ -200,7 +200,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
      *
      * Returns the SolrInputDocument for the given order. Fields that are serialized separately (FULLTEXT, ALTO) are not returned!
      * 
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocForOrder(int)
      */
     @Override
     public SolrInputDocument getPageDocForOrder(int order) throws FatalIndexerException {
@@ -222,7 +221,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
      *
      * Returns all SolrInputDocuments mapped to the given list of PHYSIDs. Fields that are serialized separately (FULLTEXT, ALTO) are not returned!
      * 
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocsForPhysIdList(java.util.List)
      * @should return all docs for the given physIdList
      */
     @Override
