@@ -933,12 +933,6 @@ public class MetsIndexer extends Indexer {
                 logger.debug("Mapped SHAPE document {} to {}", page.getDoc().getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
 
-            // Add Solr docs for grouped page metadata
-            int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
-            if (docsAdded > 0) {
-                logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
-            }
-
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
             writeStrategy.updatePage(page);
         }
@@ -1054,6 +1048,12 @@ public class MetsIndexer extends Indexer {
                                 writeStrategy.addPage(shape);
                             }
                             page.getShapes().clear();
+
+                            // Add Solr docs for grouped page metadata
+                            int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+                            if (docsAdded > 0) {
+                                logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+                            }
                         }
                         usedIddocsMap.put(iddoc, true);
                     } catch (FatalIndexerException e) {
@@ -1082,6 +1082,13 @@ public class MetsIndexer extends Indexer {
                         writeStrategy.addPage(shape);
                     }
                     page.getShapes().clear();
+
+                    // Add Solr docs for grouped page metadata
+                    int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+                    if (docsAdded > 0) {
+                        logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+                    }
+
                     order++;
                 }
             }
