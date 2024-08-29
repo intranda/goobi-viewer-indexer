@@ -1182,7 +1182,7 @@ public abstract class Indexer {
             }
             // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped.
             // Since child docstructs are added recursively, this should be the case without further conditions.
-            doc.addField(SolrConstants.IDDOC_OWNER, page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER));
+            doc.addField(SolrConstants.IDDOC_OWNER, page.getDoc().getFieldValue(SolrConstants.IDDOC));
             doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
             doc.addField(SolrConstants.PI_TOPSTRUCT, page.getDoc().getFieldValue(SolrConstants.PI_TOPSTRUCT));
 
