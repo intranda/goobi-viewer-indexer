@@ -617,8 +617,8 @@ public final class MetadataHelper {
 
                 // Do not write duplicate fields (same name + value)
                 for (LuceneField f : indexObj.getLuceneFields()) {
-                    if (f.getField().equals(field.getField()) && (((f.getValue() != null) && f.getValue().equals(field.getValue()))
-                            || field.getField().startsWith(SolrConstants.PREFIX_SORT))) {
+                    if (f.getField().equals(field.getField()) && ((f.getValue() != null && f.getValue().equals(field.getValue()))
+                            || field.getField().startsWith(SolrConstants.PREFIX_SORT) || field.getField().startsWith(SolrConstants.PREFIX_SORTNUM))) {
                         duplicate = true;
                         break;
                     }
