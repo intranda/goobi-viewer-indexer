@@ -56,7 +56,7 @@
 		<httpcore.version>4.4.16</httpcore.version>
 		<icu.version>75.1</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
-		<log4j.version>2.23.1</log4j.version>
+		<log4j.version>2.24.0</log4j.version>
 		<jackson.version>2.17.2</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
