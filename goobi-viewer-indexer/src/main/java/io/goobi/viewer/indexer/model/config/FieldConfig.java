@@ -91,6 +91,11 @@ public class FieldConfig {
             getSupportedFormats().add(FileFormat.METS);
             getSupportedFormats().add(FileFormat.METS_MARC);
             logger.debug("Field {} has METS/MODS and METS/MARC config.", fieldname);
+            
+            if (xpath.contains("mix:")) {
+                getSupportedFormats().add(FileFormat.MIX);
+                logger.debug("Field {} has MIX config.", fieldname);
+            }
         } else if (SolrConstants.EAD_NODE_ID.equals(fieldname) || xpath.contains("ead:") || xpath.equals("@otherlevel")) {
             getSupportedFormats().add(FileFormat.EAD);
             logger.debug("Field {} has EAD config.", fieldname);

@@ -38,7 +38,7 @@ class FieldConfigTest extends AbstractTest {
      * @verifies @should add FileFormats correctly
      */
     @Test
-    void checkXpathSupportedFormats_should_add_FileFormats_correctly() throws Exception {
+    void checkXpathSupportedFormats_should_add_FileFormats_correctly() {
         FieldConfig ci = new FieldConfig("field_name");
         ci.checkXpathSupportedFormats("mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]");
         Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.METS));
@@ -52,5 +52,7 @@ class FieldConfigTest extends AbstractTest {
         Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.DUBLINCORE));
         ci.checkXpathSupportedFormats("denkxweb:description");
         Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.DENKXWEB));
+        ci.checkXpathSupportedFormats("mets:xmlData/mix:mix/mix:BasicDigitalObjectInformation/mix:byteOrder");
+        Assertions.assertTrue(ci.getSupportedFormats().contains(FileFormat.MIX));
     }
 }

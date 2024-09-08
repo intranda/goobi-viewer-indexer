@@ -61,6 +61,7 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -708,7 +709,7 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
-            writeStrategy.updateDoc(pageDoc);
+            // writeStrategy.updatePage(page); TODO use PhysicalElement, if ever needed again
         }
 
         // Finalize last docstruct
@@ -790,8 +791,11 @@ public class WorldViewsIndexer extends Indexer {
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
-                        generatePageDocument(eleImage, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders);
-                        map.put(iddoc, true);
+                        PhysicalElement page = generatePageDocument(eleImage, String.valueOf(iddoc), pi, null, dataFolders);
+                        if (page != null) {
+                            writeStrategy.addPage(page);
+                            map.put(iddoc, true);
+                        }
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
                     }
@@ -807,9 +811,13 @@ public class WorldViewsIndexer extends Indexer {
         } else {
             int order = pageCountStart;
             for (final Element eleImage : eleListImages) {
-                generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
-                        writeStrategy, dataFolders);
-                order++;
+                PhysicalElement page =
+                        generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
+                                dataFolders);
+                if (page != null) {
+                    writeStrategy.addPage(page);
+                    order++;
+                }
             }
         }
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
@@ -821,32 +829,29 @@ public class WorldViewsIndexer extends Indexer {
      * @param iddoc
      * @param pi
      * @param order
-     * @param writeStrategy
      * @param dataFolders
-     * @throws FatalIndexerException
+     * @return {@link PhysicalElement}
      * @should add all basic fields
      * @should add page metadata correctly
      */
-    void generatePageDocument(Element eleImage, String iddoc, String pi, final Integer order, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders)
-            throws FatalIndexerException {
+    PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, final Integer order, Map<String, Path> dataFolders) {
         int useOrder = order != null ? order : Integer.parseInt(eleImage.getChildText("sequence"));
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", useOrder, iddoc, Thread.currentThread().getId());
 
-        // Create Solr document for this page
-        SolrInputDocument doc = new SolrInputDocument();
-        doc.addField(SolrConstants.IDDOC, iddoc);
-        doc.addField(SolrConstants.GROUPFIELD, iddoc);
-        doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        doc.addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
-        doc.addField(SolrConstants.ORDER, order);
-        doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
+        // Create object for this page
+        PhysicalElement ret = new PhysicalElement(order);
+        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
+        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
+        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
+        ret.getDoc().addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
+        ret.getDoc().addField(SolrConstants.ORDER, order);
+        ret.getDoc().addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
 
         boolean displayImage = Boolean.parseBoolean(eleImage.getChildText("displayImage"));
         if (displayImage) {
             // Add file name
             String fileName = eleImage.getChildText("fileName");
-            doc.addField(SolrConstants.FILENAME, fileName);
+            ret.getDoc().addField(SolrConstants.FILENAME, fileName);
 
             // Add file size
             if (dataFolders != null) {
@@ -855,66 +860,66 @@ public class WorldViewsIndexer extends Indexer {
                     // TODO other mime types/folders
                     if (dataFolder != null) {
                         Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                        doc.addField(FIELD_FILESIZE, Files.size(path));
+                        ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
                     } else {
-                        doc.addField(FIELD_FILESIZE, -1);
+                        ret.getDoc().addField(FIELD_FILESIZE, -1);
                     }
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage());
-                    doc.addField(FIELD_FILESIZE, -1);
+                    ret.getDoc().addField(FIELD_FILESIZE, -1);
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
-                    doc.addField(FIELD_FILESIZE, -1);
+                    ret.getDoc().addField(FIELD_FILESIZE, -1);
                 } catch (IllegalArgumentException e) {
                     logger.error(e.getMessage(), e);
-                    doc.addField(FIELD_FILESIZE, -1);
+                    ret.getDoc().addField(FIELD_FILESIZE, -1);
                 }
             }
 
             // Representative image
-            boolean representative = Boolean.valueOf(eleImage.getChildText("representative"));
+            boolean representative = Boolean.parseBoolean(eleImage.getChildText("representative"));
             if (representative) {
-                doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
+                ret.getDoc().addField(SolrConstants.THUMBNAILREPRESENT, fileName);
             }
 
-            parseMimeType(doc, fileName);
+            parseMimeType(ret.getDoc(), fileName);
         } else {
             // TODO placeholder
             String placeholder = eleImage.getChildText("placeholder");
         }
 
         // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
-                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            doc.addField(FIELD_IMAGEAVAILABLE, true);
+        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
+                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
             recordHasImages = true;
         } else {
-            doc.addField(FIELD_IMAGEAVAILABLE, false);
+            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
         }
 
         // Copyright
         String copyright = eleImage.getChildText("copyright");
         if (StringUtils.isNotEmpty(copyright)) {
-            doc.addField("MD_COPYRIGHT", copyright);
+            ret.getDoc().addField("MD_COPYRIGHT", copyright);
         }
         // access condition
         String license = eleImage.getChildText("licence");
         if (StringUtils.isNotEmpty(license)) {
-            doc.addField(SolrConstants.ACCESSCONDITION, license);
+            ret.getDoc().addField(SolrConstants.ACCESSCONDITION, license);
         }
 
         // Metadata payload for later evaluation
         String structType = eleImage.getChildText("structType");
         if (structType != null) {
-            doc.addField(SolrConstants.LABEL, structType);
-            doc.addField(SolrConstants.DOCSTRCT, "OtherDocStrct"); // TODO
+            ret.getDoc().addField(SolrConstants.LABEL, structType);
+            ret.getDoc().addField(SolrConstants.DOCSTRCT, "OtherDocStrct"); // TODO
         }
 
         if (dataFolders != null) {
-            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, useOrder, null);
+            addFullTextToPageDoc(ret.getDoc(), dataFolders, dataRepository, pi, useOrder, null);
         }
 
-        writeStrategy.addPageDoc(doc);
+        return ret;
     }
 
     /**

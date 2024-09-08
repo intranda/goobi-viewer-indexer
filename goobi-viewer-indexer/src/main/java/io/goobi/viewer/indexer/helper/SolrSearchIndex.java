@@ -693,6 +693,36 @@ public final class SolrSearchIndex {
 
         return null; //NOSONAR Returning empty map would complicate things
     }
+    
+    /**
+     * Returns a list with all (string) values for the given field name in the given SolrInputDocument.
+     *
+     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
+     * @param fieldName a {@link java.lang.String} object.
+     * @return a {@link java.util.List} object.
+     * @should return all values for the given field
+     */
+    public static List<String> getMetadataValues(SolrInputDocument doc, String fieldName) {
+        if (doc == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<Object> values = doc.getFieldValues(fieldName);
+        if (values == null) {
+            return Collections.emptyList();
+        }
+
+        List<String> ret = new ArrayList<>(values.size());
+        for (Object value : values) {
+            if (value instanceof String s) {
+                ret.add(s);
+            } else {
+                ret.add(String.valueOf(value));
+            }
+        }
+
+        return ret;
+    }
 
     /**
      *

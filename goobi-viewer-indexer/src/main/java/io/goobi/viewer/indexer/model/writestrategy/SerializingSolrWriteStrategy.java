@@ -50,6 +50,7 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
@@ -135,33 +136,33 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     /** {@inheritDoc} */
     @Override
-    public void addPageDoc(SolrInputDocument doc) {
-        String iddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
-        if (doc.getField(SolrConstants.FULLTEXT) != null) {
-            String text = (String) doc.getFieldValue(SolrConstants.FULLTEXT);
+    public void addPage(PhysicalElement page) {
+        String iddoc = String.valueOf(page.getDoc().getFieldValue(SolrConstants.IDDOC));
+        if (page.getDoc().getField(SolrConstants.FULLTEXT) != null) {
+            String text = (String) page.getDoc().getFieldValue(SolrConstants.FULLTEXT);
             try {
                 FileUtils.writeStringToFile(new File(tempFolder.toFile(), iddoc + "_" + SolrConstants.FULLTEXT), text, StandardCharsets.UTF_8.name());
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             }
-            doc.removeField(SolrConstants.FULLTEXT);
+            page.getDoc().removeField(SolrConstants.FULLTEXT);
         }
-        if (save(doc, iddoc)) {
-            int order = (int) doc.getFieldValue(SolrConstants.ORDER);
-            if (pageDocOrderIddocMap.get(order) != null) {
-                logger.error("Collision for page order {}", order);
+        if (save(page, iddoc)) {
+            ;
+            if (pageDocOrderIddocMap.get(page.getOrder()) != null) {
+                logger.error("Collision for page order {}", page.getOrder());
             }
-            pageDocOrderIddocMap.put(order, iddoc);
-            if (pageDocFileNameIddocMap.get(doc.getFieldValue(SolrConstants.FILENAME)) != null) {
-                logger.warn("A doc already exists for file: {}", doc.getFieldValue(SolrConstants.FILENAME));
+            pageDocOrderIddocMap.put(page.getOrder(), iddoc);
+            if (pageDocFileNameIddocMap.get(page.getDoc().getFieldValue(SolrConstants.FILENAME)) != null) {
+                logger.warn("A doc already exists for file: {}", page.getDoc().getFieldValue(SolrConstants.FILENAME));
             }
-            pageDocFileNameIddocMap.put((String) doc.getFieldValue(SolrConstants.FILENAME), iddoc);
-            pageDocPhysIdIddocMap.put((String) doc.getFieldValue(SolrConstants.PHYSID), iddoc);
+            pageDocFileNameIddocMap.put((String) page.getDoc().getFieldValue(SolrConstants.FILENAME), iddoc);
+            pageDocPhysIdIddocMap.put((String) page.getDoc().getFieldValue(SolrConstants.PHYSID), iddoc);
             pageDocsCounter.incrementAndGet();
 
             // Add URN to set to check for duplicates later
-            if (doc.getField(SolrConstants.IMAGEURN) != null) {
-                String urn = (String) doc.getFieldValue(SolrConstants.IMAGEURN);
+            if (page.getDoc().getField(SolrConstants.IMAGEURN) != null) {
+                String urn = (String) page.getDoc().getFieldValue(SolrConstants.IMAGEURN);
                 if (StringUtils.isNotEmpty(urn)) {
                     List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
                     urns.add(urn);
@@ -174,9 +175,9 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
     /** {@inheritDoc} */
     @Override
-    public void updateDoc(SolrInputDocument doc) {
-        String iddoc = String.valueOf(doc.getFieldValue(SolrConstants.IDDOC));
-        if (save(doc, iddoc)) {
+    public void updatePage(PhysicalElement page) {
+        String iddoc = String.valueOf(page.getDoc().getFieldValue(SolrConstants.IDDOC));
+        if (save(page, iddoc)) {
             logger.debug("Page docs updated: {}", pageDocsCounter);
         }
     }
@@ -199,14 +200,16 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
      *
      * Returns the SolrInputDocument for the given order. Fields that are serialized separately (FULLTEXT, ALTO) are not returned!
      * 
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocForOrder(int)
      */
     @Override
     public SolrInputDocument getPageDocForOrder(int order) throws FatalIndexerException {
         if (order > 0) {
             String iddoc = pageDocOrderIddocMap.get(order);
             if (iddoc != null) {
-                return load(iddoc);
+                PhysicalElement page = loadPage(iddoc);
+                if (page != null) {
+                    return page.getDoc();
+                }
             }
         }
 
@@ -218,18 +221,17 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
      *
      * Returns all SolrInputDocuments mapped to the given list of PHYSIDs. Fields that are serialized separately (FULLTEXT, ALTO) are not returned!
      * 
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#getPageDocsForPhysIdList(java.util.List)
      * @should return all docs for the given physIdList
      */
     @Override
-    public List<SolrInputDocument> getPageDocsForPhysIdList(List<String> physIdList) throws FatalIndexerException {
-        List<SolrInputDocument> ret = new ArrayList<>();
+    public List<PhysicalElement> getPagesForPhysIdList(List<String> physIdList) throws FatalIndexerException {
+        List<PhysicalElement> ret = new ArrayList<>();
 
         for (String physId : physIdList) {
             if (pageDocPhysIdIddocMap.get(physId) != null) {
-                SolrInputDocument doc = load(pageDocPhysIdIddocMap.get(physId));
-                if (doc != null) {
-                    ret.add(doc);
+                PhysicalElement page = loadPage(pageDocPhysIdIddocMap.get(physId));
+                if (page != null) {
+                    ret.add(page);
                 }
             }
         }
@@ -240,7 +242,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /** {@inheritDoc} */
     @Override
     public void writeDocs(final boolean aggregateRecords) throws IndexerException, FatalIndexerException {
-        final SolrInputDocument rootDoc = load(rootDocIddoc);
+        final SolrInputDocument rootDoc = loadDoc(rootDocIddoc);
         if (rootDoc == null) {
             throw new IndexerException("rootDoc may not be null");
         }
@@ -252,16 +254,16 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
 
         logger.info("Writing {} structure/content documents to the index...", docIddocs.size());
         for (String iddoc : docIddocs) {
-            SolrInputDocument doc = load(iddoc);
+            SolrInputDocument doc = loadDoc(iddoc);
             if (doc != null) {
                 // Add the child doc's DEFAULT values to the SUPERDEFAULT value of the root doc
                 if (aggregateRecords) {
                     // Add SUPER* fields to root doc
                     if (doc.containsKey(SolrConstants.DEFAULT)) {
-                        rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
+                        rootDoc.addField(SolrConstants.SUPERDEFAULT, doc.getFieldValue(SolrConstants.DEFAULT));
                     }
                     if (doc.containsKey(SolrConstants.FULLTEXT)) {
-                        rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
+                        rootDoc.addField(SolrConstants.SUPERFULLTEXT, doc.getFieldValue(SolrConstants.FULLTEXT));
                     }
                     if (doc.containsKey(SolrConstants.UGCTERMS)) {
                         rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
@@ -337,13 +339,13 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
      */
     private void writePageDoc(int order, SolrInputDocument rootDoc, boolean aggregateRecords) throws FatalIndexerException {
         String iddoc = pageDocOrderIddocMap.get(order);
-        SolrInputDocument doc = load(iddoc);
-        if (doc == null) {
+        PhysicalElement page = loadPage(iddoc);
+        if (page == null) {
             logger.error("Could not find serialized document for IDDOC: {}", iddoc);
             return;
         }
         // Do not add shape docs
-        if (DocType.SHAPE.name().equals(doc.getFieldValue(SolrConstants.DOCTYPE))) {
+        if (DocType.SHAPE.name().equals(page.getDoc().getFieldValue(SolrConstants.DOCTYPE))) {
             return;
         }
 
@@ -352,11 +354,11 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         if (Files.isRegularFile(xmlFile)) {
             try {
                 String xml = FileUtils.readFileToString(xmlFile.toFile(), StandardCharsets.UTF_8.name());
-                doc.addField(SolrConstants.FULLTEXT, xml);
+                page.getDoc().addField(SolrConstants.FULLTEXT, xml);
 
                 // Add the child doc's FULLTEXT values to the SUPERFULLTEXT value of the root doc
                 if (aggregateRecords) {
-                    rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
+                    rootDoc.addField(SolrConstants.SUPERFULLTEXT, (page.getDoc().getFieldValue(SolrConstants.FULLTEXT)));
                 }
                 logger.debug("Found FULLTEXT for: {}", iddoc);
             } catch (IOException e) {
@@ -364,8 +366,8 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             }
         }
 
-        checkAndAddAccessCondition(doc);
-        searchIndex.writeToIndex(doc);
+        checkAndAddAccessCondition(page.getDoc());
+        searchIndex.writeToIndex(page.getDoc());
     }
 
     /* (non-Javadoc)
@@ -435,9 +437,31 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     /**
      * 
      * @param fileName
+     * @return {@link PhysicalElement}
+     */
+    private PhysicalElement loadPage(String fileName) {
+        logger.debug("Loading '{}'...", fileName);
+        Path file = Paths.get(tempFolder.toAbsolutePath().toString(), fileName);
+        try (FileInputStream fis = new FileInputStream(file.toFile()); ObjectInputStream ois = new ObjectInputStream(fis)) {
+            return (PhysicalElement) ois.readObject();
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getMessage(), e);
+        } catch (FileNotFoundException e) {
+            logger.error(e.getMessage());
+        } catch (ClassNotFoundException | IOException e) {
+            logger.error(e.getMessage(), e);
+            copyFailedFile(file);
+        }
+
+        return null; //NOSONAR Returning empty map would complicate things
+    }
+
+    /**
+     * 
+     * @param fileName
      * @return {@link SolrInputDocument}
      */
-    private SolrInputDocument load(String fileName) {
+    private SolrInputDocument loadDoc(String fileName) {
         logger.debug("Loading '{}'...", fileName);
         Path file = Paths.get(tempFolder.toAbsolutePath().toString(), fileName);
         try (FileInputStream fis = new FileInputStream(file.toFile()); ObjectInputStream ois = new ObjectInputStream(fis)) {
@@ -452,6 +476,25 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
 
         return null; //NOSONAR Returning empty map would complicate things
+    }
+
+    /**
+     * 
+     * @param page
+     * @param fileName
+     * @return true if save successful; false otherwise
+     */
+    private boolean save(PhysicalElement page, String fileName) {
+        logger.debug("Writing '{}'...", fileName);
+        File file = new File(tempFolder.toFile(), fileName);
+        try (FileOutputStream fos = new FileOutputStream(file); ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(page);
+            return true;
+        } catch (IOException e) {
+            logger.error("Could not save file: {}", file.getAbsolutePath());
+            logger.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     /**

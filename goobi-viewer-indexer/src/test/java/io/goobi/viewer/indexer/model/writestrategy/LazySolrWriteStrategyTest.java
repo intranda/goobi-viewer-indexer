@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +32,7 @@ import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -75,11 +75,11 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
                 dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(),
                         null)[0],
                 "PPN517154005", 1, false);
-        List<SolrInputDocument> docs = strat.getPageDocsForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
-        Assertions.assertEquals(3, docs.size());
-        Assertions.assertEquals("PHYS_0001", docs.get(0).getFieldValue(SolrConstants.PHYSID));
-        Assertions.assertEquals("PHYS_0002", docs.get(1).getFieldValue(SolrConstants.PHYSID));
-        Assertions.assertEquals("PHYS_0003", docs.get(2).getFieldValue(SolrConstants.PHYSID));
+        List<PhysicalElement> pages = strat.getPagesForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
+        Assertions.assertEquals(3, pages.size());
+        Assertions.assertEquals("PHYS_0001", pages.get(0).getDoc().getFieldValue(SolrConstants.PHYSID));
+        Assertions.assertEquals("PHYS_0002", pages.get(1).getDoc().getFieldValue(SolrConstants.PHYSID));
+        Assertions.assertEquals("PHYS_0003", pages.get(2).getDoc().getFieldValue(SolrConstants.PHYSID));
     }
 
     /**

@@ -76,9 +76,9 @@ import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
-import io.goobi.viewer.indexer.model.SolrInputDocPageOrderComparator;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -261,8 +261,9 @@ public class MetsIndexer extends Indexer {
      * @param metsFile {@link java.nio.file.Path}
      * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
+     * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart Order number for the first page.
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param downloadExternalImages
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should index metadata groups correctly
@@ -276,7 +277,7 @@ public class MetsIndexer extends Indexer {
      * @should not add dateupdated if value already exists
      * 
      */
-    public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
+    public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
             int pageCountStart, boolean downloadExternalImages) {
         String[] ret = { null, null };
 
@@ -288,6 +289,7 @@ public class MetsIndexer extends Indexer {
         }
 
         logger.debug("Indexing METS file '{}'...", metsFile.getFileName());
+        ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             initJDomXP(metsFile);
             IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
@@ -668,7 +670,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param xp
      * @param filegroup
-     * @return
+     * @return {@link String}
      */
     private static String getFilePathBannerFromPhysicalStructMap(JDomXP xp, String filegroup) {
         String filePathBanner = "";
@@ -699,9 +701,8 @@ public class MetsIndexer extends Indexer {
      * @throws IndexerException -
      * @throws FatalIndexerException
      */
-    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, IndexObject parentIndexObject, boolean isWork,
-            ISolrWriteStrategy writeStrategy, int depth)
-            throws IndexerException, FatalIndexerException {
+    private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, final IndexObject parentIndexObject, boolean isWork,
+            ISolrWriteStrategy writeStrategy, int depth) throws IndexerException, FatalIndexerException {
         if (StringUtils.isEmpty(indexObj.getLogId())) {
             throw new IndexerException("Object has no LOG_ID.");
         }
@@ -714,11 +715,12 @@ public class MetsIndexer extends Indexer {
             return Collections.emptyList();
         }
 
-        List<SolrInputDocument> pageDocs = writeStrategy.getPageDocsForPhysIdList(physIdList);
-        if (pageDocs.isEmpty()) {
+        List<PhysicalElement> pages = writeStrategy.getPagesForPhysIdList(physIdList);
+        if (pages.isEmpty()) {
             logger.warn("No pages found for {}", indexObj.getLogId());
         }
-        Collections.sort(pageDocs, new SolrInputDocPageOrderComparator()); // Mapping order may be shuffled, so restore page order
+        // Collections.sort(pageDocs, new SolrInputDocPageOrderComparator());
+        Collections.sort(pages); // Mapping order may be shuffled, so restore page order
 
         // If this is a top struct element, look for a representative image
         String filePathBanner = null;
@@ -739,24 +741,24 @@ public class MetsIndexer extends Indexer {
         }
         boolean thumbnailSet = false;
         List<LuceneField> ret = new ArrayList<>();
-        SolrInputDocument firstPageDoc = !pageDocs.isEmpty() ? pageDocs.get(0) : null;
+        PhysicalElement firstPage = !pages.isEmpty() ? pages.get(0) : null;
         if (StringUtils.isEmpty(filePathBanner) && SolrIndexerDaemon.getInstance().getConfiguration().isUseFirstPageAsDefaultRepresentative()
-                && firstPageDoc != null) {
+                && firstPage != null) {
             // Add thumbnail information from the first page
             logger.debug("THUMBNAIL from first page");
-            String thumbnailFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
+            String thumbnailFileName = checkThumbnailFileName((String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME), firstPage.getDoc());
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
-            if (DocType.SHAPE.name().equals(firstPageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue("ORDER_PARENT"))));
+            if (DocType.SHAPE.name().equals(firstPage.getDoc().getFieldValue(SolrConstants.DOCTYPE))) {
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue("ORDER_PARENT"))));
             } else {
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
             }
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
-            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
+            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPage.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
             thumbnailSet = true;
         }
-        for (SolrInputDocument pageDoc : pageDocs) {
-            String pageFileName = checkThumbnailFileName((String) pageDoc.getFieldValue(SolrConstants.FILENAME), pageDoc);
+        for (PhysicalElement page : pages) {
+            String pageFileName = checkThumbnailFileName((String) page.getDoc().getFieldValue(SolrConstants.FILENAME), page.getDoc());
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && filePathBanner.equals(pageFileName)) {
@@ -764,88 +766,88 @@ public class MetsIndexer extends Indexer {
                 // THUMBNAILREPRESENT is just used to identify the presence of a custom
                 // representation thumbnail to the indexer, it is not used in the viewer
                 ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(pageDoc.getFieldValue(SolrConstants.ORDER))));
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) pageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
-                ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) pageDoc.getFieldValue(SolrConstants.MIMETYPE)));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(page.getDoc().getFieldValue(SolrConstants.ORDER))));
+                ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) page.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
+                ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) page.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
                 thumbnailSet = true;
             }
 
             int currentDepth = -1;
-            if (pageDoc.getField(FIELD_OWNERDEPTH) != null) {
-                currentDepth = (int) pageDoc.getField(FIELD_OWNERDEPTH).getValue();
+            if (page.getDoc().getField(FIELD_OWNERDEPTH) != null) {
+                currentDepth = (int) page.getDoc().getField(FIELD_OWNERDEPTH).getValue();
             }
 
             // Make sure IDDOC_OWNER of a page contains the IDDOC of the lowest possible mapped docstruct
             if (depth > currentDepth) {
-                pageDoc.setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                pageDoc.setField(FIELD_OWNERDEPTH, depth);
+                page.getDoc().setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
+                page.getDoc().setField(FIELD_OWNERDEPTH, depth);
 
                 // Add the parent document's LOGID value to the page
-                pageDoc.setField(SolrConstants.LOGID, indexObj.getLogId());
+                page.getDoc().setField(SolrConstants.LOGID, indexObj.getLogId());
 
                 // Add the parent document's structure element to the page
-                pageDoc.setField(SolrConstants.DOCSTRCT, indexObj.getType());
+                page.getDoc().setField(SolrConstants.DOCSTRCT, indexObj.getType());
 
                 // Add topstruct type to the page
-                if (!pageDoc.containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
-                    pageDoc.setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
+                if (!page.getDoc().containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
+                    page.getDoc().setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
                 }
 
                 // Remove SORT_ fields from a previous, higher up docstruct
                 Set<String> fieldsToRemove = new HashSet<>();
-                for (String fieldName : pageDoc.getFieldNames()) {
+                for (String fieldName : page.getDoc().getFieldNames()) {
                     if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
                         fieldsToRemove.add(fieldName);
                     }
                 }
                 for (String fieldName : fieldsToRemove) {
-                    pageDoc.removeField(fieldName);
+                    page.getDoc().removeField(fieldName);
                 }
                 //  Add this docstruct's SORT_* fields to page
-                if (indexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                if (indexObj.getIddoc() == Long.valueOf((String) page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
                         if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
-                            pageDoc.addField(field.getField(), field.getValue());
+                            page.getDoc().addField(field.getField(), field.getValue());
                         }
                     }
                 }
             }
 
             // Add PI_TOPSTRUCT
-            if (pageDoc.getField(SolrConstants.PI_TOPSTRUCT) == null) {
-                pageDoc.addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
+            if (page.getDoc().getField(SolrConstants.PI_TOPSTRUCT) == null) {
+                page.getDoc().addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
             }
             // Add PI_ANCHOR
-            if (StringUtils.isNotEmpty(indexObj.getAnchorPI()) && pageDoc.getField(SolrConstants.PI_ANCHOR) == null) {
-                pageDoc.addField(SolrConstants.PI_ANCHOR, indexObj.getAnchorPI());
+            if (StringUtils.isNotEmpty(indexObj.getAnchorPI()) && page.getDoc().getField(SolrConstants.PI_ANCHOR) == null) {
+                page.getDoc().addField(SolrConstants.PI_ANCHOR, indexObj.getAnchorPI());
             }
             // Add GROUPID_*
             if (!indexObj.getGroupIds().isEmpty()) {
                 for (String groupId : indexObj.getGroupIds().keySet()) {
-                    if (!pageDoc.containsKey(groupId)) {
-                        pageDoc.addField(groupId, indexObj.getLuceneFieldWithName(groupId).getValue());
+                    if (!page.getDoc().containsKey(groupId)) {
+                        page.getDoc().addField(groupId, indexObj.getLuceneFieldWithName(groupId).getValue());
                     }
                 }
             }
             // Add DATAREPOSITORY
-            if (pageDoc.getField(SolrConstants.DATAREPOSITORY) == null && indexObj.getDataRepository() != null) {
-                pageDoc.addField(SolrConstants.DATAREPOSITORY, indexObj.getDataRepository());
+            if (page.getDoc().getField(SolrConstants.DATAREPOSITORY) == null && indexObj.getDataRepository() != null) {
+                page.getDoc().addField(SolrConstants.DATAREPOSITORY, indexObj.getDataRepository());
             }
-            if (pageDoc.getField(SolrConstants.DATEUPDATED) == null && !indexObj.getDateUpdated().isEmpty()) {
+            if (page.getDoc().getField(SolrConstants.DATEUPDATED) == null && !indexObj.getDateUpdated().isEmpty()) {
                 for (Long date : indexObj.getDateUpdated()) {
-                    pageDoc.addField(SolrConstants.DATEUPDATED, date);
+                    page.getDoc().addField(SolrConstants.DATEUPDATED, date);
                 }
             }
-            if (pageDoc.getField(SolrConstants.DATEINDEXED) == null && !indexObj.getDateIndexed().isEmpty()) {
+            if (page.getDoc().getField(SolrConstants.DATEINDEXED) == null && !indexObj.getDateIndexed().isEmpty()) {
                 for (Long date : indexObj.getDateIndexed()) {
-                    pageDoc.addField(SolrConstants.DATEINDEXED, date);
+                    page.getDoc().addField(SolrConstants.DATEINDEXED, date);
                 }
             }
 
             // Add of each docstruct access conditions (no duplicates)
             Set<String> existingAccessConditions = new HashSet<>();
-            if (pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
-                for (Object obj : pageDoc.getFieldValues(SolrConstants.ACCESSCONDITION)) {
+            if (page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
+                for (Object obj : page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)) {
                     existingAccessConditions.add((String) obj);
                 }
             }
@@ -854,19 +856,19 @@ public class MetsIndexer extends Indexer {
                     // Override OPENACCESS if a different access condition comes from a lower docstruct
                     if (depth > currentDepth && existingAccessConditions.contains(SolrConstants.OPEN_ACCESS_VALUE)) {
                         // Remove all instances of ACCESSCONDITION, then re-add existing values (minus OPENACCSS)
-                        pageDoc.removeField(SolrConstants.ACCESSCONDITION);
+                        page.getDoc().removeField(SolrConstants.ACCESSCONDITION);
                         for (String existingS : existingAccessConditions) {
                             if (!SolrConstants.OPEN_ACCESS_VALUE.equals(existingS)) {
-                                pageDoc.addField(SolrConstants.ACCESSCONDITION, existingS);
+                                page.getDoc().addField(SolrConstants.ACCESSCONDITION, existingS);
                             }
                         }
                     }
                     // Add new non-OPENACCESS condition
-                    pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
+                    page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
                 } else if (SolrConstants.OPEN_ACCESS_VALUE.equals(s) && depth > currentDepth) {
                     // If OPENACCESS is on a lower docstruct, however, remove all previous access conditions and override with OPENACCESS
-                    pageDoc.removeField(SolrConstants.ACCESSCONDITION);
-                    pageDoc.addField(SolrConstants.ACCESSCONDITION, s);
+                    page.getDoc().removeField(SolrConstants.ACCESSCONDITION);
+                    page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
                 }
             }
             if (indexObj.getAccessConditions().isEmpty()) {
@@ -876,13 +878,13 @@ public class MetsIndexer extends Indexer {
             // Add owner docstruct's metadata (tokenized only!) and SORT_* fields to the page
             Set<String> existingMetadataFieldNames = new HashSet<>();
             Set<String> existingSortFieldNames = new HashSet<>();
-            for (String fieldName : pageDoc.getFieldNames()) {
+            for (String fieldName : page.getDoc().getFieldNames()) {
                 if (SolrIndexerDaemon.getInstance()
                         .getConfiguration()
                         .getMetadataConfigurationManager()
                         .getFieldsToAddToPages()
                         .contains(fieldName)) {
-                    for (Object value : pageDoc.getFieldValues(fieldName)) {
+                    for (Object value : page.getDoc().getFieldValues(fieldName)) {
                         existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
                     }
                 } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
@@ -897,62 +899,64 @@ public class MetsIndexer extends Indexer {
                         .contains(field.getField())
                         && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
                     // Avoid duplicates (same field name + value)
-                    pageDoc.addField(field.getField(), field.getValue());
-                    logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), pageDoc.getFieldValue(SolrConstants.ORDER));
+                    page.getDoc().addField(field.getField(), field.getValue());
+                    logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), page.getDoc().getFieldValue(SolrConstants.ORDER));
                 } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !existingSortFieldNames.contains(field.getField())) {
                     // Only one instance of each SORT_ field may exist
-                    pageDoc.addField(field.getField(), field.getValue());
+                    page.getDoc().addField(field.getField(), field.getValue());
                 }
             }
 
             // For shape page docs, create grouped metadata docs for their mapped docstruct
-            if (DocType.SHAPE.name().equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+            if (DocType.SHAPE.name().equals(page.getDoc().getFieldValue(SolrConstants.DOCTYPE))) {
                 GroupedMetadata shapeGmd = new GroupedMetadata();
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.METADATATYPE, DocType.SHAPE.name()));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, String.valueOf(pageDoc.getFieldValue(SolrConstants.IDDOC))));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) pageDoc.getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.GROUPFIELD, String.valueOf(page.getDoc().getFieldValue(SolrConstants.IDDOC))));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.LABEL, (String) page.getDoc().getFieldValue(FIELD_COORDS)));
                 shapeGmd.getFields().add(new LuceneField(SolrConstants.LOGID, indexObj.getLogId()));
-                shapeGmd.getFields().add(new LuceneField(FIELD_COORDS, (String) pageDoc.getFieldValue(FIELD_COORDS)));
-                shapeGmd.getFields().add(new LuceneField(FIELD_SHAPE, (String) pageDoc.getFieldValue(FIELD_SHAPE)));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, (String) pageDoc.getFieldValue(FIELD_COORDS)));
-                shapeGmd.getFields().add(new LuceneField(SolrConstants.ORDER, String.valueOf(pageDoc.getFieldValue("ORDER_PARENT"))));
+                shapeGmd.getFields().add(new LuceneField(FIELD_COORDS, (String) page.getDoc().getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(FIELD_SHAPE, (String) page.getDoc().getFieldValue(FIELD_SHAPE)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, (String) page.getDoc().getFieldValue(FIELD_COORDS)));
+                shapeGmd.getFields().add(new LuceneField(SolrConstants.ORDER, String.valueOf(page.getDoc().getFieldValue("ORDER_PARENT"))));
                 // Add main value, otherwise the document will be skipped
-                shapeGmd.setMainValue((String) pageDoc.getFieldValue(FIELD_COORDS));
+                shapeGmd.setMainValue((String) page.getDoc().getFieldValue(FIELD_COORDS));
                 indexObj.getGroupedMetadataFields().add(shapeGmd);
                 // Make sure the shape metadata is on the lowest docstruct
-                while (parentIndexObject != null) {
-                    if (parentIndexObject.getGroupedMetadataFields().contains(shapeGmd)) {
-                        parentIndexObject.getGroupedMetadataFields().remove(shapeGmd);
-                        logger.debug("removed shape metadata {} from {}", shapeGmd.getMainValue(), parentIndexObject.getLogId());
+                IndexObject useParentIndexObject = parentIndexObject;
+                while (useParentIndexObject != null) {
+                    if (useParentIndexObject.getGroupedMetadataFields().contains(shapeGmd)) {
+                        useParentIndexObject.getGroupedMetadataFields().remove(shapeGmd);
+                        logger.debug("removed shape metadata {} from {}", shapeGmd.getMainValue(), useParentIndexObject.getLogId());
                     }
-                    parentIndexObject = parentIndexObject.getParent();
+                    useParentIndexObject = useParentIndexObject.getParent();
                 }
-                logger.debug("Mapped SHAPE document {} to {}", pageDoc.getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
+                logger.debug("Mapped SHAPE document {} to {}", page.getDoc().getFieldValue(SolrConstants.ORDER), indexObj.getLogId());
             }
 
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
-            writeStrategy.updateDoc(pageDoc);
+            writeStrategy.updatePage(page);
         }
 
         // If a representative image is set but not mapped to any docstructs, do not use it
-        if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && firstPageDoc != null) {
+        if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && firstPage.getDoc() != null) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
-            String pageFileName = checkThumbnailFileName((String) firstPageDoc.getFieldValue(SolrConstants.FILENAME), firstPageDoc);
+            String pageFileName = checkThumbnailFileName((String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME), firstPage.getDoc());
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
+            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer,
+            // it is not used in the viewer
             ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPageDoc.getFieldValue(SolrConstants.ORDER))));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL)));
-            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPageDoc.getFieldValue(SolrConstants.MIMETYPE)));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
+            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
+            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPage.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
         }
 
         // Add the number of assigned pages and the labels of the first and last page to this structure element
-        indexObj.setNumPages(pageDocs.size());
-        if (firstPageDoc != null) {
-            SolrInputDocument lastPagedoc = pageDocs.get(pageDocs.size() - 1);
-            String firstPageLabel = (String) firstPageDoc.getFieldValue(SolrConstants.ORDERLABEL);
-            String lastPageLabel = (String) lastPagedoc.getFieldValue(SolrConstants.ORDERLABEL);
+        indexObj.setNumPages(pages.size());
+        if (firstPage != null) {
+            PhysicalElement lastPage = pages.get(pages.size() - 1);
+            String firstPageLabel = (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL);
+            String lastPageLabel = (String) lastPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL);
             if (firstPageLabel != null && !"-".equals(firstPageLabel.trim())) {
                 indexObj.setFirstPageLabel(firstPageLabel);
             }
@@ -1000,6 +1004,7 @@ public class MetsIndexer extends Indexer {
      * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
+     * @param downloadExternalImages
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
@@ -1025,17 +1030,32 @@ public class MetsIndexer extends Indexer {
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
             ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
-            ConcurrentHashMap<Long, Boolean> map = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Long, Boolean> usedIddocsMap = new ConcurrentHashMap<>();
             try {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
                         long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
-                        if (map.containsKey(iddoc)) {
+                        if (usedIddocsMap.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders, dataRepository,
-                                downloadExternalImages);
-                        map.put(iddoc, true);
+                        PhysicalElement page =
+                                generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
+                                        downloadExternalImages);
+                        if (page != null) {
+                            writeStrategy.addPage(page);
+                            // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
+                            for (PhysicalElement shape : page.getShapes()) {
+                                writeStrategy.addPage(shape);
+                            }
+                            page.getShapes().clear();
+
+                            // Add Solr docs for grouped page metadata
+                            int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+                            if (docsAdded > 0) {
+                                logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+                            }
+                        }
+                        usedIddocsMap.put(iddoc, true);
                     } catch (FatalIndexerException e) {
                         logger.error("Should be exiting here now...");
                     }
@@ -1052,13 +1072,28 @@ public class MetsIndexer extends Indexer {
             // Generate pages sequentially
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
-                if (generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi,
-                        order, writeStrategy, dataFolders, dataRepository, downloadExternalImages)) {
+                PhysicalElement page =
+                        generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())),
+                                pi, order, dataFolders, dataRepository, downloadExternalImages);
+                if (page != null) {
+                    writeStrategy.addPage(page);
+                    // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
+                    for (PhysicalElement shape : page.getShapes()) {
+                        writeStrategy.addPage(shape);
+                    }
+                    page.getShapes().clear();
+
+                    // Add Solr docs for grouped page metadata
+                    int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+                    if (docsAdded > 0) {
+                        logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+                    }
+
                     order++;
                 }
             }
         }
-        logger.info("Generated {} page/shape documents.", writeStrategy.getPageDocsSize());
+        logger.info("Generated {} pages.", writeStrategy.getPageDocsSize());
     }
 
     /**
@@ -1128,12 +1163,11 @@ public class MetsIndexer extends Indexer {
      * @param eleStructMapPhysical
      * @param iddoc
      * @param pi
-     * @param order
-     * @param writeStrategy
+     * @param inOrder
      * @param dataFolders
      * @param dataRepository
      * @param downloadExternalImages
-     * @return
+     * @return Generated {@link PhysicalElement}
      * @throws FatalIndexerException
      * @should add all basic fields
      * @should add crowdsourcing ALTO field correctly
@@ -1149,7 +1183,7 @@ public class MetsIndexer extends Indexer {
      * @should add page metadata correctly
      * @should add shape metadata as page documents
      */
-    boolean generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, Integer order, final ISolrWriteStrategy writeStrategy,
+    PhysicalElement generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders != null && dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
@@ -1159,13 +1193,14 @@ public class MetsIndexer extends Indexer {
         }
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
+        Integer order = inOrder;
         if (order == null) {
             String orderValue = eleStructMapPhysical.getAttributeValue("ORDER");
             if (StringUtils.isNotEmpty(orderValue)) {
                 order = Integer.parseInt(orderValue);
             } else {
                 logger.warn("ORDER attribute no found, skipping...");
-                return false;
+                return null;
             }
         }
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().getId());
@@ -1175,21 +1210,19 @@ public class MetsIndexer extends Indexer {
         List<Element> eleStructLinkList = xp.evaluateToElements(sbXPath.toString(), null);
         if (eleStructLinkList.isEmpty()) {
             logger.warn("Page {} is not mapped to a structure element, skipping...", order);
-            return false;
+            return null;
         }
 
         List<Element> eleFptrList =
                 eleStructMapPhysical.getChildren("fptr", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
 
-        // Create Solr document for this page
-        SolrInputDocument doc = new SolrInputDocument();
-        doc.addField(SolrConstants.IDDOC, iddoc);
-        doc.addField(SolrConstants.GROUPFIELD, iddoc);
-        doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        doc.addField(SolrConstants.PHYSID, id);
-        doc.addField(SolrConstants.ORDER, order);
-
-        List<SolrInputDocument> shapePageDocs = Collections.emptyList();
+        // Create object for this page
+        PhysicalElement ret = new PhysicalElement(order);
+        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
+        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
+        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
+        ret.getDoc().addField(SolrConstants.PHYSID, id);
+        ret.getDoc().addField(SolrConstants.ORDER, order);
 
         // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
         String fileIdRoot = null;
@@ -1207,22 +1240,22 @@ public class MetsIndexer extends Indexer {
                         .getChildren("area", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
                 if (eleListArea != null && !eleListArea.isEmpty()) {
                     int count = 1;
-                    shapePageDocs = new ArrayList<>();
                     for (Element eleArea : eleListArea) {
                         String coords = eleArea.getAttributeValue("COORDS");
                         String physId = eleArea.getAttributeValue("ID");
                         String shape = eleArea.getAttributeValue(DocType.SHAPE.name());
-                        SolrInputDocument shapePageDoc = new SolrInputDocument();
-                        shapePageDoc.addField(SolrConstants.IDDOC, getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
-                        shapePageDoc.setField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
-                        shapePageDoc.addField(SolrConstants.ORDER, Utils.generateLongOrderNumber(order, count));
-                        shapePageDoc.addField(SolrConstants.PHYSID, physId);
-                        shapePageDoc.addField(FIELD_COORDS, coords);
-                        shapePageDoc.addField(FIELD_SHAPE, shape);
-                        shapePageDoc.addField("ORDER_PARENT", order);
-                        shapePageDocs.add(shapePageDoc);
+
+                        PhysicalElement shapePage = new PhysicalElement(Utils.generateLongOrderNumber(order, count));
+                        shapePage.getDoc().addField(SolrConstants.IDDOC, getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        shapePage.getDoc().setField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
+                        shapePage.getDoc().addField(SolrConstants.ORDER, shapePage.getOrder());
+                        shapePage.getDoc().addField(SolrConstants.PHYSID, physId);
+                        shapePage.getDoc().addField(FIELD_COORDS, coords);
+                        shapePage.getDoc().addField(FIELD_SHAPE, shape);
+                        shapePage.getDoc().addField("ORDER_PARENT", order);
+                        ret.getShapes().add(shapePage);
                         count++;
-                        logger.debug("Added SHAPE page document: {}", shapePageDoc.getFieldValue(SolrConstants.ORDER));
+                        logger.debug("Added SHAPE page document: {}", shapePage.getOrder());
                     }
                 }
             }
@@ -1254,7 +1287,7 @@ public class MetsIndexer extends Indexer {
             } else if (fileGroupSuffix) {
                 fileIdRoot = useFileID.replace(fileIdSeparator + useFileGroupGlobal, "");
             }
-            doc.addField(SolrConstants.FILEIDROOT, fileIdRoot);
+            ret.getDoc().addField(SolrConstants.FILEIDROOT, fileIdRoot);
         }
 
         // Double page view
@@ -1262,31 +1295,31 @@ public class MetsIndexer extends Indexer {
                 "double page".equals(eleStructMapPhysical.getAttributeValue("label",
                         SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xlink")));
         if (doubleImage) {
-            doc.addField(SolrConstants.BOOL_DOUBLE_IMAGE, doubleImage);
+            ret.getDoc().addField(SolrConstants.BOOL_DOUBLE_IMAGE, doubleImage);
         }
 
         // ORDERLABEL / LABEL
         String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
-            doc.addField(SolrConstants.ORDERLABEL, orderLabel);
+            ret.getDoc().addField(SolrConstants.ORDERLABEL, orderLabel);
         } else {
             if (StringUtils.isNotEmpty(orderLabel)) {
-                doc.addField(SolrConstants.ORDERLABEL, orderLabel);
+                ret.getDoc().addField(SolrConstants.ORDERLABEL, orderLabel);
             } else {
-                doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
+                ret.getDoc().addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
             }
         }
 
         String contentIDs = eleStructMapPhysical.getAttributeValue(ATTRIBUTE_CONTENTIDS);
         if (Utils.isUrn(contentIDs)) {
-            doc.addField(SolrConstants.IMAGEURN, contentIDs);
+            ret.getDoc().addField(SolrConstants.IMAGEURN, contentIDs);
         }
         String dmdId = eleStructMapPhysical.getAttributeValue(SolrConstants.DMDID);
         if (StringUtils.isNotEmpty(dmdId)) {
             IndexObject pageObj = new IndexObject(0);
             MetadataHelper.writeMetadataToObject(pageObj, xp.getMdWrap(dmdId), "", xp);
             for (LuceneField field : pageObj.getLuceneFields()) {
-                doc.addField(field.getField(), field.getValue());
+                ret.getDoc().addField(field.getField(), field.getValue());
             }
         }
 
@@ -1381,10 +1414,10 @@ public class MetsIndexer extends Indexer {
                 // The file name from the main file group (usually PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
-                    if (doc.containsKey(SolrConstants.FILENAME)) {
+                    if (ret.getDoc().containsKey(SolrConstants.FILENAME)) {
                         if (StringUtils.isNotEmpty(selectedPreferredImageFileGroup) && selectedPreferredImageFileGroup.equals(fileGrpUse)) {
                             // Preferred file group overrides any already added values
-                            doc.remove(SolrConstants.FILENAME);
+                            ret.getDoc().remove(SolrConstants.FILENAME);
                         } else {
                             logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc,
                                     filePath,
@@ -1404,41 +1437,41 @@ public class MetsIndexer extends Indexer {
                             logger.warn("Could not download file: {}", filePath);
                         }
                     }
-                    doc.addField(SolrConstants.FILENAME, filePath);
-                    if (!shapePageDocs.isEmpty()) {
-                        for (SolrInputDocument shapePageDoc : shapePageDocs) {
-                            shapePageDoc.addField(SolrConstants.FILENAME, filePath);
+                    ret.getDoc().addField(SolrConstants.FILENAME, filePath);
+                    if (!ret.getShapes().isEmpty()) {
+                        for (PhysicalElement shape : ret.getShapes()) {
+                            shape.getDoc().addField(SolrConstants.FILENAME, filePath);
                         }
                     }
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
                     if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroupGlobal)
-                            && !doc.containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
-                        doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
+                            && !ret.getDoc().containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
+                        ret.getDoc().addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
                     }
                 } else {
-                    if (doc.containsKey(SolrConstants.FILENAME)) {
+                    if (ret.getDoc().containsKey(SolrConstants.FILENAME)) {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, fileName,
                                 fileGrpUse);
                     }
-                    doc.addField(SolrConstants.FILENAME, fileName);
-                    if (!shapePageDocs.isEmpty()) {
-                        for (SolrInputDocument shapePageDoc : shapePageDocs) {
-                            shapePageDoc.addField(SolrConstants.FILENAME, fileName);
+                    ret.getDoc().addField(SolrConstants.FILENAME, fileName);
+                    if (!ret.getShapes().isEmpty()) {
+                        for (PhysicalElement shape : ret.getShapes()) {
+                            shape.getDoc().addField(SolrConstants.FILENAME, fileName);
                         }
                     }
                 }
 
                 // Add mime type
-                if (doc.containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(selectedPreferredImageFileGroup)
+                if (ret.getDoc().containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(selectedPreferredImageFileGroup)
                         && selectedPreferredImageFileGroup.equals(fileGrpUse)) {
                     // Preferred file group overrides any already added values
-                    doc.removeField(SolrConstants.MIMETYPE);
+                    ret.getDoc().removeField(SolrConstants.MIMETYPE);
                 }
-                doc.addField(SolrConstants.MIMETYPE, mimetype);
-                if (!shapePageDocs.isEmpty()) {
-                    for (SolrInputDocument shapePageDoc : shapePageDocs) {
-                        shapePageDoc.addField(SolrConstants.MIMETYPE, mimetype);
+                ret.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
+                if (!ret.getShapes().isEmpty()) {
+                    for (PhysicalElement shape : ret.getShapes()) {
+                        shape.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
                     }
                 }
                 // Add file size
@@ -1447,16 +1480,16 @@ public class MetsIndexer extends Indexer {
                         Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
                         if (dataFolder != null) {
                             Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                            doc.addField(FIELD_FILESIZE, Files.size(path));
+                            ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
                         } else {
-                            doc.addField(FIELD_FILESIZE, -1);
+                            ret.getDoc().addField(FIELD_FILESIZE, -1);
                         }
                     } catch (FileNotFoundException | NoSuchFileException e) {
                         logger.warn("File not found: {}", e.getMessage());
-                        doc.addField(FIELD_FILESIZE, -1);
+                        ret.getDoc().addField(FIELD_FILESIZE, -1);
                     } catch (IOException | IllegalArgumentException e) {
                         logger.error(e.getMessage(), e);
-                        doc.addField(FIELD_FILESIZE, -1);
+                        ret.getDoc().addField(FIELD_FILESIZE, -1);
                     }
                 }
 
@@ -1464,37 +1497,38 @@ public class MetsIndexer extends Indexer {
                 altoURL = filePath;
             } else {
                 String fieldName = SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase();
-                if (doc.getField(fieldName) == null) {
+                if (ret.getDoc().getField(fieldName) == null) {
                     switch (mimetypeSplit[1]) {
                         case "html-sandboxed":
                             // Add full URL
-                            doc.addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), filePath);
+                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), filePath);
                             break;
                         case "object":
-                            doc.addField(SolrConstants.FILENAME, fileName);
-                            doc.addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
+                            ret.getDoc().addField(SolrConstants.FILENAME, fileName);
+                            ret.getDoc().addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
                             break;
                         default:
-                            doc.addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
+                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
                     }
                 }
             }
 
             // Width + height (from IIIF)
-            if (SolrIndexerDaemon.getInstance().getConfiguration().isReadImageDimensionsFromIIIF() && doc.getField(SolrConstants.WIDTH) == null
-                    && doc.getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
+            if (SolrIndexerDaemon.getInstance().getConfiguration().isReadImageDimensionsFromIIIF()
+                    && ret.getDoc().getField(SolrConstants.WIDTH) == null
+                    && ret.getDoc().getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
                     && filePath.endsWith("info.json")) {
                 int[] dim = getImageDimensionsFromIIIF(filePath);
                 if (dim.length == 2) {
-                    doc.addField(SolrConstants.WIDTH, dim[0]);
-                    doc.addField(SolrConstants.HEIGHT, dim[1]);
-                    logger.debug("Added WIDTH from IIIF: {}", doc.getFieldValue(SolrConstants.WIDTH));
-                    logger.debug("Added HEIGHT from IIIF: {}", doc.getFieldValue(SolrConstants.HEIGHT));
+                    ret.getDoc().addField(SolrConstants.WIDTH, dim[0]);
+                    ret.getDoc().addField(SolrConstants.HEIGHT, dim[1]);
+                    logger.debug("Added WIDTH from IIIF: {}", ret.getDoc().getFieldValue(SolrConstants.WIDTH));
+                    logger.debug("Added HEIGHT from IIIF: {}", ret.getDoc().getFieldValue(SolrConstants.HEIGHT));
                 }
             }
 
             // Width + height (from techMD)
-            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
+            if (ret.getDoc().getField(SolrConstants.WIDTH) == null && ret.getDoc().getField(SolrConstants.HEIGHT) == null) {
                 // Width + height (from techMD)
                 xpath = XPATH_FILE + fileIdXPathCondition + "/@ADMID";
                 List<Attribute> amdIdAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
@@ -1506,10 +1540,10 @@ public class MetsIndexer extends Indexer {
                     if (StringUtils.isNotEmpty(frameSize)) {
                         String[] frameSizeSplit = frameSize.split("x");
                         if (frameSizeSplit.length == 2) {
-                            doc.addField(SolrConstants.WIDTH, frameSizeSplit[0].trim());
-                            doc.addField(SolrConstants.HEIGHT, frameSizeSplit[1].trim());
-                            logger.info("WIDTH: {}", doc.getFieldValue(SolrConstants.WIDTH));
-                            logger.info("HEIGHT: {}", doc.getFieldValue(SolrConstants.HEIGHT));
+                            ret.getDoc().addField(SolrConstants.WIDTH, frameSizeSplit[0].trim());
+                            ret.getDoc().addField(SolrConstants.HEIGHT, frameSizeSplit[1].trim());
+                            logger.info("WIDTH: {}", ret.getDoc().getFieldValue(SolrConstants.WIDTH));
+                            logger.info("HEIGHT: {}", ret.getDoc().getFieldValue(SolrConstants.HEIGHT));
                         } else {
                             logger.warn("Invalid formatFrameSize value in mets:techMD[@ID='{}']: '{}'", amdId, frameSize);
                         }
@@ -1518,7 +1552,7 @@ public class MetsIndexer extends Indexer {
             }
 
             // Width + height (invalid)
-            if (doc.getField(SolrConstants.WIDTH) == null && doc.getField(SolrConstants.HEIGHT) == null) {
+            if (ret.getDoc().getField(SolrConstants.WIDTH) == null && ret.getDoc().getField(SolrConstants.HEIGHT) == null) {
                 xpath = XPATH_FILE + fileIdXPathCondition + "/@WIDTH";
                 List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
                 Integer width = null;
@@ -1534,35 +1568,47 @@ public class MetsIndexer extends Indexer {
                     logger.warn("mets:file[@ID='{}'] contains illegal HEIGHT attribute. It will still be used, though.", fileId);
                 }
                 if (width != null && height != null) {
-                    doc.addField(SolrConstants.WIDTH, width);
-                    doc.addField(SolrConstants.HEIGHT, height);
+                    ret.getDoc().addField(SolrConstants.WIDTH, width);
+                    ret.getDoc().addField(SolrConstants.HEIGHT, height);
                 }
 
             }
         }
 
         // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
-                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            doc.addField(FIELD_IMAGEAVAILABLE, true);
+        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
+                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
             recordHasImages = true;
         } else {
-            doc.addField(FIELD_IMAGEAVAILABLE, false);
+            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
         }
 
         if (dataFolders != null || altoURL != null) {
-            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, order, altoURL);
+            addFullTextToPageDoc(ret.getDoc(), dataFolders, dataRepository, pi, order, altoURL);
         }
 
-        writeStrategy.addPageDoc(doc);
-        // Add prepared shape page docs
-        if (!shapePageDocs.isEmpty()) {
-            for (SolrInputDocument shapePageDoc : shapePageDocs) {
-                writeStrategy.addPageDoc(shapePageDoc);
+        // Page metadata
+        String admId = eleStructMapPhysical.getAttributeValue("ADMID");
+        if (StringUtils.isNotEmpty(admId)) {
+            String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId
+                    + "']/mets:mdWrap/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/mets:mdWrap[@MDTYPE='OTHER']"; // TODO check whether METS correct
+            List<Element> eletechMdList = xp.evaluateToElements(techXpath, null);
+            if (!eletechMdList.isEmpty()) {
+                IndexObject indexObj = new IndexObject(1L, pi);
+                indexObj.setSourceDocFormat(FileFormat.MIX);
+                List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eletechMdList.get(0), "", indexObj, xp);
+                for (LuceneField field : fields) {
+                    if (!MetadataHelper.FIELD_HAS_WKT_COORDS.equals(field.getField())) {
+                        ret.getDoc().addField(field.getField(), field.getValue());
+                        logger.debug("Added techMD field: {}", field);
+                    }
+                }
+                ret.getGroupedMetadata().addAll(indexObj.getGroupedMetadataFields());
             }
         }
 
-        return true;
+        return ret;
     }
 
     /**
@@ -1658,7 +1704,7 @@ public class MetsIndexer extends Indexer {
      * @param collections
      * @param childrenInfoUnsorted
      * @param addVolumeCollectionsToAnchor
-     * @return
+     * @return true if volumes are sorted by label; false otherwise
      * @throws IndexerException
      */
     private static boolean collectVolumeInfo(SolrDocument doc, Map<String, Long> orderInfo, Map<String, String> urnInfo, Map<String, String> typeInfo,
@@ -1818,7 +1864,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param indexObj
      * @param collections
-     * @return
+     * @return true if new collections were added; false otherwise
      */
     protected boolean addVolumeCollectionsToAnchor(IndexObject indexObj, List<String> collections) {
         boolean ret = false;
@@ -2133,7 +2179,8 @@ public class MetsIndexer extends Indexer {
 
             // The following steps must be performed after adding child metadata and marking own metadata for skipping
 
-            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
+            // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct
+            // and after adding grouped metadata from child elements)
             addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
             // Apply field modifications that should happen at the very end
@@ -2222,7 +2269,7 @@ public class MetsIndexer extends Indexer {
      * Retrieves and sets the URN for mets:structMap[@TYPE='LOGICAL'] elements.
      * 
      * @param indexObj
-     * @return
+     * @return The URN
      */
     private String setUrn(IndexObject indexObj) {
         String query = "/mets:mets/mets:structMap[@TYPE='LOGICAL']//mets:div[@ID='" + indexObj.getLogId() + "']/@CONTENTIDS";
@@ -2362,7 +2409,8 @@ public class MetsIndexer extends Indexer {
         if (sbNewFilename.length() > 0) {
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
             try {
-                // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems. Instead, move the file.
+                // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems.
+                // Instead, move the file.
                 Files.move(Paths.get(metsFile.toAbsolutePath().toString()), indexed);
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
@@ -2382,7 +2430,7 @@ public class MetsIndexer extends Indexer {
 
     /**
      * 
-     * @return
+     * @return {@link FileFormat}
      */
     protected FileFormat getSourceDocFormat() {
         return FileFormat.METS;

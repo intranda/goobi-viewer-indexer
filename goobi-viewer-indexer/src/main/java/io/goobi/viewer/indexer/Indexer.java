@@ -104,6 +104,7 @@ import io.goobi.viewer.indexer.helper.XmlTools;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -463,7 +464,7 @@ public abstract class Indexer {
             }
             // Extract NORM_IDENTIFIER from URI for searches
             if (splitString.length > 2 && splitString[2] != null) {
-                String identifier = de.intranda.digiverso.normdataimporter.Utils.getIdentifierFromURI( splitString[2]);
+                String identifier = de.intranda.digiverso.normdataimporter.Utils.getIdentifierFromURI(splitString[2]);
                 doc.addField("NORM_IDENTIFIER", identifier);
             }
         }
@@ -1150,6 +1151,56 @@ public abstract class Indexer {
             return null;
         }
         return reader;
+    }
+
+    /**
+     * Adds the given {@link PhysicalElement}'s grouped metadata to the write strategy. Must be called after the page has been mapped to a docstruct,
+     * so that all relevant metadata has been copied from the structure element.
+     * 
+     * @param page {@link PhysicalElement}
+     * @param writeStrategy
+     * @return Number of added group docs
+     * @throws FatalIndexerException
+     */
+    public int addGroupedMetadataDocsForPage(PhysicalElement page, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
+        if (page == null) {
+            throw new IllegalArgumentException("page may not be null");
+        }
+        if (writeStrategy == null) {
+            throw new IllegalArgumentException("writeStrategy may not be null");
+        }
+
+        int count = 0;
+        for (GroupedMetadata gmd : page.getGroupedMetadata()) {
+            SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
+            long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+            doc.addField(SolrConstants.IDDOC, iddoc);
+            if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
+                logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
+                        doc.getFieldValue(SolrConstants.LABEL));
+                doc.addField(SolrConstants.GROUPFIELD, iddoc);
+            }
+            // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped.
+            // Since child docstructs are added recursively, this should be the case without further conditions.
+            doc.addField(SolrConstants.IDDOC_OWNER, page.getDoc().getFieldValue(SolrConstants.IDDOC));
+            doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
+            doc.addField(SolrConstants.PI_TOPSTRUCT, page.getDoc().getFieldValue(SolrConstants.PI_TOPSTRUCT));
+
+            // Add DC values to metadata doc
+            for (String dc : SolrSearchIndex.getMetadataValues(page.getDoc(), SolrConstants.DC)) {
+                doc.addField(SolrConstants.DC, dc);
+            }
+
+            // Copy access conditions to metadata docs
+            for (String accessCondition : SolrSearchIndex.getMetadataValues(page.getDoc(), SolrConstants.ACCESSCONDITION)) {
+                doc.addField(SolrConstants.ACCESSCONDITION, accessCondition);
+            }
+
+            writeStrategy.addDoc(doc);
+            count++;
+        }
+
+        return count;
     }
 
     /**

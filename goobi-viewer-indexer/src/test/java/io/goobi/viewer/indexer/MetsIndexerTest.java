@@ -16,6 +16,7 @@
 package io.goobi.viewer.indexer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -45,6 +46,7 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -127,12 +129,12 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             SolrDocument doc = docList.get(0);
             {
                 Collection<Object> values = doc.getFieldValues(SolrConstants.ACCESSCONDITION);
-                Assertions.assertNotNull(values);
+                assertNotNull(values);
                 assertEquals(1, values.size());
                 assertEquals("OPENACCESS", values.iterator().next());
             }
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
-            Assertions.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
+            assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
+            assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
             assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
             assertEquals(doc.getFieldValue(SolrConstants.DATECREATED), doc.getFirstValue(SolrConstants.DATEUPDATED));
             assertEquals(DocType.DOCSTRCT.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
@@ -140,7 +142,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             {
                 List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
-                Assertions.assertNotNull(mdList);
+                assertNotNull(mdList);
                 assertEquals(2, mdList.size());
                 assertEquals("varia", mdList.get(0));
                 assertEquals("digiwunschbuch", mdList.get(1));
@@ -148,7 +150,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             assertTrue(doc.containsKey(SolrConstants.DEFAULT));
             // assertTrue(doc.containsKey(SolrConstants.SUPERDEFAULT));
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assertions.assertNotNull(iddoc);
+            assertNotNull(iddoc);
             iddocMap.put(iddoc, true);
             assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
             assertEquals(true, doc.getFieldValue(SolrConstants.ISWORK));
@@ -168,13 +170,13 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR");
-                Assertions.assertNotNull(mdList);
+                assertNotNull(mdList);
                 assertEquals(1, mdList.size());
                 assertEquals("Klein, Felix", mdList.get(0));
             }
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_AUTHOR" + SolrConstants.SUFFIX_UNTOKENIZED);
-                Assertions.assertNotNull(mdList);
+                assertNotNull(mdList);
                 assertEquals(1, mdList.size());
                 assertEquals("Klein, Felix", mdList.get(0));
             }
@@ -182,35 +184,35 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEAR);
-                Assertions.assertNotNull(mdList);
+                assertNotNull(mdList);
                 assertEquals(1, mdList.size());
                 assertEquals(Long.valueOf(1980), mdList.get(0));
                 assertEquals(Long.valueOf(1980), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEAR));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEARMONTH);
-                Assertions.assertNotNull(mdList);
+                assertNotNull(mdList);
                 assertEquals(1, mdList.size());
                 assertEquals(Long.valueOf(198007), mdList.get(0));
                 assertEquals(Long.valueOf(198007), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEARMONTH));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEARMONTHDAY);
-                Assertions.assertNotNull(mdList);
+                assertNotNull(mdList);
                 assertEquals(1, mdList.size());
                 assertEquals(Long.valueOf(19800710), mdList.get(0));
                 assertEquals(Long.valueOf(19800710), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.YEARMONTHDAY));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.MONTHDAY);
-                Assertions.assertNotNull(mdList);
+                assertNotNull(mdList);
                 assertEquals(1, mdList.size());
                 assertEquals(Long.valueOf(710), mdList.get(0));
                 assertEquals(Long.valueOf(710), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.MONTHDAY));
             }
             {
                 List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.CENTURY);
-                Assertions.assertNotNull(mdList);
+                assertNotNull(mdList);
                 assertEquals(1, mdList.size());
                 assertEquals(Long.valueOf(20), mdList.get(0));
                 assertEquals(Long.valueOf(20), doc.getFieldValue(SolrConstants.PREFIX_SORTNUM + SolrConstants.CENTURY));
@@ -234,30 +236,30 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 {
                     Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                    Assertions.assertNotNull(values);
+                    assertNotNull(values);
                     assertEquals(1, values.size());
                     assertEquals("OPENACCESS", values.iterator().next());
                 }
                 {
                     //                    Collection<Object> values = doc.getFieldValues(SolrConstants.DC);
-                    //                    Assertions.assertNotNull(values);
+                    //                    assertNotNull(values);
                     //                    assertEquals(2, values.size());
                 }
                 assertTrue(doc.containsKey(SolrConstants.DEFAULT));
                 assertEquals(DocType.DOCSTRCT.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
+                assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
                 assertEquals(doc.getFieldValue(SolrConstants.DOCSTRCT), doc.getFieldValue(SolrConstants.DOCSTRCT_SUB));
                 assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue(SolrConstants.DC);
-                    Assertions.assertNotNull(mdList);
+                    assertNotNull(mdList);
                     assertEquals(2, mdList.size());
                     assertEquals("varia", mdList.get(0));
                     assertEquals("digiwunschbuch", mdList.get(1));
                 }
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assertions.assertNotNull(value);
+                    assertNotNull(value);
                     Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                     assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
@@ -265,16 +267,16 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
                 assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC_TOPSTRUCT));
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.LOGID);
-                    Assertions.assertNotNull(value);
+                    assertNotNull(value);
                     Assertions.assertNull(logIdMap.get(value));
                     logIdMap.put(value, true);
                 }
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.THUMBNAIL));
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.THUMBPAGENO));
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.NUMPAGES));
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.URN));
-                Assertions.assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
+                assertNotNull(doc.getFieldValue(SolrConstants.THUMBNAIL));
+                assertNotNull(doc.getFieldValue(SolrConstants.THUMBPAGENO));
+                assertNotNull(doc.getFieldValue(SolrConstants.THUMBPAGENOLABEL));
+                assertNotNull(doc.getFieldValue(SolrConstants.NUMPAGES));
+                assertNotNull(doc.getFieldValue(SolrConstants.URN));
+                assertNotNull(doc.getFieldValues(SolrConstants.DATEUPDATED));
             }
         }
 
@@ -288,39 +290,39 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 {
                     Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                    Assertions.assertNotNull(values);
+                    assertNotNull(values);
                     assertEquals(1, values.size());
                     assertEquals("OPENACCESS", values.iterator().next());
                 }
                 {
                     Collection<Object> values = doc.getFieldValues(SolrConstants.DC);
-                    Assertions.assertNotNull(values);
+                    assertNotNull(values);
                     assertEquals(2, values.size());
                 }
                 Integer order = (Integer) doc.getFieldValue(SolrConstants.ORDER);
-                Assertions.assertNotNull(order);
+                assertNotNull(order);
                 String fileName = (String) doc.getFieldValue(SolrConstants.FILENAME);
-                Assertions.assertNotNull(fileName);
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
+                assertNotNull(fileName);
+                assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
                 assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.IMAGEURN));
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.FILEIDROOT));
+                assertNotNull(doc.getFieldValue(SolrConstants.IMAGEURN));
+                assertNotNull(doc.getFieldValue(SolrConstants.FILEIDROOT));
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
-                    Assertions.assertNotNull(value);
+                    assertNotNull(value);
                     assertEquals("fulltext/PPN517154005/" + FilenameUtils.getBaseName(fileName) + FileTools.TXT_EXTENSION, value);
                     assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
                 }
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assertions.assertNotNull(value);
+                    assertNotNull(value);
                     Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                     assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
                 }
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+                assertNotNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
                 // DATEUPDATED from the top docstruct
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
+                assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
                 // SORT_* fields from the direct owner docstruct
                 if (order == 2) {
                     assertEquals("Universität und Technische Hochschule", doc.getFieldValue("SORT_TITLE"));
@@ -351,19 +353,19 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             SolrDocument doc = docList.get(0);
             {
                 Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                Assertions.assertNotNull(values);
+                assertNotNull(values);
                 assertEquals(1, values.size());
                 assertEquals("OPENACCESS", values.iterator().next());
             }
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
+            assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
+            assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
             assertEquals(DocType.DOCSTRCT.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
+            assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
             assertTrue(doc.getFieldValues(SolrConstants.DC) != null && doc.getFieldValues(SolrConstants.DC).size() == 1);
             assertEquals("casualia", doc.getFieldValues(SolrConstants.DC).iterator().next());
             assertTrue(doc.containsKey(SolrConstants.DEFAULT));
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assertions.assertNotNull(iddoc);
+            assertNotNull(iddoc);
             iddocMap.put(iddoc, true);
             assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
             assertEquals(true, doc.getFieldValue(SolrConstants.ISWORK));
@@ -389,21 +391,21 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 assertTrue("MD_CREATOR".equals(doc.getFieldValue(SolrConstants.LABEL))
                         || "MD_PHYSICALCOPY".equals(doc.getFieldValue(SolrConstants.LABEL)));
-                Assertions.assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
+                assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
                 if ("MD_CREATOR".equals(doc.getFieldValue(SolrConstants.LABEL))) {
-                    Assertions.assertNotNull(doc.getFieldValue("MD_VALUE"));
-                    Assertions.assertNotNull(doc.getFieldValue("MD_FIRSTNAME"));
-                    Assertions.assertNotNull(doc.getFieldValue("MD_LASTNAME"));
-                    Assertions.assertNotNull(doc.getFieldValue("NORM_URI"));
-                    Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DEFAULT));
+                    assertNotNull(doc.getFieldValue("MD_VALUE"));
+                    assertNotNull(doc.getFieldValue("MD_FIRSTNAME"));
+                    assertNotNull(doc.getFieldValue("MD_LASTNAME"));
+                    assertNotNull(doc.getFieldValue("NORM_URI"));
+                    assertNotNull(doc.getFieldValue(SolrConstants.DEFAULT));
                 } else if ("MD_PHYSICALCOPY".equals(doc.getFieldValue(SolrConstants.LABEL))) {
-                    Assertions.assertNotNull(doc.getFieldValue("MD_LOCATION"));
-                    Assertions.assertNotNull(doc.getFieldValue("MD_SHELFMARK"));
-                    //                    Assertions.assertNotNull(doc.getFieldValue(SolrConstants.NORMDATATERMS));
+                    assertNotNull(doc.getFieldValue("MD_LOCATION"));
+                    assertNotNull(doc.getFieldValue("MD_SHELFMARK"));
+                    //                    assertNotNull(doc.getFieldValue(SolrConstants.NORMDATATERMS));
                 }
                 {
                     Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                    Assertions.assertNotNull(values);
+                    assertNotNull(values);
                     assertEquals(1, values.size());
                     assertEquals("OPENACCESS", values.iterator().next());
                 }
@@ -489,7 +491,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             anchorIddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assertions.assertNotNull(anchorIddoc);
+            assertNotNull(anchorIddoc);
             assertEquals(anchorIddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
         }
 
@@ -543,12 +545,12 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
+            assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
             dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
+            assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
             dateUpdated = doc.getFieldValues(SolrConstants.DATEUPDATED);
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assertions.assertNotNull(iddoc);
+            assertNotNull(iddoc);
             iddocMap.put(iddoc, true);
             assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
         }
@@ -562,7 +564,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assertions.assertNotNull(value);
+                    assertNotNull(value);
                     Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                     assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
@@ -579,7 +581,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assertions.assertNotNull(value);
+                    assertNotNull(value);
                     Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                     assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
@@ -597,13 +599,13 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
+            assertNotNull(doc.getFieldValue(SolrConstants.DATECREATED));
             assertEquals(dateCreated, doc.getFieldValue(SolrConstants.DATECREATED));
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
+            assertNotNull(doc.getFieldValue(SolrConstants.DATEUPDATED));
             // No new DATEUPDATED value
             assertEquals(dateUpdated.size(), doc.getFieldValues(SolrConstants.DATEUPDATED).size());
             iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
-            Assertions.assertNotNull(iddoc);
+            assertNotNull(iddoc);
             Assertions.assertNull(iddocMap.get(iddoc));
             iddocMap.put(iddoc, true);
             assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
@@ -619,7 +621,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assertions.assertNotNull(value);
+                    assertNotNull(value);
                     Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                     assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
@@ -636,7 +638,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             for (SolrDocument doc : docList) {
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.IDDOC);
-                    Assertions.assertNotNull(value);
+                    assertNotNull(value);
                     Assertions.assertNull(iddocMap.get(value));
                     iddocMap.put(value, true);
                     assertEquals(value, doc.getFieldValue(SolrConstants.GROUPFIELD));
@@ -663,7 +665,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
             Collection<Object> values = doc.getFieldValues(SolrConstants.ACCESSCONDITION);
-            Assertions.assertNotNull(values);
+            assertNotNull(values);
             assertEquals(1, values.size());
             assertEquals("OPENACCESS", values.iterator().next());
         }
@@ -685,7 +687,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {
                 Collection<Object> values = doc.getFieldValues(SolrConstants.ACCESSCONDITION);
-                Assertions.assertNotNull(values);
+                assertNotNull(values);
                 assertEquals(1, values.size());
                 assertEquals("bib_network", values.iterator().next());
             }
@@ -700,7 +702,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             assertEquals(1, docList.size());
             for (SolrDocument doc : docList) {
                 Collection<Object> values = doc.getFieldValues(SolrConstants.ACCESSCONDITION);
-                Assertions.assertNotNull(values);
+                assertNotNull(values);
                 assertEquals(1, values.size(), values.toString());
                 assertEquals("bib_network", values.iterator().next());
             }
@@ -845,7 +847,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             SolrDocument doc = docList.get(0);
 
             Long dateCreated = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
-            Assertions.assertNotNull(dateCreated);
+            assertNotNull(dateCreated);
             assertEquals(Long.valueOf(1372770217000L), dateCreated);
         }
     }
@@ -870,7 +872,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
             assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
             Long dateUpdated = SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
-            Assertions.assertNotNull(dateUpdated);
+            assertNotNull(dateUpdated);
             assertEquals(timestamp, dateUpdated);
         }
         // Second indexing
@@ -882,7 +884,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             // DATEUPDATED is still the same
             assertEquals(1, doc.getFieldValues(SolrConstants.DATEUPDATED).size());
             Long dateUpdated = SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
-            Assertions.assertNotNull(dateUpdated);
+            assertNotNull(dateUpdated);
             assertEquals(timestamp, dateUpdated);
         }
     }
@@ -943,7 +945,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile2);
         ZonedDateTime dateCreated = indexer.getMetsCreateDate();
-        Assertions.assertNotNull(dateCreated);
+        assertNotNull(dateCreated);
         assertEquals("2013-07-02T13:03:37", dateCreated.format(DateTools.formatterISO8601LocalDateTime));
 
     }
@@ -968,22 +970,22 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     void generatePageDocument_shouldAddFILENAME_HTMLSANDBOXEDFieldForUrlPaths() throws Exception {
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(Paths.get("src/test/resources/METS/ppn750544996.dv.mets.xml"));
-        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        Assertions.assertNotNull(eleStructMapPhysicalList);
+        assertNotNull(eleStructMapPhysicalList);
         Assertions.assertFalse(eleStructMapPhysicalList.isEmpty());
 
         int page = 1;
         indexer.useFileGroupGlobal = MetsIndexer.DEFAULT_FILEGROUP;
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
-        assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), "ppn750544996", page, writeStrategy, null,
-                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(),
+        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), "ppn750544996", page, null,
+                dataRepositoryStrategy.selectDataRepository("ppn750544996", metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(),
                         null)[0],
-                false));
-        SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
-        Assertions.assertNotNull(doc);
+                false);
+        assertNotNull(pe);
+        SolrInputDocument doc = pe.getDoc();
+        assertNotNull(doc);
         assertEquals("http://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn750544996%252Fphys_0001/full/full/0/native.jpg",
                 doc.getFieldValue("FILENAME_HTML-SANDBOXED"));
         assertEquals("http://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn750544996%252Fphys_0001/full/full/0/native.jpg",
@@ -1001,7 +1003,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     //        ISolrWriteStrategy writeStrategy = new LazySolrWriteStrategy(searchIndex);
     //        String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
     //        List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-    //        Assertions.assertNotNull(eleStructMapPhysicalList);
+    //        assertNotNull(eleStructMapPhysicalList);
     //        Assertions.assertFalse(eleStructMapPhysicalList.isEmpty());
     //
     //        Map<String, Path> dataFolders = new HashMap<>();
@@ -1016,7 +1018,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     //                String.valueOf(MetsIndexer.getNextIddoc(hotfolder.getsearchIndex())), "ppn750542047", page, writeStrategy, dataFolders,
     //                dataRepositoryStrategy.selectDataRepository("ppn750542047", metsFile, dataFolders, searchIndex)[0]));
     //        SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
-    //        Assertions.assertNotNull(doc);
+    //        assertNotNull(doc);
     //        assertTrue(Files.isRegularFile(Paths.get(altoPath.toAbsolutePath().toString(), "00000005.xml")));
     //    }
 
@@ -1038,18 +1040,17 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.setDataRepository(new DataRepository("build/viewer", true));
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         int page = 1;
         indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
-        assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, dataFolders,
+        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
-                false));
-        SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
-        Assertions.assertNotNull(doc);
-
+                false);
+        assertNotNull(pe);
+        SolrInputDocument doc = pe.getDoc();
+        assertNotNull(doc);
         assertTrue(Files.isRegularFile(Paths.get(altoPath.toAbsolutePath().toString(), "00000001.xml")));
     }
 
@@ -1066,17 +1067,17 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         int page = 1;
         indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
-        assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, dataFolders,
+        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
-                false));
-        SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
-        Assertions.assertNotNull(doc);
+                false);
+        assertNotNull(pe);
+        SolrInputDocument doc = pe.getDoc();
+        assertNotNull(doc);
         assertEquals("fulltext/" + PI + "/00000001.txt", doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT));
         assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
     }
@@ -1091,25 +1092,25 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         String xpath = "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div";
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
-        ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
         int page = 3;
         indexer.useFileGroupGlobal = MetsIndexer.PRESENTATION_FILEGROUP;
-        assertTrue(indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
-                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, writeStrategy, null,
-                dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], false));
-        SolrInputDocument doc = writeStrategy.getPageDocForOrder(page);
-        Assertions.assertNotNull(doc);
-        Assertions.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC));
-        Assertions.assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
-        Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DOCTYPE), DocType.PAGE.name());
+        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+                String.valueOf(MetsIndexer.getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), PI, page, null,
+                dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], false);
+        assertNotNull(pe);
+        SolrInputDocument doc = pe.getDoc();
+        assertNotNull(doc);
+        assertNotNull(doc.getFieldValue(SolrConstants.IDDOC));
+        assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
+        assertNotNull(doc.getFieldValue(SolrConstants.DOCTYPE), DocType.PAGE.name());
         assertEquals("image/tiff", doc.getFieldValue(SolrConstants.MIMETYPE));
         assertEquals("PHYS_0003", doc.getFieldValue(SolrConstants.PHYSID));
         assertEquals(3, doc.getFieldValue(SolrConstants.ORDER));
         assertEquals("1", doc.getFieldValue(SolrConstants.ORDERLABEL));
         assertEquals("urn:nbn:de:hebis:66:fuldig-2004", doc.getFieldValue(SolrConstants.IMAGEURN));
-        Assertions.assertNotNull(doc.getFieldValue(SolrConstants.FILENAME), "Filename null, should be 00000003.tif");
+        assertNotNull(doc.getFieldValue(SolrConstants.FILENAME), "Filename null, should be 00000003.tif");
     }
 
     /**
@@ -1160,7 +1161,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         MetsIndexer.anchorSuperupdate(metsFile, updatedMetsFolder, dataRepository);
 
         String[] files = updatedMetsFolder.toFile().list();
-        Assertions.assertNotNull(files);
+        assertNotNull(files);
         assertEquals(1, files.length);
         assertTrue(files[0].startsWith("PPN123"));
         assertTrue(files[0].endsWith(".xml"));
@@ -1197,7 +1198,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void parseCreateDate_shouldParseIsoInstantCorrectly() throws Exception {
         ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00Z");
-        Assertions.assertNotNull(date);
+        assertNotNull(date);
     }
 
     /**
@@ -1207,7 +1208,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void parseCreateDate_shouldParseIsoLocalDateTimeCorrectly() throws Exception {
         ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00");
-        Assertions.assertNotNull(date);
+        assertNotNull(date);
     }
 
     /**
@@ -1217,7 +1218,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void parseCreateDate_shouldParseIsoOffsetDateTimeCorrectly() throws Exception {
         ZonedDateTime date = MetsIndexer.parseCreateDate("2021-09-21T16:05:00+01:00");
-        Assertions.assertNotNull(date);
+        assertNotNull(date);
     }
 
     /**

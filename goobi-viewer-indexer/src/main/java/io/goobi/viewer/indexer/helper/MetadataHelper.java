@@ -76,7 +76,7 @@ public final class MetadataHelper {
     private static final String FIELD_NORM_NAME = "NORM_NAME";
     private static final String SPLIT_PLACEHOLDER = "{SPLIT}";
 
-    private static final String LOG_DMDID_NOT_FOUND = "DMDID for Parent element '{}' not found.";
+    private static final String LOG_DMDID_NOT_FOUND = "DMDID for Parent element '{}' of '{}' not found.";
 
     protected static Map<String, Record> authorityDataCache = new HashMap<>();
 
@@ -109,6 +109,10 @@ public final class MetadataHelper {
     @SuppressWarnings("rawtypes")
     public static List<LuceneField> retrieveElementMetadata(Element element, String queryPrefix, IndexObject indexObj, JDomXP xp)
             throws FatalIndexerException {
+        if (indexObj == null) {
+            throw new IllegalArgumentException("indexObj may not be null");
+        }
+
         List<LuceneField> ret = new ArrayList<>();
 
         Set<Integer> centuries = new HashSet<>();
@@ -150,7 +154,7 @@ public final class MetadataHelper {
                 }
 
                 List<Element> elementsToIterateOver = new ArrayList<>();
-                elementsToIterateOver.add(element);
+                elementsToIterateOver.add(element); // element being null is ok here
 
                 // If a field needs child and/or parent values, add those elements to the iteration list
                 Set<String> childrenAndAncestors = new HashSet<>();
@@ -183,7 +187,7 @@ public final class MetadataHelper {
                                 childrenAndAncestors.add(parent.getDmdid());
                             } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
                                     || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
-                                logger.warn(LOG_DMDID_NOT_FOUND, indexObj.getLogId());
+                                logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId(), indexObj.getLogId());
                             }
                             while (parent.getParent() != null && !parent.getParent().isAnchor()) {
                                 parent = parent.getParent();
@@ -191,7 +195,7 @@ public final class MetadataHelper {
                                     childrenAndAncestors.add(parent.getDmdid());
                                 } else if (FileFormat.METS.equals(indexObj.getSourceDocFormat())
                                         || FileFormat.METS_MARC.equals(indexObj.getSourceDocFormat())) {
-                                    logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId());
+                                    logger.warn(LOG_DMDID_NOT_FOUND, parent.getLogId(), indexObj.getLogId());
                                 }
                             }
                             break;
@@ -233,7 +237,7 @@ public final class MetadataHelper {
                         query = xpath.replace(XPATH_ROOT_PLACEHOLDER, queryPrefix);
                     } else {
                         // User prefix as prefix
-                        query = queryPrefix + xpath;
+                        query = (queryPrefix != null ? queryPrefix : "") + xpath;
                     }
                     for (Element currentElement : elementsToIterateOver) {
                         List list = xp.evaluate(query, currentElement);
@@ -613,8 +617,8 @@ public final class MetadataHelper {
 
                 // Do not write duplicate fields (same name + value)
                 for (LuceneField f : indexObj.getLuceneFields()) {
-                    if (f.getField().equals(field.getField()) && (((f.getValue() != null) && f.getValue().equals(field.getValue()))
-                            || field.getField().startsWith(SolrConstants.PREFIX_SORT))) {
+                    if (f.getField().equals(field.getField()) && ((f.getValue() != null && f.getValue().equals(field.getValue()))
+                            || field.getField().startsWith(SolrConstants.PREFIX_SORT) || field.getField().startsWith(SolrConstants.PREFIX_SORTNUM))) {
                         duplicate = true;
                         break;
                     }
@@ -1103,7 +1107,6 @@ public final class MetadataHelper {
                 additionalFieldsFromParent.put("{0}", field.getValue());
             }
         }
-
 
         if (!additionalFieldsFromParent.isEmpty()) {
             logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());
