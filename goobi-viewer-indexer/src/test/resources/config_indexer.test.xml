@@ -1022,7 +1022,7 @@
 		<MD_DATECREATEDSTART>
 			<list>
 				<item>
-					<xpath>>mets:xmlData/mods:mods/mods:originInfo/mods:dateCreated[@point='start']</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:originInfo/mods:dateCreated[@point='start']</xpath>
 					<addToDefault>true</addToDefault>
 					<onefield>false</onefield>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
