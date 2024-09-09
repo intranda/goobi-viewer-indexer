@@ -66,7 +66,7 @@ class ConfigurationTest extends AbstractTest {
     }
 
     @Test
-    void configItemTest() throws Exception {
+    void configItemTest() {
         List<String> fieldNames =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames(FileFormat.METS);
         assertEquals(106, fieldNames.size());
@@ -134,7 +134,7 @@ class ConfigurationTest extends AbstractTest {
     }
 
     @Test
-    void metadataConfigTest() throws Exception {
+    void metadataConfigTest() {
         assertEquals(106,
                 SolrIndexerDaemon.getInstance()
                         .getConfiguration()
@@ -189,7 +189,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getViewerUrl_shouldReturnCorrectValue() throws Exception {
+    void getViewerUrl_shouldReturnCorrectValue() {
         assertEquals("http://localhost:8080/viewer", SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl());
     }
 
@@ -198,7 +198,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getPageCountStart_shouldReturnCorrectValue() throws Exception {
+    void getPageCountStart_shouldReturnCorrectValue() {
         assertEquals(0, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
     }
 
@@ -207,7 +207,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies add custom namespaces correctly
      */
     @Test
-    void initNamespaces_shouldAddCustomNamespacesCorrectly() throws Exception {
+    void initNamespaces_shouldAddCustomNamespacesCorrectly() {
         SolrIndexerDaemon.getInstance().getConfiguration().initNamespaces();
         assertEquals(20, SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().size());
         Assertions.assertNotNull(SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("intranda"));
@@ -218,7 +218,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getViewerHome_shouldReturnCorrectValue() throws Exception {
+    void getViewerHome_shouldReturnCorrectValue() {
         assertEquals("target/viewer/", SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome());
     }
 
@@ -227,7 +227,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getEmptyOrderLabelReplacement_shouldReturnCorrectValue() throws Exception {
+    void getEmptyOrderLabelReplacement_shouldReturnCorrectValue() {
         assertEquals("X", SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
     }
 
@@ -236,7 +236,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return all items
      */
     @Test
-    void getDataRepositoryConfigurations_shouldReturnAllItems() throws Exception {
+    void getDataRepositoryConfigurations_shouldReturnAllItems() {
         List<DataRepository> resp = SolrIndexerDaemon.getInstance().getConfiguration().getDataRepositoryConfigurations();
         assertEquals(3, resp.size());
         assertEquals("target/viewer/data/1", resp.get(0).getPath());
@@ -252,7 +252,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getViewerAuthorizationToken_shouldReturnCorrectValue() throws Exception {
+    void getViewerAuthorizationToken_shouldReturnCorrectValue() {
         assertEquals("test", SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
     }
 
@@ -261,7 +261,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void isCountHotfolderFiles_shouldReturnCorrectValue() throws Exception {
+    void isCountHotfolderFiles_shouldReturnCorrectValue() {
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles());
     }
 
@@ -270,7 +270,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void isAuthorityDataCacheEnabled_shouldReturnCorrectValue() throws Exception {
+    void isAuthorityDataCacheEnabled_shouldReturnCorrectValue() {
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isAuthorityDataCacheEnabled());
     }
 
@@ -279,7 +279,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getAuthorityDataCacheSizeWarningThreshold_shouldReturnCorrectValue() throws Exception {
+    void getAuthorityDataCacheSizeWarningThreshold_shouldReturnCorrectValue() {
         assertEquals(100, SolrIndexerDaemon.getInstance().getConfiguration().getAuthorityDataCacheSizeWarningThreshold());
     }
 
@@ -288,7 +288,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getAuthorityDataCacheRecordTTL_shouldReturnCorrectValue() throws Exception {
+    void getAuthorityDataCacheRecordTTL_shouldReturnCorrectValue() {
         assertEquals(12, SolrIndexerDaemon.getInstance().getConfiguration().getAuthorityDataCacheRecordTTL());
     }
 
@@ -297,7 +297,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void isProxyEnabled_shouldReturnCorrectValue() throws Exception {
+    void isProxyEnabled_shouldReturnCorrectValue() {
         assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isProxyEnabled());
     }
 
@@ -306,7 +306,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getProxyUrl_shouldReturnCorrectValue() throws Exception {
+    void getProxyUrl_shouldReturnCorrectValue() {
         assertEquals("my.proxy", SolrIndexerDaemon.getInstance().getConfiguration().getProxyUrl());
     }
 
@@ -315,7 +315,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getProxyPort_shouldReturnCorrectValue() throws Exception {
+    void getProxyPort_shouldReturnCorrectValue() {
         assertEquals(9999, SolrIndexerDaemon.getInstance().getConfiguration().getProxyPort());
     }
 
@@ -333,7 +333,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return configured values
      */
     @Test
-    void getMetsPreferredImageFileGroups_shouldReturnConfiguredValues() throws Exception {
+    void getMetsPreferredImageFileGroups_shouldReturnConfiguredValues() {
         List<String> resp = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
         assertEquals(2, resp.size());
         assertEquals("BOOKVIEWER", resp.get(0));
@@ -345,7 +345,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return configured values
      */
     @Test
-    void getMetsAllowedPhysicalTypes_shouldReturnConfiguredValues() throws Exception {
+    void getMetsAllowedPhysicalTypes_shouldReturnConfiguredValues() {
         List<String> resp = SolrIndexerDaemon.getInstance().getConfiguration().getMetsAllowedPhysicalTypes();
         assertEquals(3, resp.size());
         assertEquals("object", resp.get(0));
@@ -358,7 +358,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getMetsVolumeCheckXPath_shouldReturnCorrectValue() throws Exception {
+    void getMetsVolumeCheckXPath_shouldReturnCorrectValue() {
         assertEquals(
                 "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']"
                         + "[not(@otherType) or @otherType='hierarchical']/mods:recordInfo/mods:recordIdentifier",
@@ -370,7 +370,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return false until all values configured
      */
     @Test
-    void checkEmailConfiguration_shouldReturnFalseUntilAllValuesConfigured() throws Exception {
+    void checkEmailConfiguration_shouldReturnFalseUntilAllValuesConfigured() {
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "recipient@example.com");
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
@@ -389,7 +389,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getHotfolderPath_shouldReturnCorrectValue() throws Exception {
+    void getHotfolderPath_shouldReturnCorrectValue() {
         assertEquals("target/viewer/hotfolder/", SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
     }
 
@@ -398,7 +398,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return all values
      */
     @Test
-    void getHotfolderPaths_shouldReturnAllValues() throws Exception {
+    void getHotfolderPaths_shouldReturnAllValues() {
         assertEquals(2, SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPaths().size());
     }
 
@@ -407,7 +407,7 @@ class ConfigurationTest extends AbstractTest {
      * @verifies return correct value
      */
     @Test
-    void getOldSolrUrl_shouldReturnCorrectValue() throws Exception {
+    void getOldSolrUrl_shouldReturnCorrectValue() {
         assertEquals("https://viewer-testing-index.goobi.io/solr/indexer-testing", SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
     }
 }
