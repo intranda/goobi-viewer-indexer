@@ -384,7 +384,6 @@ public final class MetadataConfigurationManager {
             for (FieldConfig config : entry.getValue()) {
                 if (config.getSupportedFormats().contains(format)) {
                     retArray.add(entry.getKey());
-                    System.out.println(entry);
                     break;
                 }
             }
