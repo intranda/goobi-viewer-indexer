@@ -1257,7 +1257,7 @@
 		<MD_ACCESSCONDITIONLINK>
 			<list>
 				<item>
-					<xpath>>mets:xmlData/mods:mods/mods:accessCondition[@type='dz']/@xlink</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:accessCondition[@type='dz']/@xlink</xpath>
 					<addToDefault>true</addToDefault>
 				</item>
 			</list>
