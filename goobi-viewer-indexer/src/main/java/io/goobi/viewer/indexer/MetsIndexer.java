@@ -1209,7 +1209,7 @@ public class MetsIndexer extends Indexer {
         sbXPath.append("/mets:mets/mets:structLink/mets:smLink[@xlink:to=\"").append(id).append("\"]");
         List<Element> eleStructLinkList = xp.evaluateToElements(sbXPath.toString(), null);
         if (eleStructLinkList.isEmpty()) {
-            logger.warn("Page {} is not mapped to a structure element, skipping...", order);
+            logger.warn("Page {} (PHYSID: {}) is not mapped to a structure element, skipping...", order, id);
             return null;
         }
 
