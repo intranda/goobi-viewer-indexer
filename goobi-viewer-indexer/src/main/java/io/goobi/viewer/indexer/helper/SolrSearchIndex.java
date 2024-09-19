@@ -693,7 +693,7 @@ public final class SolrSearchIndex {
 
         return null; //NOSONAR Returning empty map would complicate things
     }
-    
+
     /**
      * Returns a list with all (string) values for the given field name in the given SolrInputDocument.
      *
@@ -861,7 +861,7 @@ public final class SolrSearchIndex {
             sbQuery.append(" -").append(SolrConstants.PI_TOPSTRUCT).append(":\"").append(skipPi).append('"');
         }
 
-        SolrDocumentList found = search(sbQuery.toString(), Collections.singletonList(SolrConstants.PI_TOPSTRUCT));
+        SolrDocumentList found = search(sbQuery.toString(), Arrays.asList(SolrConstants.PI, SolrConstants.PI_TOPSTRUCT));
         if (found.isEmpty()) {
             return Collections.emptySet();
         }
@@ -870,8 +870,12 @@ public final class SolrSearchIndex {
         for (SolrDocument doc : found) {
             if (doc.containsKey(SolrConstants.PI_TOPSTRUCT)) {
                 ret.add((String) doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            } else if (doc.containsKey(SolrConstants.PI)) {
+                ret.add((String) doc.getFieldValue(SolrConstants.PI));
             } else {
-                logger.error("Solr document {} contains a duplicate value but no {} field.", doc, SolrConstants.PI_TOPSTRUCT);
+                logger.error("Solr document {} contains a duplicate value but no {} field.", doc.getFieldValue(SolrConstants.IDDOC),
+                        SolrConstants.PI_TOPSTRUCT);
+                logger.error("Query used: {}", sbQuery);
                 ret.add("PI NOT FOUND");
             }
         }
