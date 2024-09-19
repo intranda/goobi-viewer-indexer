@@ -88,6 +88,7 @@ import de.intranda.api.annotation.wa.WebAnnotation;
 import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -191,6 +192,69 @@ public abstract class Indexer {
      */
     public abstract void addToIndex(Path recordFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
             throws IOException, FatalIndexerException;
+
+    /**
+     * 
+     * @param queryPrefix
+     * @return Found PI value; otherwise null
+     * @throws IndexerException
+     * @should find identifier correctly
+     * @should throw IndexerException if no identifier found
+     */
+    protected String findPI(String queryPrefix) throws IndexerException {
+        String ret = MetadataHelper.getPIFromXML(queryPrefix, xp);
+        if (StringUtils.isBlank(ret)) {
+            throw new IndexerException("PI not found.");
+        }
+
+        return ret;
+    }
+
+    /**
+     * 
+     * @param foundPi
+     * @param indexObj
+     * @param removeIdentifierPrefix
+     * @return The PI
+     * @throws IndexerException
+     * @should set identifier correctly
+     * @should remove prefix correctly
+     * @should add identifier to default
+     * @should throw IndexerException if identifier invalid
+     */
+    protected String validateAndApplyPI(String foundPi, IndexObject indexObj, boolean removeIdentifierPrefix) throws IndexerException {
+        String pi = foundPi;
+        // Remove identifier prefix
+        if (removeIdentifierPrefix) {
+            if (pi.contains(":")) {
+                pi = pi.substring(pi.lastIndexOf(':') + 1);
+            }
+            if (pi.contains("/")) {
+                pi = pi.substring(pi.lastIndexOf('/') + 1);
+            }
+        }
+
+        pi = MetadataHelper.applyIdentifierModifications(pi);
+        logger.info("Record PI: {}", pi);
+
+        // Do not allow identifiers with characters that cannot be used in file names
+        if (!Utils.validatePi(pi)) {
+            throw new IndexerException("PI contains illegal characters: " + pi);
+        }
+
+        indexObj.setPi(pi);
+        indexObj.setTopstructPI(pi);
+
+        // Add PI to default
+        if (MetadataHelper.isPiAddToDefault(SolrIndexerDaemon.getInstance()
+                .getConfiguration()
+                .getMetadataConfigurationManager()
+                .getConfigurationListForField(SolrConstants.PI))) {
+            indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
+        }
+
+        return pi;
+    }
 
     /**
      * Move data file to the error folder.

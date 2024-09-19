@@ -251,36 +251,7 @@ public class LidoIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI
-            String preQuery = "/lido:lido/";
-            String[] foundPi = MetadataHelper.getPIFromXML(preQuery, xp);
-            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            pi = foundPi[0];
-            logger.info("Record PI: {}", pi);
-
-            // Remove prefix
-            if (pi.contains(":")) {
-                pi = pi.substring(pi.lastIndexOf(':') + 1);
-            }
-            if (pi.contains("/")) {
-                pi = pi.substring(pi.lastIndexOf('/') + 1);
-            }
-            pi = MetadataHelper.applyIdentifierModifications(pi);
-            // Do not allow identifiers with illegal characters
-            if (!Utils.validatePi(pi)) {
-                ret[1] = "PI contains illegal characters: " + pi;
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-
-            // Add PI to default
-            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
-                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
-            }
+            pi = validateAndApplyPI(findPI("/lido:lido/"), indexObj, false);
 
             // Determine the data repository to use
             DataRepository[] repositories =

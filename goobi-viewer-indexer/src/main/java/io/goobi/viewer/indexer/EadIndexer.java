@@ -208,24 +208,8 @@ public class EadIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI (from file name)
-            String pi = MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString()));
-            logger.info("Record PI: {}", pi);
-
-            // Do not allow identifiers with characters that cannot be used in file names
-            if (!Utils.validatePi(pi)) {
-                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-
-            // Add PI to default
-            if (MetadataHelper.isPiAddToDefault(SolrIndexerDaemon.getInstance()
-                    .getConfiguration()
-                    .getMetadataConfigurationManager()
-                    .getConfigurationListForField(SolrConstants.PI))) {
-                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
-            }
+            String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString())),
+                    indexObj, fromReindexQueue);
 
             // Determine the data repository to use
             DataRepository[] repositories =

@@ -195,8 +195,7 @@ public class DublinCoreIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path dcFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
-            int pageCountStart) {
+    public String[] index(Path dcFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy, int pageCountStart) {
         String[] ret = { null, null };
 
         if (dcFile == null || !Files.exists(dcFile)) {
@@ -225,27 +224,7 @@ public class DublinCoreIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-            String[] foundPi = MetadataHelper.getPIFromXML("/record/", xp);
-            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            String pi = MetadataHelper.applyIdentifierModifications(foundPi[0]);
-            logger.info("Record PI: {}", pi);
-
-            // Do not allow identifiers with characters that cannot be used in file names
-            if (!Utils.validatePi(pi)) {
-                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-
-            // Add PI to default
-            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
-                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
-            }
+            String pi = validateAndApplyPI(findPI("/record/"), indexObj, false);
 
             // Determine the data repository to use
             DataRepository[] repositories =
