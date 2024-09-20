@@ -110,6 +110,11 @@ public class MetsIndexer extends Indexer {
 
     protected static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
 
+    protected static final String[] DATA_FOLDER_PARAMS =
+            { DataRepository.PARAM_MEDIA, DataRepository.PARAM_FULLTEXT, DataRepository.PARAM_FULLTEXTCROWD, DataRepository.PARAM_ABBYY,
+                    DataRepository.PARAM_TEIWC, DataRepository.PARAM_ALTO, DataRepository.PARAM_ALTOCROWD, DataRepository.PARAM_MIX,
+                    DataRepository.PARAM_UGC, DataRepository.PARAM_CMS, DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
+
     protected static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
     protected static final String XPATH_FILE = "mets:file";
     protected static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
@@ -325,18 +330,7 @@ public class MetsIndexer extends Indexer {
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy

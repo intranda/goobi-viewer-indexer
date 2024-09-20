@@ -225,7 +225,7 @@ public class EadIndexer extends Indexer {
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, new String[]{DataRepository.PARAM_ANNOTATIONS}, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy

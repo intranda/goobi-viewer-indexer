@@ -75,6 +75,10 @@ public class LidoIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(LidoIndexer.class);
 
+    private static final String[] DATA_FOLDER_PARAMS =
+            { DataRepository.PARAM_MEDIA, DataRepository.PARAM_MIX, DataRepository.PARAM_UGC, DataRepository.PARAM_CMS,
+                    DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
+
     /**
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
      * thread-safe.
@@ -267,12 +271,7 @@ public class LidoIndexer extends Indexer {
             ret[0] = indexObj.getPi();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy

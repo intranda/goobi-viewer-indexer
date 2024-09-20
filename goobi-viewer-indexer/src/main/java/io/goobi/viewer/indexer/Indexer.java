@@ -1447,6 +1447,27 @@ public abstract class Indexer {
     }
 
     /**
+     * 
+     * @param dataFolders
+     * @paramNames
+     * @param pi
+     * @throws IOException
+     * @should throw IllegalArgumentException if pi null
+     */
+    protected void checkOldDataFolders(Map<String, Path> dataFolders, String[] paramNames, String pi) throws IOException {
+        if (pi == null) {
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
+        }
+        if (dataFolders == null || paramNames == null) {
+            return;
+        }
+
+        for (String paramName : paramNames) {
+            checkOldDataFolder(dataFolders, paramName, pi);
+        }
+    }
+
+    /**
      * Checks for old data folder of the <code>paramName</code> type and puts it into <code>dataFolders</code>, if none yet present.
      *
      * @param dataFolders a {@link java.util.Map} object.
@@ -1465,7 +1486,7 @@ public abstract class Indexer {
             throw new IllegalArgumentException("paramName may not be null");
         }
         if (pi == null) {
-            throw new IllegalArgumentException("pi may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
 
         // New data folder found in hotfolder
@@ -1580,7 +1601,7 @@ public abstract class Indexer {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
         if (pi == null) {
-            throw new IllegalArgumentException("pi may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
         if (baseFileName == null) {
             throw new IllegalArgumentException("baseFileName may not be null");

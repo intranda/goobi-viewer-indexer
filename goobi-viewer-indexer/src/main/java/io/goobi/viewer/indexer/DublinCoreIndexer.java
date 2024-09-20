@@ -69,18 +69,10 @@ public class DublinCoreIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(DublinCoreIndexer.class);
 
-    /** Constant <code>DEFAULT_FILEGROUP_1="PRESENTATION"</code> */
-    public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
-    /** Constant <code>DEFAULT_FILEGROUP_2="DEFAULT"</code> */
-    public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
-    /** Constant <code>OBJECT_FILEGROUP="OBJECT"</code> */
-    public static final String OBJECT_FILEGROUP = "OBJECT";
-    /** Constant <code>ALTO_FILEGROUP="ALTO"</code> */
-    public static final String ALTO_FILEGROUP = "ALTO";
-    /** Constant <code>FULLTEXT_FILEGROUP="FULLTEXT"</code> */
-    public static final String FULLTEXT_FILEGROUP = "FULLTEXT";
-    /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
-    public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
+    private static final String[] DATA_FOLDER_PARAMS =
+            { DataRepository.PARAM_MEDIA, DataRepository.PARAM_FULLTEXT, DataRepository.PARAM_FULLTEXTCROWD, DataRepository.PARAM_ABBYY,
+                    DataRepository.PARAM_TEIWC, DataRepository.PARAM_ALTO, DataRepository.PARAM_ALTOCROWD, DataRepository.PARAM_MIX,
+                    DataRepository.PARAM_UGC, DataRepository.PARAM_CMS, DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
 
     /**
      * Constructor.
@@ -240,18 +232,7 @@ public class DublinCoreIndexer extends Indexer {
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
 
             prepareUpdate(indexObj);
 

@@ -227,7 +227,7 @@ public class Utils {
         }
 
         if (pi == null) {
-            throw new IllegalArgumentException("pi may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
 
         logger.info("Requesting prerender pdf task in viewer...");
@@ -665,7 +665,7 @@ public class Utils {
             throw new IllegalArgumentException("destFolderPath may not be null");
         }
         if (baseName == null) {
-            throw new IllegalArgumentException("pi may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
         if (extension == null) {
             throw new IllegalArgumentException("extension may not be null");
