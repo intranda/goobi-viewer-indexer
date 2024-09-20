@@ -1955,6 +1955,33 @@ public abstract class Indexer {
 
     /**
      * 
+     * @param doc
+     * @param dataFolder
+     * @param fileName
+     */
+    protected static void addFileSizeToDoc(SolrInputDocument doc, Path dataFolder, String fileName) {
+        if (doc == null) {
+            throw new IllegalArgumentException("doc may not be null");
+        }
+
+        try {
+            // TODO other mime types/folders
+            if (dataFolder != null && fileName != null) {
+                Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
+                if (Files.isRegularFile(path)) {
+                    doc.addField(FIELD_FILESIZE, Files.size(path));
+                }
+            }
+        } catch (IllegalArgumentException | IOException e) {
+            logger.warn(e.getMessage());
+        }
+        if (!doc.containsKey(FIELD_FILESIZE)) {
+            doc.addField(FIELD_FILESIZE, -1);
+        }
+    }
+
+    /**
+     * 
      * @param doc Page Solr input document
      * @param dataFolders Folder paths containing full-text files
      * @param dataRepo

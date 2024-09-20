@@ -259,7 +259,6 @@ public class DublinCoreIndexer extends Indexer {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
 
-            // ISWORK only for non-anchors
             indexObj.addToLucene(SolrConstants.ISWORK, "true");
             logger.trace("ISWORK: {}", indexObj.getLuceneFieldWithName(SolrConstants.ISWORK).getValue());
 
@@ -567,8 +566,7 @@ public class DublinCoreIndexer extends Indexer {
      * @return {@link PhysicalElement}
      * @throws FatalIndexerException
      */
-    PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, Map<String, Path> dataFolders)
-            throws FatalIndexerException {
+    PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, Map<String, Path> dataFolders) {
         if (eleImage == null) {
             throw new IllegalArgumentException("eleImage may not be null");
         }
@@ -597,21 +595,7 @@ public class DublinCoreIndexer extends Indexer {
         parseMimeType(ret.getDoc(), fileName);
 
         // Add file size
-        try {
-            Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-            // TODO other mime types/folders
-            if (dataFolder != null) {
-                Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                if (Files.isRegularFile(path)) {
-                    ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                }
-            }
-        } catch (IllegalArgumentException | IOException e) {
-            logger.warn(e.getMessage());
-        }
-        if (!ret.getDoc().containsKey(FIELD_FILESIZE)) {
-            ret.getDoc().addField(FIELD_FILESIZE, -1);
-        }
+        addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
 
         // Add image dimension values from EXIF
         if (!ret.getDoc().containsKey(SolrConstants.WIDTH) || !ret.getDoc().containsKey(SolrConstants.HEIGHT)) {

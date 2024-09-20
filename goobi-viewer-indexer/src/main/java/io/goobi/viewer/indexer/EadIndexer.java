@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -379,8 +378,7 @@ public class EadIndexer extends Indexer {
      * @throws IOException
      */
     public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, int order, ISolrWriteStrategy writeStrategy,
-            boolean allowParallelProcessing)
-            throws FatalIndexerException, IOException {
+            boolean allowParallelProcessing) throws FatalIndexerException, IOException {
         IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
         indexObj.setRootStructNode(node);
         indexObj.setParent(parentIndexObject);

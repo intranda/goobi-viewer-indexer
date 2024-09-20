@@ -625,8 +625,10 @@ public class LidoIndexer extends Indexer {
      * @throws FatalIndexerException
      */
     PhysicalElement generatePageDocument(Element eleResourceSet, String iddoc, Integer order, Map<String, Path> dataFolders, List<String> imageXPaths,
-            boolean downloadExternalImages, boolean useOldImageFolderIfAvailable)
-            throws FatalIndexerException {
+            boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
         if (order == null) {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
         }
@@ -684,23 +686,7 @@ public class LidoIndexer extends Indexer {
         }
 
         // Add file size
-        if (dataFolders != null && fileName != null) {
-            try {
-                Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                // TODO other mime types/folders
-                if (dataFolder != null) {
-                    Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                    if (Files.isRegularFile(path)) {
-                        ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                    }
-                }
-            } catch (IllegalArgumentException | IOException e) {
-                logger.warn(e.getMessage());
-            }
-            if (!ret.getDoc().containsKey(FIELD_FILESIZE)) {
-                ret.getDoc().addField(FIELD_FILESIZE, -1);
-            }
-        }
+        addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
 
         String baseFileName = FilenameUtils.getBaseName((String) ret.getDoc().getFieldValue(SolrConstants.FILENAME));
 

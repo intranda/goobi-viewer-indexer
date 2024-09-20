@@ -1436,25 +1436,9 @@ public class MetsIndexer extends Indexer {
                         shape.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
                     }
                 }
+                
                 // Add file size
-                if (dataFolders != null) {
-                    try {
-                        Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                        if (dataFolder != null) {
-                            Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                            ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                        } else {
-                            ret.getDoc().addField(FIELD_FILESIZE, -1);
-                        }
-                    } catch (FileNotFoundException | NoSuchFileException e) {
-                        logger.warn("File not found: {}", e.getMessage());
-                        ret.getDoc().addField(FIELD_FILESIZE, -1);
-                    } catch (IOException | IllegalArgumentException e) {
-                        logger.error(e.getMessage(), e);
-                        ret.getDoc().addField(FIELD_FILESIZE, -1);
-                    }
-                }
-
+                addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
             } else if (fileGrpUse.equals(ALTO_FILEGROUP) || fileGrpUse.equals(FULLTEXT_FILEGROUP)) {
                 altoURL = filePath;
             } else {

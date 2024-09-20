@@ -790,6 +790,7 @@ public class WorldViewsIndexer extends Indexer {
      * @should add page metadata correctly
      */
     PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, final Integer order, Map<String, Path> dataFolders) {
+
         int useOrder = order != null ? order : Integer.parseInt(eleImage.getChildText("sequence"));
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", useOrder, iddoc, Thread.currentThread().getId());
 
@@ -809,27 +810,7 @@ public class WorldViewsIndexer extends Indexer {
             ret.getDoc().addField(SolrConstants.FILENAME, fileName);
 
             // Add file size
-            if (dataFolders != null) {
-                try {
-                    Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                    // TODO other mime types/folders
-                    if (dataFolder != null) {
-                        Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                        ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                    } else {
-                        ret.getDoc().addField(FIELD_FILESIZE, -1);
-                    }
-                } catch (FileNotFoundException e) {
-                    logger.error(e.getMessage());
-                    ret.getDoc().addField(FIELD_FILESIZE, -1);
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                    ret.getDoc().addField(FIELD_FILESIZE, -1);
-                } catch (IllegalArgumentException e) {
-                    logger.error(e.getMessage(), e);
-                    ret.getDoc().addField(FIELD_FILESIZE, -1);
-                }
-            }
+            addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
 
             // Representative image
             boolean representative = Boolean.parseBoolean(eleImage.getChildText("representative"));

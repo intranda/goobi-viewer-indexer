@@ -665,21 +665,7 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         // Add file size
-        try {
-            Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-            // TODO other mime types/folders
-            if (dataFolder != null) {
-                Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                if (Files.isRegularFile(path)) {
-                    ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                }
-            }
-        } catch (IllegalArgumentException | IOException e) {
-            logger.warn(e.getMessage());
-        }
-        if (!ret.getDoc().containsKey(FIELD_FILESIZE)) {
-            ret.getDoc().addField(FIELD_FILESIZE, -1);
-        }
+        addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
 
         // Add image dimension values from EXIF
         if (!ret.getDoc().containsKey(SolrConstants.WIDTH) || !ret.getDoc().containsKey(SolrConstants.HEIGHT)) {

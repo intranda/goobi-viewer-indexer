@@ -30,16 +30,14 @@ import java.util.TreeMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
-import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.StringConstants;
-import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
