@@ -1147,8 +1147,11 @@ public class MetsIndexer extends Indexer {
      */
     PhysicalElement generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
-        if (dataFolders != null && dataRepository == null) {
-            throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+        if (dataRepository == null) {
+            throw new IllegalArgumentException("dataRepository may not be null");
         }
         if (useFileGroupGlobal == null) {
             throw new IllegalStateException("useFileGroupGlobal not set");
@@ -1436,7 +1439,7 @@ public class MetsIndexer extends Indexer {
                         shape.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
                     }
                 }
-                
+
                 // Add file size
                 addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
             } else if (fileGrpUse.equals(ALTO_FILEGROUP) || fileGrpUse.equals(FULLTEXT_FILEGROUP)) {

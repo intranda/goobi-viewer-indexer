@@ -599,8 +599,8 @@ public class DenkXwebIndexer extends Indexer {
      * @return PhysicalElement
      * @throws FatalIndexerException
      */
-    PhysicalElement generatePageDocument(Element eleImage, String iddoc, Integer order, Map<String, Path> dataFolders, boolean downloadExternalImages)
-            throws FatalIndexerException {
+    PhysicalElement generatePageDocument(Element eleImage, String iddoc, Integer order, Map<String, Path> dataFolders,
+            boolean downloadExternalImages) {
         if (eleImage == null) {
             throw new IllegalArgumentException("eleImage may not be null");
         }

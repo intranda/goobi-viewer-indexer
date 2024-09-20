@@ -790,6 +790,9 @@ public class WorldViewsIndexer extends Indexer {
      * @should add page metadata correctly
      */
     PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, final Integer order, Map<String, Path> dataFolders) {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
 
         int useOrder = order != null ? order : Integer.parseInt(eleImage.getChildText("sequence"));
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", useOrder, iddoc, Thread.currentThread().getId());
