@@ -77,11 +77,7 @@ public class DocUpdateIndexer extends Indexer {
     /**
      * Updates the Solr document described by the given data file with content from data folders in the hotfolder.
      * 
-     * @param dataFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      */
     @Override
     public void addToIndex(Path dataFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {

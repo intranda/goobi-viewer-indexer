@@ -98,11 +98,7 @@ public class EadIndexer extends Indexer {
     /**
      * Indexes the given METS file.
      * 
-     * @param eadFile {@link Path}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      */
     @Override
     public void addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {

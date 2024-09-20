@@ -62,7 +62,7 @@ public class UsageStatisticsIndexer extends Indexer {
     }
 
     /**
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      */
     @Override
     public void addToIndex(Path sourceFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {

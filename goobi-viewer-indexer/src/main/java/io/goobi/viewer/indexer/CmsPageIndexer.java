@@ -72,7 +72,7 @@ public class CmsPageIndexer extends Indexer {
     }
 
     /**
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      * @should add record to index correctly
      */
     @Override

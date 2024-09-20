@@ -88,7 +88,7 @@ public class DublinCoreIndexer extends Indexer {
     /**
      * Indexes the given DublinCore file.
      * 
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      */
     @Override
     public void addToIndex(Path dcFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {

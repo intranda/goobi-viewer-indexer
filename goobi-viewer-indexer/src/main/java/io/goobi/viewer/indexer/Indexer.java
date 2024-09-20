@@ -183,8 +183,8 @@ public abstract class Indexer {
     }
 
     /**
-     * 
-     * @param indexObj
+     * @param recordFile
+     * @param reindexSettings
      */
     public abstract void addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
 
