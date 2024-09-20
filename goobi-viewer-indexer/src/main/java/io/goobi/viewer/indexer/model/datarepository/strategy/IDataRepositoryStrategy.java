@@ -44,7 +44,7 @@ public interface IDataRepositoryStrategy {
      * Selects available data repository for the given record. If no repository could be selected, the indexer MUST be halted.
      *
      * @param pi a {@link java.lang.String} object.
-     * @param dataFile a {@link java.nio.file.Path} object.
+     * @param recordFile a {@link java.nio.file.Path} object.
      * @param dataFolders a {@link java.util.Map} object.
      * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @param oldSearchIndex
@@ -52,7 +52,7 @@ public interface IDataRepositoryStrategy {
      *         selected repository
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public DataRepository[] selectDataRepository(String pi, final Path dataFile, final Map<String, Path> dataFolders,
+    public DataRepository[] selectDataRepository(String pi, final Path recordFile, final Map<String, Path> dataFolders,
             final SolrSearchIndex searchIndex, final SolrSearchIndex oldSearchIndex)
             throws FatalIndexerException;
 }

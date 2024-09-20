@@ -106,7 +106,7 @@ public class LidoIndexer extends Indexer {
      * 
      */
     @Override
-    public void addToIndex(Path lidoFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public void addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
 
@@ -258,15 +258,7 @@ public class LidoIndexer extends Indexer {
             pi = validateAndApplyPI(findPI("/lido:lido/"), indexObj, false);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, null, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, null, dataFolders);
 
             ret[0] = indexObj.getPi();
 
@@ -897,7 +889,7 @@ public class LidoIndexer extends Indexer {
      * @param indexObj {@link IndexObject}
      * @throws FatalIndexerException
      */
-    private void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
+    protected void setSimpleData(IndexObject indexObj) {
         indexObj.setSourceDocFormat(FileFormat.LIDO);
         Element structNode = indexObj.getRootStructNode();
 
@@ -915,5 +907,13 @@ public class LidoIndexer extends Indexer {
             indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
+    }
+
+    /**
+     * 
+     * @return {@link FileFormat}
+     */
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.LIDO;
     }
 }

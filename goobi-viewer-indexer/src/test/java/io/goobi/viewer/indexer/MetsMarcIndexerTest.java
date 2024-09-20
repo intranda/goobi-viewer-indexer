@@ -61,7 +61,7 @@ class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
 
         String pi = "11245_3_39779";
         Map<String, Path> dataFolders = new HashMap<>();
-        String[] ret = new MetsMarcIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
+        String[] ret = new MetsMarcIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
         assertEquals(pi + ".xml", ret[0]);
         Assertions.assertNull(ret[1]);
 

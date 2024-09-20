@@ -63,9 +63,9 @@ class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if denkxwebFile null
      */
     @Test
-    void addToIndex_shouldThrowIllegalArgumentExceptionIfDenkxwebFileNull() throws Exception {
+    void addToIndex_shouldThrowIllegalArgumentExceptionIfDenkxwebFileNull() {
         DenkXwebIndexer indexer = new DenkXwebIndexer(hotfolder);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.addToIndex(null, false, Collections.emptyMap()));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.addToIndex(null, Collections.emptyMap()));
     }
 
     /**

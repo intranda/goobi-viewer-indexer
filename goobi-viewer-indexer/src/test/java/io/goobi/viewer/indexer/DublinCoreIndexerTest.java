@@ -46,7 +46,7 @@ class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    void DublinCoreIndexer_shouldSetAttributesCorrectly() throws Exception {
+    void DublinCoreIndexer_shouldSetAttributesCorrectly() {
         Assertions.assertNotNull(hotfolder);
         Indexer indexer = new DublinCoreIndexer(hotfolder);
         Assertions.assertEquals(hotfolder, indexer.hotfolder);
@@ -60,13 +60,13 @@ class DublinCoreIndexerTest extends AbstractSolrEnabledTest {
     void addToIndex_shouldAddRecordToIndexCorrectly(@TempDir Path tempDir) throws Exception {
         Path dcFile = Paths.get("src/test/resources/DC/record.xml");
         Assertions.assertTrue(Files.isRegularFile(dcFile));
-        
+
         Path dcFileCopy = Paths.get(tempDir.toAbsolutePath().toString(), "record.xml");
         Files.copy(dcFile, dcFileCopy, StandardCopyOption.REPLACE_EXISTING);
         Assertions.assertTrue(Files.isRegularFile(dcFileCopy));
 
         Indexer indexer = new DublinCoreIndexer(hotfolder);
-        indexer.addToIndex(dcFileCopy, false, new HashMap<>());
+        indexer.addToIndex(dcFileCopy, new HashMap<>());
 
         SolrDocumentList result =
                 SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":123e4567-e89b-12d3-a456-556642440000", null);

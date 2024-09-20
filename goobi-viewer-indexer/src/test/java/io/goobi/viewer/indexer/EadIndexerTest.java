@@ -55,7 +55,7 @@ class EadIndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertTrue(Files.isRegularFile(eadFileCopy));
 
         Indexer indexer = new EadIndexer(hotfolder);
-        indexer.addToIndex(eadFileCopy, false, new HashMap<>());
+        indexer.addToIndex(eadFileCopy, new HashMap<>());
 
         SolrDocumentList result =
                 SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":Akte_Koch", null);

@@ -56,7 +56,7 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    void LazySolrWriteStrategy_shouldSetAttributesCorrectly() throws Exception {
+    void LazySolrWriteStrategy_shouldSetAttributesCorrectly() {
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         Assertions.assertEquals(SolrIndexerDaemon.getInstance().getSearchIndex(), strat.searchIndex);
     }
@@ -96,7 +96,7 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        indexer.index(metsFile, false, dataFolders, strat, 1, false);
+        indexer.index(metsFile, dataFolders, strat, 1, false);
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.DOCSTRCT.name(), null);
@@ -117,7 +117,7 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        indexer.index(metsFile, false, dataFolders, strat, 1, false);
+        indexer.index(metsFile, dataFolders, strat, 1, false);
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);

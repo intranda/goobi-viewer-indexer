@@ -78,14 +78,13 @@ public class DocUpdateIndexer extends Indexer {
      * Updates the Solr document described by the given data file with content from data folders in the hotfolder.
      * 
      * @param dataFile {@link File}
-     * @param fromReindexQueue
      * @param reindexSettings
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
      * 
      */
     @Override
-    public void addToIndex(Path dataFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public void addToIndex(Path dataFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(dataFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -464,5 +463,10 @@ public class DocUpdateIndexer extends Indexer {
         }
 
         return null;
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.UNKNOWN;
     }
 }

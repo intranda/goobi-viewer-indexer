@@ -15,7 +15,6 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -92,15 +91,11 @@ public class DenkXwebIndexer extends Indexer {
     /**
      * Indexes the given DenkXweb file.
      * 
-     * @param denkxwebFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
      * @should throw IllegalArgumentException if denkxwebFile null
      */
     @Override
-    public void addToIndex(Path denkxwebFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (denkxwebFile == null) {
             throw new IllegalArgumentException("denkxwebFile may not be null");
         }
@@ -227,15 +222,7 @@ public class DenkXwebIndexer extends Indexer {
             pi = validateAndApplyPI(findPI(""), indexObj, true);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, null, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, null, dataFolders);
 
             ret[0] = indexObj.getPi();
 
@@ -720,5 +707,10 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         return ret;
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.DENKXWEB;
     }
 }

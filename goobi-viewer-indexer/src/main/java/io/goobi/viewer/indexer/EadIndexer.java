@@ -99,14 +99,13 @@ public class EadIndexer extends Indexer {
      * Indexes the given METS file.
      * 
      * @param eadFile {@link Path}
-     * @param fromReindexQueue
      * @param reindexSettings
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
      * 
      */
     @Override
-    public void addToIndex(Path eadFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public void addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(eadFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -115,7 +114,7 @@ public class EadIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(eadFile, fromReindexQueue, dataFolders, null);
+        String[] resp = index(eadFile, dataFolders, null);
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newFileName);
@@ -174,7 +173,6 @@ public class EadIndexer extends Indexer {
      * Indexes the given METS file.
      *
      * @param eadFile {@link java.nio.file.Path}
-     * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
@@ -182,11 +180,11 @@ public class EadIndexer extends Indexer {
      * @should update record correctly
      * @should set access conditions correctly
      */
-    public String[] index(Path eadFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy) {
+    public String[] index(Path eadFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy) {
         String[] ret = { null, null };
 
         if (eadFile == null || !Files.exists(eadFile)) {
-            throw new IllegalArgumentException("eadFile must point to an existing METS file.");
+            throw new IllegalArgumentException("eadFile must point to an existing EAD file.");
         }
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null.");
@@ -209,23 +207,15 @@ public class EadIndexer extends Indexer {
 
             // Set PI (from file name)
             String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString())),
-                    indexObj, fromReindexQueue);
+                    indexObj, false);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, eadFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, eadFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolders(dataFolders, new String[]{DataRepository.PARAM_ANNOTATIONS}, pi);
+            checkOldDataFolders(dataFolders, new String[] { DataRepository.PARAM_ANNOTATIONS }, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy

@@ -86,7 +86,7 @@ class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex(), tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        indexer.index(metsFile, false, dataFolders, strat, 1, false);
+        indexer.index(metsFile, dataFolders, strat, 1, false);
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.DOCSTRCT.name(), null);
@@ -107,7 +107,7 @@ class SerializingSolrWriteStrategyTest extends AbstractSolrEnabledTest {
         SerializingSolrWriteStrategy strat = new SerializingSolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex(), tempFolder);
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        indexer.index(metsFile, false, dataFolders, strat, 1, false);
+        indexer.index(metsFile, dataFolders, strat, 1, false);
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);

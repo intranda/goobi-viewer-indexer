@@ -119,7 +119,8 @@ public class MetsIndexer extends Indexer {
     protected static final String XPATH_FILE = "mets:file";
     protected static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
     private static final String XPATH_ANCHOR_PI_PART =
-            "/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
+            "/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']"
+                    + "/mods:recordInfo/mods:recordIdentifier"; //NOSONAR XPathexpression , not URI
 
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
@@ -153,15 +154,11 @@ public class MetsIndexer extends Indexer {
      * Indexes the given METS file.
      * 
      * @param metsFile {@link File}
-     * @param fromReindexQueue
      * @param reindexSettings
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
-     * 
      */
-    @Override
-    public void addToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
         String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -170,7 +167,7 @@ public class MetsIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(metsFile, fromReindexQueue, dataFolders, null,
+        String[] resp = index(metsFile, dataFolders, null,
                 SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                 dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
 
@@ -264,7 +261,6 @@ public class MetsIndexer extends Indexer {
      * Indexes the given METS file.
      *
      * @param metsFile {@link java.nio.file.Path}
-     * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
      * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart Order number for the first page.
@@ -282,7 +278,7 @@ public class MetsIndexer extends Indexer {
      * @should not add dateupdated if value already exists
      * 
      */
-    public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
+    public String[] index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
             int pageCountStart, boolean downloadExternalImages) {
         String[] ret = { null, null };
 
@@ -317,15 +313,7 @@ public class MetsIndexer extends Indexer {
             String pi = validateAndApplyPI(findPI(getPiRootPath(indexObj.getDmdid())), indexObj, false);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, metsFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
@@ -2173,7 +2161,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param indexObj {@link IndexObject}
      */
-    private void setSimpleData(IndexObject indexObj) {
+    protected void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
         indexObj.setSourceDocFormat(getSourceDocFormat());
         Element structNode = indexObj.getRootStructNode();
@@ -2263,7 +2251,7 @@ public class MetsIndexer extends Indexer {
      * @return {@link Element} or null
      * 
      */
-    private Element findStructNode(IndexObject indexObj) {
+    protected Element findStructNode(IndexObject indexObj) {
         String query = "";
         if (!indexObj.isVolume()) {
             query = "//mets:mets/mets:structMap[@TYPE='LOGICAL']/mets:div[@DMDID and @ID]";
@@ -2300,6 +2288,7 @@ public class MetsIndexer extends Indexer {
      * @should return true if record is volume
      * @should return false if relatedItem not anchor
      */
+    @Override
     protected boolean isVolume() {
         String query = SolrIndexerDaemon.getInstance().getConfiguration().getMetsVolumeCheckXPath();
         List<Element> relatedItemList = xp.evaluateToElements(query, null);

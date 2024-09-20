@@ -508,7 +508,7 @@ public class Hotfolder {
         reindexSettings.put(DataRepository.PARAM_ALTO, false);
         reindexSettings.put(DataRepository.PARAM_MIX, false);
         reindexSettings.put(DataRepository.PARAM_UGC, false);
-        boolean ret = handleSourceFile(recordFile, false, reindexSettings);
+        boolean ret = handleSourceFile(recordFile, reindexSettings);
         if (secondaryAppender != null && emailConfigurationComplete) {
             checkAndSendErrorReport(recordFile.getFileName() + ": Indexing failed (" + Version.asString() + ")",
                     secondaryAppender.getLog());
@@ -566,12 +566,11 @@ public class Hotfolder {
     /**
      * 
      * @param sourceFile File containing the record(s)
-     * @param fromReindexQueue true if file is coming from the re-index queue; false if from the hotfolder
      * @param reindexSettings
      * @return true if successful; false otherwise
      * @throws FatalIndexerException
      */
-    private boolean handleSourceFile(Path sourceFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
+    private boolean handleSourceFile(Path sourceFile, Map<String, Boolean> reindexSettings) throws FatalIndexerException {
         logger.info("handleSourceFile: {}", sourceFile);
         // Always unselect repository
         String filename = sourceFile.getFileName().toString();
@@ -600,7 +599,7 @@ public class Hotfolder {
                         if (metsEnabled) {
                             try {
                                 currentIndexer = new MetsIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -613,7 +612,7 @@ public class Hotfolder {
                         if (metsEnabled) {
                             try {
                                 currentIndexer = new MetsMarcIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -626,7 +625,7 @@ public class Hotfolder {
                         if (lidoEnabled) {
                             try {
                                 currentIndexer = new LidoIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -639,7 +638,7 @@ public class Hotfolder {
                         if (eadEnabled) {
                             try {
                                 currentIndexer = new EadIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -652,7 +651,7 @@ public class Hotfolder {
                         if (eadEnabled) {
                             try {
                                 currentIndexer = new Ead3Indexer(this);
-                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -665,7 +664,7 @@ public class Hotfolder {
                         if (denkxwebEnabled) {
                             try {
                                 currentIndexer = new DenkXwebIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, false, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -678,7 +677,7 @@ public class Hotfolder {
                         if (dcEnabled) {
                             try {
                                 currentIndexer = new DublinCoreIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -691,7 +690,7 @@ public class Hotfolder {
                         if (worldviewsEnabled) {
                             try {
                                 currentIndexer = new WorldViewsIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -704,7 +703,7 @@ public class Hotfolder {
                         if (cmsEnabled) {
                             try {
                                 currentIndexer = new CmsPageIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, fromReindexQueue, reindexSettings);
+                                currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -723,7 +722,7 @@ public class Hotfolder {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
                     try {
                         this.currentIndexer = new UsageStatisticsIndexer(this);
-                        currentIndexer.addToIndex(sourceFile, false, null);
+                        currentIndexer.addToIndex(sourceFile, null);
                     } finally {
                         this.currentIndexer = null;
                     }
@@ -761,7 +760,7 @@ public class Hotfolder {
                 // Single Solr document update
                 try {
                     currentIndexer = new DocUpdateIndexer(this);
-                    currentIndexer.addToIndex(sourceFile, false, null);
+                    currentIndexer.addToIndex(sourceFile, null);
                 } finally {
                     currentIndexer = null;
                 }

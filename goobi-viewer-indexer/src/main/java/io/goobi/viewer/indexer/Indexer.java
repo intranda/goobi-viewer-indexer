@@ -184,14 +184,9 @@ public abstract class Indexer {
 
     /**
      * 
-     * @param recordFile
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException
-     * @throws FatalIndexerException
+     * @param indexObj
      */
-    public abstract void addToIndex(Path recordFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException;
+    public abstract void addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
 
     /**
      * 
@@ -1722,6 +1717,38 @@ public abstract class Indexer {
     }
 
     /**
+     * Checks whether this is a volume of a multivolume work (should be false for monographs and anchors).
+     * 
+     * @return boolean
+     * 
+     */
+    protected boolean isVolume() {
+        return false;
+    }
+
+    /**
+     * Selects the appropriate data repository for the given record.
+     * 
+     * @param indexObj
+     * @param pi
+     * @param recordFile
+     * @param dataFolders
+     * @throws FatalIndexerException
+     */
+    protected void selectDataRepository(IndexObject indexObj, String pi, Path recordFile, Map<String, Path> dataFolders)
+            throws FatalIndexerException {
+        DataRepository[] repositories =
+                hotfolder.getDataRepositoryStrategy()
+                        .selectDataRepository(pi, recordFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
+                                SolrIndexerDaemon.getInstance().getOldSearchIndex());
+        dataRepository = repositories[0];
+        previousDataRepository = repositories[1];
+        if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+            indexObj.setDataRepository(dataRepository.getPath());
+        }
+    }
+
+    /**
      * Prepares the given record for an update. Creation timestamp and representative thumbnail and anchor IDDOC are preserved. A new update timestamp
      * is added, child docs are removed.
      *
@@ -2350,4 +2377,6 @@ public abstract class Indexer {
 
         return ret;
     }
+
+    protected abstract FileFormat getSourceDocFormat();
 }

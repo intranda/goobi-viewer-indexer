@@ -15,7 +15,6 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -102,16 +101,10 @@ public class WorldViewsIndexer extends Indexer {
     /**
      * Indexes the given WorldViews file.
      * 
-     * @param mainFile {@link File}
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
      */
     @Override
-    public void addToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
 
@@ -121,8 +114,7 @@ public class WorldViewsIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(mainFile, fromReindexQueue, dataFolders, null,
-                SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        String[] resp = index(mainFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
 
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newMetsFileName = resp[0];
@@ -213,14 +205,13 @@ public class WorldViewsIndexer extends Indexer {
      * Indexes the given WorldViews file.
      *
      * @param mainFile {@link java.nio.file.Path}
-     * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart Order number for the first page.
      * @should index record correctly
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path mainFile, boolean fromReindexQueue, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
+    public String[] index(Path mainFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
         String[] ret = { null, null };
 
@@ -244,37 +235,12 @@ public class WorldViewsIndexer extends Indexer {
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             // Set PI
-            String pi = xp.evaluateToString("worldviews//identifier/text()", null);
-            if (StringUtils.isBlank(pi)) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            pi = MetadataHelper.applyIdentifierModifications(pi);
-            logger.info("Record PI: {}", pi);
-
-            // Do not allow identifiers with characters that cannot be used in file names
-            if (!Utils.validatePi(pi)) {
-                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-            logger.debug("PI: {}", indexObj.getPi());
+            String pi = validateAndApplyPI(findPI("worldviews//identifier/text()"), indexObj, false);
 
             indexObj.setSourceDocFormat(FileFormat.WORLDVIEWS);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, mainFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, mainFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
@@ -352,7 +318,7 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Write created/updated timestamps
-            indexObj.writeDateModified(!fromReindexQueue);
+            indexObj.writeDateModified(false);
 
             // Generate docs for all pages and add to the write strategy
             generatePageDocuments(useWriteStrategy, dataFolders, pi, pageCountStart);
@@ -935,5 +901,10 @@ public class WorldViewsIndexer extends Indexer {
         } else {
             logger.warn("No anchor file has been indexed for this work yet.");
         }
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.WORLDVIEWS;
     }
 }

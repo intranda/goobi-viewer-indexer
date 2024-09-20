@@ -64,10 +64,10 @@ public class MetsMarcIndexer extends MetsIndexer {
      * @should index record correctly
      */
     @Override
-    public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
+    public String[] index(Path metsFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
             int pageCountStart, boolean downloadExternalImages) {
         logger.trace("index (METS/MARC)");
-        return super.index(metsFile, fromReindexQueue, dataFolders, writeStrategy, pageCountStart, downloadExternalImages);
+        return super.index(metsFile, dataFolders, writeStrategy, pageCountStart, downloadExternalImages);
     }
 
     /**

@@ -88,15 +88,10 @@ public class DublinCoreIndexer extends Indexer {
     /**
      * Indexes the given DublinCore file.
      * 
-     * @param dcFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * @should add record to index correctly
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
      */
     @Override
-    public void addToIndex(Path dcFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path dcFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -219,15 +214,7 @@ public class DublinCoreIndexer extends Indexer {
             String pi = validateAndApplyPI(findPI("/record/"), indexObj, false);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, dcFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, dcFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
@@ -745,5 +732,10 @@ public class DublinCoreIndexer extends Indexer {
             }
             logger.info("New anchor file copied to '{}'.", indexed.toAbsolutePath());
         }
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.DUBLINCORE;
     }
 }

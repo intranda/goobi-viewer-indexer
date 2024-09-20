@@ -122,7 +122,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies create new document with all values if none exists
      */
     @Test
-    void checkAndCreateGroupDoc_shouldCreateNewDocumentWithAllValuesIfNoneExists() throws Exception {
+    void checkAndCreateGroupDoc_shouldCreateNewDocumentWithAllValuesIfNoneExists() {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
@@ -173,7 +173,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies add default field
      */
     @Test
-    void checkAndCreateGroupDoc_shouldAddDefaultField() throws Exception {
+    void checkAndCreateGroupDoc_shouldAddDefaultField() {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
@@ -192,7 +192,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies add access conditions
      */
     @Test
-    void checkAndCreateGroupDoc_shouldAddAccessConditions() throws Exception {
+    void checkAndCreateGroupDoc_shouldAddAccessConditions() {
         SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, 123456L);
         Assertions.assertNotNull(doc);
         Assertions.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
@@ -259,7 +259,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies skip fields correctly
      */
     @Test
-    void createDocument_shouldSkipFieldsCorrectly() throws Exception {
+    void createDocument_shouldSkipFieldsCorrectly() {
         List<LuceneField> luceneFields = new ArrayList<>(2);
         luceneFields.add(new LuceneField("foo", "bar"));
         luceneFields.add(new LuceneField("skip", "me"));
@@ -276,7 +276,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies boolify field correctly
      */
     @Test
-    void getBooleanFieldName_shouldBoolifyFieldCorrectly() throws Exception {
+    void getBooleanFieldName_shouldBoolifyFieldCorrectly() {
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("FOO"));
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MD_FOO"));
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MDNUM_FOO"));
@@ -291,11 +291,9 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     void checkDuplicateFieldValues_shouldReturnCorrectIdentifiers() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
-        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
-                new HashMap<>(), null, 1, false);
+        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), new HashMap<>(), null, 1, false);
         Assertions.assertNull(ret[1]);
-        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
-                new HashMap<>(), null, 1, false);
+        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), new HashMap<>(), null, 1, false);
         Assertions.assertNull(ret[1]);
         Set<String> result = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
@@ -313,11 +311,9 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     void checkDuplicateFieldValues_shouldIgnoreRecordsThatMatchSkipPi() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
-        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
-                new HashMap<>(), null, 1, false);
+        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), new HashMap<>(), null, 1, false);
         Assertions.assertNull(ret[1]);
-        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
-                new HashMap<>(), null, 1, false);
+        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), new HashMap<>(), null, 1, false);
         Assertions.assertNull(ret[1]);
         Set<String> result = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
