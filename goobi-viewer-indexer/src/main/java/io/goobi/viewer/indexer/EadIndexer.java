@@ -254,38 +254,6 @@ public class EadIndexer extends Indexer {
             // Add mime type
             indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
 
-            // Create group documents if this record is part of a group and no doc exists for that group yet
-            for (String groupIdField : indexObj.getGroupIds().keySet()) {
-                String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
-                Map<String, String> moreMetadata = new HashMap<>();
-                String titleField = "MD_TITLE_" + groupSuffix;
-                String sortTitleField = "SORT_TITLE_" + groupSuffix;
-                for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (titleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put(SolrConstants.LABEL, field.getValue());
-                        moreMetadata.put("MD_TITLE", field.getValue());
-                    } else if (sortTitleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put("SORT_TITLE", field.getValue());
-                    } else if (field.getField().endsWith(groupSuffix)
-                            && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
-                        // Add any MD_*_GROUPSUFFIX field to the group doc
-                        moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
-                    }
-                }
-                SolrInputDocument doc = SolrIndexerDaemon.getInstance()
-                        .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
-                if (doc != null) {
-                    writeStrategy.addDoc(doc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
-                    logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                }
-            }
-
             // Index all child elements recursively
             List<IndexObject> childObjectList =
                     indexAllChildren(indexObj, 1, writeStrategy, SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1);
@@ -442,13 +410,6 @@ public class EadIndexer extends Indexer {
         // write metadata
         logger.debug("Writing metadata");
         MetadataHelper.writeMetadataToObject(indexObj, node, "", xp);
-
-        // Inherit GROUPID_* fields
-        if (!parentIndexObject.getGroupIds().isEmpty()) {
-            for (String groupId : parentIndexObject.getGroupIds().keySet()) {
-                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
-            }
-        }
 
         // Add parent's metadata and SORT_* fields to this docstruct
         for (LuceneField field : parentIndexObject.getLuceneFields()) {
