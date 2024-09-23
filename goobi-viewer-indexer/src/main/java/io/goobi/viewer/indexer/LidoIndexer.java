@@ -379,7 +379,7 @@ public class LidoIndexer extends Indexer {
      * @return
      * @throws FatalIndexerException
      */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy, int depth)
+    protected static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy, int depth)
             throws FatalIndexerException {
         List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
@@ -401,6 +401,10 @@ public class LidoIndexer extends Indexer {
                     ? (String) page.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) page.getDoc().getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
+            
+            if (page.getDoc().containsKey(SolrConstants.THUMBNAILREPRESENT)) {
+                filePathBanner = (String) page.getDoc().getFieldValue(SolrConstants.THUMBNAILREPRESENT);
+            }
 
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && pageFileName.equals(filePathBanner)) {
