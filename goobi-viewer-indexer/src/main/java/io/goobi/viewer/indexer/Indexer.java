@@ -2405,5 +2405,67 @@ public abstract class Indexer {
         return ret;
     }
 
+    /**
+     * 
+     * @param order
+     * @param iddoc
+     * @param physId
+     * @return {@link PhysicalElement}
+     */
+    protected static PhysicalElement createPhysicalElement(int order, String iddoc, String physId) {
+        PhysicalElement ret = new PhysicalElement(order);
+        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
+        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
+        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
+        ret.getDoc().addField(SolrConstants.ORDER, order);
+        ret.getDoc().addField(SolrConstants.PHYSID, physId);
+
+        return ret;
+    }
+
+    /**
+     * 
+     * @param page
+     * @param dataFolders
+     * @param fileName
+     */
+    protected void addPageAdditionalTechMetadata(PhysicalElement page, Map<String, Path> dataFolders, String fileName) {
+        if (page == null) {
+            throw new IllegalArgumentException("page may not be null");
+        }
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+
+        // Add file size
+        addFileSizeToDoc(page.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
+
+        // Add image dimension values from EXIF
+        if (!page.getDoc().containsKey(SolrConstants.WIDTH) || !page.getDoc().containsKey(SolrConstants.HEIGHT)) {
+            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) page.getDoc().getFieldValue(SolrConstants.FILENAME))
+                    .ifPresent(dimension -> {
+                        page.getDoc().addField(SolrConstants.WIDTH, dimension.width);
+                        page.getDoc().addField(SolrConstants.HEIGHT, dimension.height);
+                    });
+        }
+
+        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
+        if (page.getDoc().containsKey(SolrConstants.FILENAME) && page.getDoc().containsKey(SolrConstants.MIMETYPE)
+                && ((String) page.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            page.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
+            recordHasImages = true;
+        } else {
+            page.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
+        }
+
+        // FULLTEXTAVAILABLE indicates whether this page has full-text
+        if (page.getDoc().getField(SolrConstants.FULLTEXT) != null) {
+            page.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, true);
+            recordHasFulltext = true;
+        } else {
+            page.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, false);
+        }
+    }
+
     protected abstract FileFormat getSourceDocFormat();
 }

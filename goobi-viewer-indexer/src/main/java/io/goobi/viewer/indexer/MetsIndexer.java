@@ -1182,12 +1182,7 @@ public class MetsIndexer extends Indexer {
                 eleStructMapPhysical.getChildren("fptr", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.PHYSID, id);
-        ret.getDoc().addField(SolrConstants.ORDER, order);
+        PhysicalElement ret = createPhysicalElement(order, iddoc, id);
 
         // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
         String fileIdRoot = null;

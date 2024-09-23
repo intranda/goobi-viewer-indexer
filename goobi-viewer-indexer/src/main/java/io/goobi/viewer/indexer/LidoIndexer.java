@@ -634,12 +634,7 @@ public class LidoIndexer extends Indexer {
         }
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.ORDER, order);
-        ret.getDoc().addField(SolrConstants.PHYSID, String.valueOf(order));
+        PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));
 
         String orderLabel = eleResourceSet.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
@@ -652,44 +647,40 @@ public class LidoIndexer extends Indexer {
             return ret;
         }
 
-        String filePath = null;
+        String fileUri = null;
         for (String xpath : imageXPaths) {
-            filePath = xp.evaluateToString(xpath, eleResourceSet);
-            if (StringUtils.isNotEmpty(filePath)) {
+            fileUri = xp.evaluateToString(xpath, eleResourceSet);
+            if (StringUtils.isNotEmpty(fileUri)) {
                 logger.info("Found image in {}", xpath);
                 break;
             }
         }
 
         // Do not create pages for resourceSet elements that have no relation to images
-        if (StringUtils.isEmpty(filePath)) {
+        if (StringUtils.isEmpty(fileUri)) {
             logger.debug("No file path found for this resource set.");
             return null;
         }
 
         String fileName;
-        if (StringUtils.isNotEmpty(filePath) && filePath.contains("/")) {
-            if (Utils.isFileNameMatchesRegex(filePath, IIIF_IMAGE_FILE_NAMES)) {
+        if (StringUtils.isNotEmpty(fileUri) && fileUri.contains("/")) {
+            if (Utils.isFileNameMatchesRegex(fileUri, IIIF_IMAGE_FILE_NAMES)) {
                 // Extract correct original file name from IIIF
-                fileName = Utils.getFileNameFromIiifUrl(filePath);
+                fileName = Utils.getFileNameFromIiifUrl(fileUri);
             } else {
-                fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+                fileName = fileUri.substring(fileUri.lastIndexOf("/") + 1);
             }
         } else {
-            fileName = filePath;
+            fileName = fileUri;
         }
 
         // Handle external/internal file URL
-        if (StringUtils.isNotEmpty(filePath)) {
-            handleImageUrl(filePath, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages,
+        if (StringUtils.isNotEmpty(fileUri)) {
+            handleImageUrl(fileUri, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages,
                     useOldImageFolderIfAvailable, false);
         }
 
-        // Add file size
-        addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
-
         String baseFileName = FilenameUtils.getBaseName((String) ret.getDoc().getFieldValue(SolrConstants.FILENAME));
-
         if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
             try {
                 Map<String, String> mixData = TextHelper.readMix(
@@ -707,30 +698,7 @@ public class LidoIndexer extends Indexer {
             }
         }
 
-        // Add image dimension values from EXIF
-        if (!ret.getDoc().containsKey(SolrConstants.WIDTH) || !ret.getDoc().containsKey(SolrConstants.HEIGHT)) {
-            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) ret.getDoc().getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
-                ret.getDoc().addField(SolrConstants.WIDTH, dimension.width);
-                ret.getDoc().addField(SolrConstants.HEIGHT, dimension.height);
-            });
-        }
-
-        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
-                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
-            recordHasImages = true;
-        } else {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
-        }
-
-        // FULLTEXTAVAILABLE indicates whether this page has full-text
-        if (ret.getDoc().getField(SolrConstants.FULLTEXT) != null) {
-            ret.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, true);
-            recordHasFulltext = true;
-        } else {
-            ret.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, false);
-        }
+        addPageAdditionalTechMetadata(ret, dataFolders, fileName);
 
         return ret;
     }

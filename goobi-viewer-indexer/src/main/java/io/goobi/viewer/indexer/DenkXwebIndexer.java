@@ -50,7 +50,6 @@ import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
-import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
@@ -612,12 +611,7 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.ORDER, order);
-        ret.getDoc().addField(SolrConstants.PHYSID, String.valueOf(order));
+        PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));
 
         Element eleStandard = eleImage.getChild("standard", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("denkxweb"));
         if (eleStandard == null) {
@@ -664,33 +658,7 @@ public class DenkXwebIndexer extends Indexer {
                     "true".equals(eleImage.getAttributeValue("preferred")));
         }
 
-        // Add file size
-        addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
-
-        // Add image dimension values from EXIF
-        if (!ret.getDoc().containsKey(SolrConstants.WIDTH) || !ret.getDoc().containsKey(SolrConstants.HEIGHT)) {
-            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) ret.getDoc().getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
-                ret.getDoc().addField(SolrConstants.WIDTH, dimension.width);
-                ret.getDoc().addField(SolrConstants.HEIGHT, dimension.height);
-            });
-        }
-
-        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
-                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
-            recordHasImages = true;
-        } else {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
-        }
-
-        // FULLTEXTAVAILABLE indicates whether this page has full-text
-        if (ret.getDoc().getField(SolrConstants.FULLTEXT) != null) {
-            ret.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, true);
-            recordHasFulltext = true;
-        } else {
-            ret.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, false);
-        }
+        addPageAdditionalTechMetadata(ret, dataFolders, fileName);
 
         return ret;
     }

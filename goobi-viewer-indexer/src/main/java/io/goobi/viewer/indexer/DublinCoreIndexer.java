@@ -579,13 +579,7 @@ public class DublinCoreIndexer extends Indexer {
         }
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.ORDER, order);
-        ret.getDoc().addField(SolrConstants.PHYSID, String.valueOf(order));
-
+        PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));
         ret.getDoc().addField(SolrConstants.ORDERLABEL, String.valueOf(order));
 
         // URL

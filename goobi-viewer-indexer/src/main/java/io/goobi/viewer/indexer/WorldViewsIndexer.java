@@ -798,12 +798,7 @@ public class WorldViewsIndexer extends Indexer {
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", useOrder, iddoc, Thread.currentThread().getId());
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
-        ret.getDoc().addField(SolrConstants.ORDER, order);
+        PhysicalElement ret = createPhysicalElement(order, iddoc, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
         ret.getDoc().addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
 
         boolean displayImage = Boolean.parseBoolean(eleImage.getChildText("displayImage"));
