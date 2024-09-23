@@ -16,6 +16,8 @@
 package io.goobi.viewer.indexer.helper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -124,17 +127,17 @@ class MetadataHelperTest extends AbstractTest {
     void getGroupedMetadata_shouldGroupCorrectly() throws Exception {
         List<FieldConfig> fieldConfigurations =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
-        Assertions.assertNotNull(fieldConfigurations);
+        assertNotNull(fieldConfigurations);
         assertEquals(1, fieldConfigurations.size());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
-        Assertions.assertNotNull(fieldConfig.getGroupEntity());
+        assertNotNull(fieldConfig.getGroupEntity());
 
         Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
-        Assertions.assertNotNull(docMods);
-        Assertions.assertNotNull(docMods.getRootElement());
+        assertNotNull(docMods);
+        assertNotNull(docMods.getRootElement());
 
         Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
-        Assertions.assertNotNull(eleName);
+        assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
                 new ArrayList<>());
         Assertions.assertFalse(gmd.getFields().isEmpty());
@@ -207,18 +210,18 @@ class MetadataHelperTest extends AbstractTest {
     void getGroupedMetadata_shouldNotLowercaseCertainFields() throws Exception {
         List<FieldConfig> fieldConfigurations =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_AUTHOR");
-        Assertions.assertNotNull(fieldConfigurations);
+        assertNotNull(fieldConfigurations);
         assertEquals(1, fieldConfigurations.size());
         FieldConfig fieldConfig = fieldConfigurations.get(0);
-        Assertions.assertNotNull(fieldConfig.getGroupEntity());
+        assertNotNull(fieldConfig.getGroupEntity());
         fieldConfig.setLowercase(true);
 
         Document docMods = JDomXP.readXmlFile("src/test/resources/METS/aggregation_mods_test.xml");
-        Assertions.assertNotNull(docMods);
-        Assertions.assertNotNull(docMods.getRootElement());
+        assertNotNull(docMods);
+        assertNotNull(docMods.getRootElement());
 
         Element eleName = docMods.getRootElement().getChild("name", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mods"));
-        Assertions.assertNotNull(eleName);
+        assertNotNull(eleName);
         GroupedMetadata gmd = MetadataHelper.getGroupedMetadata(eleName, fieldConfig.getGroupEntity(), fieldConfig, "MD_AUTHOR", new StringBuilder(),
                 new ArrayList<>());
         Assertions.assertFalse(gmd.getFields().isEmpty());
@@ -481,16 +484,16 @@ class MetadataHelperTest extends AbstractTest {
      */
     @Test
     void processTEIMetadataFiles_shouldAppendFulltextFromAllFiles() throws Exception {
-        IndexObject obj = new IndexObject(1L);
+        IndexObject obj = new IndexObject(UUID.randomUUID().toString());
         Path teiFolder = Paths.get("src/test/resources/WorldViews/gei_test_sthe_quelle_01_tei");
-        Assertions.assertTrue(Files.isDirectory(teiFolder));
+        assertTrue(Files.isDirectory(teiFolder));
         MetadataHelper.processTEIMetadataFiles(obj, teiFolder);
-        Assertions.assertNotNull(obj.getLuceneFieldWithName(SolrConstants.FULLTEXT));
+        assertNotNull(obj.getLuceneFieldWithName(SolrConstants.FULLTEXT));
         String fulltext = obj.getLuceneFieldWithName(SolrConstants.FULLTEXT).getValue();
-        Assertions.assertNotNull(fulltext);
-        Assertions.assertTrue(fulltext.contains("ENGLISH"));
-        Assertions.assertTrue(fulltext.contains("FRENCH"));
-        Assertions.assertTrue(fulltext.contains("Systematische Übersicht über die Elemente für die Auszeichnung von Quellen"));
+        assertNotNull(fulltext);
+        assertTrue(fulltext.contains("ENGLISH"));
+        assertTrue(fulltext.contains("FRENCH"));
+        assertTrue(fulltext.contains("Systematische Übersicht über die Elemente für die Auszeichnung von Quellen"));
     }
 
     /**
@@ -513,7 +516,7 @@ class MetadataHelperTest extends AbstractTest {
         result.get(3).getValue().equals("0318");
         result.get(4).getField().equals(SolrConstants.CENTURY);
         result.get(4).getValue().equals("21");
-        Assertions.assertTrue(centuries.contains(21));
+        assertTrue(centuries.contains(21));
     }
 
     /**
@@ -559,7 +562,7 @@ class MetadataHelperTest extends AbstractTest {
     @Test
     void getPIFromXML_shouldExtractDenkXwebPICorrectly() {
         Path path = Paths.get("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
-        Assertions.assertTrue(Files.isRegularFile(path));
+        assertTrue(Files.isRegularFile(path));
         List<Document> docs = JDomXP.splitDenkXwebFile(path.toFile());
         String pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));
         assertEquals("30596824", pi);

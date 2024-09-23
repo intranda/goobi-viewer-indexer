@@ -401,7 +401,7 @@ public class LidoIndexer extends Indexer {
                     ? (String) page.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) page.getDoc().getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
-            
+
             if (page.getDoc().containsKey(SolrConstants.THUMBNAILREPRESENT)) {
                 filePathBanner = (String) page.getDoc().getFieldValue(SolrConstants.THUMBNAILREPRESENT);
             }
@@ -441,7 +441,7 @@ public class LidoIndexer extends Indexer {
                     page.getDoc().removeField(fieldName);
                 }
                 //  Add this docstruct's SORT_* fields to page
-                if (indexObj.getIddoc() == Long.valueOf((String) page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                if (indexObj.getIddoc() != null && indexObj.getIddoc().equals(page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
                         if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             page.getDoc().addField(field.getField(), field.getValue());
@@ -724,7 +724,7 @@ public class LidoIndexer extends Indexer {
         List<SolrInputDocument> ret = new ArrayList<>(eventList.size());
         for (Element eleEvent : eventList) {
             SolrInputDocument eventDoc = new SolrInputDocument();
-            long iddocEvent = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+            String iddocEvent = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
             eventDoc.addField(SolrConstants.IDDOC, iddocEvent);
             eventDoc.addField(SolrConstants.GROUPFIELD, iddocEvent);
             eventDoc.addField(SolrConstants.DOCTYPE, DocType.EVENT.name());
@@ -773,7 +773,7 @@ public class LidoIndexer extends Indexer {
                         indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj.getGroupedMetadataFields().size());
                 for (GroupedMetadata gmd : eventGroupedFields) {
                     SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
-                    long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                    String iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
                     doc.addField(SolrConstants.IDDOC, iddoc);
                     if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
                         logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,

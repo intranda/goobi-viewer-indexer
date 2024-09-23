@@ -350,7 +350,7 @@ public class MetsIndexer extends Indexer {
                     // Create parent IndexObject
                     if (anchorPi != null && parentIddoc != null) {
                         logger.debug("Creating anchor for '{}' (PI:{}, IDDOC:{})", indexObj.getIddoc(), anchorPi, parentIddoc);
-                        IndexObject anchor = new IndexObject(Long.valueOf(parentIddoc), anchorPi);
+                        IndexObject anchor = new IndexObject(parentIddoc, anchorPi);
                         if (anchor.getIddoc() == indexObj.getIddoc()) {
                             throw new IndexerException("Anchor and volume have the same IDDOC: " + indexObj.getIddoc());
                         }
@@ -764,7 +764,7 @@ public class MetsIndexer extends Indexer {
                     page.getDoc().removeField(fieldName);
                 }
                 //  Add this docstruct's SORT_* fields to page
-                if (indexObj.getIddoc() == Long.valueOf((String) page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                if (indexObj.getIddoc() != null && indexObj.getIddoc().equals(page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
                         if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             page.getDoc().addField(field.getField(), field.getValue());
@@ -990,11 +990,11 @@ public class MetsIndexer extends Indexer {
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
             ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
-            ConcurrentHashMap<Long, Boolean> usedIddocsMap = new ConcurrentHashMap<>();
+            ConcurrentHashMap<String, Boolean> usedIddocsMap = new ConcurrentHashMap<>();
             try {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
-                        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                        String iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
                         if (usedIddocsMap.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
@@ -1274,7 +1274,7 @@ public class MetsIndexer extends Indexer {
         }
         String dmdId = eleStructMapPhysical.getAttributeValue(SolrConstants.DMDID);
         if (StringUtils.isNotEmpty(dmdId)) {
-            IndexObject pageObj = new IndexObject(0);
+            IndexObject pageObj = new IndexObject("dummy");
             MetadataHelper.writeMetadataToObject(pageObj, xp.getMdWrap(dmdId), "", xp);
             for (LuceneField field : pageObj.getLuceneFields()) {
                 ret.getDoc().addField(field.getField(), field.getValue());
@@ -1537,7 +1537,7 @@ public class MetsIndexer extends Indexer {
                     + "']/mets:mdWrap/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/mets:mdWrap[@MDTYPE='OTHER']"; // TODO check whether METS correct
             List<Element> eletechMdList = xp.evaluateToElements(techXpath, null);
             if (!eletechMdList.isEmpty()) {
-                IndexObject indexObj = new IndexObject(1L, pi);
+                IndexObject indexObj = new IndexObject("dummy", pi);
                 indexObj.setSourceDocFormat(FileFormat.MIX);
                 List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eletechMdList.get(0), "", indexObj, xp);
                 for (LuceneField field : fields) {

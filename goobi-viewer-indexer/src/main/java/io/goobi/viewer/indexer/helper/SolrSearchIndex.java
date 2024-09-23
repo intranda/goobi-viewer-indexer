@@ -71,7 +71,7 @@ public final class SolrSearchIndex {
     private static final String ERROR_SOLR_CONNECTION = "Solr connection error";
     private static final String ERROR_UPDATE_STATUS = "Update status: {}";
 
-    private static Map<Long, Boolean> usedIddocs = new ConcurrentHashMap<>();
+    private static Map<String, Boolean> usedIddocs = new ConcurrentHashMap<>();
 
     private boolean optimize = false;
 
@@ -157,11 +157,11 @@ public final class SolrSearchIndex {
      * checkIddocAvailability.
      * </p>
      *
-     * @param iddoc a long.
+     * @param iddoc a String
      * @return a boolean.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
-    public synchronized boolean checkIddocAvailability(long iddoc) throws FatalIndexerException {
+    public synchronized boolean checkIddocAvailability(String iddoc) throws FatalIndexerException {
         if (usedIddocs.get(iddoc) != null) {
             return false;
         }
@@ -651,7 +651,7 @@ public final class SolrSearchIndex {
      * @should add default field
      * @should add access conditions
      */
-    public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, long iddoc) {
+    public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, String iddoc) {
         try {
             SolrDocumentList docs = search(SolrConstants.PI + ":" + groupId, null);
             SolrInputDocument doc = new SolrInputDocument();

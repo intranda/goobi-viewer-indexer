@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -126,9 +127,10 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
+        String iddoc = UUID.randomUUID().toString();
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
         Assertions.assertNotNull(doc);
-        Assertions.assertEquals("123456", doc.getFieldValue(SolrConstants.IDDOC));
+        Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
         Long timestamp = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
         Assertions.assertNotNull(timestamp);
         Assertions.assertEquals(timestamp, doc.getFieldValue(SolrConstants.DATEUPDATED));
@@ -148,7 +150,8 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "old_shelfmark");
         moreMetadata.put("MD_TITLE", "old_title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
+        String iddoc = UUID.randomUUID().toString();
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
         Assertions.assertNotNull(doc);
         searchIndex.writeToIndex(doc);
         searchIndex.commit(false);
@@ -156,7 +159,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "new_shelfmark");
         moreMetadata.put("MD_TITLE", "new_title");
-        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
         Assertions.assertNotNull(doc2);
         Assertions.assertEquals(doc.getFieldValue(SolrConstants.IDDOC), doc2.getFieldValue(SolrConstants.IDDOC));
         Assertions.assertEquals(doc.getFieldValue(SolrConstants.DATECREATED), doc2.getFieldValue(SolrConstants.DATECREATED));
@@ -177,7 +180,8 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc =
+                searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, UUID.randomUUID().toString());
         Assertions.assertNotNull(doc);
         Assertions.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
         String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
@@ -193,7 +197,8 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      */
     @Test
     void checkAndCreateGroupDoc_shouldAddAccessConditions() {
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, 123456L);
+        SolrInputDocument doc =
+                searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, UUID.randomUUID().toString());
         Assertions.assertNotNull(doc);
         Assertions.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
     }

@@ -652,7 +652,7 @@ public class WorldViewsIndexer extends Indexer {
                     pageDoc.removeField(fieldName);
                 }
                 //  Add this docstruct's SORT_* fields to page
-                if (currentIndexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                if (currentIndexObj.getIddoc() != null && currentIndexObj.getIddoc().equals(pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : currentIndexObj.getLuceneFields()) {
                         if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             pageDoc.addField(field.getField(), field.getValue());
@@ -736,11 +736,11 @@ public class WorldViewsIndexer extends Indexer {
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
             ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
-            ConcurrentHashMap<Long, Boolean> map = new ConcurrentHashMap<>();
+            ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
             try {
                 pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
                     try {
-                        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                        String iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
                         if (map.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }

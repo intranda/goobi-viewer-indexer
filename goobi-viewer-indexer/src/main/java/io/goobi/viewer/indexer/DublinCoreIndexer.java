@@ -424,7 +424,7 @@ public class DublinCoreIndexer extends Indexer {
                     page.getDoc().removeField(fieldName);
                 }
                 //  Add this docstruct's SORT_* fields to page
-                if (indexObj.getIddoc() == Long.valueOf((String) page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                if (indexObj.getIddoc() != null && indexObj.getIddoc().equals(page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
                         if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             page.getDoc().addField(field.getField(), field.getValue());
