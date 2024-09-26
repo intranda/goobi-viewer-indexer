@@ -181,7 +181,7 @@ public class CmsPageIndexer extends Indexer {
             }
 
             Document doc = XmlTools.readXmlFile(cmsFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             indexObj.setSourceDocFormat(FileFormat.CMS);

@@ -21,12 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -209,7 +205,7 @@ public class DenkXwebIndexer extends Indexer {
                 throw new IndexerException("Could not create XML parser.");
             }
 
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = doc.getRootElement();
             indexObj.setRootStructNode(structNode);
@@ -385,9 +381,7 @@ public class DenkXwebIndexer extends Indexer {
         //                        writeStrategy, dataFolders, downloadExternalImages));
         int order = pageCountStart;
         for (Element eleImage : eleImageList) {
-            PhysicalElement page =
-                    generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), order,
-                            dataFolders, downloadExternalImages);
+            PhysicalElement page = generatePageDocument(eleImage, String.valueOf(getNextIddoc()), order, dataFolders, downloadExternalImages);
             if (page != null) {
                 writeStrategy.addPage(page);
                 order++;

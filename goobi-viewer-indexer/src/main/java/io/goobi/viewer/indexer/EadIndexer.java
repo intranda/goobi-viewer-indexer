@@ -188,7 +188,7 @@ public class EadIndexer extends Indexer {
         logger.debug("Indexing EAD file '{}'...", eadFile.getFileName());
         try {
             initJDomXP(eadFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = findStructNode();
             if (structNode == null) {
@@ -379,7 +379,7 @@ public class EadIndexer extends Indexer {
      */
     public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, int order, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing) throws FatalIndexerException, IOException {
-        IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+        IndexObject indexObj = new IndexObject(getNextIddoc());
         indexObj.setRootStructNode(node);
         indexObj.setParent(parentIndexObject);
         indexObj.setTopstructPI(parentIndexObject.getTopstructPI());

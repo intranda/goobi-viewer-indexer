@@ -202,7 +202,7 @@ public class DublinCoreIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", useWriteStrategy.getClass().getName());
             }
             initJDomXP(dcFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setRootStructNode(xp.getRootElement());
 
@@ -307,8 +307,7 @@ public class DublinCoreIndexer extends Indexer {
                 }
                 SolrInputDocument doc = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
                 if (doc != null) {
                     useWriteStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -545,9 +544,7 @@ public class DublinCoreIndexer extends Indexer {
         // Generate pages sequentially
         int order = pageCountStart;
         for (final Element eleImage : eleImageList) {
-            PhysicalElement page =
-                    generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
-                            dataFolders);
+            PhysicalElement page = generatePageDocument(eleImage, String.valueOf(getNextIddoc()), pi, order, dataFolders);
             if (page != null) {
                 writeStrategy.addPage(page);
                 order++;

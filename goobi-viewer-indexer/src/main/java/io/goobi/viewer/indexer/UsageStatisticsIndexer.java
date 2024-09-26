@@ -133,7 +133,7 @@ public class UsageStatisticsIndexer extends Indexer {
      * @throws FatalIndexerException
      */
     private static IndexObject createIndexObject(DailyUsageStatistics stats) throws FatalIndexerException {
-        IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+        IndexObject indexObj = new IndexObject(getNextIddoc());
         indexObj.addToLucene(SolrConstants.IDDOC, indexObj.getIddoc());
         indexObj.addToLucene(SolrConstants.GROUPFIELD, indexObj.getIddoc());
         indexObj.addToLucene(SolrConstants.DOCTYPE, StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE);

@@ -246,7 +246,7 @@ public class LidoIndexer extends Indexer {
                 throw new IndexerException("Could not create XML parser.");
             }
 
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = doc.getRootElement();
             indexObj.setRootStructNode(structNode);
@@ -604,9 +604,8 @@ public class LidoIndexer extends Indexer {
             if (orderAttribute != null) {
                 order = Integer.valueOf(orderAttribute);
             }
-            PhysicalElement page =
-                    generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), order,
-                            dataFolders, imageXPaths, downloadExternalImages, useOldImageFolderIfAvailable);
+            PhysicalElement page = generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc()), order,
+                    dataFolders, imageXPaths, downloadExternalImages, useOldImageFolderIfAvailable);
             if (page != null) {
                 writeStrategy.addPage(page);
                 order++;
@@ -724,7 +723,7 @@ public class LidoIndexer extends Indexer {
         List<SolrInputDocument> ret = new ArrayList<>(eventList.size());
         for (Element eleEvent : eventList) {
             SolrInputDocument eventDoc = new SolrInputDocument();
-            String iddocEvent = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+            String iddocEvent = getNextIddoc();
             eventDoc.addField(SolrConstants.IDDOC, iddocEvent);
             eventDoc.addField(SolrConstants.GROUPFIELD, iddocEvent);
             eventDoc.addField(SolrConstants.DOCTYPE, DocType.EVENT.name());
@@ -773,7 +772,7 @@ public class LidoIndexer extends Indexer {
                         indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj.getGroupedMetadataFields().size());
                 for (GroupedMetadata gmd : eventGroupedFields) {
                     SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
-                    String iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                    String iddoc = getNextIddoc();
                     doc.addField(SolrConstants.IDDOC, iddoc);
                     if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
                         logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,

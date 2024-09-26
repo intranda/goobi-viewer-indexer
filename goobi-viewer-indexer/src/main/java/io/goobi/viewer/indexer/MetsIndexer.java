@@ -291,7 +291,7 @@ public class MetsIndexer extends Indexer {
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             initJDomXP(metsFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setVolume(isVolume());
             logger.debug("Document is volume: {}", indexObj.isVolume());
@@ -513,8 +513,7 @@ public class MetsIndexer extends Indexer {
                 }
                 SolrInputDocument doc = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -994,7 +993,7 @@ public class MetsIndexer extends Indexer {
             try {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
-                        String iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                        String iddoc = getNextIddoc();
                         if (usedIddocsMap.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
@@ -1032,9 +1031,8 @@ public class MetsIndexer extends Indexer {
             // Generate pages sequentially
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
-                PhysicalElement page =
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())),
-                                pi, order, dataFolders, dataRepository, downloadExternalImages);
+                PhysicalElement page = generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc()),
+                        pi, order, dataFolders, dataRepository, downloadExternalImages);
                 if (page != null) {
                     writeStrategy.addPage(page);
                     // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
@@ -1204,7 +1202,7 @@ public class MetsIndexer extends Indexer {
                         String shape = eleArea.getAttributeValue(DocType.SHAPE.name());
 
                         PhysicalElement shapePage = new PhysicalElement(Utils.generateLongOrderNumber(order, count));
-                        shapePage.getDoc().addField(SolrConstants.IDDOC, getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        shapePage.getDoc().addField(SolrConstants.IDDOC, getNextIddoc());
                         shapePage.getDoc().setField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
                         shapePage.getDoc().addField(SolrConstants.ORDER, shapePage.getOrder());
                         shapePage.getDoc().addField(SolrConstants.PHYSID, physId);
@@ -1959,7 +1957,7 @@ public class MetsIndexer extends Indexer {
         List<Element> childrenNodeList = xp.evaluateToElements("mets:div", parentIndexObject.getRootStructNode());
         for (int i = 0; i < childrenNodeList.size(); i++) {
             Element node = childrenNodeList.get(i);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             indexObj.setRootStructNode(node);
             indexObj.setParent(parentIndexObject);
             indexObj.setTopstructPI(parentIndexObject.getTopstructPI());

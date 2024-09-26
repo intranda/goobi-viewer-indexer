@@ -229,7 +229,7 @@ public class WorldViewsIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", useWriteStrategy.getClass().getName());
             }
             initJDomXP(mainFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             // Set PI
@@ -391,8 +391,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
                 SolrInputDocument doc = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
                 if (doc != null) {
                     useWriteStrategy.addDoc(doc);
                     logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
@@ -490,7 +489,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
 
                 // Create new docstruct object
-                currentIndexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                currentIndexObj = new IndexObject(getNextIddoc());
                 currentIndexObj.setParent(rootIndexObj);
                 currentIndexObj.setTopstructPI(rootIndexObj.getTopstructPI());
                 currentIndexObj.setType(pageDocstructLabel);
@@ -739,18 +738,14 @@ public class WorldViewsIndexer extends Indexer {
             ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
             try {
                 pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
-                    try {
-                        String iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
-                        if (map.containsKey(iddoc)) {
-                            logger.error("Duplicate IDDOC: {}", iddoc);
-                        }
-                        PhysicalElement page = generatePageDocument(eleImage, String.valueOf(iddoc), pi, null, dataFolders);
-                        if (page != null) {
-                            writeStrategy.addPage(page);
-                            map.put(iddoc, true);
-                        }
-                    } catch (FatalIndexerException e) {
-                        logger.error("Should be exiting here now...");
+                    String iddoc = getNextIddoc();
+                    if (map.containsKey(iddoc)) {
+                        logger.error("Duplicate IDDOC: {}", iddoc);
+                    }
+                    PhysicalElement page = generatePageDocument(eleImage, String.valueOf(iddoc), pi, null, dataFolders);
+                    if (page != null) {
+                        writeStrategy.addPage(page);
+                        map.put(iddoc, true);
                     }
                 })).get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
             } catch (ExecutionException e) {
@@ -764,9 +759,7 @@ public class WorldViewsIndexer extends Indexer {
         } else {
             int order = pageCountStart;
             for (final Element eleImage : eleListImages) {
-                PhysicalElement page =
-                        generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
-                                dataFolders);
+                PhysicalElement page = generatePageDocument(eleImage, String.valueOf(getNextIddoc()), pi, order, dataFolders);
                 if (page != null) {
                     writeStrategy.addPage(page);
                     order++;
