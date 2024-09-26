@@ -940,7 +940,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
         ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
         ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
         List<SolrInputDocument> docs =
-                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", "PPN-anchor", null, 1);
+                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", "PPN-anchor", null, 2);
         assertNotNull(docs);
         assertEquals(0, docs.size());
     }
