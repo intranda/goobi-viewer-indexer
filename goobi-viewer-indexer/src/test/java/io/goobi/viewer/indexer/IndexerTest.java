@@ -884,7 +884,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return empty list if dataFolder null
      */
     @Test
-    void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+    void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() {
         Indexer indexer = new MetsIndexer(hotfolder);
         List<SolrInputDocument> result =
                 indexer.generateUserCommentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1);
@@ -896,7 +896,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies construct doc correctly
      */
     @Test
-    void generateUserCommentDocsForPage_shouldConstructDocCorrectly() throws Exception {
+    void generateUserCommentDocsForPage_shouldConstructDocCorrectly() {
         Path dataFolder = Paths.get("src/test/resources/ugc");
         assertTrue(Files.isDirectory(dataFolder));
 
@@ -922,6 +922,27 @@ class IndexerTest extends AbstractSolrEnabledTest {
             assertTrue("http://localhost:8080/viewer/api/v1/annotations/comment_13/".equals(doc.getFieldValue("MD_ANNOTATION_ID"))
                     || "http://localhost:8080/viewer/api/v1/annotations/comment_14/".equals(doc.getFieldValue("MD_ANNOTATION_ID")));
         }
+    }
+
+    /**
+     * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
+     * @verifies skip comments for other pages
+     */
+    @Test
+    void generateUserCommentDocsForPage_shouldSkipCommentsForOtherPages() {
+        Path dataFolder = Paths.get("src/test/resources/ugc");
+        assertTrue(Files.isDirectory(dataFolder));
+
+        DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
+
+        String docstrct = "monograph";
+        SolrInputDocument ownerDoc = new SolrInputDocument();
+        ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
+        ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
+        List<SolrInputDocument> docs =
+                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", "PPN-anchor", null, 1);
+        assertNotNull(docs);
+        assertEquals(0, docs.size());
     }
 
     /**

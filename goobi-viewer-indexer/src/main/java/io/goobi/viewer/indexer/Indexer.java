@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.UUID;
 
 import javax.imageio.ImageIO;
@@ -82,6 +84,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import de.intranda.api.annotation.GeoLocation;
 import de.intranda.api.annotation.ISelector;
+import de.intranda.api.annotation.SimpleResource;
 import de.intranda.api.annotation.wa.FragmentSelector;
 import de.intranda.api.annotation.wa.SpecificResource;
 import de.intranda.api.annotation.wa.TextualResource;
@@ -742,6 +745,7 @@ public abstract class Indexer {
      * @return List of Solr input documents for the comment annotations
      * @should return empty list if dataFolder null
      * @should construct doc correctly
+     * @should skip comment for other pages
      */
     List<SolrInputDocument> generateUserCommentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
             Map<String, String> groupIds, int order) {
@@ -758,15 +762,36 @@ public abstract class Indexer {
                     continue;
                 }
 
+                logger.debug("JSON file: {}", file.getFileName());
                 try (FileInputStream fis = new FileInputStream(file.toFile())) {
                     WebAnnotation anno = new ObjectMapper().registerModule(new JavaTimeModule()).readValue(fis, WebAnnotation.class);
                     if (anno == null) {
                         logger.warn("Invalid JSON in file '{}'.", file.getFileName());
-                        return Collections.emptyList();
+                        continue;
                     }
                     if (anno.getBody() == null || !anno.getBody().getClass().equals(TextualResource.class)) {
                         logger.warn("Missing or invalid body in JSON '{}'.", file.getFileName());
-                        return Collections.emptyList();
+                        continue;
+                    }
+
+                    Long extractedOrder = null;
+                    String uri = null;
+
+                    if (anno.getTarget() instanceof SimpleResource sr) {
+                        uri = sr.getId().toString();
+                    } else if (anno.getTarget() instanceof TextualResource tr) {
+                        uri = tr.getText();
+                    }
+                    if (uri != null) {
+                        Pattern p = Pattern.compile("pages\\/(\\d+)\\/canvas");
+                        Matcher m = p.matcher(uri);
+                        if (m.find()) {
+                            extractedOrder = Long.parseLong(m.group(1));
+                        }
+                    }
+                    // Skip pages that don't match
+                    if (extractedOrder == null || extractedOrder != order) {
+                        continue;
                     }
 
                     SolrInputDocument doc = new SolrInputDocument();
