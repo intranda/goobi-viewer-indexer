@@ -178,6 +178,8 @@
 
 		<!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
 		<dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
+        
+        <serializingWriteStrategyBatchSize>1000</serializingWriteStrategyBatchSize>
 
 		<!-- If true, an optimize query will be sent to Solr after every indexed object. -->
 		<autoOptimize>false</autoOptimize>
@@ -4098,6 +4100,70 @@
                 </item>
             </list>
         </MD_TECH_IMAGE_DATETIME_CREATED>
+        
+        <MD_ALTNAME_LANG_FR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:name/mods:alternativeName</item>
+                        </list>
+                    </xpath>
+                    <groupEntity type="OTHER" addAuthorityDataToDocstruct="false" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">concat(./mods:namePart[@xml:lang="fre" and not(@type)], mods:namePart[@xml:lang="fre" and @type="given"], " ", mods:namePart[@xml:lang="fre" and @type="family"])</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_TYPE">mods:description[@xml:lang="fre"]</field>
+                        <field name="MD_SOURCEID">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name</field>
+                        <field name="MD_SOURCETYPE">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                    </groupEntity>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_ALTNAME_LANG_FR>
+        
+        <MD_ALTNAME_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:name/mods:alternativeName</item>
+                        </list>
+                    </xpath>
+                    <groupEntity type="OTHER"  addAuthorityDataToDocstruct="false" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">concat(mods:namePart[@xml:lang="eng" and not(@type)], mods:namePart[@xml:lang="eng" and @type="given"], " ", mods:namePart[@xml:lang="eng" and @type="family"])</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_TYPE">mods:description[@xml:lang="eng"]</field>
+                        <field name="MD_SOURCEID">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name</field>
+                        <field name="MD_SOURCETYPE">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                    </groupEntity>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_ALTNAME_LANG_EN>
+       
+        <MD_ALTNAME_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:name/mods:alternativeName</item>
+                        </list>
+                    </xpath>
+                    <groupEntity type="OTHER"  addAuthorityDataToDocstruct="false" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">concat(mods:namePart[@xml:lang="ger" and not(@type)], mods:namePart[@xml:lang="ger" and @type="given"], " ", mods:namePart[@xml:lang="ger" and @type="family"])</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_TYPE">mods:description[@xml:lang="fre"]</field>
+                        <field name="MD_SOURCEID">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name</field>
+                        <field name="MD_SOURCETYPE">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                    </groupEntity>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_ALTNAME_LANG_DE>
+
         
     </fields>
  
