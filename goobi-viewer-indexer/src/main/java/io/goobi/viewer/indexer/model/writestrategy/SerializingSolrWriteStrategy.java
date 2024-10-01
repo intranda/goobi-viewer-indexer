@@ -260,7 +260,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         int numBatches = (int) numBatchesDouble;
         if (numBatches < numBatchesDouble) {
             numBatches++;
-            logger.info("{} ({})", numBatches, numBatchesDouble);
+            logger.debug("Batches: {} ({})", numBatches, numBatchesDouble);
         }
         int useBatchSize = batchSize > 0 ? batchSize : docIddocs.size();
         if (batchSize > 0 && docIddocs.size() > batchSize) {
@@ -278,13 +278,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                     addSuperSearchFields(doc, rootDoc);
                 }
                 sanitizeDoc(doc);
-                try {
-                    searchIndex.writeToIndex(doc);
-                } catch (RemoteSolrException e) {
-                    copyFailedFile(Paths.get(tempFolder.toAbsolutePath().toString(), iddoc));
-                    logger.error(e.getMessage(), e);
-                    throw new IndexerException(e.getMessage());
-                }
                 batch.add(doc);
                 count++;
                 if (count >= useBatchSize) {
@@ -305,7 +298,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         if (!batch.isEmpty()) {
             writeDocBatch(batch, batchCount, pi);
             logger.info("Sending batch {}/{} to Solr...", batchCount, numBatches);
-
         }
 
         logger.info("Writing {} page documents to the index...", pageDocOrderIddocMap.size());
@@ -364,7 +356,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     private void writeDocBatch(List<SolrInputDocument> batch, int batchNumber, String pi) throws FatalIndexerException, IndexerException {
         try {
             searchIndex.writeToIndex(batch);
-            logger.info("Batch sent");
+            logger.debug("Batch sent");
         } catch (RemoteSolrException e) {
             copyFailedFile(Paths.get(tempFolder.toAbsolutePath().toString(), pi + "_" + batchNumber));
             logger.error(e.getMessage(), e);
@@ -412,9 +404,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         searchIndex.writeToIndex(page.getDoc());
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#cleanup()
-     */
     /** {@inheritDoc} */
     @Override
     public void cleanup() {
