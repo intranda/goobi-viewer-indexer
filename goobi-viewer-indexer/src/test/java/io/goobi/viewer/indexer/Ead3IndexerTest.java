@@ -55,7 +55,7 @@ class Ead3IndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertTrue(Files.isRegularFile(eadFileCopy));
 
         Indexer indexer = new Ead3Indexer(hotfolder);
-        indexer.addToIndex(eadFileCopy, false, new HashMap<>());
+        indexer.addToIndex(eadFileCopy, new HashMap<>());
 
         SolrDocumentList result =
                 SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":EAD3_example", null);

@@ -62,7 +62,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies detect positive century correctly
      */
     @Test
-    void getCentury_shouldDetectPositiveCenturyCorrectly() throws Exception {
+    void getCentury_shouldDetectPositiveCenturyCorrectly() {
         assertEquals(1, MetadataHelper.getCentury(50));
         assertEquals(9, MetadataHelper.getCentury(865));
         assertEquals(20, MetadataHelper.getCentury(1901));
@@ -73,7 +73,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies detect negative century correctly
      */
     @Test
-    void getCentury_shouldDetectNegativeCenturyCorrectly() throws Exception {
+    void getCentury_shouldDetectNegativeCenturyCorrectly() {
         assertEquals(-1, MetadataHelper.getCentury(-50));
         assertEquals(-2, MetadataHelper.getCentury(-150));
     }
@@ -83,7 +83,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies detect first century correctly
      */
     @Test
-    void getCentury_shouldDetectFirstCenturyCorrectly() throws Exception {
+    void getCentury_shouldDetectFirstCenturyCorrectly() {
         assertEquals(1, MetadataHelper.getCentury(7));
     }
 
@@ -92,7 +92,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies trim identifier
      */
     @Test
-    void applyIdentifierModifications_shouldTrimIdentifier() throws Exception {
+    void applyIdentifierModifications_shouldTrimIdentifier() {
         assertEquals("id", MetadataHelper.applyIdentifierModifications(" id "));
     }
 
@@ -101,7 +101,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies replace illegal characters with underscores
      */
     @Test
-    void applyIdentifierModifications_shouldReplaceIllegalCharactersWithUnderscores() throws Exception {
+    void applyIdentifierModifications_shouldReplaceIllegalCharactersWithUnderscores() {
         assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID 10t"));
         assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("ID,10t"));
         assertEquals("ID_10t_", MetadataHelper.applyIdentifierModifications("ID(10t)"));
@@ -112,7 +112,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies apply replace rules
      */
     @Test
-    void applyIdentifierModifications_shouldApplyReplaceRules() throws Exception {
+    void applyIdentifierModifications_shouldApplyReplaceRules() {
         assertEquals("ID_10t", MetadataHelper.applyIdentifierModifications("replaceme/ID,10t/replacemetoo"));
     }
 
@@ -180,6 +180,8 @@ class MetadataHelperTest extends AbstractTest {
                     break;
                 case "MD_LINK":
                     link = field.getValue();
+                    break;
+                default:
                     break;
             }
         }
@@ -263,6 +265,8 @@ class MetadataHelperTest extends AbstractTest {
                 case "MD_LINK":
                     link = field.getValue();
                     break;
+                default:
+                    break;
             }
         }
         assertEquals("MD_AUTHOR", label);
@@ -284,7 +288,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies complete centuries correctly
      */
     @Test
-    void completeCenturies_shouldCompleteCenturiesCorrectly() throws Exception {
+    void completeCenturies_shouldCompleteCenturiesCorrectly() {
         List<LuceneField> centuries = new ArrayList<>();
         centuries.add(new LuceneField(SolrConstants.CENTURY, "-2"));
         centuries.add(new LuceneField(SolrConstants.CENTURY, "3"));
@@ -301,7 +305,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies complete years correctly
      */
     @Test
-    void completeYears_shouldCompleteYearsCorrectly() throws Exception {
+    void completeYears_shouldCompleteYearsCorrectly() {
         List<LuceneField> years = new ArrayList<>();
         years.add(new LuceneField(SolrConstants.YEAR, "1990"));
         years.add(new LuceneField(SolrConstants.YEAR, "1993"));
@@ -317,7 +321,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies apply rules correctly
      */
     @Test
-    void applyReplaceRules_shouldApplyRulesCorrectly() throws Exception {
+    void applyReplaceRules_shouldApplyRulesCorrectly() {
         Map<Object, String> replaceRules = new HashMap<>();
         replaceRules.put('<', "");
         replaceRules.put(">", "s");
@@ -330,7 +334,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies throw IllegalArgumentException if value is null
      */
     @Test
-    void applyReplaceRules_shouldThrowIllegalArgumentExceptionIfValueIsNull() throws Exception {
+    void applyReplaceRules_shouldThrowIllegalArgumentExceptionIfValueIsNull() {
         Map<Object, String> replaceRules = new HashMap<>();
         Assertions.assertThrows(IllegalArgumentException.class, () -> MetadataHelper.applyReplaceRules(null, replaceRules));
     }
@@ -340,7 +344,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies return unmodified value if replaceRules is null
      */
     @Test
-    void applyReplaceRules_shouldReturnUnmodifiedValueIfReplaceRulesIsNull() throws Exception {
+    void applyReplaceRules_shouldReturnUnmodifiedValueIfReplaceRulesIsNull() {
         assertEquals("v<a>e", MetadataHelper.applyReplaceRules("v<a>e", null));
     }
 
@@ -349,7 +353,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies concatenate value terms correctly
      */
     @Test
-    void getConcatenatedValue_shouldConcatenateValueTermsCorrectly() throws Exception {
+    void getConcatenatedValue_shouldConcatenateValueTermsCorrectly() {
         assertEquals("foobar", MetadataHelper.getConcatenatedValue("foo-bar"));
     }
 
@@ -358,7 +362,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies add value correctly
      */
     @Test
-    void addValueToDefault_shouldAddValueCorrectly() throws Exception {
+    void addValueToDefault_shouldAddValueCorrectly() {
         StringBuilder sb = new StringBuilder(" bla blup ");
         MetadataHelper.addValueToDefault("foo bar", sb);
         assertEquals(" bla blup  foo bar ", sb.toString());
@@ -369,10 +373,9 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies add concatenated value correctly
      */
     @Test
-    void addValueToDefault_shouldAddConcatenatedValueCorrectly() throws Exception {
+    void addValueToDefault_shouldAddConcatenatedValueCorrectly() {
         StringBuilder sb = new StringBuilder(" bla blup ");
         MetadataHelper.addValueToDefault("foo-bar", sb);
-        //        assertEquals(" bla blup  foo-bar  foobar ", sb.toString());
         assertEquals(" bla blup  foo-bar ", sb.toString());
     }
 
@@ -381,7 +384,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies throw IllegalArgumentException if value is null
      */
     @Test
-    void addValueToDefault_shouldThrowIllegalArgumentExceptionIfValueIsNull() throws Exception {
+    void addValueToDefault_shouldThrowIllegalArgumentExceptionIfValueIsNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> MetadataHelper.addValueToDefault(null, new StringBuilder()));
     }
 
@@ -390,7 +393,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies throw IllegalArgumentException if sbDefaultMetadataValues is null
      */
     @Test
-    void addValueToDefault_shouldThrowIllegalArgumentExceptionIfSbDefaultMetadataValuesIsNull() throws Exception {
+    void addValueToDefault_shouldThrowIllegalArgumentExceptionIfSbDefaultMetadataValuesIsNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> MetadataHelper.addValueToDefault("foo-bar", null));
     }
 
@@ -399,7 +402,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies add regular sort fields correctly
      */
     @Test
-    void addSortField_shouldAddRegularSortFieldsCorrectly() throws Exception {
+    void addSortField_shouldAddRegularSortFieldsCorrectly() {
         List<LuceneField> result = new ArrayList<>(1);
         MetadataHelper.addSortField("MD_TITLE", "Title", SolrConstants.PREFIX_SORT, null, null, result);
         assertEquals(1, result.size());
@@ -412,7 +415,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies add numerical sort fields correctly
      */
     @Test
-    void addSortField_shouldAddNumericalSortFieldsCorrectly() throws Exception {
+    void addSortField_shouldAddNumericalSortFieldsCorrectly() {
         List<LuceneField> result = new ArrayList<>(1);
         MetadataHelper.addSortField(SolrConstants.YEAR, "-100", SolrConstants.PREFIX_SORTNUM, null, null, result);
         assertEquals(1, result.size());
@@ -425,7 +428,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies not add existing fields
      */
     @Test
-    void addSortField_shouldNotAddExistingFields() throws Exception {
+    void addSortField_shouldNotAddExistingFields() {
         List<LuceneField> result = new ArrayList<>(1);
         result.add(new LuceneField(SolrConstants.PREFIX_SORT + "TITLE", "other title"));
         MetadataHelper.addSortField("MD_TITLE", "Title", SolrConstants.PREFIX_SORT, null, null, result);
@@ -439,7 +442,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies extract language code correctly
      */
     @Test
-    void extractLanguageCodeFromMetadataField_shouldExtractLanguageCodeCorrectly() throws Exception {
+    void extractLanguageCodeFromMetadataField_shouldExtractLanguageCodeCorrectly() {
         assertEquals("en", MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN"));
     }
 
@@ -448,7 +451,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies ignore any suffixes longer than two chars
      */
     @Test
-    void extractLanguageCodeFromMetadataField_shouldIgnoreAnySuffixesLongerThanTwoChars() throws Exception {
+    void extractLanguageCodeFromMetadataField_shouldIgnoreAnySuffixesLongerThanTwoChars() {
         Assertions.assertNull(MetadataHelper.extractLanguageCodeFromMetadataField("MD_TITLE_LANG_EN_UNTOKENIZED"));
     }
 
@@ -457,7 +460,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies remove leading comma
      */
     @Test
-    void cleanUpName_shouldRemoveLeadingComma() throws Exception {
+    void cleanUpName_shouldRemoveLeadingComma() {
         assertEquals("foo", MetadataHelper.cleanUpName(", foo"));
         assertEquals("foo", MetadataHelper.cleanUpName(",foo"));
     }
@@ -467,7 +470,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies remove trailing comma
      */
     @Test
-    void cleanUpName_shouldRemoveTrailingComma() throws Exception {
+    void cleanUpName_shouldRemoveTrailingComma() {
         assertEquals("foo", MetadataHelper.cleanUpName("foo,"));
         assertEquals("foo", MetadataHelper.cleanUpName("foo, "));
     }
@@ -495,7 +498,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies parse centuries and dates correctly
      */
     @Test
-    void parseDatesAndCenturies_shouldParseCenturiesAndDatesCorrectly() throws Exception {
+    void parseDatesAndCenturies_shouldParseCenturiesAndDatesCorrectly() {
         String date = "2019-03-18";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, null);
@@ -518,7 +521,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies normalize year digits
      */
     @Test
-    void parseDatesAndCenturies_shouldNormalizeYearDigits() throws Exception {
+    void parseDatesAndCenturies_shouldNormalizeYearDigits() {
         String date = "0190-03-18";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, null);
@@ -538,7 +541,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies add custom field correctly
      */
     @Test
-    void parseDatesAndCenturies_shouldAddCustomFieldCorrectly() throws Exception {
+    void parseDatesAndCenturies_shouldAddCustomFieldCorrectly() {
         String date = "2023-01-09";
         Set<Integer> centuries = new HashSet<>(1);
         List<LuceneField> result = MetadataHelper.parseDatesAndCenturies(centuries, date, 4, "MDNUM_CUSTOMYEAR");
@@ -554,14 +557,12 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies extract DenkXweb PI correctly
      */
     @Test
-    void getPIFromXML_shouldExtractDenkXwebPICorrectly() throws Exception {
+    void getPIFromXML_shouldExtractDenkXwebPICorrectly() {
         Path path = Paths.get("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assertions.assertTrue(Files.isRegularFile(path));
         List<Document> docs = JDomXP.splitDenkXwebFile(path.toFile());
-        String[] pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));
-        assertEquals(2, pi.length);
-        assertEquals("30596824", pi[0]);
-        assertEquals("addToDefault", pi[1]);
+        String pi = MetadataHelper.getPIFromXML("", new JDomXP(docs.get(0)));
+        assertEquals("30596824", pi);
     }
 
     /**
@@ -569,7 +570,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies add name search field correctly
      */
     @Test
-    void parseAuthorityMetadata_shouldAddNameSearchFieldCorrectly() throws Exception {
+    void parseAuthorityMetadata_shouldAddNameSearchFieldCorrectly() {
         List<NormData> authorityDataList = new ArrayList<>(2);
         authorityDataList.add(new NormData("NORM_NAME", new NormDataValue("one", null, null)));
         authorityDataList.add(new NormData("NORM_OFFICIALNAME", new NormDataValue("two", null, null)));
@@ -591,7 +592,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies remove non-alphanumerical characters
      */
     @Test
-    void toOneToken_shouldRemoveNonalphanumericalCharacters() throws Exception {
+    void toOneToken_shouldRemoveNonalphanumericalCharacters() {
         assertEquals("LoremIpsum", MetadataHelper.toOneToken("Lorem Ipsum!", null));
     }
 
@@ -600,7 +601,7 @@ class MetadataHelperTest extends AbstractTest {
      * @verifies replace splitting char
      */
     @Test
-    void toOneToken_shouldReplaceSplittingChar() throws Exception {
+    void toOneToken_shouldReplaceSplittingChar() {
         assertEquals("foo.bar", MetadataHelper.toOneToken("foo#bar", "#"));
     }
 }

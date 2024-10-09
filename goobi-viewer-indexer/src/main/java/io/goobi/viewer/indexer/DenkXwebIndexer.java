@@ -15,7 +15,6 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -51,7 +50,6 @@ import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
-import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
@@ -67,6 +65,10 @@ public class DenkXwebIndexer extends Indexer {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(DenkXwebIndexer.class);
+
+    private static final String[] DATA_FOLDER_PARAMS =
+            { DataRepository.PARAM_MIX, DataRepository.PARAM_UGC, DataRepository.PARAM_CMS, DataRepository.PARAM_TEIMETADATA,
+                    DataRepository.PARAM_ANNOTATIONS };
 
     /**
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
@@ -88,15 +90,11 @@ public class DenkXwebIndexer extends Indexer {
     /**
      * Indexes the given DenkXweb file.
      * 
-     * @param denkxwebFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      * @should throw IllegalArgumentException if denkxwebFile null
      */
     @Override
-    public void addToIndex(Path denkxwebFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (denkxwebFile == null) {
             throw new IllegalArgumentException("denkxwebFile may not be null");
         }
@@ -220,55 +218,15 @@ public class DenkXwebIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI
-            String[] foundPi = MetadataHelper.getPIFromXML("", xp);
-            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            pi = foundPi[0];
-            logger.info("Record PI: {}", pi);
-
-            // Remove prefix
-            if (pi.contains(":")) {
-                pi = pi.substring(pi.lastIndexOf(':') + 1);
-            }
-            if (pi.contains("/")) {
-                pi = pi.substring(pi.lastIndexOf('/') + 1);
-            }
-            pi = MetadataHelper.applyIdentifierModifications(pi);
-            // Do not allow identifiers with illegal characters
-            if (!Utils.validatePi(pi)) {
-                ret[1] = "PI contains illegal characters: " + pi;
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-
-            // Add PI to default
-            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
-                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
-            }
+            pi = validateAndApplyPI(findPI(""), indexObj, true);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, null, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, null, dataFolders);
 
             ret[0] = indexObj.getPi();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy
@@ -302,7 +260,7 @@ public class DenkXwebIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-            List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy);
+            List<LuceneField> thumbnailFields = LidoIndexer.mapPagesToDocstruct(indexObj, writeStrategy, 0);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
@@ -364,197 +322,6 @@ public class DenkXwebIndexer extends Indexer {
         } finally {
             if (writeStrategy != null) {
                 writeStrategy.cleanup();
-            }
-        }
-
-        return ret;
-    }
-
-    /**
-     * 
-     * @param indexObj
-     * @param writeStrategy
-     * @return List<LuceneField>
-     * @throws FatalIndexerException
-     */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
-        List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
-        for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
-            physIds.add(String.valueOf(i));
-        }
-        List<PhysicalElement> pages = writeStrategy.getPagesForPhysIdList(physIds);
-        if (pages.isEmpty()) {
-            logger.warn("No pages found for {}", indexObj.getLogId());
-            return Collections.emptyList();
-        }
-
-        List<LuceneField> ret = new ArrayList<>(5);
-
-        // If this is a top struct element, look for a representative image
-        String filePathBanner = null;
-        boolean thumbnailSet = false;
-        for (PhysicalElement page : pages) {
-            String pageFileName = page.getDoc().getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
-                    ? (String) page.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
-                    : (String) page.getDoc().getFieldValue(SolrConstants.FILENAME);
-            String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
-
-            if (page.getDoc().containsKey(SolrConstants.THUMBNAILREPRESENT)) {
-                filePathBanner = (String) page.getDoc().getFieldValue(SolrConstants.THUMBNAILREPRESENT);
-            }
-
-            // Add thumbnail information from the representative page
-            if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && pageFileName.equals(filePathBanner)) {
-                ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-                // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
-                ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(page.getDoc().getFieldValue(SolrConstants.ORDER))));
-                ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) page.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
-                ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) page.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
-                thumbnailSet = true;
-            }
-
-            // Make sure IDDOC_OWNER of a page contains the iddoc of the lowest possible mapped docstruct
-            if (page.getDoc().getField(FIELD_OWNERDEPTH) == null || 0 > (Integer) page.getDoc().getFieldValue(FIELD_OWNERDEPTH)) {
-                page.getDoc().setField(SolrConstants.IDDOC_OWNER, String.valueOf(indexObj.getIddoc()));
-                page.getDoc().setField(FIELD_OWNERDEPTH, 0);
-
-                // Add the parent document's structure element to the page
-                page.getDoc().setField(SolrConstants.DOCSTRCT, indexObj.getType());
-
-                // Add topstruct type to the page
-                if (!page.getDoc().containsKey(SolrConstants.DOCSTRCT_TOP) && indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null) {
-                    page.getDoc().setField(SolrConstants.DOCSTRCT_TOP, indexObj.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
-                }
-
-                // Remove SORT_ fields from a previous, higher up docstruct
-                Set<String> fieldsToRemove = new HashSet<>();
-                for (String fieldName : page.getDoc().getFieldNames()) {
-                    if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
-                        fieldsToRemove.add(fieldName);
-                    }
-                }
-                for (String fieldName : fieldsToRemove) {
-                    page.getDoc().removeField(fieldName);
-                }
-                //  Add this docstruct's SORT_* fields to page
-                if (indexObj.getIddoc() == Long.valueOf((String) page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
-                    for (LuceneField field : indexObj.getLuceneFields()) {
-                        if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
-                            page.getDoc().addField(field.getField(), field.getValue());
-                        }
-                    }
-                }
-            }
-
-            if (page.getDoc().getField(SolrConstants.PI_TOPSTRUCT) == null) {
-                page.getDoc().addField(SolrConstants.PI_TOPSTRUCT, indexObj.getTopstructPI());
-            }
-            if (page.getDoc().getField(SolrConstants.DATAREPOSITORY) == null && indexObj.getDataRepository() != null) {
-                page.getDoc().addField(SolrConstants.DATAREPOSITORY, indexObj.getDataRepository());
-            }
-            if (page.getDoc().getField(SolrConstants.DATEUPDATED) == null && !indexObj.getDateUpdated().isEmpty()) {
-                for (Long date : indexObj.getDateUpdated()) {
-                    page.getDoc().addField(SolrConstants.DATEUPDATED, date);
-                }
-            }
-            if (page.getDoc().getField(SolrConstants.DATEINDEXED) == null && !indexObj.getDateIndexed().isEmpty()) {
-                for (Long date : indexObj.getDateIndexed()) {
-                    page.getDoc().addField(SolrConstants.DATEINDEXED, date);
-                }
-            }
-
-            // Add of each docstruct access conditions (no duplicates)
-            Set<String> existingAccessConditions = new HashSet<>();
-            if (page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
-                for (Object obj : page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)) {
-                    existingAccessConditions.add((String) obj);
-                }
-            }
-            for (String s : indexObj.getAccessConditions()) {
-                if (!existingAccessConditions.contains(s)) {
-                    page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
-                }
-            }
-            if (indexObj.getAccessConditions().isEmpty()) {
-                logger.warn("{}: {} has no access conditions.", pageFileBaseName, indexObj.getIddoc());
-            }
-
-            // Add owner docstruct's metadata (tokenized only!) and SORT_* fields to the page
-            Set<String> existingMetadataFieldNames = new HashSet<>();
-            Set<String> existingSortFieldNames = new HashSet<>();
-            for (String fieldName : page.getDoc().getFieldNames()) {
-                if (SolrIndexerDaemon.getInstance()
-                        .getConfiguration()
-                        .getMetadataConfigurationManager()
-                        .getFieldsToAddToPages()
-                        .contains(fieldName)) {
-                    for (Object value : page.getDoc().getFieldValues(fieldName)) {
-                        existingMetadataFieldNames.add(new StringBuilder(fieldName).append(String.valueOf(value)).toString());
-                    }
-                } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
-                    existingSortFieldNames.add(fieldName);
-                }
-            }
-            for (LuceneField field : indexObj.getLuceneFields()) {
-                if (SolrIndexerDaemon.getInstance()
-                        .getConfiguration()
-                        .getMetadataConfigurationManager()
-                        .getFieldsToAddToPages()
-                        .contains(field.getField())
-                        && !existingMetadataFieldNames.contains(new StringBuilder(field.getField()).append(field.getValue()).toString())) {
-                    // Avoid duplicates (same field name + value)
-                    page.getDoc().addField(field.getField(), field.getValue());
-                    logger.debug("Added {}:{} to page {}", field.getField(), field.getValue(), page.getDoc().getFieldValue(SolrConstants.ORDER));
-                } else if (field.getField().startsWith(SolrConstants.PREFIX_SORT) && !existingSortFieldNames.contains(field.getField())) {
-                    // Only one instance of each SORT_ field may exist
-                    page.getDoc().addField(field.getField(), field.getValue());
-                }
-            }
-
-            // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
-            writeStrategy.updatePage(page);
-        }
-
-        PhysicalElement firstPage = pages.get(0);
-
-        // If a representative image is set but not mapped to any docstructs, do not use it
-        if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && !pages.isEmpty()) {
-            logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
-                    filePathBanner);
-            String pageFileName = firstPage.getDoc().getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
-                    ? (String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
-                    : (String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME);
-            ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
-            ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
-            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPage.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
-        }
-
-        // Add thumbnail information from the first page
-        if (StringUtils.isEmpty(filePathBanner) && SolrIndexerDaemon.getInstance().getConfiguration().isUseFirstPageAsDefaultRepresentative()) {
-            String thumbnailFileName = firstPage.getDoc().getField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED) != null
-                    ? (String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
-                    : (String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME);
-            ret.add(new LuceneField(SolrConstants.THUMBNAIL, thumbnailFileName));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
-            ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
-            ret.add(new LuceneField(SolrConstants.MIMETYPE, (String) firstPage.getDoc().getFieldValue(SolrConstants.MIMETYPE)));
-        }
-
-        // Add the number of assigned pages and the labels of the first and last page to this structure element
-        indexObj.setNumPages(pages.size());
-        if (!pages.isEmpty()) {
-            PhysicalElement lastPage = pages.get(pages.size() - 1);
-            String firstPageLabel = (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL);
-            String lastPageLabel = (String) lastPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL);
-            if (firstPageLabel != null && !"-".equals(firstPageLabel.trim())) {
-                indexObj.setFirstPageLabel(firstPageLabel);
-            }
-            if (lastPageLabel != null && !"-".equals(lastPageLabel.trim())) {
-                indexObj.setLastPageLabel(lastPageLabel);
             }
         }
 
@@ -640,8 +407,8 @@ public class DenkXwebIndexer extends Indexer {
      * @return PhysicalElement
      * @throws FatalIndexerException
      */
-    PhysicalElement generatePageDocument(Element eleImage, String iddoc, Integer order, Map<String, Path> dataFolders, boolean downloadExternalImages)
-            throws FatalIndexerException {
+    PhysicalElement generatePageDocument(Element eleImage, String iddoc, Integer order, Map<String, Path> dataFolders,
+            boolean downloadExternalImages) {
         if (eleImage == null) {
             throw new IllegalArgumentException("eleImage may not be null");
         }
@@ -653,12 +420,7 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.ORDER, order);
-        ret.getDoc().addField(SolrConstants.PHYSID, String.valueOf(order));
+        PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));
 
         Element eleStandard = eleImage.getChild("standard", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("denkxweb"));
         if (eleStandard == null) {
@@ -705,48 +467,13 @@ public class DenkXwebIndexer extends Indexer {
                     "true".equals(eleImage.getAttributeValue("preferred")));
         }
 
-        // Add file size
-        try {
-            Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-            // TODO other mime types/folders
-            if (dataFolder != null) {
-                Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                if (Files.isRegularFile(path)) {
-                    ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                }
-            }
-        } catch (IllegalArgumentException | IOException e) {
-            logger.warn(e.getMessage());
-        }
-        if (!ret.getDoc().containsKey(FIELD_FILESIZE)) {
-            ret.getDoc().addField(FIELD_FILESIZE, -1);
-        }
-
-        // Add image dimension values from EXIF
-        if (!ret.getDoc().containsKey(SolrConstants.WIDTH) || !ret.getDoc().containsKey(SolrConstants.HEIGHT)) {
-            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) ret.getDoc().getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
-                ret.getDoc().addField(SolrConstants.WIDTH, dimension.width);
-                ret.getDoc().addField(SolrConstants.HEIGHT, dimension.height);
-            });
-        }
-
-        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
-                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
-            recordHasImages = true;
-        } else {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
-        }
-
-        // FULLTEXTAVAILABLE indicates whether this page has full-text
-        if (ret.getDoc().getField(SolrConstants.FULLTEXT) != null) {
-            ret.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, true);
-            recordHasFulltext = true;
-        } else {
-            ret.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, false);
-        }
+        addPageAdditionalTechMetadata(ret, dataFolders, fileName);
 
         return ret;
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.DENKXWEB;
     }
 }

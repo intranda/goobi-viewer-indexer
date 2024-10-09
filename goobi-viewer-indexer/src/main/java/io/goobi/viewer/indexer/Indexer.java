@@ -45,6 +45,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -81,6 +83,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import de.intranda.api.annotation.GeoLocation;
 import de.intranda.api.annotation.ISelector;
+import de.intranda.api.annotation.SimpleResource;
 import de.intranda.api.annotation.wa.FragmentSelector;
 import de.intranda.api.annotation.wa.SpecificResource;
 import de.intranda.api.annotation.wa.TextualResource;
@@ -88,6 +91,7 @@ import de.intranda.api.annotation.wa.WebAnnotation;
 import de.intranda.digiverso.normdataimporter.model.Record;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
+import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
@@ -182,15 +186,73 @@ public abstract class Indexer {
     }
 
     /**
-     * 
      * @param recordFile
-     * @param fromReindexQueue
      * @param reindexSettings
-     * @throws IOException
-     * @throws FatalIndexerException
      */
-    public abstract void addToIndex(Path recordFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException;
+    public abstract void addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+
+    /**
+     * 
+     * @param queryPrefix
+     * @return Found PI value; otherwise null
+     * @throws IndexerException
+     * @should find identifier correctly
+     * @should throw IndexerException if no identifier found
+     */
+    protected String findPI(String queryPrefix) throws IndexerException {
+        String ret = MetadataHelper.getPIFromXML(queryPrefix, xp);
+        if (StringUtils.isBlank(ret)) {
+            throw new IndexerException("PI not found.");
+        }
+
+        return ret;
+    }
+
+    /**
+     * 
+     * @param foundPi
+     * @param indexObj
+     * @param removeIdentifierPrefix
+     * @return The PI
+     * @throws IndexerException
+     * @should set identifier correctly
+     * @should remove prefix correctly
+     * @should add identifier to default
+     * @should throw IndexerException if identifier invalid
+     */
+    protected String validateAndApplyPI(String foundPi, IndexObject indexObj, boolean removeIdentifierPrefix) throws IndexerException {
+        String pi = foundPi;
+        // Remove identifier prefix
+        if (removeIdentifierPrefix) {
+            if (pi.contains(":")) {
+                pi = pi.substring(pi.lastIndexOf(':') + 1);
+            }
+            if (pi.contains("/")) {
+                pi = pi.substring(pi.lastIndexOf('/') + 1);
+            }
+        }
+
+        pi = MetadataHelper.applyIdentifierModifications(pi);
+        logger.info("Record PI: {}", pi);
+
+        // Do not allow identifiers with characters that cannot be used in file names
+        if (!Utils.validatePi(pi)) {
+            throw new IndexerException("PI contains illegal characters: " + pi);
+        }
+
+        indexObj.setPi(pi);
+        indexObj.setTopstructPI(pi);
+
+        // Add PI to default
+        if (MetadataHelper.isPiAddToDefault(SolrIndexerDaemon.getInstance()
+                .getConfiguration()
+                .getMetadataConfigurationManager()
+                .getConfigurationListForField(SolrConstants.PI))) {
+            indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
+        }
+
+        return pi;
+    }
 
     /**
      * Move data file to the error folder.
@@ -700,9 +762,11 @@ public abstract class Indexer {
      * @throws FatalIndexerException
      * @should return empty list if dataFolder null
      * @should construct doc correctly
+     * @should skip comment for other pages
      */
     List<SolrInputDocument> generateUserCommentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
             Map<String, String> groupIds, int order) throws FatalIndexerException {
+        logger.info("generateUserCommentDocsForPage: {}", order);
         if (dataFolder == null || !Files.isDirectory(dataFolder)) {
             logger.info("UGC folder not found.");
             return Collections.emptyList();
@@ -716,15 +780,36 @@ public abstract class Indexer {
                     continue;
                 }
 
+                logger.debug("JSON file: {}", file.getFileName());
                 try (FileInputStream fis = new FileInputStream(file.toFile())) {
                     WebAnnotation anno = new ObjectMapper().registerModule(new JavaTimeModule()).readValue(fis, WebAnnotation.class);
                     if (anno == null) {
                         logger.warn("Invalid JSON in file '{}'.", file.getFileName());
-                        return Collections.emptyList();
+                        continue;
                     }
                     if (anno.getBody() == null || !anno.getBody().getClass().equals(TextualResource.class)) {
                         logger.warn("Missing or invalid body in JSON '{}'.", file.getFileName());
-                        return Collections.emptyList();
+                        continue;
+                    }
+
+                    Long extractedOrder = null;
+                    String uri = null;
+
+                    if (anno.getTarget() instanceof SimpleResource sr) {
+                        uri = sr.getId().toString();
+                    } else if (anno.getTarget() instanceof TextualResource tr) {
+                        uri = tr.getText();
+                    }
+                    if (uri != null) {
+                        Pattern p = Pattern.compile("pages\\/(\\d+)\\/canvas");
+                        Matcher m = p.matcher(uri);
+                        if (m.find()) {
+                            extractedOrder = Long.parseLong(m.group(1));
+                        }
+                    }
+                    // Skip pages that don't match
+                    if (extractedOrder == null || extractedOrder != order) {
+                        continue;
                     }
 
                     SolrInputDocument doc = new SolrInputDocument();
@@ -1383,6 +1468,27 @@ public abstract class Indexer {
     }
 
     /**
+     * 
+     * @param dataFolders
+     * @paramNames
+     * @param pi
+     * @throws IOException
+     * @should throw IllegalArgumentException if pi null
+     */
+    protected void checkOldDataFolders(Map<String, Path> dataFolders, String[] paramNames, String pi) throws IOException {
+        if (pi == null) {
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
+        }
+        if (dataFolders == null || paramNames == null) {
+            return;
+        }
+
+        for (String paramName : paramNames) {
+            checkOldDataFolder(dataFolders, paramName, pi);
+        }
+    }
+
+    /**
      * Checks for old data folder of the <code>paramName</code> type and puts it into <code>dataFolders</code>, if none yet present.
      *
      * @param dataFolders a {@link java.util.Map} object.
@@ -1401,7 +1507,7 @@ public abstract class Indexer {
             throw new IllegalArgumentException("paramName may not be null");
         }
         if (pi == null) {
-            throw new IllegalArgumentException("pi may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
 
         // New data folder found in hotfolder
@@ -1516,7 +1622,7 @@ public abstract class Indexer {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
         if (pi == null) {
-            throw new IllegalArgumentException("pi may not be null");
+            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
         }
         if (baseFileName == null) {
             throw new IllegalArgumentException("baseFileName may not be null");
@@ -1634,6 +1740,38 @@ public abstract class Indexer {
      */
     boolean isAnchor() throws FatalIndexerException {
         return false;
+    }
+
+    /**
+     * Checks whether this is a volume of a multivolume work (should be false for monographs and anchors).
+     * 
+     * @return boolean
+     * 
+     */
+    protected boolean isVolume() {
+        return false;
+    }
+
+    /**
+     * Selects the appropriate data repository for the given record.
+     * 
+     * @param indexObj
+     * @param pi
+     * @param recordFile
+     * @param dataFolders
+     * @throws FatalIndexerException
+     */
+    protected void selectDataRepository(IndexObject indexObj, String pi, Path recordFile, Map<String, Path> dataFolders)
+            throws FatalIndexerException {
+        DataRepository[] repositories =
+                hotfolder.getDataRepositoryStrategy()
+                        .selectDataRepository(pi, recordFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
+                                SolrIndexerDaemon.getInstance().getOldSearchIndex());
+        dataRepository = repositories[0];
+        previousDataRepository = repositories[1];
+        if (StringUtils.isNotEmpty(dataRepository.getPath())) {
+            indexObj.setDataRepository(dataRepository.getPath());
+        }
     }
 
     /**
@@ -1838,6 +1976,33 @@ public abstract class Indexer {
             if (StringUtils.isNotBlank(subMimetype)) {
                 doc.addField(SolrConstants.FILENAME + "_" + subMimetype.toUpperCase(), fileName);
             }
+        }
+    }
+
+    /**
+     * 
+     * @param doc
+     * @param dataFolder
+     * @param fileName
+     */
+    protected static void addFileSizeToDoc(SolrInputDocument doc, Path dataFolder, String fileName) {
+        if (doc == null) {
+            throw new IllegalArgumentException("doc may not be null");
+        }
+
+        try {
+            // TODO other mime types/folders
+            if (dataFolder != null && fileName != null) {
+                Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
+                if (Files.isRegularFile(path)) {
+                    doc.addField(FIELD_FILESIZE, Files.size(path));
+                }
+            }
+        } catch (IllegalArgumentException | IOException e) {
+            logger.warn(e.getMessage());
+        }
+        if (!doc.containsKey(FIELD_FILESIZE)) {
+            doc.addField(FIELD_FILESIZE, -1);
         }
     }
 
@@ -2265,4 +2430,68 @@ public abstract class Indexer {
 
         return ret;
     }
+
+    /**
+     * 
+     * @param order
+     * @param iddoc
+     * @param physId
+     * @return {@link PhysicalElement}
+     */
+    protected static PhysicalElement createPhysicalElement(int order, String iddoc, String physId) {
+        PhysicalElement ret = new PhysicalElement(order);
+        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
+        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
+        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
+        ret.getDoc().addField(SolrConstants.ORDER, order);
+        ret.getDoc().addField(SolrConstants.PHYSID, physId);
+
+        return ret;
+    }
+
+    /**
+     * 
+     * @param page
+     * @param dataFolders
+     * @param fileName
+     */
+    protected void addPageAdditionalTechMetadata(PhysicalElement page, Map<String, Path> dataFolders, String fileName) {
+        if (page == null) {
+            throw new IllegalArgumentException("page may not be null");
+        }
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+
+        // Add file size
+        addFileSizeToDoc(page.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
+
+        // Add image dimension values from EXIF
+        if (!page.getDoc().containsKey(SolrConstants.WIDTH) || !page.getDoc().containsKey(SolrConstants.HEIGHT)) {
+            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) page.getDoc().getFieldValue(SolrConstants.FILENAME))
+                    .ifPresent(dimension -> {
+                        page.getDoc().addField(SolrConstants.WIDTH, dimension.width);
+                        page.getDoc().addField(SolrConstants.HEIGHT, dimension.height);
+                    });
+        }
+
+        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
+        if (page.getDoc().containsKey(SolrConstants.FILENAME) && page.getDoc().containsKey(SolrConstants.MIMETYPE)
+                && ((String) page.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            page.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
+            recordHasImages = true;
+        } else {
+            page.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
+        }
+
+        // FULLTEXTAVAILABLE indicates whether this page has full-text
+        if (page.getDoc().getField(SolrConstants.FULLTEXT) != null) {
+            page.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, true);
+            recordHasFulltext = true;
+        } else {
+            page.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, false);
+        }
+    }
+
+    protected abstract FileFormat getSourceDocFormat();
 }

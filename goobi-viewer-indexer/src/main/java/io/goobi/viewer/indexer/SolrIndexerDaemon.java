@@ -354,13 +354,13 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * For unit tests only.
+     * Required for g2g, must be public.
      * 
      * @param confFileName
      * @return this
      * @should set confFileName correctly
      */
-    SolrIndexerDaemon setConfFileName(String confFileName) {
+    public SolrIndexerDaemon setConfFileName(String confFileName) {
         this.confFileName = confFileName;
         return this;
     }

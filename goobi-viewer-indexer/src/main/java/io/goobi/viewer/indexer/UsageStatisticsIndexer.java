@@ -34,6 +34,7 @@ import org.json.JSONObject;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -60,12 +61,11 @@ public class UsageStatisticsIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+    /**
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      */
     @Override
-    public void addToIndex(Path sourceFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path sourceFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (sourceFile == null) {
             throw new IllegalArgumentException("usage statistics file may not be null");
         } else if (!Files.isRegularFile(sourceFile)) {
@@ -185,5 +185,10 @@ public class UsageStatisticsIndexer extends Indexer {
         String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
         LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
         return StatisticsLuceneFields.FORMATTER_SOLR_DATE.format(date.atStartOfDay());
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.UNKNOWN;
     }
 }

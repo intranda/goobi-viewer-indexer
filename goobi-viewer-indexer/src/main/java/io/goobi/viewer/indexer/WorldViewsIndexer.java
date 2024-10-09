@@ -15,8 +15,6 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
@@ -63,7 +61,6 @@ import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
-import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
@@ -102,16 +99,10 @@ public class WorldViewsIndexer extends Indexer {
     /**
      * Indexes the given WorldViews file.
      * 
-     * @param mainFile {@link File}
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      */
     @Override
-    public void addToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
 
@@ -121,8 +112,7 @@ public class WorldViewsIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(mainFile, fromReindexQueue, dataFolders, null,
-                SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        String[] resp = index(mainFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
 
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newMetsFileName = resp[0];
@@ -213,14 +203,13 @@ public class WorldViewsIndexer extends Indexer {
      * Indexes the given WorldViews file.
      *
      * @param mainFile {@link java.nio.file.Path}
-     * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart Order number for the first page.
      * @should index record correctly
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path mainFile, boolean fromReindexQueue, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
+    public String[] index(Path mainFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
         String[] ret = { null, null };
 
@@ -244,53 +233,17 @@ public class WorldViewsIndexer extends Indexer {
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             // Set PI
-            String pi = xp.evaluateToString("worldviews//identifier/text()", null);
-            if (StringUtils.isBlank(pi)) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            pi = MetadataHelper.applyIdentifierModifications(pi);
-            logger.info("Record PI: {}", pi);
-
-            // Do not allow identifiers with characters that cannot be used in file names
-            if (!Utils.validatePi(pi)) {
-                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-            logger.debug("PI: {}", indexObj.getPi());
+            String pi = validateAndApplyPI(findPI("worldviews//identifier/text()"), indexObj, false);
 
             indexObj.setSourceDocFormat(FileFormat.WORLDVIEWS);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, mainFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, mainFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, MetsIndexer.DATA_FOLDER_PARAMS, pi);
 
             prepareUpdate(indexObj);
 
@@ -363,7 +316,7 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Write created/updated timestamps
-            indexObj.writeDateModified(!fromReindexQueue);
+            indexObj.writeDateModified(false);
 
             // Generate docs for all pages and add to the write strategy
             generatePageDocuments(useWriteStrategy, dataFolders, pi, pageCountStart);
@@ -835,16 +788,15 @@ public class WorldViewsIndexer extends Indexer {
      * @should add page metadata correctly
      */
     PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, final Integer order, Map<String, Path> dataFolders) {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+
         int useOrder = order != null ? order : Integer.parseInt(eleImage.getChildText("sequence"));
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", useOrder, iddoc, Thread.currentThread().getId());
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
-        ret.getDoc().addField(SolrConstants.ORDER, order);
+        PhysicalElement ret = createPhysicalElement(order, iddoc, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
         ret.getDoc().addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
 
         boolean displayImage = Boolean.parseBoolean(eleImage.getChildText("displayImage"));
@@ -854,27 +806,7 @@ public class WorldViewsIndexer extends Indexer {
             ret.getDoc().addField(SolrConstants.FILENAME, fileName);
 
             // Add file size
-            if (dataFolders != null) {
-                try {
-                    Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                    // TODO other mime types/folders
-                    if (dataFolder != null) {
-                        Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                        ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                    } else {
-                        ret.getDoc().addField(FIELD_FILESIZE, -1);
-                    }
-                } catch (FileNotFoundException e) {
-                    logger.error(e.getMessage());
-                    ret.getDoc().addField(FIELD_FILESIZE, -1);
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                    ret.getDoc().addField(FIELD_FILESIZE, -1);
-                } catch (IllegalArgumentException e) {
-                    logger.error(e.getMessage(), e);
-                    ret.getDoc().addField(FIELD_FILESIZE, -1);
-                }
-            }
+            addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
 
             // Representative image
             boolean representative = Boolean.parseBoolean(eleImage.getChildText("representative"));
@@ -946,5 +878,10 @@ public class WorldViewsIndexer extends Indexer {
         } else {
             logger.warn("No anchor file has been indexed for this work yet.");
         }
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.WORLDVIEWS;
     }
 }

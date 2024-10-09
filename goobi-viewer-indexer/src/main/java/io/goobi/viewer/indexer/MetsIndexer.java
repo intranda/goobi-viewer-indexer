@@ -16,13 +16,11 @@
 package io.goobi.viewer.indexer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -110,11 +108,17 @@ public class MetsIndexer extends Indexer {
 
     protected static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
 
+    protected static final String[] DATA_FOLDER_PARAMS =
+            { DataRepository.PARAM_MEDIA, DataRepository.PARAM_FULLTEXT, DataRepository.PARAM_FULLTEXTCROWD, DataRepository.PARAM_ABBYY,
+                    DataRepository.PARAM_TEIWC, DataRepository.PARAM_ALTO, DataRepository.PARAM_ALTOCROWD, DataRepository.PARAM_MIX,
+                    DataRepository.PARAM_UGC, DataRepository.PARAM_CMS, DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
+
     protected static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
     protected static final String XPATH_FILE = "mets:file";
     protected static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
     private static final String XPATH_ANCHOR_PI_PART =
-            "/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier";
+            "/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']"
+                    + "/mods:recordInfo/mods:recordIdentifier"; //NOSONAR XPathexpression , not URI
 
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
@@ -148,15 +152,11 @@ public class MetsIndexer extends Indexer {
      * Indexes the given METS file.
      * 
      * @param metsFile {@link File}
-     * @param fromReindexQueue
      * @param reindexSettings
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
-     * 
      */
-    @Override
-    public void addToIndex(Path metsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
         String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -165,7 +165,7 @@ public class MetsIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(metsFile, fromReindexQueue, dataFolders, null,
+        String[] resp = index(metsFile, dataFolders, null,
                 SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                 dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
 
@@ -259,7 +259,6 @@ public class MetsIndexer extends Indexer {
      * Indexes the given METS file.
      *
      * @param metsFile {@link java.nio.file.Path}
-     * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
      * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart Order number for the first page.
@@ -277,7 +276,7 @@ public class MetsIndexer extends Indexer {
      * @should not add dateupdated if value already exists
      * 
      */
-    public String[] index(Path metsFile, boolean fromReindexQueue, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
+    public String[] index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
             int pageCountStart, boolean downloadExternalImages) {
         String[] ret = { null, null };
 
@@ -309,54 +308,15 @@ public class MetsIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-            String[] foundPi = MetadataHelper.getPIFromXML(getPiRootPath(indexObj.getDmdid()), xp);
-            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            String pi = MetadataHelper.applyIdentifierModifications(foundPi[0]);
-            logger.info("Record PI: {}", pi);
-
-            // Do not allow identifiers with characters that cannot be used in file names
-            if (!Utils.validatePi(pi)) {
-                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-
-            // Add PI to default
-            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
-                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
-            }
+            String pi = validateAndApplyPI(findPI(getPiRootPath(indexObj.getDmdid())), indexObj, false);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, metsFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy
@@ -1185,8 +1145,11 @@ public class MetsIndexer extends Indexer {
      */
     PhysicalElement generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
-        if (dataFolders != null && dataRepository == null) {
-            throw new IllegalArgumentException("dataRepository may not be null if dataFolders is not null");
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+        if (dataRepository == null) {
+            throw new IllegalArgumentException("dataRepository may not be null");
         }
         if (useFileGroupGlobal == null) {
             throw new IllegalStateException("useFileGroupGlobal not set");
@@ -1209,7 +1172,7 @@ public class MetsIndexer extends Indexer {
         sbXPath.append("/mets:mets/mets:structLink/mets:smLink[@xlink:to=\"").append(id).append("\"]");
         List<Element> eleStructLinkList = xp.evaluateToElements(sbXPath.toString(), null);
         if (eleStructLinkList.isEmpty()) {
-            logger.warn("Page {} is not mapped to a structure element, skipping...", order);
+            logger.warn("Page {} (PHYSID: {}) is not mapped to a structure element, skipping...", order, id);
             return null;
         }
 
@@ -1217,12 +1180,7 @@ public class MetsIndexer extends Indexer {
                 eleStructMapPhysical.getChildren("fptr", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.PHYSID, id);
-        ret.getDoc().addField(SolrConstants.ORDER, order);
+        PhysicalElement ret = createPhysicalElement(order, iddoc, id);
 
         // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
         String fileIdRoot = null;
@@ -1474,25 +1432,9 @@ public class MetsIndexer extends Indexer {
                         shape.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
                     }
                 }
-                // Add file size
-                if (dataFolders != null) {
-                    try {
-                        Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                        if (dataFolder != null) {
-                            Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                            ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                        } else {
-                            ret.getDoc().addField(FIELD_FILESIZE, -1);
-                        }
-                    } catch (FileNotFoundException | NoSuchFileException e) {
-                        logger.warn("File not found: {}", e.getMessage());
-                        ret.getDoc().addField(FIELD_FILESIZE, -1);
-                    } catch (IOException | IllegalArgumentException e) {
-                        logger.error(e.getMessage(), e);
-                        ret.getDoc().addField(FIELD_FILESIZE, -1);
-                    }
-                }
 
+                // Add file size
+                addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
             } else if (fileGrpUse.equals(ALTO_FILEGROUP) || fileGrpUse.equals(FULLTEXT_FILEGROUP)) {
                 altoURL = filePath;
             } else {
@@ -2199,7 +2141,7 @@ public class MetsIndexer extends Indexer {
      * 
      * @param indexObj {@link IndexObject}
      */
-    private void setSimpleData(IndexObject indexObj) {
+    protected void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
         indexObj.setSourceDocFormat(getSourceDocFormat());
         Element structNode = indexObj.getRootStructNode();
@@ -2289,7 +2231,7 @@ public class MetsIndexer extends Indexer {
      * @return {@link Element} or null
      * 
      */
-    private Element findStructNode(IndexObject indexObj) {
+    protected Element findStructNode(IndexObject indexObj) {
         String query = "";
         if (!indexObj.isVolume()) {
             query = "//mets:mets/mets:structMap[@TYPE='LOGICAL']/mets:div[@DMDID and @ID]";
@@ -2326,6 +2268,7 @@ public class MetsIndexer extends Indexer {
      * @should return true if record is volume
      * @should return false if relatedItem not anchor
      */
+    @Override
     protected boolean isVolume() {
         String query = SolrIndexerDaemon.getInstance().getConfiguration().getMetsVolumeCheckXPath();
         List<Element> relatedItemList = xp.evaluateToElements(query, null);

@@ -69,18 +69,10 @@ public class DublinCoreIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(DublinCoreIndexer.class);
 
-    /** Constant <code>DEFAULT_FILEGROUP_1="PRESENTATION"</code> */
-    public static final String DEFAULT_FILEGROUP_1 = "PRESENTATION";
-    /** Constant <code>DEFAULT_FILEGROUP_2="DEFAULT"</code> */
-    public static final String DEFAULT_FILEGROUP_2 = "DEFAULT";
-    /** Constant <code>OBJECT_FILEGROUP="OBJECT"</code> */
-    public static final String OBJECT_FILEGROUP = "OBJECT";
-    /** Constant <code>ALTO_FILEGROUP="ALTO"</code> */
-    public static final String ALTO_FILEGROUP = "ALTO";
-    /** Constant <code>FULLTEXT_FILEGROUP="FULLTEXT"</code> */
-    public static final String FULLTEXT_FILEGROUP = "FULLTEXT";
-    /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
-    public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
+    private static final String[] DATA_FOLDER_PARAMS =
+            { DataRepository.PARAM_MEDIA, DataRepository.PARAM_FULLTEXT, DataRepository.PARAM_FULLTEXTCROWD, DataRepository.PARAM_ABBYY,
+                    DataRepository.PARAM_TEIWC, DataRepository.PARAM_ALTO, DataRepository.PARAM_ALTOCROWD, DataRepository.PARAM_MIX,
+                    DataRepository.PARAM_UGC, DataRepository.PARAM_CMS, DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
 
     /**
      * Constructor.
@@ -96,15 +88,10 @@ public class DublinCoreIndexer extends Indexer {
     /**
      * Indexes the given DublinCore file.
      * 
-     * @param dcFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * @should add record to index correctly
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      */
     @Override
-    public void addToIndex(Path dcFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path dcFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(dcFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -195,8 +182,7 @@ public class DublinCoreIndexer extends Indexer {
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path dcFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
-            int pageCountStart) {
+    public String[] index(Path dcFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy, int pageCountStart) {
         String[] ret = { null, null };
 
         if (dcFile == null || !Files.exists(dcFile)) {
@@ -225,54 +211,15 @@ public class DublinCoreIndexer extends Indexer {
             setUrn(indexObj);
 
             // Set PI
-            String[] foundPi = MetadataHelper.getPIFromXML("/record/", xp);
-            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            String pi = MetadataHelper.applyIdentifierModifications(foundPi[0]);
-            logger.info("Record PI: {}", pi);
-
-            // Do not allow identifiers with characters that cannot be used in file names
-            if (!Utils.validatePi(pi)) {
-                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-
-            // Add PI to default
-            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
-                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
-            }
+            String pi = validateAndApplyPI(findPI("/record/"), indexObj, false);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, dcFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, dcFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
 
             prepareUpdate(indexObj);
 
@@ -312,7 +259,6 @@ public class DublinCoreIndexer extends Indexer {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
             }
 
-            // ISWORK only for non-anchors
             indexObj.addToLucene(SolrConstants.ISWORK, "true");
             logger.trace("ISWORK: {}", indexObj.getLuceneFieldWithName(SolrConstants.ISWORK).getValue());
 
@@ -620,8 +566,7 @@ public class DublinCoreIndexer extends Indexer {
      * @return {@link PhysicalElement}
      * @throws FatalIndexerException
      */
-    PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, Map<String, Path> dataFolders)
-            throws FatalIndexerException {
+    PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, Map<String, Path> dataFolders) {
         if (eleImage == null) {
             throw new IllegalArgumentException("eleImage may not be null");
         }
@@ -634,13 +579,7 @@ public class DublinCoreIndexer extends Indexer {
         }
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.ORDER, order);
-        ret.getDoc().addField(SolrConstants.PHYSID, String.valueOf(order));
-
+        PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));
         ret.getDoc().addField(SolrConstants.ORDERLABEL, String.valueOf(order));
 
         // URL
@@ -650,21 +589,7 @@ public class DublinCoreIndexer extends Indexer {
         parseMimeType(ret.getDoc(), fileName);
 
         // Add file size
-        try {
-            Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-            // TODO other mime types/folders
-            if (dataFolder != null) {
-                Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                if (Files.isRegularFile(path)) {
-                    ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                }
-            }
-        } catch (IllegalArgumentException | IOException e) {
-            logger.warn(e.getMessage());
-        }
-        if (!ret.getDoc().containsKey(FIELD_FILESIZE)) {
-            ret.getDoc().addField(FIELD_FILESIZE, -1);
-        }
+        addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
 
         // Add image dimension values from EXIF
         if (!ret.getDoc().containsKey(SolrConstants.WIDTH) || !ret.getDoc().containsKey(SolrConstants.HEIGHT)) {
@@ -785,5 +710,10 @@ public class DublinCoreIndexer extends Indexer {
             }
             logger.info("New anchor file copied to '{}'.", indexed.toAbsolutePath());
         }
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.DUBLINCORE;
     }
 }

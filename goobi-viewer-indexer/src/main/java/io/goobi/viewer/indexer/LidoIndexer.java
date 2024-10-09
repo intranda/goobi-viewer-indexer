@@ -75,6 +75,10 @@ public class LidoIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(LidoIndexer.class);
 
+    private static final String[] DATA_FOLDER_PARAMS =
+            { DataRepository.PARAM_MEDIA, DataRepository.PARAM_MIX, DataRepository.PARAM_UGC, DataRepository.PARAM_CMS,
+                    DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
+
     /**
      * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
      * thread-safe.
@@ -102,7 +106,7 @@ public class LidoIndexer extends Indexer {
      * 
      */
     @Override
-    public void addToIndex(Path lidoFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public void addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
 
@@ -251,57 +255,15 @@ public class LidoIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI
-            String preQuery = "/lido:lido/";
-            String[] foundPi = MetadataHelper.getPIFromXML(preQuery, xp);
-            if (foundPi.length == 0 || StringUtils.isBlank(foundPi[0])) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            pi = foundPi[0];
-            logger.info("Record PI: {}", pi);
-
-            // Remove prefix
-            if (pi.contains(":")) {
-                pi = pi.substring(pi.lastIndexOf(':') + 1);
-            }
-            if (pi.contains("/")) {
-                pi = pi.substring(pi.lastIndexOf('/') + 1);
-            }
-            pi = MetadataHelper.applyIdentifierModifications(pi);
-            // Do not allow identifiers with illegal characters
-            if (!Utils.validatePi(pi)) {
-                ret[1] = "PI contains illegal characters: " + pi;
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-
-            // Add PI to default
-            if (foundPi.length > 1 && "addToDefault".equals(foundPi[1])) {
-                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
-            }
+            pi = validateAndApplyPI(findPI("/lido:lido/"), indexObj, false);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, null, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, null, dataFolders);
 
             ret[0] = indexObj.getPi();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy
@@ -417,7 +379,7 @@ public class LidoIndexer extends Indexer {
      * @return
      * @throws FatalIndexerException
      */
-    private static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy, int depth)
+    protected static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy, int depth)
             throws FatalIndexerException {
         List<String> physIds = new ArrayList<>(writeStrategy.getPageDocsSize());
         for (int i = 1; i <= writeStrategy.getPageDocsSize(); ++i) {
@@ -439,6 +401,10 @@ public class LidoIndexer extends Indexer {
                     ? (String) page.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) page.getDoc().getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
+            
+            if (page.getDoc().containsKey(SolrConstants.THUMBNAILREPRESENT)) {
+                filePathBanner = (String) page.getDoc().getFieldValue(SolrConstants.THUMBNAILREPRESENT);
+            }
 
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && pageFileName.equals(filePathBanner)) {
@@ -663,19 +629,16 @@ public class LidoIndexer extends Indexer {
      * @throws FatalIndexerException
      */
     PhysicalElement generatePageDocument(Element eleResourceSet, String iddoc, Integer order, Map<String, Path> dataFolders, List<String> imageXPaths,
-            boolean downloadExternalImages, boolean useOldImageFolderIfAvailable)
-            throws FatalIndexerException {
+            boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
         if (order == null) {
             // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
         }
 
         // Create object for this page
-        PhysicalElement ret = new PhysicalElement(order);
-        ret.getDoc().addField(SolrConstants.IDDOC, iddoc);
-        ret.getDoc().addField(SolrConstants.GROUPFIELD, iddoc);
-        ret.getDoc().addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        ret.getDoc().addField(SolrConstants.ORDER, order);
-        ret.getDoc().addField(SolrConstants.PHYSID, String.valueOf(order));
+        PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));
 
         String orderLabel = eleResourceSet.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
@@ -688,60 +651,40 @@ public class LidoIndexer extends Indexer {
             return ret;
         }
 
-        String filePath = null;
+        String fileUri = null;
         for (String xpath : imageXPaths) {
-            filePath = xp.evaluateToString(xpath, eleResourceSet);
-            if (StringUtils.isNotEmpty(filePath)) {
+            fileUri = xp.evaluateToString(xpath, eleResourceSet);
+            if (StringUtils.isNotEmpty(fileUri)) {
                 logger.info("Found image in {}", xpath);
                 break;
             }
         }
 
         // Do not create pages for resourceSet elements that have no relation to images
-        if (StringUtils.isEmpty(filePath)) {
+        if (StringUtils.isEmpty(fileUri)) {
             logger.debug("No file path found for this resource set.");
             return null;
         }
 
         String fileName;
-        if (StringUtils.isNotEmpty(filePath) && filePath.contains("/")) {
-            if (Utils.isFileNameMatchesRegex(filePath, IIIF_IMAGE_FILE_NAMES)) {
+        if (StringUtils.isNotEmpty(fileUri) && fileUri.contains("/")) {
+            if (Utils.isFileNameMatchesRegex(fileUri, IIIF_IMAGE_FILE_NAMES)) {
                 // Extract correct original file name from IIIF
-                fileName = Utils.getFileNameFromIiifUrl(filePath);
+                fileName = Utils.getFileNameFromIiifUrl(fileUri);
             } else {
-                fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+                fileName = fileUri.substring(fileUri.lastIndexOf("/") + 1);
             }
         } else {
-            fileName = filePath;
+            fileName = fileUri;
         }
 
         // Handle external/internal file URL
-        if (StringUtils.isNotEmpty(filePath)) {
-            handleImageUrl(filePath, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages,
+        if (StringUtils.isNotEmpty(fileUri)) {
+            handleImageUrl(fileUri, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages,
                     useOldImageFolderIfAvailable, false);
         }
 
-        // Add file size
-        if (dataFolders != null && fileName != null) {
-            try {
-                Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                // TODO other mime types/folders
-                if (dataFolder != null) {
-                    Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                    if (Files.isRegularFile(path)) {
-                        ret.getDoc().addField(FIELD_FILESIZE, Files.size(path));
-                    }
-                }
-            } catch (IllegalArgumentException | IOException e) {
-                logger.warn(e.getMessage());
-            }
-            if (!ret.getDoc().containsKey(FIELD_FILESIZE)) {
-                ret.getDoc().addField(FIELD_FILESIZE, -1);
-            }
-        }
-
         String baseFileName = FilenameUtils.getBaseName((String) ret.getDoc().getFieldValue(SolrConstants.FILENAME));
-
         if (dataFolders.get(DataRepository.PARAM_MIX) != null) {
             try {
                 Map<String, String> mixData = TextHelper.readMix(
@@ -759,30 +702,7 @@ public class LidoIndexer extends Indexer {
             }
         }
 
-        // Add image dimension values from EXIF
-        if (!ret.getDoc().containsKey(SolrConstants.WIDTH) || !ret.getDoc().containsKey(SolrConstants.HEIGHT)) {
-            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) ret.getDoc().getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
-                ret.getDoc().addField(SolrConstants.WIDTH, dimension.width);
-                ret.getDoc().addField(SolrConstants.HEIGHT, dimension.height);
-            });
-        }
-
-        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
-                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
-            recordHasImages = true;
-        } else {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
-        }
-
-        // FULLTEXTAVAILABLE indicates whether this page has full-text
-        if (ret.getDoc().getField(SolrConstants.FULLTEXT) != null) {
-            ret.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, true);
-            recordHasFulltext = true;
-        } else {
-            ret.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, false);
-        }
+        addPageAdditionalTechMetadata(ret, dataFolders, fileName);
 
         return ret;
     }
@@ -927,7 +847,7 @@ public class LidoIndexer extends Indexer {
      * @param indexObj {@link IndexObject}
      * @throws FatalIndexerException
      */
-    private void setSimpleData(IndexObject indexObj) throws FatalIndexerException {
+    protected void setSimpleData(IndexObject indexObj) {
         indexObj.setSourceDocFormat(FileFormat.LIDO);
         Element structNode = indexObj.getRootStructNode();
 
@@ -945,5 +865,13 @@ public class LidoIndexer extends Indexer {
             indexObj.setLabel(value);
         }
         logger.trace("LABEL: {}", indexObj.getLabel());
+    }
+
+    /**
+     * 
+     * @return {@link FileFormat}
+     */
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.LIDO;
     }
 }

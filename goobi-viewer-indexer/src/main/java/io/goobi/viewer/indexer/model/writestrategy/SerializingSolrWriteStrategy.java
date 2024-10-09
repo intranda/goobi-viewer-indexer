@@ -259,18 +259,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                 // Add the child doc's DEFAULT values to the SUPERDEFAULT value of the root doc
                 if (aggregateRecords) {
                     // Add SUPER* fields to root doc
-                    if (doc.containsKey(SolrConstants.DEFAULT)) {
-                        rootDoc.addField(SolrConstants.SUPERDEFAULT, doc.getFieldValue(SolrConstants.DEFAULT));
-                    }
-                    if (doc.containsKey(SolrConstants.FULLTEXT)) {
-                        rootDoc.addField(SolrConstants.SUPERFULLTEXT, doc.getFieldValue(SolrConstants.FULLTEXT));
-                    }
-                    if (doc.containsKey(SolrConstants.UGCTERMS)) {
-                        rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
-                    }
-                    if (doc.containsKey(SolrConstants.SEARCHTERMS_ARCHIVE)) {
-                        rootDoc.addField(SolrConstants.SUPERSEARCHTERMS_ARCHIVE, doc.getFieldValue(SolrConstants.SEARCHTERMS_ARCHIVE));
-                    }
+                    addSuperSearchFields(doc, rootDoc);
                 }
                 sanitizeDoc(doc);
                 try {

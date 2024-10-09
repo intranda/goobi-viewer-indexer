@@ -72,12 +72,11 @@ public class CmsPageIndexer extends Indexer {
     }
 
     /**
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      * @should add record to index correctly
      */
     @Override
-    public void addToIndex(Path cmsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public void addToIndex(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         Map<String, Path> dataFolders = new HashMap<>();
 
         String fileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
@@ -211,15 +210,7 @@ public class CmsPageIndexer extends Indexer {
                 logger.debug("PI: {}", indexObj.getPi());
 
                 // Determine the data repository to use
-                DataRepository[] repositories =
-                        hotfolder.getDataRepositoryStrategy()
-                                .selectDataRepository(pi, cmsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                        SolrIndexerDaemon.getInstance().getOldSearchIndex());
-                dataRepository = repositories[0];
-                previousDataRepository = repositories[1];
-                if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                    indexObj.setDataRepository(dataRepository.getPath());
-                }
+                selectDataRepository(indexObj, pi, cmsFile, dataFolders);
 
                 ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
             } else {
@@ -316,5 +307,10 @@ public class CmsPageIndexer extends Indexer {
         }
 
         return ret;
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.CMS;
     }
 }

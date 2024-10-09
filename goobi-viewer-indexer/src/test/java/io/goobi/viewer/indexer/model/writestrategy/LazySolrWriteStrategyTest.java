@@ -56,7 +56,7 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    void LazySolrWriteStrategy_shouldSetAttributesCorrectly() throws Exception {
+    void LazySolrWriteStrategy_shouldSetAttributesCorrectly() {
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         Assertions.assertEquals(SolrIndexerDaemon.getInstance().getSearchIndex(), strat.searchIndex);
     }
@@ -71,10 +71,8 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
         indexer.initJDomXP(metsFile);
-        indexer.generatePageDocuments(strat, null,
-                dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                        null)[0],
-                "PPN517154005", 1, false);
+        indexer.generatePageDocuments(strat, new HashMap<>(), dataRepositoryStrategy.selectDataRepository("PPN517154005", metsFile, null,
+                SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], "PPN517154005", 1, false);
         List<PhysicalElement> pages = strat.getPagesForPhysIdList(Arrays.asList(new String[] { "PHYS_0001", "PHYS_0002", "PHYS_0003" }));
         Assertions.assertEquals(3, pages.size());
         Assertions.assertEquals("PHYS_0001", pages.get(0).getDoc().getFieldValue(SolrConstants.PHYSID));
@@ -96,7 +94,7 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        indexer.index(metsFile, false, dataFolders, strat, 1, false);
+        indexer.index(metsFile, dataFolders, strat, 1, false);
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.DOCSTRCT.name(), null);
@@ -117,7 +115,7 @@ class LazySolrWriteStrategyTest extends AbstractSolrEnabledTest {
         LazySolrWriteStrategy strat = new LazySolrWriteStrategy(SolrIndexerDaemon.getInstance().getSearchIndex());
         MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        indexer.index(metsFile, false, dataFolders, strat, 1, false);
+        indexer.index(metsFile, dataFolders, strat, 1, false);
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search(SolrConstants.PI_TOPSTRUCT + ":PPN517154005 AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);

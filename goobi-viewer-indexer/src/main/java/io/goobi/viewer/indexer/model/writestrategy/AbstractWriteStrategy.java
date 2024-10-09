@@ -192,4 +192,28 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
             }
         }
     }
+
+    /**
+     * 
+     * @param doc Source doc
+     * @param rootDoc Target doc
+     */
+    protected void addSuperSearchFields(SolrInputDocument doc, SolrInputDocument rootDoc) {
+        if (doc == null || rootDoc == null) {
+            return;
+        }
+
+        if (doc.containsKey(SolrConstants.DEFAULT)) {
+            rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
+        }
+        if (doc.containsKey(SolrConstants.FULLTEXT)) {
+            rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
+        }
+        if (doc.containsKey(SolrConstants.UGCTERMS)) {
+            rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
+        }
+        if (doc.containsKey(SolrConstants.SEARCHTERMS_ARCHIVE)) {
+            rootDoc.addField(SolrConstants.SUPERSEARCHTERMS_ARCHIVE, doc.getFieldValue(SolrConstants.SEARCHTERMS_ARCHIVE));
+        }
+    }
 }
