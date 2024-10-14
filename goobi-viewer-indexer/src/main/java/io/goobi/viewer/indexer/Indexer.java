@@ -766,7 +766,7 @@ public abstract class Indexer {
      */
     List<SolrInputDocument> generateUserCommentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
             Map<String, String> groupIds, int order) throws FatalIndexerException {
-        logger.info("generateUserCommentDocsForPage: {}", order);
+        logger.debug("generateUserCommentDocsForPage: {}", order);
         if (dataFolder == null || !Files.isDirectory(dataFolder)) {
             logger.info("UGC folder not found.");
             return Collections.emptyList();
