@@ -109,6 +109,6 @@ public abstract class AbstractDataRepositoryStrategy implements IDataRepositoryS
             }
         }
 
-        return null;
+        return previousRepository;
     }
 }
