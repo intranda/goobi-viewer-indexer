@@ -1533,8 +1533,8 @@ public class MetsIndexer extends Indexer {
         // Page metadata
         String admId = eleStructMapPhysical.getAttributeValue("ADMID");
         if (StringUtils.isNotEmpty(admId)) {
-            String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId
-                    + "']/mets:mdWrap/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/mets:mdWrap[@MDTYPE='OTHER']"; // TODO check whether METS correct
+            // Use '//' so faulty duplication in the hierarchy still works
+            String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId + "']//mets:xmlData/mets:mdWrap[@MDTYPE='OTHER']";
             List<Element> eletechMdList = xp.evaluateToElements(techXpath, null);
             if (!eletechMdList.isEmpty()) {
                 IndexObject indexObj = new IndexObject(1L, pi);
@@ -1543,7 +1543,7 @@ public class MetsIndexer extends Indexer {
                 for (LuceneField field : fields) {
                     if (!MetadataHelper.FIELD_HAS_WKT_COORDS.equals(field.getField())) {
                         ret.getDoc().addField(field.getField(), field.getValue());
-                        logger.debug("Added techMD field: {}", field);
+                        logger.debug("Added simple techMD field: {}", field);
                     }
                 }
                 ret.getGroupedMetadata().addAll(indexObj.getGroupedMetadataFields());
