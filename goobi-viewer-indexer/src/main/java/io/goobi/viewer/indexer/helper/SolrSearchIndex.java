@@ -726,9 +726,9 @@ public final class SolrSearchIndex {
 
     /**
      *
-     * @param doc
+     * @param doc {@link SolrDocument}
      * @param field
-     * @return
+     * @return First value found; null otherwise
      */
     public static Object getSingleFieldValue(SolrDocument doc, String field) {
         Collection<Object> valueList = doc.getFieldValues(field);
@@ -741,9 +741,9 @@ public final class SolrSearchIndex {
 
     /**
      *
-     * @param doc
-     * @param field
-     * @return
+     * @param doc {@link SolrDocument}
+     * @param field Solr field name
+     * @return First value found; null otherwise
      * @should return value as string correctly
      * @should not return null as string if value is null
      */
@@ -754,9 +754,25 @@ public final class SolrSearchIndex {
 
     /**
      * 
-     * @param doc
-     * @param field
-     * @return
+     * @param doc {@link SolrInputDocument}
+     * @param field Solr field name
+     * @return First value found; null otherwise
+     */
+    public static String getSingleFieldStringValue(SolrInputDocument doc, String field) {
+        Object ret = null;
+
+        Collection<Object> valueList = doc.getFieldValues(field);
+        if (valueList != null && !valueList.isEmpty()) {
+            ret = valueList.iterator().next();
+        }
+        return ret != null ? String.valueOf(ret) : null;
+    }
+
+    /**
+     * 
+     * @param doc {@link SolrDocument}
+     * @param field Solr field name
+     * @return First value found; null otherwise
      */
     public static Integer getSingleFieldIntegerValue(SolrDocument doc, String field) {
         Object val = getSingleFieldValue(doc, field);
@@ -765,9 +781,9 @@ public final class SolrSearchIndex {
 
     /**
      * 
-     * @param doc
-     * @param field
-     * @return
+     * @param doc {@link SolrDocument}
+     * @param field Solr field name
+     * @return First value found; null otherwise
      */
     public static Long getSingleFieldLongValue(SolrDocument doc, String field) {
         Object val = getSingleFieldValue(doc, field);

@@ -1247,7 +1247,7 @@ public abstract class Indexer {
      * @param writeStrategy
      * @return Number of added group docs
      * @throws FatalIndexerException
-     * @should add grouped metadata docs from the given page to writeStrategy correctly
+     * @should add grouped metadata docs from given page to writeStrategy correctly
      */
     public int addGroupedMetadataDocsForPage(PhysicalElement page, String pi, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
         if (page == null) {
@@ -1267,8 +1267,6 @@ public abstract class Indexer {
                         doc.getFieldValue(SolrConstants.LABEL));
                 doc.addField(SolrConstants.GROUPFIELD, iddoc);
             }
-            // IDDOC_OWNER should always contain the IDDOC of the lowest docstruct to which this page is mapped.
-            // Since child docstructs are added recursively, this should be the case without further conditions.
             doc.addField(SolrConstants.IDDOC_OWNER, page.getDoc().getFieldValue(SolrConstants.IDDOC));
             doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
             doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
