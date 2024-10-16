@@ -1535,7 +1535,7 @@ public class MetsIndexer extends Indexer {
         String admId = eleStructMapPhysical.getAttributeValue("ADMID");
         if (StringUtils.isNotEmpty(admId)) {
             // Use '//' so faulty duplication in the hierarchy still works
-            String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId + "']//mets:xmlData/mets:mdWrap[@MDTYPE='OTHER']";
+            String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId + "']//mets:mdWrap[@MDTYPE='OTHER'][mets:xmlData/mix:mix]";
             List<Element> eletechMdList = xp.evaluateToElements(techXpath, null);
             if (!eletechMdList.isEmpty()) {
                 IndexObject indexObj = new IndexObject(1L, pi);
