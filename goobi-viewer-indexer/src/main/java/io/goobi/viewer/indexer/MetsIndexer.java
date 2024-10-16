@@ -274,6 +274,7 @@ public class MetsIndexer extends Indexer {
      * @should keep volume count up to date in anchor
      * @should read datecreated from mets with correct time zone
      * @should not add dateupdated if value already exists
+     * @should index page metadata correctly
      * 
      */
     public String[] index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
