@@ -1010,9 +1010,9 @@ public class MetsIndexer extends Indexer {
                             page.getShapes().clear();
 
                             // Add Solr docs for grouped page metadata
-                            int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+                            int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
                             if (docsAdded > 0) {
-                                logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+                                logger.debug("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
                             }
                         }
                         usedIddocsMap.put(iddoc, true);
@@ -1044,7 +1044,7 @@ public class MetsIndexer extends Indexer {
                     page.getShapes().clear();
 
                     // Add Solr docs for grouped page metadata
-                    int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+                    int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
                     if (docsAdded > 0) {
                         logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
                     }

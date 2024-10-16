@@ -1243,11 +1243,13 @@ public abstract class Indexer {
      * so that all relevant metadata has been copied from the structure element.
      * 
      * @param page {@link PhysicalElement}
+     * @param pi Record identifier
      * @param writeStrategy
      * @return Number of added group docs
      * @throws FatalIndexerException
+     * @should add grouped metadata docs from the given page to writeStrategy correctly
      */
-    public int addGroupedMetadataDocsForPage(PhysicalElement page, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
+    public int addGroupedMetadataDocsForPage(PhysicalElement page, String pi, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
         if (page == null) {
             throw new IllegalArgumentException("page may not be null");
         }
@@ -1269,7 +1271,7 @@ public abstract class Indexer {
             // Since child docstructs are added recursively, this should be the case without further conditions.
             doc.addField(SolrConstants.IDDOC_OWNER, page.getDoc().getFieldValue(SolrConstants.IDDOC));
             doc.addField(SolrConstants.DOCTYPE, DocType.METADATA.name());
-            doc.addField(SolrConstants.PI_TOPSTRUCT, page.getDoc().getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            doc.addField(SolrConstants.PI_TOPSTRUCT, pi);
 
             // Add DC values to metadata doc
             for (String dc : SolrSearchIndex.getMetadataValues(page.getDoc(), SolrConstants.DC)) {
@@ -2450,6 +2452,7 @@ public abstract class Indexer {
     }
 
     /**
+     * Adds image size, mime type and image/full-text availability metadata fields.
      * 
      * @param page
      * @param dataFolders
