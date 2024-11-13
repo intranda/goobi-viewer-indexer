@@ -26,6 +26,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -96,13 +97,9 @@ public class WorldViewsIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * Indexes the given WorldViews file.
-     * 
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
 
@@ -119,7 +116,7 @@ public class WorldViewsIndexer extends Indexer {
             String pi = FilenameUtils.getBaseName(newMetsFileName);
             Path indexed = Paths.get(getDataRepository().getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
             if (mainFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
@@ -184,19 +181,23 @@ public class WorldViewsIndexer extends Indexer {
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(mainFile, resp[1], FileFormat.WORLDVIEWS);
-            try {
-                Files.delete(mainFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, mainFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(mainFile, resp[1], FileFormat.WORLDVIEWS);
+        try {
+            Files.delete(mainFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, mainFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**

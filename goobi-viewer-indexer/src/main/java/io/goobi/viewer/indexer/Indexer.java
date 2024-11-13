@@ -186,10 +186,13 @@ public abstract class Indexer {
     }
 
     /**
+     * Indexes given record file.
+     * 
      * @param recordFile
      * @param reindexSettings
+     * @return List of successfully indexed record identifiers
      */
-    public abstract void addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+    public abstract List<String> addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
 
     /**
      * 

@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -61,11 +62,9 @@ public class UsageStatisticsIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path sourceFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path sourceFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (sourceFile == null) {
             throw new IllegalArgumentException("usage statistics file may not be null");
         } else if (!Files.isRegularFile(sourceFile)) {
@@ -78,6 +77,7 @@ public class UsageStatisticsIndexer extends Indexer {
             throw new IOException(e);
         }
 
+        return Collections.emptyList();
     }
 
     /**

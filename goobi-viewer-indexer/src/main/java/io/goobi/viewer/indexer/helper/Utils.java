@@ -245,13 +245,17 @@ public class Utils {
     }
 
     /**
+     * @param identifiers Identifier list of indexed records
      * @param fileCount
      * @throws FatalIndexerException
      * @throws HTTPException
      * @throws ClientProtocolException
      * @throws IOException
      */
-    public static void submitDataToViewer(long fileCount) {
+    public static void submitDataToViewer(List<String> identifiers, long fileCount) {
+        if (identifiers == null) {
+            throw new IllegalArgumentException("identifiers may not be null");
+        }
         if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
             return;
         }
@@ -261,9 +265,14 @@ public class Utils {
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
+            json.put("record-identifiers", identifiers);
+
             getWebContentPUT(url, new HashMap<>(0), null, json.toString(),
                     Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
             logger.info("Version and file count ({}) submitted to Goobi viewer.", fileCount);
+            if (!identifiers.isEmpty()) {
+                logger.info("Record identifier(s) submitted to Goobi viewer.");
+            }
         } catch (IOException | HTTPException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }

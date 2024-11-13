@@ -24,9 +24,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -593,13 +595,14 @@ public class Hotfolder {
                 }
 
                 // Check file format and start the appropriate indexing routine
+                List<String> identifiers = Collections.emptyList();
                 FileFormat fileType = JDomXP.determineFileFormat(sourceFile.toFile());
                 switch (fileType) {
                     case METS:
                         if (metsEnabled) {
                             try {
                                 currentIndexer = new MetsIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -612,7 +615,7 @@ public class Hotfolder {
                         if (metsEnabled) {
                             try {
                                 currentIndexer = new MetsMarcIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -625,7 +628,7 @@ public class Hotfolder {
                         if (lidoEnabled) {
                             try {
                                 currentIndexer = new LidoIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -638,7 +641,7 @@ public class Hotfolder {
                         if (eadEnabled) {
                             try {
                                 currentIndexer = new EadIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -651,7 +654,7 @@ public class Hotfolder {
                         if (eadEnabled) {
                             try {
                                 currentIndexer = new Ead3Indexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -664,7 +667,7 @@ public class Hotfolder {
                         if (denkxwebEnabled) {
                             try {
                                 currentIndexer = new DenkXwebIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -677,7 +680,7 @@ public class Hotfolder {
                         if (dcEnabled) {
                             try {
                                 currentIndexer = new DublinCoreIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -690,7 +693,7 @@ public class Hotfolder {
                         if (worldviewsEnabled) {
                             try {
                                 currentIndexer = new WorldViewsIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -703,7 +706,7 @@ public class Hotfolder {
                         if (cmsEnabled) {
                             try {
                                 currentIndexer = new CmsPageIndexer(this);
-                                currentIndexer.addToIndex(sourceFile, reindexSettings);
+                                identifiers = currentIndexer.addToIndex(sourceFile, reindexSettings);
                             } finally {
                                 currentIndexer = null;
                             }
@@ -717,7 +720,7 @@ public class Hotfolder {
                         Files.delete(sourceFile);
                         return false;
                 }
-                Utils.submitDataToViewer(countRecordFiles());
+                Utils.submitDataToViewer(identifiers, countRecordFiles());
             } else if (filename.endsWith(".json")) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
                     try {
@@ -728,43 +731,34 @@ public class Hotfolder {
                     }
                     Files.delete(sourceFile);
                 }
-            } else if (filename.endsWith(FILENAME_EXTENSION_DELETE)) {
+            } else if (filename.endsWith(FILENAME_EXTENSION_PURGE) || filename.endsWith(FILENAME_EXTENSION_DELETE)) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
                     removeUsageStatisticsFromIndex(sourceFile);
                     Files.delete(sourceFile);
                 } else {
-                    // DELETE
+                    // PURGE / DELETE
                     DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null,
                             SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
-                    removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], true);
-                    Utils.submitDataToViewer(countRecordFiles());
-                }
-            } else if (filename.endsWith(FILENAME_EXTENSION_PURGE)) {
-                if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
-                    removeUsageStatisticsFromIndex(sourceFile);
-                    Files.delete(sourceFile);
-                } else {
-                    // PURGE (delete with no "deleted" doc)
-                    DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null,
-                            SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
-                    removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0], false);
-                    Utils.submitDataToViewer(countRecordFiles());
+                    String pi = removeFromIndex(sourceFile, repositories[1] != null ? repositories[1] : repositories[0],
+                            filename.endsWith(FILENAME_EXTENSION_DELETE));
+                    Utils.submitDataToViewer(Collections.singletonList(pi), countRecordFiles());
                 }
             } else if (filename.endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION)) {
                 // SUPERUPDATE
                 DataRepository[] repositories = dataRepositoryStrategy.selectDataRepository(null, sourceFile, null,
                         SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
                 MetsIndexer.anchorSuperupdate(sourceFile, updatedMets, repositories[1] != null ? repositories[1] : repositories[0]);
-                Utils.submitDataToViewer(countRecordFiles());
+                Utils.submitDataToViewer(Collections.emptyList(), countRecordFiles()); // TODO submit any record identifiers here?
             } else if (filename.endsWith(DocUpdateIndexer.FILE_EXTENSION)) {
                 // Single Solr document update
+                List<String> identifiers = Collections.emptyList();
                 try {
                     currentIndexer = new DocUpdateIndexer(this);
-                    currentIndexer.addToIndex(sourceFile, null);
+                    identifiers = currentIndexer.addToIndex(sourceFile, null);
                 } finally {
                     currentIndexer = null;
                 }
-                Utils.submitDataToViewer(countRecordFiles());
+                Utils.submitDataToViewer(identifiers, countRecordFiles());
             }
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
@@ -784,11 +778,12 @@ public class Hotfolder {
      * 
      * @param deleteFile {@link Path}
      * @param dataRepository Data repository in which the record data is stored
-     * @param trace A Lucene document with DATEDELETED timestamp will be created if true.
+     * @param trace A Solr document with DATEDELETED timestamp will be created if true.
+     * @return Identifier of the deleted record, if successful; otherwise null
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
      */
-    private void removeFromIndex(Path deleteFile, DataRepository dataRepository, boolean trace) throws IOException, FatalIndexerException {
+    private String removeFromIndex(Path deleteFile, DataRepository dataRepository, boolean trace) throws IOException, FatalIndexerException {
         if (deleteFile == null) {
             throw new IllegalArgumentException("deleteFile may not be null");
         }
@@ -801,7 +796,7 @@ public class Hotfolder {
             // Check for empty file names, otherwise the entire content folders will be deleted!
             if (StringUtils.isBlank(baseFileName)) {
                 logger.error("File '{}' contains no identifier, aborting...", deleteFile.getFileName());
-                return;
+                return null;
             }
 
             Path actualXmlFile = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) != null
@@ -867,7 +862,7 @@ public class Hotfolder {
                 } else {
                     logger.error("Record '{}' not found in index.", baseFileName);
                 }
-                return;
+                return null;
             }
 
             boolean success = false;
@@ -889,7 +884,7 @@ public class Hotfolder {
                     break;
                 default:
                     logger.error("Unknown format: {}", format);
-                    return;
+                    return null;
             }
             if (success) {
                 dataRepository.deleteDataFoldersForRecord(baseFileName);
@@ -898,6 +893,7 @@ public class Hotfolder {
                     Files.copy(actualXmlFile, deleted, StandardCopyOption.REPLACE_EXISTING);
                     Files.delete(actualXmlFile);
                     logger.info("'{}' has been successfully deleted.", actualXmlFile.getFileName());
+                    return baseFileName;
                 }
             } else {
                 Path errorFile = Paths.get(errorMets.toAbsolutePath().toString(), baseFileName + ".delete_error");
@@ -914,6 +910,8 @@ public class Hotfolder {
                 logger.warn(StringConstants.LOG_COULD_NOT_BE_DELETED, deleteFile.toAbsolutePath());
             }
         }
+
+        return null;
     }
 
     /**

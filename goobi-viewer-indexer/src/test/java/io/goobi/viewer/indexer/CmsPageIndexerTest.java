@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.common.SolrDocument;
@@ -70,7 +71,9 @@ class CmsPageIndexerTest extends AbstractSolrEnabledTest {
         assertTrue(Files.isRegularFile(indexFile));
 
         Indexer indexer = new CmsPageIndexer(hotfolder);
-        indexer.addToIndex(indexFile, new HashMap<>());
+        List<String> identifiers = indexer.addToIndex(indexFile, new HashMap<>());
+        Assertions.assertEquals(1, identifiers.size());
+        Assertions.assertEquals("CMS123", identifiers.get(0));
 
         SolrDocumentList result = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":CMS123", null);
         Assertions.assertNotNull(result);

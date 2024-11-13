@@ -94,13 +94,9 @@ public class EadIndexer extends Indexer {
         SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
-    /**
-     * Indexes the given METS file.
-     * 
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(eadFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -115,7 +111,7 @@ public class EadIndexer extends Indexer {
             String pi = FilenameUtils.getBaseName(newFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toAbsolutePath().toString(), newFileName);
             if (eadFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
 
             Files.copy(eadFile, indexed, StandardCopyOption.REPLACE_EXISTING);
@@ -149,19 +145,23 @@ public class EadIndexer extends Indexer {
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(eadFile, resp[1], getSourceDocFormat());
-            try {
-                Files.delete(eadFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, eadFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(eadFile, resp[1], getSourceDocFormat());
+        try {
+            Files.delete(eadFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, eadFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
