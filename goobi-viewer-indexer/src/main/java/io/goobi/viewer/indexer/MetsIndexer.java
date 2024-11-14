@@ -274,6 +274,7 @@ public class MetsIndexer extends Indexer {
      * @should keep volume count up to date in anchor
      * @should read datecreated from mets with correct time zone
      * @should not add dateupdated if value already exists
+     * @should index page metadata correctly
      * 
      */
     public String[] index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
@@ -1010,9 +1011,9 @@ public class MetsIndexer extends Indexer {
                             page.getShapes().clear();
 
                             // Add Solr docs for grouped page metadata
-                            int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+                            int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
                             if (docsAdded > 0) {
-                                logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+                                logger.debug("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
                             }
                         }
                         usedIddocsMap.put(iddoc, true);
@@ -1044,7 +1045,7 @@ public class MetsIndexer extends Indexer {
                     page.getShapes().clear();
 
                     // Add Solr docs for grouped page metadata
-                    int docsAdded = addGroupedMetadataDocsForPage(page, writeStrategy);
+                    int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
                     if (docsAdded > 0) {
                         logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
                     }
@@ -1533,8 +1534,8 @@ public class MetsIndexer extends Indexer {
         // Page metadata
         String admId = eleStructMapPhysical.getAttributeValue("ADMID");
         if (StringUtils.isNotEmpty(admId)) {
-            String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId
-                    + "']/mets:mdWrap/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/mets:mdWrap[@MDTYPE='OTHER']"; // TODO check whether METS correct
+            // Use '//' so faulty duplication in the hierarchy still works
+            String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId + "']//mets:mdWrap[@MDTYPE='OTHER'][mets:xmlData/mix:mix]";
             List<Element> eletechMdList = xp.evaluateToElements(techXpath, null);
             if (!eletechMdList.isEmpty()) {
                 IndexObject indexObj = new IndexObject(1L, pi);
@@ -1543,7 +1544,7 @@ public class MetsIndexer extends Indexer {
                 for (LuceneField field : fields) {
                     if (!MetadataHelper.FIELD_HAS_WKT_COORDS.equals(field.getField())) {
                         ret.getDoc().addField(field.getField(), field.getValue());
-                        logger.debug("Added techMD field: {}", field);
+                        logger.debug("Added simple techMD field: {}", field);
                     }
                 }
                 ret.getGroupedMetadata().addAll(indexObj.getGroupedMetadataFields());

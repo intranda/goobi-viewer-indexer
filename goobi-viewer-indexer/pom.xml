@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>24.09</version>
+	<version>24.10-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -54,17 +54,17 @@
 		<commons-text.version>1.12.0</commons-text.version>
 		<httpclient.version>4.5.14</httpclient.version>
 		<httpcore.version>4.4.16</httpcore.version>
-		<icu.version>75.1</icu.version>
+		<icu.version>76.1</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
 		<log4j.version>2.24.1</log4j.version>
-		<jackson.version>2.18.0</jackson.version>
+		<jackson.version>2.18.1</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
 		<jakarta.mail-api.version>2.1.3</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.18.1</jsoup.version>
 		<json.version>20240303</json.version>
-		<junit.version>5.11.2</junit.version>
+		<junit.version>5.11.3</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
 		<solr.version>9.7.0</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
@@ -480,7 +480,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>10.18.2</version>
+						<version>10.20.1</version>
 					</dependency>
 				</dependencies>
 				<executions>

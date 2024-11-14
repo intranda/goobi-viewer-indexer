@@ -82,6 +82,7 @@
 				<intranda>http://intranda.com/MODS/</intranda>
                 <pd>https//intranda.com/prosopographicDatabase</pd>
                 <gml>http://www.opengis.net/gml/3.2</gml>
+                <inpa>http://goobi.io/INPA/</inpa>
 			</list>
 		</namespaces>
 
@@ -748,7 +749,7 @@
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
-					<normalizeYear minYearDigits="1" field="MDNUM_YEARPUBLISH">true</normalizeYear>
+					<normalizeYear minYearDigits="4" field="MDNUM_YEARPUBLISH">true</normalizeYear>
 				</item>
 			</list>
 		</MD_YEARPUBLISH>
@@ -4098,6 +4099,20 @@
                 </item>
             </list>
         </MD_TECH_IMAGE_DATETIME_CREATED>
+        
+<MD_PROTECTION_LANG_DE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:extension/inpa:protection[inpa:protectionType]</xpath>
+                    <addToDefault>false</addToDefault>
+                    <allowDuplicateValues>true</allowDuplicateValues>
+                    <groupEntity type="OTHER">
+                         <field name="MD_VALUE">inpa:protectionType[@lang="ger"]</field>
+                        <field name="MD_DATE">inpa:protectionDate</field>
+                    </groupEntity>
+                </item>
+            </list>
+</MD_PROTECTION_LANG_DE>
         
     </fields>
  
