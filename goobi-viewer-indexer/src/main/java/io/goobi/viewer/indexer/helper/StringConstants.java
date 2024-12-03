@@ -24,6 +24,8 @@ public final class StringConstants {
 
     public static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted.";
 
+    public static final String METADATA_ACCESS_RESTRICTED = "metadata_access_restricted";
+
     private StringConstants() {
         //
     }

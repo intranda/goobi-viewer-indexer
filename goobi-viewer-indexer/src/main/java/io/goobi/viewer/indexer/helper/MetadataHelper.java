@@ -56,6 +56,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
+import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
@@ -245,27 +246,37 @@ public final class MetadataHelper {
                             continue;
                         }
                         for (Object xpathAnswerObject : list) {
+                            boolean accessRestrict = false;
+                            // Check for accessRestrict="true"
+                            String accessRestrictionQuery = query + "/@accessRestrict";
+                            String accessRestrictionValue = xp.evaluateToAttributeStringValue(accessRestrictionQuery, currentElement);
+                            if ("true".equals(accessRestrictionValue)) {
+                                accessRestrict = true;
+                                logger.info("Found restricted metadata value for {}", configurationItem.getFieldname());
+                            }
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
                                 logger.trace(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
-                                GroupedMetadata gmd =
-                                        getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
-                                                configurationItem.getFieldname(), sbDefaultMetadataValues,
-                                                ret);
+                                GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
+                                        configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (gmd.getMainValue() != null) {
-                                    fieldValue = gmd.getMainValue();
-                                    // Apply XPath prefix
-                                    if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
-                                        fieldValue = xpathConfig.getPrefix() + fieldValue;
+                                    if (accessRestrict) {
+                                        fieldValues.add(StringConstants.METADATA_ACCESS_RESTRICTED);
+                                    } else {
+                                        fieldValue = gmd.getMainValue();
+                                        // Apply XPath prefix
+                                        if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
+                                            fieldValue = xpathConfig.getPrefix() + fieldValue;
+                                        }
+                                        // Apply XPath suffix
+                                        if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
+                                            fieldValue = fieldValue + xpathConfig.getSuffix();
+                                        }
+                                        fieldValues.add(fieldValue);
                                     }
-                                    // Apply XPath suffix
-                                    if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
-                                        fieldValue = fieldValue + xpathConfig.getSuffix();
-                                    }
-                                    fieldValues.add(fieldValue);
                                 }
 
                                 // Add GMD to index object (if not duplicate or duplicates are allowed for this field)
@@ -297,19 +308,34 @@ public final class MetadataHelper {
                                     if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
                                         fieldValue = fieldValue + xpathConfig.getSuffix();
                                     }
-                                    if (configurationItem.isOneField()) {
-                                        if (fieldValues.isEmpty()) {
-                                            fieldValues.add("");
+
+                                    if (accessRestrict) {
+                                        // Use grouped metadata if to this value is restricted
+                                        GroupedMetadata gmd = new GroupedMetadata();
+                                        gmd.setMainValue(fieldValue);
+                                        gmd.getFields().add(new LuceneField(SolrConstants.LABEL, configurationItem.getFieldname()));
+                                        gmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, fieldValue));
+                                        gmd.getFields()
+                                                .add(new LuceneField(SolrConstants.ACCESSCONDITION, StringConstants.METADATA_ACCESS_RESTRICTED));
+                                        if (!indexObj.getGroupedMetadataFields().contains(gmd) || configurationItem.isAllowDuplicateValues()) {
+                                            indexObj.getGroupedMetadataFields().add(gmd);
                                         }
-                                        StringBuilder sb = new StringBuilder();
-                                        sb.append(fieldValues.get(0));
-                                        if (sb.length() > 0) {
-                                            sb.append(configurationItem.getOneFieldSeparator());
-                                        }
-                                        sb.append(fieldValue);
-                                        fieldValues.set(0, sb.toString());
+                                        fieldValues.add(StringConstants.METADATA_ACCESS_RESTRICTED);
                                     } else {
-                                        fieldValues.add(fieldValue);
+                                        if (configurationItem.isOneField()) {
+                                            if (fieldValues.isEmpty()) {
+                                                fieldValues.add("");
+                                            }
+                                            StringBuilder sb = new StringBuilder();
+                                            sb.append(fieldValues.get(0));
+                                            if (sb.length() > 0) {
+                                                sb.append(configurationItem.getOneFieldSeparator());
+                                            }
+                                            sb.append(fieldValue);
+                                            fieldValues.set(0, sb.toString());
+                                        } else {
+                                            fieldValues.add(fieldValue);
+                                        }
                                     }
                                 } else {
                                     logger.debug("Null or empty string value returned for XPath query '{}'.", query);
