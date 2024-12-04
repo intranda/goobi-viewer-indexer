@@ -246,13 +246,13 @@ public final class MetadataHelper {
                             continue;
                         }
                         for (Object xpathAnswerObject : list) {
-                            boolean accessRestrict = false;
+                            boolean nonShareable = false;
                             // Check for accessRestrict="true"
-                            String accessRestrictionQuery = query + "/@accessRestrict";
+                            String accessRestrictionQuery = query + "/@shareable";
                             String accessRestrictionValue = xp.evaluateToAttributeStringValue(accessRestrictionQuery, currentElement);
-                            if ("true".equals(accessRestrictionValue)) {
-                                accessRestrict = true;
-                                logger.info("Found restricted metadata value for {}", configurationItem.getFieldname());
+                            if ("no".equals(accessRestrictionValue)) {
+                                nonShareable = true;
+                                logger.info("Found non-shareable metadata value for {}, applying access condition.", configurationItem.getFieldname());
                             }
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
@@ -263,7 +263,7 @@ public final class MetadataHelper {
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (gmd.getMainValue() != null) {
-                                    if (accessRestrict) {
+                                    if (nonShareable) {
                                         fieldValues.add(StringConstants.METADATA_ACCESS_RESTRICTED);
                                     } else {
                                         fieldValue = gmd.getMainValue();
@@ -309,7 +309,7 @@ public final class MetadataHelper {
                                         fieldValue = fieldValue + xpathConfig.getSuffix();
                                     }
 
-                                    if (accessRestrict) {
+                                    if (nonShareable) {
                                         // Use grouped metadata if to this value is restricted
                                         GroupedMetadata gmd = new GroupedMetadata();
                                         gmd.setMainValue(fieldValue);
