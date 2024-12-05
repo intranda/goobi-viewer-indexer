@@ -379,7 +379,8 @@ public final class MetadataHelper {
                     }
 
                     // Add value to DEFAULT
-                    if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
+                    if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)
+                            && !StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED.equals(fieldValue)) {
                         addValueToDefault(fieldValue, sbDefaultMetadataValues);
                         logger.trace("Added to DEFAULT: {}", fieldValue);
                     }
@@ -405,7 +406,8 @@ public final class MetadataHelper {
                                 configurationItem.getNonSortConfigurations(),
                                 configurationItem.getValueNormalizers(), ret);
                     }
-                    if (configurationItem.isAddUntokenizedVersion()) {
+                    if (configurationItem.isAddUntokenizedVersion()
+                            && !StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED.equals(fieldValue)) {
                         ret.add(new LuceneField(fieldName + SolrConstants.SUFFIX_UNTOKENIZED, fieldValue));
                     }
 
