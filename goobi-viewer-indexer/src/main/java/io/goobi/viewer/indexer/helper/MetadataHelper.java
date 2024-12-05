@@ -56,7 +56,6 @@ import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
-import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 import io.goobi.viewer.indexer.model.config.ValueNormalizer;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
 
@@ -252,7 +251,8 @@ public final class MetadataHelper {
                             String accessRestrictionValue = xp.evaluateToAttributeStringValue(accessRestrictionQuery, currentElement);
                             if ("no".equals(accessRestrictionValue)) {
                                 nonShareable = true;
-                                logger.info("Found non-shareable metadata value for {}, applying access condition.", configurationItem.getFieldname());
+                                logger.info("Found non-shareable metadata value for {}, applying access condition.",
+                                        configurationItem.getFieldname());
                             }
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
@@ -264,7 +264,7 @@ public final class MetadataHelper {
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (gmd.getMainValue() != null) {
                                     if (nonShareable) {
-                                        fieldValues.add(StringConstants.METADATA_ACCESS_RESTRICTED);
+                                        fieldValues.add(StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED);
                                     } else {
                                         fieldValue = gmd.getMainValue();
                                         // Apply XPath prefix
@@ -316,11 +316,12 @@ public final class MetadataHelper {
                                         gmd.getFields().add(new LuceneField(SolrConstants.LABEL, configurationItem.getFieldname()));
                                         gmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, fieldValue));
                                         gmd.getFields()
-                                                .add(new LuceneField(SolrConstants.ACCESSCONDITION, StringConstants.METADATA_ACCESS_RESTRICTED));
+                                                .add(new LuceneField(SolrConstants.ACCESSCONDITION,
+                                                        StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED));
                                         if (!indexObj.getGroupedMetadataFields().contains(gmd) || configurationItem.isAllowDuplicateValues()) {
                                             indexObj.getGroupedMetadataFields().add(gmd);
                                         }
-                                        fieldValues.add(StringConstants.METADATA_ACCESS_RESTRICTED);
+                                        fieldValues.add(StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED);
                                     } else {
                                         if (configurationItem.isOneField()) {
                                             if (fieldValues.isEmpty()) {

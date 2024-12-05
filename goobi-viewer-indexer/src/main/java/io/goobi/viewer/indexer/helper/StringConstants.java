@@ -16,6 +16,8 @@
 package io.goobi.viewer.indexer.helper;
 
 public final class StringConstants {
+    
+    public static final String ACCESSCONDITION_METADATA_ACCESS_RESTRICTED = "metadata_access_restricted";
 
     public static final String ERROR_CONFIG = "Configuration error, see log for details.";
     public static final String ERROR_DATAFOLDERS_MAY_NOT_BE_NULL = "dataFolders may not be null";
@@ -23,8 +25,6 @@ public final class StringConstants {
     public static final String ERROR_PI_MAY_NOT_BE_NULL = "pi may not be null";
 
     public static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted.";
-
-    public static final String METADATA_ACCESS_RESTRICTED = "metadata_access_restricted";
 
     private StringConstants() {
         //
