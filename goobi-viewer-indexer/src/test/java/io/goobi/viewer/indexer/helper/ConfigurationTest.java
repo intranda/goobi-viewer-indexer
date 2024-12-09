@@ -69,7 +69,7 @@ class ConfigurationTest extends AbstractTest {
     void configItemTest() {
         List<String> fieldNames =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames(FileFormat.METS);
-        assertEquals(104, fieldNames.size());
+        assertEquals(107, fieldNames.size());
         List<FieldConfig> fieldConfigList =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assertions.assertNotNull(fieldConfigList);
@@ -135,7 +135,7 @@ class ConfigurationTest extends AbstractTest {
 
     @Test
     void metadataConfigTest() {
-        assertEquals(104,
+        assertEquals(107,
                 SolrIndexerDaemon.getInstance()
                         .getConfiguration()
                         .getMetadataConfigurationManager()
