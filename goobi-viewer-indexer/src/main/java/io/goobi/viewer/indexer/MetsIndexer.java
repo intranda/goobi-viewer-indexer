@@ -1102,7 +1102,7 @@ public class MetsIndexer extends Indexer {
                     }
                     break;
                 case OBJECT_FILEGROUP:
-                    if (!PRESENTATION_FILEGROUP.equals(ret) || !DEFAULT_FILEGROUP.equals(ret)) {
+                    if (!PRESENTATION_FILEGROUP.equals(ret) && !DEFAULT_FILEGROUP.equals(ret)) {
                         ret = use;
                     }
                     break;
