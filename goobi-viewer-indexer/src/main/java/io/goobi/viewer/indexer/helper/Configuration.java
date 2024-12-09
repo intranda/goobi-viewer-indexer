@@ -408,7 +408,7 @@ public final class Configuration {
      * @return a boolean.
      */
     public boolean isAggregateRecords() {
-        return getBoolean("init.aggregateRecords", false);
+        return getBoolean("init.aggregateRecords", true);
     }
 
     /**

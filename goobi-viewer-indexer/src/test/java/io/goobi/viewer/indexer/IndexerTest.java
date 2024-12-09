@@ -57,13 +57,17 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.LazySolrWriteStrategy;
 
 class IndexerTest extends AbstractSolrEnabledTest {
+
+    protected static final String PI_KLEIUNIV = "PPN517154005";
 
     private Path metsFile;
     private Path lidoFile;
@@ -142,7 +146,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void delete_shouldDeleteMETSRecordFromIndexCompletely() throws Exception {
-        String pi = "PPN517154005";
+        String pi = PI_KLEIUNIV;
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
@@ -203,7 +207,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void delete_shouldLeaveTraceDocumentForMETSRecordIfRequested() throws Exception {
-        String pi = "PPN517154005";
+        String pi = PI_KLEIUNIV;
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
@@ -382,7 +386,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
                     .filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("geo"))
                     .findAny()
                     .orElseThrow(() -> new IllegalStateException("No annotation with id 'geo'"));
-            assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            assertEquals(PI_KLEIUNIV, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
             assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             assertNull(doc.getFieldValue(SolrConstants.ORDER));
             assertNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
@@ -396,7 +400,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
                     .filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("PPN517154005_3"))
                     .findAny()
                     .orElseThrow(() -> new IllegalStateException("No annotation with id 'PPN517154005_3'"));
-            assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            assertEquals(PI_KLEIUNIV, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
             assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
             assertEquals(2, doc.getFieldValue(SolrConstants.ORDER));
             assertEquals(124, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
@@ -419,6 +423,39 @@ class IndexerTest extends AbstractSolrEnabledTest {
             assertEquals("Spaß in AC02949962", doc.getFieldValue(SolrConstants.ACCESSCONDITION));
             assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
         }
+    }
+
+    /**
+     * @see Indexer#addGroupedMetadataDocsForPage(PhysicalElement,String,ISolrWriteStrategy)
+     * @verifies add grouped metadata docs from given page to writeStrategy correctly
+     */
+    @Test
+    void addGroupedMetadataDocsForPage_shouldAddGroupedMetadataDocsFromGivenPageToWriteStrategyCorrectly() throws Exception {
+        LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Indexer indexer = new MetsIndexer(hotfolder);
+        PhysicalElement pe = Indexer.createPhysicalElement(2, "222", "PHYS_0000");
+        pe.getDoc().addField(SolrConstants.DC, "varia");
+        pe.getDoc().addField(SolrConstants.ACCESSCONDITION, "restricted");
+
+        GroupedMetadata gmd = new GroupedMetadata();
+        gmd.getFields().add(new LuceneField(SolrConstants.LABEL, "MD_TECH_FOO"));
+        gmd.getFields().add(new LuceneField("MD_VALUE", "800x600"));
+        gmd.getFields().add(new LuceneField("MD_FOO", "bar"));
+        pe.getGroupedMetadata().add(gmd);
+
+        Assertions.assertEquals(1, indexer.addGroupedMetadataDocsForPage(pe, PI_KLEIUNIV, strategy));
+        Assertions.assertEquals(1, strategy.getDocsToAdd().size());
+        SolrInputDocument doc = strategy.getDocsToAdd().get(0);
+        Assertions.assertNotNull(doc);
+        Assertions.assertNotNull(doc.getFieldValue(SolrConstants.IDDOC));
+        Assertions.assertEquals("222", doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+        Assertions.assertEquals(PI_KLEIUNIV, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+        Assertions.assertEquals(DocType.METADATA.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
+        Assertions.assertEquals("varia", SolrSearchIndex.getSingleFieldStringValue(doc, SolrConstants.DC));
+        Assertions.assertEquals("restricted", SolrSearchIndex.getSingleFieldStringValue(doc, SolrConstants.ACCESSCONDITION));
+        Assertions.assertEquals("MD_TECH_FOO", doc.getFieldValue(SolrConstants.LABEL));
+        Assertions.assertEquals("800x600", doc.getFieldValue("MD_VALUE"));
+        Assertions.assertEquals("bar", doc.getFieldValue("MD_FOO"));
     }
 
     /**

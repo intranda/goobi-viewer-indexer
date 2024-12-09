@@ -60,7 +60,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     /** Logger for this class. */
     //    private static final Logger logger = LogManager.getLogger(MetsIndexerTest.class);
 
-    private static final String PI = "PPN517154005";
+    private static final String PI = IndexerTest.PI_KLEIUNIV;
     private static final String PI2 = "H030001";
 
     private Path metsFile;
@@ -886,6 +886,60 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             Long dateUpdated = SolrSearchIndex.getSingleFieldLongValue(doc, SolrConstants.DATEUPDATED);
             assertNotNull(dateUpdated);
             assertEquals(timestamp, dateUpdated);
+        }
+    }
+
+    /**
+     * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
+     * @verifies index page metadata correctly
+     */
+    @Test
+    void index_shouldIndexPageMetadataCorrectly() throws Exception {
+        String pi = "4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3";
+        Path localMetsFile = Paths.get("src/test/resources/METS/MIX/" + pi + ".xml");
+        assertTrue(Files.isRegularFile(localMetsFile));
+        Map<String, Path> dataFolders = new HashMap<>();
+        String[] ret = new MetsIndexer(hotfolder).index(localMetsFile, dataFolders, null, 1, false);
+        assertEquals("4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3.xml", ret[0]);
+        Assertions.assertNull(ret[1]);
+
+        // Pages
+
+        SolrDocumentList pageDocList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+" + SolrConstants.PI_TOPSTRUCT + ":" + pi + " +" + SolrConstants.DOCTYPE + ":" + DocType.PAGE, null);
+        assertEquals(7, pageDocList.size());
+        for (SolrDocument pageDoc : pageDocList) {
+            Integer order = (Integer) pageDoc.getFieldValue(SolrConstants.ORDER);
+            assertNotNull(order);
+            String pageIddoc = (String) pageDoc.getFieldValue(SolrConstants.IDDOC);
+            assertNotNull(pageIddoc);
+
+            // Simple page metadata
+            assertEquals("image/tiff", SolrSearchIndex.getSingleFieldStringValue(pageDoc, "MD_TECH_FORMAT_NAME"));
+            assertEquals("little endian", SolrSearchIndex.getSingleFieldStringValue(pageDoc, "MD_TECH_BYTE_ORDER"));
+            assertNotNull(pageDoc.getFieldValue("MD_TECH_BASIC_IMAGE_INFO"));
+
+            // Grouped page metadata
+            SolrDocumentList metadataDocList = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
+                    .search(new StringBuilder().append("+")
+                            .append(SolrConstants.DOCTYPE)
+                            .append(":")
+                            .append(DocType.METADATA.name())
+                            .append(" +")
+                            .append(SolrConstants.IDDOC_OWNER)
+                            .append(":")
+                            .append(pageIddoc)
+                            .toString(), null);
+            assertEquals(1, metadataDocList.size());
+            SolrDocument doc = metadataDocList.get(0);
+            assertEquals(pi, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            assertEquals("MD_TECH_BASIC_IMAGE_INFO", doc.getFieldValue(SolrConstants.LABEL));
+            assertEquals("RGB", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TECH_IMAGE_COLOR_SPACE"));
+            assertNotNull(SolrSearchIndex.getSingleFieldStringValue(doc, "MD_VALUE"));
+            assertNotNull(SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TECH_IMAGE_WIDTH"));
+            assertNotNull(SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TECH_IMAGE_HEIGHT"));
         }
     }
 
