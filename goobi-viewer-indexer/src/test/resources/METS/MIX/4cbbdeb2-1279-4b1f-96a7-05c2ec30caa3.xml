@@ -1,0 +1,974 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets OBJID="194767" xsi:schemaLocation="http://www.loc.gov/standards/premis/ http://www.loc.gov/standards/premis/v2/premis-v2-0.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.loc.gov/standards/mix/ http://www.loc.gov/standards/mix/mix.xsd" xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:dv="http://dfg-viewer.de/" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <mets:metsHdr CREATEDATE="2024-10-16T07:01:35Z">
+      <mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+         <mets:name>Goobi - d5d7c - 2020-05-14 04:15:18+0000</mets:name>
+         <mets:note>Goobi</mets:note>
+      </mets:agent>
+   </mets:metsHdr>
+   <mets:dmdSec ID="DMDLOG_0000">
+      <mets:mdWrap MDTYPE="MODS">
+         <mets:xmlData>
+            <mods:mods>
+               <mods:titleInfo>
+                  <mods:title>Farbstoff Muster</mods:title>
+               </mods:titleInfo>
+               <mods:recordInfo>
+                  <mods:recordIdentifier source="internal">4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3</mods:recordIdentifier>
+               </mods:recordInfo>
+            </mods:mods>
+         </mets:xmlData>
+      </mets:mdWrap>
+   </mets:dmdSec>
+   <mets:amdSec ID="AMD">
+      <mets:techMD ID="AMD_17e60738-95ba-40c3-ae9a-6a7e424faddf">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+            <mets:xmlData>
+               <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+                  <mets:xmlData>
+                     <mix:mix xsi:schemaLocation="http://www.loc.gov/mix/v20 http://www.loc.gov/standards/mix/mix20/mix20.xsd" xmlns:mix="http://www.loc.gov/mix/v20">
+                        <mix:BasicDigitalObjectInformation>
+                           <mix:ObjectIdentifier>
+                              <mix:objectIdentifierType>JHOVE</mix:objectIdentifierType>
+                           </mix:ObjectIdentifier>
+                           <mix:FormatDesignation>
+                              <mix:formatName>image/tiff</mix:formatName>
+                           </mix:FormatDesignation>
+                           <mix:byteOrder>little endian</mix:byteOrder>
+                           <mix:Compression>
+                              <mix:compressionScheme>Uncompressed</mix:compressionScheme>
+                           </mix:Compression>
+                        </mix:BasicDigitalObjectInformation>
+                        <mix:BasicImageInformation>
+                           <mix:BasicImageCharacteristics>
+                              <mix:imageWidth>5504</mix:imageWidth>
+                              <mix:imageHeight>8256</mix:imageHeight>
+                              <mix:PhotometricInterpretation>
+                                 <mix:colorSpace>RGB</mix:colorSpace>
+                                 <mix:ColorProfile>
+                                    <mix:IccProfile>
+                                       <mix:iccProfileName>Adobe RGB (1998)</mix:iccProfileName>
+                                    </mix:IccProfile>
+                                 </mix:ColorProfile>
+                                 <mix:ReferenceBlackWhite>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>R</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>G</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>B</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                 </mix:ReferenceBlackWhite>
+                              </mix:PhotometricInterpretation>
+                           </mix:BasicImageCharacteristics>
+                        </mix:BasicImageInformation>
+                        <mix:ImageCaptureMetadata>
+                           <mix:GeneralCaptureInformation>
+                              <mix:dateTimeCreated>2024-03-13T10:01:35</mix:dateTimeCreated>
+                           </mix:GeneralCaptureInformation>
+                           <mix:ScannerCapture>
+                              <mix:ScanningSystemSoftware>
+                                 <mix:scanningSoftwareName>Adobe Photoshop Camera Raw 9.1.1 (Windows)</mix:scanningSoftwareName>
+                              </mix:ScanningSystemSoftware>
+                           </mix:ScannerCapture>
+                           <mix:DigitalCameraCapture>
+                              <mix:digitalCameraManufacturer>NIKON CORPORATION</mix:digitalCameraManufacturer>
+                              <mix:DigitalCameraModel>
+                                 <mix:digitalCameraModelName>NIKON D850</mix:digitalCameraModelName>
+                              </mix:DigitalCameraModel>
+                              <mix:CameraCaptureSettings>
+                                 <mix:ImageData>
+                                    <mix:fNumber>8.0</mix:fNumber>
+                                    <mix:exposureTime>0.02</mix:exposureTime>
+                                    <mix:isoSpeedRatings>100</mix:isoSpeedRatings>
+                                    <mix:shutterSpeedValue>
+                                       <mix:numerator>5643856</mix:numerator>
+                                       <mix:denominator>1000000</mix:denominator>
+                                    </mix:shutterSpeedValue>
+                                    <mix:apertureValue>
+                                       <mix:numerator>6</mix:numerator>
+                                       <mix:denominator>1</mix:denominator>
+                                    </mix:apertureValue>
+                                    <mix:exposureBiasValue>
+                                       <mix:numerator>0</mix:numerator>
+                                       <mix:denominator>6</mix:denominator>
+                                    </mix:exposureBiasValue>
+                                    <mix:maxApertureValue>
+                                       <mix:numerator>16</mix:numerator>
+                                       <mix:denominator>10</mix:denominator>
+                                    </mix:maxApertureValue>
+                                 </mix:ImageData>
+                              </mix:CameraCaptureSettings>
+                           </mix:DigitalCameraCapture>
+                           <mix:orientation>normal*</mix:orientation>
+                        </mix:ImageCaptureMetadata>
+                        <mix:ImageAssessmentMetadata>
+                           <mix:SpatialMetrics>
+                              <mix:samplingFrequencyUnit>in.</mix:samplingFrequencyUnit>
+                              <mix:xSamplingFrequency>
+                                 <mix:numerator>300</mix:numerator>
+                              </mix:xSamplingFrequency>
+                              <mix:ySamplingFrequency>
+                                 <mix:numerator>300</mix:numerator>
+                              </mix:ySamplingFrequency>
+                           </mix:SpatialMetrics>
+                           <mix:ImageColorEncoding>
+                              <mix:BitsPerSample>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleUnit>integer</mix:bitsPerSampleUnit>
+                              </mix:BitsPerSample>
+                              <mix:samplesPerPixel>3</mix:samplesPerPixel>
+                           </mix:ImageColorEncoding>
+                        </mix:ImageAssessmentMetadata>
+                     </mix:mix>
+                  </mets:xmlData>
+               </mets:mdWrap>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:techMD>
+      <mets:techMD ID="AMD_89f40203-aa32-40e0-ba35-cbed28cc4ea4">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+            <mets:xmlData>
+               <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+                  <mets:xmlData>
+                     <mix:mix xsi:schemaLocation="http://www.loc.gov/mix/v20 http://www.loc.gov/standards/mix/mix20/mix20.xsd" xmlns:mix="http://www.loc.gov/mix/v20">
+                        <mix:BasicDigitalObjectInformation>
+                           <mix:ObjectIdentifier>
+                              <mix:objectIdentifierType>JHOVE</mix:objectIdentifierType>
+                           </mix:ObjectIdentifier>
+                           <mix:FormatDesignation>
+                              <mix:formatName>image/tiff</mix:formatName>
+                           </mix:FormatDesignation>
+                           <mix:byteOrder>little endian</mix:byteOrder>
+                           <mix:Compression>
+                              <mix:compressionScheme>Uncompressed</mix:compressionScheme>
+                           </mix:Compression>
+                        </mix:BasicDigitalObjectInformation>
+                        <mix:BasicImageInformation>
+                           <mix:BasicImageCharacteristics>
+                              <mix:imageWidth>5504</mix:imageWidth>
+                              <mix:imageHeight>8256</mix:imageHeight>
+                              <mix:PhotometricInterpretation>
+                                 <mix:colorSpace>RGB</mix:colorSpace>
+                                 <mix:ColorProfile>
+                                    <mix:IccProfile>
+                                       <mix:iccProfileName>Adobe RGB (1998)</mix:iccProfileName>
+                                    </mix:IccProfile>
+                                 </mix:ColorProfile>
+                                 <mix:ReferenceBlackWhite>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>R</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>G</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>B</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                 </mix:ReferenceBlackWhite>
+                              </mix:PhotometricInterpretation>
+                           </mix:BasicImageCharacteristics>
+                        </mix:BasicImageInformation>
+                        <mix:ImageCaptureMetadata>
+                           <mix:GeneralCaptureInformation>
+                              <mix:dateTimeCreated>2022-11-16T09:38:08</mix:dateTimeCreated>
+                           </mix:GeneralCaptureInformation>
+                           <mix:ScannerCapture>
+                              <mix:ScanningSystemSoftware>
+                                 <mix:scanningSoftwareName>Adobe Photoshop Camera Raw 9.1.1 (Windows)</mix:scanningSoftwareName>
+                              </mix:ScanningSystemSoftware>
+                           </mix:ScannerCapture>
+                           <mix:DigitalCameraCapture>
+                              <mix:digitalCameraManufacturer>NIKON CORPORATION</mix:digitalCameraManufacturer>
+                              <mix:DigitalCameraModel>
+                                 <mix:digitalCameraModelName>NIKON D850</mix:digitalCameraModelName>
+                              </mix:DigitalCameraModel>
+                              <mix:CameraCaptureSettings>
+                                 <mix:ImageData>
+                                    <mix:fNumber>8.0</mix:fNumber>
+                                    <mix:exposureTime>10.0</mix:exposureTime>
+                                    <mix:isoSpeedRatings>200</mix:isoSpeedRatings>
+                                    <mix:shutterSpeedValue>
+                                       <mix:numerator>4291645368</mix:numerator>
+                                       <mix:denominator>1000000</mix:denominator>
+                                    </mix:shutterSpeedValue>
+                                    <mix:apertureValue>
+                                       <mix:numerator>6</mix:numerator>
+                                       <mix:denominator>1</mix:denominator>
+                                    </mix:apertureValue>
+                                    <mix:exposureBiasValue>
+                                       <mix:numerator>0</mix:numerator>
+                                       <mix:denominator>6</mix:denominator>
+                                    </mix:exposureBiasValue>
+                                    <mix:maxApertureValue>
+                                       <mix:numerator>16</mix:numerator>
+                                       <mix:denominator>10</mix:denominator>
+                                    </mix:maxApertureValue>
+                                 </mix:ImageData>
+                              </mix:CameraCaptureSettings>
+                           </mix:DigitalCameraCapture>
+                           <mix:orientation>normal*</mix:orientation>
+                        </mix:ImageCaptureMetadata>
+                        <mix:ImageAssessmentMetadata>
+                           <mix:SpatialMetrics>
+                              <mix:samplingFrequencyUnit>in.</mix:samplingFrequencyUnit>
+                              <mix:xSamplingFrequency>
+                                 <mix:numerator>300</mix:numerator>
+                              </mix:xSamplingFrequency>
+                              <mix:ySamplingFrequency>
+                                 <mix:numerator>300</mix:numerator>
+                              </mix:ySamplingFrequency>
+                           </mix:SpatialMetrics>
+                           <mix:ImageColorEncoding>
+                              <mix:BitsPerSample>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleUnit>integer</mix:bitsPerSampleUnit>
+                              </mix:BitsPerSample>
+                              <mix:samplesPerPixel>3</mix:samplesPerPixel>
+                           </mix:ImageColorEncoding>
+                        </mix:ImageAssessmentMetadata>
+                     </mix:mix>
+                  </mets:xmlData>
+               </mets:mdWrap>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:techMD>
+      <mets:techMD ID="AMD_eb73a78a-e1d5-4c12-a2b0-0d101a7ed148">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+            <mets:xmlData>
+               <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+                  <mets:xmlData>
+                     <mix:mix xsi:schemaLocation="http://www.loc.gov/mix/v20 http://www.loc.gov/standards/mix/mix20/mix20.xsd" xmlns:mix="http://www.loc.gov/mix/v20">
+                        <mix:BasicDigitalObjectInformation>
+                           <mix:ObjectIdentifier>
+                              <mix:objectIdentifierType>JHOVE</mix:objectIdentifierType>
+                           </mix:ObjectIdentifier>
+                           <mix:FormatDesignation>
+                              <mix:formatName>image/tiff</mix:formatName>
+                           </mix:FormatDesignation>
+                           <mix:byteOrder>little endian</mix:byteOrder>
+                           <mix:Compression>
+                              <mix:compressionScheme>Uncompressed</mix:compressionScheme>
+                           </mix:Compression>
+                        </mix:BasicDigitalObjectInformation>
+                        <mix:BasicImageInformation>
+                           <mix:BasicImageCharacteristics>
+                              <mix:imageWidth>5318</mix:imageWidth>
+                              <mix:imageHeight>7959</mix:imageHeight>
+                              <mix:PhotometricInterpretation>
+                                 <mix:colorSpace>RGB</mix:colorSpace>
+                                 <mix:ColorProfile>
+                                    <mix:IccProfile>
+                                       <mix:iccProfileName>sRGB IEC61966-2.1</mix:iccProfileName>
+                                    </mix:IccProfile>
+                                 </mix:ColorProfile>
+                                 <mix:ReferenceBlackWhite>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>R</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>G</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>B</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                 </mix:ReferenceBlackWhite>
+                              </mix:PhotometricInterpretation>
+                           </mix:BasicImageCharacteristics>
+                        </mix:BasicImageInformation>
+                        <mix:ImageCaptureMetadata>
+                           <mix:GeneralCaptureInformation>
+                              <mix:dateTimeCreated>2024-03-13T10:05:00</mix:dateTimeCreated>
+                           </mix:GeneralCaptureInformation>
+                           <mix:ScannerCapture>
+                              <mix:ScanningSystemSoftware>
+                                 <mix:scanningSoftwareName>Adobe Photoshop CS6 (Windows)</mix:scanningSoftwareName>
+                              </mix:ScanningSystemSoftware>
+                           </mix:ScannerCapture>
+                           <mix:orientation>normal*</mix:orientation>
+                        </mix:ImageCaptureMetadata>
+                        <mix:ImageAssessmentMetadata>
+                           <mix:SpatialMetrics>
+                              <mix:samplingFrequencyUnit>in.</mix:samplingFrequencyUnit>
+                              <mix:xSamplingFrequency>
+                                 <mix:numerator>3000000</mix:numerator>
+                                 <mix:denominator>10000</mix:denominator>
+                              </mix:xSamplingFrequency>
+                              <mix:ySamplingFrequency>
+                                 <mix:numerator>3000000</mix:numerator>
+                                 <mix:denominator>10000</mix:denominator>
+                              </mix:ySamplingFrequency>
+                           </mix:SpatialMetrics>
+                           <mix:ImageColorEncoding>
+                              <mix:BitsPerSample>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleUnit>integer</mix:bitsPerSampleUnit>
+                              </mix:BitsPerSample>
+                              <mix:samplesPerPixel>3</mix:samplesPerPixel>
+                           </mix:ImageColorEncoding>
+                        </mix:ImageAssessmentMetadata>
+                     </mix:mix>
+                  </mets:xmlData>
+               </mets:mdWrap>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:techMD>
+      <mets:techMD ID="AMD_64a36e73-8c52-4738-a988-487b3c0ddcba">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+            <mets:xmlData>
+               <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+                  <mets:xmlData>
+                     <mix:mix xsi:schemaLocation="http://www.loc.gov/mix/v20 http://www.loc.gov/standards/mix/mix20/mix20.xsd" xmlns:mix="http://www.loc.gov/mix/v20">
+                        <mix:BasicDigitalObjectInformation>
+                           <mix:ObjectIdentifier>
+                              <mix:objectIdentifierType>JHOVE</mix:objectIdentifierType>
+                           </mix:ObjectIdentifier>
+                           <mix:FormatDesignation>
+                              <mix:formatName>image/tiff</mix:formatName>
+                           </mix:FormatDesignation>
+                           <mix:byteOrder>little endian</mix:byteOrder>
+                           <mix:Compression>
+                              <mix:compressionScheme>Uncompressed</mix:compressionScheme>
+                           </mix:Compression>
+                        </mix:BasicDigitalObjectInformation>
+                        <mix:BasicImageInformation>
+                           <mix:BasicImageCharacteristics>
+                              <mix:imageWidth>5504</mix:imageWidth>
+                              <mix:imageHeight>8256</mix:imageHeight>
+                              <mix:PhotometricInterpretation>
+                                 <mix:colorSpace>RGB</mix:colorSpace>
+                                 <mix:ColorProfile>
+                                    <mix:IccProfile>
+                                       <mix:iccProfileName>Adobe RGB (1998)</mix:iccProfileName>
+                                    </mix:IccProfile>
+                                 </mix:ColorProfile>
+                                 <mix:ReferenceBlackWhite>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>R</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>G</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>B</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                 </mix:ReferenceBlackWhite>
+                              </mix:PhotometricInterpretation>
+                           </mix:BasicImageCharacteristics>
+                        </mix:BasicImageInformation>
+                        <mix:ImageCaptureMetadata>
+                           <mix:GeneralCaptureInformation>
+                              <mix:dateTimeCreated>2023-08-10T17:06:02</mix:dateTimeCreated>
+                           </mix:GeneralCaptureInformation>
+                           <mix:ScannerCapture>
+                              <mix:ScanningSystemSoftware>
+                                 <mix:scanningSoftwareName>Adobe Photoshop CS6 (Windows)</mix:scanningSoftwareName>
+                              </mix:ScanningSystemSoftware>
+                           </mix:ScannerCapture>
+                           <mix:DigitalCameraCapture>
+                              <mix:digitalCameraManufacturer>NIKON CORPORATION</mix:digitalCameraManufacturer>
+                              <mix:DigitalCameraModel>
+                                 <mix:digitalCameraModelName>NIKON D850</mix:digitalCameraModelName>
+                              </mix:DigitalCameraModel>
+                              <mix:CameraCaptureSettings>
+                                 <mix:ImageData>
+                                    <mix:fNumber>5.6</mix:fNumber>
+                                    <mix:exposureTime>5.0</mix:exposureTime>
+                                    <mix:isoSpeedRatings>200</mix:isoSpeedRatings>
+                                    <mix:shutterSpeedValue>
+                                       <mix:numerator>4292645368</mix:numerator>
+                                       <mix:denominator>1000000</mix:denominator>
+                                    </mix:shutterSpeedValue>
+                                    <mix:apertureValue>
+                                       <mix:numerator>4970854</mix:numerator>
+                                       <mix:denominator>1000000</mix:denominator>
+                                    </mix:apertureValue>
+                                    <mix:exposureBiasValue>
+                                       <mix:numerator>0</mix:numerator>
+                                       <mix:denominator>6</mix:denominator>
+                                    </mix:exposureBiasValue>
+                                    <mix:maxApertureValue>
+                                       <mix:numerator>16</mix:numerator>
+                                       <mix:denominator>10</mix:denominator>
+                                    </mix:maxApertureValue>
+                                 </mix:ImageData>
+                              </mix:CameraCaptureSettings>
+                           </mix:DigitalCameraCapture>
+                           <mix:orientation>normal*</mix:orientation>
+                        </mix:ImageCaptureMetadata>
+                        <mix:ImageAssessmentMetadata>
+                           <mix:SpatialMetrics>
+                              <mix:samplingFrequencyUnit>in.</mix:samplingFrequencyUnit>
+                              <mix:xSamplingFrequency>
+                                 <mix:numerator>3000000</mix:numerator>
+                                 <mix:denominator>10000</mix:denominator>
+                              </mix:xSamplingFrequency>
+                              <mix:ySamplingFrequency>
+                                 <mix:numerator>3000000</mix:numerator>
+                                 <mix:denominator>10000</mix:denominator>
+                              </mix:ySamplingFrequency>
+                           </mix:SpatialMetrics>
+                           <mix:ImageColorEncoding>
+                              <mix:BitsPerSample>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleUnit>integer</mix:bitsPerSampleUnit>
+                              </mix:BitsPerSample>
+                              <mix:samplesPerPixel>3</mix:samplesPerPixel>
+                           </mix:ImageColorEncoding>
+                        </mix:ImageAssessmentMetadata>
+                     </mix:mix>
+                  </mets:xmlData>
+               </mets:mdWrap>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:techMD>
+      <mets:techMD ID="AMD_e03661c0-c2ca-416f-8f96-0766384714d2">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+            <mets:xmlData>
+               <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+                  <mets:xmlData>
+                     <mix:mix xsi:schemaLocation="http://www.loc.gov/mix/v20 http://www.loc.gov/standards/mix/mix20/mix20.xsd" xmlns:mix="http://www.loc.gov/mix/v20">
+                        <mix:BasicDigitalObjectInformation>
+                           <mix:ObjectIdentifier>
+                              <mix:objectIdentifierType>JHOVE</mix:objectIdentifierType>
+                           </mix:ObjectIdentifier>
+                           <mix:FormatDesignation>
+                              <mix:formatName>image/tiff</mix:formatName>
+                           </mix:FormatDesignation>
+                           <mix:byteOrder>little endian</mix:byteOrder>
+                           <mix:Compression>
+                              <mix:compressionScheme>Uncompressed</mix:compressionScheme>
+                           </mix:Compression>
+                        </mix:BasicDigitalObjectInformation>
+                        <mix:BasicImageInformation>
+                           <mix:BasicImageCharacteristics>
+                              <mix:imageWidth>4963</mix:imageWidth>
+                              <mix:imageHeight>7168</mix:imageHeight>
+                              <mix:PhotometricInterpretation>
+                                 <mix:colorSpace>RGB</mix:colorSpace>
+                                 <mix:ReferenceBlackWhite>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>R</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>G</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>B</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                 </mix:ReferenceBlackWhite>
+                              </mix:PhotometricInterpretation>
+                           </mix:BasicImageCharacteristics>
+                        </mix:BasicImageInformation>
+                        <mix:ImageCaptureMetadata>
+                           <mix:GeneralCaptureInformation>
+                              <mix:dateTimeCreated>2023-01-23T17:53:52</mix:dateTimeCreated>
+                           </mix:GeneralCaptureInformation>
+                           <mix:ScannerCapture>
+                              <mix:ScanningSystemSoftware>
+                                 <mix:scanningSoftwareName>Adobe Photoshop CS6 (Windows)</mix:scanningSoftwareName>
+                              </mix:ScanningSystemSoftware>
+                           </mix:ScannerCapture>
+                           <mix:orientation>normal*</mix:orientation>
+                        </mix:ImageCaptureMetadata>
+                        <mix:ImageAssessmentMetadata>
+                           <mix:SpatialMetrics>
+                              <mix:samplingFrequencyUnit>in.</mix:samplingFrequencyUnit>
+                              <mix:xSamplingFrequency>
+                                 <mix:numerator>3000000</mix:numerator>
+                                 <mix:denominator>10000</mix:denominator>
+                              </mix:xSamplingFrequency>
+                              <mix:ySamplingFrequency>
+                                 <mix:numerator>3000000</mix:numerator>
+                                 <mix:denominator>10000</mix:denominator>
+                              </mix:ySamplingFrequency>
+                           </mix:SpatialMetrics>
+                           <mix:ImageColorEncoding>
+                              <mix:BitsPerSample>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleUnit>integer</mix:bitsPerSampleUnit>
+                              </mix:BitsPerSample>
+                              <mix:samplesPerPixel>3</mix:samplesPerPixel>
+                           </mix:ImageColorEncoding>
+                        </mix:ImageAssessmentMetadata>
+                     </mix:mix>
+                  </mets:xmlData>
+               </mets:mdWrap>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:techMD>
+      <mets:techMD ID="AMD_fec1fdfc-ae0b-46d5-9d21-a351ae84387a">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+            <mets:xmlData>
+               <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+                  <mets:xmlData>
+                     <mix:mix xsi:schemaLocation="http://www.loc.gov/mix/v20 http://www.loc.gov/standards/mix/mix20/mix20.xsd" xmlns:mix="http://www.loc.gov/mix/v20">
+                        <mix:BasicDigitalObjectInformation>
+                           <mix:ObjectIdentifier>
+                              <mix:objectIdentifierType>JHOVE</mix:objectIdentifierType>
+                           </mix:ObjectIdentifier>
+                           <mix:FormatDesignation>
+                              <mix:formatName>image/tiff</mix:formatName>
+                           </mix:FormatDesignation>
+                           <mix:byteOrder>little endian</mix:byteOrder>
+                           <mix:Compression>
+                              <mix:compressionScheme>Uncompressed</mix:compressionScheme>
+                           </mix:Compression>
+                        </mix:BasicDigitalObjectInformation>
+                        <mix:BasicImageInformation>
+                           <mix:BasicImageCharacteristics>
+                              <mix:imageWidth>5504</mix:imageWidth>
+                              <mix:imageHeight>8256</mix:imageHeight>
+                              <mix:PhotometricInterpretation>
+                                 <mix:colorSpace>RGB</mix:colorSpace>
+                                 <mix:ColorProfile>
+                                    <mix:IccProfile>
+                                       <mix:iccProfileName>Adobe RGB (1998)</mix:iccProfileName>
+                                    </mix:IccProfile>
+                                 </mix:ColorProfile>
+                                 <mix:ReferenceBlackWhite>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>R</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>G</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>B</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                 </mix:ReferenceBlackWhite>
+                              </mix:PhotometricInterpretation>
+                           </mix:BasicImageCharacteristics>
+                        </mix:BasicImageInformation>
+                        <mix:ImageCaptureMetadata>
+                           <mix:GeneralCaptureInformation>
+                              <mix:dateTimeCreated>2022-11-16T09:37:19</mix:dateTimeCreated>
+                           </mix:GeneralCaptureInformation>
+                           <mix:ScannerCapture>
+                              <mix:ScanningSystemSoftware>
+                                 <mix:scanningSoftwareName>Adobe Photoshop Camera Raw 9.1.1 (Windows)</mix:scanningSoftwareName>
+                              </mix:ScanningSystemSoftware>
+                           </mix:ScannerCapture>
+                           <mix:DigitalCameraCapture>
+                              <mix:digitalCameraManufacturer>NIKON CORPORATION</mix:digitalCameraManufacturer>
+                              <mix:DigitalCameraModel>
+                                 <mix:digitalCameraModelName>NIKON D850</mix:digitalCameraModelName>
+                              </mix:DigitalCameraModel>
+                              <mix:CameraCaptureSettings>
+                                 <mix:ImageData>
+                                    <mix:fNumber>5.6</mix:fNumber>
+                                    <mix:exposureTime>5.0</mix:exposureTime>
+                                    <mix:isoSpeedRatings>200</mix:isoSpeedRatings>
+                                    <mix:shutterSpeedValue>
+                                       <mix:numerator>4292645368</mix:numerator>
+                                       <mix:denominator>1000000</mix:denominator>
+                                    </mix:shutterSpeedValue>
+                                    <mix:apertureValue>
+                                       <mix:numerator>4970854</mix:numerator>
+                                       <mix:denominator>1000000</mix:denominator>
+                                    </mix:apertureValue>
+                                    <mix:exposureBiasValue>
+                                       <mix:numerator>0</mix:numerator>
+                                       <mix:denominator>6</mix:denominator>
+                                    </mix:exposureBiasValue>
+                                    <mix:maxApertureValue>
+                                       <mix:numerator>16</mix:numerator>
+                                       <mix:denominator>10</mix:denominator>
+                                    </mix:maxApertureValue>
+                                 </mix:ImageData>
+                              </mix:CameraCaptureSettings>
+                           </mix:DigitalCameraCapture>
+                           <mix:orientation>normal*</mix:orientation>
+                        </mix:ImageCaptureMetadata>
+                        <mix:ImageAssessmentMetadata>
+                           <mix:SpatialMetrics>
+                              <mix:samplingFrequencyUnit>in.</mix:samplingFrequencyUnit>
+                              <mix:xSamplingFrequency>
+                                 <mix:numerator>300</mix:numerator>
+                              </mix:xSamplingFrequency>
+                              <mix:ySamplingFrequency>
+                                 <mix:numerator>300</mix:numerator>
+                              </mix:ySamplingFrequency>
+                           </mix:SpatialMetrics>
+                           <mix:ImageColorEncoding>
+                              <mix:BitsPerSample>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleUnit>integer</mix:bitsPerSampleUnit>
+                              </mix:BitsPerSample>
+                              <mix:samplesPerPixel>3</mix:samplesPerPixel>
+                           </mix:ImageColorEncoding>
+                        </mix:ImageAssessmentMetadata>
+                     </mix:mix>
+                  </mets:xmlData>
+               </mets:mdWrap>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:techMD>
+      <mets:techMD ID="AMD_c9229d6e-6c88-41cb-9249-11f982ddfd92">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+            <mets:xmlData>
+               <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml">
+                  <mets:xmlData>
+                     <mix:mix xsi:schemaLocation="http://www.loc.gov/mix/v20 http://www.loc.gov/standards/mix/mix20/mix20.xsd" xmlns:mix="http://www.loc.gov/mix/v20">
+                        <mix:BasicDigitalObjectInformation>
+                           <mix:ObjectIdentifier>
+                              <mix:objectIdentifierType>JHOVE</mix:objectIdentifierType>
+                           </mix:ObjectIdentifier>
+                           <mix:FormatDesignation>
+                              <mix:formatName>image/tiff</mix:formatName>
+                           </mix:FormatDesignation>
+                           <mix:byteOrder>little endian</mix:byteOrder>
+                           <mix:Compression>
+                              <mix:compressionScheme>LZW</mix:compressionScheme>
+                           </mix:Compression>
+                        </mix:BasicDigitalObjectInformation>
+                        <mix:BasicImageInformation>
+                           <mix:BasicImageCharacteristics>
+                              <mix:imageWidth>5504</mix:imageWidth>
+                              <mix:imageHeight>8256</mix:imageHeight>
+                              <mix:PhotometricInterpretation>
+                                 <mix:colorSpace>RGB</mix:colorSpace>
+                                 <mix:ColorProfile>
+                                    <mix:IccProfile>
+                                       <mix:iccProfileName>Adobe RGB (1998)</mix:iccProfileName>
+                                    </mix:IccProfile>
+                                 </mix:ColorProfile>
+                                 <mix:ReferenceBlackWhite>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>R</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>G</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                    <mix:Component>
+                                       <mix:componentPhotometricInterpretation>B</mix:componentPhotometricInterpretation>
+                                       <mix:footroom>
+                                          <mix:numerator>0</mix:numerator>
+                                       </mix:footroom>
+                                       <mix:headroom>
+                                          <mix:numerator>255</mix:numerator>
+                                       </mix:headroom>
+                                    </mix:Component>
+                                 </mix:ReferenceBlackWhite>
+                              </mix:PhotometricInterpretation>
+                           </mix:BasicImageCharacteristics>
+                        </mix:BasicImageInformation>
+                        <mix:ImageCaptureMetadata>
+                           <mix:GeneralCaptureInformation>
+                              <mix:dateTimeCreated>2022-11-16T14:48:11</mix:dateTimeCreated>
+                           </mix:GeneralCaptureInformation>
+                           <mix:ScannerCapture>
+                              <mix:ScanningSystemSoftware>
+                                 <mix:scanningSoftwareName>Microsoft Windows Photo Viewer 10.0.19041.1</mix:scanningSoftwareName>
+                              </mix:ScanningSystemSoftware>
+                           </mix:ScannerCapture>
+                           <mix:DigitalCameraCapture>
+                              <mix:digitalCameraManufacturer>NIKON CORPORATION</mix:digitalCameraManufacturer>
+                              <mix:DigitalCameraModel>
+                                 <mix:digitalCameraModelName>NIKON D850</mix:digitalCameraModelName>
+                              </mix:DigitalCameraModel>
+                              <mix:CameraCaptureSettings>
+                                 <mix:ImageData>
+                                    <mix:fNumber>8.0</mix:fNumber>
+                                    <mix:exposureTime>0.2</mix:exposureTime>
+                                    <mix:isoSpeedRatings>100</mix:isoSpeedRatings>
+                                    <mix:shutterSpeedValue>
+                                       <mix:numerator>2321928</mix:numerator>
+                                       <mix:denominator>1000000</mix:denominator>
+                                    </mix:shutterSpeedValue>
+                                    <mix:apertureValue>
+                                       <mix:numerator>6</mix:numerator>
+                                       <mix:denominator>1</mix:denominator>
+                                    </mix:apertureValue>
+                                    <mix:exposureBiasValue>
+                                       <mix:numerator>0</mix:numerator>
+                                       <mix:denominator>6</mix:denominator>
+                                    </mix:exposureBiasValue>
+                                    <mix:maxApertureValue>
+                                       <mix:numerator>16</mix:numerator>
+                                       <mix:denominator>10</mix:denominator>
+                                    </mix:maxApertureValue>
+                                 </mix:ImageData>
+                              </mix:CameraCaptureSettings>
+                           </mix:DigitalCameraCapture>
+                           <mix:orientation>normal*</mix:orientation>
+                        </mix:ImageCaptureMetadata>
+                        <mix:ImageAssessmentMetadata>
+                           <mix:SpatialMetrics>
+                              <mix:samplingFrequencyUnit>in.</mix:samplingFrequencyUnit>
+                              <mix:xSamplingFrequency>
+                                 <mix:numerator>300000</mix:numerator>
+                                 <mix:denominator>1000</mix:denominator>
+                              </mix:xSamplingFrequency>
+                              <mix:ySamplingFrequency>
+                                 <mix:numerator>300000</mix:numerator>
+                                 <mix:denominator>1000</mix:denominator>
+                              </mix:ySamplingFrequency>
+                           </mix:SpatialMetrics>
+                           <mix:ImageColorEncoding>
+                              <mix:BitsPerSample>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleValue>8</mix:bitsPerSampleValue>
+                                 <mix:bitsPerSampleUnit>integer</mix:bitsPerSampleUnit>
+                              </mix:BitsPerSample>
+                              <mix:samplesPerPixel>3</mix:samplesPerPixel>
+                           </mix:ImageColorEncoding>
+                        </mix:ImageAssessmentMetadata>
+                     </mix:mix>
+                  </mets:xmlData>
+               </mets:mdWrap>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:techMD>
+      <mets:rightsMD ID="RIGHTS">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+            <mets:xmlData>
+               <dv:rights>
+                  <dv:owner>KHM-Museumsverband</dv:owner>
+                  <dv:ownerLogo>https://www.khm.at/fileadmin/templates/khm/images/logo-print.png</dv:ownerLogo>
+                  <dv:ownerSiteURL>https://www.khm.at/</dv:ownerSiteURL>
+                  <dv:ownerContact>mailto:bibliothek@khm.at</dv:ownerContact>
+                  <dv:sponsorSiteURL>bibliothek@khm.at</dv:sponsorSiteURL>
+               </dv:rights>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:rightsMD>
+      <mets:digiprovMD ID="DIGIPROV">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVLINKS">
+            <mets:xmlData>
+               <dv:links>
+                  <dv:reference/>
+                  <dv:presentation>https://repository.khm.at/viewer/piresolver?id=4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3</dv:presentation>
+               </dv:links>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:digiprovMD>
+   </mets:amdSec>
+   <mets:fileSec>
+      <mets:fileGrp USE="PRESENTATION">
+         <mets:file ID="FILE_0001_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/FARBSTOFF MUSTER_TF_20221110_IR_062.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0002_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/FARBSTOFF MUSTER_TF_20221110_IRF_063.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/FARBSTOFF MUSTER_TF_20221110_IRFC_066.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0004_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/FARBSTOFF MUSTER_TF_20221110_UVF_065.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0005_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/FARBSTOFF MUSTER_TF_20221110_UVFC_126.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0006_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/FARBSTOFF MUSTER_TF_20221110_UVR_064.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0007_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/FARBSTOFF MUSTER_TF_20221110_VIS_061.jpg"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="DEFAULT">
+         <mets:file ID="FILE_0001_DEFAULT" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="https://repository.khm.at/viewer/content/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/800/0/FARBSTOFF MUSTER_TF_20221110_IR_062.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0002_DEFAULT" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="https://repository.khm.at/viewer/content/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/800/0/FARBSTOFF MUSTER_TF_20221110_IRF_063.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_DEFAULT" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="https://repository.khm.at/viewer/content/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/800/0/FARBSTOFF MUSTER_TF_20221110_IRFC_066.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0004_DEFAULT" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="https://repository.khm.at/viewer/content/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/800/0/FARBSTOFF MUSTER_TF_20221110_UVF_065.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0005_DEFAULT" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="https://repository.khm.at/viewer/content/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/800/0/FARBSTOFF MUSTER_TF_20221110_UVFC_126.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0006_DEFAULT" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="https://repository.khm.at/viewer/content/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/800/0/FARBSTOFF MUSTER_TF_20221110_UVR_064.jpg"/>
+         </mets:file>
+         <mets:file ID="FILE_0007_DEFAULT" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="https://repository.khm.at/viewer/content/4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3/800/0/FARBSTOFF MUSTER_TF_20221110_VIS_061.jpg"/>
+         </mets:file>
+      </mets:fileGrp>
+   </mets:fileSec>
+   <mets:structMap TYPE="LOGICAL">
+      <mets:div ADMID="AMD" DMDID="DMDLOG_0000" ID="LOG_0000" LABEL="Farbstoff Muster" TYPE="folder"/>
+   </mets:structMap>
+   <mets:structMap TYPE="PHYSICAL">
+      <mets:div ID="PHYS_0000" TYPE="physSequence">
+         <mets:div ADMID="AMD_17e60738-95ba-40c3-ae9a-6a7e424faddf" ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0001_PRESENTATION"/>
+            <mets:fptr FILEID="FILE_0001_DEFAULT"/>
+         </mets:div>
+         <mets:div ADMID="AMD_89f40203-aa32-40e0-ba35-cbed28cc4ea4" ID="PHYS_0002" ORDER="2" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0002_PRESENTATION"/>
+            <mets:fptr FILEID="FILE_0002_DEFAULT"/>
+         </mets:div>
+         <mets:div ADMID="AMD_eb73a78a-e1d5-4c12-a2b0-0d101a7ed148" ID="PHYS_0003" ORDER="3" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0003_PRESENTATION"/>
+            <mets:fptr FILEID="FILE_0003_DEFAULT"/>
+         </mets:div>
+         <mets:div ADMID="AMD_64a36e73-8c52-4738-a988-487b3c0ddcba" ID="PHYS_0004" ORDER="4" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0004_PRESENTATION"/>
+            <mets:fptr FILEID="FILE_0004_DEFAULT"/>
+         </mets:div>
+         <mets:div ADMID="AMD_e03661c0-c2ca-416f-8f96-0766384714d2" ID="PHYS_0005" ORDER="5" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0005_PRESENTATION"/>
+            <mets:fptr FILEID="FILE_0005_DEFAULT"/>
+         </mets:div>
+         <mets:div ADMID="AMD_fec1fdfc-ae0b-46d5-9d21-a351ae84387a" ID="PHYS_0006" ORDER="6" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0006_PRESENTATION"/>
+            <mets:fptr FILEID="FILE_0006_DEFAULT"/>
+         </mets:div>
+         <mets:div ADMID="AMD_c9229d6e-6c88-41cb-9249-11f982ddfd92" ID="PHYS_0007" ORDER="7" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0007_PRESENTATION"/>
+            <mets:fptr FILEID="FILE_0007_DEFAULT"/>
+         </mets:div>
+      </mets:div>
+   </mets:structMap>
+   <mets:structLink>
+      <mets:smLink xlink:to="PHYS_0001" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0002" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0003" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0004" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0005" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0006" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0007" xlink:from="LOG_0000"/>
+   </mets:structLink>
+</mets:mets>

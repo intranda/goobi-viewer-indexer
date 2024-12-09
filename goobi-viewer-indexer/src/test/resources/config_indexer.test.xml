@@ -1629,6 +1629,51 @@
 				</item>
 			</list>
 		</MD_DV_OWNERCONTACT>
+        
+        <MD_TECH_FORMAT_NAME>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mix:mix/mix:BasicDigitalObjectInformation/mix:FormatDesignation/mix:formatName</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </MD_TECH_FORMAT_NAME>
+        
+        <MD_TECH_BYTE_ORDER>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mix:mix/mix:BasicDigitalObjectInformation/mix:byteOrder</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </MD_TECH_BYTE_ORDER>
+        
+        <MD_TECH_BASIC_IMAGE_INFO>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>false</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">concat(mix:imageWidth, ' x ', mix:imageHeight)</field>
+                        <field name="MD_TECH_IMAGE_WIDTH">mix:imageWidth</field>
+                        <field name="MD_TECH_IMAGE_HEIGHT">mix:imageHeight</field>
+                        <field name="MD_TECH_IMAGE_COLOR_SPACE">mix:PhotometricInterpretation/mix:colorSpace</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_TECH_BASIC_IMAGE_INFO>
 		
 	</fields>
 
