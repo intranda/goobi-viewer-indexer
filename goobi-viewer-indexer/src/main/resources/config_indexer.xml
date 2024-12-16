@@ -2336,10 +2336,6 @@
 					</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
-<!--                     <groupEntity type="OTHER"> -->
-<!--                        <field name="MD_VALUE">text()</field> -->
-<!--                        <field name="ACCESSCONDITION">@accessRestrict</field> -->
-<!--                     </groupEntity> -->
                     <replace string="true">metadata_access_restricted</replace>
 				</item>
 			</list>
