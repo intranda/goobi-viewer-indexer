@@ -138,7 +138,7 @@ public final class MetadataHelper {
                 // Constant value instead of XPath
                 if (configurationItem.getConstantValue() != null) {
                     StringBuilder sbValue = new StringBuilder(configurationItem.getConstantValue());
-                    if (configurationItem.getValuepostfix().length() > 0) {
+                    if (StringUtils.isNotEmpty(configurationItem.getValuepostfix())) {
                         sbValue.append(configurationItem.getValuepostfix());
                     }
                     String value = sbValue.toString().trim();
@@ -247,16 +247,19 @@ public final class MetadataHelper {
                         for (Object xpathAnswerObject : list) {
                             boolean nonShareable = false;
                             // Check for accessRestrict="true"
-                            String accessRestrictionQuery = query + "/@shareable";
-                            String accessRestrictionValue = xp.evaluateToAttributeStringValue(accessRestrictionQuery, currentElement);
-                            if ("no".equals(accessRestrictionValue)) {
-                                nonShareable = true;
-                                logger.info("Found non-shareable metadata value for {}, applying access condition.",
-                                        configurationItem.getFieldname());
+                            if (xpathAnswerObject instanceof Element ele) {
+                                String accessRestrictionQuery = "@shareable";
+                                String accessRestrictionValue = xp.evaluateToAttributeStringValue(accessRestrictionQuery, ele);
+                                if ("no".equals(accessRestrictionValue)) {
+                                    nonShareable = true;
+                                    logger.info("Found non-shareable metadata value for {}, applying access condition.",
+                                            configurationItem.getFieldname());
+                                }
                             }
+                            
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
-                                logger.trace(xpath);
+                                logger.info(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
                                         configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
@@ -265,6 +268,9 @@ public final class MetadataHelper {
                                 if (gmd.getMainValue() != null) {
                                     if (nonShareable) {
                                         fieldValues.add(StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED);
+                                        gmd.getFields()
+                                                .add(new LuceneField(SolrConstants.ACCESSCONDITION,
+                                                        StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED));
                                     } else {
                                         fieldValue = gmd.getMainValue();
                                         // Apply XPath prefix
@@ -310,18 +316,20 @@ public final class MetadataHelper {
                                     }
 
                                     if (nonShareable) {
-                                        // Use grouped metadata if to this value is restricted
-                                        GroupedMetadata gmd = new GroupedMetadata();
-                                        gmd.setMainValue(fieldValue);
-                                        gmd.getFields().add(new LuceneField(SolrConstants.LABEL, configurationItem.getFieldname()));
-                                        gmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, fieldValue));
-                                        gmd.getFields()
-                                                .add(new LuceneField(SolrConstants.ACCESSCONDITION,
-                                                        StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED));
-                                        if (!indexObj.getGroupedMetadataFields().contains(gmd) || configurationItem.isAllowDuplicateValues()) {
-                                            indexObj.getGroupedMetadataFields().add(gmd);
-                                        }
-                                        fieldValues.add(StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED);
+                                        // // Use grouped metadata if to this value is restricted
+                                        // GroupedMetadata gmd = new GroupedMetadata();
+                                        // gmd.setMainValue(fieldValue);
+                                        // gmd.getFields().add(new LuceneField(SolrConstants.LABEL, configurationItem.getFieldname()));
+                                        // gmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, fieldValue));
+                                        // gmd.getFields()
+                                        // .add(new LuceneField(SolrConstants.ACCESSCONDITION,
+                                        // StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED));
+                                        // if (!indexObj.getGroupedMetadataFields().contains(gmd) || configurationItem.isAllowDuplicateValues()) {
+                                        // indexObj.getGroupedMetadataFields().add(gmd);
+                                        // }
+                                        // fieldValues.add(StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED);
+                                        logger.info("Skipping non-sharable value for field '{}'. Configure as grouped to add to index.",
+                                                configurationItem.getFieldname());
                                     } else {
                                         if (configurationItem.isOneField()) {
                                             if (fieldValues.isEmpty()) {
