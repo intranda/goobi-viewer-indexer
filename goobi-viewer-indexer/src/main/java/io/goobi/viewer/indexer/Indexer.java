@@ -2082,7 +2082,6 @@ public abstract class Indexer {
                     logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                 }
             }
-            // logger.info("regular alto " + altoFile.getAbsolutePath() + " written: " + altoWritten);
         }
 
         // If FULLTEXT is still empty, look for a plain full-text
