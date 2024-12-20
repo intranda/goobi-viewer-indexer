@@ -429,20 +429,18 @@ public class EadIndexer extends Indexer {
         indexObj.writeAccessConditions(parentIndexObject);
 
         // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
-        if (StringUtils.isNotEmpty(indexObj.getLogId())) {
+        if (StringUtils.isNotEmpty(indexObj.getLogId()) && indexObj.getNumPages() > 0) {
             // Write number of pages and first/last page labels for this docstruct
-            if (indexObj.getNumPages() > 0) {
-                indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
-                if (indexObj.getFirstPageLabel() != null) {
-                    indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
-                }
-                if (indexObj.getLastPageLabel() != null) {
-                    indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
-                }
-                if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
-                    indexObj.addToLucene("MD_ORDERLABELRANGE",
-                            new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
-                }
+            indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
+            if (indexObj.getFirstPageLabel() != null) {
+                indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
+            }
+            if (indexObj.getLastPageLabel() != null) {
+                indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
+            }
+            if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
+                indexObj.addToLucene("MD_ORDERLABELRANGE",
+                        new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
             }
         }
 
