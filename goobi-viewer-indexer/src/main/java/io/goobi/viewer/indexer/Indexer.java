@@ -1444,8 +1444,10 @@ public abstract class Indexer {
         }
 
         // Add access conditions
-        for (String s : indexObj.getAccessConditions()) {
-            doc.addField(SolrConstants.ACCESSCONDITION, s);
+        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
+            for (String s : indexObj.getAccessConditions()) {
+                doc.addField(SolrConstants.ACCESSCONDITION, s);
+            }
         }
 
         // Add DC values to metadata doc
@@ -2080,7 +2082,6 @@ public abstract class Indexer {
                     logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                 }
             }
-            // logger.info("regular alto " + altoFile.getAbsolutePath() + " written: " + altoWritten);
         }
 
         // If FULLTEXT is still empty, look for a plain full-text

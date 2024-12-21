@@ -387,7 +387,6 @@ class IndexerTest extends AbstractSolrEnabledTest {
             Assertions.assertEquals("9.967025 51.521737", doc.getFieldValue("MD_COORDS"));
             Assertions.assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
             Assertions.assertNotNull(doc.getFieldValue("MD_BODY"));
-            //            Assertions.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", docs.get(0).getFieldValue(SolrConstants.UGCTERMS));
         }
         {
             SolrInputDocument doc = docs.stream()
@@ -721,9 +720,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDocNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        Map<String, Object> altoData = Collections.emptyMap();
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(null, Collections.emptyMap(), Collections.emptyMap(),
-                        DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+                () -> metsIndeer
+                        .addIndexFieldsFromAltoData(null, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
     }
 
     /**
@@ -732,9 +735,12 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        Map<String, Object> altoData = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(), null,
-                        DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, null, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
     }
 
     /**
@@ -743,10 +749,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfPiNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        Map<String, Object> altoData = Collections.emptyMap();
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(),
-                        Collections.emptyMap(),
-                        DataRepository.PARAM_ALTO, null, "00000010", 10, false));
+                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, null, "00000010", 10, false));
     }
 
     /**
@@ -755,10 +764,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfBaseFileNameNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        Map<String, Object> altoData = Collections.emptyMap();
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(),
-                        Collections.emptyMap(),
-                        DataRepository.PARAM_ALTO, "PPN123", null, 10, false));
+                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", null, 10, false));
     }
 
     /**
@@ -909,8 +921,11 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void generateUserGeneratedContentDocForPage_shouldThrowIllegalArgumentExceptionIfEleContentNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        Map<String, String> groupIds = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).generateUserGeneratedContentDocForPage(null, null, "foo", null, Collections.emptyMap(), 1));
+                () -> metsIndeer.generateUserGeneratedContentDocForPage(null, null, "foo", null, groupIds, 1));
     }
 
     /**
@@ -989,8 +1004,11 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(2L);
         ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Set<String> skipFields = new HashSet<>();
+        List<LuceneField> dcFields = Collections.emptyList();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(null, strategy, indexObj, 1L, new HashSet<>(), Collections.emptyList()));
+                () -> indexer.addGroupedMetadataDocs(null, strategy, indexObj, 1L, skipFields, dcFields));
     }
 
     /**
@@ -1002,8 +1020,11 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Indexer indexer = new MetsIndexer(hotfolder);
         GroupedMetadata gmd = new GroupedMetadata();
         ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Set<String> skipFields = new HashSet<>();
+        List<LuceneField> dcFields = Collections.emptyList();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(gmd, strategy, null, 1L, new HashSet<>(), Collections.emptyList()));
+                () -> indexer.addGroupedMetadataDocs(gmd, strategy, null, 1L, skipFields, dcFields));
     }
 
     /**
@@ -1015,9 +1036,11 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(2L);
         GroupedMetadata gmd = new GroupedMetadata();
+        Set<String> skipFields = new HashSet<>();
+        List<LuceneField> dcFields = Collections.emptyList();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(gmd, null, indexObj, 1L, new HashSet<>(),
-                        Collections.emptyList()));
+                () -> indexer.addGroupedMetadataDocs(gmd, null, indexObj, 1L, skipFields, dcFields));
     }
 
     /**
@@ -1059,7 +1082,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfParamNameNull() {
         Indexer indexer = new MetsIndexer(hotfolder);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(Collections.emptyMap(), null, "foo"));
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(dataFolders, null, "foo"));
     }
 
     /**
@@ -1069,8 +1094,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfPiNull() {
         Indexer indexer = new MetsIndexer(hotfolder);
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.checkOldDataFolder(Collections.emptyMap(), DataRepository.PARAM_ALTO, null));
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, null));
     }
 
     /**
@@ -1129,7 +1155,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(null, Collections.emptyMap()));
+        Map<String, Boolean> reindexSettings = Collections.emptyMap();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(null, reindexSettings));
     }
 
     /**
@@ -1138,7 +1165,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(Collections.emptyMap(), null));
+        Map<String, Path> dataFolders = Collections.emptyMap();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(dataFolders, null));
     }
 
     /**
@@ -1201,18 +1229,6 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
         Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
     }
-
-    //    /**
-    //     * @see Indexer#getImageDimensionsFromIIIF(String)
-    //     * @verifies fetch dimensions correctly
-    //     */
-    //    @Test
-    //    void getImageDimensionsFromIIIF_shouldFetchDimensionsCorrectly() throws Exception {
-    //        int[] dim = Indexer.getImageDimensionsFromIIIF("https://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn894068725%252Fphys_0001/info.json");
-    //        Assertions.assertEquals(2, dim.length);
-    //        Assertions.assertEquals(1427, dim[0]);
-    //        Assertions.assertEquals(2220, dim[1]);
-    //    }
 
     /**
      * @see Indexer#checkReindexSettings(Map,Map)

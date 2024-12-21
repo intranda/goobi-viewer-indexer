@@ -474,10 +474,6 @@ public class Hotfolder {
                             logger.debug("Queue full ({})", getHotfolderPath().getFileName());
                         }
                     }
-                    //                    else {
-                    //                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
-                    //                        Files.delete(recordFile);
-                    //                    }
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);

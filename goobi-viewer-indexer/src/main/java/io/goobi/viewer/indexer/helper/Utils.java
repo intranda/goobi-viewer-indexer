@@ -445,8 +445,10 @@ public class Utils {
                     logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
                     return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
                 }
-                logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
-                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
+                if (logger.isErrorEnabled()) {
+                    logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
+                            EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
+                }
                 throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
             }
         }

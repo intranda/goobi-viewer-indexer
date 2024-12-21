@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>24.11</version>
+	<version>24.12-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -51,12 +51,12 @@
 		<commons-io.version>2.18.0</commons-io.version>
 		<commons-jxpath.version>1.3</commons-jxpath.version>
 		<commons-lang3.version>3.17.0</commons-lang3.version>
-		<commons-text.version>1.12.0</commons-text.version>
+		<commons-text.version>1.13.0</commons-text.version>
 		<httpclient.version>4.5.14</httpclient.version>
 		<httpcore.version>4.4.16</httpcore.version>
 		<icu.version>76.1</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
-		<log4j.version>2.24.2</log4j.version>
+		<log4j.version>2.24.3</log4j.version>
 		<jackson.version>2.18.2</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
@@ -64,7 +64,7 @@
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.18.3</jsoup.version>
 		<json.version>20240303</json.version>
-		<junit.version>5.11.3</junit.version>
+		<junit.version>5.11.4</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
 		<solr.version>9.7.0</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
@@ -319,7 +319,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>3.8.1</version>
 				<executions>
 					<execution>
 						<id>analyze</id>
@@ -480,7 +480,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>10.20.2</version>
+						<version>10.21.0</version>
 					</dependency>
 				</dependencies>
 				<executions>
