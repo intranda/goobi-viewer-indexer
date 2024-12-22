@@ -47,7 +47,6 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
  * <p>
  * JDomXP class.
  * </p>
- *
  */
 public class JDomXP {
 
@@ -417,7 +416,6 @@ public class JDomXP {
      *
      * @param dmdId a {@link java.lang.String} object.
      * @return a {@link org.jdom2.Element} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return mdWrap correctly
      */
     public Element getMdWrap(String dmdId) {

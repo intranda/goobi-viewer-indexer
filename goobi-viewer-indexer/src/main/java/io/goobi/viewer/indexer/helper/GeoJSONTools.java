@@ -36,6 +36,10 @@ import mil.nga.sf.geojson.Point;
 import mil.nga.sf.geojson.Polygon;
 import mil.nga.sf.geojson.Position;
 
+/**
+ * <p>GeoJSONTools class.</p>
+ *
+ */
 public class GeoJSONTools {
 
     /** Logger for this class. */
@@ -50,6 +54,14 @@ public class GeoJSONTools {
     private GeoJSONTools() {
     }
 
+    /**
+     * <p>convert.</p>
+     *
+     * @param coords a {@link java.lang.String} object
+     * @param type a {@link java.lang.String} object
+     * @param separator a {@link java.lang.String} object
+     * @return a {@link io.goobi.viewer.indexer.model.GeoCoords} object
+     */
     public static GeoCoords convert(String coords, String type, String separator) {
         FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
 
@@ -129,13 +141,16 @@ public class GeoJSONTools {
     }
 
     /**
-     * 
-     * @param coords
+     * <p>convertCoordinatesToGeoJSONString.</p>
+     *
+     * @param coords a {@link java.lang.String} object
      * @return geoJSON string
      * @should convert GML point correctly
      * @should convert GML polygon correctly
      * @should convert MODS point correctly
      * @should convert deg min sec polygon correctly
+     * @param type a {@link java.lang.String} object
+     * @param separator a {@link java.lang.String} object
      */
     public static String convertCoordinatesToGeoJSONString(String coords, String type, String separator) {
         FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
@@ -149,11 +164,11 @@ public class GeoJSONTools {
     }
 
     /**
-     * 
-     * @param coords
-     * @param type
-     * @param separator
-     * @return
+     * <p>convertCoordinatesToGeoJSONFeatureCollection.</p>
+     *
+     * @param coords a {@link java.lang.String} object
+     * @param type a {@link java.lang.String} object
+     * @param separator a {@link java.lang.String} object
      * @should convert gml point correctly
      * @should convert gml point 4326 correctly
      * @should convert gml polygon correctly
@@ -161,6 +176,7 @@ public class GeoJSONTools {
      * @should convert mods point correctly
      * @should convert sexagesimal point correctly
      * @should convert sexagesimal polygon correctly
+     * @return a {@link mil.nga.sf.geojson.FeatureCollection} object
      */
     public static FeatureCollection convertCoordinatesToGeoJSONFeatureCollection(String coords, String type, String separator) {
         if (coords == null) {

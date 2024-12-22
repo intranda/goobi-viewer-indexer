@@ -65,6 +65,7 @@ public class EadIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(EadIndexer.class);
 
+    /** Constant <code>NAMESPACE_EAD2</code> */
     public static final Namespace NAMESPACE_EAD2 = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
 
     private ForkJoinPool pool;
@@ -84,9 +85,10 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @param hotfolder
-     * @param httpConnector
+     * <p>Constructor for EadIndexer.</p>
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object
+     * @param httpConnector a {@link io.goobi.viewer.indexer.helper.HttpConnector} object
      */
     public EadIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
@@ -95,8 +97,9 @@ public class EadIndexer extends Indexer {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * Indexes the given METS file.
-     * 
      * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      */
     @Override
@@ -288,14 +291,14 @@ public class EadIndexer extends Indexer {
 
     /**
      * Recursively re-indexes the logical docstruct subtree of the node represented by the given IndexObject.
-     * 
-     * @param parentIndexObject {@link IndexObject}
+     *
+     * @param parentIndexObject {@link io.goobi.viewer.indexer.model.IndexObject}
      * @param depth OBSOLETE
-     * @param writeStrategy
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object
      * @param allowParallelProcessing If true, this node's immediate children may be processed in parallel
      * @return List of <code>LuceneField</code>s to inherit up the hierarchy.
-     * @throws IOException
-     * @throws FatalIndexerException
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing) throws IOException, FatalIndexerException {
@@ -366,16 +369,17 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @param node
-     * @param parentIndexObject
-     * @param depth
-     * @param order
-     * @param writeStrategy
-     * @param allowParallelProcessing
-     * @return Created {@link IndexObject} if it has metadata fields to inherit upwards; otherwise null
-     * @throws FatalIndexerException
-     * @throws IOException
+     * <p>indexChild.</p>
+     *
+     * @param node a {@link org.jdom2.Element} object
+     * @param parentIndexObject a {@link io.goobi.viewer.indexer.model.IndexObject} object
+     * @param depth a int
+     * @param order a int
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object
+     * @param allowParallelProcessing a boolean
+     * @return Created {@link io.goobi.viewer.indexer.model.IndexObject} if it has metadata fields to inherit upwards; otherwise null
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @throws java.io.IOException
      */
     public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, int order, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing) throws FatalIndexerException, IOException {
@@ -539,8 +543,8 @@ public class EadIndexer extends Indexer {
 
     /**
      * Sets DMDID, ID, TYPE and LABEL from the METS document.
-     * 
-     * @param indexObj {@link IndexObject}
+     *
+     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
      */
     protected void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
@@ -606,8 +610,9 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @return
+     * <p>getSourceDocFormat.</p>
+     *
+     * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object
      */
     protected FileFormat getSourceDocFormat() {
         return FileFormat.EAD;
