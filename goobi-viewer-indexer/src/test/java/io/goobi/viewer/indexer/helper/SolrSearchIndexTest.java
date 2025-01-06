@@ -60,7 +60,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         super.setUp();
 
         String solrUrl = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl");
-        client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, true);
+        client = SolrSearchIndex.getNewSolrClient(solrUrl);
         searchIndex = new SolrSearchIndex(client);
     }
 

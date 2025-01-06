@@ -40,7 +40,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -96,52 +95,15 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>getNewSolrClient.</p>
-     *
-     * @return New {@link org.apache.solr.client.solrj.SolrClient}
-     * @throws org.apache.commons.configuration2.ex.ConfigurationException
-     * @param solrUrl a {@link java.lang.String} object
-     */
-    public static SolrClient getNewSolrClient(String solrUrl) throws ConfigurationException {
-        if (SolrIndexerDaemon.getInstance().getConfiguration().isSolrUseHttp2()) {
-            return getNewHttp2SolrClient(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
-        }
-
-        return getNewHttpSolrClient(solrUrl, true);
-    }
-
-    /**
      * <p>
-     * getNewHttpSolrServer.
+     * getNewSolrClient.
      * </p>
      *
-     * @param solrUrl URL to the Solr server
-     * @param allowCompression
-     * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
-     * @throws ConfigurationException
-     * @should return null if solrUrl is empty
+     * @param solrUrl a {@link java.lang.String} object
+     * @return New {@link org.apache.solr.client.solrj.SolrClient}
+     * @throws org.apache.commons.configuration2.ex.ConfigurationException
      */
-    static HttpSolrClient getNewHttpSolrClient(String solrUrl, boolean allowCompression) throws ConfigurationException {
-        if (StringUtils.isEmpty(solrUrl)) {
-            throw new ConfigurationException("No Solr URL configured. Please check <solrUrl/>.");
-        }
-
-        HttpSolrClient server = new HttpSolrClient.Builder()
-                .withBaseSolrUrl(solrUrl)
-                .withSocketTimeout(TIMEOUT_SO)
-                .withConnectionTimeout(TIMEOUT_CONNECTION)
-                .allowCompression(allowCompression)
-                .build();
-        //        server.setDefaultMaxConnectionsPerHost(100);
-        //        server.setMaxTotalConnections(100);
-        server.setFollowRedirects(false); // defaults to false
-        //        server.setMaxRetries(1); // defaults to 0. > 1 not recommended.
-        server.setRequestWriter(new BinaryRequestWriter());
-
-        return server;
-    }
-
-    static Http2SolrClient getNewHttp2SolrClient(String solrUrl) throws ConfigurationException {
+    public static SolrClient getNewSolrClient(String solrUrl) throws ConfigurationException {
         if (StringUtils.isEmpty(solrUrl)) {
             throw new ConfigurationException("No Solr URL configured. Please check <solrUrl/>.");
         }
@@ -729,7 +691,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>getSingleFieldValue.</p>
+     * <p>
+     * getSingleFieldValue.
+     * </p>
      *
      * @param doc {@link org.apache.solr.common.SolrDocument}
      * @param field a {@link java.lang.String} object
@@ -745,7 +709,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>getSingleFieldStringValue.</p>
+     * <p>
+     * getSingleFieldStringValue.
+     * </p>
      *
      * @param doc {@link org.apache.solr.common.SolrDocument}
      * @param field Solr field name
@@ -759,7 +725,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>getSingleFieldStringValue.</p>
+     * <p>
+     * getSingleFieldStringValue.
+     * </p>
      *
      * @param doc {@link org.apache.solr.common.SolrInputDocument}
      * @param field Solr field name
@@ -776,7 +744,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>getSingleFieldIntegerValue.</p>
+     * <p>
+     * getSingleFieldIntegerValue.
+     * </p>
      *
      * @param doc {@link org.apache.solr.common.SolrDocument}
      * @param field Solr field name
@@ -788,7 +758,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>getSingleFieldLongValue.</p>
+     * <p>
+     * getSingleFieldLongValue.
+     * </p>
      *
      * @param doc {@link org.apache.solr.common.SolrDocument}
      * @param field Solr field name
@@ -800,7 +772,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>getAsInt.</p>
+     * <p>
+     * getAsInt.
+     * </p>
      *
      * @param fieldValue a {@link java.lang.Object} object
      * @return {@link java.lang.Integer}
@@ -840,7 +814,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>getBooleanFieldName.</p>
+     * <p>
+     * getBooleanFieldName.
+     * </p>
      *
      * @param field a {@link java.lang.String} object
      * @should boolify field correctly
@@ -859,7 +835,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>checkDuplicateFieldValues.</p>
+     * <p>
+     * checkDuplicateFieldValues.
+     * </p>
      *
      * @param fields Field names to check
      * @param values Values to check
@@ -912,7 +890,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>isOptimize.</p>
+     * <p>
+     * isOptimize.
+     * </p>
      *
      * @return the optimize
      */
@@ -921,7 +901,9 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * <p>Setter for the field <code>optimize</code>.</p>
+     * <p>
+     * Setter for the field <code>optimize</code>.
+     * </p>
      *
      * @param optimize the optimize to set
      */
