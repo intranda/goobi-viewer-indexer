@@ -158,15 +158,15 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_TITLE");
                 Assertions.assertNotNull(mdList);
                 Assertions.assertEquals(1, mdList.size());
-                Assertions.assertEquals("Feldseite Kr√∂peliner Tor, Kinder im Vordergrund", mdList.get(0));
+                Assertions.assertEquals("Feldseite Krˆpeliner Tor, Kinder im Vordergrund", mdList.get(0));
             }
             {
                 List<String> mdList = (List<String>) doc.getFieldValue("MD_TITLE" + SolrConstants.SUFFIX_UNTOKENIZED);
                 Assertions.assertNotNull(mdList);
                 Assertions.assertEquals(1, mdList.size());
-                Assertions.assertEquals("Feldseite Kr√∂peliner Tor, Kinder im Vordergrund", mdList.get(0));
+                Assertions.assertEquals("Feldseite Krˆpeliner Tor, Kinder im Vordergrund", mdList.get(0));
             }
-            Assertions.assertEquals("Feldseite Kr√∂peliner Tor, Kinder im Vordergrund", doc.getFieldValue("SORT_TITLE"));
+            Assertions.assertEquals("Feldseite Krˆpeliner Tor, Kinder im Vordergrund", doc.getFieldValue("SORT_TITLE"));
             Assertions.assertEquals("1900", doc.getFieldValue("SORT_" + SolrConstants.EVENTDATESTART));
             Assertions.assertFalse((boolean) doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
         }
@@ -276,13 +276,13 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
                     List<String> mdList = (List<String>) doc.getFieldValue("MD_MATERIAL");
                     Assertions.assertNotNull(mdList);
                     Assertions.assertEquals(1, mdList.size());
-                    Assertions.assertEquals("Papier, schwarz-wei√ü", mdList.get(0));
+                    Assertions.assertEquals("Papier, schwarz-weiﬂ", mdList.get(0));
                 }
                 {
                     List<String> mdList = (List<String>) doc.getFieldValue("MD_MATERIAL" + SolrConstants.SUFFIX_UNTOKENIZED);
                     Assertions.assertNotNull(mdList);
                     Assertions.assertEquals(1, mdList.size());
-                    Assertions.assertEquals("Papier, schwarz-wei√ü", mdList.get(0));
+                    Assertions.assertEquals("Papier, schwarz-weiﬂ", mdList.get(0));
                 }
                 {
                     List<Long> mdList = (List<Long>) doc.getFieldValue(SolrConstants.YEAR);
