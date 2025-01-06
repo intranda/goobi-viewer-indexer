@@ -185,10 +185,13 @@ public abstract class Indexer {
     }
 
     /**
+     * Indexes given record file.
+     * 
      * @param recordFile
      * @param reindexSettings
+     * @return List of successfully indexed record identifiers
      */
-    public abstract void addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+    public abstract List<String> addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
 
     /**
      * 
@@ -1426,8 +1429,10 @@ public abstract class Indexer {
         }
 
         // Add access conditions
-        for (String s : indexObj.getAccessConditions()) {
-            doc.addField(SolrConstants.ACCESSCONDITION, s);
+        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
+            for (String s : indexObj.getAccessConditions()) {
+                doc.addField(SolrConstants.ACCESSCONDITION, s);
+            }
         }
 
         // Add DC values to metadata doc
@@ -2062,7 +2067,6 @@ public abstract class Indexer {
                     logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                 }
             }
-            // logger.info("regular alto " + altoFile.getAbsolutePath() + " written: " + altoWritten);
         }
 
         // If FULLTEXT is still empty, look for a plain full-text

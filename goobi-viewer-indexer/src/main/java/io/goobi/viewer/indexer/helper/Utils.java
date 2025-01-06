@@ -85,7 +85,6 @@ import io.goobi.viewer.indexer.model.SolrConstants;
  * <p>
  * Utils class.
  * </p>
- *
  */
 public class Utils {
 
@@ -158,11 +157,12 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param pi
-     * @param dataRepositoryName
-     * @throws IOException
-     * @throws HTTPException
+     * <p>updateDataRepositoryCache.</p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @param dataRepositoryName a {@link java.lang.String} object
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName) throws IOException, HTTPException {
         updateDataRepositoryCache(pi, dataRepositoryName, SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl(),
@@ -170,11 +170,12 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param pi
-     * @param forceUpdate
-     * @throws IOException
-     * @throws HTTPException
+     * <p>prerenderPdfs.</p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @param forceUpdate a boolean
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException
      */
     public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException {
         if (StringUtils.isNotBlank(pi) && SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
@@ -185,14 +186,14 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param pi
-     * @param dataRepositoryName
-     * @param viewerUrl
-     * @param token
-     * @throws FatalIndexerException
-     * @throws IOException
-     * @throws HTTPException
+     * <p>updateDataRepositoryCache.</p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @param dataRepositoryName a {@link java.lang.String} object
+     * @param viewerUrl a {@link java.lang.String} object
+     * @param token a {@link java.lang.String} object
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
             throws IOException, HTTPException {
@@ -220,6 +221,17 @@ public class Utils {
         getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
     }
 
+    /**
+     * <p>prerenderPdfs.</p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @param force a boolean
+     * @param config a {@link java.lang.String} object
+     * @param viewerUrl a {@link java.lang.String} object
+     * @param token a {@link java.lang.String} object
+     * @throws java.io.IOException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
+     */
     public static void prerenderPdfs(String pi, boolean force, String config, String viewerUrl, String token)
             throws IOException, HTTPException {
         if (StringUtils.isEmpty(token)) {
@@ -245,13 +257,13 @@ public class Utils {
     }
 
     /**
+     * @param identifiers Identifier list of indexed records
      * @param fileCount
-     * @throws FatalIndexerException
-     * @throws HTTPException
-     * @throws ClientProtocolException
-     * @throws IOException
      */
-    public static void submitDataToViewer(long fileCount) {
+    public static void submitDataToViewer(List<String> identifiers, long fileCount) {
+        if (identifiers == null) {
+            throw new IllegalArgumentException("identifiers may not be null");
+        }
         if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
             return;
         }
@@ -261,9 +273,14 @@ public class Utils {
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
+            json.put("record-identifiers", identifiers);
+
             getWebContentPUT(url, new HashMap<>(0), null, json.toString(),
                     Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
             logger.info("Version and file count ({}) submitted to Goobi viewer.", fileCount);
+            if (!identifiers.isEmpty()) {
+                logger.info("Record identifier(s) submitted to Goobi viewer.");
+            }
         } catch (IOException | HTTPException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }
@@ -277,7 +294,7 @@ public class Utils {
      * @param urlString a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      * @throws java.io.IOException if any.
-     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentGET(String urlString) throws IOException, HTTPException {
         RequestConfig defaultRequestConfig = RequestConfig.custom()
@@ -310,7 +327,7 @@ public class Utils {
      * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
      * @throws java.io.IOException if any.
-     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies, String body,
             Map<String, String> headerParams) throws IOException, HTTPException {
@@ -328,9 +345,8 @@ public class Utils {
      * @param body Optional entity content.
      * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
-     * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
-     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentPUT(String url, Map<String, String> params, Map<String, String> cookies, String body,
             Map<String, String> headerParams) throws IOException, HTTPException {
@@ -348,9 +364,8 @@ public class Utils {
      * @param body Optional entity content.
      * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
-     * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
-     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentDELETE(String url, Map<String, String> params, Map<String, String> cookies, String body,
             Map<String, String> headerParams) throws IOException, HTTPException {
@@ -445,8 +460,10 @@ public class Utils {
                     logger.trace("{}: {}", code, response.getStatusLine().getReasonPhrase());
                     return EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET);
                 }
-                logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
-                        EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
+                if (logger.isErrorEnabled()) {
+                    logger.error("Error calling URL '{}'; {}: {}\n{}", url, code, response.getStatusLine().getReasonPhrase(),
+                            EntityUtils.toString(response.getEntity(), TextHelper.DEFAULT_CHARSET));
+                }
                 throw new HTTPException(code, response.getStatusLine().getReasonPhrase());
             }
         }
@@ -466,7 +483,7 @@ public class Utils {
      * @param smtpSenderAddress a {@link java.lang.String} object.
      * @param smtpSenderName a {@link java.lang.String} object.
      * @param smtpSecurity a {@link java.lang.String} object.
-     * @param smtpPort
+     * @param smtpPort a {@link java.lang.Integer} object
      * @throws jakarta.mail.MessagingException
      * @throws java.io.UnsupportedEncodingException
      */
@@ -620,7 +637,8 @@ public class Utils {
     }
 
     /**
-     * 
+     * <p>isValidURL.</p>
+     *
      * @param urlString URL to check
      * @return true if valid; false otherwise
      * @should return true if url starts with http
@@ -714,9 +732,10 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param fileName
-     * @param regexes
+     * <p>isFileNameMatchesRegex.</p>
+     *
+     * @param fileName a {@link java.lang.String} object
+     * @param regexes an array of {@link java.lang.String} objects
      * @return true if fileName matches any of the regexes in the array; false otherwise
      * @should match correctly
      */
@@ -767,11 +786,12 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param prefix
-     * @param count
-     * @return
+     * <p>generateLongOrderNumber.</p>
+     *
+     * @param prefix a int
+     * @param count a int
      * @should construct number correctly
+     * @return a int
      */
     public static int generateLongOrderNumber(int prefix, int count) {
         logger.trace("generateLongOrderNumber({}, {})", prefix, count);

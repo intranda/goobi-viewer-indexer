@@ -148,15 +148,8 @@ public class MetsIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * Indexes the given METS file.
-     * 
-     * @param metsFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     */
-    public void addToIndex(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
+    /** {@inheritDoc} */
+    public List<String> addToIndex(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
         String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -174,7 +167,7 @@ public class MetsIndexer extends Indexer {
             String pi = FilenameUtils.getBaseName(newMetsFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
             if (metsFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
 
             if (Files.exists(indexed)) {
@@ -240,19 +233,23 @@ public class MetsIndexer extends Indexer {
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(metsFile, resp[1], getSourceDocFormat());
-            try {
-                Files.delete(metsFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(metsFile, resp[1], getSourceDocFormat());
+        try {
+            Files.delete(metsFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -517,8 +514,10 @@ public class MetsIndexer extends Indexer {
                         .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                    }
+                } else if (logger.isDebugEnabled()) {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }
@@ -1307,7 +1306,7 @@ public class MetsIndexer extends Indexer {
             }
             logger.debug("fileId: {}", fileId);
 
-            // If fileId is not null, use an XPath expression for the appropriate file element;
+            // If fileId is not null, use an XPath expression for the appropriate file element,
             // otherwise get all file elements and get the one with the index of the page order
             String fileIdXPathCondition = "";
             if (fileId != null) {

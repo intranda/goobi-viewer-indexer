@@ -180,6 +180,7 @@
 		<!-- If a data folder size exceeds the given number (in bytes), an alternate Solr write strategy will be used to avoid memory overflows (default is 157286400 bytes) -->
 		<dataFolderSizeThreshold>157286400</dataFolderSizeThreshold>
         
+        <!-- Number of documents written to Solr in one commit when using SerializingWriteStrategyBatch -->
         <serializingWriteStrategyBatchSize>1000</serializingWriteStrategyBatchSize>
 
 		<!-- If true, an optimize query will be sent to Solr after every indexed object. -->
@@ -205,11 +206,6 @@
 				Default is 1000. -->
 			<sizeWarningThreshold>1000</sizeWarningThreshold>
 		</authorityDataCache>
-		
-		<solr>
-			<!-- useHttp2: If false, the old HTTP1 client will be used for backwards compatibility with Solr 8. Default is true. -->
-			<useHttp2>true</useHttp2>
-		</solr>
 	</performance>
 
 
@@ -4164,8 +4160,8 @@
                 </item>
             </list>
         </MD_ALTNAME_LANG_DE>
-        
-<MD_PROTECTION_LANG_DE>
+
+        <MD_PROTECTION_LANG_DE>
             <list>
                 <item>
                     <xpath>mets:xmlData/mods:mods/mods:extension/inpa:protection[inpa:protectionType]</xpath>
@@ -4177,7 +4173,21 @@
                     </groupEntity>
                 </item>
             </list>
-</MD_PROTECTION_LANG_DE>
+        </MD_PROTECTION_LANG_DE>
+
+
+        <MD_ADMINNOTE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type="admin"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">text()</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_ADMINNOTE>
 
         
     </fields>

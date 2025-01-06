@@ -96,17 +96,9 @@ public class LidoIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * Indexes the given LIDO file.
-     * 
-     * @param lidoFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
 
@@ -129,6 +121,8 @@ public class LidoIndexer extends Indexer {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         logger.info("File contains {} LIDO documents.", lidoDocs.size());
         XMLOutputter outputter = new XMLOutputter();
+
+        List<String> ret = new ArrayList<>(lidoDocs.size());
         for (Document doc : lidoDocs) {
             String[] resp = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"),
@@ -202,6 +196,9 @@ public class LidoIndexer extends Indexer {
 
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
+
+                // Add identifier to return list
+                ret.add(identifier);
             } else {
                 handleError(lidoFile, resp[1], FileFormat.LIDO);
             }
@@ -220,6 +217,8 @@ public class LidoIndexer extends Indexer {
         // Delete all data folders for this record from the hotfolder
         DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         logger.info("Finished indexing LIDO file '{}'.", lidoFile.getFileName());
+
+        return ret;
     }
 
     /**

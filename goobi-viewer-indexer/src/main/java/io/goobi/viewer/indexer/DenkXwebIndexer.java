@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -84,13 +85,12 @@ public class DenkXwebIndexer extends Indexer {
     }
 
     /**
-     * Indexes the given DenkXweb file.
+     * {@inheritDoc}
      * 
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      * @should throw IllegalArgumentException if denkxwebFile null
      */
     @Override
-    public void addToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (denkxwebFile == null) {
             throw new IllegalArgumentException("denkxwebFile may not be null");
         }
@@ -111,13 +111,15 @@ public class DenkXwebIndexer extends Indexer {
                 logger.info("Created media folder {}", newMediaFolder.toAbsolutePath());
             }
         }
-
+ 
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
         List<Document> denkxwebDocs = JDomXP.splitDenkXwebFile(denkxwebFile.toFile());
         logger.info("File contains {} DenkXweb documents.", denkxwebDocs.size());
         XMLOutputter outputter = new XMLOutputter();
+
+        List<String> ret = new ArrayList<>(denkxwebDocs.size());
         for (Document doc : denkxwebDocs) {
             resp = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
@@ -163,6 +165,9 @@ public class DenkXwebIndexer extends Indexer {
 
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
+
+                // Add identifier to return list
+                ret.add(identifier);
             } else {
                 handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
             }
@@ -181,6 +186,8 @@ public class DenkXwebIndexer extends Indexer {
         // Delete all data folders for this record from the hotfolder
         DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         logger.info("Finished indexing DenkXweb file '{}'.", denkxwebFile.getFileName());
+
+        return ret;
     }
 
     /**
@@ -381,7 +388,9 @@ public class DenkXwebIndexer extends Indexer {
         //                        writeStrategy, dataFolders, downloadExternalImages));
         int order = pageCountStart;
         for (Element eleImage : eleImageList) {
-            PhysicalElement page = generatePageDocument(eleImage, String.valueOf(getNextIddoc()), order, dataFolders, downloadExternalImages);
+            PhysicalElement page =
+                    generatePageDocument(eleImage, String.valueOf(getNextIddoc()), order,
+                            dataFolders, downloadExternalImages);
             if (page != null) {
                 writeStrategy.addPage(page);
                 order++;

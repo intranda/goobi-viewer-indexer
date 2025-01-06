@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.common.SolrDocumentList;
@@ -55,7 +56,10 @@ class EadIndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertTrue(Files.isRegularFile(eadFileCopy));
 
         Indexer indexer = new EadIndexer(hotfolder);
-        indexer.addToIndex(eadFileCopy, new HashMap<>());
+        List<String> identifiers = indexer.addToIndex(eadFileCopy, new HashMap<>());
+        Assertions.assertNotNull(identifiers);
+        Assertions.assertEquals(1, identifiers.size());
+        Assertions.assertEquals("Akte_Koch", identifiers.get(0));
 
         SolrDocumentList result =
                 SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":Akte_Koch", null);
