@@ -203,11 +203,6 @@
 				Default is 1000. -->
 			<sizeWarningThreshold>1000</sizeWarningThreshold>
 		</authorityDataCache>
-		
-		<solr>
-			<!-- useHttp2: If false, the old HTTP1 client will be used for backwards compatibility with Solr 8. Default is true. -->
-			<useHttp2>true</useHttp2>
-		</solr>
 	</performance>
 
 
@@ -4100,7 +4095,7 @@
             </list>
         </MD_TECH_IMAGE_DATETIME_CREATED>
         
-<MD_PROTECTION_LANG_DE>
+        <MD_PROTECTION_LANG_DE>
             <list>
                 <item>
                     <xpath>mets:xmlData/mods:mods/mods:extension/inpa:protection[inpa:protectionType]</xpath>
@@ -4112,7 +4107,21 @@
                     </groupEntity>
                 </item>
             </list>
-</MD_PROTECTION_LANG_DE>
+        </MD_PROTECTION_LANG_DE>
+
+        <MD_ADMINNOTE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type="admin"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">text()</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_ADMINNOTE>
+
         
     </fields>
  

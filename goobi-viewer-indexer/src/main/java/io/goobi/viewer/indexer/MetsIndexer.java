@@ -515,8 +515,10 @@ public class MetsIndexer extends Indexer {
                                 getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                    }
+                } else if (logger.isDebugEnabled()) {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }
@@ -1306,7 +1308,7 @@ public class MetsIndexer extends Indexer {
             }
             logger.debug("fileId: {}", fileId);
 
-            // If fileId is not null, use an XPath expression for the appropriate file element;
+            // If fileId is not null, use an XPath expression for the appropriate file element,
             // otherwise get all file elements and get the one with the index of the page order
             String fileIdXPathCondition = "";
             if (fileId != null) {

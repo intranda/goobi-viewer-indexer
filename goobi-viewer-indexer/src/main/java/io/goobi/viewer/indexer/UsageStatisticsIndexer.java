@@ -47,16 +47,18 @@ import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
- * @author florian
+ * <p>UsageStatisticsIndexer class.</p>
  *
+ * @author florian
  */
 public class UsageStatisticsIndexer extends Indexer {
 
     private static final Logger logger = LogManager.getLogger(UsageStatisticsIndexer.class);
 
     /**
-     * 
-     * @param hotfolder
+     * <p>Constructor for UsageStatisticsIndexer.</p>
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object
      */
     public UsageStatisticsIndexer(Hotfolder hotfolder) {
         this.hotfolder = hotfolder;
@@ -159,9 +161,11 @@ public class UsageStatisticsIndexer extends Indexer {
     }
 
     /**
-     * @param sourceFile
-     * @return
-     * @throws FatalIndexerException
+     * <p>removeFromIndex.</p>
+     *
+     * @param sourceFile a {@link java.nio.file.Path} object
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @return a boolean
      */
     public boolean removeFromIndex(Path sourceFile) throws FatalIndexerException {
         String solrDateString = getStatisticsDate(sourceFile);
@@ -187,6 +191,7 @@ public class UsageStatisticsIndexer extends Indexer {
         return StatisticsLuceneFields.FORMATTER_SOLR_DATE.format(date.atStartOfDay());
     }
 
+    /** {@inheritDoc} */
     @Override
     protected FileFormat getSourceDocFormat() {
         return FileFormat.UNKNOWN;

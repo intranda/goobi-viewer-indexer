@@ -138,7 +138,7 @@ public final class MetadataHelper {
                 // Constant value instead of XPath
                 if (configurationItem.getConstantValue() != null) {
                     StringBuilder sbValue = new StringBuilder(configurationItem.getConstantValue());
-                    if (configurationItem.getValuepostfix().length() > 0) {
+                    if (StringUtils.isNotEmpty(configurationItem.getValuepostfix())) {
                         sbValue.append(configurationItem.getValuepostfix());
                     }
                     String value = sbValue.toString().trim();
@@ -245,27 +245,44 @@ public final class MetadataHelper {
                             continue;
                         }
                         for (Object xpathAnswerObject : list) {
+                            boolean nonShareable = false;
+                            // Check for accessRestrict="true"
+                            if (xpathAnswerObject instanceof Element ele) {
+                                String accessRestrictionQuery = "@shareable";
+                                String accessRestrictionValue = xp.evaluateToAttributeStringValue(accessRestrictionQuery, ele);
+                                if ("no".equals(accessRestrictionValue)) {
+                                    nonShareable = true;
+                                    logger.info("Found non-shareable metadata value for {}, applying access condition.",
+                                            configurationItem.getFieldname());
+                                }
+                            }
+                            
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
-                                logger.trace(xpath);
+                                logger.info(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
-                                GroupedMetadata gmd =
-                                        getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
-                                                configurationItem.getFieldname(), sbDefaultMetadataValues,
-                                                ret);
+                                GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
+                                        configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
                                 if (gmd.getMainValue() != null) {
-                                    fieldValue = gmd.getMainValue();
-                                    // Apply XPath prefix
-                                    if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
-                                        fieldValue = xpathConfig.getPrefix() + fieldValue;
+                                    if (nonShareable) {
+                                        fieldValues.add(StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED);
+                                        gmd.getFields()
+                                                .add(new LuceneField(SolrConstants.ACCESSCONDITION,
+                                                        StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED));
+                                    } else {
+                                        fieldValue = gmd.getMainValue();
+                                        // Apply XPath prefix
+                                        if (StringUtils.isNotEmpty(xpathConfig.getPrefix())) {
+                                            fieldValue = xpathConfig.getPrefix() + fieldValue;
+                                        }
+                                        // Apply XPath suffix
+                                        if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
+                                            fieldValue = fieldValue + xpathConfig.getSuffix();
+                                        }
+                                        fieldValues.add(fieldValue);
                                     }
-                                    // Apply XPath suffix
-                                    if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
-                                        fieldValue = fieldValue + xpathConfig.getSuffix();
-                                    }
-                                    fieldValues.add(fieldValue);
                                 }
 
                                 // Add GMD to index object (if not duplicate or duplicates are allowed for this field)
@@ -297,19 +314,37 @@ public final class MetadataHelper {
                                     if (StringUtils.isNotEmpty(xpathConfig.getSuffix())) {
                                         fieldValue = fieldValue + xpathConfig.getSuffix();
                                     }
-                                    if (configurationItem.isOneField()) {
-                                        if (fieldValues.isEmpty()) {
-                                            fieldValues.add("");
-                                        }
-                                        StringBuilder sb = new StringBuilder();
-                                        sb.append(fieldValues.get(0));
-                                        if (sb.length() > 0) {
-                                            sb.append(configurationItem.getOneFieldSeparator());
-                                        }
-                                        sb.append(fieldValue);
-                                        fieldValues.set(0, sb.toString());
+
+                                    if (nonShareable) {
+                                        // // Use grouped metadata if to this value is restricted
+                                        // GroupedMetadata gmd = new GroupedMetadata();
+                                        // gmd.setMainValue(fieldValue);
+                                        // gmd.getFields().add(new LuceneField(SolrConstants.LABEL, configurationItem.getFieldname()));
+                                        // gmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, fieldValue));
+                                        // gmd.getFields()
+                                        // .add(new LuceneField(SolrConstants.ACCESSCONDITION,
+                                        // StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED));
+                                        // if (!indexObj.getGroupedMetadataFields().contains(gmd) || configurationItem.isAllowDuplicateValues()) {
+                                        // indexObj.getGroupedMetadataFields().add(gmd);
+                                        // }
+                                        // fieldValues.add(StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED);
+                                        logger.info("Skipping non-sharable value for field '{}'. Configure as grouped to add to index.",
+                                                configurationItem.getFieldname());
                                     } else {
-                                        fieldValues.add(fieldValue);
+                                        if (configurationItem.isOneField()) {
+                                            if (fieldValues.isEmpty()) {
+                                                fieldValues.add("");
+                                            }
+                                            StringBuilder sb = new StringBuilder();
+                                            sb.append(fieldValues.get(0));
+                                            if (sb.length() > 0) {
+                                                sb.append(configurationItem.getOneFieldSeparator());
+                                            }
+                                            sb.append(fieldValue);
+                                            fieldValues.set(0, sb.toString());
+                                        } else {
+                                            fieldValues.add(fieldValue);
+                                        }
                                     }
                                 } else {
                                     logger.debug("Null or empty string value returned for XPath query '{}'.", query);
@@ -352,7 +387,8 @@ public final class MetadataHelper {
                     }
 
                     // Add value to DEFAULT
-                    if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)) {
+                    if (configurationItem.isAddToDefault() && StringUtils.isNotBlank(fieldValue)
+                            && !StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED.equals(fieldValue)) {
                         addValueToDefault(fieldValue, sbDefaultMetadataValues);
                         logger.trace("Added to DEFAULT: {}", fieldValue);
                     }
@@ -378,7 +414,8 @@ public final class MetadataHelper {
                                 configurationItem.getNonSortConfigurations(),
                                 configurationItem.getValueNormalizers(), ret);
                     }
-                    if (configurationItem.isAddUntokenizedVersion()) {
+                    if (configurationItem.isAddUntokenizedVersion()
+                            && !StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED.equals(fieldValue)) {
                         ret.add(new LuceneField(fieldName + SolrConstants.SUFFIX_UNTOKENIZED, fieldValue));
                     }
 

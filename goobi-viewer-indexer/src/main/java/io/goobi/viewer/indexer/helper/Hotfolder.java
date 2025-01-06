@@ -73,7 +73,6 @@ import jakarta.mail.MessagingException;
  * <p>
  * Hotfolder class.
  * </p>
- *
  */
 public class Hotfolder {
 
@@ -82,9 +81,12 @@ public class Hotfolder {
     private static final String SHUTDOWN_FILE = ".SHUTDOWN_INDEXER";
     private static final int WAIT_IF_FILE_EMPTY = 5000;
 
+    /** Constant <code>ERROR_COULD_NOT_CREATE_DIR="Could not create directory: "</code> */
     public static final String ERROR_COULD_NOT_CREATE_DIR = "Could not create directory: ";
 
+    /** Constant <code>FILENAME_EXTENSION_DELETE=".delete"</code> */
     public static final String FILENAME_EXTENSION_DELETE = ".delete";
+    /** Constant <code>FILENAME_EXTENSION_PURGE=".purge"</code> */
     public static final String FILENAME_EXTENSION_PURGE = ".purge";
 
     private static final String FILENAME_PREFIX_STATISTICS_USAGE = "statistics-usage-";
@@ -146,7 +148,7 @@ public class Hotfolder {
      * Constructor for Hotfolder.
      * </p>
      *
-     * @param hotfolderPath
+     * @param hotfolderPath a {@link java.lang.String} object
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
     public Hotfolder(String hotfolderPath) throws FatalIndexerException {
@@ -416,6 +418,7 @@ public class Hotfolder {
      * Scans the hotfolder for new files and executes appropriate actions.
      *
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @return a boolean
      */
     public boolean scan() throws FatalIndexerException {
         logger.debug("scan ({})", getHotfolderPath().getFileName());
@@ -476,10 +479,6 @@ public class Hotfolder {
                             logger.debug("Queue full ({})", getHotfolderPath().getFileName());
                         }
                     }
-                    //                    else {
-                    //                        logger.info("Found file '{}' which is not in the re-index queue. This file will be deleted.", recordFile.getFileName());
-                    //                        Files.delete(recordFile);
-                    //                    }
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -521,7 +520,7 @@ public class Hotfolder {
 
     /**
      * Returns the number of record and command (delete, update) files in the hotfolder.
-     * 
+     *
      * @return Number of files
      * @should count files correctly
      */
@@ -928,9 +927,10 @@ public class Hotfolder {
     }
 
     /**
-     * 
-     * @param pi
-     * @throws IOException
+     * <p>removeSourceFileFromQueue.</p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @throws java.io.IOException
      */
     public void removeSourceFileFromQueue(String pi) throws IOException {
         if (StringUtils.isEmpty(pi)) {
@@ -1082,6 +1082,8 @@ public class Hotfolder {
     }
 
     /**
+     * <p>isDeleteContentFilesOnFailure.</p>
+     *
      * @return the deleteContentFilesOnFailure
      */
     public boolean isDeleteContentFilesOnFailure() {
@@ -1089,6 +1091,8 @@ public class Hotfolder {
     }
 
     /**
+     * <p>Setter for the field <code>deleteContentFilesOnFailure</code>.</p>
+     *
      * @param deleteContentFilesOnFailure the deleteContentFilesOnFailure to set
      */
     public void setDeleteContentFilesOnFailure(boolean deleteContentFilesOnFailure) {
@@ -1151,6 +1155,8 @@ public class Hotfolder {
     }
 
     /**
+     * <p>Getter for the field <code>origDenkxWeb</code>.</p>
+     *
      * @return the origDenkxWeb
      */
     public Path getOrigDenkxWeb() {
@@ -1169,6 +1175,8 @@ public class Hotfolder {
     }
 
     /**
+     * <p>Getter for the field <code>metsFileSizeThreshold</code>.</p>
+     *
      * @return the metsFileSizeThreshold
      */
     public long getMetsFileSizeThreshold() {
@@ -1176,6 +1184,8 @@ public class Hotfolder {
     }
 
     /**
+     * <p>Getter for the field <code>dataFolderSizeThreshold</code>.</p>
+     *
      * @return the dataFolderSizeThreshold
      */
     public long getDataFolderSizeThreshold() {

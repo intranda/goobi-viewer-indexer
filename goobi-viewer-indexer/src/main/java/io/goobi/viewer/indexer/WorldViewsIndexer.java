@@ -343,7 +343,7 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(),
-            // writeAccessConditions() and generatePageDocuments()!)
+            // writeAccessConditions() and generatePageDocuments()!
             generateChildDocstructDocuments(indexObj, useWriteStrategy, dataFolders, workDepth);
 
             // ISWORK only for non-anchors
@@ -352,7 +352,6 @@ public class WorldViewsIndexer extends Indexer {
             // Add DEFAULT field
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
-                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue("");
             }
 
@@ -396,8 +395,10 @@ public class WorldViewsIndexer extends Indexer {
                                 getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
                 if (doc != null) {
                     useWriteStrategy.addDoc(doc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                    }
+                } else if (logger.isDebugEnabled()) {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }
@@ -561,14 +562,14 @@ public class WorldViewsIndexer extends Indexer {
                 sbDefaultValue.append(currentIndexObj.getDefaultValue());
                 String labelWithSpaces = new StringBuilder(" ").append(currentIndexObj.getLabel()).append(' ').toString();
                 if (StringUtils.isNotEmpty(currentIndexObj.getLabel()) && !sbDefaultValue.toString().contains(labelWithSpaces)) {
-                    // logger.info("Adding own LABEL to DEFAULT: " + indexObj.getLabel());
+                    // logger.info("Adding own LABEL to DEFAULT: {}", indexObj.getLabel()); //NOSONAR Debug
                     sbDefaultValue.append(labelWithSpaces);
                 }
                 if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
                     for (String label : currentIndexObj.getParentLabels()) {
                         String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
                         if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
-                            // logger.info("Adding ancestor LABEL to DEFAULT: " + label);
+                            // logger.info("Adding ancestor LABEL to DEFAULT: {}", label); //NOSONAR Debug
                             sbDefaultValue.append(parentLabelWithSpaces);
                         }
                     }
@@ -580,7 +581,6 @@ public class WorldViewsIndexer extends Indexer {
                 if (StringUtils.isNotEmpty(currentIndexObj.getDefaultValue())) {
                     currentIndexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(currentIndexObj.getDefaultValue()));
                     // Add default value to parent doc
-                    // parentIndexObject.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                     currentIndexObj.setDefaultValue("");
                 }
             }
@@ -816,9 +816,6 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             parseMimeType(ret.getDoc(), fileName);
-        } else {
-            // TODO placeholder
-            String placeholder = eleImage.getChildText("placeholder");
         }
 
         // FIELD_IMAGEAVAILABLE indicates whether this page has an image
@@ -848,9 +845,7 @@ public class WorldViewsIndexer extends Indexer {
             ret.getDoc().addField(SolrConstants.DOCSTRCT, "OtherDocStrct"); // TODO
         }
 
-        if (dataFolders != null) {
-            addFullTextToPageDoc(ret.getDoc(), dataFolders, dataRepository, pi, useOrder, null);
-        }
+        addFullTextToPageDoc(ret.getDoc(), dataFolders, dataRepository, pi, useOrder, null);
 
         return ret;
     }

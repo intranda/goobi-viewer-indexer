@@ -40,7 +40,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -64,7 +63,9 @@ public final class SolrSearchIndex {
     private static final Logger logger = LogManager.getLogger(SolrSearchIndex.class);
 
     private static final int MAX_HITS = Integer.MAX_VALUE;
+    /** Constant <code>TIMEOUT_SO=300000</code> */
     public static final int TIMEOUT_SO = 300000;
+    /** Constant <code>TIMEOUT_CONNECTION=300000</code> */
     public static final int TIMEOUT_CONNECTION = 300000;
     private static final int RETRY_ATTEMPTS = 20;
 
@@ -83,8 +84,7 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param client a {@link org.apache.solr.client.solrj.SolrClient} object.
-     * @throws ConfigurationException
-     * @throws FatalIndexerException
+     * @throws org.apache.commons.configuration2.ex.ConfigurationException
      */
     public SolrSearchIndex(SolrClient client) throws ConfigurationException {
         if (client == null) {
@@ -95,50 +95,15 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @return New {@link SolrClient}
-     * @throws ConfigurationException
-     */
-    public static SolrClient getNewSolrClient(String solrUrl) throws ConfigurationException {
-        if (SolrIndexerDaemon.getInstance().getConfiguration().isSolrUseHttp2()) {
-            return getNewHttp2SolrClient(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
-        }
-
-        return getNewHttpSolrClient(solrUrl, true);
-    }
-
-    /**
      * <p>
-     * getNewHttpSolrServer.
+     * getNewSolrClient.
      * </p>
      *
-     * @param solrUrl URL to the Solr server
-     * @param allowCompression
-     * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
-     * @throws ConfigurationException
-     * @should return null if solrUrl is empty
+     * @param solrUrl a {@link java.lang.String} object
+     * @return New {@link org.apache.solr.client.solrj.SolrClient}
+     * @throws org.apache.commons.configuration2.ex.ConfigurationException
      */
-    static HttpSolrClient getNewHttpSolrClient(String solrUrl, boolean allowCompression) throws ConfigurationException {
-        if (StringUtils.isEmpty(solrUrl)) {
-            throw new ConfigurationException("No Solr URL configured. Please check <solrUrl/>.");
-        }
-
-        HttpSolrClient server = new HttpSolrClient.Builder()
-                .withBaseSolrUrl(solrUrl)
-                .withSocketTimeout(TIMEOUT_SO)
-                .withConnectionTimeout(TIMEOUT_CONNECTION)
-                .allowCompression(allowCompression)
-                .build();
-        //        server.setDefaultMaxConnectionsPerHost(100);
-        //        server.setMaxTotalConnections(100);
-        server.setFollowRedirects(false); // defaults to false
-        //        server.setMaxRetries(1); // defaults to 0. > 1 not recommended.
-        server.setRequestWriter(new BinaryRequestWriter());
-
-        return server;
-    }
-
-    static Http2SolrClient getNewHttp2SolrClient(String solrUrl) throws ConfigurationException {
+    public static SolrClient getNewSolrClient(String solrUrl) throws ConfigurationException {
         if (StringUtils.isEmpty(solrUrl)) {
             throw new ConfigurationException("No Solr URL configured. Please check <solrUrl/>.");
         }
@@ -204,7 +169,7 @@ public final class SolrSearchIndex {
      * @param query a {@link java.lang.String} object.
      * @return a long.
      * @throws org.apache.solr.client.solrj.SolrServerException if any.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public long getNumHits(String query) throws SolrServerException, IOException {
         return search(query, null, 0).getNumFound();
@@ -219,7 +184,7 @@ public final class SolrSearchIndex {
      * @param fields a {@link java.util.List} object.
      * @return a {@link org.apache.solr.common.SolrDocumentList} object.
      * @throws org.apache.solr.client.solrj.SolrServerException if any.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public SolrDocumentList search(String query, List<String> fields) throws SolrServerException, IOException {
         return search(query, fields, MAX_HITS);
@@ -235,7 +200,7 @@ public final class SolrSearchIndex {
      * @param rows a int.
      * @throws org.apache.solr.client.solrj.SolrServerException
      * @return a {@link org.apache.solr.common.SolrDocumentList} object.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public SolrDocumentList search(String query, List<String> fields, int rows) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery(query);
@@ -283,7 +248,7 @@ public final class SolrSearchIndex {
      * @return The name of the data repository currently used for the record with the given PI; "?" if the record is indexed, but not in a repository;
      *         null if the record is not in the index
      * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws IOException
+     * @throws java.io.IOException
      * @should find correct data repository for record
      */
     public String findCurrentDataRepository(String pi) throws SolrServerException, IOException {
@@ -476,8 +441,9 @@ public final class SolrSearchIndex {
 
     /**
      * Deletes all documents that match the given query. Handle with care!
-     * 
+     *
      * @return true if successful; false otherwise
+     * @param query a {@link java.lang.String} object
      */
     public boolean deleteByQuery(String query) {
         if (StringUtils.isEmpty(query)) {
@@ -582,10 +548,10 @@ public final class SolrSearchIndex {
      * getSolrSchemaDocument.
      * </p>
      *
-     * @param solrUrl
+     * @param solrUrl a {@link java.lang.String} object
      * @return a {@link org.jdom2.Document} object.
-     * @throws IOException
-     * @throws JDOMException
+     * @throws java.io.IOException
+     * @throws org.jdom2.JDOMException
      * @should return schema document correctly
      */
     public static Document getSolrSchemaDocument(String solrUrl) throws IOException, JDOMException {
@@ -725,9 +691,12 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * <p>
+     * getSingleFieldValue.
+     * </p>
      *
-     * @param doc {@link SolrDocument}
-     * @param field
+     * @param doc {@link org.apache.solr.common.SolrDocument}
+     * @param field a {@link java.lang.String} object
      * @return First value found; null otherwise
      */
     public static Object getSingleFieldValue(SolrDocument doc, String field) {
@@ -740,8 +709,11 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * <p>
+     * getSingleFieldStringValue.
+     * </p>
      *
-     * @param doc {@link SolrDocument}
+     * @param doc {@link org.apache.solr.common.SolrDocument}
      * @param field Solr field name
      * @return First value found; null otherwise
      * @should return value as string correctly
@@ -753,8 +725,11 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param doc {@link SolrInputDocument}
+     * <p>
+     * getSingleFieldStringValue.
+     * </p>
+     *
+     * @param doc {@link org.apache.solr.common.SolrInputDocument}
      * @param field Solr field name
      * @return First value found; null otherwise
      */
@@ -769,8 +744,11 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param doc {@link SolrDocument}
+     * <p>
+     * getSingleFieldIntegerValue.
+     * </p>
+     *
+     * @param doc {@link org.apache.solr.common.SolrDocument}
      * @param field Solr field name
      * @return First value found; null otherwise
      */
@@ -780,8 +758,11 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param doc {@link SolrDocument}
+     * <p>
+     * getSingleFieldLongValue.
+     * </p>
+     *
+     * @param doc {@link org.apache.solr.common.SolrDocument}
      * @param field Solr field name
      * @return First value found; null otherwise
      */
@@ -791,9 +772,12 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param fieldValue
-     * @return {@link Integer}
+     * <p>
+     * getAsInt.
+     * </p>
+     *
+     * @param fieldValue a {@link java.lang.Object} object
+     * @return {@link java.lang.Integer}
      * @should return null if fieldValue null
      */
     public static Integer getAsInt(Object fieldValue) {
@@ -830,10 +814,13 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param field
-     * @return
+     * <p>
+     * getBooleanFieldName.
+     * </p>
+     *
+     * @param field a {@link java.lang.String} object
      * @should boolify field correctly
+     * @return a {@link java.lang.String} object
      */
     public static String getBooleanFieldName(String field) {
         if (field == null) {
@@ -848,13 +835,16 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
+     * <p>
+     * checkDuplicateFieldValues.
+     * </p>
+     *
      * @param fields Field names to check
      * @param values Values to check
      * @param skipPi Record identifier to skip (typically the currently indexed record)
      * @return Set of PI_TOPSTRUCT values that already possess given field values
-     * @throws SolrServerException
-     * @throws IOException
+     * @throws org.apache.solr.client.solrj.SolrServerException
+     * @throws java.io.IOException
      * @should return correct identifiers
      * @should ignore records that match skipPi
      */
@@ -900,6 +890,10 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * <p>
+     * isOptimize.
+     * </p>
+     *
      * @return the optimize
      */
     public boolean isOptimize() {
@@ -907,6 +901,10 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * <p>
+     * Setter for the field <code>optimize</code>.
+     * </p>
+     *
      * @param optimize the optimize to set
      */
     public void setOptimize(boolean optimize) {
