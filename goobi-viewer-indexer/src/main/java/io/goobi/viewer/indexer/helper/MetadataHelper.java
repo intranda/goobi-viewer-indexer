@@ -590,7 +590,7 @@ public final class MetadataHelper {
 
                 // Aggregate place fields into the same untokenized field for term browsing
                 if (authorityDataField.getKey().equals(FIELD_NORM_NAME)
-                        || (authorityDataField.getKey().equals("NORM_ALTNAME") || authorityDataField.getKey().equals("NORM_OFFICIALNAME"))
+                        || (authorityDataField.getKey().startsWith("NORM_ALTNAME") || authorityDataField.getKey().startsWith("NORM_OFFICIALNAME"))
                                 && !nameSearchFieldValues.contains(textValue)) {
                     if (StringUtils.isNotEmpty(labelField)) {
                         ret.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
