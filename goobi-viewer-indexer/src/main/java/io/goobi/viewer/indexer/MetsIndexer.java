@@ -349,7 +349,7 @@ public class MetsIndexer extends Indexer {
                     if (anchorPi != null && parentIddoc != null) {
                         logger.debug("Creating anchor for '{}' (PI:{}, IDDOC:{})", indexObj.getIddoc(), anchorPi, parentIddoc);
                         IndexObject anchor = new IndexObject(parentIddoc, anchorPi);
-                        if (anchor.getIddoc() == indexObj.getIddoc()) {
+                        if (StringUtils.equals(anchor.getIddoc(), indexObj.getIddoc())) {
                             throw new IndexerException("Anchor and volume have the same IDDOC: " + indexObj.getIddoc());
                         }
                         // Set anchor properties manually because this IndexObject does not undergo the normal procedure
