@@ -1021,9 +1021,10 @@ class IndexerTest extends AbstractSolrEnabledTest {
         ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Set<String> skipFields = new HashSet<>();
         List<LuceneField> dcFields = Collections.emptyList();
+        String iddoc = UUID.randomUUID().toString();
 
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(null, strategy, indexObj, UUID.randomUUID().toString(), skipFields, dcFields));
+                () -> indexer.addGroupedMetadataDocs(null, strategy, indexObj, iddoc, skipFields, dcFields));
     }
 
     /**
@@ -1037,9 +1038,10 @@ class IndexerTest extends AbstractSolrEnabledTest {
         ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Set<String> skipFields = new HashSet<>();
         List<LuceneField> dcFields = Collections.emptyList();
+        String iddoc = UUID.randomUUID().toString();
 
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(gmd, strategy, null, UUID.randomUUID().toString(), skipFields, dcFields));
+                () -> indexer.addGroupedMetadataDocs(gmd, strategy, null, iddoc, skipFields, dcFields));
     }
 
     /**
@@ -1053,9 +1055,10 @@ class IndexerTest extends AbstractSolrEnabledTest {
         GroupedMetadata gmd = new GroupedMetadata();
         Set<String> skipFields = new HashSet<>();
         List<LuceneField> dcFields = Collections.emptyList();
+        String iddoc = UUID.randomUUID().toString();
 
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(gmd, null, indexObj, UUID.randomUUID().toString(), skipFields, dcFields));
+                () -> indexer.addGroupedMetadataDocs(gmd, null, indexObj, iddoc, skipFields, dcFields));
     }
 
     /**
