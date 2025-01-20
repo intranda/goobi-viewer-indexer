@@ -735,9 +735,9 @@ public class WorldViewsIndexer extends Indexer {
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
-            ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
+
             ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
-            try {
+            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
                 pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
                     String iddoc = getNextIddoc();
                     if (map.containsKey(iddoc)) {
@@ -754,8 +754,6 @@ public class WorldViewsIndexer extends Indexer {
                 SolrIndexerDaemon.getInstance().stop();
             } catch (TimeoutException e) {
                 throw new InterruptedException("Generating page documents timed out for object " + pi);
-            } finally {
-                pool.shutdown();
             }
         } else {
             int order = pageCountStart;

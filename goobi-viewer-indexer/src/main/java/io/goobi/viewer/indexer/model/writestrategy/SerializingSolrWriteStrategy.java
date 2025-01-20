@@ -305,26 +305,27 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         Collections.sort(orderList);
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
-            ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
-            for (final int order : orderList) {
+            try (ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
+                for (final int order : orderList) {
 
-                // Generate write page document in its own thread
-                Runnable r = new Runnable() {
+                    // Generate write page document in its own thread
+                    Runnable r = new Runnable() {
 
-                    @Override
-                    public void run() {
-                        try {
-                            writePageDoc(order, rootDoc, aggregateRecords);
-                        } catch (FatalIndexerException e) {
-                            logger.error(e.getMessage());
+                        @Override
+                        public void run() {
+                            try {
+                                writePageDoc(order, rootDoc, aggregateRecords);
+                            } catch (FatalIndexerException e) {
+                                logger.error(e.getMessage());
+                            }
                         }
-                    }
-                };
-                executor.execute(r);
-            }
-            executor.shutdown();
-            while (!executor.isTerminated()) {
-                //
+                    };
+                    executor.execute(r);
+                }
+                executor.shutdown();
+                while (!executor.isTerminated()) {
+                    //
+                }
             }
         } else {
             for (final int order : orderList) {

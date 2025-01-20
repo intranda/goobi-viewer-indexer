@@ -83,6 +83,7 @@
                 <pd>https//intranda.com/prosopographicDatabase</pd>
                 <gml>http://www.opengis.net/gml/3.2</gml>
                 <inpa>http://goobi.io/INPA/</inpa>
+                <luxArtDic>http://example.com/luxArtistDictionary</luxArtDic>
 			</list>
 		</namespaces>
 
@@ -4188,6 +4189,104 @@
                 </item>
             </list>
         </MD_ADMINNOTE>
+
+    <MD_AGENCY_LOCATION>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="true">
+            <field name="MD_VALUE">mods:place/mods:placeTerm</field>
+                        <field name="MD_PLACE">mods:place/mods:placeTerm</field>
+                        <field name="MD_REFID">@ID</field>
+            <field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
+            <field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
+                </item>
+            </list>
+    </MD_AGENCY_LOCATION>
+
+        <MD_AGENCY_LOCATION_LANG_FR>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION" addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
+            <field name="MD_VALUE">mods:place/mods:placeTerm</field>
+                        <field name="MD_DESCRIPTION">mods:description[@xml:lang="fre"]</field>
+                        <field name="MD_PLACE">mods:place/mods:placeTerm</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_DATESTART">mods:dateCreated</field> 
+                        <field name="MD_DATEEND">mods:dateOther</field> 
+            <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="fre"]</field>
+                        <field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+            <field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
+            <field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_AGENCY_LOCATION_LANG_FR>
+
+        <MD_AGENCY_LOCATION_LANG_DE>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
+            <field name="MD_VALUE">mods:place/mods:placeTerm</field>
+                        <field name="MD_DESCRIPTION">mods:description[@xml:lang="ger"]</field>
+                        <field name="MD_PLACE">mods:place/mods:placeTerm</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_DATESTART">mods:dateCreated</field> 
+                        <field name="MD_DATEEND">mods:dateOther</field> 
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="ger"]</field>
+                        <field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+            <field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
+            <field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_AGENCY_LOCATION_LANG_DE>
+
+        <MD_AGENCY_LOCATION_LANG_EN>
+            <list>
+                <item>
+                    <xpath>
+                        <list>
+                            <item>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</item>
+                        </list>
+                    </xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
+            <field name="MD_VALUE">mods:place/mods:placeTerm</field>
+                        <field name="MD_DESCRIPTION">mods:description[@xml:lang="eng"]</field>
+                        <field name="MD_PLACE">mods:place/mods:placeTerm</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_DATESTART">mods:dateCreated</field> 
+                        <field name="MD_DATEEND">mods:dateOther</field> 
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="eng"]</field>
+                        <field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+            <field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
+            <field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_AGENCY_LOCATION_LANG_EN>
 
         
     </fields>
