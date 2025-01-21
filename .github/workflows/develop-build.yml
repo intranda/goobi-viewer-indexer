@@ -1,4 +1,4 @@
-name: Standard CI
+name: Build develop branch
 
 on:
   push:
