@@ -15,6 +15,11 @@
  */
 package io.goobi.viewer.indexer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Files;
@@ -27,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -74,9 +80,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
         metsFile = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml");
-        Assertions.assertTrue(Files.isRegularFile(metsFile));
+        assertTrue(Files.isRegularFile(metsFile));
         lidoFile = Paths.get("src/test/resources/LIDO/khm_lido_export.xml");
-        Assertions.assertTrue(Files.isRegularFile(lidoFile));
+        assertTrue(Files.isRegularFile(lidoFile));
     }
 
     @BeforeAll
@@ -101,9 +107,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void handleError_shouldWriteLogFileAndCopyOfMetsFileIntoErrorMets() {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.handleError(metsFile, "lorem ipsum dolor sit amet", FileFormat.METS);
-        Assertions.assertTrue(Files.isRegularFile(
+        assertTrue(Files.isRegularFile(
                 Paths.get(hotfolder.getErrorMets().toString(), FilenameUtils.getBaseName(metsFile.getFileName().toString()) + ".log")));
-        Assertions.assertTrue(Files.isRegularFile(Paths.get(hotfolder.getErrorMets().toString(), metsFile.getFileName().toString())));
+        assertTrue(Files.isRegularFile(Paths.get(hotfolder.getErrorMets().toString(), metsFile.getFileName().toString())));
     }
 
     /**
@@ -146,16 +152,16 @@ class IndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-        Assertions.assertEquals(pi + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        assertEquals(pi + ".xml", ret[0]);
+        assertNull(ret[1]);
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
-            Assertions.assertEquals(22, docList.size());
+            assertEquals(22, docList.size());
         }
-        Assertions.assertTrue(Indexer.delete(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex()));
+        assertTrue(Indexer.delete(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex()));
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
-            Assertions.assertTrue(docList.isEmpty());
+            assertTrue(docList.isEmpty());
         }
     }
 
@@ -170,28 +176,28 @@ class IndexerTest extends AbstractSolrEnabledTest {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
                 SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-        Assertions.assertEquals(pi, ret[0], "ERROR: " + ret[1]);
+        assertEquals(pi, ret[0], "ERROR: " + ret[1]);
         String iddoc;
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-            Assertions.assertEquals(1, docList.size());
+            assertEquals(1, docList.size());
             iddoc = (String) docList.get(0).getFieldValue(SolrConstants.IDDOC);
-            Assertions.assertNotNull(iddoc);
+            assertNotNull(iddoc);
         }
         {
             SolrDocumentList docList =
                     SolrIndexerDaemon.getInstance()
                             .getSearchIndex()
                             .search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
-            Assertions.assertEquals(3, docList.size());
+            assertEquals(3, docList.size());
         }
-        Assertions.assertTrue(Indexer.delete(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex()));
+        assertTrue(Indexer.delete(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex()));
         {
             SolrDocumentList docList =
                     SolrIndexerDaemon.getInstance()
                             .getSearchIndex()
                             .search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
-            Assertions.assertTrue(docList.isEmpty());
+            assertTrue(docList.isEmpty());
         }
     }
 
@@ -207,21 +213,21 @@ class IndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-        Assertions.assertEquals(pi + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        assertEquals(pi + ".xml", ret[0]);
+        assertNull(ret[1]);
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
-            Assertions.assertEquals(22, docList.size());
+            assertEquals(22, docList.size());
         }
-        Assertions.assertTrue(Indexer.delete(pi, true, SolrIndexerDaemon.getInstance().getSearchIndex()));
+        assertTrue(Indexer.delete(pi, true, SolrIndexerDaemon.getInstance().getSearchIndex()));
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-            Assertions.assertEquals(1, docList.size());
+            assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
-            Assertions.assertNotNull(doc.getFieldValues(SolrConstants.IMAGEURN_OAI));
-            Assertions.assertEquals(16, doc.getFieldValues(SolrConstants.IMAGEURN_OAI).size());
+            assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));
+            assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
+            assertNotNull(doc.getFieldValues(SolrConstants.IMAGEURN_OAI));
+            assertEquals(16, doc.getFieldValues(SolrConstants.IMAGEURN_OAI).size());
         }
     }
 
@@ -236,28 +242,28 @@ class IndexerTest extends AbstractSolrEnabledTest {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
                 SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-        Assertions.assertEquals(pi, ret[0]);
+        assertEquals(pi, ret[0]);
         String iddoc;
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-            Assertions.assertEquals(1, docList.size());
+            assertEquals(1, docList.size());
             iddoc = (String) docList.get(0).getFieldValue(SolrConstants.IDDOC);
-            Assertions.assertNotNull(iddoc);
+            assertNotNull(iddoc);
         }
         {
             SolrDocumentList docList =
                     SolrIndexerDaemon.getInstance()
                             .getSearchIndex()
                             .search(SolrConstants.PI_TOPSTRUCT + ":" + pi + " OR " + SolrConstants.IDDOC_OWNER + ":" + iddoc, null);
-            Assertions.assertEquals(3, docList.size());
+            assertEquals(3, docList.size());
         }
-        Assertions.assertTrue(Indexer.delete(pi, true, SolrIndexerDaemon.getInstance().getSearchIndex()));
+        assertTrue(Indexer.delete(pi, true, SolrIndexerDaemon.getInstance().getSearchIndex()));
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
-            Assertions.assertEquals(1, docList.size());
+            assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));
-            Assertions.assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
+            assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));
+            assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
         }
     }
 
@@ -267,7 +273,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void cleanUpDefaultField_shouldReplaceIrrelevantCharsWithSpacesCorrectly() {
-        Assertions.assertEquals("A B C D", Indexer.cleanUpDefaultField(" A,B;C:D,  "));
+        assertEquals("A B C D", Indexer.cleanUpDefaultField(" A,B;C:D,  "));
     }
 
     /**
@@ -276,7 +282,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void cleanUpDefaultField_shouldReturnNullIfFieldNull() {
-        Assertions.assertNull(Indexer.cleanUpDefaultField(null));
+        assertNull(Indexer.cleanUpDefaultField(null));
     }
 
     /**
@@ -285,7 +291,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void cleanUpNamedEntityValue_shouldCleanUpValueCorrectly() {
-        Assertions.assertEquals("abcd", Indexer.cleanUpNamedEntityValue("\"(abcd,\""));
+        assertEquals("abcd", Indexer.cleanUpNamedEntityValue("\"(abcd,\""));
     }
 
     /**
@@ -320,8 +326,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
 
                 Optional<Dimension> dim = Indexer.getSize(dataFolder.toPath(), filename);
                 // jp2 image files cannot be read because of missing jp2 library
-                Assertions.assertTrue(dim.isPresent());
-                Assertions.assertEquals(imageSizes[i], dim.get(), "Image size of " + filename + " is " + dim + ", but should be " + imageSizes[i]);
+                assertTrue(dim.isPresent());
+                assertEquals(imageSizes[i], dim.get(), "Image size of " + filename + " is " + dim + ", but should be " + imageSizes[i]);
                 i++;
             }
         } finally {
@@ -337,8 +343,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void generateAnnotationDocs_shouldReturnEmptyListIfDataFolderNull() throws Exception {
-        List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(Collections.emptyMap(), null, PI_KLEIUNIV, null, null);
-        Assertions.assertTrue(docs.isEmpty());
+        List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(Collections.emptyMap(), null, "PPN517154005", null, null);
+        assertTrue(docs.isEmpty());
     }
 
     /**
@@ -371,51 +377,50 @@ class IndexerTest extends AbstractSolrEnabledTest {
         }
 
         Path dataFolder = Paths.get("src/test/resources/WebAnnotations");
-        Assertions.assertTrue(Files.isDirectory(dataFolder));
+        assertTrue(Files.isDirectory(dataFolder));
 
-        List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(pageDocs, dataFolder, PI_KLEIUNIV, null, null);
-        Assertions.assertEquals(3, docs.size());
+        List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(pageDocs, dataFolder, "PPN517154005", null, null);
+        assertEquals(3, docs.size());
         {
             SolrInputDocument doc = docs.stream()
                     .filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("geo"))
                     .findAny()
                     .orElseThrow(() -> new IllegalStateException("No annotation with id 'geo'"));
-            Assertions.assertEquals(PI_KLEIUNIV, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assertions.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-            Assertions.assertNull(doc.getFieldValue(SolrConstants.ORDER));
-            Assertions.assertNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-            Assertions.assertEquals("9.967025 51.521737", doc.getFieldValue("MD_COORDS"));
-            Assertions.assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
-            Assertions.assertNotNull(doc.getFieldValue("MD_BODY"));
-            //            Assertions.assertEquals(SolrConstants._UGC_TYPE_ADDRESS + " Leipzig", docs.get(0).getFieldValue(SolrConstants.UGCTERMS));
+            assertEquals(PI_KLEIUNIV, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            assertNull(doc.getFieldValue(SolrConstants.ORDER));
+            assertNull(doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            assertEquals("9.967025 51.521737", doc.getFieldValue("MD_COORDS"));
+            assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
+            assertNotNull(doc.getFieldValue("MD_BODY"));
         }
         {
             SolrInputDocument doc = docs.stream()
                     .filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("PPN517154005_3"))
                     .findAny()
                     .orElseThrow(() -> new IllegalStateException("No annotation with id 'PPN517154005_3'"));
-            Assertions.assertEquals(PI_KLEIUNIV, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assertions.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-            Assertions.assertEquals(2, doc.getFieldValue(SolrConstants.ORDER));
-            Assertions.assertEquals(124, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-            Assertions.assertEquals("Leipzig", doc.getFieldValue("MD_TEXT"));
-            Assertions.assertEquals("xywh=1378,3795,486,113", doc.getFieldValue(SolrConstants.UGCCOORDS));
-            Assertions.assertNotNull(doc.getFieldValue("MD_BODY"));
-            Assertions.assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
-            Assertions.assertEquals(SolrConstants.UGC_TYPE_ADDRESS + " Leipzig", doc.getFieldValue(SolrConstants.UGCTERMS));
+            assertEquals(PI_KLEIUNIV, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            assertEquals(2, doc.getFieldValue(SolrConstants.ORDER));
+            assertEquals(124, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            assertEquals("Leipzig", doc.getFieldValue("MD_TEXT"));
+            assertEquals("xywh=1378,3795,486,113", doc.getFieldValue(SolrConstants.UGCCOORDS));
+            assertNotNull(doc.getFieldValue("MD_BODY"));
+            assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
+            assertEquals(SolrConstants.UGC_TYPE_ADDRESS + " Leipzig", doc.getFieldValue(SolrConstants.UGCTERMS));
         }
         {
             SolrInputDocument doc = docs.stream()
                     .filter(d -> d.getFieldValue(SolrConstants.MD_ANNOTATION_ID).equals("normdata"))
                     .findAny()
                     .orElseThrow(() -> new IllegalStateException("No annotation with id 'normdata'"));
-            Assertions.assertEquals(PI_KLEIUNIV, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
-            Assertions.assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
-            Assertions.assertEquals(10, doc.getFieldValue(SolrConstants.ORDER));
-            Assertions.assertEquals(133, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
-            Assertions.assertNotNull(doc.getFieldValue("MD_BODY"));
-            Assertions.assertEquals("Spaß in AC02949962", doc.getFieldValue(SolrConstants.ACCESSCONDITION));
-            Assertions.assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
+            assertEquals("PPN517154005", doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            assertEquals("topstruct", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            assertEquals(10, doc.getFieldValue(SolrConstants.ORDER));
+            assertEquals(133, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            assertNotNull(doc.getFieldValue("MD_BODY"));
+            assertEquals("Spaß in AC02949962", doc.getFieldValue(SolrConstants.ACCESSCONDITION));
+            assertEquals(SolrConstants.UGC_TYPE_ADDRESS, doc.getFieldValue(SolrConstants.UGCTYPE));
         }
     }
 
@@ -460,7 +465,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void addGroupedMetadataDocs_shouldAddDocsCorrectly() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(1);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setLabel("MD_GROUP");
         gmd.setMainValue("a");
@@ -469,9 +474,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexObj.getGroupedMetadataFields().add(gmd);
 
         indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
-        Assertions.assertEquals(1, strategy.getDocsToAdd().size());
-        Assertions.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
-        Assertions.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+        assertEquals(1, strategy.getDocsToAdd().size());
+        assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
     }
 
     /**
@@ -482,7 +487,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void addGroupedMetadataDocs_shouldSetPI_TOPSTRUCTToChildDocstructMetadata() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(1);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         indexObj.setTopstructPI("PPN123");
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setLabel("MD_GROUP");
@@ -490,8 +495,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexObj.getGroupedMetadataFields().add(gmd);
 
         indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
-        Assertions.assertEquals(1, strategy.getDocsToAdd().size());
-        Assertions.assertEquals("PPN123", strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.PI_TOPSTRUCT));
+        assertEquals(1, strategy.getDocsToAdd().size());
+        assertEquals("PPN123", strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.PI_TOPSTRUCT));
     }
 
     /**
@@ -502,7 +507,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void addGroupedMetadataDocs_shouldSetDOCSTRCT_TOP() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(1);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         indexObj.addToLucene(SolrConstants.DOCSTRCT_TOP, "monograph");
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setLabel("MD_GROUP");
@@ -510,8 +515,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexObj.getGroupedMetadataFields().add(gmd);
 
         indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
-        Assertions.assertEquals(1, strategy.getDocsToAdd().size());
-        Assertions.assertEquals("monograph", strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.DOCSTRCT_TOP));
+        assertEquals(1, strategy.getDocsToAdd().size());
+        assertEquals("monograph", strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.DOCSTRCT_TOP));
     }
 
     /**
@@ -522,7 +527,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void addGroupedMetadataDocs_shouldSkipFieldsCorrectly() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(1);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         {
             GroupedMetadata gmd = new GroupedMetadata();
             gmd.setLabel("MD_GROUP");
@@ -540,9 +545,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
         }
 
         indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
-        Assertions.assertEquals(1, strategy.getDocsToAdd().size());
-        Assertions.assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
-        Assertions.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+        assertEquals(1, strategy.getDocsToAdd().size());
+        assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
     }
 
     /**
@@ -553,7 +558,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void addGroupedMetadataDocs_shouldAddAuthorityMetadataToGroupMetadataDocsCorrectly() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(1);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setLabel("MD_GROUP");
         gmd.setMainValue("a");
@@ -569,11 +574,11 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertFalse(gmd.isAddCoordsToDocstruct());
 
         // Values are not added to metadata docs
-        Assertions.assertEquals(1, strategy.getDocsToAdd().size());
-        Assertions.assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
-        Assertions.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
-        Assertions.assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
-        Assertions.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+        assertEquals(1, strategy.getDocsToAdd().size());
+        assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+        assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
 
     }
 
@@ -585,7 +590,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void addGroupedMetadataDocs_shouldAddAuthorityMetadataToDocstructDocCorrectlyExceptCoordinates() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(1);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setLabel("MD_GROUP");
         gmd.setMainValue("a");
@@ -602,25 +607,25 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertFalse(gmd.isAddCoordsToDocstruct());
 
         // Values are not added to metadata docs
-        Assertions.assertEquals(1, strategy.getDocsToAdd().size());
-        Assertions.assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
-        Assertions.assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+        assertEquals(1, strategy.getDocsToAdd().size());
+        assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        assertNull(strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
 
         // Coordinate fields are still on metadata docs
-        Assertions.assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_WKT_COORDS));
-        Assertions.assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
+        assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_WKT_COORDS));
+        assertNotNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
 
         // Regular authority metadata are rerouted to IndexObject
-        Assertions.assertNotNull(indexObj.getLuceneFieldWithName("MD_ONE"));
-        Assertions.assertEquals("foo", indexObj.getLuceneFieldWithName("MD_ONE").getValue());
-        Assertions.assertNotNull(indexObj.getLuceneFieldWithName("MD_TWO"));
-        Assertions.assertEquals("bar", indexObj.getLuceneFieldWithName("MD_TWO").getValue());
-        Assertions.assertNotNull(indexObj.getLuceneFieldWithName("BOOL_WHAT"));
-        Assertions.assertEquals("true", indexObj.getLuceneFieldWithName("BOOL_WHAT").getValue());
+        assertNotNull(indexObj.getLuceneFieldWithName("MD_ONE"));
+        assertEquals("foo", indexObj.getLuceneFieldWithName("MD_ONE").getValue());
+        assertNotNull(indexObj.getLuceneFieldWithName("MD_TWO"));
+        assertEquals("bar", indexObj.getLuceneFieldWithName("MD_TWO").getValue());
+        assertNotNull(indexObj.getLuceneFieldWithName("BOOL_WHAT"));
+        assertEquals("true", indexObj.getLuceneFieldWithName("BOOL_WHAT").getValue());
 
         // Except for coordinate fields
-        Assertions.assertNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS));
-        Assertions.assertNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS));
+        assertNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS));
+        assertNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS));
     }
 
     /**
@@ -631,7 +636,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void addGroupedMetadataDocs_shouldAddCoordinatesToDocstructDocCorrectly() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(1);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setLabel("MD_GROUP");
         gmd.setMainValue("a");
@@ -643,14 +648,14 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
         // Coordinate fields are no longer on metadata docs
-        Assertions.assertNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_WKT_COORDS));
-        Assertions.assertNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
+        assertNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_WKT_COORDS));
+        assertNull(strategy.getDocsToAdd().get(0).getFieldValue(MetadataHelper.FIELD_HAS_WKT_COORDS));
 
         // Coordinate fields are rerouted to IndexObject
-        Assertions.assertNotNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS));
-        Assertions.assertEquals("1,2,3,1", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS).getValue());
-        Assertions.assertNotNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS));
-        Assertions.assertEquals("true", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS).getValue());
+        assertNotNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS));
+        assertEquals("1,2,3,1", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_WKT_COORDS).getValue());
+        assertNotNull(indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS));
+        assertEquals("true", indexObj.getLuceneFieldWithName(MetadataHelper.FIELD_HAS_WKT_COORDS).getValue());
     }
 
     /**
@@ -661,7 +666,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void addGroupedMetadataDocs_shouldRecursivelyAddChildMetadata() throws Exception {
         LazySolrWriteStrategy strategy = (LazySolrWriteStrategy) AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(1);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setLabel("MD_GROUP");
         gmd.setMainValue("a");
@@ -684,24 +689,24 @@ class IndexerTest extends AbstractSolrEnabledTest {
         gmdChild.getChildren().add(gmdGrandchild);
 
         indexer.addGroupedMetadataDocs(strategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
-        Assertions.assertEquals(3, strategy.getDocsToAdd().size());
+        assertEquals(3, strategy.getDocsToAdd().size());
 
-        Long iddocParent = (Long) strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.IDDOC);
-        Assertions.assertNotNull(iddocParent);
-        Assertions.assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
-        Assertions.assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
+        String iddocParent = (String) strategy.getDocsToAdd().get(0).getFieldValue(SolrConstants.IDDOC);
+        assertNotNull(iddocParent);
+        assertEquals("foo", strategy.getDocsToAdd().get(0).getFieldValue("MD_ONE"));
+        assertEquals("bar", strategy.getDocsToAdd().get(0).getFieldValue("MD_TWO"));
 
-        Long iddocChild = (Long) strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC);
-        Assertions.assertNotNull(iddocChild);
-        Assertions.assertEquals(iddocParent, strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC_OWNER));
-        Assertions.assertEquals("foo", strategy.getDocsToAdd().get(1).getFieldValue("MD_ONE"));
-        Assertions.assertEquals("bar", strategy.getDocsToAdd().get(1).getFieldValue("MD_TWO"));
+        String iddocChild = (String) strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC);
+        assertNotNull(iddocChild);
+        assertEquals(iddocParent, strategy.getDocsToAdd().get(1).getFieldValue(SolrConstants.IDDOC_OWNER));
+        assertEquals("foo", strategy.getDocsToAdd().get(1).getFieldValue("MD_ONE"));
+        assertEquals("bar", strategy.getDocsToAdd().get(1).getFieldValue("MD_TWO"));
 
-        Long iddocGrandchild = (Long) strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC);
-        Assertions.assertNotNull(iddocGrandchild);
-        Assertions.assertEquals(iddocChild, strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC_OWNER));
-        Assertions.assertEquals("foo", strategy.getDocsToAdd().get(2).getFieldValue("MD_ONE"));
-        Assertions.assertEquals("bar", strategy.getDocsToAdd().get(2).getFieldValue("MD_TWO"));
+        String iddocGrandchild = (String) strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC);
+        assertNotNull(iddocGrandchild);
+        assertEquals(iddocChild, strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC_OWNER));
+        assertEquals("foo", strategy.getDocsToAdd().get(2).getFieldValue("MD_ONE"));
+        assertEquals("bar", strategy.getDocsToAdd().get(2).getFieldValue("MD_TWO"));
     }
 
     /**
@@ -721,9 +726,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDocNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        Map<String, Object> altoData = Collections.emptyMap();
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(null, Collections.emptyMap(), Collections.emptyMap(),
-                        DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+                () -> metsIndeer
+                        .addIndexFieldsFromAltoData(null, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
     }
 
     /**
@@ -732,9 +741,12 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        Map<String, Object> altoData = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(), null,
-                        DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, null, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
     }
 
     /**
@@ -743,10 +755,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfPiNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        Map<String, Object> altoData = Collections.emptyMap();
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(),
-                        Collections.emptyMap(),
-                        DataRepository.PARAM_ALTO, null, "00000010", 10, false));
+                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, null, "00000010", 10, false));
     }
 
     /**
@@ -755,10 +770,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfBaseFileNameNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        Map<String, Object> altoData = Collections.emptyMap();
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), Collections.emptyMap(),
-                        Collections.emptyMap(),
-                        DataRepository.PARAM_ALTO, "PPN123", null, 10, false));
+                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", null, 10, false));
     }
 
     /**
@@ -771,14 +789,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
-        Assertions.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
+        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
         File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
         Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
 
-        Assertions.assertTrue(
-                indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-        Assertions.assertEquals("alto/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+        assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+        assertEquals("alto/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
     }
 
     /**
@@ -791,14 +808,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_ALTOCROWD, Paths.get("src/test/resources/ALTO/"));
-        Assertions.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD)));
+        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD)));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
         File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), "00000010.xml");
         Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
 
-        Assertions.assertTrue(
-                indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, "PPN123", "00000010", 10, false));
-        Assertions.assertEquals("alto_crowd/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+        assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, "PPN123", "00000010", 10, false));
+        assertEquals("alto_crowd/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
     }
 
     /**
@@ -811,14 +827,14 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexer.setDataRepository(new DataRepository("build/viewer", true));
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get("src/test/resources/ABBYYXML"));
-        Assertions.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY)));
+        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY)));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
         File abbyyfile = new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), "00000001.xml");
         Map<String, Object> altoData = TextHelper.readAbbyyToAlto(abbyyfile);
 
-        Assertions.assertTrue(
+        assertTrue(
                 indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, "PPN123", "00000001", 1, true));
-        Assertions.assertEquals("alto/PPN123/00000001.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+        assertEquals("alto/PPN123/00000001.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
     }
 
     /**
@@ -831,14 +847,13 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
-        Assertions.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
+        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
         File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
         Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
 
-        Assertions.assertTrue(
-                indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-        Assertions.assertNotNull(doc.getFieldValue(SolrConstants.FULLTEXT));
+        assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
+        assertNotNull(doc.getFieldValue(SolrConstants.FULLTEXT));
     }
 
     /**
@@ -851,15 +866,15 @@ class IndexerTest extends AbstractSolrEnabledTest {
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
-        Assertions.assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
+        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
         File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
         Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
 
-        Assertions.assertTrue(
+        assertTrue(
                 indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-        Assertions.assertEquals("2480", doc.getFieldValue(SolrConstants.WIDTH));
-        Assertions.assertEquals("3508", doc.getFieldValue(SolrConstants.HEIGHT));
+        assertEquals("2480", doc.getFieldValue(SolrConstants.WIDTH));
+        assertEquals("3508", doc.getFieldValue(SolrConstants.HEIGHT));
     }
 
     /**
@@ -873,7 +888,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
 
         Indexer.addNamedEntitiesFields(altoData, doc);
-        Assertions.assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION"));
+        assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION"));
     }
 
     /**
@@ -887,7 +902,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
         SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
 
         Indexer.addNamedEntitiesFields(altoData, doc);
-        Assertions.assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION_UNTOKENIZED"));
+        assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION_UNTOKENIZED"));
     }
 
     /**
@@ -900,7 +915,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
         List<SolrInputDocument> result =
                 indexer.generateUserGeneratedContentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1,
                         "foo");
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     /**
@@ -909,8 +924,11 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void generateUserGeneratedContentDocForPage_shouldThrowIllegalArgumentExceptionIfEleContentNull() {
+        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
+        Map<String, String> groupIds = Collections.emptyMap();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> new MetsIndexer(hotfolder).generateUserGeneratedContentDocForPage(null, null, "foo", null, Collections.emptyMap(), 1));
+                () -> metsIndeer.generateUserGeneratedContentDocForPage(null, null, "foo", null, groupIds, 1));
     }
 
     /**
@@ -918,11 +936,11 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return empty list if dataFolder null
      */
     @Test
-    void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+    void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() {
         Indexer indexer = new MetsIndexer(hotfolder);
         List<SolrInputDocument> result =
                 indexer.generateUserCommentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1);
-        Assertions.assertTrue(result.isEmpty());
+        assertTrue(result.isEmpty());
     }
 
     /**
@@ -930,30 +948,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies construct doc correctly
      */
     @Test
-    void generateUserCommentDocsForPage_shouldConstructDocCorrectly() throws Exception {
+    void generateUserCommentDocsForPage_shouldConstructDocCorrectly() {
         Path dataFolder = Paths.get("src/test/resources/ugc");
-        Assertions.assertTrue(Files.isDirectory(dataFolder));
-
-        DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
-
-        String docstrct = "monograph";
-        SolrInputDocument ownerDoc = new SolrInputDocument();
-        ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
-        ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
-        List<SolrInputDocument> docs =
-                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", "PPN-anchor", null, 2);
-        Assertions.assertNotNull(docs);
-        Assertions.assertEquals(0, docs.size());
-    }
-
-    /**
-     * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
-     * @verifies skip comments for other pages
-     */
-    @Test
-    void generateUserCommentDocsForPage_shouldSkipCommentsForOtherPages() throws Exception {
-        Path dataFolder = Paths.get("src/test/resources/ugc");
-        Assertions.assertTrue(Files.isDirectory(dataFolder));
+        assertTrue(Files.isDirectory(dataFolder));
 
         DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
 
@@ -963,8 +960,41 @@ class IndexerTest extends AbstractSolrEnabledTest {
         ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
         List<SolrInputDocument> docs =
                 indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", "PPN-anchor", null, 1);
-        Assertions.assertNotNull(docs);
-        Assertions.assertEquals(2, docs.size());
+        assertNotNull(docs);
+        assertEquals(2, docs.size());
+
+        // Cannot guarantee reading order from file system, so check for either/or values
+        for (SolrInputDocument doc : docs) {
+            assertEquals(1, doc.getFieldValue(SolrConstants.ORDER));
+            assertEquals(123L, doc.getFieldValue(SolrConstants.IDDOC_OWNER));
+            assertEquals(docstrct, doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
+            assertTrue("a comment".equals(doc.getFieldValue("MD_TEXT")) || "another comment".equals(doc.getFieldValue("MD_TEXT")));
+            assertTrue("COMMENT  a comment".equals(doc.getFieldValue(SolrConstants.UGCTERMS))
+                    || "COMMENT  another comment".equals(doc.getFieldValue(SolrConstants.UGCTERMS)));
+            assertTrue("http://localhost:8080/viewer/api/v1/annotations/comment_13/".equals(doc.getFieldValue("MD_ANNOTATION_ID"))
+                    || "http://localhost:8080/viewer/api/v1/annotations/comment_14/".equals(doc.getFieldValue("MD_ANNOTATION_ID")));
+        }
+    }
+
+    /**
+     * @see Indexer#generateUserCommentDocsForPage(SolrInputDocument,Path,String,String,Map,int,String)
+     * @verifies skip comments for other pages
+     */
+    @Test
+    void generateUserCommentDocsForPage_shouldSkipCommentsForOtherPages() {
+        Path dataFolder = Paths.get("src/test/resources/ugc");
+        assertTrue(Files.isDirectory(dataFolder));
+
+        DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
+
+        String docstrct = "monograph";
+        SolrInputDocument ownerDoc = new SolrInputDocument();
+        ownerDoc.setField(SolrConstants.IDDOC_OWNER, 123L);
+        ownerDoc.setField(SolrConstants.DOCSTRCT_TOP, docstrct);
+        List<SolrInputDocument> docs =
+                indexer.generateUserCommentDocsForPage(ownerDoc, dataFolder, "PPN123", "PPN-anchor", null, 2);
+        assertNotNull(docs);
+        assertEquals(0, docs.size());
     }
 
     /**
@@ -976,8 +1006,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
         SolrInputDocument doc = new SolrInputDocument();
         Indexer.parseMimeType(doc, "src/text/resouces/LIDO/1292624_media/Film77.mp4");
 
-        Assertions.assertEquals("video/mp4", doc.getFieldValue(SolrConstants.MIMETYPE));
-        Assertions.assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
+        assertEquals("video/mp4", doc.getFieldValue(SolrConstants.MIMETYPE));
+        assertEquals("Film77.mp4", doc.getFieldValue(SolrConstants.FILENAME + "_MP4"));
     }
 
     /**
@@ -987,10 +1017,14 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfGmdNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(2L);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Set<String> skipFields = new HashSet<>();
+        List<LuceneField> dcFields = Collections.emptyList();
+        String iddoc = UUID.randomUUID().toString();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(null, strategy, indexObj, 1L, new HashSet<>(), Collections.emptyList()));
+                () -> indexer.addGroupedMetadataDocs(null, strategy, indexObj, iddoc, skipFields, dcFields));
     }
 
     /**
@@ -1002,8 +1036,12 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Indexer indexer = new MetsIndexer(hotfolder);
         GroupedMetadata gmd = new GroupedMetadata();
         ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        Set<String> skipFields = new HashSet<>();
+        List<LuceneField> dcFields = Collections.emptyList();
+        String iddoc = UUID.randomUUID().toString();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(gmd, strategy, null, 1L, new HashSet<>(), Collections.emptyList()));
+                () -> indexer.addGroupedMetadataDocs(gmd, strategy, null, iddoc, skipFields, dcFields));
     }
 
     /**
@@ -1013,11 +1051,14 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfWriteStrategyNull() {
         Indexer indexer = new MetsIndexer(hotfolder);
-        IndexObject indexObj = new IndexObject(2L);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         GroupedMetadata gmd = new GroupedMetadata();
+        Set<String> skipFields = new HashSet<>();
+        List<LuceneField> dcFields = Collections.emptyList();
+        String iddoc = UUID.randomUUID().toString();
+
         Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.addGroupedMetadataDocs(gmd, null, indexObj, 1L, new HashSet<>(),
-                        Collections.emptyList()));
+                () -> indexer.addGroupedMetadataDocs(gmd, null, indexObj, iddoc, skipFields, dcFields));
     }
 
     /**
@@ -1029,17 +1070,17 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.setDataRepository(new DataRepository("src/test/resources", true));
 
-        IndexObject indexObj = new IndexObject(2L);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setMainValue("foo");
         gmd.setAddCoordsToDocstruct(true);
         gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_WKT_COORDS, "1.0, 2.0, 3.0, 4.0"));
         gmd.getAuthorityDataFields().add(new LuceneField(MetadataHelper.FIELD_HAS_WKT_COORDS, "false"));
-        indexer.addGroupedMetadataDocs(gmd, AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder), indexObj, 1L, new HashSet<>(),
-                Collections.emptyList());
-        Assertions.assertEquals(2, indexObj.getLuceneFields().size());
-        Assertions.assertEquals(MetadataHelper.FIELD_HAS_WKT_COORDS, indexObj.getLuceneFields().get(0).getField());
-        Assertions.assertEquals("true", indexObj.getLuceneFields().get(0).getValue());
+        indexer.addGroupedMetadataDocs(gmd, AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder), indexObj, UUID.randomUUID().toString(),
+                new HashSet<>(), Collections.emptyList());
+        assertEquals(2, indexObj.getLuceneFields().size());
+        assertEquals(MetadataHelper.FIELD_HAS_WKT_COORDS, indexObj.getLuceneFields().get(0).getField());
+        assertEquals("true", indexObj.getLuceneFields().get(0).getValue());
     }
 
     /**
@@ -1059,7 +1100,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfParamNameNull() {
         Indexer indexer = new MetsIndexer(hotfolder);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(Collections.emptyMap(), null, "foo"));
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(dataFolders, null, "foo"));
     }
 
     /**
@@ -1069,8 +1112,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfPiNull() {
         Indexer indexer = new MetsIndexer(hotfolder);
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> indexer.checkOldDataFolder(Collections.emptyMap(), DataRepository.PARAM_ALTO, null));
+        Map<String, Path> dataFolders = Collections.emptyMap();
+
+        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, null));
     }
 
     /**
@@ -1080,47 +1124,47 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void checkDataFolders_shouldAddDataFolderPathsCorrectly() throws Exception {
         String fileNameRoot = "foo";
-        Assertions.assertTrue(Files
+        assertTrue(Files
                 .isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_MEDIA))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_txt"))));
-        Assertions.assertTrue(
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_txt"))));
+        assertTrue(
                 Files.isDirectory(
                         Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_TXTCROWD))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_wc"))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_alto"))));
-        Assertions.assertTrue(
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_wc"))));
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_alto"))));
+        assertTrue(
                 Files.isDirectory(
                         Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_ALTOCROWD))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_xml"))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_pdf"))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_mix"))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_src"))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_ugc"))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_cms"))));
-        Assertions.assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_tei"))));
-        Assertions.assertTrue(
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_xml"))));
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_pdf"))));
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_mix"))));
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_src"))));
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_ugc"))));
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_cms"))));
+        assertTrue(Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_tei"))));
+        assertTrue(
                 Files.isDirectory(Files.createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + "_annotations"))));
-        Assertions.assertTrue(
+        assertTrue(
                 Files.isDirectory(Files
                         .createDirectory(Paths.get(hotfolder.getHotfolderPath().toString(), fileNameRoot + Indexer.FOLDER_SUFFIX_DOWNLOADIMAGES))));
 
         Map<String, Path> result = Indexer.checkDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
-        Assertions.assertNotNull(result);
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_MEDIA));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_FULLTEXT));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_FULLTEXTCROWD));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_TEIWC));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_ALTO));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_ALTOCROWD));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_ABBYY));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_PAGEPDF));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_MIX));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_SOURCE));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_UGC));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_CMS));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_TEIMETADATA));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_ANNOTATIONS));
-        Assertions.assertNotNull(result.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
+        assertNotNull(result);
+        assertNotNull(result.get(DataRepository.PARAM_MEDIA));
+        assertNotNull(result.get(DataRepository.PARAM_FULLTEXT));
+        assertNotNull(result.get(DataRepository.PARAM_FULLTEXTCROWD));
+        assertNotNull(result.get(DataRepository.PARAM_TEIWC));
+        assertNotNull(result.get(DataRepository.PARAM_ALTO));
+        assertNotNull(result.get(DataRepository.PARAM_ALTOCROWD));
+        assertNotNull(result.get(DataRepository.PARAM_ABBYY));
+        assertNotNull(result.get(DataRepository.PARAM_PAGEPDF));
+        assertNotNull(result.get(DataRepository.PARAM_MIX));
+        assertNotNull(result.get(DataRepository.PARAM_SOURCE));
+        assertNotNull(result.get(DataRepository.PARAM_UGC));
+        assertNotNull(result.get(DataRepository.PARAM_CMS));
+        assertNotNull(result.get(DataRepository.PARAM_TEIMETADATA));
+        assertNotNull(result.get(DataRepository.PARAM_ANNOTATIONS));
+        assertNotNull(result.get(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
     }
 
     /**
@@ -1129,7 +1173,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(null, Collections.emptyMap()));
+        Map<String, Boolean> reindexSettings = Collections.emptyMap();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(null, reindexSettings));
     }
 
     /**
@@ -1138,7 +1183,8 @@ class IndexerTest extends AbstractSolrEnabledTest {
      */
     @Test
     void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(Collections.emptyMap(), null));
+        Map<String, Path> dataFolders = Collections.emptyMap();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(dataFolders, null));
     }
 
     /**
@@ -1150,18 +1196,18 @@ class IndexerTest extends AbstractSolrEnabledTest {
         Map<String, Boolean> reindexSettings = new HashMap<>();
 
         Indexer.checkReindexSettings(Collections.emptyMap(), reindexSettings);
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_MEDIA));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_TEIWC));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_ALTO));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_ABBYY));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_MIX));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_UGC));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_CMS));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
-        Assertions.assertTrue(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_MEDIA));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_TEIWC));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_ALTO));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_ABBYY));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_MIX));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_UGC));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_CMS));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
+        assertTrue(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
     }
 
     /**
@@ -1188,31 +1234,19 @@ class IndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_ANNOTATIONS, p);
 
         Indexer.checkReindexSettings(dataFolders, reindexSettings);
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_MEDIA));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_TEIWC));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_ALTO));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_ABBYY));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_MIX));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_UGC));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_CMS));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
-        Assertions.assertNull(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
+        assertNull(reindexSettings.get(DataRepository.PARAM_MEDIA));
+        assertNull(reindexSettings.get(DataRepository.PARAM_FULLTEXT));
+        assertNull(reindexSettings.get(DataRepository.PARAM_FULLTEXTCROWD));
+        assertNull(reindexSettings.get(DataRepository.PARAM_TEIWC));
+        assertNull(reindexSettings.get(DataRepository.PARAM_ALTO));
+        assertNull(reindexSettings.get(DataRepository.PARAM_ALTOCROWD));
+        assertNull(reindexSettings.get(DataRepository.PARAM_ABBYY));
+        assertNull(reindexSettings.get(DataRepository.PARAM_MIX));
+        assertNull(reindexSettings.get(DataRepository.PARAM_UGC));
+        assertNull(reindexSettings.get(DataRepository.PARAM_CMS));
+        assertNull(reindexSettings.get(DataRepository.PARAM_TEIMETADATA));
+        assertNull(reindexSettings.get(DataRepository.PARAM_ANNOTATIONS));
     }
-
-    //    /**
-    //     * @see Indexer#getImageDimensionsFromIIIF(String)
-    //     * @verifies fetch dimensions correctly
-    //     */
-    //    @Test
-    //    void getImageDimensionsFromIIIF_shouldFetchDimensionsCorrectly() throws Exception {
-    //        int[] dim = Indexer.getImageDimensionsFromIIIF("https://rosdok.uni-rostock.de/iiif/image-api/rosdok%252Fppn894068725%252Fphys_0001/info.json");
-    //        Assertions.assertEquals(2, dim.length);
-    //        Assertions.assertEquals(1427, dim[0]);
-    //        Assertions.assertEquals(2220, dim[1]);
-    //    }
 
     /**
      * @see Indexer#checkReindexSettings(Map,Map)
@@ -1222,10 +1256,10 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void checkThumbnailFileName_shouldReturnAltValueCorrectly() {
         SolrInputDocument doc = new SolrInputDocument();
         doc.setField("FILENAME_JPEG", "001.jpg");
-        Assertions.assertEquals("001.jpg", Indexer.checkThumbnailFileName("001.ogg", doc));
+        assertEquals("001.jpg", Indexer.checkThumbnailFileName("001.ogg", doc));
 
         doc.setField("FILENAME_TIFF", "001.tif");
-        Assertions.assertEquals("001.tif", Indexer.checkThumbnailFileName("001.ogg", doc));
+        assertEquals("001.tif", Indexer.checkThumbnailFileName("001.ogg", doc));
     }
 
     /**
@@ -1236,7 +1270,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void checkThumbnailFileName_shouldReturnFileNameIfImage() {
         SolrInputDocument doc = new SolrInputDocument();
         doc.setField("FILENAME_JPEG", "001.jpg");
-        Assertions.assertEquals("001.png", Indexer.checkThumbnailFileName("001.png", doc));
+        assertEquals("001.png", Indexer.checkThumbnailFileName("001.png", doc));
     }
 
     /**
@@ -1247,6 +1281,6 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void checkThumbnailFileName_shouldReturnFileNameIfUrl() {
         SolrInputDocument doc = new SolrInputDocument();
         doc.setField("FILENAME_JPEG", "001.jpg");
-        Assertions.assertEquals("https://foo.bar/info.json", Indexer.checkThumbnailFileName("https://foo.bar/info.json", doc));
+        assertEquals("https://foo.bar/info.json", Indexer.checkThumbnailFileName("https://foo.bar/info.json", doc));
     }
 }

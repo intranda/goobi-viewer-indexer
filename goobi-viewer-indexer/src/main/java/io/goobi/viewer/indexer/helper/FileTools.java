@@ -81,7 +81,7 @@ public class FileTools {
     /**
      * Reads a String from a byte array
      *
-     * @param bytes an array of {@link byte} objects.
+     * @param bytes an array of {@link java.lang.Byte} objects.
      * @param encoding a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      */

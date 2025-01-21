@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -151,8 +152,6 @@ public abstract class Indexer {
             { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
                     ".*native.(jpg|png|tif|jp2)$" };
 
-    private static long nextIddoc = -1;
-
     // TODO cyclic dependency; find a more elegant way to select a repository w/o passing the hotfolder instance to the indexer
     protected Hotfolder hotfolder;
 
@@ -186,10 +185,13 @@ public abstract class Indexer {
     }
 
     /**
+     * Indexes given record file.
+     * 
      * @param recordFile
      * @param reindexSettings
+     * @return List of successfully indexed record identifiers
      */
-    public abstract void addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
+    public abstract List<String> addToIndex(Path recordFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException;
 
     /**
      * 
@@ -443,7 +445,7 @@ public abstract class Indexer {
         // Build replacement document that is marked as deleted
         logger.info("Creating 'DELETED' document for {}...", pi);
         List<LuceneField> fields = new ArrayList<>();
-        String iddoc = String.valueOf(getNextIddoc(searchIndex));
+        String iddoc = String.valueOf(getNextIddoc());
         fields.add(new LuceneField(SolrConstants.IDDOC, iddoc));
         fields.add(new LuceneField(SolrConstants.GROUPFIELD, iddoc));
 
@@ -464,25 +466,10 @@ public abstract class Indexer {
     /**
      * Returns the next available IDDOC value.
      *
-     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @return a long.
+     * @return Generated UUID as {@link String}
      */
-    protected static synchronized long getNextIddoc(SolrSearchIndex searchIndex) throws FatalIndexerException {
-        if (nextIddoc < 0) {
-            // Only determine the next IDDOC from Solr once per indexer lifetime, otherwise it might return numbers that already exist
-            nextIddoc = System.currentTimeMillis();
-        }
-
-        while (!searchIndex.checkIddocAvailability(nextIddoc)) {
-            logger.debug("IDDOC '{}' is already taken.", nextIddoc);
-            nextIddoc = System.currentTimeMillis();
-        }
-
-        long ret = nextIddoc;
-        nextIddoc++;
-
-        return ret;
+    protected static synchronized String getNextIddoc() {
+        return UUID.randomUUID().toString();
     }
 
     /**
@@ -634,7 +621,7 @@ public abstract class Indexer {
 
         StringBuilder sbTerms = new StringBuilder();
         SolrInputDocument doc = new SolrInputDocument();
-        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+        String iddoc = getNextIddoc();
         doc.addField(SolrConstants.IDDOC, iddoc);
         if (pageDoc != null) {
             if (pageDoc.containsKey(SolrConstants.IDDOC_OWNER)) {
@@ -759,14 +746,12 @@ public abstract class Indexer {
      * @param groupIds
      * @param order
      * @return List of Solr input documents for the comment annotations
-     * @throws FatalIndexerException
      * @should return empty list if dataFolder null
      * @should construct doc correctly
      * @should skip comment for other pages
      */
     List<SolrInputDocument> generateUserCommentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
-            Map<String, String> groupIds, int order) throws FatalIndexerException {
-        logger.debug("generateUserCommentDocsForPage: {}", order);
+            Map<String, String> groupIds, int order) {
         if (dataFolder == null || !Files.isDirectory(dataFolder)) {
             logger.info("UGC folder not found.");
             return Collections.emptyList();
@@ -813,7 +798,7 @@ public abstract class Indexer {
                     }
 
                     SolrInputDocument doc = new SolrInputDocument();
-                    long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                    String iddoc = getNextIddoc();
                     doc.addField(SolrConstants.IDDOC, iddoc);
 
                     if (pageDoc != null) {
@@ -881,7 +866,7 @@ public abstract class Indexer {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolder, "*.{json}")) {
             List<SolrInputDocument> ret = new ArrayList<>();
             for (Path path : stream) {
-                long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                String iddoc = getNextIddoc();
                 ret.add(readAnnotation(path, iddoc, pi, anchorPi, pageDocs, groupIds));
             }
 
@@ -906,7 +891,7 @@ public abstract class Indexer {
      * @param iddoc a long.
      * @return a {@link org.apache.solr.common.SolrInputDocument} object.
      */
-    public SolrInputDocument readAnnotation(Path path, long iddoc, String pi, String anchorPi, Map<Integer, SolrInputDocument> pageDocs,
+    public SolrInputDocument readAnnotation(Path path, String iddoc, String pi, String anchorPi, Map<Integer, SolrInputDocument> pageDocs,
             Map<String, String> groupIds) {
         try (FileInputStream fis = new FileInputStream(path.toFile())) {
             String json = FileTools.readFileToString(path.toFile(), TextHelper.DEFAULT_CHARSET);
@@ -1260,7 +1245,7 @@ public abstract class Indexer {
         int count = 0;
         for (GroupedMetadata gmd : page.getGroupedMetadata()) {
             SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
-            long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+            String iddoc = getNextIddoc();
             doc.addField(SolrConstants.IDDOC, iddoc);
             if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
                 logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
@@ -1310,7 +1295,7 @@ public abstract class Indexer {
      * @should recursively add child metadata
      */
     public int addGroupedMetadataDocs(ISolrWriteStrategy writeStrategy, IndexObject indexObj, List<GroupedMetadata> groupedMetadataList,
-            long ownerIddoc) throws FatalIndexerException {
+            String ownerIddoc) throws FatalIndexerException {
         if (groupedMetadataList == null || groupedMetadataList.isEmpty()) {
             return 0;
         }
@@ -1341,7 +1326,7 @@ public abstract class Indexer {
      * @should throw IllegalArgumentException if writeStrategy null
      * @should add BOOL_WKT_COORDINATES true to docstruct if WKT_COORDS found
      */
-    int addGroupedMetadataDocs(GroupedMetadata gmd, ISolrWriteStrategy writeStrategy, IndexObject indexObj, long ownerIddoc, Set<String> skipFields,
+    int addGroupedMetadataDocs(GroupedMetadata gmd, ISolrWriteStrategy writeStrategy, IndexObject indexObj, String ownerIddoc, Set<String> skipFields,
             List<LuceneField> dcFields) throws FatalIndexerException {
         if (gmd == null) {
             throw new IllegalArgumentException("gmd may not be null");
@@ -1427,7 +1412,7 @@ public abstract class Indexer {
             fieldsToAddToGroupDoc.addAll(gmd.getAuthorityDataFields());
         }
         SolrInputDocument doc = SolrSearchIndex.createDocument(fieldsToAddToGroupDoc);
-        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+        String iddoc = getNextIddoc();
         doc.addField(SolrConstants.IDDOC, iddoc);
         if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
             logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
@@ -1444,8 +1429,10 @@ public abstract class Indexer {
         }
 
         // Add access conditions
-        for (String s : indexObj.getAccessConditions()) {
-            doc.addField(SolrConstants.ACCESSCONDITION, s);
+        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
+            for (String s : indexObj.getAccessConditions()) {
+                doc.addField(SolrConstants.ACCESSCONDITION, s);
+            }
         }
 
         // Add DC values to metadata doc
@@ -1834,7 +1821,7 @@ public abstract class Indexer {
         }
         if (isAnchor()) {
             // Keep old IDDOC
-            indexObj.setIddoc(Long.valueOf(doc.getFieldValue(SolrConstants.IDDOC).toString()));
+            indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
             // Delete old doc
             SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
             // Delete secondary docs (aggregated metadata, events)
@@ -2080,7 +2067,6 @@ public abstract class Indexer {
                     logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
                 }
             }
-            // logger.info("regular alto " + altoFile.getAbsolutePath() + " written: " + altoWritten);
         }
 
         // If FULLTEXT is still empty, look for a plain full-text
