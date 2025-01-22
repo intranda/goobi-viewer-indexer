@@ -235,7 +235,7 @@ public class MetsIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
-            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+            prerenderPagePdfsIfRequired(pi);
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version

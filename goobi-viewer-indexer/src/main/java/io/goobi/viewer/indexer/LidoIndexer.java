@@ -192,7 +192,7 @@ public class LidoIndexer extends Indexer {
                         logger.error(e.getMessage(), e);
                     }
                 }
-                prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+                prerenderPagePdfsIfRequired(identifier);
                 logger.info("Successfully finished indexing '{}'.", identifier);
 
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version

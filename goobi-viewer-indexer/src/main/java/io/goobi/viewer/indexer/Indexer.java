@@ -463,7 +463,7 @@ public abstract class Indexer {
             }
             // Extract NORM_IDENTIFIER from URI for searches
             if (splitString.length > 2 && splitString[2] != null) {
-                String identifier = de.intranda.digiverso.normdataimporter.Utils.getIdentifierFromURI( splitString[2]);
+                String identifier = de.intranda.digiverso.normdataimporter.Utils.getIdentifierFromURI(splitString[2]);
                 doc.addField("NORM_IDENTIFIER", identifier);
             }
         }
@@ -2171,18 +2171,13 @@ public abstract class Indexer {
      * @param pi The identifier of the process to create pdfs for
      * @param hasNewMediaFiles if the data repository has been updated with new media files
      */
-    void prerenderPagePdfsIfRequired(String pi, boolean hasNewMediaFiles) {
+    void prerenderPagePdfsIfRequired(String pi) {
         try {
-            if (hasNewMediaFiles) {
-                logger.debug("New media files found: Trigger prerenderPDFs task in viewer and force update");
-                Utils.prerenderPdfs(pi, true);
-            } else {
-                Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
-                if (mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
-                    boolean force = SolrIndexerDaemon.getInstance().getConfiguration().isForcePrerenderPdfs();
-                    logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", pi);
-                    Utils.prerenderPdfs(pi, force);
-                }
+            Path mediaFolder = this.dataRepository.getDir(DataRepository.PARAM_MEDIA);
+            if (mediaFolder != null && !FileTools.isFolderEmpty(mediaFolder)) {
+                boolean force = SolrIndexerDaemon.getInstance().getConfiguration().isForcePrerenderPdfs();
+                logger.debug("Reindexed process with media files: Trigger prerenderPDFs task in viewer; overwrite existing files: {}", pi);
+                Utils.prerenderPdfs(pi, force);
             }
         } catch (IOException | HTTPException e) {
             logger.error(e.getMessage());

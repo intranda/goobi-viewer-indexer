@@ -143,7 +143,7 @@ public class EadIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
-            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+            prerenderPagePdfsIfRequired(pi);
             logger.info("Successfully finished indexing '{}'.", eadFile.getFileName());
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
