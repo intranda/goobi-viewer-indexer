@@ -15,13 +15,21 @@
  */
 package io.goobi.viewer.indexer.model.datarepository.strategy;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
+import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
+import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 public abstract class AbstractDataRepositoryStrategy implements IDataRepositoryStrategy {
@@ -57,4 +65,50 @@ public abstract class AbstractDataRepositoryStrategy implements IDataRepositoryS
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<DataRepository> getAllDataRepositories() {
+        return dataRepositories;
+    }
+
+    /**
+     * 
+     * @param pi
+     * @param recordFile
+     * @return PI value
+     */
+    protected String lookUpPi(String pi, Path recordFile) {
+        String ret = pi;
+        // Extract PI from the file name, if no value was passed (e.g. when deleting a record)
+        if (StringUtils.isEmpty(ret) && recordFile != null) {
+            String fileExtension = FilenameUtils.getExtension(recordFile.getFileName().toString());
+            if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals("." + fileExtension) || "delete".equals(fileExtension) || "purge".equals(fileExtension)) {
+                ret = Utils.extractPiFromFileName(recordFile);
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * 
+     * @param pi
+     * @param searchIndex
+     * @param oldSearchIndex
+     * @return Previous data repository name; null if none found
+     * @throws SolrServerException
+     * @throws IOException
+     */
+    protected String lookUpPreviousDataRepository(String pi, final SolrSearchIndex searchIndex, final SolrSearchIndex oldSearchIndex)
+            throws SolrServerException, IOException {
+        // Look up previous repository in the index
+        String previousRepository = searchIndex.findCurrentDataRepository(pi);
+        if (previousRepository == null && oldSearchIndex != null) {
+            previousRepository = oldSearchIndex.findCurrentDataRepository(pi);
+            if (previousRepository != null) {
+                logger.info("Data repository found in old index: {}", previousRepository);
+            }
+        }
+
+        return previousRepository;
+    }
 }

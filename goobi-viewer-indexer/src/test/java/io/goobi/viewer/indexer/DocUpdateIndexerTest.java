@@ -57,7 +57,7 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    void DocUpdateIndexer_shouldSetAttributesCorrectly() throws Exception {
+    void DocUpdateIndexer_shouldSetAttributesCorrectly() {
         DocUpdateIndexer indexer = new DocUpdateIndexer(hotfolder);
         Assertions.assertEquals(hotfolder, indexer.hotfolder);
     }
@@ -78,7 +78,7 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
             dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_alto"));
             dataFolders.put(DataRepository.PARAM_UGC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ugc"));
-            String[] ret = new MetsIndexer(hotfolder).index(metsFile, false, dataFolders, null, 1, false);
+            String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
             Assertions.assertEquals(PI + ".xml", ret[0]);
             Assertions.assertNull(ret[1]);
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()

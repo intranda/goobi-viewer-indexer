@@ -30,16 +30,14 @@ import java.util.TreeMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 
-import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.StringConstants;
-import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
@@ -80,37 +78,22 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
 
     /** {@inheritDoc} */
     @Override
-    public List<DataRepository> getAllDataRepositories() {
-        return dataRepositories;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public DataRepository[] selectDataRepository(final String pi, final Path dataFile, final Map<String, Path> dataFolders,
+    public DataRepository[] selectDataRepository(final String pi, final Path recordFile, final Map<String, Path> dataFolders,
             final SolrSearchIndex searchIndex, final SolrSearchIndex oldSearchIndex) throws FatalIndexerException {
         DataRepository[] ret = new DataRepository[] { null, null };
 
-        String usePi = pi;
-
-        // Extract PI from the file name, if not value was passed (e.g. when deleting a record)
-        if (StringUtils.isEmpty(usePi) && dataFile != null) {
-            String fileExtension = FilenameUtils.getExtension(dataFile.getFileName().toString());
-            if (MetsIndexer.ANCHOR_UPDATE_EXTENSION.equals("." + fileExtension) || "delete".equals(fileExtension) || "purge".equals(fileExtension)) {
-                usePi = Utils.extractPiFromFileName(dataFile);
-            }
-        }
-
+        String usePi = lookUpPi(pi, recordFile);
         if (StringUtils.isBlank(usePi)) {
-            if (dataFile != null) {
-                logger.error("Could not parse PI from '{}'", dataFile.getFileName());
+            if (recordFile != null) {
+                logger.error("Could not parse PI from '{}'", recordFile.getFileName());
             }
             return ret;
         }
 
         long recordSize = 0;
-        if (dataFile != null || dataFolders != null) {
+        if (recordFile != null || dataFolders != null) {
             try {
-                recordSize = getRecordTotalSize(dataFile, dataFolders);
+                recordSize = getRecordTotalSize(recordFile, dataFolders);
                 logger.info("Total record size is {} Bytes.", recordSize);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
@@ -121,18 +104,12 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
         }
 
         SortedMap<Long, DataRepository> repositorySpaceMap = generateRepositorySpaceMap(dataRepositories);
+
         String previousRepository = null;
         try {
-            // Look up previous repository in the index
-            previousRepository = searchIndex.findCurrentDataRepository(usePi);
-            if (previousRepository == null && oldSearchIndex != null) {
-                previousRepository = oldSearchIndex.findCurrentDataRepository(usePi);
-                if (previousRepository != null) {
-                    logger.info("Data repository found in old index: {}", previousRepository);
-                }
-            }
-        } catch (IOException | SolrServerException e) {
-            logger.error(e.getMessage(), e);
+            previousRepository = lookUpPreviousDataRepository(usePi, searchIndex, oldSearchIndex);
+        } catch (SolrServerException | IOException e) {
+            throw new FatalIndexerException(e.getMessage());
         }
         if (previousRepository != null) {
             if ("?".equals(previousRepository)) {

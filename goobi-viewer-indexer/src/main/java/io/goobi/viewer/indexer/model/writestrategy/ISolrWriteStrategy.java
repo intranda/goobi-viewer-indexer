@@ -21,6 +21,7 @@ import org.apache.solr.common.SolrInputDocument;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 
 /**
  * <p>
@@ -59,20 +60,20 @@ public interface ISolrWriteStrategy {
 
     /**
      * <p>
-     * addPageDoc.
+     * addPage.
      * </p>
      *
-     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
+     * @param page {@link io.goobi.viewer.indexer.model.PhysicalElement}
      */
-    public void addPageDoc(SolrInputDocument doc);
+    public void addPage(PhysicalElement page);
 
     /**
-     * If a document has been updated, it may have to be updated internally. The implementation of this interface must make sure the changes to the
-     * doc are not lost.
+     * If a page document has been updated, it may have to be updated internally. The implementation of this interface must make sure the changes to
+     * the doc are not lost.
      *
-     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
+     * @param page a {@link io.goobi.viewer.indexer.model.PhysicalElement} object.
      */
-    public void updateDoc(SolrInputDocument doc);
+    public void updatePage(PhysicalElement page);
 
     /**
      * <p>
@@ -112,7 +113,7 @@ public interface ISolrWriteStrategy {
      * @return a {@link java.util.List} object.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
-    public List<SolrInputDocument> getPageDocsForPhysIdList(List<String> physIdList) throws FatalIndexerException;
+    public List<PhysicalElement> getPagesForPhysIdList(List<String> physIdList) throws FatalIndexerException;
 
     /**
      * <p>

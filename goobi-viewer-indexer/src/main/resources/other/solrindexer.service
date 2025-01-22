@@ -1,8 +1,8 @@
 [Unit]
 Description=Goobi viewer - Indexer
-After=tomcat9.service
+After=tomcat10.service
 After=solr.service
-Requires=tomcat9.service
+Requires=tomcat10.service
 Requires=solr.service
 
 
@@ -22,5 +22,5 @@ StandardError=file:/opt/digiverso/logs/indexer.log
 
 [Install]
 WantedBy=default.target
-WantedBy=tomcat9.service
+WantedBy=tomcat10.service
 

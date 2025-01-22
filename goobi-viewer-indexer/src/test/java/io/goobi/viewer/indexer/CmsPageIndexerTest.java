@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.common.SolrDocument;
@@ -51,7 +52,7 @@ class CmsPageIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    void CmsPageIndexer_shouldSetAttributesCorrectly() throws Exception {
+    void CmsPageIndexer_shouldSetAttributesCorrectly() {
         Assertions.assertNotNull(hotfolder);
         Indexer indexer = new CmsPageIndexer(hotfolder);
         Assertions.assertEquals(hotfolder, indexer.hotfolder);
@@ -70,7 +71,9 @@ class CmsPageIndexerTest extends AbstractSolrEnabledTest {
         assertTrue(Files.isRegularFile(indexFile));
 
         Indexer indexer = new CmsPageIndexer(hotfolder);
-        indexer.addToIndex(indexFile, false, new HashMap<>());
+        List<String> identifiers = indexer.addToIndex(indexFile, new HashMap<>());
+        Assertions.assertEquals(1, identifiers.size());
+        Assertions.assertEquals("CMS123", identifiers.get(0));
 
         SolrDocumentList result = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":CMS123", null);
         Assertions.assertNotNull(result);
@@ -79,7 +82,8 @@ class CmsPageIndexerTest extends AbstractSolrEnabledTest {
 
         assertEquals("CMS123", doc.getFieldValue(SolrConstants.PI));
         assertEquals("CMS Page Title", doc.getFieldValue(SolrConstants.LABEL));
-        assertEquals("CMS Page Title", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TITLE"));
+        assertEquals("CMS Page Title", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TITLE_LANG_EN"));
+        assertEquals("CMS Seitentitel", SolrSearchIndex.getSingleFieldStringValue(doc, "MD_TITLE_LANG_DE"));
 
         Collection<Object> categories = doc.getFieldValues("MD_CATEGORY");
         assertNotNull(categories);

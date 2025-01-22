@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -34,6 +35,7 @@ import org.json.JSONObject;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -45,27 +47,26 @@ import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
- * @author florian
+ * <p>UsageStatisticsIndexer class.</p>
  *
+ * @author florian
  */
 public class UsageStatisticsIndexer extends Indexer {
 
     private static final Logger logger = LogManager.getLogger(UsageStatisticsIndexer.class);
 
     /**
-     * 
-     * @param hotfolder
+     * <p>Constructor for UsageStatisticsIndexer.</p>
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object
      */
     public UsageStatisticsIndexer(Hotfolder hotfolder) {
         this.hotfolder = hotfolder;
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path sourceFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path sourceFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (sourceFile == null) {
             throw new IllegalArgumentException("usage statistics file may not be null");
         } else if (!Files.isRegularFile(sourceFile)) {
@@ -78,6 +79,7 @@ public class UsageStatisticsIndexer extends Indexer {
             throw new IOException(e);
         }
 
+        return Collections.emptyList();
     }
 
     /**
@@ -133,9 +135,9 @@ public class UsageStatisticsIndexer extends Indexer {
      * @throws FatalIndexerException
      */
     private static IndexObject createIndexObject(DailyUsageStatistics stats) throws FatalIndexerException {
-        IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
-        indexObj.addToLucene(SolrConstants.IDDOC, Long.toString(indexObj.getIddoc()));
-        indexObj.addToLucene(SolrConstants.GROUPFIELD, Long.toString(indexObj.getIddoc()));
+        IndexObject indexObj = new IndexObject(getNextIddoc());
+        indexObj.addToLucene(SolrConstants.IDDOC, indexObj.getIddoc());
+        indexObj.addToLucene(SolrConstants.GROUPFIELD, indexObj.getIddoc());
         indexObj.addToLucene(SolrConstants.DOCTYPE, StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE);
         indexObj.addToLucene(StatisticsLuceneFields.VIEWER_NAME, stats.getViewerName());
         indexObj.addToLucene(StatisticsLuceneFields.DATE, StatisticsLuceneFields.FORMATTER_SOLR_DATE.format(stats.getDate().atStartOfDay()));
@@ -159,9 +161,11 @@ public class UsageStatisticsIndexer extends Indexer {
     }
 
     /**
-     * @param sourceFile
-     * @return
-     * @throws FatalIndexerException
+     * <p>removeFromIndex.</p>
+     *
+     * @param sourceFile a {@link java.nio.file.Path} object
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @return a boolean
      */
     public boolean removeFromIndex(Path sourceFile) throws FatalIndexerException {
         String solrDateString = getStatisticsDate(sourceFile);
@@ -185,5 +189,11 @@ public class UsageStatisticsIndexer extends Indexer {
         String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
         LocalDate date = LocalDate.parse(dateString, DailyUsageStatistics.getDateformatter());
         return StatisticsLuceneFields.FORMATTER_SOLR_DATE.format(date.atStartOfDay());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.UNKNOWN;
     }
 }

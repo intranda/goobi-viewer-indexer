@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,12 +73,12 @@ public class CmsPageIndexer extends Indexer {
     }
 
     /**
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, boolean, java.util.Map)
+     * {@inheritDoc}
+     * 
      * @should add record to index correctly
      */
     @Override
-    public void addToIndex(Path cmsFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         Map<String, Path> dataFolders = new HashMap<>();
 
         String fileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
@@ -88,7 +89,7 @@ public class CmsPageIndexer extends Indexer {
             String pi = FilenameUtils.getBaseName(newCmsFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toAbsolutePath().toString(), newCmsFileName);
             if (cmsFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
             Files.copy(cmsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
             dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newCmsFileName, DataRepository.PARAM_INDEXED_CMS,
@@ -129,19 +130,23 @@ public class CmsPageIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(cmsFile, resp[1], FileFormat.CMS);
-            try {
-                Files.delete(cmsFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, cmsFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(cmsFile, resp[1], FileFormat.CMS);
+        try {
+            Files.delete(cmsFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, cmsFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -182,7 +187,7 @@ public class CmsPageIndexer extends Indexer {
             }
 
             Document doc = XmlTools.readXmlFile(cmsFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             indexObj.setSourceDocFormat(FileFormat.CMS);
@@ -211,15 +216,7 @@ public class CmsPageIndexer extends Indexer {
                 logger.debug("PI: {}", indexObj.getPi());
 
                 // Determine the data repository to use
-                DataRepository[] repositories =
-                        hotfolder.getDataRepositoryStrategy()
-                                .selectDataRepository(pi, cmsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                        SolrIndexerDaemon.getInstance().getOldSearchIndex());
-                dataRepository = repositories[0];
-                previousDataRepository = repositories[1];
-                if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                    indexObj.setDataRepository(dataRepository.getPath());
-                }
+                selectDataRepository(indexObj, pi, cmsFile, dataFolders);
 
                 ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
             } else {
@@ -230,9 +227,20 @@ public class CmsPageIndexer extends Indexer {
             prepareUpdate(indexObj);
 
             // Set title
-            String title = doc.getRootElement().getChildText("title");
-            indexObj.setLabel(title);
-            indexObj.addToLucene("MD_TITLE", title);
+            List<Element> eleListTitle = doc.getRootElement().getChildren("title");
+            if (eleListTitle != null) {
+                for (Element eleTitle : eleListTitle) {
+                    if (StringUtils.isEmpty(indexObj.getLabel())) {
+                        indexObj.setLabel(eleTitle.getTextTrim());
+                    }
+                    if (eleTitle.getAttribute("lang") != null) {
+                        indexObj.addToLucene("MD_TITLE" + SolrConstants.MIXFIX_LANG + eleTitle.getAttributeValue("lang").toUpperCase(),
+                                eleTitle.getTextTrim());
+                    } else {
+                        indexObj.addToLucene("MD_TITLE", eleTitle.getTextTrim());
+                    }
+                }
+            }
 
             // Categories
             List<Element> eleListCategories = doc.getRootElement().getChild("categories").getChildren("category");
@@ -305,5 +313,10 @@ public class CmsPageIndexer extends Indexer {
         }
 
         return ret;
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.CMS;
     }
 }

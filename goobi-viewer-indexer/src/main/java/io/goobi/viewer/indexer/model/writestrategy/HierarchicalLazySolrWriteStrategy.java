@@ -15,16 +15,16 @@
  */
 package io.goobi.viewer.indexer.model.writestrategy;
 
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.solr.common.SolrInputDocument;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 
 /**
@@ -61,10 +61,10 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
         // Check for duplicate URNs
         checkForValueCollisions(SolrConstants.URN, pi);
 
-        for (Entry<Integer, SolrInputDocument> entry : pageOrderMap.entrySet()) {
-            SolrInputDocument pageDoc = entry.getValue();
-            checkAndAddAccessCondition(pageDoc);
-            docsToAdd.add(pageDoc);
+        for (Entry<Integer, PhysicalElement> entry : pageOrderMap.entrySet()) {
+            PhysicalElement page = entry.getValue();
+            checkAndAddAccessCondition(page.getDoc());
+            docsToAdd.add(page.getDoc());
         }
 
         for (SolrInputDocument doc : docsToAdd) {
@@ -75,15 +75,7 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
             rootDoc.addChildDocument(doc);
             if (aggregateRecords) {
                 // Add SUPER* fields to root doc
-                if (doc.containsKey(SolrConstants.DEFAULT)) {
-                    rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
-                }
-                if (doc.containsKey(SolrConstants.FULLTEXT)) {
-                    rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
-                }
-                if (doc.containsKey(SolrConstants.UGCTERMS)) {
-                    rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
-                }
+                addSuperSearchFields(doc, rootDoc);
             }
         }
 

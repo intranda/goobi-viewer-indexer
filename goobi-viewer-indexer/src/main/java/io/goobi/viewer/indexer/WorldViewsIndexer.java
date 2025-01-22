@@ -15,8 +15,6 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
@@ -28,6 +26,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,8 +60,8 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
-import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
@@ -98,19 +97,9 @@ public class WorldViewsIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * Indexes the given WorldViews file.
-     * 
-     * @param mainFile {@link File}
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path mainFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings)
-            throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path mainFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing WorldViews file '{}'...", mainFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(mainFile.getFileName().toString());
 
@@ -120,15 +109,14 @@ public class WorldViewsIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(mainFile, fromReindexQueue, dataFolders, null,
-                SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        String[] resp = index(mainFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
 
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newMetsFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newMetsFileName);
             Path indexed = Paths.get(getDataRepository().getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
             if (mainFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
@@ -193,33 +181,36 @@ public class WorldViewsIndexer extends Indexer {
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(mainFile, resp[1], FileFormat.WORLDVIEWS);
-            try {
-                Files.delete(mainFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, mainFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(mainFile, resp[1], FileFormat.WORLDVIEWS);
+        try {
+            Files.delete(mainFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, mainFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
      * Indexes the given WorldViews file.
      *
      * @param mainFile {@link java.nio.file.Path}
-     * @param fromReindexQueue a boolean.
      * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart Order number for the first page.
      * @should index record correctly
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path mainFile, boolean fromReindexQueue, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
+    public String[] index(Path mainFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
         String[] ret = { null, null };
 
@@ -239,57 +230,21 @@ public class WorldViewsIndexer extends Indexer {
                 logger.info("Solr write strategy injected by caller: {}", useWriteStrategy.getClass().getName());
             }
             initJDomXP(mainFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             // Set PI
-            String pi = xp.evaluateToString("worldviews//identifier/text()", null);
-            if (StringUtils.isBlank(pi)) {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
-            }
-
-            pi = MetadataHelper.applyIdentifierModifications(pi);
-            logger.info("Record PI: {}", pi);
-
-            // Do not allow identifiers with characters that cannot be used in file names
-            if (!Utils.validatePi(pi)) {
-                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-            logger.debug("PI: {}", indexObj.getPi());
+            String pi = validateAndApplyPI(findPI("worldviews//identifier/text()"), indexObj, false);
 
             indexObj.setSourceDocFormat(FileFormat.WORLDVIEWS);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, mainFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, mainFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MEDIA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXT, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_FULLTEXTCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ABBYY, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIWC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTO, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ALTOCROWD, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_MIX, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_UGC, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_CMS, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_TEIMETADATA, pi);
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, MetsIndexer.DATA_FOLDER_PARAMS, pi);
 
             prepareUpdate(indexObj);
 
@@ -362,7 +317,7 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.writeAccessConditions(null);
 
             // Write created/updated timestamps
-            indexObj.writeDateModified(!fromReindexQueue);
+            indexObj.writeDateModified(false);
 
             // Generate docs for all pages and add to the write strategy
             generatePageDocuments(useWriteStrategy, dataFolders, pi, pageCountStart);
@@ -388,7 +343,7 @@ public class WorldViewsIndexer extends Indexer {
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
             // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(),
-            // writeAccessConditions() and generatePageDocuments()!)
+            // writeAccessConditions() and generatePageDocuments()!
             generateChildDocstructDocuments(indexObj, useWriteStrategy, dataFolders, workDepth);
 
             // ISWORK only for non-anchors
@@ -397,7 +352,6 @@ public class WorldViewsIndexer extends Indexer {
             // Add DEFAULT field
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
                 indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
-                // indexObj.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                 indexObj.setDefaultValue("");
             }
 
@@ -437,12 +391,13 @@ public class WorldViewsIndexer extends Indexer {
                 }
                 SolrInputDocument doc = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
                 if (doc != null) {
                     useWriteStrategy.addDoc(doc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                    }
+                } else if (logger.isDebugEnabled()) {
                     logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
                 }
             }
@@ -536,7 +491,7 @@ public class WorldViewsIndexer extends Indexer {
                 }
 
                 // Create new docstruct object
-                currentIndexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                currentIndexObj = new IndexObject(getNextIddoc());
                 currentIndexObj.setParent(rootIndexObj);
                 currentIndexObj.setTopstructPI(rootIndexObj.getTopstructPI());
                 currentIndexObj.setType(pageDocstructLabel);
@@ -606,14 +561,14 @@ public class WorldViewsIndexer extends Indexer {
                 sbDefaultValue.append(currentIndexObj.getDefaultValue());
                 String labelWithSpaces = new StringBuilder(" ").append(currentIndexObj.getLabel()).append(' ').toString();
                 if (StringUtils.isNotEmpty(currentIndexObj.getLabel()) && !sbDefaultValue.toString().contains(labelWithSpaces)) {
-                    // logger.info("Adding own LABEL to DEFAULT: " + indexObj.getLabel());
+                    // logger.info("Adding own LABEL to DEFAULT: {}", indexObj.getLabel()); //NOSONAR Debug
                     sbDefaultValue.append(labelWithSpaces);
                 }
                 if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
                     for (String label : currentIndexObj.getParentLabels()) {
                         String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
                         if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
-                            // logger.info("Adding ancestor LABEL to DEFAULT: " + label);
+                            // logger.info("Adding ancestor LABEL to DEFAULT: {}", label); //NOSONAR Debug
                             sbDefaultValue.append(parentLabelWithSpaces);
                         }
                     }
@@ -625,7 +580,6 @@ public class WorldViewsIndexer extends Indexer {
                 if (StringUtils.isNotEmpty(currentIndexObj.getDefaultValue())) {
                     currentIndexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(currentIndexObj.getDefaultValue()));
                     // Add default value to parent doc
-                    // parentIndexObject.getSuperDefaultBuilder().append(' ').append(indexObj.getDefaultValue().trim());
                     currentIndexObj.setDefaultValue("");
                 }
             }
@@ -698,7 +652,7 @@ public class WorldViewsIndexer extends Indexer {
                     pageDoc.removeField(fieldName);
                 }
                 //  Add this docstruct's SORT_* fields to page
-                if (currentIndexObj.getIddoc() == Long.valueOf((String) pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                if (currentIndexObj.getIddoc() != null && currentIndexObj.getIddoc().equals(pageDoc.getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : currentIndexObj.getLuceneFields()) {
                         if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             pageDoc.addField(field.getField(), field.getValue());
@@ -708,7 +662,7 @@ public class WorldViewsIndexer extends Indexer {
             }
 
             // Update the doc in the write strategy (otherwise some implementations might ignore the changes).
-            writeStrategy.updateDoc(pageDoc);
+            // writeStrategy.updatePage(page); TODO use PhysicalElement, if ever needed again
         }
 
         // Finalize last docstruct
@@ -781,19 +735,18 @@ public class WorldViewsIndexer extends Indexer {
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
-            ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
-            ConcurrentHashMap<Long, Boolean> map = new ConcurrentHashMap<>();
-            try {
+
+            ConcurrentHashMap<String, Boolean> map = new ConcurrentHashMap<>();
+            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
                 pool.submit(() -> eleListImages.parallelStream().forEach(eleImage -> {
-                    try {
-                        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
-                        if (map.containsKey(iddoc)) {
-                            logger.error("Duplicate IDDOC: {}", iddoc);
-                        }
-                        generatePageDocument(eleImage, String.valueOf(iddoc), pi, null, writeStrategy, dataFolders);
+                    String iddoc = getNextIddoc();
+                    if (map.containsKey(iddoc)) {
+                        logger.error("Duplicate IDDOC: {}", iddoc);
+                    }
+                    PhysicalElement page = generatePageDocument(eleImage, String.valueOf(iddoc), pi, null, dataFolders);
+                    if (page != null) {
+                        writeStrategy.addPage(page);
                         map.put(iddoc, true);
-                    } catch (FatalIndexerException e) {
-                        logger.error("Should be exiting here now...");
                     }
                 })).get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
             } catch (ExecutionException e) {
@@ -801,15 +754,15 @@ public class WorldViewsIndexer extends Indexer {
                 SolrIndexerDaemon.getInstance().stop();
             } catch (TimeoutException e) {
                 throw new InterruptedException("Generating page documents timed out for object " + pi);
-            } finally {
-                pool.shutdown();
             }
         } else {
             int order = pageCountStart;
             for (final Element eleImage : eleListImages) {
-                generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), pi, order,
-                        writeStrategy, dataFolders);
-                order++;
+                PhysicalElement page = generatePageDocument(eleImage, String.valueOf(getNextIddoc()), pi, order, dataFolders);
+                if (page != null) {
+                    writeStrategy.addPage(page);
+                    order++;
+                }
             }
         }
         logger.info("Generated {} page documents.", writeStrategy.getPageDocsSize());
@@ -821,100 +774,71 @@ public class WorldViewsIndexer extends Indexer {
      * @param iddoc
      * @param pi
      * @param order
-     * @param writeStrategy
      * @param dataFolders
-     * @throws FatalIndexerException
+     * @return {@link PhysicalElement}
      * @should add all basic fields
      * @should add page metadata correctly
      */
-    void generatePageDocument(Element eleImage, String iddoc, String pi, final Integer order, ISolrWriteStrategy writeStrategy,
-            Map<String, Path> dataFolders)
-            throws FatalIndexerException {
+    PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, final Integer order, Map<String, Path> dataFolders) {
+        if (dataFolders == null) {
+            throw new IllegalArgumentException("dataFolders may not be null");
+        }
+
         int useOrder = order != null ? order : Integer.parseInt(eleImage.getChildText("sequence"));
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", useOrder, iddoc, Thread.currentThread().getId());
 
-        // Create Solr document for this page
-        SolrInputDocument doc = new SolrInputDocument();
-        doc.addField(SolrConstants.IDDOC, iddoc);
-        doc.addField(SolrConstants.GROUPFIELD, iddoc);
-        doc.addField(SolrConstants.DOCTYPE, DocType.PAGE.name());
-        doc.addField(SolrConstants.PHYSID, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
-        doc.addField(SolrConstants.ORDER, order);
-        doc.addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
+        // Create object for this page
+        PhysicalElement ret = createPhysicalElement(order, iddoc, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
+        ret.getDoc().addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
 
         boolean displayImage = Boolean.parseBoolean(eleImage.getChildText("displayImage"));
         if (displayImage) {
             // Add file name
             String fileName = eleImage.getChildText("fileName");
-            doc.addField(SolrConstants.FILENAME, fileName);
+            ret.getDoc().addField(SolrConstants.FILENAME, fileName);
 
             // Add file size
-            if (dataFolders != null) {
-                try {
-                    Path dataFolder = dataFolders.get(DataRepository.PARAM_MEDIA);
-                    // TODO other mime types/folders
-                    if (dataFolder != null) {
-                        Path path = Paths.get(dataFolder.toAbsolutePath().toString(), fileName);
-                        doc.addField(FIELD_FILESIZE, Files.size(path));
-                    } else {
-                        doc.addField(FIELD_FILESIZE, -1);
-                    }
-                } catch (FileNotFoundException e) {
-                    logger.error(e.getMessage());
-                    doc.addField(FIELD_FILESIZE, -1);
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
-                    doc.addField(FIELD_FILESIZE, -1);
-                } catch (IllegalArgumentException e) {
-                    logger.error(e.getMessage(), e);
-                    doc.addField(FIELD_FILESIZE, -1);
-                }
-            }
+            addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
 
             // Representative image
-            boolean representative = Boolean.valueOf(eleImage.getChildText("representative"));
+            boolean representative = Boolean.parseBoolean(eleImage.getChildText("representative"));
             if (representative) {
-                doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
+                ret.getDoc().addField(SolrConstants.THUMBNAILREPRESENT, fileName);
             }
 
-            parseMimeType(doc, fileName);
-        } else {
-            // TODO placeholder
-            String placeholder = eleImage.getChildText("placeholder");
+            parseMimeType(ret.getDoc(), fileName);
         }
 
         // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (doc.containsKey(SolrConstants.FILENAME) && doc.containsKey(SolrConstants.MIMETYPE)
-                && ((String) doc.getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            doc.addField(FIELD_IMAGEAVAILABLE, true);
+        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
+                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
             recordHasImages = true;
         } else {
-            doc.addField(FIELD_IMAGEAVAILABLE, false);
+            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
         }
 
         // Copyright
         String copyright = eleImage.getChildText("copyright");
         if (StringUtils.isNotEmpty(copyright)) {
-            doc.addField("MD_COPYRIGHT", copyright);
+            ret.getDoc().addField("MD_COPYRIGHT", copyright);
         }
         // access condition
         String license = eleImage.getChildText("licence");
         if (StringUtils.isNotEmpty(license)) {
-            doc.addField(SolrConstants.ACCESSCONDITION, license);
+            ret.getDoc().addField(SolrConstants.ACCESSCONDITION, license);
         }
 
         // Metadata payload for later evaluation
         String structType = eleImage.getChildText("structType");
         if (structType != null) {
-            doc.addField(SolrConstants.LABEL, structType);
-            doc.addField(SolrConstants.DOCSTRCT, "OtherDocStrct"); // TODO
+            ret.getDoc().addField(SolrConstants.LABEL, structType);
+            ret.getDoc().addField(SolrConstants.DOCSTRCT, "OtherDocStrct"); // TODO
         }
 
-        if (dataFolders != null) {
-            addFullTextToPageDoc(doc, dataFolders, dataRepository, pi, useOrder, null);
-        }
+        addFullTextToPageDoc(ret.getDoc(), dataFolders, dataRepository, pi, useOrder, null);
 
-        writeStrategy.addPageDoc(doc);
+        return ret;
     }
 
     /**
@@ -941,5 +865,10 @@ public class WorldViewsIndexer extends Indexer {
         } else {
             logger.warn("No anchor file has been indexed for this work yet.");
         }
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.WORLDVIEWS;
     }
 }

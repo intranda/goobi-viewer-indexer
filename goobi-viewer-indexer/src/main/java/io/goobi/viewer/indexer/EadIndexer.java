@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -36,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
@@ -65,7 +65,12 @@ public class EadIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(EadIndexer.class);
 
+    /** Constant <code>NAMESPACE_EAD2</code> */
+    public static final Namespace NAMESPACE_EAD2 = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
+
     private ForkJoinPool pool;
+
+    protected Namespace eadNamespace = SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead3");
 
     /**
      * Constructor.
@@ -76,30 +81,24 @@ public class EadIndexer extends Indexer {
     public EadIndexer(Hotfolder hotfolder) {
         super();
         this.hotfolder = hotfolder;
+        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
     /**
-     * 
-     * @param hotfolder
-     * @param httpConnector
+     * <p>Constructor for EadIndexer.</p>
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object
+     * @param httpConnector a {@link io.goobi.viewer.indexer.helper.HttpConnector} object
      */
     public EadIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
         this.hotfolder = hotfolder;
+        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
-    /**
-     * Indexes the given METS file.
-     * 
-     * @param eadFile {@link Path}
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path eadFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(eadFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -108,13 +107,13 @@ public class EadIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(eadFile, fromReindexQueue, dataFolders, null);
+        String[] resp = index(eadFile, dataFolders, null);
         if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
             String newFileName = resp[0];
             String pi = FilenameUtils.getBaseName(newFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toAbsolutePath().toString(), newFileName);
             if (eadFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
 
             Files.copy(eadFile, indexed, StandardCopyOption.REPLACE_EXISTING);
@@ -148,39 +147,41 @@ public class EadIndexer extends Indexer {
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(eadFile, resp[1], getSourceDocFormat());
-            try {
-                Files.delete(eadFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, eadFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(eadFile, resp[1], getSourceDocFormat());
+        try {
+            Files.delete(eadFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, eadFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
      * Indexes the given METS file.
      *
-     * @param metsFile {@link java.nio.file.Path}
-     * @param fromReindexQueue a boolean.
+     * @param eadFile {@link java.nio.file.Path}
      * @param dataFolders a {@link java.util.Map} object.
-     * @param pageCountStart Order number for the first page.
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should update record correctly
      * @should set access conditions correctly
      */
-    public String[] index(Path eadFile, boolean fromReindexQueue, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy) {
+    public String[] index(Path eadFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy) {
         String[] ret = { null, null };
 
         if (eadFile == null || !Files.exists(eadFile)) {
-            throw new IllegalArgumentException("eadFile must point to an existing METS file.");
+            throw new IllegalArgumentException("eadFile must point to an existing EAD file.");
         }
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null.");
@@ -189,7 +190,7 @@ public class EadIndexer extends Indexer {
         logger.debug("Indexing EAD file '{}'...", eadFile.getFileName());
         try {
             initJDomXP(eadFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = findStructNode();
             if (structNode == null) {
@@ -202,40 +203,16 @@ public class EadIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI (from file name)
-            String pi = MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString()));
-            logger.info("Record PI: {}", pi);
-
-            // Do not allow identifiers with characters that cannot be used in file names
-            if (!Utils.validatePi(pi)) {
-                ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                throw new IndexerException(ret[1]);
-            }
-            indexObj.setPi(pi);
-            indexObj.setTopstructPI(pi);
-
-            // Add PI to default
-            if (MetadataHelper.isPiAddToDefault(SolrIndexerDaemon.getInstance()
-                    .getConfiguration()
-                    .getMetadataConfigurationManager()
-                    .getConfigurationListForField(SolrConstants.PI))) {
-                indexObj.setDefaultValue(indexObj.getDefaultValue() + " " + pi);
-            }
+            String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString())),
+                    indexObj, false);
 
             // Determine the data repository to use
-            DataRepository[] repositories =
-                    hotfolder.getDataRepositoryStrategy()
-                            .selectDataRepository(pi, eadFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(),
-                                    SolrIndexerDaemon.getInstance().getOldSearchIndex());
-            dataRepository = repositories[0];
-            previousDataRepository = repositories[1];
-            if (StringUtils.isNotEmpty(dataRepository.getPath())) {
-                indexObj.setDataRepository(dataRepository.getPath());
-            }
+            selectDataRepository(indexObj, pi, eadFile, dataFolders);
 
             ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
 
             // Check and use old data folders, if no new ones found
-            checkOldDataFolder(dataFolders, DataRepository.PARAM_ANNOTATIONS, pi);
+            checkOldDataFolders(dataFolders, new String[] { DataRepository.PARAM_ANNOTATIONS }, pi);
 
             if (writeStrategy == null) {
                 // Request appropriate write strategy
@@ -267,48 +244,16 @@ public class EadIndexer extends Indexer {
             // If full-text has been indexed for any page, set a boolean in the root doc indicating that the record does have full-text
             indexObj.addToLucene(SolrConstants.FULLTEXTAVAILABLE, String.valueOf(recordHasFulltext));
 
-            indexObj.addToLucene(SolrConstants.ISWORK, "false");
+            indexObj.addToLucene(SolrConstants.ISWORK, "true");
 
-            // Add DEFAULT field
+            // Add SEARCHTERMS_ARCHIVE field (instead of DEFAULT)
             if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-                indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+                indexObj.addToLucene(SolrConstants.SEARCHTERMS_ARCHIVE, cleanUpDefaultField(indexObj.getDefaultValue()));
                 indexObj.setDefaultValue("");
             }
 
             // Add mime type
             indexObj.addToLucene(SolrConstants.MIMETYPE, "application/xml");
-
-            // Create group documents if this record is part of a group and no doc exists for that group yet
-            for (String groupIdField : indexObj.getGroupIds().keySet()) {
-                String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
-                Map<String, String> moreMetadata = new HashMap<>();
-                String titleField = "MD_TITLE_" + groupSuffix;
-                String sortTitleField = "SORT_TITLE_" + groupSuffix;
-                for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (titleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put(SolrConstants.LABEL, field.getValue());
-                        moreMetadata.put("MD_TITLE", field.getValue());
-                    } else if (sortTitleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put("SORT_TITLE", field.getValue());
-                    } else if (field.getField().endsWith(groupSuffix)
-                            && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
-                        // Add any MD_*_GROUPSUFFIX field to the group doc
-                        moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
-                    }
-                }
-                SolrInputDocument doc = SolrIndexerDaemon.getInstance()
-                        .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
-                if (doc != null) {
-                    writeStrategy.addDoc(doc);
-                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                } else {
-                    logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                }
-            }
 
             // Index all child elements recursively
             List<IndexObject> childObjectList =
@@ -345,14 +290,14 @@ public class EadIndexer extends Indexer {
 
     /**
      * Recursively re-indexes the logical docstruct subtree of the node represented by the given IndexObject.
-     * 
-     * @param parentIndexObject {@link IndexObject}
+     *
+     * @param parentIndexObject {@link io.goobi.viewer.indexer.model.IndexObject}
      * @param depth OBSOLETE
-     * @param writeStrategy
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object
      * @param allowParallelProcessing If true, this node's immediate children may be processed in parallel
      * @return List of <code>LuceneField</code>s to inherit up the hierarchy.
-     * @throws IOException
-     * @throws FatalIndexerException
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing) throws IOException, FatalIndexerException {
@@ -362,19 +307,19 @@ public class EadIndexer extends Indexer {
         List<Element> childrenNodeList;
         if ("c".equals(parentIndexObject.getRootStructNode().getName())) {
             childrenNodeList = parentIndexObject.getRootStructNode()
-                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+                    .getChildren("c", eadNamespace);
         } else if ("ead".equals(parentIndexObject.getRootStructNode().getName())) {
             // ead:archdesc/ead:dsc/ead:c
             childrenNodeList = parentIndexObject.getRootStructNode()
-                    .getChild("archdesc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
-                    .getChild("dsc", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"))
-                    .getChildren("c", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("ead"));
+                    .getChild("archdesc", eadNamespace)
+                    .getChild("dsc", eadNamespace)
+                    .getChildren("c", eadNamespace);
         } else {
             logger.warn("Unknown node name: {}", parentIndexObject.getRootStructNode().getName());
             return Collections.emptyList();
         }
-        if (!childrenNodeList.isEmpty()) {
-            logger.info("{} child elements found", childrenNodeList.size());
+        if (logger.isDebugEnabled() && !childrenNodeList.isEmpty()) {
+            logger.debug("{} child elements found", childrenNodeList.size());
         }
 
         if (allowParallelProcessing && pool == null && childrenNodeList.size() >= SolrIndexerDaemon.getInstance().getConfiguration().getThreads()) {
@@ -423,21 +368,21 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @param node
-     * @param parentIndexObject
-     * @param depth
-     * @param order
-     * @param writeStrategy
-     * @param allowParallelProcessing
-     * @return Created {@link IndexObject} if it has metadata fields to inherit upwards; otherwise null
-     * @throws FatalIndexerException
-     * @throws IOException
+     * <p>indexChild.</p>
+     *
+     * @param node a {@link org.jdom2.Element} object
+     * @param parentIndexObject a {@link io.goobi.viewer.indexer.model.IndexObject} object
+     * @param depth a int
+     * @param order a int
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object
+     * @param allowParallelProcessing a boolean
+     * @return Created {@link io.goobi.viewer.indexer.model.IndexObject} if it has metadata fields to inherit upwards; otherwise null
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @throws java.io.IOException
      */
     public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, int order, ISolrWriteStrategy writeStrategy,
-            boolean allowParallelProcessing)
-            throws FatalIndexerException, IOException {
-        IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            boolean allowParallelProcessing) throws FatalIndexerException, IOException {
+        IndexObject indexObj = new IndexObject(getNextIddoc());
         indexObj.setRootStructNode(node);
         indexObj.setParent(parentIndexObject);
         indexObj.setTopstructPI(parentIndexObject.getTopstructPI());
@@ -467,13 +412,6 @@ public class EadIndexer extends Indexer {
         logger.debug("Writing metadata");
         MetadataHelper.writeMetadataToObject(indexObj, node, "", xp);
 
-        // Inherit GROUPID_* fields
-        if (!parentIndexObject.getGroupIds().isEmpty()) {
-            for (String groupId : parentIndexObject.getGroupIds().keySet()) {
-                indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
-            }
-        }
-
         // Add parent's metadata and SORT_* fields to this docstruct
         for (LuceneField field : parentIndexObject.getLuceneFields()) {
             if (SolrIndexerDaemon.getInstance()
@@ -494,20 +432,18 @@ public class EadIndexer extends Indexer {
         indexObj.writeAccessConditions(parentIndexObject);
 
         // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
-        if (StringUtils.isNotEmpty(indexObj.getLogId())) {
+        if (StringUtils.isNotEmpty(indexObj.getLogId()) && indexObj.getNumPages() > 0) {
             // Write number of pages and first/last page labels for this docstruct
-            if (indexObj.getNumPages() > 0) {
-                indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
-                if (indexObj.getFirstPageLabel() != null) {
-                    indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
-                }
-                if (indexObj.getLastPageLabel() != null) {
-                    indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
-                }
-                if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
-                    indexObj.addToLucene("MD_ORDERLABELRANGE",
-                            new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
-                }
+            indexObj.addToLucene(SolrConstants.NUMPAGES, String.valueOf(indexObj.getNumPages()));
+            if (indexObj.getFirstPageLabel() != null) {
+                indexObj.addToLucene(SolrConstants.ORDERLABELFIRST, indexObj.getFirstPageLabel());
+            }
+            if (indexObj.getLastPageLabel() != null) {
+                indexObj.addToLucene(SolrConstants.ORDERLABELLAST, indexObj.getLastPageLabel());
+            }
+            if (indexObj.getFirstPageLabel() != null && indexObj.getLastPageLabel() != null) {
+                indexObj.addToLucene("MD_ORDERLABELRANGE",
+                        new StringBuilder(indexObj.getFirstPageLabel()).append(" - ").append(indexObj.getLastPageLabel()).toString());
             }
         }
 
@@ -519,7 +455,7 @@ public class EadIndexer extends Indexer {
             sbDefaultValue.append(labelWithSpaces);
         }
         if (SolrIndexerDaemon.getInstance().getConfiguration().isAddLabelToChildren()) {
-            logger.info("Adding label to children");
+            logger.debug("Adding label to children");
             for (String label : indexObj.getParentLabels()) {
                 String parentLabelWithSpaces = new StringBuilder(" ").append(label).append(' ').toString();
                 if (StringUtils.isNotEmpty(label) && !sbDefaultValue.toString().contains(parentLabelWithSpaces)) {
@@ -530,9 +466,9 @@ public class EadIndexer extends Indexer {
 
         indexObj.setDefaultValue(sbDefaultValue.toString());
 
-        // Add DEFAULT field
+        // Add SEARCHTERMS_ARCHIVE field (instead of DEFAULT)
         if (StringUtils.isNotEmpty(indexObj.getDefaultValue())) {
-            indexObj.addToLucene(SolrConstants.DEFAULT, cleanUpDefaultField(indexObj.getDefaultValue()));
+            indexObj.addToLucene(SolrConstants.SEARCHTERMS_ARCHIVE, cleanUpDefaultField(indexObj.getDefaultValue()));
             // Add default value to parent doc
             indexObj.setDefaultValue("");
         }
@@ -606,10 +542,10 @@ public class EadIndexer extends Indexer {
 
     /**
      * Sets DMDID, ID, TYPE and LABEL from the METS document.
-     * 
-     * @param indexObj {@link IndexObject}
+     *
+     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
      */
-    private void setSimpleData(IndexObject indexObj) {
+    protected void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
 
         indexObj.setDocType(DocType.ARCHIVE);
@@ -618,10 +554,18 @@ public class EadIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // LOGID / DMDID
+
         String value = TextHelper.normalizeSequence(structNode.getAttributeValue("id"));
         if (value != null) {
             indexObj.setLogId(value);
             indexObj.setDmdid(value);
+        } else {
+            // Root element
+            value = xp.evaluateToAttributeStringValue("ead:archdesc/@id", structNode);
+            if (value != null) {
+                indexObj.setLogId(value);
+                indexObj.setDmdid(value);
+            }
         }
         logger.trace("LOGID: {}", indexObj.getLogId());
 
@@ -665,8 +609,9 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @return
+     * <p>getSourceDocFormat.</p>
+     *
+     * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object
      */
     protected FileFormat getSourceDocFormat() {
         return FileFormat.EAD;

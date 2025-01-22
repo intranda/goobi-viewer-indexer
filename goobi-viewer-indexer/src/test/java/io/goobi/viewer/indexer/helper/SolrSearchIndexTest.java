@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -60,7 +61,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         super.setUp();
 
         String solrUrl = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("solrUrl");
-        client = SolrSearchIndex.getNewHttpSolrClient(solrUrl, true);
+        client = SolrSearchIndex.getNewSolrClient(solrUrl);
         searchIndex = new SolrSearchIndex(client);
     }
 
@@ -122,13 +123,14 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies create new document with all values if none exists
      */
     @Test
-    void checkAndCreateGroupDoc_shouldCreateNewDocumentWithAllValuesIfNoneExists() throws Exception {
+    void checkAndCreateGroupDoc_shouldCreateNewDocumentWithAllValuesIfNoneExists() {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
+        String iddoc = UUID.randomUUID().toString();
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
         Assertions.assertNotNull(doc);
-        Assertions.assertEquals("123456", doc.getFieldValue(SolrConstants.IDDOC));
+        Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.IDDOC));
         Long timestamp = (Long) doc.getFieldValue(SolrConstants.DATECREATED);
         Assertions.assertNotNull(timestamp);
         Assertions.assertEquals(timestamp, doc.getFieldValue(SolrConstants.DATEUPDATED));
@@ -148,7 +150,8 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "old_shelfmark");
         moreMetadata.put("MD_TITLE", "old_title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
+        String iddoc = UUID.randomUUID().toString();
+        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
         Assertions.assertNotNull(doc);
         searchIndex.writeToIndex(doc);
         searchIndex.commit(false);
@@ -156,7 +159,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
         moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "new_shelfmark");
         moreMetadata.put("MD_TITLE", "new_title");
-        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc2 = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, iddoc);
         Assertions.assertNotNull(doc2);
         Assertions.assertEquals(doc.getFieldValue(SolrConstants.IDDOC), doc2.getFieldValue(SolrConstants.IDDOC));
         Assertions.assertEquals(doc.getFieldValue(SolrConstants.DATECREATED), doc2.getFieldValue(SolrConstants.DATECREATED));
@@ -173,11 +176,12 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies add default field
      */
     @Test
-    void checkAndCreateGroupDoc_shouldAddDefaultField() throws Exception {
+    void checkAndCreateGroupDoc_shouldAddDefaultField() {
         Map<String, String> moreMetadata = new HashMap<>();
         moreMetadata.put("MD_SHELFMARK", "shelfmark");
         moreMetadata.put("MD_TITLE", "title");
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, 123456L);
+        SolrInputDocument doc =
+                searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", moreMetadata, UUID.randomUUID().toString());
         Assertions.assertNotNull(doc);
         Assertions.assertEquals(DocType.GROUP.name(), doc.getFieldValue(SolrConstants.DOCTYPE));
         String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
@@ -192,8 +196,9 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies add access conditions
      */
     @Test
-    void checkAndCreateGroupDoc_shouldAddAccessConditions() throws Exception {
-        SolrInputDocument doc = searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, 123456L);
+    void checkAndCreateGroupDoc_shouldAddAccessConditions() {
+        SolrInputDocument doc =
+                searchIndex.checkAndCreateGroupDoc(SolrConstants.PREFIX_GROUPID + "TEST", "id10T", null, UUID.randomUUID().toString());
         Assertions.assertNotNull(doc);
         Assertions.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, doc.getFieldValue(SolrConstants.ACCESSCONDITION));
     }
@@ -259,7 +264,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies skip fields correctly
      */
     @Test
-    void createDocument_shouldSkipFieldsCorrectly() throws Exception {
+    void createDocument_shouldSkipFieldsCorrectly() {
         List<LuceneField> luceneFields = new ArrayList<>(2);
         luceneFields.add(new LuceneField("foo", "bar"));
         luceneFields.add(new LuceneField("skip", "me"));
@@ -276,7 +281,7 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
      * @verifies boolify field correctly
      */
     @Test
-    void getBooleanFieldName_shouldBoolifyFieldCorrectly() throws Exception {
+    void getBooleanFieldName_shouldBoolifyFieldCorrectly() {
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("FOO"));
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MD_FOO"));
         Assertions.assertEquals("BOOL_FOO", SolrSearchIndex.getBooleanFieldName("MDNUM_FOO"));
@@ -291,11 +296,9 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     void checkDuplicateFieldValues_shouldReturnCorrectIdentifiers() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
-        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
-                new HashMap<>(), null, 1, false);
+        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), new HashMap<>(), null, 1, false);
         Assertions.assertNull(ret[1]);
-        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
-                new HashMap<>(), null, 1, false);
+        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), new HashMap<>(), null, 1, false);
         Assertions.assertNull(ret[1]);
         Set<String> result = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
@@ -313,11 +316,9 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     void checkDuplicateFieldValues_shouldIgnoreRecordsThatMatchSkipPi() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
-        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), false,
-                new HashMap<>(), null, 1, false);
+        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), new HashMap<>(), null, 1, false);
         Assertions.assertNull(ret[1]);
-        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), false,
-                new HashMap<>(), null, 1, false);
+        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), new HashMap<>(), null, 1, false);
         Assertions.assertNull(ret[1]);
         Set<String> result = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()

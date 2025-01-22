@@ -42,6 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Namespace;
 
+import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -50,12 +51,12 @@ import io.goobi.viewer.indexer.model.datarepository.DataRepository;
  * <p>
  * Configuration class.
  * </p>
- *
  */
 public final class Configuration {
 
     private static final Logger logger = LogManager.getLogger(Configuration.class);
 
+    /** Constant <code>CONFIG_FILE_NAME="config_indexer.xml"</code> */
     public static final String CONFIG_FILE_NAME = "config_indexer.xml";
 
     private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
@@ -69,7 +70,7 @@ public final class Configuration {
 
     /**
      * Private constructor.
-     * 
+     *
      * @throws ConfigurationException
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -170,7 +171,7 @@ public final class Configuration {
         namespaces.put("rdf", Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
         namespaces.put("skos", Namespace.getNamespace("skos", "http://www.w3.org/2004/02/skos/core#"));
         namespaces.put("oai", Namespace.getNamespace("oai", "http://www.openarchives.org/OAI/2.0/"));
-        namespaces.put("ead", Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9"));
+        namespaces.put("ead", EadIndexer.NAMESPACE_EAD2);
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         for (Entry<String, String> entry : additionalNamespaces.entrySet()) {
@@ -180,7 +181,7 @@ public final class Configuration {
     }
 
     /**
-     * Returns param of < init >< elementName > param < /elementName >< /init > if exists otherwise returns question
+     * Returns param of &lt;init&gt;&lt;elementName&gt; param &lt;/elementName&gt;&lt;/init&gt; if exists otherwise returns question
      *
      * @param elementName the element name
      * @return param if exists, element name otherwise
@@ -195,9 +196,10 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>getConfigurations.</p>
+     *
      * @param elementName
-     * @return
+     * @return a {@link java.util.List} object
      */
     public List<String> getConfigurations(String elementName) {
         List<String> ret = new ArrayList<>();
@@ -209,10 +211,11 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>getBoolean.</p>
+     *
      * @param inPath
      * @param defaultValue
-     * @return
+     * @return a {@link java.lang.Boolean} object
      */
     public Boolean getBoolean(String inPath, boolean defaultValue) {
         return getConfig().getBoolean(inPath, defaultValue);
@@ -257,9 +260,10 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>getStringList.</p>
+     *
      * @param inPath
-     * @return
+     * @return a {@link java.util.List} object
      */
     public List<String> getStringList(String inPath) {
         String[] arr = getConfig().getStringArray(inPath);
@@ -288,24 +292,27 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @return
+     * <p>getSolrUrl.</p>
+     *
      * @should return correct value
+     * @return a {@link java.lang.String} object
      */
     public String getSolrUrl() {
         return getConfiguration("solrUrl");
     }
 
     /**
-     * 
-     * @return
+     * <p>getOldSolrUrl.</p>
+     *
+     * @return a {@link java.lang.String} object
      */
     public String getOldSolrUrl() {
         return getConfiguration("oldSolrUrl");
     }
 
     /**
-     * 
+     * <p>isSolrUseHttp2.</p>
+     *
      * @return a boolean
      * @should return correct value
      */
@@ -338,18 +345,20 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @return
+     * <p>getHotfolderPath.</p>
+     *
      * @should return correct value
+     * @return a {@link java.lang.String} object
      */
     public String getHotfolderPath() {
         return getHotfolderPaths().get(0);
     }
 
     /**
-     * 
-     * @return
+     * <p>getHotfolderPaths.</p>
+     *
      * @should return all values
+     * @return a {@link java.util.List} object
      */
     public List<String> getHotfolderPaths() {
         return getConfigurations("hotFolder");
@@ -407,7 +416,7 @@ public final class Configuration {
      * @return a boolean.
      */
     public boolean isAggregateRecords() {
-        return getBoolean("init.aggregateRecords", false);
+        return getBoolean("init.aggregateRecords", true);
     }
 
     /**
@@ -433,36 +442,40 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @return
+     * <p>isCountHotfolderFiles.</p>
+     *
      * @should return correct value
+     * @return a boolean
      */
     public boolean isCountHotfolderFiles() {
         return getBoolean("performance.countHotfolderFiles", true);
     }
 
     /**
-     * 
-     * @return
+     * <p>isAuthorityDataCacheEnabled.</p>
+     *
      * @should return correct value
+     * @return a boolean
      */
     public boolean isAuthorityDataCacheEnabled() {
         return getBoolean("performance.authorityDataCache[@enabled]", true);
     }
 
     /**
-     * 
-     * @return
+     * <p>getAuthorityDataCacheRecordTTL.</p>
+     *
      * @should return correct value
+     * @return a int
      */
     public int getAuthorityDataCacheRecordTTL() {
         return getInt("performance.authorityDataCache.recordTTL", 24);
     }
 
     /**
-     * 
-     * @return
+     * <p>getAuthorityDataCacheSizeWarningThreshold.</p>
+     *
      * @should return correct value
+     * @return a int
      */
     public int getAuthorityDataCacheSizeWarningThreshold() {
         return getInt("performance.authorityDataCache.sizeWarningThreshold", 10000);
@@ -493,7 +506,8 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>getViewerAuthorizationToken.</p>
+     *
      * @return Viewer authorization token string, if configured
      * @should return correct value
      */
@@ -503,7 +517,7 @@ public final class Configuration {
 
     /**
      * Whether a viewer task should be triggered that creates pdf files for all images of an indexed process
-     * 
+     *
      * @return Whether a viewer task should be triggered that creates pdf files for all images of an indexed process
      */
     public boolean isPrerenderPdfsEnabled() {
@@ -512,7 +526,7 @@ public final class Configuration {
 
     /**
      * Whether pdfs for record images should be prerendered in any case, even if they already exist
-     * 
+     *
      * @return Whether pdfs for record images should be prerendered in any case, even if they already exist
      */
     public boolean isForcePrerenderPdfs() {
@@ -521,7 +535,7 @@ public final class Configuration {
 
     /**
      * The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
-     * 
+     *
      * @return The config_contentServer pdf-configuration variant to use when prerendering pdfs for images
      */
     public String getPrerenderPdfsConfigVariant() {
@@ -611,7 +625,8 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>isProxyEnabled.</p>
+     *
      * @return true if enabled; false otherwise
      * @should return correct value
      */
@@ -620,16 +635,18 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @return
+     * <p>getProxyUrl.</p>
+     *
      * @should return correct value
+     * @return a {@link java.lang.String} object
      */
     public String getProxyUrl() {
         return getString("proxy.proxyUrl");
     }
 
     /**
-     * 
+     * <p>getProxyPort.</p>
+     *
      * @return Configured port number; 0 if none found
      * @should return correct value
      */
@@ -638,19 +655,21 @@ public final class Configuration {
     }
 
     /**
-     * 
-     * @return
+     * <p>getProxyWhitelist.</p>
+     *
+     * @return a {@link java.util.List} object
      */
     public List<String> getProxyWhitelist() {
         return getStringList("proxy.whitelist.host");
     }
 
     /**
-     * 
+     * <p>isHostProxyWhitelisted.</p>
+     *
      * @param url
-     * @return
      * @throws MalformedURLException
      * @should return true if host whitelisted
+     * @return a boolean
      */
     public boolean isHostProxyWhitelisted(String url) throws MalformedURLException {
         URL urlAsURL = new URL(url);
@@ -660,7 +679,7 @@ public final class Configuration {
     /**
      * If true, the first page of a document is set as the representative image if no other page is specified in the source document. If this is set
      * to false, and no page is explicitly set as representative, no representative image will be set. Defaults to true
-     * 
+     *
      * @return whether the first page should be used as representative image per default
      */
     public boolean isUseFirstPageAsDefaultRepresentative() {
@@ -668,7 +687,8 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>getMetsPreferredImageFileGroups.</p>
+     *
      * @return Configured preferredImageFileGroup values or empty list
      * @should return configured values
      */
@@ -677,7 +697,8 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>getMetsAllowedPhysicalTypes.</p>
+     *
      * @return Configured physicalElementTypes/type values or empty list
      * @should return configured values
      */
@@ -686,7 +707,8 @@ public final class Configuration {
     }
 
     /**
-     * 
+     * <p>getMetsVolumeCheckXPath.</p>
+     *
      * @return Configured XPath expression or default value
      * @should return correct value
      */
@@ -697,7 +719,7 @@ public final class Configuration {
 
     /**
      * Overrides values in the config file (for unit test purposes).
-     * 
+     *
      * @param property Property path (e.g. "accessConditions.fullAccessForLocalhost")
      * @param value New value to set
      */
@@ -736,6 +758,11 @@ public final class Configuration {
         return true;
     }
 
+    /**
+     * <p>isReadImageDimensionsFromIIIF.</p>
+     *
+     * @return a boolean
+     */
     public boolean isReadImageDimensionsFromIIIF() {
         return getBoolean("performance.loadExternalImageInfos", true);
     }

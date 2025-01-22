@@ -39,9 +39,6 @@ import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
-    /** Logger for this class. */
-    //    private static final Logger logger = LogManager.getLogger(DenkXwebIndexerTest.class);
-
     private static final String PI = "30596824";
     private static final String PI2 = "10973880";
 
@@ -63,9 +60,10 @@ class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if denkxwebFile null
      */
     @Test
-    void addToIndex_shouldThrowIllegalArgumentExceptionIfDenkxwebFileNull() throws Exception {
+    void addToIndex_shouldThrowIllegalArgumentExceptionIfDenkxwebFileNull() {
         DenkXwebIndexer indexer = new DenkXwebIndexer(hotfolder);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.addToIndex(null, false, Collections.emptyMap()));
+        Map<String, Boolean> map = Collections.emptyMap();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.addToIndex(null, map));
     }
 
     /**
@@ -81,7 +79,7 @@ class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document recordDoc : recordDocs) {
             String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
-            Assertions.assertNotEquals(ret[1], "ERROR", ret[0]);
+            Assertions.assertNotEquals("ERROR", ret[0], ret[1]);
         }
 
         // Top document
@@ -110,15 +108,15 @@ class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
     @SuppressWarnings("unchecked")
     @Test
     void generatePageDocuments_shouldGeneratePagesCorrectly() throws Exception {
-        File denkxwebFile = new File("src/test/resources/DenkXweb/" + PI2 + ".xml");
-        Assertions.assertTrue(denkxwebFile.isFile());
-        List<Document> recordDocs = JDomXP.splitDenkXwebFile(denkxwebFile);
+        File file = new File("src/test/resources/DenkXweb/" + PI2 + ".xml");
+        Assertions.assertTrue(file.isFile());
+        List<Document> recordDocs = JDomXP.splitDenkXwebFile(file);
         Assertions.assertEquals(1, recordDocs.size());
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document recordDoc : recordDocs) {
             String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
-            Assertions.assertNotEquals(ret[1], "ERROR", ret[0]);
+            Assertions.assertNotEquals("ERROR", ret[0], ret[1]);
         }
 
         // Top document

@@ -31,6 +31,7 @@ import org.apache.solr.common.SolrInputDocument;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
@@ -46,9 +47,9 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     protected SolrInputDocument rootDoc;
     protected List<SolrInputDocument> docsToAdd = new CopyOnWriteArrayList<>();
-    protected Map<Integer, SolrInputDocument> pageOrderMap = new ConcurrentHashMap<>();
+    protected Map<Integer, PhysicalElement> pageOrderMap = new ConcurrentHashMap<>();
     /** Map for fast doc retrieval via its PHYSID. */
-    private Map<String, SolrInputDocument> physIdPageMap = new ConcurrentHashMap<>();
+    private Map<String, PhysicalElement> physIdPageMap = new ConcurrentHashMap<>();
 
     /**
      * Constructor.
@@ -111,18 +112,17 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     /** {@inheritDoc} */
     @Override
-    public void addPageDoc(SolrInputDocument doc) {
-        int order = (Integer) doc.getFieldValue(SolrConstants.ORDER);
-        if (pageOrderMap.get(order) != null) {
-            logger.error("Collision for page order {}", order);
+    public void addPage(PhysicalElement page) {
+        if (pageOrderMap.get(page.getOrder()) != null) {
+            logger.error("Collision for page order {}", page.getOrder());
         }
-        pageOrderMap.put(order, doc);
-        String key = (String) doc.getFieldValue(SolrConstants.PHYSID);
-        physIdPageMap.put(key, doc);
+        pageOrderMap.put(page.getOrder(), page);
+        String key = (String) page.getDoc().getFieldValue(SolrConstants.PHYSID);
+        physIdPageMap.put(key, page);
 
         // Add URN to set to check for duplicates later
-        if (doc.getField(SolrConstants.IMAGEURN) != null) {
-            String urn = (String) doc.getFieldValue(SolrConstants.IMAGEURN);
+        if (page.getDoc().getField(SolrConstants.IMAGEURN) != null) {
+            String urn = (String) page.getDoc().getFieldValue(SolrConstants.IMAGEURN);
             if (StringUtils.isNotEmpty(urn)) {
                 List<String> urns = collectedValues.computeIfAbsent(SolrConstants.URN, k -> new ArrayList<>());
                 urns.add(urn);
@@ -132,7 +132,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     /** {@inheritDoc} */
     @Override
-    public void updateDoc(SolrInputDocument doc) {
+    public void updatePage(PhysicalElement page) {
         // This implementation doesn't need to do anything, since all docs are kept in memory
     }
 
@@ -161,7 +161,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
     @Override
     public SolrInputDocument getPageDocForOrder(int order) {
         if (order > 0) {
-            return pageOrderMap.get(order);
+            return pageOrderMap.get(order) != null ? pageOrderMap.get(order).getDoc() : null;
         }
 
         return null; //NOSONAR Returning empty map would complicate things
@@ -169,13 +169,13 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
 
     /** {@inheritDoc} */
     @Override
-    public List<SolrInputDocument> getPageDocsForPhysIdList(List<String> physIdList) {
-        List<SolrInputDocument> ret = new ArrayList<>();
+    public List<PhysicalElement> getPagesForPhysIdList(List<String> physIdList) {
+        List<PhysicalElement> ret = new ArrayList<>();
 
         for (String physId : physIdList) {
-            SolrInputDocument doc = physIdPageMap.get(physId);
-            if (doc != null) {
-                ret.add(doc);
+            PhysicalElement page = physIdPageMap.get(physId);
+            if (page != null) {
+                ret.add(page);
             }
         }
 
@@ -194,21 +194,22 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         // Check for duplicate URNs
         checkForValueCollisions(SolrConstants.URN, pi);
 
-        for (Entry<Integer, SolrInputDocument> entry : pageOrderMap.entrySet()) {
-            SolrInputDocument pageDoc = entry.getValue();
+        for (Entry<Integer, PhysicalElement> entry : pageOrderMap.entrySet()) {
+            PhysicalElement page = entry.getValue();
             // Do not add shape docs
-            if (DocType.SHAPE.name().equals(pageDoc.getFieldValue(SolrConstants.DOCTYPE))) {
+            if (DocType.SHAPE.name().equals(page.getDoc().getFieldValue(SolrConstants.DOCTYPE))) {
+                // TODO make sure shape docs are handled separately in all formats, then remove this check
                 continue;
             }
-            checkAndAddAccessCondition(pageDoc);
-            docsToAdd.add(pageDoc);
-            if (!pageDoc.containsKey(SolrConstants.PI_TOPSTRUCT) && pi != null) {
-                pageDoc.addField(SolrConstants.PI_TOPSTRUCT, pi);
-                logger.warn("Page document {} has no PI_TOPSTRUCT fields, adding now...", pageDoc.getFieldValue(SolrConstants.ORDER));
+            checkAndAddAccessCondition(page.getDoc());
+            docsToAdd.add(page.getDoc());
+            if (!page.getDoc().containsKey(SolrConstants.PI_TOPSTRUCT) && pi != null) {
+                page.getDoc().addField(SolrConstants.PI_TOPSTRUCT, pi);
+                logger.warn("Page document {} has no PI_TOPSTRUCT fields, adding now...", page.getDoc().getFieldValue(SolrConstants.ORDER));
             }
             // Remove ALTO field (easier than removing all the logic involved in adding the ALTO field)
-            if (pageDoc.containsKey(SolrConstants.ALTO)) {
-                pageDoc.removeField(SolrConstants.ALTO);
+            if (page.getDoc().containsKey(SolrConstants.ALTO)) {
+                page.getDoc().removeField(SolrConstants.ALTO);
             }
         }
 
@@ -218,15 +219,7 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
             }
             if (aggregateRecords) {
                 // Add SUPER* fields to root doc
-                if (doc.containsKey(SolrConstants.DEFAULT)) {
-                    rootDoc.addField(SolrConstants.SUPERDEFAULT, doc.getFieldValue(SolrConstants.DEFAULT));
-                }
-                if (doc.containsKey(SolrConstants.FULLTEXT)) {
-                    rootDoc.addField(SolrConstants.SUPERFULLTEXT, doc.getFieldValue(SolrConstants.FULLTEXT));
-                }
-                if (doc.containsKey(SolrConstants.UGCTERMS)) {
-                    rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
-                }
+                addSuperSearchFields(doc, rootDoc);
             }
             sanitizeDoc(doc);
         }
@@ -240,9 +233,6 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
         }
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy#cleanup()
-     */
     /** {@inheritDoc} */
     @Override
     public void cleanup() {

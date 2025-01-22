@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -44,7 +45,7 @@ public final class SolrIndexerDaemon {
     private static final Logger logger = LogManager.getLogger(SolrIndexerDaemon.class);
 
     /** Constant <code>VERSION</code> */
-    private static final int MIN_SCHEMA_VERSION = 20240403;
+    private static final int MIN_SCHEMA_VERSION = 20240625;
     private static final String SCHEMA_VERSION_PREFIX = "goobi_viewer-";
     private static final int DEFAULT_SLEEP_INTERVAL = 1000;
 
@@ -235,7 +236,7 @@ public final class SolrIndexerDaemon {
 
         logger.info("Using {} CPU thread(s).", configuration.getThreads());
 
-        Utils.submitDataToViewer(hotfolders.get(0).countRecordFiles());
+        Utils.submitDataToViewer(Collections.emptyList(), hotfolders.get(0).countRecordFiles());
 
         // main loop
         logger.info("Program started, monitoring hotfolder(s)...");
@@ -318,7 +319,7 @@ public final class SolrIndexerDaemon {
     /**
      * Sets custom Configuration object (used for unit testing).
      *
-     * @param configuration a {@link io.goobi.viewer.controller.Configuration} object.
+     * @param configuration a {@link io.goobi.viewer.indexer.helper.Configuration} object.
      */
     public void injectConfiguration(Configuration configuration) {
         if (configuration != null) {
@@ -354,13 +355,13 @@ public final class SolrIndexerDaemon {
     }
 
     /**
-     * For unit tests only.
+     * Required for g2g, must be public.
      * 
      * @param confFileName
      * @return this
      * @should set confFileName correctly
      */
-    SolrIndexerDaemon setConfFileName(String confFileName) {
+    public SolrIndexerDaemon setConfFileName(String confFileName) {
         this.confFileName = confFileName;
         return this;
     }
@@ -392,7 +393,7 @@ public final class SolrIndexerDaemon {
     /**
      * Sets custom SolrSearchIndex object (used for unit testing).
      *
-     * @param searchIndex a {@link io.goobi.viewer.solr.SolrSearchIndex} object.
+     * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      */
     public void injectSearchIndex(SolrSearchIndex searchIndex) {
         this.searchIndex = searchIndex;

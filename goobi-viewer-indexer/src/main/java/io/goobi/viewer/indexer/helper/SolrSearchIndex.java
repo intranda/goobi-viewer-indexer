@@ -40,7 +40,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.BaseHttpSolrClient.RemoteSolrException;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
@@ -64,14 +63,16 @@ public final class SolrSearchIndex {
     private static final Logger logger = LogManager.getLogger(SolrSearchIndex.class);
 
     private static final int MAX_HITS = Integer.MAX_VALUE;
+    /** Constant <code>TIMEOUT_SO=300000</code> */
     public static final int TIMEOUT_SO = 300000;
+    /** Constant <code>TIMEOUT_CONNECTION=300000</code> */
     public static final int TIMEOUT_CONNECTION = 300000;
     private static final int RETRY_ATTEMPTS = 20;
 
     private static final String ERROR_SOLR_CONNECTION = "Solr connection error";
     private static final String ERROR_UPDATE_STATUS = "Update status: {}";
 
-    private static Map<Long, Boolean> usedIddocs = new ConcurrentHashMap<>();
+    private static Map<String, Boolean> usedIddocs = new ConcurrentHashMap<>();
 
     private boolean optimize = false;
 
@@ -82,9 +83,8 @@ public final class SolrSearchIndex {
      * Constructor for SolrSearchIndex.
      * </p>
      *
-     * @param client a {@link org.apache.solr.client.solrj.SolrServer} object.
-     * @throws ConfigurationException
-     * @throws FatalIndexerException
+     * @param client a {@link org.apache.solr.client.solrj.SolrClient} object.
+     * @throws org.apache.commons.configuration2.ex.ConfigurationException
      */
     public SolrSearchIndex(SolrClient client) throws ConfigurationException {
         if (client == null) {
@@ -95,50 +95,15 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @return New {@link SolrClient}
-     * @throws ConfigurationException
-     */
-    public static SolrClient getNewSolrClient(String solrUrl) throws ConfigurationException {
-        if (SolrIndexerDaemon.getInstance().getConfiguration().isSolrUseHttp2()) {
-            return getNewHttp2SolrClient(SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
-        }
-
-        return getNewHttpSolrClient(solrUrl, true);
-    }
-
-    /**
      * <p>
-     * getNewHttpSolrServer.
+     * getNewSolrClient.
      * </p>
      *
-     * @param solrUrl URL to the Solr server
-     * @param allowCompression
-     * @return a {@link org.apache.solr.client.solrj.impl.HttpSolrServer} object.
-     * @throws ConfigurationException
-     * @should return null if solrUrl is empty
+     * @param solrUrl a {@link java.lang.String} object
+     * @return New {@link org.apache.solr.client.solrj.SolrClient}
+     * @throws org.apache.commons.configuration2.ex.ConfigurationException
      */
-    static HttpSolrClient getNewHttpSolrClient(String solrUrl, boolean allowCompression) throws ConfigurationException {
-        if (StringUtils.isEmpty(solrUrl)) {
-            throw new ConfigurationException("No Solr URL configured. Please check <solrUrl/>.");
-        }
-
-        HttpSolrClient server = new HttpSolrClient.Builder()
-                .withBaseSolrUrl(solrUrl)
-                .withSocketTimeout(TIMEOUT_SO)
-                .withConnectionTimeout(TIMEOUT_CONNECTION)
-                .allowCompression(allowCompression)
-                .build();
-        //        server.setDefaultMaxConnectionsPerHost(100);
-        //        server.setMaxTotalConnections(100);
-        server.setFollowRedirects(false); // defaults to false
-        //        server.setMaxRetries(1); // defaults to 0. > 1 not recommended.
-        server.setRequestWriter(new BinaryRequestWriter());
-
-        return server;
-    }
-
-    static Http2SolrClient getNewHttp2SolrClient(String solrUrl) throws ConfigurationException {
+    public static SolrClient getNewSolrClient(String solrUrl) throws ConfigurationException {
         if (StringUtils.isEmpty(solrUrl)) {
             throw new ConfigurationException("No Solr URL configured. Please check <solrUrl/>.");
         }
@@ -157,11 +122,11 @@ public final class SolrSearchIndex {
      * checkIddocAvailability.
      * </p>
      *
-     * @param iddoc a long.
+     * @param iddoc a String
      * @return a boolean.
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException if any.
      */
-    public synchronized boolean checkIddocAvailability(long iddoc) throws FatalIndexerException {
+    public synchronized boolean checkIddocAvailability(String iddoc) throws FatalIndexerException {
         if (usedIddocs.get(iddoc) != null) {
             return false;
         }
@@ -204,7 +169,7 @@ public final class SolrSearchIndex {
      * @param query a {@link java.lang.String} object.
      * @return a long.
      * @throws org.apache.solr.client.solrj.SolrServerException if any.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public long getNumHits(String query) throws SolrServerException, IOException {
         return search(query, null, 0).getNumFound();
@@ -219,7 +184,7 @@ public final class SolrSearchIndex {
      * @param fields a {@link java.util.List} object.
      * @return a {@link org.apache.solr.common.SolrDocumentList} object.
      * @throws org.apache.solr.client.solrj.SolrServerException if any.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public SolrDocumentList search(String query, List<String> fields) throws SolrServerException, IOException {
         return search(query, fields, MAX_HITS);
@@ -235,7 +200,7 @@ public final class SolrSearchIndex {
      * @param rows a int.
      * @throws org.apache.solr.client.solrj.SolrServerException
      * @return a {@link org.apache.solr.common.SolrDocumentList} object.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public SolrDocumentList search(String query, List<String> fields, int rows) throws SolrServerException, IOException {
         SolrQuery solrQuery = new SolrQuery(query);
@@ -283,7 +248,7 @@ public final class SolrSearchIndex {
      * @return The name of the data repository currently used for the record with the given PI; "?" if the record is indexed, but not in a repository;
      *         null if the record is not in the index
      * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws IOException
+     * @throws java.io.IOException
      * @should find correct data repository for record
      */
     public String findCurrentDataRepository(String pi) throws SolrServerException, IOException {
@@ -307,7 +272,7 @@ public final class SolrSearchIndex {
      * any changes to other fields.
      *
      * @param doc a {@link org.apache.solr.common.SolrDocument} object.
-     * @param partialUpdates Map of update operations (usage: Map<field, Map<operation, value>>)
+     * @param partialUpdates Map of update operations (usage: Map&lt;field, Map&lt;operation, value&gt;&gt;)
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should update doc correctly
      * @should add GROUPFIELD if original doc doesn't have it
@@ -476,8 +441,9 @@ public final class SolrSearchIndex {
 
     /**
      * Deletes all documents that match the given query. Handle with care!
-     * 
+     *
      * @return true if successful; false otherwise
+     * @param query a {@link java.lang.String} object
      */
     public boolean deleteByQuery(String query) {
         if (StringUtils.isEmpty(query)) {
@@ -582,10 +548,10 @@ public final class SolrSearchIndex {
      * getSolrSchemaDocument.
      * </p>
      *
-     * @param confFilename
+     * @param solrUrl a {@link java.lang.String} object
      * @return a {@link org.jdom2.Document} object.
-     * @throws IOException
-     * @throws JDOMException
+     * @throws java.io.IOException
+     * @throws org.jdom2.JDOMException
      * @should return schema document correctly
      */
     public static Document getSolrSchemaDocument(String solrUrl) throws IOException, JDOMException {
@@ -651,7 +617,7 @@ public final class SolrSearchIndex {
      * @should add default field
      * @should add access conditions
      */
-    public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, long iddoc) {
+    public SolrInputDocument checkAndCreateGroupDoc(String groupIdField, String groupId, Map<String, String> metadata, String iddoc) {
         try {
             SolrDocumentList docs = search(SolrConstants.PI + ":" + groupId, null);
             SolrInputDocument doc = new SolrInputDocument();
@@ -695,10 +661,43 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * Returns a list with all (string) values for the given field name in the given SolrInputDocument.
      *
-     * @param doc
-     * @param field
-     * @return
+     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
+     * @param fieldName a {@link java.lang.String} object.
+     * @return a {@link java.util.List} object.
+     * @should return all values for the given field
+     */
+    public static List<String> getMetadataValues(SolrInputDocument doc, String fieldName) {
+        if (doc == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<Object> values = doc.getFieldValues(fieldName);
+        if (values == null) {
+            return Collections.emptyList();
+        }
+
+        List<String> ret = new ArrayList<>(values.size());
+        for (Object value : values) {
+            if (value instanceof String s) {
+                ret.add(s);
+            } else {
+                ret.add(String.valueOf(value));
+            }
+        }
+
+        return ret;
+    }
+
+    /**
+     * <p>
+     * getSingleFieldValue.
+     * </p>
+     *
+     * @param doc {@link org.apache.solr.common.SolrDocument}
+     * @param field a {@link java.lang.String} object
+     * @return First value found; null otherwise
      */
     public static Object getSingleFieldValue(SolrDocument doc, String field) {
         Collection<Object> valueList = doc.getFieldValues(field);
@@ -710,10 +709,13 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * <p>
+     * getSingleFieldStringValue.
+     * </p>
      *
-     * @param doc
-     * @param field
-     * @return
+     * @param doc {@link org.apache.solr.common.SolrDocument}
+     * @param field Solr field name
+     * @return First value found; null otherwise
      * @should return value as string correctly
      * @should not return null as string if value is null
      */
@@ -723,10 +725,32 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param doc
-     * @param field
-     * @return
+     * <p>
+     * getSingleFieldStringValue.
+     * </p>
+     *
+     * @param doc {@link org.apache.solr.common.SolrInputDocument}
+     * @param field Solr field name
+     * @return First value found; null otherwise
+     */
+    public static String getSingleFieldStringValue(SolrInputDocument doc, String field) {
+        Object ret = null;
+
+        Collection<Object> valueList = doc.getFieldValues(field);
+        if (valueList != null && !valueList.isEmpty()) {
+            ret = valueList.iterator().next();
+        }
+        return ret != null ? String.valueOf(ret) : null;
+    }
+
+    /**
+     * <p>
+     * getSingleFieldIntegerValue.
+     * </p>
+     *
+     * @param doc {@link org.apache.solr.common.SolrDocument}
+     * @param field Solr field name
+     * @return First value found; null otherwise
      */
     public static Integer getSingleFieldIntegerValue(SolrDocument doc, String field) {
         Object val = getSingleFieldValue(doc, field);
@@ -734,10 +758,13 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param doc
-     * @param field
-     * @return
+     * <p>
+     * getSingleFieldLongValue.
+     * </p>
+     *
+     * @param doc {@link org.apache.solr.common.SolrDocument}
+     * @param field Solr field name
+     * @return First value found; null otherwise
      */
     public static Long getSingleFieldLongValue(SolrDocument doc, String field) {
         Object val = getSingleFieldValue(doc, field);
@@ -745,9 +772,12 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param fieldValue
-     * @return {@link Integer}
+     * <p>
+     * getAsInt.
+     * </p>
+     *
+     * @param fieldValue a {@link java.lang.Object} object
+     * @return {@link java.lang.Integer}
      * @should return null if fieldValue null
      */
     public static Integer getAsInt(Object fieldValue) {
@@ -784,10 +814,13 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
-     * @param field
-     * @return
+     * <p>
+     * getBooleanFieldName.
+     * </p>
+     *
+     * @param field a {@link java.lang.String} object
      * @should boolify field correctly
+     * @return a {@link java.lang.String} object
      */
     public static String getBooleanFieldName(String field) {
         if (field == null) {
@@ -802,13 +835,16 @@ public final class SolrSearchIndex {
     }
 
     /**
-     * 
+     * <p>
+     * checkDuplicateFieldValues.
+     * </p>
+     *
      * @param fields Field names to check
      * @param values Values to check
      * @param skipPi Record identifier to skip (typically the currently indexed record)
      * @return Set of PI_TOPSTRUCT values that already possess given field values
-     * @throws SolrServerException
-     * @throws IOException
+     * @throws org.apache.solr.client.solrj.SolrServerException
+     * @throws java.io.IOException
      * @should return correct identifiers
      * @should ignore records that match skipPi
      */
@@ -831,7 +867,7 @@ public final class SolrSearchIndex {
             sbQuery.append(" -").append(SolrConstants.PI_TOPSTRUCT).append(":\"").append(skipPi).append('"');
         }
 
-        SolrDocumentList found = search(sbQuery.toString(), Collections.singletonList(SolrConstants.PI_TOPSTRUCT));
+        SolrDocumentList found = search(sbQuery.toString(), Arrays.asList(SolrConstants.PI, SolrConstants.PI_TOPSTRUCT));
         if (found.isEmpty()) {
             return Collections.emptySet();
         }
@@ -840,8 +876,12 @@ public final class SolrSearchIndex {
         for (SolrDocument doc : found) {
             if (doc.containsKey(SolrConstants.PI_TOPSTRUCT)) {
                 ret.add((String) doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
+            } else if (doc.containsKey(SolrConstants.PI)) {
+                ret.add((String) doc.getFieldValue(SolrConstants.PI));
             } else {
-                logger.error("Solr document {} contains a duplicate value but no {} field.", doc, SolrConstants.PI_TOPSTRUCT);
+                logger.error("Solr document {} contains a duplicate value but no {} field.", doc.getFieldValue(SolrConstants.IDDOC),
+                        SolrConstants.PI_TOPSTRUCT);
+                logger.error("Query used: {}", sbQuery);
                 ret.add("PI NOT FOUND");
             }
         }
@@ -850,6 +890,10 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * <p>
+     * isOptimize.
+     * </p>
+     *
      * @return the optimize
      */
     public boolean isOptimize() {
@@ -857,6 +901,10 @@ public final class SolrSearchIndex {
     }
 
     /**
+     * <p>
+     * Setter for the field <code>optimize</code>.
+     * </p>
+     *
      * @param optimize the optimize to set
      */
     public void setOptimize(boolean optimize) {

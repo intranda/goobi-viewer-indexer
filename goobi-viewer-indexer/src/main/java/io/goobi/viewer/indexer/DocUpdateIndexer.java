@@ -50,10 +50,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
 /**
- * <p>
- * DocUpdateIndexer class.
- * </p>
- *
+ * Updates the Solr document described by the given data file with content from data folders in the hotfolder.
  */
 public class DocUpdateIndexer extends Indexer {
 
@@ -74,18 +71,9 @@ public class DocUpdateIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * Updates the Solr document described by the given data file with content from data folders in the hotfolder.
-     * 
-     * @param dataFile {@link File}
-     * @param fromReindexQueue
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path dataFile, boolean fromReindexQueue, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path dataFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(dataFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -98,7 +86,7 @@ public class DocUpdateIndexer extends Indexer {
             } catch (IOException e) {
                 logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
             }
-            return;
+            return Collections.emptyList();
         }
 
         String[] resp = index(dataFile, dataFolders);
@@ -118,42 +106,45 @@ public class DocUpdateIndexer extends Indexer {
                 logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
             }
 
-        } else {
-            // Error
-            logger.error(resp[1]);
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders in hotfolder
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolder.getHotfolderPath(), new DirectoryStream.Filter<Path>() {
+            return Collections.singletonList(pi);
+        }
 
-                    @Override
-                    public boolean accept(Path entry) throws IOException {
-                        return Files.isDirectory(entry)
-                                && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith(FOLDER_SUFFIX_MEDIA));
-                    }
-                });) {
-                    for (Path path : stream) {
-                        logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
-                        Utils.deleteDirectory(path);
-                    }
-                }
+        // Error
+        logger.error(resp[1]);
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders in hotfolder
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolder.getHotfolderPath(), new DirectoryStream.Filter<Path>() {
 
-                if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
-                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD));
+                @Override
+                public boolean accept(Path entry) throws IOException {
+                    return Files.isDirectory(entry)
+                            && (entry.getFileName().toString().endsWith("_tif") || entry.getFileName().toString().endsWith(FOLDER_SUFFIX_MEDIA));
                 }
-                if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD));
-                }
-                if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
-                    Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_UGC));
+            });) {
+                for (Path path : stream) {
+                    logger.info(LOG_FOUND_DATA_FOLDER, path.getFileName());
+                    Utils.deleteDirectory(path);
                 }
             }
-            handleError(dataFile, resp[1], FileFormat.UNKNOWN);
-            try {
-                Files.delete(dataFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
+
+            if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
+                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD));
+            }
+            if (dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
+                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD));
+            }
+            if (dataFolders.get(DataRepository.PARAM_UGC) != null) {
+                Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_UGC));
             }
         }
+        handleError(dataFile, resp[1], FileFormat.UNKNOWN);
+        try {
+            Files.delete(dataFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -464,5 +455,10 @@ public class DocUpdateIndexer extends Indexer {
         }
 
         return null;
+    }
+
+    @Override
+    protected FileFormat getSourceDocFormat() {
+        return FileFormat.UNKNOWN;
     }
 }

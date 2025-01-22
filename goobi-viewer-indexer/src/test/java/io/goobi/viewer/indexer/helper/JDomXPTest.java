@@ -41,6 +41,11 @@ class JDomXPTest extends AbstractTest {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
+        
+        // File containing both MODS and MARC
+        file = new File("src/test/resources/METS/BV048249088.xml");
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
     }
 
     /**
@@ -64,16 +69,27 @@ class JDomXPTest extends AbstractTest {
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.LIDO, JDomXP.determineFileFormat(file));
     }
-    
+
     /**
      * @see JDomXP#determineFileFormat(File)
-     * @verifies detect ead files correctly
+     * @verifies detect ead2 files correctly
      */
     @Test
-    void determineFileFormat_shouldDetectEadFilesCorrectly() throws Exception {
+    void determineFileFormat_shouldDetectEad2FilesCorrectly() throws Exception {
         File file = new File("src/test/resources/EAD/Akte_Koch.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.EAD, JDomXP.determineFileFormat(file));
+    }
+
+    /**
+     * @see JDomXP#determineFileFormat(File)
+     * @verifies detect ead3 files correctly
+     */
+    @Test
+    void determineFileFormat_shouldDetectEad3FilesCorrectly() throws Exception {
+        File file = new File("src/test/resources/EAD/EAD3_example.xml");
+        Assertions.assertTrue(file.isFile());
+        Assertions.assertEquals(FileFormat.EAD3, JDomXP.determineFileFormat(file));
     }
 
     /**
