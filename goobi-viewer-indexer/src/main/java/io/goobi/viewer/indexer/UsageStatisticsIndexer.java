@@ -119,7 +119,7 @@ public class UsageStatisticsIndexer extends Indexer {
 
     /**
      * @param solrDateString
-     * @return
+     * @return a boolean
      * @throws IOException
      * @throws SolrServerException
      */
@@ -131,10 +131,9 @@ public class UsageStatisticsIndexer extends Indexer {
 
     /**
      * @param stats
-     * @return
-     * @throws FatalIndexerException
+     * @return {@link IndexObject}
      */
-    private static IndexObject createIndexObject(DailyUsageStatistics stats) throws FatalIndexerException {
+    private static IndexObject createIndexObject(DailyUsageStatistics stats) {
         IndexObject indexObj = new IndexObject(getNextIddoc());
         indexObj.addToLucene(SolrConstants.IDDOC, indexObj.getIddoc());
         indexObj.addToLucene(SolrConstants.GROUPFIELD, indexObj.getIddoc());
@@ -183,7 +182,7 @@ public class UsageStatisticsIndexer extends Indexer {
     /**
      * 
      * @param sourceFile
-     * @return
+     * @return {@link String}
      */
     private static String getStatisticsDate(Path sourceFile) {
         String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");

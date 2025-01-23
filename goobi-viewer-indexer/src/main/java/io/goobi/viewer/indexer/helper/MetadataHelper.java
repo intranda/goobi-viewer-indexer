@@ -17,6 +17,7 @@ package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -509,7 +510,7 @@ public final class MetadataHelper {
                     proxyUrl = SolrIndexerDaemon.getInstance().getConfiguration().getProxyUrl();
                     proxyPort = SolrIndexerDaemon.getInstance().getConfiguration().getProxyPort();
                 }
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException | URISyntaxException e) {
                 logger.error(e.getMessage());
             }
 

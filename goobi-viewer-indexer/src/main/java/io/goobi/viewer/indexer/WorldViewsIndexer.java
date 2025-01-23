@@ -16,7 +16,6 @@
 package io.goobi.viewer.indexer;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -720,7 +719,6 @@ public class WorldViewsIndexer extends Indexer {
      * @param pi
      * @param pageCountStart a int.
      * @throws InterruptedException
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
      * @should skip unmapped pages
@@ -728,7 +726,7 @@ public class WorldViewsIndexer extends Indexer {
      * @should maintain page order after parallel processing
      */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders, final String pi,
-            int pageCountStart) throws InterruptedException, FatalIndexerException {
+            int pageCountStart) throws InterruptedException {
         // Get all physical elements
         List<Element> eleListImages = xp.evaluateToElements("worldviews/resource/images/image", null);
         logger.info("Generating {} page documents (count starts at {})...", eleListImages.size(), pageCountStart);
@@ -785,7 +783,7 @@ public class WorldViewsIndexer extends Indexer {
         }
 
         int useOrder = order != null ? order : Integer.parseInt(eleImage.getChildText("sequence"));
-        logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", useOrder, iddoc, Thread.currentThread().getId());
+        logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", useOrder, iddoc, Thread.currentThread().threadId());
 
         // Create object for this page
         PhysicalElement ret = createPhysicalElement(order, iddoc, "PHYS_" + MetadataHelper.FORMAT_FOUR_DIGITS.get().format(useOrder));
@@ -847,9 +845,8 @@ public class WorldViewsIndexer extends Indexer {
      * @param indexObj {@link IndexObject}
      * @param hotfolder
      * @param dataRepository
-     * @throws UnsupportedEncodingException
      */
-    static void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) throws UnsupportedEncodingException {
+    static void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) {
         logger.debug("copyAndReIndexAnchor: {}", indexObj.getPi());
         if (indexObj.getParent() != null) {
             String piParent = indexObj.getParent().getPi();

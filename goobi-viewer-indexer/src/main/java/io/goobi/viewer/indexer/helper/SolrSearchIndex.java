@@ -872,7 +872,7 @@ public final class SolrSearchIndex {
             return Collections.emptySet();
         }
 
-        Set<String> ret = new HashSet<>(found.size());
+        Set<String> ret = HashSet.newHashSet(found.size());
         for (SolrDocument doc : found) {
             if (doc.containsKey(SolrConstants.PI_TOPSTRUCT)) {
                 ret.add((String) doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));

@@ -574,10 +574,9 @@ public class LidoIndexer extends Indexer {
      * @param imageXPaths a {@link java.util.List} object.
      * @param downloadExternalImages a boolean.
      * @param useOldImageFolderIfAvailable
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart,
-            List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) throws FatalIndexerException {
+            List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
         String xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet";
         List<Element> resourceSetList = xp.evaluateToElements(xpath, null);
         if (resourceSetList == null || resourceSetList.isEmpty()) {

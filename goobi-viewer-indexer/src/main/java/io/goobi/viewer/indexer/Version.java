@@ -18,7 +18,8 @@ package io.goobi.viewer.indexer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
@@ -83,12 +84,12 @@ public class Version {
         String manifestPath = classPath.substring(0, classPath.lastIndexOf("/io/goobi")) + "/META-INF/MANIFEST.MF";
         logger.trace(manifestPath);
 
-        try (InputStream inputStream = new URL(manifestPath).openStream()) {
+        try (InputStream inputStream = new URI(manifestPath).toURL().openStream()) {
             StringWriter writer = new StringWriter();
             IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
             String manifestString = writer.toString();
             value = manifestString;
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             return null;
         }
 

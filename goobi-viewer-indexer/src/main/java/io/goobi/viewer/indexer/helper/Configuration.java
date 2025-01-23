@@ -16,6 +16,8 @@
 package io.goobi.viewer.indexer.helper;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -667,12 +669,13 @@ public final class Configuration {
      * <p>isHostProxyWhitelisted.</p>
      *
      * @param url
-     * @throws MalformedURLException
-     * @should return true if host whitelisted
      * @return a boolean
+     * @throws MalformedURLException
+     * @throws URISyntaxException 
+     * @should return true if host whitelisted
      */
-    public boolean isHostProxyWhitelisted(String url) throws MalformedURLException {
-        URL urlAsURL = new URL(url);
+    public boolean isHostProxyWhitelisted(String url) throws MalformedURLException, URISyntaxException {
+        URL urlAsURL = new URI(url).toURL();
         return getProxyWhitelist().contains(urlAsURL.getHost());
     }
 

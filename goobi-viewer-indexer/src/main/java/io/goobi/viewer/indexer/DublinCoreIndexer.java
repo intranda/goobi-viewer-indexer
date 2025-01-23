@@ -529,7 +529,6 @@ public class DublinCoreIndexer extends Indexer {
      * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should create documents for all mapped pages
      * @should set correct ORDER values
      * @should skip unmapped pages
@@ -537,7 +536,7 @@ public class DublinCoreIndexer extends Indexer {
      * @should maintain page order after parallel processing
      */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
-            final DataRepository dataRepository, final String pi, int pageCountStart) throws FatalIndexerException {
+            final DataRepository dataRepository, final String pi, int pageCountStart) {
         // Get all physical elements
         String xpath = "/record/dc:relation";
         List<Element> eleImageList = xp.evaluateToElements(xpath, null);

@@ -1161,7 +1161,7 @@ public class MetsIndexer extends Indexer {
                 return null;
             }
         }
-        logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().getId());
+        logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().threadId());
         // Check whether this physical element is mapped to any logical element, skip if not
         StringBuilder sbXPath = new StringBuilder(70);
         sbXPath.append("/mets:mets/mets:structLink/mets:smLink[@xlink:to=\"").append(id).append("\"]");

@@ -501,7 +501,7 @@ public class IndexObject {
      * @should add existence booleans correctly
      */
     public void applyFinalModifications() {
-        Set<String> existingFields = new HashSet<>(luceneFields.size());
+        Set<String> existingFields = HashSet.newHashSet(luceneFields.size());
         Set<String> alreadyFinishedFields = new HashSet<>();
 
         // Collect existing metadata fields

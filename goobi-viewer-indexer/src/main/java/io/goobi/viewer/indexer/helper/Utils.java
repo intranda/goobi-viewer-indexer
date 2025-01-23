@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer.helper;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -35,22 +36,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -77,9 +67,17 @@ import org.json.JSONObject;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.Version;
-import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 /**
  * <p>
@@ -157,7 +155,9 @@ public class Utils {
     }
 
     /**
-     * <p>updateDataRepositoryCache.</p>
+     * <p>
+     * updateDataRepositoryCache.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object
      * @param dataRepositoryName a {@link java.lang.String} object
@@ -170,7 +170,9 @@ public class Utils {
     }
 
     /**
-     * <p>prerenderPdfs.</p>
+     * <p>
+     * prerenderPdfs.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object
      * @param forceUpdate a boolean
@@ -186,7 +188,9 @@ public class Utils {
     }
 
     /**
-     * <p>updateDataRepositoryCache.</p>
+     * <p>
+     * updateDataRepositoryCache.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object
      * @param dataRepositoryName a {@link java.lang.String} object
@@ -215,14 +219,16 @@ public class Utils {
         json.put("dataRepositoryName", dataRepositoryName);
 
         String url = viewerUrl + "/api/v1/tasks/";
-        Map<String, String> headerParams = new HashMap<>(2);
+        Map<String, String> headerParams = HashMap.newHashMap(2);
         headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
         getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
     }
 
     /**
-     * <p>prerenderPdfs.</p>
+     * <p>
+     * prerenderPdfs.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object
      * @param force a boolean
@@ -250,7 +256,7 @@ public class Utils {
         json.put("variant", config);
 
         String url = viewerUrl + "/api/v1/tasks/";
-        Map<String, String> headerParams = new HashMap<>(2);
+        Map<String, String> headerParams = HashMap.newHashMap(2);
         headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
         getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
@@ -275,7 +281,7 @@ public class Utils {
             json.put("hotfolder-file-count", fileCount);
             json.put("record-identifiers", identifiers);
 
-            getWebContentPUT(url, new HashMap<>(0), null, json.toString(),
+            getWebContentPUT(url, HashMap.newHashMap(0), null, json.toString(),
                     Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
             logger.info("Version and file count ({}) submitted to Goobi viewer.", fileCount);
             if (!identifiers.isEmpty()) {
@@ -625,7 +631,7 @@ public class Utils {
                 .append(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
 
         try {
-            String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), new HashMap<>(0), null, null,
+            String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), HashMap.newHashMap(0), null, null,
                     Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
             if (StringUtils.isNotEmpty(jsonString)) {
                 return (String) new JSONObject(jsonString).get("message");
@@ -637,7 +643,9 @@ public class Utils {
     }
 
     /**
-     * <p>isValidURL.</p>
+     * <p>
+     * isValidURL.
+     * </p>
      *
      * @param urlString URL to check
      * @return true if valid; false otherwise
@@ -648,7 +656,7 @@ public class Utils {
      */
     public static boolean isValidURL(String urlString) {
         try {
-            URL url = new URL(urlString);
+            URL url = new URI(urlString).toURL();
             url.toURI();
             return true;
         } catch (Exception e) {
@@ -732,7 +740,9 @@ public class Utils {
     }
 
     /**
-     * <p>isFileNameMatchesRegex.</p>
+     * <p>
+     * isFileNameMatchesRegex.
+     * </p>
      *
      * @param fileName a {@link java.lang.String} object
      * @param regexes an array of {@link java.lang.String} objects
@@ -786,7 +796,9 @@ public class Utils {
     }
 
     /**
-     * <p>generateLongOrderNumber.</p>
+     * <p>
+     * generateLongOrderNumber.
+     * </p>
      *
      * @param prefix a int
      * @param count a int

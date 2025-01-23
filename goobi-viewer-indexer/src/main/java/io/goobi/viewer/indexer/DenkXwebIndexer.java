@@ -111,7 +111,7 @@ public class DenkXwebIndexer extends Indexer {
                 logger.info("Created media folder {}", newMediaFolder.toAbsolutePath());
             }
         }
- 
+
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
@@ -342,23 +342,20 @@ public class DenkXwebIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // Set type
-        {
-            String value = structNode.getAttributeValue("type");
-            if (StringUtils.isNotEmpty(value)) {
-                indexObj.setType(MetadataConfigurationManager.mapDocStrct(value).trim());
-            } else {
-                indexObj.setType("monument");
-            }
-            logger.trace("TYPE: {}", indexObj.getType());
+        String type = structNode.getAttributeValue("type");
+        if (StringUtils.isNotEmpty(type)) {
+            indexObj.setType(MetadataConfigurationManager.mapDocStrct(type).trim());
+        } else {
+            indexObj.setType("monument");
         }
+        logger.trace("TYPE: {}", indexObj.getType());
 
         // Set label
-        {
-            String value = structNode.getAttributeValue("LABEL");
-            if (value != null) {
-                indexObj.setLabel(value);
-            }
+        String label = structNode.getAttributeValue("LABEL");
+        if (label != null) {
+            indexObj.setLabel(label);
         }
+
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
 
@@ -368,11 +365,10 @@ public class DenkXwebIndexer extends Indexer {
      * @param dataFolders
      * @param pageCountStart
      * @param downloadExternalImages
-     * @throws FatalIndexerException
      * @should generate pages correctly
      */
     public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart,
-            boolean downloadExternalImages) throws FatalIndexerException {
+            boolean downloadExternalImages) {
         String xpath = "//denkxweb:images/denkxweb:image";
         List<Element> eleImageList = xp.evaluateToElements(xpath, null);
         if (eleImageList == null || eleImageList.isEmpty()) {

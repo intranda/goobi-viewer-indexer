@@ -610,11 +610,10 @@ public abstract class Indexer {
      * @param groupIds
      * @param order
      * @return Generated {@link SolrInputDocument}
-     * @throws FatalIndexerException
      * @should throw IllegalArgumentException if eleContent null
      */
     SolrInputDocument generateUserGeneratedContentDocForPage(Element eleContent, SolrInputDocument pageDoc, String pi,
-            String anchorPi, Map<String, String> groupIds, int order) throws FatalIndexerException {
+            String anchorPi, Map<String, String> groupIds, int order) {
         if (eleContent == null) {
             throw new IllegalArgumentException("eleContent may not be null");
         }
@@ -852,12 +851,11 @@ public abstract class Indexer {
      * @param anchorPi
      * @param groupIds
      * @return List<SolrInputDocument>
-     * @throws FatalIndexerException
      * @should return empty list if dataFolder null
      * @should create docs correctly
      */
     List<SolrInputDocument> generateAnnotationDocs(Map<Integer, SolrInputDocument> pageDocs, Path dataFolder, String pi, String anchorPi,
-            Map<String, String> groupIds) throws FatalIndexerException {
+            Map<String, String> groupIds) {
         if (dataFolder == null || !Files.isDirectory(dataFolder)) {
             logger.info("Annotation folder is empty.");
             return Collections.emptyList();
@@ -1012,7 +1010,7 @@ public abstract class Indexer {
     protected void writeUserGeneratedContents(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, IndexObject indexObj)
             throws FatalIndexerException {
         // Collect page docs for annotation<->page mapping
-        Map<Integer, SolrInputDocument> pageDocs = new HashMap<>(writeStrategy.getPageDocsSize());
+        Map<Integer, SolrInputDocument> pageDocs = HashMap.newHashMap(writeStrategy.getPageDocsSize());
 
         // Add used-generated content docs from legacy crowdsourcing
         for (int i : writeStrategy.getPageOrderNumbers()) {
@@ -1231,10 +1229,9 @@ public abstract class Indexer {
      * @param pi Record identifier
      * @param writeStrategy
      * @return Number of added group docs
-     * @throws FatalIndexerException
      * @should add grouped metadata docs from given page to writeStrategy correctly
      */
-    public int addGroupedMetadataDocsForPage(PhysicalElement page, String pi, ISolrWriteStrategy writeStrategy) throws FatalIndexerException {
+    public int addGroupedMetadataDocsForPage(PhysicalElement page, String pi, ISolrWriteStrategy writeStrategy) {
         if (page == null) {
             throw new IllegalArgumentException("page may not be null");
         }
