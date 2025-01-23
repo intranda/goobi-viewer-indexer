@@ -71,8 +71,7 @@ public final class Configuration {
     private Timer reloadTimer = new Timer();
 
     /**
-     * Private constructor.
-     *
+     * @param configFilePath
      * @throws ConfigurationException
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -198,7 +197,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getConfigurations.</p>
+     * <p>
+     * getConfigurations.
+     * </p>
      *
      * @param elementName
      * @return a {@link java.util.List} object
@@ -213,7 +214,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getBoolean.</p>
+     * <p>
+     * getBoolean.
+     * </p>
      *
      * @param inPath
      * @param defaultValue
@@ -262,7 +265,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getStringList.</p>
+     * <p>
+     * getStringList.
+     * </p>
      *
      * @param inPath
      * @return a {@link java.util.List} object
@@ -294,7 +299,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getSolrUrl.</p>
+     * <p>
+     * getSolrUrl.
+     * </p>
      *
      * @should return correct value
      * @return a {@link java.lang.String} object
@@ -304,7 +311,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getOldSolrUrl.</p>
+     * <p>
+     * getOldSolrUrl.
+     * </p>
      *
      * @return a {@link java.lang.String} object
      */
@@ -313,7 +322,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isSolrUseHttp2.</p>
+     * <p>
+     * isSolrUseHttp2.
+     * </p>
      *
      * @return a boolean
      * @should return correct value
@@ -347,7 +358,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getHotfolderPath.</p>
+     * <p>
+     * getHotfolderPath.
+     * </p>
      *
      * @should return correct value
      * @return a {@link java.lang.String} object
@@ -357,7 +370,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getHotfolderPaths.</p>
+     * <p>
+     * getHotfolderPaths.
+     * </p>
      *
      * @should return all values
      * @return a {@link java.util.List} object
@@ -444,7 +459,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isCountHotfolderFiles.</p>
+     * <p>
+     * isCountHotfolderFiles.
+     * </p>
      *
      * @should return correct value
      * @return a boolean
@@ -454,7 +471,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isAuthorityDataCacheEnabled.</p>
+     * <p>
+     * isAuthorityDataCacheEnabled.
+     * </p>
      *
      * @should return correct value
      * @return a boolean
@@ -464,7 +483,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getAuthorityDataCacheRecordTTL.</p>
+     * <p>
+     * getAuthorityDataCacheRecordTTL.
+     * </p>
      *
      * @should return correct value
      * @return a int
@@ -474,7 +495,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getAuthorityDataCacheSizeWarningThreshold.</p>
+     * <p>
+     * getAuthorityDataCacheSizeWarningThreshold.
+     * </p>
      *
      * @should return correct value
      * @return a int
@@ -508,7 +531,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getViewerAuthorizationToken.</p>
+     * <p>
+     * getViewerAuthorizationToken.
+     * </p>
      *
      * @return Viewer authorization token string, if configured
      * @should return correct value
@@ -627,7 +652,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isProxyEnabled.</p>
+     * <p>
+     * isProxyEnabled.
+     * </p>
      *
      * @return true if enabled; false otherwise
      * @should return correct value
@@ -637,7 +664,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getProxyUrl.</p>
+     * <p>
+     * getProxyUrl.
+     * </p>
      *
      * @should return correct value
      * @return a {@link java.lang.String} object
@@ -647,7 +676,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getProxyPort.</p>
+     * <p>
+     * getProxyPort.
+     * </p>
      *
      * @return Configured port number; 0 if none found
      * @should return correct value
@@ -657,7 +688,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getProxyWhitelist.</p>
+     * <p>
+     * getProxyWhitelist.
+     * </p>
      *
      * @return a {@link java.util.List} object
      */
@@ -666,12 +699,14 @@ public final class Configuration {
     }
 
     /**
-     * <p>isHostProxyWhitelisted.</p>
+     * <p>
+     * isHostProxyWhitelisted.
+     * </p>
      *
      * @param url
      * @return a boolean
      * @throws MalformedURLException
-     * @throws URISyntaxException 
+     * @throws URISyntaxException
      * @should return true if host whitelisted
      */
     public boolean isHostProxyWhitelisted(String url) throws MalformedURLException, URISyntaxException {
@@ -690,7 +725,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getMetsPreferredImageFileGroups.</p>
+     * <p>
+     * getMetsPreferredImageFileGroups.
+     * </p>
      *
      * @return Configured preferredImageFileGroup values or empty list
      * @should return configured values
@@ -700,7 +737,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>getMetsAllowedPhysicalTypes.</p>
+     * <p>
+     * getMetsAllowedPhysicalTypes.
+     * </p>
      *
      * @return Configured physicalElementTypes/type values or empty list
      * @should return configured values
@@ -710,14 +749,17 @@ public final class Configuration {
     }
 
     /**
-     * <p>getMetsVolumeCheckXPath.</p>
+     * <p>
+     * getMetsVolumeCheckXPath.
+     * </p>
      *
      * @return Configured XPath expression or default value
      * @should return correct value
      */
     public String getMetsVolumeCheckXPath() {
         return getString("init.mets.volumeCheckXPath",
-                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']/mods:recordInfo/mods:recordIdentifier");
+                "/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']"
+                        + "/mods:recordInfo/mods:recordIdentifier");
     }
 
     /**
@@ -762,7 +804,9 @@ public final class Configuration {
     }
 
     /**
-     * <p>isReadImageDimensionsFromIIIF.</p>
+     * <p>
+     * isReadImageDimensionsFromIIIF.
+     * </p>
      *
      * @return a boolean
      */

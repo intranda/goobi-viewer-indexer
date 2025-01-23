@@ -150,7 +150,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             page.getDoc().removeField(SolrConstants.FULLTEXT);
         }
         if (save(page, iddoc)) {
-            ;
             if (pageDocOrderIddocMap.get(page.getOrder()) != null) {
                 logger.error("Collision for page order {}", page.getOrder());
             }

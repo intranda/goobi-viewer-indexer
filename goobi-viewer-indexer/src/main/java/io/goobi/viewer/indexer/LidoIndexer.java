@@ -226,7 +226,7 @@ public class LidoIndexer extends Indexer {
      *
      * @param doc a {@link org.jdom2.Document} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart a int.
      * @param imageXPaths a {@link java.util.List} object.
      * @param downloadExternalImages a boolean.
@@ -235,10 +235,11 @@ public class LidoIndexer extends Indexer {
      * @should update record correctly
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
+    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy inWriteStrategy, int pageCountStart,
             List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
         String[] ret = { STATUS_ERROR, null };
         String pi = null;
+        ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             this.xp = new JDomXP(doc);
             if (this.xp == null) {
@@ -294,7 +295,8 @@ public class LidoIndexer extends Indexer {
             // Set access conditions
             indexObj.writeAccessConditions(null);
 
-            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
+            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL
+            // (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
             List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy, 0);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
@@ -375,7 +377,7 @@ public class LidoIndexer extends Indexer {
      * @param indexObj
      * @param writeStrategy
      * @param depth
-     * @return
+     * @return List<LuceneField>
      * @throws FatalIndexerException
      */
     protected static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy, int depth)
@@ -408,7 +410,8 @@ public class LidoIndexer extends Indexer {
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && pageFileName.equals(filePathBanner)) {
                 ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-                // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
+                // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer,
+                // it is not used in the viewer
                 ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(page.getDoc().getFieldValue(SolrConstants.ORDER))));
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) page.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
@@ -528,7 +531,8 @@ public class LidoIndexer extends Indexer {
                     ? (String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
+            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer,
+            // it is not used in the viewer
             ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));

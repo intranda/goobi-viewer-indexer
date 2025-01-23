@@ -195,17 +195,18 @@ public class DenkXwebIndexer extends Indexer {
      * 
      * @param doc a {@link org.jdom2.Document} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart a int.
      * @param downloadExternalImages
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should update record correctly
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
+    public String[] index(Document doc, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy, int pageCountStart,
             boolean downloadExternalImages) {
         String[] ret = { STATUS_ERROR, null };
         String pi = null;
+        ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             this.xp = new JDomXP(doc);
             if (this.xp == null) {

@@ -352,15 +352,6 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#getConcatenatedValue(String)
-     * @verifies concatenate value terms correctly
-     */
-    @Test
-    void getConcatenatedValue_shouldConcatenateValueTermsCorrectly() {
-        assertEquals("foobar", MetadataHelper.getConcatenatedValue("foo-bar"));
-    }
-
-    /**
      * @see MetadataHelper#addValueToDefault(String,StringBuilder)
      * @verifies add value correctly
      */

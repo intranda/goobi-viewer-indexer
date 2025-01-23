@@ -375,7 +375,8 @@ public final class MetadataConfigurationManager {
 
     /**
      * Returns a list with all field names in the config files.
-     *
+     * 
+     * @param format {@link FileFormat}
      * @return a {@link java.util.List} object.
      */
     public List<String> getListWithAllFieldNames(FileFormat format) {

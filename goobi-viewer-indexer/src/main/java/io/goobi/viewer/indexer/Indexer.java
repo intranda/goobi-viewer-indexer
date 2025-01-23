@@ -1454,7 +1454,7 @@ public abstract class Indexer {
     /**
      * 
      * @param dataFolders
-     * @paramNames
+     * @param paramNames
      * @param pi
      * @throws IOException
      * @should throw IllegalArgumentException if pi null
@@ -2368,7 +2368,6 @@ public abstract class Indexer {
      * existing page PDFs; in the second case, only do so if {@link Configuration#isForcePrerenderPdfs()} is true
      * 
      * @param pi The identifier of the process to create pdfs for
-     * @param hasNewMediaFiles if the data repository has been updated with new media files
      */
     void prerenderPagePdfsIfRequired(String pi) {
         try {

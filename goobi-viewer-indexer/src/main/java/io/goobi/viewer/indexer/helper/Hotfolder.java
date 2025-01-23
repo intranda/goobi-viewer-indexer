@@ -358,6 +358,7 @@ public class Hotfolder {
      * 
      * @param subject
      * @param body
+     * @return true if successful; false otherwise
      * @should return false if body contains no error
      * @should return false if recipients not configured
      * @should return false if smtpServer not configured
@@ -777,12 +778,13 @@ public class Hotfolder {
      * 
      * @param deleteFile {@link Path}
      * @param dataRepository Data repository in which the record data is stored
-     * @param trace A Solr document with DATEDELETED timestamp will be created if true.
+     * @param createTraceDoc A Solr document with DATEDELETED timestamp will be created if true.
      * @return Identifier of the deleted record, if successful; otherwise null
      * @throws IOException in case of errors.
      * @throws FatalIndexerException
      */
-    private String removeFromIndex(Path deleteFile, DataRepository dataRepository, boolean trace) throws IOException, FatalIndexerException {
+    private String removeFromIndex(Path deleteFile, DataRepository dataRepository, final boolean createTraceDoc)
+            throws IOException, FatalIndexerException {
         if (deleteFile == null) {
             throw new IllegalArgumentException("deleteFile may not be null");
         }
@@ -829,6 +831,7 @@ public class Hotfolder {
             String[] fields = { SolrConstants.SOURCEDOCFORMAT, SolrConstants.DATEDELETED, SolrConstants.DOCTYPE };
             SolrDocumentList result =
                     SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + baseFileName, Arrays.asList(fields));
+            boolean trace = createTraceDoc;
             if (!result.isEmpty()) {
                 SolrDocument doc = result.get(0);
                 format = FileFormat.getByName((String) doc.getFieldValue(SolrConstants.SOURCEDOCFORMAT));
@@ -915,6 +918,7 @@ public class Hotfolder {
 
     /**
      * @param sourceFile
+     * @return true if successful; false otherwise
      * @throws FatalIndexerException
      */
     private boolean removeUsageStatisticsFromIndex(Path sourceFile) throws FatalIndexerException {
@@ -927,7 +931,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>removeSourceFileFromQueue.</p>
+     * <p>
+     * removeSourceFileFromQueue.
+     * </p>
      *
      * @param pi a {@link java.lang.String} object
      * @throws java.io.IOException
@@ -1003,7 +1009,9 @@ public class Hotfolder {
         private String recordFileName;
         private long total = 0;
 
-        /** Empty constructor. */
+        /** 
+         * @param recordFileName
+         */
         public DataFolderSizeCounter(String recordFileName) {
             this.recordFileName = recordFileName;
         }
@@ -1082,7 +1090,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>isDeleteContentFilesOnFailure.</p>
+     * <p>
+     * isDeleteContentFilesOnFailure.
+     * </p>
      *
      * @return the deleteContentFilesOnFailure
      */
@@ -1091,7 +1101,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Setter for the field <code>deleteContentFilesOnFailure</code>.</p>
+     * <p>
+     * Setter for the field <code>deleteContentFilesOnFailure</code>.
+     * </p>
      *
      * @param deleteContentFilesOnFailure the deleteContentFilesOnFailure to set
      */
@@ -1155,7 +1167,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>origDenkxWeb</code>.</p>
+     * <p>
+     * Getter for the field <code>origDenkxWeb</code>.
+     * </p>
      *
      * @return the origDenkxWeb
      */
@@ -1175,7 +1189,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>metsFileSizeThreshold</code>.</p>
+     * <p>
+     * Getter for the field <code>metsFileSizeThreshold</code>.
+     * </p>
      *
      * @return the metsFileSizeThreshold
      */
@@ -1184,7 +1200,9 @@ public class Hotfolder {
     }
 
     /**
-     * <p>Getter for the field <code>dataFolderSizeThreshold</code>.</p>
+     * <p>
+     * Getter for the field <code>dataFolderSizeThreshold</code>.
+     * </p>
      *
      * @return the dataFolderSizeThreshold
      */

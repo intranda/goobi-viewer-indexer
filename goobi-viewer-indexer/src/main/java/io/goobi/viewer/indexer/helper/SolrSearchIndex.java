@@ -232,7 +232,8 @@ public final class SolrSearchIndex {
                 continue;
             }
 
-            // Do not pass a boost value because starting with Solr 3.6, adding an index-time boost to primitive field types will cause the commit to fail
+            // Do not pass a boost value because starting with Solr 3.6, adding an index-time boost to primitive field types will cause
+            // the commit to fail
             doc.addField(luceneField.getField(), luceneField.getValue());
         }
 
@@ -797,7 +798,7 @@ public final class SolrSearchIndex {
     /**
      * 
      * @param fieldValue
-     * @return
+     * @return {@link Long}
      */
     static Long getAsLong(Object fieldValue) {
         if (fieldValue == null) {
@@ -819,19 +820,20 @@ public final class SolrSearchIndex {
      * </p>
      *
      * @param field a {@link java.lang.String} object
-     * @should boolify field correctly
      * @return a {@link java.lang.String} object
+     * @should boolify field correctly
      */
-    public static String getBooleanFieldName(String field) {
+    public static String getBooleanFieldName(final String field) {
         if (field == null) {
             return null;
         }
 
-        if (field.contains("_")) {
-            field = field.substring(field.indexOf("_") + 1);
+        String ret = field;
+        if (ret.contains("_")) {
+            ret = ret.substring(ret.indexOf("_") + 1);
         }
 
-        return "BOOL_" + field;
+        return "BOOL_" + ret;
     }
 
     /**

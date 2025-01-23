@@ -37,17 +37,19 @@ import mil.nga.sf.geojson.Polygon;
 import mil.nga.sf.geojson.Position;
 
 /**
- * <p>GeoJSONTools class.</p>
+ * <p>
+ * GeoJSONTools class.
+ * </p>
  *
  */
-public class GeoJSONTools {
+public final class GeoJSONTools {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(GeoJSONTools.class);
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     static {
-        mapper.registerModule(new JavaTimeModule());
+        MAPPER.registerModule(new JavaTimeModule());
     }
 
     /** Private constructor. */
@@ -55,7 +57,9 @@ public class GeoJSONTools {
     }
 
     /**
-     * <p>convert.</p>
+     * <p>
+     * convert.
+     * </p>
      *
      * @param coords a {@link java.lang.String} object
      * @param type a {@link java.lang.String} object
@@ -141,7 +145,9 @@ public class GeoJSONTools {
     }
 
     /**
-     * <p>convertCoordinatesToGeoJSONString.</p>
+     * <p>
+     * convertCoordinatesToGeoJSONString.
+     * </p>
      *
      * @param coords a {@link java.lang.String} object
      * @return geoJSON string
@@ -155,7 +161,7 @@ public class GeoJSONTools {
     public static String convertCoordinatesToGeoJSONString(String coords, String type, String separator) {
         FeatureCollection featureCollection = convertCoordinatesToGeoJSONFeatureCollection(coords, type, separator);
         try {
-            return mapper.writeValueAsString(featureCollection);
+            return MAPPER.writeValueAsString(featureCollection);
         } catch (JsonProcessingException e) {
             logger.error(e.getMessage(), e);
         }
@@ -164,7 +170,9 @@ public class GeoJSONTools {
     }
 
     /**
-     * <p>convertCoordinatesToGeoJSONFeatureCollection.</p>
+     * <p>
+     * convertCoordinatesToGeoJSONFeatureCollection.
+     * </p>
      *
      * @param coords a {@link java.lang.String} object
      * @param type a {@link java.lang.String} object
@@ -193,58 +201,51 @@ public class GeoJSONTools {
 
         Geometry geometry = null;
         switch (type.toLowerCase()) {
-            case "gml:point": {
-                List<Position> polygon = convertPoints(coords, separator, 2, false);
-                if (!polygon.isEmpty()) {
-                    geometry = Point.fromCoordinates(polygon.get(0));
+            case "gml:point":
+                List<Position> point = convertPoints(coords, separator, 2, false);
+                if (!point.isEmpty()) {
+                    geometry = Point.fromCoordinates(point.get(0));
                 }
-            }
                 break;
-            case "gml:point:4326": {
-                List<Position> polygon = convertPoints(coords, separator, 2, true);
-                if (!polygon.isEmpty()) {
-                    geometry = Point.fromCoordinates(polygon.get(0));
+            case "gml:point:4326":
+                List<Position> point4326 = convertPoints(coords, separator, 2, true);
+                if (!point4326.isEmpty()) {
+                    geometry = Point.fromCoordinates(point4326.get(0));
                 }
-            }
                 break;
-            case "gml:polygon": {
+            case "gml:polygon":
                 List<Position> polygon = convertPoints(coords, separator, 2, false);
                 if (!polygon.isEmpty()) {
                     geometry = Polygon.fromCoordinates(Collections.singletonList(polygon));
                 }
-            }
                 break;
-            case "gml:polygon:4326": {
-                List<Position> polygon = convertPoints(coords, separator, 2, true);
-                if (!polygon.isEmpty()) {
-                    geometry = Polygon.fromCoordinates(Collections.singletonList(polygon));
+            case "gml:polygon:4326":
+                List<Position> polygon4326 = convertPoints(coords, separator, 2, true);
+                if (!polygon4326.isEmpty()) {
+                    geometry = Polygon.fromCoordinates(Collections.singletonList(polygon4326));
                 }
-            }
                 break;
-            case "mods:coordinates/point": {
-                List<Position> polygon = convertPoints(coords, separator, coords.split(separator).length, false);
-                if (!polygon.isEmpty()) {
-                    geometry = Point.fromCoordinates(polygon.get(0));
+            case "mods:coordinates/point":
+                List<Position> modsPoint = convertPoints(coords, separator, coords.split(separator).length, false);
+                if (!modsPoint.isEmpty()) {
+                    geometry = Point.fromCoordinates(modsPoint.get(0));
                 }
-            }
                 break;
-            case "sexagesimal:point": {
-                List<Position> polygon = convertSexagesimalToDecimalPoints(coords, separator);
-                if (!polygon.isEmpty()) {
-                    geometry = Point.fromCoordinates(polygon.get(0));
+            case "sexagesimal:point":
+                List<Position> sexPoint = convertSexagesimalToDecimalPoints(coords, separator);
+                if (!sexPoint.isEmpty()) {
+                    geometry = Point.fromCoordinates(sexPoint.get(0));
                 }
-            }
                 break;
-            case "sexagesimal:polygon": {
-                List<Position> polygon = convertSexagesimalToDecimalPoints(coords, separator);
-                if (!polygon.isEmpty()) {
-                    if (polygon.size() == 1) {
-                        geometry = Point.fromCoordinates(polygon.get(0));
+            case "sexagesimal:polygon":
+                List<Position> sexPolygon = convertSexagesimalToDecimalPoints(coords, separator);
+                if (!sexPolygon.isEmpty()) {
+                    if (sexPolygon.size() == 1) {
+                        geometry = Point.fromCoordinates(sexPolygon.get(0));
                     } else {
-                        geometry = Polygon.fromCoordinates(Collections.singletonList(polygon));
+                        geometry = Polygon.fromCoordinates(Collections.singletonList(sexPolygon));
                     }
                 }
-            }
                 break;
             default:
                 logger.error("Unknown type: {}", type);
@@ -266,15 +267,12 @@ public class GeoJSONTools {
      * @param revert If true, it will be assumed the format is lat-long instead of long-lat
      * @return List of LngLatAlt points
      */
-    static List<Position> convertPoints(String coords, String separator, int dimensions, boolean revert) {
+    static List<Position> convertPoints(String coords, final String separator, int dimensions, boolean revert) {
         if (StringUtils.isEmpty(coords)) {
             return Collections.emptyList();
         }
-        if (separator == null) {
-            separator = " ";
-        }
 
-        String[] coordsSplit = coords.split(separator);
+        String[] coordsSplit = coords.split(separator != null ? separator : " ");
         List<Position> ret = new ArrayList<>(coordsSplit.length / 2);
         double[] point = { -1, -1, -1 };
         int count = 0;
@@ -313,15 +311,12 @@ public class GeoJSONTools {
      * @should convert polygons correctly
      * @should return single point if coordinates duplicate
      */
-    static List<Position> convertSexagesimalToDecimalPoints(String coords, String separator) {
+    static List<Position> convertSexagesimalToDecimalPoints(String coords, final String separator) {
         if (StringUtils.isEmpty(coords)) {
             return Collections.emptyList();
         }
-        if (separator == null) {
-            separator = " ";
-        }
 
-        String[] coordsSplit = coords.split(separator);
+        String[] coordsSplit = coords.split(separator != null ? separator : " ");
         List<Position> ret = new ArrayList<>();
         double[] decimalValues = new double[coordsSplit.length];
         for (int i = 0; i < coordsSplit.length; ++i) {
@@ -357,7 +352,7 @@ public class GeoJSONTools {
      * Converts a single sexagesimal (XX° YY' UU") coordinate in degrees, minutes and seconds to a decimal coordinate.
      * 
      * @param coordinate 8-character coordinate string (e.g. E0080756)
-     * @return
+     * @return a double
      * @should convert coordinate correctly
      */
     static double convertSexagesimalCoordinateToDecimal(String coordinate) {
@@ -381,7 +376,7 @@ public class GeoJSONTools {
     /**
      * 
      * @param coords
-     * @return
+     * @return Type of given coords
      * @should detect sexagesimal points correctly
      * @should detect sexagesimal polygons correctly
      */

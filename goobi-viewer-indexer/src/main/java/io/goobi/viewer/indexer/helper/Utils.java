@@ -84,7 +84,7 @@ import jakarta.mail.internet.MimeMultipart;
  * Utils class.
  * </p>
  */
-public class Utils {
+public final class Utils {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(Utils.class);
@@ -494,7 +494,7 @@ public class Utils {
      * @throws java.io.UnsupportedEncodingException
      */
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
-            final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity, Integer smtpPort)
+            final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity, final Integer smtpPort)
             throws MessagingException, UnsupportedEncodingException {
         logger.info("postMail");
         if (recipients == null) {
@@ -525,15 +525,16 @@ public class Utils {
         if (StringUtils.isEmpty(smtpUser)) {
             auth = false;
         }
+        Integer usePort = smtpPort;
         Properties props = new Properties();
         switch (smtpSecurity.toUpperCase()) {
             case "STARTTLS":
                 logger.debug("Using STARTTLS");
-                if (smtpPort == null || smtpPort == -1) {
-                    smtpPort = 25;
+                if (usePort == null || usePort == -1) {
+                    usePort = 25;
                 }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(usePort));
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
                 props.setProperty("mail.smtp.ssl.trust", "*");
                 props.setProperty("mail.smtp.starttls.enable", "true");
@@ -541,22 +542,22 @@ public class Utils {
                 break;
             case "SSL":
                 logger.debug("Using SSL");
-                if (smtpPort == null || smtpPort == -1) {
-                    smtpPort = 465;
+                if (usePort == null || usePort == -1) {
+                    usePort = 465;
                 }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(usePort));
                 props.setProperty("mail.smtp.ssl.enable", "true");
                 props.setProperty("mail.smtp.ssl.trust", "*");
                 break;
             default:
                 logger.debug("Using no SMTP security");
-                if (smtpPort == null || smtpPort == -1) {
-                    smtpPort = 25;
+                if (usePort == null || usePort == -1) {
+                    usePort = 25;
                 }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(usePort));
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
         }
         props.setProperty("mail.smtp.connectiontimeout", "15000");
@@ -773,18 +774,19 @@ public class Utils {
      * @should extract file name correctly
      * @should extract escaped file name correctly
      */
-    public static String getFileNameFromIiifUrl(String url) {
+    public static String getFileNameFromIiifUrl(final String url) {
         if (StringUtils.isEmpty(url)) {
             return null;
         }
 
+        String useUrl = url;
         try {
-            url = URLDecoder.decode(url, TextHelper.DEFAULT_CHARSET);
+            useUrl = URLDecoder.decode(useUrl, TextHelper.DEFAULT_CHARSET);
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getMessage());
         }
 
-        String[] filePathSplit = url.split("/");
+        String[] filePathSplit = useUrl.split("/");
         if (filePathSplit.length < 5) {
             return null;
         }
@@ -840,12 +842,12 @@ public class Utils {
      * @should not apply facet prefix to calendar fields
      * @should remove untokenized correctly
      */
-    static String adaptField(String fieldName, String prefix) {
+    static String adaptField(final String fieldName, final String prefix) {
         if (fieldName == null) {
             return null;
         }
         if (prefix == null) {
-            prefix = "";
+            throw new IllegalArgumentException("prefix may not be null");
         }
 
         switch (fieldName) {
@@ -863,27 +865,28 @@ public class Utils {
                 }
                 return fieldName;
             default:
+                String ret = fieldName;
                 if (StringUtils.isNotEmpty(prefix)) {
-                    if (fieldName.startsWith("MD_")) {
-                        fieldName = fieldName.replace("MD_", prefix);
-                    } else if (fieldName.startsWith("MD2_")) {
-                        fieldName = fieldName.replace("MD2_", prefix);
-                    } else if (fieldName.startsWith(SolrConstants.PREFIX_MDNUM)) {
+                    if (ret.startsWith("MD_")) {
+                        ret = ret.replace("MD_", prefix);
+                    } else if (ret.startsWith("MD2_")) {
+                        ret = ret.replace("MD2_", prefix);
+                    } else if (ret.startsWith(SolrConstants.PREFIX_MDNUM)) {
                         if (SolrConstants.PREFIX_SORT.equals(prefix)) {
-                            fieldName = fieldName.replace(SolrConstants.PREFIX_MDNUM, SolrConstants.PREFIX_SORTNUM);
+                            ret = ret.replace(SolrConstants.PREFIX_MDNUM, SolrConstants.PREFIX_SORTNUM);
                         } else {
-                            fieldName = fieldName.replace(SolrConstants.PREFIX_MDNUM, prefix);
+                            ret = ret.replace(SolrConstants.PREFIX_MDNUM, prefix);
                         }
-                    } else if (fieldName.startsWith("NE_")) {
-                        fieldName = fieldName.replace("NE_", prefix);
-                    } else if (fieldName.startsWith("BOOL_")) {
-                        fieldName = fieldName.replace("BOOL_", prefix);
-                    } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
-                        fieldName = fieldName.replace(SolrConstants.PREFIX_SORT, prefix);
+                    } else if (ret.startsWith("NE_")) {
+                        ret = ret.replace("NE_", prefix);
+                    } else if (ret.startsWith("BOOL_")) {
+                        ret = ret.replace("BOOL_", prefix);
+                    } else if (ret.startsWith(SolrConstants.PREFIX_SORT)) {
+                        ret = ret.replace(SolrConstants.PREFIX_SORT, prefix);
                     }
                 }
-                fieldName = fieldName.replace(SolrConstants.SUFFIX_UNTOKENIZED, "");
-                return fieldName;
+                ret = ret.replace(SolrConstants.SUFFIX_UNTOKENIZED, "");
+                return ret;
         }
     }
 

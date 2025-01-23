@@ -38,7 +38,7 @@ import io.goobi.viewer.indexer.model.PrimitiveDate;
 /**
  * 
  */
-public class DateTools {
+public final class DateTools {
 
     private static final Logger logger = LogManager.getLogger(DateTools.class);
 

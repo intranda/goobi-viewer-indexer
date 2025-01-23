@@ -559,22 +559,21 @@ public class DublinCoreIndexer extends Indexer {
      * @param eleImage
      * @param iddoc
      * @param pi
-     * @param order
+     * @param inOrder
      * @param dataFolders
      * @return {@link PhysicalElement}
      * @throws FatalIndexerException
      */
-    PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, Integer order, Map<String, Path> dataFolders) {
+    PhysicalElement generatePageDocument(Element eleImage, String iddoc, String pi, final Integer inOrder, Map<String, Path> dataFolders) {
         if (eleImage == null) {
             throw new IllegalArgumentException("eleImage may not be null");
         }
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
-        if (order == null) {
-            // TODO page order within the metadata
-            order = 1;
-        }
+
+        int order = inOrder != null ? inOrder : 1;
+        // TODO page order within the metadata
 
         // Create object for this page
         PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));

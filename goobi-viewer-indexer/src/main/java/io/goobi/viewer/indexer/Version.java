@@ -39,7 +39,7 @@ import io.goobi.viewer.indexer.helper.DateTools;
  * </p>
  *
  */
-public class Version {
+public final class Version {
 
     private static final Logger logger = LogManager.getLogger(Version.class);
 
@@ -73,7 +73,7 @@ public class Version {
 
     /**
      * 
-     * @return
+     * @return {@link String}
      */
     private static String getManifestStringFromJar() {
         Class clazz = Version.class;
@@ -100,7 +100,7 @@ public class Version {
      * 
      * @param label
      * @param infoText
-     * @return
+     * @return {@link String}
      */
     private static String getInfo(String label, String infoText) {
         String regex = label + ": (.*)";

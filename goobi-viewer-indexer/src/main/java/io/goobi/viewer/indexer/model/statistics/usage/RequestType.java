@@ -20,9 +20,9 @@ import java.util.Arrays;
 /**
  * @author florian
  *
- *         A list of types of request to count independently for usage statistics. When recording a request in 
- *         {@see io.goobi.viewer.model.statistics.usage.UsageStatisticsRecorder} you
- *         need to pass an appropriate type. Statistics for each type are recorded independently
+ *         A list of types of request to count independently for usage statistics. When recording a request in
+ *         {@see io.goobi.viewer.model.statistics.usage.UsageStatisticsRecorder} you need to pass an appropriate type. Statistics for each type are
+ *         recorded independently
  */
 public enum RequestType {
 
@@ -75,7 +75,8 @@ public enum RequestType {
     }
 
     /**
-     * Get the RequestType for the given index of the count array in {@link RequestType} within {@see io.goobi.viewer.model.statistics.usage.SessionUsageStatistics}
+     * Get the RequestType for the given index of the count array in {@link RequestType} within
+     * {@see io.goobi.viewer.model.statistics.usage.SessionUsageStatistics}
      * 
      * @param index
      * @return the type

@@ -84,6 +84,7 @@ public class UsageStatisticsIndexer extends Indexer {
 
     /**
      * @param sourceFile
+     * @return {@link SolrInputDocument}
      * @throws IOException
      * @throws FatalIndexerException
      * @throws SolrServerException

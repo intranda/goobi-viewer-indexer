@@ -85,7 +85,9 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * <p>Constructor for EadIndexer.</p>
+     * <p>
+     * Constructor for EadIndexer.
+     * </p>
      *
      * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object
      * @param httpConnector a {@link io.goobi.viewer.indexer.helper.HttpConnector} object
@@ -171,13 +173,13 @@ public class EadIndexer extends Indexer {
      *
      * @param eadFile {@link java.nio.file.Path}
      * @param dataFolders a {@link java.util.Map} object.
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should update record correctly
      * @should set access conditions correctly
      */
-    public String[] index(Path eadFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy) {
+    public String[] index(Path eadFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy) {
         String[] ret = { null, null };
 
         if (eadFile == null || !Files.exists(eadFile)) {
@@ -188,6 +190,7 @@ public class EadIndexer extends Indexer {
         }
 
         logger.debug("Indexing EAD file '{}'...", eadFile.getFileName());
+        ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             initJDomXP(eadFile);
             IndexObject indexObj = new IndexObject(getNextIddoc());
@@ -368,7 +371,9 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * <p>indexChild.</p>
+     * <p>
+     * indexChild.
+     * </p>
      *
      * @param node a {@link org.jdom2.Element} object
      * @param parentIndexObject a {@link io.goobi.viewer.indexer.model.IndexObject} object
@@ -522,7 +527,8 @@ public class EadIndexer extends Indexer {
 
         // The following steps must be performed after adding child metadata and marking own metadata for skipping
 
-        // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
+        // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct 
+        // and after adding grouped metadata from child elements)
         addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
         // Apply field modifications that should happen at the very end
@@ -609,7 +615,9 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * <p>getSourceDocFormat.</p>
+     * <p>
+     * getSourceDocFormat.
+     * </p>
      *
      * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object
      */

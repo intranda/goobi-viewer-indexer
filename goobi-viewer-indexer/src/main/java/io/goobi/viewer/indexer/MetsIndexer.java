@@ -125,7 +125,7 @@ public class MetsIndexer extends Indexer {
 
     private String selectedPreferredImageFileGroup = null;
     private List<String> availablePreferredImageFileGroups = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
-    volatile String useFileGroupGlobal = null;
+    private volatile String useFileGroupGlobal = null;
 
     /**
      * Constructor.
@@ -2401,5 +2401,14 @@ public class MetsIndexer extends Indexer {
         }
 
         return null;
+    }
+
+    /**
+     * For tests.
+     * 
+     * @param useFileGroupGlobal the useFileGroupGlobal to set
+     */
+    void setUseFileGroupGlobal(String useFileGroupGlobal) {
+        this.useFileGroupGlobal = useFileGroupGlobal;
     }
 }

@@ -257,7 +257,7 @@ public final class MetadataHelper {
                                             configurationItem.getFieldname());
                                 }
                             }
-                            
+
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
                                 logger.info(xpath);
@@ -1395,24 +1395,6 @@ public final class MetadataHelper {
         //                sbDefaultMetadataValues.append(concatValueWithSpaces);
         //            }
         //        }
-    }
-
-    /**
-     * 
-     * @param value
-     * @return
-     * @should concatenate value terms correctly
-     */
-    static String getConcatenatedValue(String value) {
-        StringBuilder sbConcat = new StringBuilder();
-        if (value != null && value.contains("-")) {
-            String[] constantValueSplit = value.split("-");
-            for (String s : constantValueSplit) {
-                sbConcat.append(s);
-            }
-        }
-
-        return sbConcat.toString();
     }
 
     /**

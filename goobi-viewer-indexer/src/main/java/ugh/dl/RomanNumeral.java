@@ -232,12 +232,13 @@ public class RomanNumeral extends Number {
      * 
      * @param number the int value to convert to a Roman numeral
      **************************************************************************/
-    private void convertInt(int number) {
+    private void convertInt(final int number) {
+        int num = number;
         int div;
 
         this.num = new StringBuilder();
-        for (int i = 0; i < NUM_DIVISORS && number > 0; i++) {
-            div = number / DIVISORS[i];
+        for (int i = 0; i < NUM_DIVISORS && num > 0; i++) {
+            div = num / DIVISORS[i];
             if (div == 4) {
                 if (this.num.length() == 0
                         || this.num.charAt(this.num.length() - 1) != ROMAN_DIGITS[i - 1]) {
@@ -259,7 +260,7 @@ public class RomanNumeral extends Number {
                 }
             }
 
-            number = number - DIVISORS[i] * div;
+            num = num - DIVISORS[i] * div;
         }
     }
 
@@ -297,13 +298,13 @@ public class RomanNumeral extends Number {
      * @param value A string representation of a Roman numeral
      * @exception NumberFormatException If the string parameter is not a valid RomanNumeral
      **************************************************************************/
-    public void setValue(String value) throws NumberFormatException {
+    public void setValue(final String value) throws NumberFormatException {
         if (value == null) {
             throw new IllegalArgumentException("value may not be null");
         }
-        value = value.toUpperCase();
-        this.intValue = convertRomanToInt(value);
-        this.num = new StringBuilder(value);
+        String val = value.toUpperCase();
+        this.intValue = convertRomanToInt(val);
+        this.num = new StringBuilder(val);
     }
 
     /***************************************************************************
