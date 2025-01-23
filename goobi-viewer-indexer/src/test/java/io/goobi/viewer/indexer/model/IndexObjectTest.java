@@ -136,48 +136,34 @@ class IndexObjectTest extends AbstractTest {
         assertNotNull(io.getLuceneFieldWithName(SolrConstants.IDDOC));
         assertEquals("1", io.getLuceneFieldWithName(SolrConstants.IDDOC).getValue());
         assertEquals("1", io.getLuceneFieldWithName(SolrConstants.GROUPFIELD).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCTYPE));
-        assertEquals(DocType.DOCSTRCT.name(), io.getLuceneFieldWithName(SolrConstants.DOCTYPE).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI));
-        assertEquals("PI", io.getLuceneFieldWithName(SolrConstants.PI).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_TOPSTRUCT));
-        assertEquals("TOPSTRUCT_PI", io.getLuceneFieldWithName(SolrConstants.PI_TOPSTRUCT).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_PARENT));
-        assertEquals("PARENT_PI", io.getLuceneFieldWithName(SolrConstants.PI_PARENT).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR));
-        assertEquals("PARENT_PI", io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.LABEL));
-        assertEquals("<b>LABEL</b>", io.getLuceneFieldWithName(SolrConstants.LABEL).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.DMDID));
-        assertEquals("DMD0000", io.getLuceneFieldWithName(SolrConstants.DMDID).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.LOGID));
-        assertEquals("LOG0000", io.getLuceneFieldWithName(SolrConstants.LOGID).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT));
-        assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT));
-        assertEquals("MusicSupplies_ALT", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP));
-        assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY));
-        assertEquals("DATA", io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.IDDOC_PARENT));
-        assertEquals("2", io.getLuceneFieldWithName(SolrConstants.IDDOC_PARENT).getValue());
-
-        assertNotNull(io.getLuceneFieldWithName(SolrConstants.IDDOC_TOPSTRUCT));
-        assertEquals("3", io.getLuceneFieldWithName(SolrConstants.IDDOC_TOPSTRUCT).getValue());
+        assertEquals(DocType.DOCSTRCT.name(),
+                io.getLuceneFieldWithName(SolrConstants.DOCTYPE) != null ? io.getLuceneFieldWithName(SolrConstants.DOCTYPE).getValue() : null);
+        assertEquals("PI", io.getLuceneFieldWithName(SolrConstants.PI) != null ? io.getLuceneFieldWithName(SolrConstants.PI).getValue()
+                : null);
+        assertEquals("TOPSTRUCT_PI", io.getLuceneFieldWithName(SolrConstants.PI_TOPSTRUCT) != null
+                ? io.getLuceneFieldWithName(SolrConstants.PI_TOPSTRUCT).getValue() : null);
+        assertEquals("PARENT_PI",
+                io.getLuceneFieldWithName(SolrConstants.PI_PARENT) != null ? io.getLuceneFieldWithName(SolrConstants.PI_PARENT).getValue() : null);
+        assertEquals("PARENT_PI",
+                io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null ? io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR).getValue() : null);
+        assertEquals("<b>LABEL</b>",
+                io.getLuceneFieldWithName(SolrConstants.LABEL) != null ? io.getLuceneFieldWithName(SolrConstants.LABEL).getValue() : null);
+        assertEquals("DMD0000",
+                io.getLuceneFieldWithName(SolrConstants.DMDID) != null ? io.getLuceneFieldWithName(SolrConstants.DMDID).getValue() : null);
+        assertEquals("LOG0000",
+                io.getLuceneFieldWithName(SolrConstants.LOGID) != null ? io.getLuceneFieldWithName(SolrConstants.LOGID).getValue() : null);
+        assertEquals("MusicSupplies",
+                io.getLuceneFieldWithName(SolrConstants.DOCSTRCT) != null ? io.getLuceneFieldWithName(SolrConstants.DOCSTRCT).getValue() : null);
+        assertEquals("MusicSupplies_ALT", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT) != null
+                ? io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT).getValue() : null);
+        assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null
+                ? io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue() : null);
+        assertEquals("DATA", io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY) != null
+                ? io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY).getValue() : null);
+        assertEquals("2", io.getLuceneFieldWithName(SolrConstants.IDDOC_PARENT) != null
+                ? io.getLuceneFieldWithName(SolrConstants.IDDOC_PARENT).getValue() : null);
+        assertEquals("3", io.getLuceneFieldWithName(SolrConstants.IDDOC_TOPSTRUCT) != null
+                ? io.getLuceneFieldWithName(SolrConstants.IDDOC_TOPSTRUCT).getValue() : null);
     }
 
     /**
