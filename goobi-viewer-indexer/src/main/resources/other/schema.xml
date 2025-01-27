@@ -36,7 +36,7 @@
 
 <!-- PLEASE ADD A CHECKBOX IN THE TICKET TO REMEMBER TO UPDATE THIS FILE IN THE
      GOOBI-VIEWER-DOCKER-SOLR REPOSITORY AS WELL -->
-<schema name="goobi_viewer-20240626" version="1.7">
+<schema name="goobi_viewer-20250127" version="1.7">
 
 
 
