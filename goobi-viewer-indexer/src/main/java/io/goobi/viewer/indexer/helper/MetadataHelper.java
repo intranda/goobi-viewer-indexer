@@ -260,7 +260,7 @@ public final class MetadataHelper {
 
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
-                                logger.info(xpath);
+                                logger.trace(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
                                         configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
