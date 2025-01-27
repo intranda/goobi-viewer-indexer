@@ -231,41 +231,56 @@ public final class SolrSearchIndex {
             if (luceneField.isSkip() || luceneField.getValue() == null) {
                 continue;
             }
-
-            // Explicitly use numeric value in doc, where applicable
-            switch (luceneField.getField()) {
-                case SolrConstants.CENTURY:
-                case SolrConstants.CURRENTNOSORT:
-                case SolrConstants.MONTHDAY:
-                case SolrConstants.DATECREATED:
-                case SolrConstants.DATEINDEXED:
-                case SolrConstants.DATEUPDATED:
-                case SolrConstants.NUMVOLUMES:
-                case SolrConstants.YEAR:
-                case SolrConstants.YEARMONTH:
-                case SolrConstants.YEARMONTHDAY:
-                    doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
-                    break;
-                case SolrConstants.HEIGHT:
-                case SolrConstants.NUMPAGES:
-                case SolrConstants.ORDER:
-                case SolrConstants.THUMBPAGENO:
-                case SolrConstants.WIDTH:
-                    doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
-                    break;
-                default:
-                    if (luceneField.getField().startsWith(SolrConstants.PREFIX_MDNUM) || luceneField.getField().startsWith("SORTNUM_")) {
-                        doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
-                    } else if (luceneField.getField().startsWith("GROUPORDER_")) {
-                        doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
-                    } else {
-                        doc.addField(luceneField.getField(), luceneField.getValue());
-                    }
-            }
+            addFieldToDoc(luceneField, doc);
         }
 
         return doc;
 
+    }
+
+    /**
+     * 
+     * @param luceneField
+     * @param doc
+     */
+    public static void addFieldToDoc(LuceneField luceneField, SolrInputDocument doc) {
+        if (luceneField == null) {
+            throw new IllegalArgumentException("luceneField may not be null");
+        }
+        if (doc == null) {
+            throw new IllegalArgumentException("doc may not be null");
+        }
+
+        // Explicitly use numeric value in doc, where applicable
+        switch (luceneField.getField()) {
+            case SolrConstants.CENTURY:
+            case SolrConstants.CURRENTNOSORT:
+            case SolrConstants.MONTHDAY:
+            case SolrConstants.DATECREATED:
+            case SolrConstants.DATEINDEXED:
+            case SolrConstants.DATEUPDATED:
+            case SolrConstants.NUMVOLUMES:
+            case SolrConstants.YEAR:
+            case SolrConstants.YEARMONTH:
+            case SolrConstants.YEARMONTHDAY:
+                doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
+                break;
+            case SolrConstants.HEIGHT:
+            case SolrConstants.NUMPAGES:
+            case SolrConstants.ORDER:
+            case SolrConstants.THUMBPAGENO:
+            case SolrConstants.WIDTH:
+                doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
+                break;
+            default:
+                if (luceneField.getField().startsWith(SolrConstants.PREFIX_MDNUM) || luceneField.getField().startsWith("SORTNUM_")) {
+                    doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
+                } else if (luceneField.getField().startsWith("GROUPORDER_")) {
+                    doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
+                } else {
+                    doc.addField(luceneField.getField(), luceneField.getValue());
+                }
+        }
     }
 
     /**

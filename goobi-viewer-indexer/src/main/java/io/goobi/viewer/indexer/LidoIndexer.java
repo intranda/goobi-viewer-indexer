@@ -807,7 +807,7 @@ public class LidoIndexer extends Indexer {
             }
 
             for (LuceneField field : fields) {
-                eventDoc.addField(field.getField(), field.getValue());
+                SolrSearchIndex.addFieldToDoc(field, eventDoc);
                 logger.debug("Added {}:{} to event '{}'.", field.getField(), field.getValue(), type);
 
                 // Check whether this field is configured to be added as a sort field to topstruct
