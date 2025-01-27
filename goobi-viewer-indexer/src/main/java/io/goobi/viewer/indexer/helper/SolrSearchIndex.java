@@ -232,12 +232,40 @@ public final class SolrSearchIndex {
                 continue;
             }
 
-            // Do not pass a boost value because starting with Solr 3.6, adding an index-time boost to primitive field types will cause
-            // the commit to fail
-            doc.addField(luceneField.getField(), luceneField.getValue());
+            // Explicitly use numeric value in doc, where applicable
+            switch (luceneField.getField()) {
+                case SolrConstants.CENTURY:
+                case SolrConstants.CURRENTNOSORT:
+                case SolrConstants.MONTHDAY:
+                case SolrConstants.DATECREATED:
+                case SolrConstants.DATEINDEXED:
+                case SolrConstants.DATEUPDATED:
+                case SolrConstants.NUMVOLUMES:
+                case SolrConstants.YEAR:
+                case SolrConstants.YEARMONTH:
+                case SolrConstants.YEARMONTHDAY:
+                    doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
+                    break;
+                case SolrConstants.HEIGHT:
+                case SolrConstants.NUMPAGES:
+                case SolrConstants.ORDER:
+                case SolrConstants.THUMBPAGENO:
+                case SolrConstants.WIDTH:
+                    doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
+                    break;
+                default:
+                    if (luceneField.getField().startsWith(SolrConstants.PREFIX_MDNUM) || luceneField.getField().startsWith("SORTNUM_")) {
+                        doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
+                    } else if (luceneField.getField().startsWith("GROUPORDER_")) {
+                        doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
+                    } else {
+                        doc.addField(luceneField.getField(), luceneField.getValue());
+                    }
+            }
         }
 
         return doc;
+
     }
 
     /**
@@ -637,9 +665,9 @@ public final class SolrSearchIndex {
                     doc.setField(SolrConstants.GROUPFIELD, oldDoc.getFieldValue(SolrConstants.IDDOC));
                 }
                 doc.setField(SolrConstants.DOCTYPE, DocType.GROUP.name());
-                doc.setField(SolrConstants.DATECREATED, oldDoc.getFieldValue(SolrConstants.DATECREATED));
+                doc.setField(SolrConstants.DATECREATED, Long.parseLong(String.valueOf(oldDoc.getFieldValue(SolrConstants.DATECREATED))));
             }
-            doc.setField(SolrConstants.DATEUPDATED, now);
+            doc.setField(SolrConstants.DATEUPDATED, Long.valueOf(now));
             doc.setField(SolrConstants.PI, groupId);
             doc.setField(SolrConstants.PI_TOPSTRUCT, groupId);
             doc.setField(SolrConstants.GROUPTYPE, groupIdField);
