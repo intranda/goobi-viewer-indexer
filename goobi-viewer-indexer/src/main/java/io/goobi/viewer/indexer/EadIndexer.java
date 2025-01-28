@@ -206,7 +206,12 @@ public class EadIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI (from file name)
-            String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString())),
+            String baseFileName = eadFile.getFileName().toString();
+            // Remove anti-collision name part
+            if (baseFileName.contains("#")) {
+                baseFileName = baseFileName.substring(0, baseFileName.indexOf('#'));
+            }
+            String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(baseFileName)),
                     indexObj, false);
 
             // Determine the data repository to use
