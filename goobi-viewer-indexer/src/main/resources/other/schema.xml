@@ -131,7 +131,7 @@
 	<field name="CURRENTNOSORT" type="plong" indexed="true" stored="true" />
 	<field name="DATAREPOSITORY" type="string" indexed="true" stored="true" />
 	<field name="DATECREATED" type="plong" indexed="true" stored="true" />
-	<field name="DATEDELETED" type="tlong" indexed="true" stored="true" />
+	<field name="DATEDELETED" type="plong" indexed="true" stored="true" />
     <field name="DATEINDEXED" type="plong" indexed="true" stored="true" multiValued="true" />
 	<field name="DATEUPDATED" type="plong" indexed="true" stored="true" multiValued="true" />
 	<field name="DC" type="string" indexed="true" stored="true" multiValued="true" />
