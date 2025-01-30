@@ -18,6 +18,8 @@ package io.goobi.viewer.indexer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +41,7 @@ import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.statistics.usage.DailyRequestCounts;
 import io.goobi.viewer.indexer.model.statistics.usage.DailyUsageStatistics;
 import io.goobi.viewer.indexer.model.statistics.usage.RequestType;
@@ -47,7 +50,9 @@ import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
- * <p>UsageStatisticsIndexer class.</p>
+ * <p>
+ * UsageStatisticsIndexer class.
+ * </p>
  *
  * @author florian
  */
@@ -56,7 +61,9 @@ public class UsageStatisticsIndexer extends Indexer {
     private static final Logger logger = LogManager.getLogger(UsageStatisticsIndexer.class);
 
     /**
-     * <p>Constructor for UsageStatisticsIndexer.</p>
+     * <p>
+     * Constructor for UsageStatisticsIndexer.
+     * </p>
      *
      * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object
      */
@@ -73,7 +80,15 @@ public class UsageStatisticsIndexer extends Indexer {
             throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
         }
         try {
-            index(sourceFile);
+            if (index(sourceFile) != null) {
+                this.dataRepository = new DataRepository("", true);
+                String newFileName = sourceFile.getFileName().toString();
+                Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_STATISTICS).toAbsolutePath().toString(), newFileName);
+                if (sourceFile.equals(indexed)) {
+                    return Collections.singletonList(newFileName);
+                }
+                Files.copy(sourceFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (SolrServerException e) {
             logger.error("Error indexing file {}. Reason: {}", sourceFile, e.getMessage());
             throw new IOException(e);
@@ -92,7 +107,7 @@ public class UsageStatisticsIndexer extends Indexer {
     SolrInputDocument index(Path sourceFile) throws IOException, FatalIndexerException, SolrServerException {
         String solrDateString = getStatisticsDate(sourceFile);
         if (statisticsExists(solrDateString)) {
-            logger.info("Don't index usage statistics for {}: Statistics already exist for that date", solrDateString);
+            logger.info("Don't index usage statistics for {}: Statistics already exist for that date.", solrDateString);
             return null; //NOSONAR Returning empty map would complicate things
         }
 
@@ -161,7 +176,9 @@ public class UsageStatisticsIndexer extends Indexer {
     }
 
     /**
-     * <p>removeFromIndex.</p>
+     * <p>
+     * removeFromIndex.
+     * </p>
      *
      * @param sourceFile a {@link java.nio.file.Path} object
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException

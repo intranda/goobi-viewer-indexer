@@ -105,6 +105,8 @@ public class Hotfolder {
     private boolean worldviewsEnabled = true;
     /** Constant <code>cmsEnabled=true</code> */
     private boolean cmsEnabled = true;
+    /** Constant <code>usageStatisticsEnabled=true</code> */
+    private boolean usageStatisticsEnabled = true;
 
     private int queueCapacity = 500;
     private int minStorageSpace = 2048;
@@ -333,6 +335,12 @@ public class Hotfolder {
         if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_CMS))) {
             cmsEnabled = false;
             logger.warn("<{}> not defined - CMS page indexing is disabled.", DataRepository.PARAM_INDEXED_CMS);
+        }
+
+        // Usage statistics folder
+        if (StringUtils.isEmpty(config.getConfiguration(DataRepository.PARAM_INDEXED_STATISTICS))) {
+            usageStatisticsEnabled = false;
+            logger.warn("<{}> not defined - usage statistics indexing is disabled.", DataRepository.PARAM_INDEXED_STATISTICS);
         }
 
         if (StringUtils.isEmpty(config.getConfiguration("successFolder"))) {
@@ -723,11 +731,15 @@ public class Hotfolder {
                 Utils.submitDataToViewer(identifiers, countRecordFiles());
             } else if (filename.endsWith(".json")) {
                 if (filename.startsWith(FILENAME_PREFIX_STATISTICS_USAGE)) {
-                    try {
-                        this.currentIndexer = new UsageStatisticsIndexer(this);
-                        currentIndexer.addToIndex(sourceFile, null);
-                    } finally {
-                        this.currentIndexer = null;
+                    if (usageStatisticsEnabled) {
+                        try {
+                            this.currentIndexer = new UsageStatisticsIndexer(this);
+                            currentIndexer.addToIndex(sourceFile, null);
+                        } finally {
+                            this.currentIndexer = null;
+                        }
+                    } else {
+                        logger.error("Usage statistics indexing is disabled - please make sure all folders are configured.");
                     }
                     Files.delete(sourceFile);
                 }
@@ -1009,7 +1021,7 @@ public class Hotfolder {
         private String recordFileName;
         private long total = 0;
 
-        /** 
+        /**
          * @param recordFileName
          */
         public DataFolderSizeCounter(String recordFileName) {
