@@ -42,7 +42,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.6.2</alto.version>
 		<iiif-api-model.version>2.6.5</iiif-api-model.version>
-		<normdataimporter.version>2.0.0-SNAPSHOT</normdataimporter.version>
+		<normdataimporter.version>2.0.0</normdataimporter.version>
 
 		<!-- other libraries -->
 		<angus-mail.version>2.0.3</angus-mail.version>
