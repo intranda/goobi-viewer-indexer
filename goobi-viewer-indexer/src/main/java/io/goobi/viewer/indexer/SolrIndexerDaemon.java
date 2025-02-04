@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -235,7 +236,7 @@ public final class SolrIndexerDaemon {
 
         logger.info("Using {} CPU thread(s).", configuration.getThreads());
 
-        Utils.submitDataToViewer(hotfolders.get(0).countRecordFiles());
+        Utils.submitDataToViewer(Collections.emptyList(), hotfolders.get(0).countRecordFiles());
 
         // main loop
         logger.info("Program started, monitoring hotfolder(s)...");

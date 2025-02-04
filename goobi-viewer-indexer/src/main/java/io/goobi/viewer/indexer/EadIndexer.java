@@ -65,6 +65,7 @@ public class EadIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(EadIndexer.class);
 
+    /** Constant <code>NAMESPACE_EAD2</code> */
     public static final Namespace NAMESPACE_EAD2 = Namespace.getNamespace("ead", "urn:isbn:1-931666-22-9");
 
     private ForkJoinPool pool;
@@ -84,9 +85,12 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @param hotfolder
-     * @param httpConnector
+     * <p>
+     * Constructor for EadIndexer.
+     * </p>
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object
+     * @param httpConnector a {@link io.goobi.viewer.indexer.helper.HttpConnector} object
      */
     public EadIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
         super(httpConnector);
@@ -94,13 +98,9 @@ public class EadIndexer extends Indexer {
         SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().put("ead", NAMESPACE_EAD2);
     }
 
-    /**
-     * Indexes the given METS file.
-     * 
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path eadFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         String fileNameRoot = FilenameUtils.getBaseName(eadFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -115,7 +115,7 @@ public class EadIndexer extends Indexer {
             String pi = FilenameUtils.getBaseName(newFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toAbsolutePath().toString(), newFileName);
             if (eadFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
 
             Files.copy(eadFile, indexed, StandardCopyOption.REPLACE_EXISTING);
@@ -144,24 +144,28 @@ public class EadIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
-            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+            prerenderPagePdfsIfRequired(pi);
             logger.info("Successfully finished indexing '{}'.", eadFile.getFileName());
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(eadFile, resp[1], getSourceDocFormat());
-            try {
-                Files.delete(eadFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, eadFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(eadFile, resp[1], getSourceDocFormat());
+        try {
+            Files.delete(eadFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, eadFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -169,13 +173,13 @@ public class EadIndexer extends Indexer {
      *
      * @param eadFile {@link java.nio.file.Path}
      * @param dataFolders a {@link java.util.Map} object.
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should update record correctly
      * @should set access conditions correctly
      */
-    public String[] index(Path eadFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy) {
+    public String[] index(Path eadFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy) {
         String[] ret = { null, null };
 
         if (eadFile == null || !Files.exists(eadFile)) {
@@ -186,9 +190,10 @@ public class EadIndexer extends Indexer {
         }
 
         logger.debug("Indexing EAD file '{}'...", eadFile.getFileName());
+        ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             initJDomXP(eadFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = findStructNode();
             if (structNode == null) {
@@ -201,7 +206,12 @@ public class EadIndexer extends Indexer {
             setSimpleData(indexObj);
 
             // Set PI (from file name)
-            String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(eadFile.getFileName().toString())),
+            String baseFileName = eadFile.getFileName().toString();
+            // Remove anti-collision name part
+            if (baseFileName.contains("#")) {
+                baseFileName = baseFileName.substring(0, baseFileName.indexOf('#'));
+            }
+            String pi = validateAndApplyPI(MetadataHelper.applyIdentifierModifications(FilenameUtils.getBaseName(baseFileName)),
                     indexObj, false);
 
             // Determine the data repository to use
@@ -288,14 +298,14 @@ public class EadIndexer extends Indexer {
 
     /**
      * Recursively re-indexes the logical docstruct subtree of the node represented by the given IndexObject.
-     * 
-     * @param parentIndexObject {@link IndexObject}
+     *
+     * @param parentIndexObject {@link io.goobi.viewer.indexer.model.IndexObject}
      * @param depth OBSOLETE
-     * @param writeStrategy
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object
      * @param allowParallelProcessing If true, this node's immediate children may be processed in parallel
      * @return List of <code>LuceneField</code>s to inherit up the hierarchy.
-     * @throws IOException
-     * @throws FatalIndexerException
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     protected List<IndexObject> indexAllChildren(IndexObject parentIndexObject, int depth, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing) throws IOException, FatalIndexerException {
@@ -366,20 +376,23 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @param node
-     * @param parentIndexObject
-     * @param depth
-     * @param order
-     * @param writeStrategy
-     * @param allowParallelProcessing
-     * @return Created {@link IndexObject} if it has metadata fields to inherit upwards; otherwise null
-     * @throws FatalIndexerException
-     * @throws IOException
+     * <p>
+     * indexChild.
+     * </p>
+     *
+     * @param node a {@link org.jdom2.Element} object
+     * @param parentIndexObject a {@link io.goobi.viewer.indexer.model.IndexObject} object
+     * @param depth a int
+     * @param order a int
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object
+     * @param allowParallelProcessing a boolean
+     * @return Created {@link io.goobi.viewer.indexer.model.IndexObject} if it has metadata fields to inherit upwards; otherwise null
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @throws java.io.IOException
      */
     public IndexObject indexChild(Element node, IndexObject parentIndexObject, int depth, int order, ISolrWriteStrategy writeStrategy,
             boolean allowParallelProcessing) throws FatalIndexerException, IOException {
-        IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+        IndexObject indexObj = new IndexObject(getNextIddoc());
         indexObj.setRootStructNode(node);
         indexObj.setParent(parentIndexObject);
         indexObj.setTopstructPI(parentIndexObject.getTopstructPI());
@@ -519,7 +532,8 @@ public class EadIndexer extends Indexer {
 
         // The following steps must be performed after adding child metadata and marking own metadata for skipping
 
-        // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct and after adding grouped metadata from child elements)
+        // Add grouped metadata as separate documents (must be done after mapping page docs to this docstrct 
+        // and after adding grouped metadata from child elements)
         addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
         // Apply field modifications that should happen at the very end
@@ -539,8 +553,8 @@ public class EadIndexer extends Indexer {
 
     /**
      * Sets DMDID, ID, TYPE and LABEL from the METS document.
-     * 
-     * @param indexObj {@link IndexObject}
+     *
+     * @param indexObj {@link io.goobi.viewer.indexer.model.IndexObject}
      */
     protected void setSimpleData(IndexObject indexObj) {
         logger.trace("setSimpleData(IndexObject) - start");
@@ -606,8 +620,11 @@ public class EadIndexer extends Indexer {
     }
 
     /**
-     * 
-     * @return
+     * <p>
+     * getSourceDocFormat.
+     * </p>
+     *
+     * @return a {@link io.goobi.viewer.indexer.helper.JDomXP.FileFormat} object
      */
     protected FileFormat getSourceDocFormat() {
         return FileFormat.EAD;

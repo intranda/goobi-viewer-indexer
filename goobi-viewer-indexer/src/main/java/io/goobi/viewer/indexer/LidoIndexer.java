@@ -96,17 +96,9 @@ public class LidoIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * Indexes the given LIDO file.
-     * 
-     * @param lidoFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     * 
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path lidoFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         logger.debug("Indexing LIDO file '{}'...", lidoFile.getFileName());
         String fileNameRoot = FilenameUtils.getBaseName(lidoFile.getFileName().toString());
 
@@ -129,6 +121,8 @@ public class LidoIndexer extends Indexer {
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
         logger.info("File contains {} LIDO documents.", lidoDocs.size());
         XMLOutputter outputter = new XMLOutputter();
+
+        List<String> ret = new ArrayList<>(lidoDocs.size());
         for (Document doc : lidoDocs) {
             String[] resp = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"),
@@ -197,11 +191,14 @@ public class LidoIndexer extends Indexer {
                         logger.error(e.getMessage(), e);
                     }
                 }
-                prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+                prerenderPagePdfsIfRequired(identifier);
                 logger.info("Successfully finished indexing '{}'.", identifier);
 
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
+
+                // Add identifier to return list
+                ret.add(identifier);
             } else {
                 handleError(lidoFile, resp[1], FileFormat.LIDO);
             }
@@ -220,6 +217,8 @@ public class LidoIndexer extends Indexer {
         // Delete all data folders for this record from the hotfolder
         DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         logger.info("Finished indexing LIDO file '{}'.", lidoFile.getFileName());
+
+        return ret;
     }
 
     /**
@@ -227,7 +226,7 @@ public class LidoIndexer extends Indexer {
      *
      * @param doc a {@link org.jdom2.Document} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart a int.
      * @param imageXPaths a {@link java.util.List} object.
      * @param downloadExternalImages a boolean.
@@ -236,17 +235,18 @@ public class LidoIndexer extends Indexer {
      * @should update record correctly
      * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
+    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy inWriteStrategy, int pageCountStart,
             List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
         String[] ret = { STATUS_ERROR, null };
         String pi = null;
+        ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             this.xp = new JDomXP(doc);
             if (this.xp == null) {
                 throw new IndexerException("Could not create XML parser.");
             }
 
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = doc.getRootElement();
             indexObj.setRootStructNode(structNode);
@@ -295,7 +295,8 @@ public class LidoIndexer extends Indexer {
             // Set access conditions
             indexObj.writeAccessConditions(null);
 
-            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
+            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL
+            // (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
             List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, writeStrategy, 0);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
@@ -376,7 +377,7 @@ public class LidoIndexer extends Indexer {
      * @param indexObj
      * @param writeStrategy
      * @param depth
-     * @return
+     * @return List<LuceneField>
      * @throws FatalIndexerException
      */
     protected static List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, ISolrWriteStrategy writeStrategy, int depth)
@@ -401,7 +402,7 @@ public class LidoIndexer extends Indexer {
                     ? (String) page.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) page.getDoc().getFieldValue(SolrConstants.FILENAME);
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
-            
+
             if (page.getDoc().containsKey(SolrConstants.THUMBNAILREPRESENT)) {
                 filePathBanner = (String) page.getDoc().getFieldValue(SolrConstants.THUMBNAILREPRESENT);
             }
@@ -409,7 +410,8 @@ public class LidoIndexer extends Indexer {
             // Add thumbnail information from the representative page
             if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && pageFileName.equals(filePathBanner)) {
                 ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-                // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
+                // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer,
+                // it is not used in the viewer
                 ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(page.getDoc().getFieldValue(SolrConstants.ORDER))));
                 ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) page.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
@@ -441,7 +443,7 @@ public class LidoIndexer extends Indexer {
                     page.getDoc().removeField(fieldName);
                 }
                 //  Add this docstruct's SORT_* fields to page
-                if (indexObj.getIddoc() == Long.valueOf((String) page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                if (indexObj.getIddoc() != null && indexObj.getIddoc().equals(page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
                         if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             page.getDoc().addField(field.getField(), field.getValue());
@@ -529,7 +531,8 @@ public class LidoIndexer extends Indexer {
                     ? (String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME);
             ret.add(new LuceneField(SolrConstants.THUMBNAIL, pageFileName));
-            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer, it is not used in the viewer
+            // THUMBNAILREPRESENT is just used to identify the presence of a custom representation thumbnail to the indexer,
+            // it is not used in the viewer
             ret.add(new LuceneField(SolrConstants.THUMBNAILREPRESENT, pageFileName));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENO, String.valueOf(firstPage.getDoc().getFieldValue(SolrConstants.ORDER))));
             ret.add(new LuceneField(SolrConstants.THUMBPAGENOLABEL, (String) firstPage.getDoc().getFieldValue(SolrConstants.ORDERLABEL)));
@@ -575,10 +578,9 @@ public class LidoIndexer extends Indexer {
      * @param imageXPaths a {@link java.util.List} object.
      * @param downloadExternalImages a boolean.
      * @param useOldImageFolderIfAvailable
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart,
-            List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) throws FatalIndexerException {
+            List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
         String xpath = "/lido:lido/lido:administrativeMetadata/lido:resourceWrap/lido:resourceSet";
         List<Element> resourceSetList = xp.evaluateToElements(xpath, null);
         if (resourceSetList == null || resourceSetList.isEmpty()) {
@@ -604,9 +606,8 @@ public class LidoIndexer extends Indexer {
             if (orderAttribute != null) {
                 order = Integer.valueOf(orderAttribute);
             }
-            PhysicalElement page =
-                    generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), order,
-                            dataFolders, imageXPaths, downloadExternalImages, useOldImageFolderIfAvailable);
+            PhysicalElement page = generatePageDocument(eleResourceSet, String.valueOf(getNextIddoc()), order,
+                    dataFolders, imageXPaths, downloadExternalImages, useOldImageFolderIfAvailable);
             if (page != null) {
                 writeStrategy.addPage(page);
                 order++;
@@ -724,7 +725,7 @@ public class LidoIndexer extends Indexer {
         List<SolrInputDocument> ret = new ArrayList<>(eventList.size());
         for (Element eleEvent : eventList) {
             SolrInputDocument eventDoc = new SolrInputDocument();
-            long iddocEvent = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+            String iddocEvent = getNextIddoc();
             eventDoc.addField(SolrConstants.IDDOC, iddocEvent);
             eventDoc.addField(SolrConstants.GROUPFIELD, iddocEvent);
             eventDoc.addField(SolrConstants.DOCTYPE, DocType.EVENT.name());
@@ -773,7 +774,7 @@ public class LidoIndexer extends Indexer {
                         indexObj.getGroupedMetadataFields().subList(groupedFieldsBackup.size(), indexObj.getGroupedMetadataFields().size());
                 for (GroupedMetadata gmd : eventGroupedFields) {
                     SolrInputDocument doc = SolrSearchIndex.createDocument(gmd.getFields());
-                    long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                    String iddoc = getNextIddoc();
                     doc.addField(SolrConstants.IDDOC, iddoc);
                     if (!doc.getFieldNames().contains(SolrConstants.GROUPFIELD)) {
                         logger.warn("{} not set in grouped metadata doc {}, using IDDOC instead.", SolrConstants.GROUPFIELD,
@@ -806,7 +807,7 @@ public class LidoIndexer extends Indexer {
             }
 
             for (LuceneField field : fields) {
-                eventDoc.addField(field.getField(), field.getValue());
+                SolrSearchIndex.addFieldToDoc(field, eventDoc);
                 logger.debug("Added {}:{} to event '{}'.", field.getField(), field.getValue(), type);
 
                 // Check whether this field is configured to be added as a sort field to topstruct

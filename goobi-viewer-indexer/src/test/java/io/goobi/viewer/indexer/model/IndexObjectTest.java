@@ -15,6 +15,10 @@
  */
 package io.goobi.viewer.indexer.model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,9 +38,9 @@ class IndexObjectTest extends AbstractTest {
      * @verifies set attributes correctly
      */
     @Test
-    void IndexObject_shouldSetAttributesCorrectly() throws Exception {
-        IndexObject io = new IndexObject(123L);
-        Assertions.assertEquals(123L, io.getIddoc());
+    void IndexObject_shouldSetAttributesCorrectly() {
+        IndexObject io = new IndexObject("123");
+        assertEquals("123", io.getIddoc());
     }
 
     /**
@@ -44,16 +48,16 @@ class IndexObjectTest extends AbstractTest {
      * @verifies return all fields with given name
      */
     @Test
-    void getLuceneFieldsWithName_shouldReturnAllFieldsWithGivenName() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void getLuceneFieldsWithName_shouldReturnAllFieldsWithGivenName() {
+        IndexObject io = new IndexObject("1");
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE11"));
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE12"));
         io.getLuceneFields().add(new LuceneField("FIELD2", "VALUE21"));
         io.getLuceneFields().add(new LuceneField("FIELD2", "VALUE22"));
 
         List<LuceneField> fields = io.getLuceneFieldsWithName("FIELD1");
-        Assertions.assertNotNull(fields);
-        Assertions.assertEquals(2, fields.size());
+        assertNotNull(fields);
+        assertEquals(2, fields.size());
     }
 
     /**
@@ -61,16 +65,16 @@ class IndexObjectTest extends AbstractTest {
      * @verifies return empty list if name not found
      */
     @Test
-    void getLuceneFieldsWithName_shouldReturnEmptyListIfNameNotFound() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void getLuceneFieldsWithName_shouldReturnEmptyListIfNameNotFound() {
+        IndexObject io = new IndexObject("1");
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE11"));
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE12"));
         io.getLuceneFields().add(new LuceneField("FIELD2", "VALUE21"));
         io.getLuceneFields().add(new LuceneField("FIELD2", "VALUE22"));
 
         List<LuceneField> fields = io.getLuceneFieldsWithName("FIELD3");
-        Assertions.assertNotNull(fields);
-        Assertions.assertTrue(fields.isEmpty());
+        assertNotNull(fields);
+        assertTrue(fields.isEmpty());
     }
 
     /**
@@ -78,16 +82,16 @@ class IndexObjectTest extends AbstractTest {
      * @verifies return first field with given name
      */
     @Test
-    void getLuceneFieldWithName_shouldReturnFirstFieldWithGivenName() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void getLuceneFieldWithName_shouldReturnFirstFieldWithGivenName() {
+        IndexObject io = new IndexObject("1");
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE11"));
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE12"));
         io.getLuceneFields().add(new LuceneField("FIELD2", "VALUE21"));
         io.getLuceneFields().add(new LuceneField("FIELD2", "VALUE22"));
 
         LuceneField field = io.getLuceneFieldWithName("FIELD2");
-        Assertions.assertNotNull(field);
-        Assertions.assertEquals("VALUE21", field.getValue());
+        assertNotNull(field);
+        assertEquals("VALUE21", field.getValue());
     }
 
     /**
@@ -95,8 +99,8 @@ class IndexObjectTest extends AbstractTest {
      * @verifies return null if name not found
      */
     @Test
-    void getLuceneFieldWithName_shouldReturnNullIfNameNotFound() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void getLuceneFieldWithName_shouldReturnNullIfNameNotFound() {
+        IndexObject io = new IndexObject("1");
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE11"));
         io.getLuceneFields().add(new LuceneField("FIELD1", "VALUE12"));
         io.getLuceneFields().add(new LuceneField("FIELD2", "VALUE21"));
@@ -111,8 +115,8 @@ class IndexObjectTest extends AbstractTest {
      * @verifies write all required fields
      */
     @Test
-    void pushSimpleDataToLuceneArray_shouldWriteAllRequiredFields() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void pushSimpleDataToLuceneArray_shouldWriteAllRequiredFields() {
+        IndexObject io = new IndexObject("1");
         io.setType("MusicSupplies");
         io.setPi("PI");
         io.setTopstructPI("TOPSTRUCT_PI");
@@ -122,58 +126,44 @@ class IndexObjectTest extends AbstractTest {
         io.setLogId("LOG0000");
         io.setDataRepository("DATA");
 
-        IndexObject io2 = new IndexObject(2);
+        IndexObject io2 = new IndexObject("2");
         io.setParent(io2);
-        IndexObject io3 = new IndexObject(3);
+        IndexObject io3 = new IndexObject("3");
         io2.setParent(io3);
 
         io.pushSimpleDataToLuceneArray();
 
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.IDDOC));
-        Assertions.assertEquals("1", io.getLuceneFieldWithName(SolrConstants.IDDOC).getValue());
-        Assertions.assertEquals("1", io.getLuceneFieldWithName(SolrConstants.GROUPFIELD).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCTYPE));
-        Assertions.assertEquals(DocType.DOCSTRCT.name(), io.getLuceneFieldWithName(SolrConstants.DOCTYPE).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI));
-        Assertions.assertEquals("PI", io.getLuceneFieldWithName(SolrConstants.PI).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_TOPSTRUCT));
-        Assertions.assertEquals("TOPSTRUCT_PI", io.getLuceneFieldWithName(SolrConstants.PI_TOPSTRUCT).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_PARENT));
-        Assertions.assertEquals("PARENT_PI", io.getLuceneFieldWithName(SolrConstants.PI_PARENT).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR));
-        Assertions.assertEquals("PARENT_PI", io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.LABEL));
-        Assertions.assertEquals("<b>LABEL</b>", io.getLuceneFieldWithName(SolrConstants.LABEL).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DMDID));
-        Assertions.assertEquals("DMD0000", io.getLuceneFieldWithName(SolrConstants.DMDID).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.LOGID));
-        Assertions.assertEquals("LOG0000", io.getLuceneFieldWithName(SolrConstants.LOGID).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT));
-        Assertions.assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT));
-        Assertions.assertEquals("MusicSupplies_ALT", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP));
-        Assertions.assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY));
-        Assertions.assertEquals("DATA", io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.IDDOC_PARENT));
-        Assertions.assertEquals("2", io.getLuceneFieldWithName(SolrConstants.IDDOC_PARENT).getValue());
-
-        Assertions.assertNotNull(io.getLuceneFieldWithName(SolrConstants.IDDOC_TOPSTRUCT));
-        Assertions.assertEquals("3", io.getLuceneFieldWithName(SolrConstants.IDDOC_TOPSTRUCT).getValue());
+        assertNotNull(io.getLuceneFieldWithName(SolrConstants.IDDOC));
+        assertEquals("1", io.getLuceneFieldWithName(SolrConstants.IDDOC).getValue());
+        assertEquals("1", io.getLuceneFieldWithName(SolrConstants.GROUPFIELD).getValue());
+        assertEquals(DocType.DOCSTRCT.name(),
+                io.getLuceneFieldWithName(SolrConstants.DOCTYPE) != null ? io.getLuceneFieldWithName(SolrConstants.DOCTYPE).getValue() : null);
+        assertEquals("PI", io.getLuceneFieldWithName(SolrConstants.PI) != null ? io.getLuceneFieldWithName(SolrConstants.PI).getValue()
+                : null);
+        assertEquals("TOPSTRUCT_PI", io.getLuceneFieldWithName(SolrConstants.PI_TOPSTRUCT) != null
+                ? io.getLuceneFieldWithName(SolrConstants.PI_TOPSTRUCT).getValue() : null);
+        assertEquals("PARENT_PI",
+                io.getLuceneFieldWithName(SolrConstants.PI_PARENT) != null ? io.getLuceneFieldWithName(SolrConstants.PI_PARENT).getValue() : null);
+        assertEquals("PARENT_PI",
+                io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null ? io.getLuceneFieldWithName(SolrConstants.PI_ANCHOR).getValue() : null);
+        assertEquals("<b>LABEL</b>",
+                io.getLuceneFieldWithName(SolrConstants.LABEL) != null ? io.getLuceneFieldWithName(SolrConstants.LABEL).getValue() : null);
+        assertEquals("DMD0000",
+                io.getLuceneFieldWithName(SolrConstants.DMDID) != null ? io.getLuceneFieldWithName(SolrConstants.DMDID).getValue() : null);
+        assertEquals("LOG0000",
+                io.getLuceneFieldWithName(SolrConstants.LOGID) != null ? io.getLuceneFieldWithName(SolrConstants.LOGID).getValue() : null);
+        assertEquals("MusicSupplies",
+                io.getLuceneFieldWithName(SolrConstants.DOCSTRCT) != null ? io.getLuceneFieldWithName(SolrConstants.DOCSTRCT).getValue() : null);
+        assertEquals("MusicSupplies_ALT", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT) != null
+                ? io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_ALT).getValue() : null);
+        assertEquals("MusicSupplies", io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP) != null
+                ? io.getLuceneFieldWithName(SolrConstants.DOCSTRCT_TOP).getValue() : null);
+        assertEquals("DATA", io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY) != null
+                ? io.getLuceneFieldWithName(SolrConstants.DATAREPOSITORY).getValue() : null);
+        assertEquals("2", io.getLuceneFieldWithName(SolrConstants.IDDOC_PARENT) != null
+                ? io.getLuceneFieldWithName(SolrConstants.IDDOC_PARENT).getValue() : null);
+        assertEquals("3", io.getLuceneFieldWithName(SolrConstants.IDDOC_TOPSTRUCT) != null
+                ? io.getLuceneFieldWithName(SolrConstants.IDDOC_TOPSTRUCT).getValue() : null);
     }
 
     /**
@@ -181,10 +171,10 @@ class IndexObjectTest extends AbstractTest {
      * @verifies inherit access conditions from parent except OPENACCESS
      */
     @Test
-    void writeAccessConditions_shouldInheritAccessConditionsFromParentExceptOPENACCESS() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void writeAccessConditions_shouldInheritAccessConditionsFromParentExceptOPENACCESS() {
+        IndexObject io = new IndexObject("1");
 
-        IndexObject pio = new IndexObject(2);
+        IndexObject pio = new IndexObject("2");
         pio.getAccessConditions().add(SolrConstants.OPEN_ACCESS_VALUE);
         pio.getAccessConditions().add("CONDITION3");
         pio.getAccessConditions().add("CONDITION4");
@@ -192,10 +182,10 @@ class IndexObjectTest extends AbstractTest {
         io.writeAccessConditions(pio);
 
         List<LuceneField> fields = io.getLuceneFieldsWithName(SolrConstants.ACCESSCONDITION);
-        Assertions.assertNotNull(fields);
-        Assertions.assertEquals(2, fields.size());
-        Assertions.assertEquals("CONDITION3", fields.get(0).getValue());
-        Assertions.assertEquals("CONDITION4", fields.get(1).getValue());
+        assertNotNull(fields);
+        assertEquals(2, fields.size());
+        assertEquals("CONDITION3", fields.get(0).getValue());
+        assertEquals("CONDITION4", fields.get(1).getValue());
     }
 
     /**
@@ -203,22 +193,22 @@ class IndexObjectTest extends AbstractTest {
      * @verifies not inherit access conditions from parent if own access conditions exist
      */
     @Test
-    void writeAccessConditions_shouldNotInheritAccessConditionsFromParentIfOwnAccessConditionsExist() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void writeAccessConditions_shouldNotInheritAccessConditionsFromParentIfOwnAccessConditionsExist() {
+        IndexObject io = new IndexObject("1");
         io.getAccessConditions().add("CONDITION1");
         io.getAccessConditions().add("CONDITION2");
 
-        IndexObject pio = new IndexObject(2);
+        IndexObject pio = new IndexObject("2");
         pio.getAccessConditions().add("CONDITION3");
         pio.getAccessConditions().add("CONDITION4");
 
         io.writeAccessConditions(pio);
 
         List<LuceneField> fields = io.getLuceneFieldsWithName(SolrConstants.ACCESSCONDITION);
-        Assertions.assertNotNull(fields);
-        Assertions.assertEquals(2, fields.size());
-        Assertions.assertEquals("CONDITION1", fields.get(0).getValue());
-        Assertions.assertEquals("CONDITION2", fields.get(1).getValue());
+        assertNotNull(fields);
+        assertEquals(2, fields.size());
+        assertEquals("CONDITION1", fields.get(0).getValue());
+        assertEquals("CONDITION2", fields.get(1).getValue());
     }
 
     /**
@@ -226,15 +216,15 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add OPENACCESS if list empty
      */
     @Test
-    void writeAccessConditions_shouldAddOPENACCESSIfListEmpty() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void writeAccessConditions_shouldAddOPENACCESSIfListEmpty() {
+        IndexObject io = new IndexObject("1");
 
         io.writeAccessConditions(null);
 
         List<LuceneField> fields = io.getLuceneFieldsWithName(SolrConstants.ACCESSCONDITION);
-        Assertions.assertNotNull(fields);
-        Assertions.assertEquals(1, fields.size());
-        Assertions.assertEquals(SolrConstants.OPEN_ACCESS_VALUE, fields.get(0).getValue());
+        assertNotNull(fields);
+        assertEquals(1, fields.size());
+        assertEquals(SolrConstants.OPEN_ACCESS_VALUE, fields.get(0).getValue());
     }
 
     /**
@@ -243,14 +233,14 @@ class IndexObjectTest extends AbstractTest {
      */
     @Test
     void writeDateModified_shouldSetDATECREATEDIfNotSet() throws Exception {
-        IndexObject io = new IndexObject(1);
+        IndexObject io = new IndexObject("1");
 
         io.writeDateModified(false);
 
-        Assertions.assertTrue(io.getDateCreated() > 0);
+        assertTrue(io.getDateCreated() > 0);
         LuceneField fieldDateCreated = io.getLuceneFieldWithName(SolrConstants.DATECREATED);
-        Assertions.assertNotNull(fieldDateCreated);
-        Assertions.assertEquals(io.getDateCreated(), Long.parseLong(fieldDateCreated.getValue()));
+        assertNotNull(fieldDateCreated);
+        assertEquals(io.getDateCreated(), Long.parseLong(fieldDateCreated.getValue()));
     }
 
     /**
@@ -258,14 +248,14 @@ class IndexObjectTest extends AbstractTest {
      * @verifies not set DATECREATED if already set
      */
     @Test
-    void writeDateModified_shouldNotSetDATECREATEDIfAlreadySet() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void writeDateModified_shouldNotSetDATECREATEDIfAlreadySet() {
+        IndexObject io = new IndexObject("1");
         long now = System.currentTimeMillis();
         io.setDateCreated(now);
 
         io.writeDateModified(false);
 
-        Assertions.assertEquals(now, io.getDateCreated());
+        assertEquals(now, io.getDateCreated());
     }
 
     /**
@@ -274,17 +264,17 @@ class IndexObjectTest extends AbstractTest {
      */
     @Test
     void writeDateModified_shouldSetDATEUPDATEDIfNotSet() throws Exception {
-        IndexObject io = new IndexObject(1);
+        IndexObject io = new IndexObject("1");
 
         io.writeDateModified(false);
 
-        Assertions.assertTrue(io.getDateCreated() > 0);
-        Assertions.assertEquals(1, io.getDateUpdated().size());
-        Assertions.assertEquals(Long.valueOf(io.getDateCreated()), io.getDateUpdated().get(0));
+        assertTrue(io.getDateCreated() > 0);
+        assertEquals(1, io.getDateUpdated().size());
+        assertEquals(Long.valueOf(io.getDateCreated()), io.getDateUpdated().get(0));
         List<LuceneField> fieldsDateUpdated = io.getLuceneFieldsWithName(SolrConstants.DATEUPDATED);
-        Assertions.assertNotNull(fieldsDateUpdated);
-        Assertions.assertEquals(1, fieldsDateUpdated.size());
-        Assertions.assertEquals(io.getDateUpdated().get(0), Long.valueOf(fieldsDateUpdated.get(0).getValue()));
+        assertNotNull(fieldsDateUpdated);
+        assertEquals(1, fieldsDateUpdated.size());
+        assertEquals(io.getDateUpdated().get(0), Long.valueOf(fieldsDateUpdated.get(0).getValue()));
     }
 
     /**
@@ -293,7 +283,7 @@ class IndexObjectTest extends AbstractTest {
      */
     @Test
     void writeDateModified_shouldNotSetDATEUPDATEDIfAlreadySet() throws Exception {
-        IndexObject io = new IndexObject(1);
+        IndexObject io = new IndexObject("1");
         long now = System.currentTimeMillis();
         io.setDateCreated(now);
         io.getDateUpdated().add(now);
@@ -301,10 +291,10 @@ class IndexObjectTest extends AbstractTest {
         Thread.sleep(1);
         io.writeDateModified(false);
 
-        Assertions.assertEquals(Long.valueOf(now), io.getDateUpdated().get(0));
+        assertEquals(Long.valueOf(now), io.getDateUpdated().get(0));
         LuceneField fieldDateUpdated = io.getLuceneFieldWithName(SolrConstants.DATEUPDATED);
-        Assertions.assertNotNull(fieldDateUpdated);
-        Assertions.assertEquals(now, Long.parseLong(fieldDateUpdated.getValue()));
+        assertNotNull(fieldDateUpdated);
+        assertEquals(now, Long.parseLong(fieldDateUpdated.getValue()));
     }
 
     /**
@@ -313,7 +303,7 @@ class IndexObjectTest extends AbstractTest {
      */
     @Test
     void writeDateModified_shouldSetDATEUPDATEDIfUpdateRequested() throws Exception {
-        IndexObject io = new IndexObject(1);
+        IndexObject io = new IndexObject("1");
         long now = System.currentTimeMillis();
         io.setDateCreated(now);
         io.getDateUpdated().add(now);
@@ -321,10 +311,10 @@ class IndexObjectTest extends AbstractTest {
         Thread.sleep(1);
         io.writeDateModified(true);
 
-        Assertions.assertTrue(now == io.getDateUpdated().get(0));
+        assertEquals(now, io.getDateUpdated().get(0));
         List<LuceneField> fieldsDateUpdated = io.getLuceneFieldsWithName(SolrConstants.DATEUPDATED);
-        Assertions.assertNotNull(fieldsDateUpdated);
-        Assertions.assertEquals(2, fieldsDateUpdated.size());
+        assertNotNull(fieldsDateUpdated);
+        assertEquals(2, fieldsDateUpdated.size());
         Assertions.assertNotEquals(now, Long.parseLong(fieldsDateUpdated.get(1).getValue()));
     }
 
@@ -334,7 +324,7 @@ class IndexObjectTest extends AbstractTest {
      */
     @Test
     void writeDateModified_shouldAlwaysSetDATEINDEXED() throws Exception {
-        IndexObject io = new IndexObject(1);
+        IndexObject io = new IndexObject("1");
         long now = System.currentTimeMillis();
         io.setDateCreated(now);
         io.getDateIndexed().add(now);
@@ -342,10 +332,10 @@ class IndexObjectTest extends AbstractTest {
         Thread.sleep(1);
         io.writeDateModified(true);
 
-        Assertions.assertTrue(now == io.getDateIndexed().get(0));
+        assertEquals(now, io.getDateIndexed().get(0));
         List<LuceneField> fields = io.getLuceneFieldsWithName(SolrConstants.DATEINDEXED);
-        Assertions.assertNotNull(fields);
-        Assertions.assertEquals(2, fields.size());
+        assertNotNull(fields);
+        assertEquals(2, fields.size());
         Assertions.assertNotEquals(now, Long.parseLong(fields.get(1).getValue()));
     }
 
@@ -354,12 +344,12 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add field to list correctly
      */
     @Test
-    void addToLucene_shouldAddFieldToListCorrectly() throws Exception {
-        IndexObject io = new IndexObject(1);
-        Assertions.assertTrue(io.addToLucene("FIELD", "VALUE"));
+    void addToLucene_shouldAddFieldToListCorrectly() {
+        IndexObject io = new IndexObject("1");
+        assertTrue(io.addToLucene("FIELD", "VALUE"));
         LuceneField field = io.getLuceneFieldWithName("FIELD");
-        Assertions.assertNotNull(field);
-        Assertions.assertEquals("VALUE", field.getValue());
+        assertNotNull(field);
+        assertEquals("VALUE", field.getValue());
     }
 
     /**
@@ -367,24 +357,24 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add fields correctly
      */
     @Test
-    void addAllToLucene_shouldAddFieldsCorrectly() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void addAllToLucene_shouldAddFieldsCorrectly() {
+        IndexObject io = new IndexObject("1");
 
         List<LuceneField> toAdd = new ArrayList<>(2);
         toAdd.add(new LuceneField("foo", "bar"));
         toAdd.add(new LuceneField("foo2", "bar2"));
-        Assertions.assertEquals(2, io.addAllToLucene(toAdd, true));
+        assertEquals(2, io.addAllToLucene(toAdd, true));
 
-        Assertions.assertEquals(2, io.getLuceneFields().size());
+        assertEquals(2, io.getLuceneFields().size());
         {
             LuceneField field = io.getLuceneFieldWithName("foo");
-            Assertions.assertNotNull(field);
-            Assertions.assertEquals("bar", field.getValue());
+            assertNotNull(field);
+            assertEquals("bar", field.getValue());
         }
         {
             LuceneField field = io.getLuceneFieldWithName("foo2");
-            Assertions.assertNotNull(field);
-            Assertions.assertEquals("bar2", field.getValue());
+            assertNotNull(field);
+            assertEquals("bar2", field.getValue());
         }
     }
 
@@ -393,30 +383,30 @@ class IndexObjectTest extends AbstractTest {
      * @verifies skip duplicates correctly
      */
     @Test
-    void addAllToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void addAllToLucene_shouldSkipDuplicatesCorrectly() {
+        IndexObject io = new IndexObject("1");
         io.addToLucene("foo", "bar");
         {
             LuceneField field = io.getLuceneFieldWithName("foo");
-            Assertions.assertNotNull(field);
-            Assertions.assertEquals("bar", field.getValue());
+            assertNotNull(field);
+            assertEquals("bar", field.getValue());
         }
 
         List<LuceneField> toAdd = new ArrayList<>(2);
         toAdd.add(new LuceneField("foo", "bar"));
         toAdd.add(new LuceneField("foo2", "bar2"));
-        Assertions.assertEquals(1, io.addAllToLucene(toAdd, true));
+        assertEquals(1, io.addAllToLucene(toAdd, true));
 
-        Assertions.assertEquals(2, io.getLuceneFields().size());
+        assertEquals(2, io.getLuceneFields().size());
         {
             LuceneField field = io.getLuceneFieldWithName("foo");
-            Assertions.assertNotNull(field);
-            Assertions.assertEquals("bar", field.getValue());
+            assertNotNull(field);
+            assertEquals("bar", field.getValue());
         }
         {
             LuceneField field = io.getLuceneFieldWithName("foo2");
-            Assertions.assertNotNull(field);
-            Assertions.assertEquals("bar2", field.getValue());
+            assertNotNull(field);
+            assertEquals("bar2", field.getValue());
         }
     }
 
@@ -425,29 +415,29 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add duplicates correctly
      */
     @Test
-    void addAllToLucene_shouldAddDuplicatesCorrectly() throws Exception {
-        IndexObject io = new IndexObject(1);
+    void addAllToLucene_shouldAddDuplicatesCorrectly() {
+        IndexObject io = new IndexObject("1");
         io.addToLucene("foo", "bar");
         {
             LuceneField field = io.getLuceneFieldWithName("foo");
-            Assertions.assertNotNull(field);
-            Assertions.assertEquals("bar", field.getValue());
+            assertNotNull(field);
+            assertEquals("bar", field.getValue());
         }
 
         List<LuceneField> toAdd = new ArrayList<>(2);
         toAdd.add(new LuceneField("foo", "bar"));
         toAdd.add(new LuceneField("foo2", "bar2"));
-        Assertions.assertEquals(2, io.addAllToLucene(toAdd, false));
+        assertEquals(2, io.addAllToLucene(toAdd, false));
 
-        Assertions.assertEquals(3, io.getLuceneFields().size());
+        assertEquals(3, io.getLuceneFields().size());
         {
             List<LuceneField> fields = io.getLuceneFieldsWithName("foo");
-            Assertions.assertEquals(2, fields.size());
+            assertEquals(2, fields.size());
         }
         {
             LuceneField field = io.getLuceneFieldWithName("foo2");
-            Assertions.assertNotNull(field);
-            Assertions.assertEquals("bar2", field.getValue());
+            assertNotNull(field);
+            assertEquals("bar2", field.getValue());
         }
     }
 
@@ -456,11 +446,11 @@ class IndexObjectTest extends AbstractTest {
      * @verifies collect group id fields correctly
      */
     @Test
-    void addToGroupIds_shouldCollectGroupIdFieldsCorrectly() throws Exception {
-        IndexObject io = new IndexObject(1);
-        Assertions.assertTrue(io.getGroupIds().isEmpty());
+    void addToGroupIds_shouldCollectGroupIdFieldsCorrectly() {
+        IndexObject io = new IndexObject("1");
+        assertTrue(io.getGroupIds().isEmpty());
         io.addToGroupIds(SolrConstants.PREFIX_GROUPID + "FIELD", "VALUE");
-        Assertions.assertEquals("VALUE", io.getGroupIds().get(SolrConstants.PREFIX_GROUPID + "FIELD"));
+        assertEquals("VALUE", io.getGroupIds().get(SolrConstants.PREFIX_GROUPID + "FIELD"));
     }
 
     /**
@@ -468,8 +458,8 @@ class IndexObjectTest extends AbstractTest {
      * @verifies remove duplicates correctly
      */
     @Test
-    void removeDuplicateGroupedMetadata_shouldRemoveDuplicatesCorrectly() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
+    void removeDuplicateGroupedMetadata_shouldRemoveDuplicatesCorrectly() {
+        IndexObject indexObj = new IndexObject("1");
         {
             GroupedMetadata gmd = new GroupedMetadata();
             gmd.getFields().add(new LuceneField(SolrConstants.LABEL, "label"));
@@ -482,9 +472,9 @@ class IndexObjectTest extends AbstractTest {
             gmd.getFields().add(new LuceneField(SolrConstants.MD_VALUE, "value"));
             indexObj.getGroupedMetadataFields().add(gmd);
         }
-        Assertions.assertEquals(2, indexObj.getGroupedMetadataFields().size());
+        assertEquals(2, indexObj.getGroupedMetadataFields().size());
         indexObj.removeDuplicateGroupedMetadata();
-        Assertions.assertEquals(1, indexObj.getGroupedMetadataFields().size());
+        assertEquals(1, indexObj.getGroupedMetadataFields().size());
     }
 
     /**
@@ -492,8 +482,8 @@ class IndexObjectTest extends AbstractTest {
      * @verifies not remove allowed duplicates
      */
     @Test
-    void removeDuplicateGroupedMetadata_shouldNotRemoveAllowedDuplicates() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
+    void removeDuplicateGroupedMetadata_shouldNotRemoveAllowedDuplicates() {
+        IndexObject indexObj = new IndexObject("1");
         {
             GroupedMetadata gmd = new GroupedMetadata();
             gmd.setAllowDuplicateValues(true);
@@ -508,9 +498,9 @@ class IndexObjectTest extends AbstractTest {
             gmd.getFields().add(new LuceneField("MD_VALUE", "value"));
             indexObj.getGroupedMetadataFields().add(gmd);
         }
-        Assertions.assertEquals(2, indexObj.getGroupedMetadataFields().size());
+        assertEquals(2, indexObj.getGroupedMetadataFields().size());
         indexObj.removeDuplicateGroupedMetadata();
-        Assertions.assertEquals(2, indexObj.getGroupedMetadataFields().size());
+        assertEquals(2, indexObj.getGroupedMetadataFields().size());
     }
 
     /**
@@ -518,13 +508,13 @@ class IndexObjectTest extends AbstractTest {
      * @verifies remove existing boolean fields
      */
     @Test
-    void removeNonMultivaluedFields_shouldRemoveExistingBooleanFields() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
+    void removeNonMultivaluedFields_shouldRemoveExistingBooleanFields() {
+        IndexObject indexObj = new IndexObject("1");
         indexObj.addToLucene("BOOL_TEST", "false");
-        Assertions.assertEquals(1, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
+        assertEquals(1, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
 
         indexObj.removeNonMultivaluedFields("BOOL_TEST");
-        Assertions.assertEquals(0, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
+        assertEquals(0, indexObj.getLuceneFieldsWithName("BOOL_TEST").size());
     }
 
     /**
@@ -532,13 +522,13 @@ class IndexObjectTest extends AbstractTest {
      * @verifies remove existing sorting fields
      */
     @Test
-    void removeNonMultivaluedFields_shouldRemoveExistingSortingFields() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
+    void removeNonMultivaluedFields_shouldRemoveExistingSortingFields() {
+        IndexObject indexObj = new IndexObject("1");
         indexObj.addToLucene("SORT_TEST", "false");
-        Assertions.assertEquals(1, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
+        assertEquals(1, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
 
         indexObj.removeNonMultivaluedFields("SORT_TEST");
-        Assertions.assertEquals(0, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
+        assertEquals(0, indexObj.getLuceneFieldsWithName("SORT_TEST").size());
     }
 
     /**
@@ -546,14 +536,14 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add languages from metadata fields
      */
     @Test
-    void writeLanguages_shouldAddLanguagesFromMetadataFields() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
+    void writeLanguages_shouldAddLanguagesFromMetadataFields() {
+        IndexObject indexObj = new IndexObject("1");
         indexObj.getLuceneFields().add(new LuceneField("MD_TITLE_LANG_EN", "Title"));
         indexObj.getLuceneFields().add(new LuceneField("MD_TITLE_LANG_DE", "Titel"));
         indexObj.writeLanguages();
-        Assertions.assertEquals(2, indexObj.getLanguages().size());
-        Assertions.assertTrue(indexObj.getLanguages().contains("en"));
-        Assertions.assertTrue(indexObj.getLanguages().contains("de"));
+        assertEquals(2, indexObj.getLanguages().size());
+        assertTrue(indexObj.getLanguages().contains("en"));
+        assertTrue(indexObj.getLanguages().contains("de"));
     }
 
     /**
@@ -561,16 +551,16 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add regular metadata correctly
      */
     @Test
-    void addChildMetadata_shouldAddRegularMetadataCorrectly() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
-        IndexObject childObj = new IndexObject(2);
+    void addChildMetadata_shouldAddRegularMetadataCorrectly() {
+        IndexObject indexObj = new IndexObject("1");
+        IndexObject childObj = new IndexObject("2");
         childObj.addToLucene("foo", "bar");
         childObj.getFieldsToInheritToParents().add("foo");
 
         indexObj.addChildMetadata(Collections.singletonList(childObj));
-        Assertions.assertNotNull(indexObj.getLuceneFieldWithName("foo"));
-        Assertions.assertEquals("bar", indexObj.getLuceneFieldWithName("foo").getValue());
-        Assertions.assertEquals("bar", childObj.getLuceneFieldWithName("foo").getValue());
+        assertNotNull(indexObj.getLuceneFieldWithName("foo"));
+        assertEquals("bar", indexObj.getLuceneFieldWithName("foo").getValue());
+        assertEquals("bar", childObj.getLuceneFieldWithName("foo").getValue());
     }
 
     /**
@@ -578,10 +568,10 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add grouped metadata correctly
      */
     @Test
-    void addChildMetadata_shouldAddGroupedMetadataCorrectly() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
+    void addChildMetadata_shouldAddGroupedMetadataCorrectly() {
+        IndexObject indexObj = new IndexObject("1");
 
-        IndexObject childObj = new IndexObject(2);
+        IndexObject childObj = new IndexObject("2");
         GroupedMetadata gmd = new GroupedMetadata();
         gmd.setLabel("foo");
         gmd.setMainValue("bar");
@@ -589,8 +579,8 @@ class IndexObjectTest extends AbstractTest {
         childObj.getFieldsToInheritToParents().add("foo");
 
         indexObj.addChildMetadata(Collections.singletonList(childObj));
-        Assertions.assertEquals(1, indexObj.getGroupedMetadataFields().size());
-        Assertions.assertEquals(1, childObj.getGroupedMetadataFields().size());
+        assertEquals(1, indexObj.getGroupedMetadataFields().size());
+        assertEquals(1, childObj.getGroupedMetadataFields().size());
     }
 
     /**
@@ -598,15 +588,15 @@ class IndexObjectTest extends AbstractTest {
      * @verifies avoid regular metadata duplicates
      */
     @Test
-    void addChildMetadata_shouldAvoidRegularMetadataDuplicates() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
+    void addChildMetadata_shouldAvoidRegularMetadataDuplicates() {
+        IndexObject indexObj = new IndexObject("1");
         indexObj.addToLucene("foo", "bar");
-        IndexObject childObj = new IndexObject(2);
+        IndexObject childObj = new IndexObject("2");
         childObj.addToLucene("foo", "bar");
         childObj.getFieldsToInheritToParents().add("foo");
 
         indexObj.addChildMetadata(Collections.singletonList(childObj));
-        Assertions.assertEquals(1, indexObj.getLuceneFieldsWithName("foo").size());
+        assertEquals(1, indexObj.getLuceneFieldsWithName("foo").size());
     }
 
     /**
@@ -614,8 +604,8 @@ class IndexObjectTest extends AbstractTest {
      * @verifies avoid grouped metadata duplicates
      */
     @Test
-    void addChildMetadata_shouldAvoidGroupedMetadataDuplicates() throws Exception {
-        IndexObject indexObj = new IndexObject(1);
+    void addChildMetadata_shouldAvoidGroupedMetadataDuplicates() {
+        IndexObject indexObj = new IndexObject("1");
         {
             GroupedMetadata gmd = new GroupedMetadata();
             gmd.setLabel("foo");
@@ -623,7 +613,7 @@ class IndexObjectTest extends AbstractTest {
             indexObj.getGroupedMetadataFields().add(gmd);
         }
 
-        IndexObject childObj = new IndexObject(2);
+        IndexObject childObj = new IndexObject("2");
         {
             GroupedMetadata gmd = new GroupedMetadata();
             gmd.setLabel("foo");
@@ -633,7 +623,7 @@ class IndexObjectTest extends AbstractTest {
         childObj.getFieldsToInheritToParents().add("foo");
 
         indexObj.addChildMetadata(Collections.singletonList(childObj));
-        Assertions.assertEquals(1, indexObj.getGroupedMetadataFields().size());
+        assertEquals(1, indexObj.getGroupedMetadataFields().size());
     }
 
     /**
@@ -641,27 +631,27 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add existence booleans correctly
      */
     @Test
-    void applyFinalModifications_shouldAddExistenceBooleansCorrectly() throws Exception {
+    void applyFinalModifications_shouldAddExistenceBooleansCorrectly() {
         {
             // true
-            IndexObject indexObject = new IndexObject(1L);
+            IndexObject indexObject = new IndexObject("1");
             indexObject.setSourceDocFormat(FileFormat.METS);
             indexObject.addToLucene("MD_TESTFIELD", "foo");
             indexObject.applyFinalModifications();
-            Assertions.assertEquals(2, indexObject.getLuceneFields().size());
+            assertEquals(2, indexObject.getLuceneFields().size());
             LuceneField boolField = indexObject.getLuceneFields().get(1);
-            Assertions.assertEquals("BOOL_TESTFIELD", boolField.getField());
-            Assertions.assertEquals("true", boolField.getValue());
+            assertEquals("BOOL_TESTFIELD", boolField.getField());
+            assertEquals("true", boolField.getValue());
         }
         {
             // false
-            IndexObject indexObject = new IndexObject(1L);
+            IndexObject indexObject = new IndexObject("1");
             indexObject.setSourceDocFormat(FileFormat.METS);
             indexObject.applyFinalModifications();
-            Assertions.assertEquals(1, indexObject.getLuceneFields().size());
+            assertEquals(1, indexObject.getLuceneFields().size());
             LuceneField boolField = indexObject.getLuceneFields().get(0);
-            Assertions.assertEquals("BOOL_TESTFIELD", boolField.getField());
-            Assertions.assertEquals("false", boolField.getValue());
+            assertEquals("BOOL_TESTFIELD", boolField.getField());
+            assertEquals("false", boolField.getValue());
         }
     }
 
@@ -670,15 +660,15 @@ class IndexObjectTest extends AbstractTest {
      * @verifies set dateCreated only if not yet set
      */
     @Test
-    void populateDateCreatedUpdated_shouldSetDateCreatedOnlyIfNotYetSet() throws Exception {
+    void populateDateCreatedUpdated_shouldSetDateCreatedOnlyIfNotYetSet() {
         ZonedDateTime now = ZonedDateTime.now();
-        IndexObject obj = new IndexObject(1);
+        IndexObject obj = new IndexObject("1");
 
         obj.populateDateCreatedUpdated(now);
-        Assertions.assertEquals(now.toInstant().toEpochMilli(), obj.getDateCreated());
+        assertEquals(now.toInstant().toEpochMilli(), obj.getDateCreated());
 
         obj.populateDateCreatedUpdated(now.plusDays(1)); // populate again with a later date
-        Assertions.assertEquals(now.toInstant().toEpochMilli(), obj.getDateCreated()); // dateCreated remains unchanged
+        assertEquals(now.toInstant().toEpochMilli(), obj.getDateCreated()); // dateCreated remains unchanged
     }
 
     /**
@@ -686,21 +676,21 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add dateUpdated only if later
      */
     @Test
-    void populateDateCreatedUpdated_shouldAddDateUpdatedOnlyIfLater() throws Exception {
+    void populateDateCreatedUpdated_shouldAddDateUpdatedOnlyIfLater() {
         ZonedDateTime now = ZonedDateTime.now();
-        IndexObject obj = new IndexObject(1);
+        IndexObject obj = new IndexObject("1");
 
         obj.populateDateCreatedUpdated(now);
-        Assertions.assertEquals(1, obj.getDateUpdated().size());
-        Assertions.assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0));
+        assertEquals(1, obj.getDateUpdated().size());
+        assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0));
 
         obj.populateDateCreatedUpdated(now); // populate again with the same date
-        Assertions.assertEquals(1, obj.getDateUpdated().size()); // no new value was added
+        assertEquals(1, obj.getDateUpdated().size()); // no new value was added
 
         obj.populateDateCreatedUpdated(now.plusDays(1)); // populate again with a later date
-        Assertions.assertEquals(2, obj.getDateUpdated().size()); // no new value was added
-        Assertions.assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0));
-        Assertions.assertEquals(Long.valueOf(now.plusDays(1).toInstant().toEpochMilli()), obj.getDateUpdated().get(1));
+        assertEquals(2, obj.getDateUpdated().size()); // no new value was added
+        assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0));
+        assertEquals(Long.valueOf(now.plusDays(1).toInstant().toEpochMilli()), obj.getDateUpdated().get(1));
     }
 
     /**
@@ -708,19 +698,19 @@ class IndexObjectTest extends AbstractTest {
      * @verifies remove dateUpdated values later than given
      */
     @Test
-    void populateDateCreatedUpdated_shouldRemoveDateUpdatedValuesLaterThanGiven() throws Exception {
+    void populateDateCreatedUpdated_shouldRemoveDateUpdatedValuesLaterThanGiven() {
         ZonedDateTime now = ZonedDateTime.now();
         ZonedDateTime tomorrow = now.plusDays(1);
-        IndexObject obj = new IndexObject(1);
+        IndexObject obj = new IndexObject("1");
         obj.getDateUpdated().add(now.toInstant().toEpochMilli());
         obj.getDateUpdated().add(now.plusDays(2).toInstant().toEpochMilli());
         obj.getDateUpdated().add(now.plusDays(3).toInstant().toEpochMilli());
-        Assertions.assertEquals(3, obj.getDateUpdated().size());
+        assertEquals(3, obj.getDateUpdated().size());
 
         obj.populateDateCreatedUpdated(tomorrow); // populate with "tomorrow"
-        Assertions.assertEquals(2, obj.getDateUpdated().size()); // only two values remain
-        Assertions.assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0)); // now
-        Assertions.assertEquals(Long.valueOf(tomorrow.toInstant().toEpochMilli()), obj.getDateUpdated().get(1)); // tomorrow
+        assertEquals(2, obj.getDateUpdated().size()); // only two values remain
+        assertEquals(Long.valueOf(now.toInstant().toEpochMilli()), obj.getDateUpdated().get(0)); // now
+        assertEquals(Long.valueOf(tomorrow.toInstant().toEpochMilli()), obj.getDateUpdated().get(1)); // tomorrow
 
     }
 
@@ -729,13 +719,13 @@ class IndexObjectTest extends AbstractTest {
      * @verifies add fields correctly
      */
     @Test
-    void addToLucene_shouldAddFieldsCorrectly() throws Exception {
-        IndexObject o = new IndexObject(1L);
+    void addToLucene_shouldAddFieldsCorrectly() {
+        IndexObject o = new IndexObject("1");
         o.addToLucene(new LuceneField("title", "once upon..."), false);
         o.addToLucene(new LuceneField("foo", "bar"), false);
-        Assertions.assertEquals(2, o.getLuceneFields().size());
+        assertEquals(2, o.getLuceneFields().size());
         o.addToLucene(new LuceneField("foo", "bar"), false);
-        Assertions.assertEquals(3, o.getLuceneFields().size());
+        assertEquals(3, o.getLuceneFields().size());
     }
 
     /**
@@ -743,11 +733,11 @@ class IndexObjectTest extends AbstractTest {
      * @verifies skip duplicates correctly
      */
     @Test
-    void addToLucene_shouldSkipDuplicatesCorrectly() throws Exception {
-        IndexObject o = new IndexObject(1L);
+    void addToLucene_shouldSkipDuplicatesCorrectly() {
+        IndexObject o = new IndexObject("1");
         o.addToLucene(new LuceneField("foo", "bar"), true);
-        Assertions.assertEquals(1, o.getLuceneFields().size());
+        assertEquals(1, o.getLuceneFields().size());
         o.addToLucene(new LuceneField("foo", "bar"), true);
-        Assertions.assertEquals(1, o.getLuceneFields().size());
+        assertEquals(1, o.getLuceneFields().size());
     }
 }

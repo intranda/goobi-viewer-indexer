@@ -74,6 +74,8 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
     private AtomicInteger pageDocsCounter = new AtomicInteger();
     private AtomicInteger tempFileCounter = new AtomicInteger();
 
+    private int batchSize = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.serializingWriteStrategyBatchSize", 0);
+
     /**
      * <p>
      * Constructor for SerializingSolrWriteStrategy.
@@ -148,7 +150,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
             page.getDoc().removeField(SolrConstants.FULLTEXT);
         }
         if (save(page, iddoc)) {
-            ;
             if (pageDocOrderIddocMap.get(page.getOrder()) != null) {
                 logger.error("Collision for page order {}", page.getOrder());
             }
@@ -250,9 +251,23 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         sanitizeDoc(rootDoc);
 
         // Check for duplicate URNs
-        checkForValueCollisions(SolrConstants.URN, (String) rootDoc.getFieldValue(SolrConstants.PI));
+        String pi = (String) rootDoc.getFieldValue(SolrConstants.PI);
+        checkForValueCollisions(SolrConstants.URN, pi);
 
         logger.info("Writing {} structure/content documents to the index...", docIddocs.size());
+        double numBatchesDouble = batchSize > 0 ? ((double) docIddocs.size() / batchSize) : 1;
+        int numBatches = (int) numBatchesDouble;
+        if (numBatches < numBatchesDouble) {
+            numBatches++;
+            logger.debug("Batches: {} ({})", numBatches, numBatchesDouble);
+        }
+        int useBatchSize = batchSize > 0 ? batchSize : docIddocs.size();
+        if (batchSize > 0 && docIddocs.size() > batchSize) {
+            logger.info("Sending structure docs to Solr in {} batch(es), batch size is {} docs.", numBatches, useBatchSize);
+        }
+        List<SolrInputDocument> batch = new ArrayList<>(useBatchSize);
+        int batchCount = 1;
+        int count = 0;
         for (String iddoc : docIddocs) {
             SolrInputDocument doc = loadDoc(iddoc);
             if (doc != null) {
@@ -262,16 +277,26 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                     addSuperSearchFields(doc, rootDoc);
                 }
                 sanitizeDoc(doc);
-                try {
-                    searchIndex.writeToIndex(doc);
-                } catch (RemoteSolrException e) {
-                    copyFailedFile(Paths.get(tempFolder.toAbsolutePath().toString(), iddoc));
-                    logger.error(e.getMessage(), e);
-                    throw new IndexerException(e.getMessage());
+                batch.add(doc);
+                count++;
+                if (count >= useBatchSize) {
+                    logger.info("Sending batch {}/{} to Solr...", batchCount, numBatches);
+                    try {
+                        writeDocBatch(batch, batchCount, pi);
+                    } finally {
+                        batch.clear();
+                        count = 0;
+                        batchCount++;
+                    }
                 }
             } else {
                 logger.error("Could not find serialized document for IDDOC: {}", iddoc);
             }
+        }
+        // Last batch
+        if (!batch.isEmpty()) {
+            writeDocBatch(batch, batchCount, pi);
+            logger.info("Sending batch {}/{} to Solr...", batchCount, numBatches);
         }
 
         logger.info("Writing {} page documents to the index...", pageDocOrderIddocMap.size());
@@ -279,26 +304,27 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         Collections.sort(orderList);
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
-            ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
-            for (final int order : orderList) {
+            try (ExecutorService executor = Executors.newFixedThreadPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
+                for (final int order : orderList) {
 
-                // Generate write page document in its own thread
-                Runnable r = new Runnable() {
+                    // Generate write page document in its own thread
+                    Runnable r = new Runnable() {
 
-                    @Override
-                    public void run() {
-                        try {
-                            writePageDoc(order, rootDoc, aggregateRecords);
-                        } catch (FatalIndexerException e) {
-                            logger.error(e.getMessage());
+                        @Override
+                        public void run() {
+                            try {
+                                writePageDoc(order, rootDoc, aggregateRecords);
+                            } catch (FatalIndexerException e) {
+                                logger.error(e.getMessage());
+                            }
                         }
-                    }
-                };
-                executor.execute(r);
-            }
-            executor.shutdown();
-            while (!executor.isTerminated()) {
-                //
+                    };
+                    executor.execute(r);
+                }
+                executor.shutdown();
+                while (!executor.isTerminated()) {
+                    //
+                }
             }
         } else {
             for (final int order : orderList) {
@@ -317,6 +343,25 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         }
 
         searchIndex.commit(searchIndex.isOptimize());
+    }
+
+    /**
+     * 
+     * @param batch
+     * @param batchNumber
+     * @param pi
+     * @throws FatalIndexerException
+     * @throws IndexerException
+     */
+    private void writeDocBatch(List<SolrInputDocument> batch, int batchNumber, String pi) throws FatalIndexerException, IndexerException {
+        try {
+            searchIndex.writeToIndex(batch);
+            logger.debug("Batch sent");
+        } catch (RemoteSolrException e) {
+            copyFailedFile(Paths.get(tempFolder.toAbsolutePath().toString(), pi + "_" + batchNumber));
+            logger.error(e.getMessage(), e);
+            throw new IndexerException(e.getMessage());
+        }
     }
 
     /**
@@ -359,9 +404,6 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
         searchIndex.writeToIndex(page.getDoc());
     }
 
-    /* (non-Javadoc)
-     * @see io.goobi.viewer.indexer.model.ISolrWriteStrategy#cleanup()
-     */
     /** {@inheritDoc} */
     @Override
     public void cleanup() {

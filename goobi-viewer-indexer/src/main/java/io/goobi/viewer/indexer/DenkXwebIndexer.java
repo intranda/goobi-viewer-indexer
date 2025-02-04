@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -84,13 +85,12 @@ public class DenkXwebIndexer extends Indexer {
     }
 
     /**
-     * Indexes the given DenkXweb file.
+     * {@inheritDoc}
      * 
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
      * @should throw IllegalArgumentException if denkxwebFile null
      */
     @Override
-    public void addToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path denkxwebFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (denkxwebFile == null) {
             throw new IllegalArgumentException("denkxwebFile may not be null");
         }
@@ -118,6 +118,8 @@ public class DenkXwebIndexer extends Indexer {
         List<Document> denkxwebDocs = JDomXP.splitDenkXwebFile(denkxwebFile.toFile());
         logger.info("File contains {} DenkXweb documents.", denkxwebDocs.size());
         XMLOutputter outputter = new XMLOutputter();
+
+        List<String> ret = new ArrayList<>(denkxwebDocs.size());
         for (Document doc : denkxwebDocs) {
             resp = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
@@ -158,11 +160,14 @@ public class DenkXwebIndexer extends Indexer {
                         logger.error(e.getMessage(), e);
                     }
                 }
-                prerenderPagePdfsIfRequired(identifier, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+                prerenderPagePdfsIfRequired(identifier);
                 logger.info("Successfully finished indexing '{}'.", identifier);
 
                 // Remove this file from lower priority hotfolders to avoid overriding changes with older version
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
+
+                // Add identifier to return list
+                ret.add(identifier);
             } else {
                 handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
             }
@@ -181,6 +186,8 @@ public class DenkXwebIndexer extends Indexer {
         // Delete all data folders for this record from the hotfolder
         DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         logger.info("Finished indexing DenkXweb file '{}'.", denkxwebFile.getFileName());
+
+        return ret;
     }
 
     /**
@@ -188,24 +195,25 @@ public class DenkXwebIndexer extends Indexer {
      * 
      * @param doc a {@link org.jdom2.Document} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart a int.
      * @param downloadExternalImages
      * @return an array of {@link java.lang.String} objects.
      * @should index record correctly
      * @should update record correctly
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy, int pageCountStart,
+    public String[] index(Document doc, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy, int pageCountStart,
             boolean downloadExternalImages) {
         String[] ret = { STATUS_ERROR, null };
         String pi = null;
+        ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             this.xp = new JDomXP(doc);
             if (this.xp == null) {
                 throw new IndexerException("Could not create XML parser.");
             }
 
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             Element structNode = doc.getRootElement();
             indexObj.setRootStructNode(structNode);
@@ -335,23 +343,20 @@ public class DenkXwebIndexer extends Indexer {
         Element structNode = indexObj.getRootStructNode();
 
         // Set type
-        {
-            String value = structNode.getAttributeValue("type");
-            if (StringUtils.isNotEmpty(value)) {
-                indexObj.setType(MetadataConfigurationManager.mapDocStrct(value).trim());
-            } else {
-                indexObj.setType("monument");
-            }
-            logger.trace("TYPE: {}", indexObj.getType());
+        String type = structNode.getAttributeValue("type");
+        if (StringUtils.isNotEmpty(type)) {
+            indexObj.setType(MetadataConfigurationManager.mapDocStrct(type).trim());
+        } else {
+            indexObj.setType("monument");
         }
+        logger.trace("TYPE: {}", indexObj.getType());
 
         // Set label
-        {
-            String value = structNode.getAttributeValue("LABEL");
-            if (value != null) {
-                indexObj.setLabel(value);
-            }
+        String label = structNode.getAttributeValue("LABEL");
+        if (label != null) {
+            indexObj.setLabel(label);
         }
+
         logger.trace("LABEL: {}", indexObj.getLabel());
     }
 
@@ -361,11 +366,10 @@ public class DenkXwebIndexer extends Indexer {
      * @param dataFolders
      * @param pageCountStart
      * @param downloadExternalImages
-     * @throws FatalIndexerException
      * @should generate pages correctly
      */
     public void generatePageDocuments(ISolrWriteStrategy writeStrategy, Map<String, Path> dataFolders, int pageCountStart,
-            boolean downloadExternalImages) throws FatalIndexerException {
+            boolean downloadExternalImages) {
         String xpath = "//denkxweb:images/denkxweb:image";
         List<Element> eleImageList = xp.evaluateToElements(xpath, null);
         if (eleImageList == null || eleImageList.isEmpty()) {
@@ -382,7 +386,7 @@ public class DenkXwebIndexer extends Indexer {
         int order = pageCountStart;
         for (Element eleImage : eleImageList) {
             PhysicalElement page =
-                    generatePageDocument(eleImage, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())), order,
+                    generatePageDocument(eleImage, String.valueOf(getNextIddoc()), order,
                             dataFolders, downloadExternalImages);
             if (page != null) {
                 writeStrategy.addPage(page);

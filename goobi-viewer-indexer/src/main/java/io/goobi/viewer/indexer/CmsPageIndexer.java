@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,11 +73,12 @@ public class CmsPageIndexer extends Indexer {
     }
 
     /**
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
+     * {@inheritDoc}
+     * 
      * @should add record to index correctly
      */
     @Override
-    public void addToIndex(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         Map<String, Path> dataFolders = new HashMap<>();
 
         String fileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
@@ -87,7 +89,7 @@ public class CmsPageIndexer extends Indexer {
             String pi = FilenameUtils.getBaseName(newCmsFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toAbsolutePath().toString(), newCmsFileName);
             if (cmsFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
             Files.copy(cmsFile, indexed, StandardCopyOption.REPLACE_EXISTING);
             dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newCmsFileName, DataRepository.PARAM_INDEXED_CMS,
@@ -128,19 +130,23 @@ public class CmsPageIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(cmsFile, resp[1], FileFormat.CMS);
-            try {
-                Files.delete(cmsFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, cmsFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(cmsFile, resp[1], FileFormat.CMS);
+        try {
+            Files.delete(cmsFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, cmsFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -181,7 +187,7 @@ public class CmsPageIndexer extends Indexer {
             }
 
             Document doc = XmlTools.readXmlFile(cmsFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
 
             indexObj.setSourceDocFormat(FileFormat.CMS);

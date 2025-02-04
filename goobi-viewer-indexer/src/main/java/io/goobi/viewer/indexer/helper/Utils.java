@@ -18,6 +18,7 @@ package io.goobi.viewer.indexer.helper;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -35,22 +36,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -77,17 +67,24 @@ import org.json.JSONObject;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.Version;
-import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 /**
  * <p>
  * Utils class.
  * </p>
- *
  */
-public class Utils {
+public final class Utils {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(Utils.class);
@@ -158,11 +155,14 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param pi
-     * @param dataRepositoryName
-     * @throws IOException
-     * @throws HTTPException
+     * <p>
+     * updateDataRepositoryCache.
+     * </p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @param dataRepositoryName a {@link java.lang.String} object
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName) throws IOException, HTTPException {
         updateDataRepositoryCache(pi, dataRepositoryName, SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl(),
@@ -170,11 +170,14 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param pi
-     * @param forceUpdate
-     * @throws IOException
-     * @throws HTTPException
+     * <p>
+     * prerenderPdfs.
+     * </p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @param forceUpdate a boolean
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException
      */
     public static void prerenderPdfs(String pi, boolean forceUpdate) throws IOException, HTTPException {
         if (StringUtils.isNotBlank(pi) && SolrIndexerDaemon.getInstance().getConfiguration().isPrerenderPdfsEnabled()) {
@@ -185,14 +188,16 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param pi
-     * @param dataRepositoryName
-     * @param viewerUrl
-     * @param token
-     * @throws FatalIndexerException
-     * @throws IOException
-     * @throws HTTPException
+     * <p>
+     * updateDataRepositoryCache.
+     * </p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @param dataRepositoryName a {@link java.lang.String} object
+     * @param viewerUrl a {@link java.lang.String} object
+     * @param token a {@link java.lang.String} object
+     * @throws java.io.IOException
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException
      */
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
             throws IOException, HTTPException {
@@ -214,12 +219,25 @@ public class Utils {
         json.put("dataRepositoryName", dataRepositoryName);
 
         String url = viewerUrl + "/api/v1/tasks/";
-        Map<String, String> headerParams = new HashMap<>(2);
+        Map<String, String> headerParams = HashMap.newHashMap(2);
         headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
         getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
     }
 
+    /**
+     * <p>
+     * prerenderPdfs.
+     * </p>
+     *
+     * @param pi a {@link java.lang.String} object
+     * @param force a boolean
+     * @param config a {@link java.lang.String} object
+     * @param viewerUrl a {@link java.lang.String} object
+     * @param token a {@link java.lang.String} object
+     * @throws java.io.IOException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
+     */
     public static void prerenderPdfs(String pi, boolean force, String config, String viewerUrl, String token)
             throws IOException, HTTPException {
         if (StringUtils.isEmpty(token)) {
@@ -238,20 +256,20 @@ public class Utils {
         json.put("variant", config);
 
         String url = viewerUrl + "/api/v1/tasks/";
-        Map<String, String> headerParams = new HashMap<>(2);
+        Map<String, String> headerParams = HashMap.newHashMap(2);
         headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
         getWebContentPOST(url, Collections.emptyMap(), null, json.toString(), headerParams);
     }
 
     /**
+     * @param identifiers Identifier list of indexed records
      * @param fileCount
-     * @throws FatalIndexerException
-     * @throws HTTPException
-     * @throws ClientProtocolException
-     * @throws IOException
      */
-    public static void submitDataToViewer(long fileCount) {
+    public static void submitDataToViewer(List<String> identifiers, long fileCount) {
+        if (identifiers == null) {
+            throw new IllegalArgumentException("identifiers may not be null");
+        }
         if (StringUtils.isEmpty(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken())) {
             return;
         }
@@ -261,9 +279,14 @@ public class Utils {
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
-            getWebContentPUT(url, new HashMap<>(0), null, json.toString(),
+            json.put("record-identifiers", identifiers);
+
+            getWebContentPUT(url, HashMap.newHashMap(0), null, json.toString(),
                     Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
             logger.info("Version and file count ({}) submitted to Goobi viewer.", fileCount);
+            if (!identifiers.isEmpty()) {
+                logger.info("Record identifier(s) submitted to Goobi viewer.");
+            }
         } catch (IOException | HTTPException e) {
             logger.warn("Version could not be submitted to Goobi viewer: {}", e.getMessage());
         }
@@ -277,7 +300,7 @@ public class Utils {
      * @param urlString a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      * @throws java.io.IOException if any.
-     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentGET(String urlString) throws IOException, HTTPException {
         RequestConfig defaultRequestConfig = RequestConfig.custom()
@@ -310,7 +333,7 @@ public class Utils {
      * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
      * @throws java.io.IOException if any.
-     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentPOST(String url, Map<String, String> params, Map<String, String> cookies, String body,
             Map<String, String> headerParams) throws IOException, HTTPException {
@@ -328,9 +351,8 @@ public class Utils {
      * @param body Optional entity content.
      * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
-     * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
-     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentPUT(String url, Map<String, String> params, Map<String, String> cookies, String body,
             Map<String, String> headerParams) throws IOException, HTTPException {
@@ -348,9 +370,8 @@ public class Utils {
      * @param body Optional entity content.
      * @param headerParams Optional header params.
      * @return a {@link java.lang.String} object.
-     * @throws org.apache.http.client.ClientProtocolException if any.
      * @throws java.io.IOException if any.
-     * @throws io.goobi.viewer.exceptions.HTTPException if any.
+     * @throws io.goobi.viewer.indexer.exceptions.HTTPException if any.
      */
     public static String getWebContentDELETE(String url, Map<String, String> params, Map<String, String> cookies, String body,
             Map<String, String> headerParams) throws IOException, HTTPException {
@@ -468,12 +489,12 @@ public class Utils {
      * @param smtpSenderAddress a {@link java.lang.String} object.
      * @param smtpSenderName a {@link java.lang.String} object.
      * @param smtpSecurity a {@link java.lang.String} object.
-     * @param smtpPort
+     * @param smtpPort a {@link java.lang.Integer} object
      * @throws jakarta.mail.MessagingException
      * @throws java.io.UnsupportedEncodingException
      */
     public static void postMail(List<String> recipients, String subject, String body, String smtpServer, final String smtpUser,
-            final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity, Integer smtpPort)
+            final String smtpPassword, String smtpSenderAddress, String smtpSenderName, String smtpSecurity, final Integer smtpPort)
             throws MessagingException, UnsupportedEncodingException {
         logger.info("postMail");
         if (recipients == null) {
@@ -504,15 +525,16 @@ public class Utils {
         if (StringUtils.isEmpty(smtpUser)) {
             auth = false;
         }
+        Integer usePort = smtpPort;
         Properties props = new Properties();
         switch (smtpSecurity.toUpperCase()) {
             case "STARTTLS":
                 logger.debug("Using STARTTLS");
-                if (smtpPort == null || smtpPort == -1) {
-                    smtpPort = 25;
+                if (usePort == null || usePort == -1) {
+                    usePort = 25;
                 }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(usePort));
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
                 props.setProperty("mail.smtp.ssl.trust", "*");
                 props.setProperty("mail.smtp.starttls.enable", "true");
@@ -520,22 +542,22 @@ public class Utils {
                 break;
             case "SSL":
                 logger.debug("Using SSL");
-                if (smtpPort == null || smtpPort == -1) {
-                    smtpPort = 465;
+                if (usePort == null || usePort == -1) {
+                    usePort = 465;
                 }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(usePort));
                 props.setProperty("mail.smtp.ssl.enable", "true");
                 props.setProperty("mail.smtp.ssl.trust", "*");
                 break;
             default:
                 logger.debug("Using no SMTP security");
-                if (smtpPort == null || smtpPort == -1) {
-                    smtpPort = 25;
+                if (usePort == null || usePort == -1) {
+                    usePort = 25;
                 }
                 props.setProperty(MAIL_PROPERTY_PROTOCOL, "smtp");
-                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(smtpPort));
+                props.setProperty(MAIL_PROPERTY_SMTP_PORT, String.valueOf(usePort));
                 props.setProperty(MAIL_PROPERTY_SMTP_HOST, smtpServer);
         }
         props.setProperty("mail.smtp.connectiontimeout", "15000");
@@ -610,7 +632,7 @@ public class Utils {
                 .append(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
 
         try {
-            String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), new HashMap<>(0), null, null,
+            String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), HashMap.newHashMap(0), null, null,
                     Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
             if (StringUtils.isNotEmpty(jsonString)) {
                 return (String) new JSONObject(jsonString).get("message");
@@ -622,7 +644,10 @@ public class Utils {
     }
 
     /**
-     * 
+     * <p>
+     * isValidURL.
+     * </p>
+     *
      * @param urlString URL to check
      * @return true if valid; false otherwise
      * @should return true if url starts with http
@@ -632,7 +657,7 @@ public class Utils {
      */
     public static boolean isValidURL(String urlString) {
         try {
-            URL url = new URL(urlString);
+            URL url = new URI(urlString).toURL();
             url.toURI();
             return true;
         } catch (Exception e) {
@@ -716,9 +741,12 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param fileName
-     * @param regexes
+     * <p>
+     * isFileNameMatchesRegex.
+     * </p>
+     *
+     * @param fileName a {@link java.lang.String} object
+     * @param regexes an array of {@link java.lang.String} objects
      * @return true if fileName matches any of the regexes in the array; false otherwise
      * @should match correctly
      */
@@ -746,18 +774,19 @@ public class Utils {
      * @should extract file name correctly
      * @should extract escaped file name correctly
      */
-    public static String getFileNameFromIiifUrl(String url) {
+    public static String getFileNameFromIiifUrl(final String url) {
         if (StringUtils.isEmpty(url)) {
             return null;
         }
 
+        String useUrl = url;
         try {
-            url = URLDecoder.decode(url, TextHelper.DEFAULT_CHARSET);
+            useUrl = URLDecoder.decode(useUrl, TextHelper.DEFAULT_CHARSET);
         } catch (UnsupportedEncodingException e) {
             logger.error(e.getMessage());
         }
 
-        String[] filePathSplit = url.split("/");
+        String[] filePathSplit = useUrl.split("/");
         if (filePathSplit.length < 5) {
             return null;
         }
@@ -769,11 +798,14 @@ public class Utils {
     }
 
     /**
-     * 
-     * @param prefix
-     * @param count
-     * @return
+     * <p>
+     * generateLongOrderNumber.
+     * </p>
+     *
+     * @param prefix a int
+     * @param count a int
      * @should construct number correctly
+     * @return a int
      */
     public static int generateLongOrderNumber(int prefix, int count) {
         logger.trace("generateLongOrderNumber({}, {})", prefix, count);
@@ -810,12 +842,12 @@ public class Utils {
      * @should not apply facet prefix to calendar fields
      * @should remove untokenized correctly
      */
-    static String adaptField(String fieldName, String prefix) {
+    static String adaptField(final String fieldName, final String prefix) {
         if (fieldName == null) {
             return null;
         }
         if (prefix == null) {
-            prefix = "";
+            throw new IllegalArgumentException("prefix may not be null");
         }
 
         switch (fieldName) {
@@ -833,27 +865,28 @@ public class Utils {
                 }
                 return fieldName;
             default:
+                String ret = fieldName;
                 if (StringUtils.isNotEmpty(prefix)) {
-                    if (fieldName.startsWith("MD_")) {
-                        fieldName = fieldName.replace("MD_", prefix);
-                    } else if (fieldName.startsWith("MD2_")) {
-                        fieldName = fieldName.replace("MD2_", prefix);
-                    } else if (fieldName.startsWith(SolrConstants.PREFIX_MDNUM)) {
+                    if (ret.startsWith("MD_")) {
+                        ret = ret.replace("MD_", prefix);
+                    } else if (ret.startsWith("MD2_")) {
+                        ret = ret.replace("MD2_", prefix);
+                    } else if (ret.startsWith(SolrConstants.PREFIX_MDNUM)) {
                         if (SolrConstants.PREFIX_SORT.equals(prefix)) {
-                            fieldName = fieldName.replace(SolrConstants.PREFIX_MDNUM, SolrConstants.PREFIX_SORTNUM);
+                            ret = ret.replace(SolrConstants.PREFIX_MDNUM, SolrConstants.PREFIX_SORTNUM);
                         } else {
-                            fieldName = fieldName.replace(SolrConstants.PREFIX_MDNUM, prefix);
+                            ret = ret.replace(SolrConstants.PREFIX_MDNUM, prefix);
                         }
-                    } else if (fieldName.startsWith("NE_")) {
-                        fieldName = fieldName.replace("NE_", prefix);
-                    } else if (fieldName.startsWith("BOOL_")) {
-                        fieldName = fieldName.replace("BOOL_", prefix);
-                    } else if (fieldName.startsWith(SolrConstants.PREFIX_SORT)) {
-                        fieldName = fieldName.replace(SolrConstants.PREFIX_SORT, prefix);
+                    } else if (ret.startsWith("NE_")) {
+                        ret = ret.replace("NE_", prefix);
+                    } else if (ret.startsWith("BOOL_")) {
+                        ret = ret.replace("BOOL_", prefix);
+                    } else if (ret.startsWith(SolrConstants.PREFIX_SORT)) {
+                        ret = ret.replace(SolrConstants.PREFIX_SORT, prefix);
                     }
                 }
-                fieldName = fieldName.replace(SolrConstants.SUFFIX_UNTOKENIZED, "");
-                return fieldName;
+                ret = ret.replace(SolrConstants.SUFFIX_UNTOKENIZED, "");
+                return ret;
         }
     }
 

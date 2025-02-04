@@ -66,6 +66,8 @@ public class DataRepository {
     public static final String PARAM_INDEXED_DUBLINCORE = "indexedDublinCore";
     /** Constant <code>PARAM_INDEXED_CMS="indexedCMS"</code> */
     public static final String PARAM_INDEXED_CMS = "indexedCMS";
+    /** Constant <code>PARAM_INDEXED_STATISTICS="indexedStatistics"</code> */
+    public static final String PARAM_INDEXED_STATISTICS = "indexedStatistics";
     /** Constant <code>PARAM_MEDIA="mediaFolder"</code> */
     public static final String PARAM_MEDIA = "mediaFolder";
     /** Constant <code>PARAM_ALTO="altoFolder"</code> */
@@ -156,6 +158,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_INDEXED_DENKXWEB, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_DUBLINCORE, createFolders);
         checkAndCreateDataSubdir(PARAM_INDEXED_CMS, createFolders);
+        checkAndCreateDataSubdir(PARAM_INDEXED_STATISTICS, createFolders);
         checkAndCreateDataSubdir(PARAM_MEDIA, createFolders);
         checkAndCreateDataSubdir(PARAM_ALTO, createFolders);
         checkAndCreateDataSubdir(PARAM_ALTOCROWD, createFolders);
@@ -245,7 +248,7 @@ public class DataRepository {
         String config = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration(dataDirName);
         if (StringUtils.isEmpty(config)) {
             switch (dataDirName) {
-                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB, PARAM_INDEXED_DUBLINCORE, PARAM_INDEXED_CMS:
+                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB, PARAM_INDEXED_DUBLINCORE, PARAM_INDEXED_CMS, PARAM_INDEXED_STATISTICS:
                     return;
                 default:
                     throw new FatalIndexerException("No configuration found for '" + dataDirName + "', exiting...");
@@ -341,6 +344,8 @@ public class DataRepository {
         logger.info("Data repository '{}' contains {} Dublin Core records.", path, dcRecords);
         int cmsRecords = countFiles(getDir(PARAM_INDEXED_CMS));
         logger.info("Data repository '{}' contains {} CMS page records.", path, cmsRecords);
+        int statisticsRecords = countFiles(getDir(PARAM_INDEXED_STATISTICS));
+        logger.info("Data repository '{}' contains {} usage statistics records.", path, statisticsRecords);
 
         return metsRecords + lidoRecords + eadRecords + denkxwebRecords + dcRecords + cmsRecords;
     }

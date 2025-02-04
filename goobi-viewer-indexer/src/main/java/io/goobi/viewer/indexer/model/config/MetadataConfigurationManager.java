@@ -104,33 +104,19 @@ public final class MetadataConfigurationManager {
             for (int i = 0; i <= count; i++) {
                 FieldConfig fieldConfig = new FieldConfig(fieldname);
 
-                int items = config.getMaxIndex(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath.list.item");
-                if (items > -1) {
-                    // Multiple XPath items
-                    for (int j = 0; j <= items; j++) {
-                        HierarchicalConfiguration<ImmutableNode> xpathNode =
-                                config.configurationAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath.list.item(" + j + ")");
-                        String xpath = xpathNode.getString(".");
+                // XPath expressions
+                List<HierarchicalConfiguration<ImmutableNode>> xpathList =
+                        config.configurationsAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath");
+                if (xpathList != null) {
+                    for (Iterator it = xpathList.iterator(); it.hasNext();) {
+                        HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
+                        String xpath = sub.getString("");
                         if (StringUtils.isEmpty(xpath)) {
                             logger.error("Found empty XPath configuration for field: {}", fieldname);
                             continue;
                         }
-                        String prefix = xpathNode.getString(XML_PATH_ATTRIBUTE_PREFIX);
-                        String suffix = xpathNode.getString(XML_PATH_ATTRIBUTE_SUFFIX);
-                        fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix));
-                        fieldConfig.checkXpathSupportedFormats(xpath);
-                    }
-                } else if (config.getMaxIndex(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath") > -1) {
-                    // Single XPath item
-                    // TODO multiple item variant only
-                    HierarchicalConfiguration<ImmutableNode> xpathNode =
-                            config.configurationAt(XML_PATH_FIELDS + fieldname + XML_PATH_LIST_ITEM + i + ").xpath");
-                    String xpath = xpathNode.getString(".");
-                    if (StringUtils.isEmpty(xpath)) {
-                        logger.error("Found empty XPath configuration for field: {}", fieldname);
-                    } else {
-                        String prefix = xpathNode.getString(XML_PATH_ATTRIBUTE_PREFIX);
-                        String suffix = xpathNode.getString(XML_PATH_ATTRIBUTE_SUFFIX);
+                        String prefix = sub.getString(XML_PATH_ATTRIBUTE_PREFIX);
+                        String suffix = sub.getString(XML_PATH_ATTRIBUTE_SUFFIX);
                         fieldConfig.getxPathConfigurations().add(new XPathConfig(xpath, prefix, suffix));
                         fieldConfig.checkXpathSupportedFormats(xpath);
                     }
@@ -389,7 +375,8 @@ public final class MetadataConfigurationManager {
 
     /**
      * Returns a list with all field names in the config files.
-     *
+     * 
+     * @param format {@link FileFormat}
      * @return a {@link java.util.List} object.
      */
     public List<String> getListWithAllFieldNames(FileFormat format) {

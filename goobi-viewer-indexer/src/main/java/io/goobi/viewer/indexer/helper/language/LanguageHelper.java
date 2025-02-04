@@ -25,7 +25,7 @@ public class LanguageHelper {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(LanguageHelper.class);
 
-    ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
+    private ReloadingFileBasedConfigurationBuilder<XMLConfiguration> builder;
 
     private static LanguageHelper helper;
 

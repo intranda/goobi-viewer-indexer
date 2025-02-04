@@ -47,7 +47,6 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
  * <p>
  * JDomXP class.
  * </p>
- *
  */
 public class JDomXP {
 
@@ -138,11 +137,8 @@ public class JDomXP {
      * @param parent If not null, the expression is evaluated relative to this element.
      * @return {@link java.util.List}
      */
-    public List<Object> evaluate(String expr, Object parent) {
-        if (parent == null) {
-            parent = doc;
-        }
-        return evaluate(expr, parent, Filters.fpassthrough());
+    public List<Object> evaluate(String expr, final Object parent) {
+        return evaluate(expr, parent != null ? parent : doc, Filters.fpassthrough());
     }
 
     /**
@@ -151,7 +147,7 @@ public class JDomXP {
      * @param expr XPath expression to evaluate.
      * @param parent If not null, the expression is evaluated relative to this element.
      * @param filter Return type filter.
-     * @return
+     * @return List<Object>
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private static List<Object> evaluate(String expr, Object parent, Filter filter) {
@@ -178,12 +174,8 @@ public class JDomXP {
      * @return {@link java.util.ArrayList} or null
      * @should return all values
      */
-    public List<Element> evaluateToElements(String expr, Object parent) {
-        if (parent == null) {
-            parent = doc;
-        }
-
-        return evaluateToElementsStatic(expr, parent);
+    public List<Element> evaluateToElements(String expr, final Object parent) {
+        return evaluateToElementsStatic(expr, parent != null ? parent : doc);
     }
 
     /**
@@ -217,12 +209,9 @@ public class JDomXP {
      * @return {@link java.util.ArrayList} or null
      * @should return all values
      */
-    public List<Attribute> evaluateToAttributes(String expr, Object parent) {
+    public List<Attribute> evaluateToAttributes(String expr, final Object parent) {
         List<Attribute> retList = new ArrayList<>();
-        if (parent == null) {
-            parent = doc;
-        }
-        List<Object> list = evaluate(expr, parent, Filters.attribute());
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute());
         if (list == null) {
             return Collections.emptyList();
         }
@@ -243,11 +232,8 @@ public class JDomXP {
      * @return a {@link java.lang.String} object.
      * @should return value correctly
      */
-    public String evaluateToAttributeStringValue(String expr, Object parent) {
-        if (parent == null) {
-            parent = doc;
-        }
-        List<Object> list = evaluate(expr, parent, Filters.attribute());
+    public String evaluateToAttributeStringValue(String expr, final Object parent) {
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.attribute());
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -267,10 +253,7 @@ public class JDomXP {
      * @should return value correctly
      * @should convert string to NFC
      */
-    public String evaluateToString(String expr, Object parent) {
-        if (parent == null) {
-            parent = doc;
-        }
+    public String evaluateToString(String expr, final Object parent) {
         if (expr == null) {
             return "";
         }
@@ -278,7 +261,7 @@ public class JDomXP {
         if (!expr.endsWith(XPATH_TEXT)) {
             expr += XPATH_TEXT;
         }
-        List<Object> list = evaluate(expr, parent, Filters.text());
+        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.text());
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -297,12 +280,8 @@ public class JDomXP {
      * @should return all values
      * @should convert strings to NFC
      */
-    public List<String> evaluateToStringList(String expr, Object parent) {
-        if (parent == null) {
-            parent = doc;
-        }
-
-        return evaluateToStringListStatic(expr, parent);
+    public List<String> evaluateToStringList(String expr, final Object parent) {
+        return evaluateToStringListStatic(expr, parent != null ? parent : doc);
     }
 
     /**
@@ -334,18 +313,16 @@ public class JDomXP {
      * @return a {@link java.lang.String} object.
      * @should return value correctly
      */
-    public String evaluateToCdata(String expr, Object parent) {
-        if (parent == null) {
-            parent = doc;
-        }
+    public String evaluateToCdata(final String expr, final Object parent) {
         if (expr == null) {
             return "";
         }
         // JDOM2 requires '/text()' for string evaluation
-        if (!expr.endsWith(XPATH_TEXT)) {
-            expr += XPATH_TEXT;
+        String useExpr = expr;
+        if (!useExpr.endsWith(XPATH_TEXT)) {
+            useExpr += XPATH_TEXT;
         }
-        List<Object> list = evaluate(expr, parent, Filters.cdata());
+        List<Object> list = evaluate(useExpr, parent != null ? parent : doc, Filters.cdata());
         if (list == null || list.isEmpty()) {
             return null;
         }
@@ -417,7 +394,6 @@ public class JDomXP {
      *
      * @param dmdId a {@link java.lang.String} object.
      * @return a {@link org.jdom2.Element} object.
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should return mdWrap correctly
      */
     public Element getMdWrap(String dmdId) {

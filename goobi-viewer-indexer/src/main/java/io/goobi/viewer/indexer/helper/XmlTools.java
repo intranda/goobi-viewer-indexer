@@ -46,7 +46,7 @@ import org.jdom2.xpath.XPathFactory;
 /**
  * XML utilities.
  */
-public class XmlTools {
+public final class XmlTools {
 
     private static final Logger logger = LogManager.getLogger(XmlTools.class);
 
@@ -141,14 +141,10 @@ public class XmlTools {
      * @throws org.jdom2.JDOMException
      * @should build document correctly
      */
-    public static Document getDocumentFromString(String string, String encoding) throws JDOMException, IOException {
-        if (encoding == null) {
-            encoding = TextHelper.DEFAULT_CHARSET;
-        }
-
+    public static Document getDocumentFromString(String string, final String encoding) throws JDOMException, IOException {
         byte[] byteArray = null;
         try {
-            byteArray = string.getBytes(encoding);
+            byteArray = string.getBytes(encoding != null ? encoding : TextHelper.DEFAULT_CHARSET);
             ByteArrayInputStream baos = new ByteArrayInputStream(byteArray);
             return getSAXBuilder().build(baos);
         } catch (UnsupportedEncodingException e) {
@@ -169,19 +165,15 @@ public class XmlTools {
      * @should return XML string correctly for elements
      * @return a {@link java.lang.String} object.
      */
-    public static String getStringFromElement(Object element, String encoding) {
+    public static String getStringFromElement(Object element, final String encoding) {
         if (element == null) {
             throw new IllegalArgumentException("element may not be null");
         }
-        if (encoding == null) {
-            encoding = TextHelper.DEFAULT_CHARSET;
-        }
+
         Format format = Format.getRawFormat();
         XMLOutputter outputter = new XMLOutputter(format);
         Format xmlFormat = outputter.getFormat();
-        if (StringUtils.isNotEmpty(encoding)) {
-            xmlFormat.setEncoding(encoding);
-        }
+        xmlFormat.setEncoding(encoding != null ? encoding : TextHelper.DEFAULT_CHARSET);
         xmlFormat.setExpandEmptyElements(true);
         outputter.setFormat(xmlFormat);
 
@@ -216,7 +208,7 @@ public class XmlTools {
                 retList.add(e);
             }
         }
-        
+
         return retList;
     }
 

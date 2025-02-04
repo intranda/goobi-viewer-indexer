@@ -125,7 +125,7 @@ public class MetsIndexer extends Indexer {
 
     private String selectedPreferredImageFileGroup = null;
     private List<String> availablePreferredImageFileGroups = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
-    volatile String useFileGroupGlobal = null;
+    private volatile String useFileGroupGlobal = null;
 
     /**
      * Constructor.
@@ -148,15 +148,8 @@ public class MetsIndexer extends Indexer {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * Indexes the given METS file.
-     * 
-     * @param metsFile {@link File}
-     * @param reindexSettings
-     * @throws IOException in case of errors.
-     * @throws FatalIndexerException
-     */
-    public void addToIndex(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
+    /** {@inheritDoc} */
+    public List<String> addToIndex(Path metsFile, Map<String, Boolean> reindexSettings) throws IOException {
         String fileNameRoot = FilenameUtils.getBaseName(metsFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -174,7 +167,7 @@ public class MetsIndexer extends Indexer {
             String pi = FilenameUtils.getBaseName(newMetsFileName);
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
             if (metsFile.equals(indexed)) {
-                return;
+                return Collections.singletonList(pi);
             }
 
             if (Files.exists(indexed)) {
@@ -235,24 +228,28 @@ public class MetsIndexer extends Indexer {
                     logger.error(e.getMessage(), e);
                 }
             }
-            prerenderPagePdfsIfRequired(pi, dataFolders.get(DataRepository.PARAM_MEDIA) != null);
+            prerenderPagePdfsIfRequired(pi);
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
-        } else {
-            // Error
-            if (hotfolder.isDeleteContentFilesOnFailure()) {
-                // Delete all data folders for this record from the hotfolder
-                DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
-            }
-            handleError(metsFile, resp[1], getSourceDocFormat());
-            try {
-                Files.delete(metsFile);
-            } catch (IOException e) {
-                logger.error(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
-            }
+
+            return Collections.singletonList(pi);
         }
+
+        // Error
+        if (hotfolder.isDeleteContentFilesOnFailure()) {
+            // Delete all data folders for this record from the hotfolder
+            DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
+        }
+        handleError(metsFile, resp[1], getSourceDocFormat());
+        try {
+            Files.delete(metsFile);
+        } catch (IOException e) {
+            logger.error(LOG_COULD_NOT_BE_DELETED, metsFile.toAbsolutePath());
+        }
+
+        return Collections.emptyList();
     }
 
     /**
@@ -292,7 +289,7 @@ public class MetsIndexer extends Indexer {
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
             initJDomXP(metsFile);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setVolume(isVolume());
             logger.debug("Document is volume: {}", indexObj.isVolume());
@@ -351,8 +348,8 @@ public class MetsIndexer extends Indexer {
                     // Create parent IndexObject
                     if (anchorPi != null && parentIddoc != null) {
                         logger.debug("Creating anchor for '{}' (PI:{}, IDDOC:{})", indexObj.getIddoc(), anchorPi, parentIddoc);
-                        IndexObject anchor = new IndexObject(Long.valueOf(parentIddoc), anchorPi);
-                        if (anchor.getIddoc() == indexObj.getIddoc()) {
+                        IndexObject anchor = new IndexObject(parentIddoc, anchorPi);
+                        if (StringUtils.equals(anchor.getIddoc(), indexObj.getIddoc())) {
                             throw new IndexerException("Anchor and volume have the same IDDOC: " + indexObj.getIddoc());
                         }
                         // Set anchor properties manually because this IndexObject does not undergo the normal procedure
@@ -514,8 +511,7 @@ public class MetsIndexer extends Indexer {
                 }
                 SolrInputDocument doc = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata,
-                                getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
                 if (doc != null) {
                     writeStrategy.addDoc(doc);
                     if (logger.isDebugEnabled()) {
@@ -767,7 +763,7 @@ public class MetsIndexer extends Indexer {
                     page.getDoc().removeField(fieldName);
                 }
                 //  Add this docstruct's SORT_* fields to page
-                if (indexObj.getIddoc() == Long.valueOf((String) page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
+                if (indexObj.getIddoc() != null && indexObj.getIddoc().equals(page.getDoc().getFieldValue(SolrConstants.IDDOC_OWNER))) {
                     for (LuceneField field : indexObj.getLuceneFields()) {
                         if (field.getField().startsWith(SolrConstants.PREFIX_SORT)) {
                             page.getDoc().addField(field.getField(), field.getValue());
@@ -992,12 +988,11 @@ public class MetsIndexer extends Indexer {
 
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
             // Generate each page document in its own thread
-            ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads());
-            ConcurrentHashMap<Long, Boolean> usedIddocsMap = new ConcurrentHashMap<>();
-            try {
+            ConcurrentHashMap<String, Boolean> usedIddocsMap = new ConcurrentHashMap<>();
+            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
-                        long iddoc = getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex());
+                        String iddoc = getNextIddoc();
                         if (usedIddocsMap.containsKey(iddoc)) {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
@@ -1028,16 +1023,13 @@ public class MetsIndexer extends Indexer {
                 SolrIndexerDaemon.getInstance().stop();
             } catch (TimeoutException e) {
                 throw new InterruptedException("Generating page documents timed out for object " + pi);
-            } finally {
-                pool.shutdown();
             }
         } else {
             // Generate pages sequentially
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
-                PhysicalElement page =
-                        generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex())),
-                                pi, order, dataFolders, dataRepository, downloadExternalImages);
+                PhysicalElement page = generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc()),
+                        pi, order, dataFolders, dataRepository, downloadExternalImages);
                 if (page != null) {
                     writeStrategy.addPage(page);
                     // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
@@ -1169,7 +1161,7 @@ public class MetsIndexer extends Indexer {
                 return null;
             }
         }
-        logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().getId());
+        logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().threadId());
         // Check whether this physical element is mapped to any logical element, skip if not
         StringBuilder sbXPath = new StringBuilder(70);
         sbXPath.append("/mets:mets/mets:structLink/mets:smLink[@xlink:to=\"").append(id).append("\"]");
@@ -1207,7 +1199,7 @@ public class MetsIndexer extends Indexer {
                         String shape = eleArea.getAttributeValue(DocType.SHAPE.name());
 
                         PhysicalElement shapePage = new PhysicalElement(Utils.generateLongOrderNumber(order, count));
-                        shapePage.getDoc().addField(SolrConstants.IDDOC, getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+                        shapePage.getDoc().addField(SolrConstants.IDDOC, getNextIddoc());
                         shapePage.getDoc().setField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
                         shapePage.getDoc().addField(SolrConstants.ORDER, shapePage.getOrder());
                         shapePage.getDoc().addField(SolrConstants.PHYSID, physId);
@@ -1277,7 +1269,7 @@ public class MetsIndexer extends Indexer {
         }
         String dmdId = eleStructMapPhysical.getAttributeValue(SolrConstants.DMDID);
         if (StringUtils.isNotEmpty(dmdId)) {
-            IndexObject pageObj = new IndexObject(0);
+            IndexObject pageObj = new IndexObject("dummy");
             MetadataHelper.writeMetadataToObject(pageObj, xp.getMdWrap(dmdId), "", xp);
             for (LuceneField field : pageObj.getLuceneFields()) {
                 ret.getDoc().addField(field.getField(), field.getValue());
@@ -1540,7 +1532,7 @@ public class MetsIndexer extends Indexer {
             String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId + "']//mets:mdWrap[@MDTYPE='OTHER'][mets:xmlData/mix:mix]";
             List<Element> eletechMdList = xp.evaluateToElements(techXpath, null);
             if (!eletechMdList.isEmpty()) {
-                IndexObject indexObj = new IndexObject(1L, pi);
+                IndexObject indexObj = new IndexObject("dummy", pi);
                 indexObj.setSourceDocFormat(FileFormat.MIX);
                 List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eletechMdList.get(0), "", indexObj, xp);
                 for (LuceneField field : fields) {
@@ -1962,7 +1954,7 @@ public class MetsIndexer extends Indexer {
         List<Element> childrenNodeList = xp.evaluateToElements("mets:div", parentIndexObject.getRootStructNode());
         for (int i = 0; i < childrenNodeList.size(); i++) {
             Element node = childrenNodeList.get(i);
-            IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
+            IndexObject indexObj = new IndexObject(getNextIddoc());
             indexObj.setRootStructNode(node);
             indexObj.setParent(parentIndexObject);
             indexObj.setTopstructPI(parentIndexObject.getTopstructPI());
@@ -2409,5 +2401,14 @@ public class MetsIndexer extends Indexer {
         }
 
         return null;
+    }
+
+    /**
+     * For tests.
+     * 
+     * @param useFileGroupGlobal the useFileGroupGlobal to set
+     */
+    void setUseFileGroupGlobal(String useFileGroupGlobal) {
+        this.useFileGroupGlobal = useFileGroupGlobal;
     }
 }

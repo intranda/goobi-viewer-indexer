@@ -18,7 +18,8 @@ package io.goobi.viewer.indexer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
@@ -38,7 +39,7 @@ import io.goobi.viewer.indexer.helper.DateTools;
  * </p>
  *
  */
-public class Version {
+public final class Version {
 
     private static final Logger logger = LogManager.getLogger(Version.class);
 
@@ -72,7 +73,7 @@ public class Version {
 
     /**
      * 
-     * @return
+     * @return {@link String}
      */
     private static String getManifestStringFromJar() {
         Class clazz = Version.class;
@@ -83,12 +84,12 @@ public class Version {
         String manifestPath = classPath.substring(0, classPath.lastIndexOf("/io/goobi")) + "/META-INF/MANIFEST.MF";
         logger.trace(manifestPath);
 
-        try (InputStream inputStream = new URL(manifestPath).openStream()) {
+        try (InputStream inputStream = new URI(manifestPath).toURL().openStream()) {
             StringWriter writer = new StringWriter();
             IOUtils.copy(inputStream, writer, StandardCharsets.UTF_8);
             String manifestString = writer.toString();
             value = manifestString;
-        } catch (IOException e) {
+        } catch (IOException | URISyntaxException e) {
             return null;
         }
 
@@ -99,7 +100,7 @@ public class Version {
      * 
      * @param label
      * @param infoText
-     * @return
+     * @return {@link String}
      */
     private static String getInfo(String label, String infoText) {
         String regex = label + ": (.*)";

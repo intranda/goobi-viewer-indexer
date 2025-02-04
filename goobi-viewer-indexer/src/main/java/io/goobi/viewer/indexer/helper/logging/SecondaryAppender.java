@@ -39,7 +39,7 @@ public class SecondaryAppender extends AbstractAppender {
 
     private static final Logger logger = LogManager.getLogger(SecondaryAppender.class);
 
-    private static final StringWriter writer = new StringWriter(); // static to ensure it's the same object over different appender instances
+    private static final StringWriter WRITER = new StringWriter(); // static to ensure it's the same object over different appender instances
 
     /**
      * Constructor.
@@ -55,27 +55,24 @@ public class SecondaryAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent logEvent) {
-        logger.trace("APPENDING ({} / {})", System.identityHashCode(this), System.identityHashCode(writer));
-        writer.append(getLayout().toSerializable(logEvent).toString());
+        logger.trace("APPENDING ({} / {})", System.identityHashCode(this), System.identityHashCode(WRITER));
+        WRITER.append(getLayout().toSerializable(logEvent).toString());
     }
 
     @PluginFactory
     public static SecondaryAppender createAppender(@PluginAttribute("name") String name,
-            @PluginElement("Layout") Layout<? extends Serializable> layout, @PluginElement("Filter") final Filter filter) {
+            final @PluginElement("Layout") Layout<? extends Serializable> layout, @PluginElement("Filter") final Filter filter) {
         if (name == null) {
             logger.error("No name provided for SecondaryAppender");
             return null;
         }
-        if (layout == null) {
-            layout = PatternLayout.createDefaultLayout();
-        }
 
-        return new SecondaryAppender(name, filter, layout, true);
+        return new SecondaryAppender(name, filter, layout != null ? layout : PatternLayout.createDefaultLayout(), true);
     }
 
     public String getLog() {
-        logger.trace("getLog ({} / {})", System.identityHashCode(this), System.identityHashCode(writer));
-        return writer.toString();
+        logger.trace("getLog ({} / {})", System.identityHashCode(this), System.identityHashCode(WRITER));
+        return WRITER.toString();
     }
 
     /**
@@ -83,6 +80,6 @@ public class SecondaryAppender extends AbstractAppender {
      */
     public void reset() {
         logger.debug("resetting writer");
-        writer.getBuffer().setLength(0);
+        WRITER.getBuffer().setLength(0);
     }
 }

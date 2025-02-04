@@ -43,7 +43,7 @@ public class IndexObject {
 
     private static final Logger logger = LogManager.getLogger(IndexObject.class);
 
-    private long iddoc;
+    private String iddoc;
     private String pi;
     private IndexObject parent = null;
     private boolean update = false;
@@ -91,7 +91,7 @@ public class IndexObject {
      *
      * @param iddoc a long.
      */
-    public IndexObject(long iddoc) {
+    public IndexObject(String iddoc) {
         this.iddoc = iddoc;
     }
 
@@ -104,7 +104,7 @@ public class IndexObject {
      * @param pi a {@link java.lang.String} object.
      * @should set attributes correctly
      */
-    public IndexObject(long iddoc, String pi) {
+    public IndexObject(String iddoc, String pi) {
         this.iddoc = iddoc;
         this.pi = pi;
     }
@@ -501,7 +501,7 @@ public class IndexObject {
      * @should add existence booleans correctly
      */
     public void applyFinalModifications() {
-        Set<String> existingFields = new HashSet<>(luceneFields.size());
+        Set<String> existingFields = HashSet.newHashSet(luceneFields.size());
         Set<String> alreadyFinishedFields = new HashSet<>();
 
         // Collect existing metadata fields
@@ -509,7 +509,8 @@ public class IndexObject {
             existingFields.add(field.getField());
         }
         // Check each field configuration where additional modifications might be configured
-        List<String> fieldNamesList = SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames(sourceDocFormat);
+        List<String> fieldNamesList =
+                SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames(sourceDocFormat);
         for (String fieldName : fieldNamesList) {
             List<FieldConfig> fieldConfigList =
                     SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField(fieldName);
@@ -578,7 +579,7 @@ public class IndexObject {
      *
      * @param iddoc a long.
      */
-    public void setIddoc(long iddoc) {
+    public void setIddoc(String iddoc) {
         this.iddoc = iddoc;
     }
 
@@ -589,7 +590,7 @@ public class IndexObject {
      *
      * @return a long.
      */
-    public long getIddoc() {
+    public String getIddoc() {
         return iddoc;
     }
 

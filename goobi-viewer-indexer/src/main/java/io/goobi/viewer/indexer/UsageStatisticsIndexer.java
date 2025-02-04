@@ -18,8 +18,11 @@ package io.goobi.viewer.indexer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -38,6 +41,7 @@ import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.statistics.usage.DailyRequestCounts;
 import io.goobi.viewer.indexer.model.statistics.usage.DailyUsageStatistics;
 import io.goobi.viewer.indexer.model.statistics.usage.RequestType;
@@ -46,42 +50,56 @@ import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
- * @author florian
+ * <p>
+ * UsageStatisticsIndexer class.
+ * </p>
  *
+ * @author florian
  */
 public class UsageStatisticsIndexer extends Indexer {
 
     private static final Logger logger = LogManager.getLogger(UsageStatisticsIndexer.class);
 
     /**
-     * 
-     * @param hotfolder
+     * <p>
+     * Constructor for UsageStatisticsIndexer.
+     * </p>
+     *
+     * @param hotfolder a {@link io.goobi.viewer.indexer.helper.Hotfolder} object
      */
     public UsageStatisticsIndexer(Hotfolder hotfolder) {
         this.hotfolder = hotfolder;
     }
 
-    /**
-     * @see io.goobi.viewer.indexer.Indexer#addToIndex(java.nio.file.Path, java.util.Map)
-     */
+    /** {@inheritDoc} */
     @Override
-    public void addToIndex(Path sourceFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
+    public List<String> addToIndex(Path sourceFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         if (sourceFile == null) {
             throw new IllegalArgumentException("usage statistics file may not be null");
         } else if (!Files.isRegularFile(sourceFile)) {
             throw new IllegalArgumentException("usage statistics file {} does not exist".replace("{}", sourceFile.toString()));
         }
         try {
-            index(sourceFile);
+            if (index(sourceFile) != null) {
+                this.dataRepository = new DataRepository("", true);
+                String newFileName = sourceFile.getFileName().toString();
+                Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_STATISTICS).toAbsolutePath().toString(), newFileName);
+                if (sourceFile.equals(indexed)) {
+                    return Collections.singletonList(newFileName);
+                }
+                Files.copy(sourceFile, indexed, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (SolrServerException e) {
             logger.error("Error indexing file {}. Reason: {}", sourceFile, e.getMessage());
             throw new IOException(e);
         }
 
+        return Collections.emptyList();
     }
 
     /**
      * @param sourceFile
+     * @return {@link SolrInputDocument}
      * @throws IOException
      * @throws FatalIndexerException
      * @throws SolrServerException
@@ -89,7 +107,7 @@ public class UsageStatisticsIndexer extends Indexer {
     SolrInputDocument index(Path sourceFile) throws IOException, FatalIndexerException, SolrServerException {
         String solrDateString = getStatisticsDate(sourceFile);
         if (statisticsExists(solrDateString)) {
-            logger.info("Don't index usage statistics for {}: Statistics already exist for that date", solrDateString);
+            logger.info("Don't index usage statistics for {}: Statistics already exist for that date.", solrDateString);
             return null; //NOSONAR Returning empty map would complicate things
         }
 
@@ -117,7 +135,7 @@ public class UsageStatisticsIndexer extends Indexer {
 
     /**
      * @param solrDateString
-     * @return
+     * @return a boolean
      * @throws IOException
      * @throws SolrServerException
      */
@@ -129,13 +147,12 @@ public class UsageStatisticsIndexer extends Indexer {
 
     /**
      * @param stats
-     * @return
-     * @throws FatalIndexerException
+     * @return {@link IndexObject}
      */
-    private static IndexObject createIndexObject(DailyUsageStatistics stats) throws FatalIndexerException {
-        IndexObject indexObj = new IndexObject(getNextIddoc(SolrIndexerDaemon.getInstance().getSearchIndex()));
-        indexObj.addToLucene(SolrConstants.IDDOC, Long.toString(indexObj.getIddoc()));
-        indexObj.addToLucene(SolrConstants.GROUPFIELD, Long.toString(indexObj.getIddoc()));
+    private static IndexObject createIndexObject(DailyUsageStatistics stats) {
+        IndexObject indexObj = new IndexObject(getNextIddoc());
+        indexObj.addToLucene(SolrConstants.IDDOC, indexObj.getIddoc());
+        indexObj.addToLucene(SolrConstants.GROUPFIELD, indexObj.getIddoc());
         indexObj.addToLucene(SolrConstants.DOCTYPE, StatisticsLuceneFields.USAGE_STATISTICS_DOCTYPE);
         indexObj.addToLucene(StatisticsLuceneFields.VIEWER_NAME, stats.getViewerName());
         indexObj.addToLucene(StatisticsLuceneFields.DATE, StatisticsLuceneFields.FORMATTER_SOLR_DATE.format(stats.getDate().atStartOfDay()));
@@ -159,9 +176,13 @@ public class UsageStatisticsIndexer extends Indexer {
     }
 
     /**
-     * @param sourceFile
-     * @return
-     * @throws FatalIndexerException
+     * <p>
+     * removeFromIndex.
+     * </p>
+     *
+     * @param sourceFile a {@link java.nio.file.Path} object
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @return a boolean
      */
     public boolean removeFromIndex(Path sourceFile) throws FatalIndexerException {
         String solrDateString = getStatisticsDate(sourceFile);
@@ -179,7 +200,7 @@ public class UsageStatisticsIndexer extends Indexer {
     /**
      * 
      * @param sourceFile
-     * @return
+     * @return {@link String}
      */
     private static String getStatisticsDate(Path sourceFile) {
         String dateString = sourceFile.getFileName().toString().replaceAll("statistics-usage-([\\d-]+).\\w+", "$1");
@@ -187,6 +208,7 @@ public class UsageStatisticsIndexer extends Indexer {
         return StatisticsLuceneFields.FORMATTER_SOLR_DATE.format(date.atStartOfDay());
     }
 
+    /** {@inheritDoc} */
     @Override
     protected FileFormat getSourceDocFormat() {
         return FileFormat.UNKNOWN;

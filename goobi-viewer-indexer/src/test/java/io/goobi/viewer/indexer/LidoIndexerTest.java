@@ -62,7 +62,7 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
      * @verifies set attributes correctly
      */
     @Test
-    void LidoIndexer_shouldSDataRepositoryetAttributesCorrectly() throws Exception {
+    void LidoIndexer_shouldSDataRepositoryetAttributesCorrectly() {
         LidoIndexer indexer = new LidoIndexer(hotfolder);
         Assertions.assertEquals(hotfolder, indexer.hotfolder);
     }

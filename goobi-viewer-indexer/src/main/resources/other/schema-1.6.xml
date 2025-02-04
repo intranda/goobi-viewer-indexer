@@ -36,7 +36,7 @@
 
 <!-- PLEASE ADD A CHECKBOX IN THE TICKET TO REMEMBER TO UPDATE THIS FILE IN THE
      GOOBI-VIEWER-DOCKER-SOLR REPOSITORY AS WELL -->
-<schema name="goobi_viewer-20250127" version="1.7">
+<schema name="goobi_viewer-20240626" version="1.6">
 
 
 
@@ -125,15 +125,15 @@
 	<field name="ACCESSCONDITION" type="string" indexed="true" stored="true" multiValued="true" />
 	<field name="ALLEGROID" type="string" indexed="true" stored="true" />
 	<field name="ALTO" type="string" indexed="false" stored="true" />
-	<field name="CENTURY" type="plong" indexed="true" stored="true" multiValued="true" />
+	<field name="CENTURY" type="tlong" indexed="true" stored="true" multiValued="true" />
 	<field name="COLORSPACE" type="string" indexed="false" stored="true" />
 	<field name="CURRENTNO" type="string" indexed="true" stored="true" />
-	<field name="CURRENTNOSORT" type="plong" indexed="true" stored="true" />
+	<field name="CURRENTNOSORT" type="tlong" indexed="true" stored="true" />
 	<field name="DATAREPOSITORY" type="string" indexed="true" stored="true" />
-	<field name="DATECREATED" type="plong" indexed="true" stored="true" />
-	<field name="DATEDELETED" type="plong" indexed="true" stored="true" />
-    <field name="DATEINDEXED" type="plong" indexed="true" stored="true" multiValued="true" />
-	<field name="DATEUPDATED" type="plong" indexed="true" stored="true" multiValued="true" />
+	<field name="DATECREATED" type="tlong" indexed="true" stored="true" />
+	<field name="DATEDELETED" type="tlong" indexed="true" stored="true" />
+    <field name="DATEINDEXED" type="tlong" indexed="true" stored="true" multiValued="true" />
+	<field name="DATEUPDATED" type="tlong" indexed="true" stored="true" multiValued="true" />
 	<field name="DC" type="string" indexed="true" stored="true" multiValued="true" />
 	<field name="DEFAULT" type="search_field_rev" indexed="true" stored="true" />
 	<field name="DMDID" type="string" indexed="true" stored="false" />
@@ -151,7 +151,7 @@
 	<field name="FULLTEXTAVAILABLE" type="boolean" indexed="true" stored="true" />
 	<field name="GROUPFIELD" type="string" indexed="true" stored="true" required="false" />
 	<field name="GROUPTYPE" type="string" indexed="true" stored="true" />
-	<field name="HEIGHT" type="pint" indexed="true" stored="true" />
+	<field name="HEIGHT" type="tint" indexed="true" stored="true" />
 	<field name="IDDOC" type="string" indexed="true" stored="true" required="true" />
 	<field name="IDDOC_EVENTOWNER" type="string" indexed="true" stored="true" />
 	<field name="IDDOC_IMAGEOWNER" type="string" indexed="true" stored="true" />
@@ -170,12 +170,12 @@
 	<field name="LOGID" type="string" indexed="true" stored="true" />
 	<field name="METADATATYPE" type="string" indexed="true" stored="true" />
 	<field name="MIMETYPE" type="string" indexed="true" stored="true" />
-    <field name="MONTHDAY" type="plong" indexed="true" stored="true" multiValued="true" />
+    <field name="MONTHDAY" type="tlong" indexed="true" stored="true" multiValued="true" />
 	<field name="NORMDATATERMS" type="search_field_rev" indexed="true" stored="true" />
-	<field name="NUMPAGES" type="pint" indexed="true" stored="true" />
-	<field name="NUMVOLUMES" type="plong" indexed="true" stored="true" />
+	<field name="NUMPAGES" type="tint" indexed="true" stored="true" />
+	<field name="NUMVOLUMES" type="tlong" indexed="true" stored="true" />
 	<field name="OPACURL" type="string" indexed="true" stored="true" />
-	<field name="ORDER" type="pint" indexed="true" stored="true" />
+	<field name="ORDER" type="tint" indexed="true" stored="true" />
 	<field name="ORDERLABEL" type="string" indexed="true" stored="true" />
 	<field name="ORDERLABELFIRST" type="string" indexed="true" stored="true" />
 	<field name="ORDERLABELLAST" type="string" indexed="true" stored="true" />
@@ -203,19 +203,19 @@
     <field name="SUPERUGCTERMS" type="text_general_rev" indexed="true" stored="false" multiValued="true" />
 	<field name="THUMBNAIL" type="string" indexed="true" stored="true" />
 	<field name="THUMBNAILREPRESENT" type="string" indexed="true" stored="true" />
-	<field name="THUMBPAGENO" type="pint" indexed="true" stored="true" />
+	<field name="THUMBPAGENO" type="tint" indexed="true" stored="true" />
 	<field name="THUMBPAGENOLABEL" type="string" indexed="true" stored="true" />
 	<field name="UGCTERMS" type="search_field_rev" indexed="true" stored="true" />
 	<field name="UGCTYPE" type="string" indexed="true" stored="true" />
 	<field name="UGCCOORDS" type="string" indexed="true" stored="true" />
 	<!-- URN: docstruct URN; also used in deleted docs, so do not change the field type! -->
 	<field name="URN" type="string" indexed="true" stored="true" />
-	<field name="WIDTH" type="pint" indexed="true" stored="true" />
+	<field name="WIDTH" type="tint" indexed="true" stored="true" />
 	<!-- WORDCOORDS: DEPRECATED -->
 	<field name="WORDCOORDS" type="string" indexed="false" stored="true" />
-	<field name="YEAR" type="plong" indexed="true" stored="true" multiValued="true" />
-	<field name="YEARMONTH" type="plong" indexed="true" stored="true" multiValued="true" />
-	<field name="YEARMONTHDAY" type="plong" indexed="true" stored="true" multiValued="true" />
+	<field name="YEAR" type="tlong" indexed="true" stored="true" multiValued="true" />
+	<field name="YEARMONTH" type="tlong" indexed="true" stored="true" multiValued="true" />
+	<field name="YEARMONTHDAY" type="tlong" indexed="true" stored="true" multiValued="true" />
 
 
 
@@ -229,15 +229,15 @@
 	<dynamicField name="IMAGEURL_*" type="string" indexed="true" stored="true" />
 	<dynamicField name="*_UNTOKENIZED" type="text_untokenized" indexed="true" stored="true" multiValued="true" />
 	<dynamicField name="MD_*" type="text_general_rev" indexed="true" stored="true" multiValued="true" />
-	<dynamicField name="MDNUM_*" type="plong" indexed="true" stored="true" />
+	<dynamicField name="MDNUM_*" type="tlong" indexed="true" stored="true" />
 	<dynamicField name="MD2_*" type="text_general_rev" indexed="true" stored="true" multiValued="true" />
     <dynamicField name="DATE_*" type="date" indexed="true" stored="true" />
 	<dynamicField name="SORT_*" type="sort_de" indexed="true" stored="true" docValues="true" multiValued="false" />
-	<dynamicField name="SORTNUM_*" type="plong" indexed="false" stored="true" docValues="true" multiValued="false" />
+	<dynamicField name="SORTNUM_*" type="tlong" indexed="false" stored="true" docValues="true" multiValued="false" />
 	<dynamicField name="FACET_*" type="string" indexed="false" stored="false" docValues="true" multiValued="true" />
 	<dynamicField name="NORM_*" type="text_general_rev" indexed="true" stored="true" multiValued="true" />
 	<dynamicField name="GROUPID_*" type="string" indexed="true" stored="true" />
-	<dynamicField name="GROUPORDER_*" type="pint" indexed="true" stored="true" />
+	<dynamicField name="GROUPORDER_*" type="tint" indexed="true" stored="true" />
 	<dynamicField name="NE_*" type="preanalyzed" indexed="true" stored="true" multiValued="true" />
 	<dynamicField name="BOOL_*" type="boolean" indexed="true" stored="true" />
     <dynamicField name="DOCSTRCT_*" type="string" indexed="true" stored="true" />

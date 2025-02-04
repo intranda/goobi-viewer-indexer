@@ -17,6 +17,7 @@ package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -256,10 +257,10 @@ public final class MetadataHelper {
                                             configurationItem.getFieldname());
                                 }
                             }
-                            
+
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
-                                logger.info(xpath);
+                                logger.trace(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
                                         configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
@@ -509,7 +510,7 @@ public final class MetadataHelper {
                     proxyUrl = SolrIndexerDaemon.getInstance().getConfiguration().getProxyUrl();
                     proxyPort = SolrIndexerDaemon.getInstance().getConfiguration().getProxyPort();
                 }
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException | URISyntaxException e) {
                 logger.error(e.getMessage());
             }
 
@@ -590,7 +591,7 @@ public final class MetadataHelper {
 
                 // Aggregate place fields into the same untokenized field for term browsing
                 if (authorityDataField.getKey().equals(FIELD_NORM_NAME)
-                        || (authorityDataField.getKey().equals("NORM_ALTNAME") || authorityDataField.getKey().equals("NORM_OFFICIALNAME"))
+                        || (authorityDataField.getKey().startsWith("NORM_ALTNAME") || authorityDataField.getKey().startsWith("NORM_OFFICIALNAME"))
                                 && !nameSearchFieldValues.contains(textValue)) {
                     if (StringUtils.isNotEmpty(labelField)) {
                         ret.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
@@ -1394,24 +1395,6 @@ public final class MetadataHelper {
         //                sbDefaultMetadataValues.append(concatValueWithSpaces);
         //            }
         //        }
-    }
-
-    /**
-     * 
-     * @param value
-     * @return
-     * @should concatenate value terms correctly
-     */
-    static String getConcatenatedValue(String value) {
-        StringBuilder sbConcat = new StringBuilder();
-        if (value != null && value.contains("-")) {
-            String[] constantValueSplit = value.split("-");
-            for (String s : constantValueSplit) {
-                sbConcat.append(s);
-            }
-        }
-
-        return sbConcat.toString();
     }
 
     /**

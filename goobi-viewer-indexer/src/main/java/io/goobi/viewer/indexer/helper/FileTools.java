@@ -60,7 +60,7 @@ import com.ibm.icu.text.CharsetMatch;
 /**
  * File I/O utilities.
  */
-public class FileTools {
+public final class FileTools {
 
     private static final Logger logger = LogManager.getLogger(FileTools.class);
 
@@ -81,20 +81,16 @@ public class FileTools {
     /**
      * Reads a String from a byte array
      *
-     * @param bytes an array of {@link byte} objects.
+     * @param bytes an array of {@link java.lang.Byte} objects.
      * @param encoding a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
      */
-    public static String getStringFromByteArray(byte[] bytes, String encoding) {
+    public static String getStringFromByteArray(byte[] bytes, final String encoding) {
         String result = "";
-
-        if (encoding == null) {
-            encoding = TextHelper.DEFAULT_CHARSET;
-        }
 
         StringBuilder text = new StringBuilder();
         String nl = System.getProperty("line.separator");
-        try (Scanner scanner = new Scanner(new ByteArrayInputStream(bytes), encoding);) {
+        try (Scanner scanner = new Scanner(new ByteArrayInputStream(bytes), encoding != null ? encoding : TextHelper.DEFAULT_CHARSET)) {
             while (scanner.hasNextLine()) {
                 text.append(scanner.nextLine()).append(nl);
             }
@@ -183,16 +179,16 @@ public class FileTools {
      * @should append to file correctly
      * @return a {@link java.io.File} object.
      */
-    public static File getFileFromString(String string, String filePath, String encoding, boolean append) throws IOException {
+    public static File getFileFromString(String string, String filePath, final String encoding, boolean append) throws IOException {
         if (string == null) {
             throw new IllegalArgumentException("string may not be null");
         }
-        if (encoding == null) {
-            encoding = TextHelper.DEFAULT_CHARSET;
-        }
-
         File file = new File(filePath);
-        try (FileWriterWithEncoding writer = FileWriterWithEncoding.builder().setFile(file).setCharset(encoding).setAppend(append).get()) {
+        try (FileWriterWithEncoding writer = FileWriterWithEncoding.builder()
+                .setFile(file)
+                .setCharset(encoding != null ? encoding : TextHelper.DEFAULT_CHARSET)
+                .setAppend(append)
+                .get()) {
             writer.write(string);
         }
 
@@ -437,7 +433,7 @@ public class FileTools {
             }
         }
     }
-    
+
     /**
      * <p>
      * isImageUrl.
