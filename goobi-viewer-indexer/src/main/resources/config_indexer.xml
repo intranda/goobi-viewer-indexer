@@ -55,6 +55,7 @@
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
 		<indexedCMS>indexed_cms</indexedCMS>
+        <indexedStatistics>indexed_statistics</indexedStatistics>
 
 		<!-- Misc folders -->
 		<successFolder>C:/opt/digiverso/viewer/success/</successFolder>
