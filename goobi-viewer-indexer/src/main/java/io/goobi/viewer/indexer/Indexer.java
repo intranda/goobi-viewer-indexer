@@ -28,6 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -45,9 +46,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -1222,6 +1223,47 @@ public abstract class Indexer {
     }
 
     /**
+     * 
+     * @param indexObj
+     * @param writeStrategy
+     */
+    protected void addGroupDocs(IndexObject indexObj, ISolrWriteStrategy writeStrategy) {
+        logger.info("addGroupDocs");
+        if (indexObj == null || writeStrategy == null) {
+            return;
+        }
+
+        for (String groupIdField : indexObj.getGroupIds().keySet()) {
+            logger.info("groupIdField: {}", groupIdField);
+            String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
+            Map<String, String> moreMetadata = new HashMap<>();
+            String titleField = "MD_TITLE_" + groupSuffix;
+            for (LuceneField field : indexObj.getLuceneFields()) {
+                if (field.getField().endsWith(groupSuffix) && !field.getField().startsWith(SolrConstants.PREFIX_GROUPID)
+                        && !field.getField().startsWith("GROUPORDER_")) {
+                    if (titleField.equals(field.getField())) {
+                        moreMetadata.put(SolrConstants.LABEL, field.getValue());
+                    }
+                    // Add any MD_*_GROUPSUFFIX field to the group doc
+                    moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
+                }
+            }
+            moreMetadata.put(SolrConstants.DOCSTRCT, groupSuffix.toLowerCase());
+            SolrInputDocument doc = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
+                    .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
+            if (doc != null) {
+                writeStrategy.addDoc(doc);
+                if (logger.isDebugEnabled()) {
+                    logger.info("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                }
+            } else if (logger.isDebugEnabled()) {
+                logger.info("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+            }
+        }
+    }
+
+    /**
      * Adds the given {@link PhysicalElement}'s grouped metadata to the write strategy. Must be called after the page has been mapped to a docstruct,
      * so that all relevant metadata has been copied from the structure element.
      * 
@@ -2189,7 +2231,7 @@ public abstract class Indexer {
                         }
                     }
                 }
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException | UnknownHostException e) {
                 logger.error(e.getMessage());
             } catch (JDOMException | IOException e) {
                 logger.error(e.getMessage(), e);
