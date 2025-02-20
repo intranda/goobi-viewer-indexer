@@ -33,7 +33,8 @@ public final class SolrConstants {
         PAGE,
         SHAPE,
         UGC,
-        CMS;
+        CMS,
+        DOWNLOAD_RESOURCE;
     }
 
     public enum MetadataGroupType {
@@ -276,7 +277,7 @@ public final class SolrConstants {
 
     public static final String SOLR_QUERY_AND = " AND ";
     public static final String SOLR_QUERY_TRUE = ":true";
-    
+
     /** Private constructor. */
     private SolrConstants() {
     }

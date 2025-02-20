@@ -45,9 +45,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -170,7 +170,7 @@ public abstract class Indexer {
     /** Indicates whether any of this record's pages has full-text. */
     protected boolean recordHasFulltext = false;
 
-    private final HttpConnector httpConnector;
+    protected final HttpConnector httpConnector;
 
     private final ObjectMapper mapper = new ObjectMapper();
 

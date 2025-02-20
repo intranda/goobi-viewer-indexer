@@ -1296,4 +1296,20 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(Paths.get("src/test/resources/METS/oai5164685802946115306.xml"));
         Assertions.assertFalse(indexer.isVolume());
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void index_shouldIndexDownloadResourcesCorrectly() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_media"));
+        String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        assertEquals(PI + ".xml", ret[0]);
+        Assertions.assertNull(ret[1]);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + PI, null);
+
+        assertEquals(3, docList.stream().filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(16, docList.stream().filter(doc -> "PAGE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+
+    }
 }

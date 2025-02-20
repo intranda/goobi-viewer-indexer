@@ -106,7 +106,7 @@ public class MetsIndexer extends Indexer {
     /** Constant <code>ANCHOR_UPDATE_EXTENSION=".UPDATED"</code> */
     public static final String ANCHOR_UPDATE_EXTENSION = ".UPDATED";
 
-    protected static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
+    public static final String ATTRIBUTE_CONTENTIDS = "CONTENTIDS";
 
     protected static final String[] DATA_FOLDER_PARAMS =
             { DataRepository.PARAM_MEDIA, DataRepository.PARAM_FULLTEXT, DataRepository.PARAM_FULLTEXTCROWD, DataRepository.PARAM_ABBYY,
@@ -114,7 +114,7 @@ public class MetsIndexer extends Indexer {
                     DataRepository.PARAM_UGC, DataRepository.PARAM_CMS, DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
 
     protected static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
-    protected static final String XPATH_FILE = "mets:file";
+    public static final String XPATH_FILE = "mets:file";
     protected static final String XPATH_FILEGRP = "/mets:mets/mets:fileSec/mets:fileGrp[@USE=\""; //NOSONAR XPath, not URI
     private static final String XPATH_ANCHOR_PI_PART =
             "/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']"
@@ -441,7 +441,34 @@ public class MetsIndexer extends Indexer {
                 collectDownloadUrl(indexObj);
 
                 // Generate docs for all pages and add to the write strategy
-                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
+                //                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
+                this.useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
+                ResourceDocumentBuilder pageBuilder =
+                        new ResourceDocumentBuilder(useFileGroupGlobal, xp, httpConnector, dataRepository, DocType.PAGE);
+                Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+                pages.forEach(writeStrategy::addPage);
+                this.recordHasImages = pageBuilder.isHasImages();
+                this.recordHasFulltext = pageBuilder.isHasFulltext();
+                // Add Solr docs for grouped page metadata
+                for (PhysicalElement page : pages) {
+                    int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
+                    if (docsAdded > 0) {
+                        logger.debug("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+                    }
+                }
+
+                //                ResourceDocumentBuilder downloadResourceBuilder =
+                //                        new ResourceDocumentBuilder("DOWNLOAD", xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
+                //                Collection<PhysicalElement> downloadResources =
+                //                        downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+                //                downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
+
+                //                for (PhysicalElement resource : downloadResources) {
+                //                    int docsAdded = addGroupedMetadataDocsForPage(resource, pi, writeStrategy);
+                //                    if (docsAdded > 0) {
+                //                        logger.debug("Added {} grouped metadata for resource {}", docsAdded, resource.getOrder());
+                //                    }
+                //                }
 
                 // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
                 indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
@@ -451,10 +478,9 @@ public class MetsIndexer extends Indexer {
 
                 // write all page URNs sequentially into one field
                 generatePageUrns(indexObj);
-
                 // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL
                 // (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
-                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, null, true, writeStrategy, hierarchyLevel);
+                List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, null, true, writeStrategy, hierarchyLevel, useFileGroupGlobal);
                 if (thumbnailFields != null) {
                     indexObj.getLuceneFields().addAll(thumbnailFields);
                 }
@@ -661,7 +687,7 @@ public class MetsIndexer extends Indexer {
      * @throws FatalIndexerException
      */
     private List<LuceneField> mapPagesToDocstruct(IndexObject indexObj, final IndexObject parentIndexObject, boolean isWork,
-            ISolrWriteStrategy writeStrategy, int depth) throws IndexerException, FatalIndexerException {
+            ISolrWriteStrategy writeStrategy, int depth, String useFileGroup) throws IndexerException, FatalIndexerException {
         if (StringUtils.isEmpty(indexObj.getLogId())) {
             throw new IndexerException("Object has no LOG_ID.");
         }
@@ -684,11 +710,11 @@ public class MetsIndexer extends Indexer {
         // If this is a top struct element, look for a representative image
         String filePathBanner = null;
         if (isWork) {
-            filePathBanner = getFilePathBannerFromFileSec(xp, useFileGroupGlobal);
+            filePathBanner = getFilePathBannerFromFileSec(xp, useFileGroup);
             if (StringUtils.isNotBlank(filePathBanner)) {
                 logger.info("Found representation thumbnail for {} in METS filesec: {}", indexObj.getLogId(), filePathBanner);
             } else {
-                filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroupGlobal);
+                filePathBanner = getFilePathBannerFromPhysicalStructMap(xp, useFileGroup);
                 if (StringUtils.isNotBlank(filePathBanner)) {
                     logger.info("Found representation thumbnail for {} in METS physical structMap: {}", indexObj.getLogId(), filePathBanner);
                 } else if (SolrIndexerDaemon.getInstance().getConfiguration().isUseFirstPageAsDefaultRepresentative()
@@ -2013,7 +2039,8 @@ public class MetsIndexer extends Indexer {
             // Generate thumbnail info and page docs for this docstruct. PI_TOPSTRUCT must be set at this point!
             if (StringUtils.isNotEmpty(indexObj.getLogId())) {
                 try {
-                    List<LuceneField> thumbnailFields = mapPagesToDocstruct(indexObj, parentIndexObject, false, writeStrategy, depth);
+                    List<LuceneField> thumbnailFields =
+                            mapPagesToDocstruct(indexObj, parentIndexObject, false, writeStrategy, depth, useFileGroupGlobal);
                     if (thumbnailFields != null) {
                         indexObj.getLuceneFields().addAll(thumbnailFields);
                     }
