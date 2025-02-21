@@ -1315,4 +1315,22 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         assertEquals(16, docList.stream().filter(doc -> "PAGE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
 
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void index_shouldIndexSingleDownloadResourceCorrectly() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", ret[0]);
+        Assertions.assertNull(ret[1]);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
+
+        assertEquals(1, docList.stream().filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(0, docList.stream().filter(doc -> "PAGE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(1, docList.stream().filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(1, docList.stream().filter(doc -> "monograph".equals(doc.getFieldValue(SolrConstants.DOCSTRCT))).count());
+    }
 }
