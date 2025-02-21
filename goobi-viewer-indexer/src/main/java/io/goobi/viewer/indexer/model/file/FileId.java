@@ -2,7 +2,7 @@ package io.goobi.viewer.indexer.model.file;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class FileId {
+public final class FileId {
 
     private final boolean prefix;
     private final boolean suffix;

@@ -91,7 +91,7 @@ import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.file.FileId;
 
-public class ResourceDocumentBuilder {
+public class PhysicalDocumentBuilder {
 
     private static final Logger logger = LogManager.getLogger(Indexer.class);
 
@@ -136,7 +136,7 @@ public class ResourceDocumentBuilder {
      * @param dataRepository the repository in which files are to be stored
      * @param docType the doc type to use for this PhysicalElement
      */
-    public ResourceDocumentBuilder(String fileGroup, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository, DocType docType) {
+    public PhysicalDocumentBuilder(String fileGroup, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository, DocType docType) {
         this.useFileGroupGlobal = fileGroup;
         this.xp = xp;
         this.httpConnector = httpConnector;
@@ -152,6 +152,7 @@ public class ResourceDocumentBuilder {
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
      * @param downloadExternalImages
+     * @return A list of {@link PhysicalElement} for all pages in the physical structMap with file resources in the given fileGroup
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
     public Collection<PhysicalElement> generatePageDocuments(final Map<String, Path> dataFolders, final String pi,
@@ -215,7 +216,9 @@ public class ResourceDocumentBuilder {
                     }
                     page.getShapes().clear();
 
-                    Optional.ofNullable(order).ifPresent(o -> o++);
+                    if (order != null) {
+                        order++;
+                    }
                 }
             }
         }
@@ -1288,6 +1291,7 @@ public class ResourceDocumentBuilder {
      * @param order
      * @param iddoc
      * @param physId
+     * @param docType
      * @return {@link PhysicalElement}
      */
     private static PhysicalElement createPhysicalElement(int order, String iddoc, String physId, DocType docType) {

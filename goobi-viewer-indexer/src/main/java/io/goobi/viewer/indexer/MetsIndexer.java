@@ -434,11 +434,10 @@ public class MetsIndexer extends Indexer {
                 collectDownloadUrl(indexObj);
 
                 // Generate docs for all pages and add to the write strategy
-                //                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
-                ResourceDocumentBuilder downloadResourceBuilder =
-                        new ResourceDocumentBuilder("DOWNLOAD", xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
+                PhysicalDocumentBuilder downloadResourceBuilder =
+                        new PhysicalDocumentBuilder("DOWNLOAD", xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
                 Collection<PhysicalElement> downloadResources =
                         downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
                 downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
@@ -632,8 +631,8 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         this.useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
-        ResourceDocumentBuilder pageBuilder =
-                new ResourceDocumentBuilder(useFileGroupGlobal, xp, httpConnector, dataRepository, DocType.PAGE);
+        PhysicalDocumentBuilder pageBuilder =
+                new PhysicalDocumentBuilder(useFileGroupGlobal, xp, httpConnector, dataRepository, DocType.PAGE);
         Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
         pages.forEach(writeStrategy::addPage);
         this.recordHasImages = pageBuilder.isHasImages();
@@ -698,6 +697,7 @@ public class MetsIndexer extends Indexer {
      * @param isWork
      * @param writeStrategy
      * @param depth Depth of the current docstruct in the docstruct hierarchy.
+     * @param useFileGroup The fileGroup to use for file resources
      * @return {@link LuceneField}
      * @throws IndexerException -
      * @throws FatalIndexerException
@@ -1074,7 +1074,7 @@ public class MetsIndexer extends Indexer {
      */
     PhysicalElement generatePageDocument(String fileGroup, Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
-        ResourceDocumentBuilder builder = new ResourceDocumentBuilder(fileGroup, xp, httpConnector, dataRepository, DocType.PAGE);
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(fileGroup, xp, httpConnector, dataRepository, DocType.PAGE);
         return builder.generatePageDocument(eleStructMapPhysical, iddoc, pi, inOrder, dataFolders, dataRepository, downloadExternalImages);
     }
 
