@@ -881,14 +881,6 @@ public class ResourceDocumentBuilder {
                         } else {
                             logger.warn("No FULLTEXT found");
                         }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                            logger.debug("Added WIDTH from downloaded ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                            logger.debug("Added HEIGHT from downloaded ALTO for page {}", order);
-                        }
                         if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
                             addNamedEntitiesFields(altoData, doc);
                         }
@@ -994,16 +986,6 @@ public class ResourceDocumentBuilder {
                 && doc.getField(SolrConstants.FULLTEXT) == null) {
             doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
             logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
-        }
-        // WIDTH
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-        }
-        // HEIGHT
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-            logger.debug("Added WIDTH from regular ALTO for page {}", order);
         }
         // NAMEDENTITIES
         if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
