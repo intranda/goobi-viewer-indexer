@@ -239,7 +239,7 @@ public class ResourceDocumentBuilder {
      * @should add page metadata correctly
      * @should add shape metadata as page documents
      */
-    private PhysicalElement generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
+    public PhysicalElement generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");

@@ -442,33 +442,20 @@ public class MetsIndexer extends Indexer {
 
                 // Generate docs for all pages and add to the write strategy
                 //                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
-                this.useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
-                ResourceDocumentBuilder pageBuilder =
-                        new ResourceDocumentBuilder(useFileGroupGlobal, xp, httpConnector, dataRepository, DocType.PAGE);
-                Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
-                pages.forEach(writeStrategy::addPage);
-                this.recordHasImages = pageBuilder.isHasImages();
-                this.recordHasFulltext = pageBuilder.isHasFulltext();
-                // Add Solr docs for grouped page metadata
-                for (PhysicalElement page : pages) {
-                    int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
+                generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
+
+                ResourceDocumentBuilder downloadResourceBuilder =
+                        new ResourceDocumentBuilder("DOWNLOAD", xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
+                Collection<PhysicalElement> downloadResources =
+                        downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+                downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
+
+                for (PhysicalElement resource : downloadResources) {
+                    int docsAdded = addGroupedMetadataDocsForPage(resource, pi, writeStrategy);
                     if (docsAdded > 0) {
-                        logger.debug("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+                        logger.debug("Added {} grouped metadata for resource {}", docsAdded, resource.getOrder());
                     }
                 }
-
-                //                ResourceDocumentBuilder downloadResourceBuilder =
-                //                        new ResourceDocumentBuilder("DOWNLOAD", xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
-                //                Collection<PhysicalElement> downloadResources =
-                //                        downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
-                //                downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
-
-                //                for (PhysicalElement resource : downloadResources) {
-                //                    int docsAdded = addGroupedMetadataDocsForPage(resource, pi, writeStrategy);
-                //                    if (docsAdded > 0) {
-                //                        logger.debug("Added {} grouped metadata for resource {}", docsAdded, resource.getOrder());
-                //                    }
-                //                }
 
                 // If images have been found for any page, set a boolean in the root doc indicating that the record does have images
                 indexObj.addToLucene(FIELD_IMAGEAVAILABLE, String.valueOf(recordHasImages));
@@ -629,6 +616,25 @@ public class MetsIndexer extends Indexer {
         }
 
         return ret;
+    }
+
+    public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
+            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
+            throws InterruptedException, FatalIndexerException {
+        this.useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
+        ResourceDocumentBuilder pageBuilder =
+                new ResourceDocumentBuilder(useFileGroupGlobal, xp, httpConnector, dataRepository, DocType.PAGE);
+        Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+        pages.forEach(writeStrategy::addPage);
+        this.recordHasImages = pageBuilder.isHasImages();
+        this.recordHasFulltext = pageBuilder.isHasFulltext();
+        // Add Solr docs for grouped page metadata
+        for (PhysicalElement page : pages) {
+            int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
+            if (docsAdded > 0) {
+                logger.debug("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
+            }
+        }
     }
 
     /**
@@ -997,7 +1003,7 @@ public class MetsIndexer extends Indexer {
      * @should switch to DEFAULT file group correctly
      * @should maintain page order after parallel processing
      */
-    public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
+    public void generatePageDocuments2(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         // Get all physical elements
@@ -1023,7 +1029,7 @@ public class MetsIndexer extends Indexer {
                             logger.error("Duplicate IDDOC: {}", iddoc);
                         }
                         PhysicalElement page =
-                                generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
+                                generatePageDocument2(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
                                         downloadExternalImages);
                         if (page != null) {
                             writeStrategy.addPage(page);
@@ -1054,7 +1060,7 @@ public class MetsIndexer extends Indexer {
             // Generate pages sequentially
             int order = pageCountStart;
             for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
-                PhysicalElement page = generatePageDocument(eleStructMapPhysical, String.valueOf(getNextIddoc()),
+                PhysicalElement page = generatePageDocument2(eleStructMapPhysical, String.valueOf(getNextIddoc()),
                         pi, order, dataFolders, dataRepository, downloadExternalImages);
                 if (page != null) {
                     writeStrategy.addPage(page);
@@ -1139,6 +1145,12 @@ public class MetsIndexer extends Indexer {
         return ret;
     }
 
+    PhysicalElement generatePageDocument(String fileGroup, Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
+            final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
+        ResourceDocumentBuilder builder = new ResourceDocumentBuilder(fileGroup, xp, httpConnector, dataRepository, DocType.PAGE);
+        return builder.generatePageDocument(eleStructMapPhysical, iddoc, pi, inOrder, dataFolders, dataRepository, downloadExternalImages);
+    }
+
     /**
      * 
      * @param eleStructMapPhysical
@@ -1164,7 +1176,7 @@ public class MetsIndexer extends Indexer {
      * @should add page metadata correctly
      * @should add shape metadata as page documents
      */
-    PhysicalElement generatePageDocument(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
+    PhysicalElement generatePageDocument2(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");

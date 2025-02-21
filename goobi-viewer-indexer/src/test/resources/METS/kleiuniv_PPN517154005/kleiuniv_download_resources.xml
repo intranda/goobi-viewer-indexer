@@ -68,6 +68,19 @@
       </mets:digiprovMD>
     </mets:amdSec>
     <mets:fileSec>
+    
+    <mets:fileGrp USE="DOWNLOAD">
+		<mets:file ID="FILE_0000_DOWNLOAD" MIMETYPE="text/plain">
+			<mets:FLocat LOCTYPE="URL" xlink:href="000000x1.txt" xmlns:xlink="http://www.w3.org/1999/xlink" />
+		</mets:file>
+		<mets:file ID="FILE_0001_DOWNLOAD" MIMETYPE="text/plain">
+			<mets:FLocat LOCTYPE="URL" xlink:href="000000x2.txt" xmlns:xlink="http://www.w3.org/1999/xlink" />
+		</mets:file>
+		<mets:file ID="FILE_0002_DOWNLOAD" MIMETYPE="text/plain">
+			<mets:FLocat LOCTYPE="URL" xlink:href="000000x3.txt" xmlns:xlink="http://www.w3.org/1999/xlink" />
+		</mets:file>
+	</mets:fileGrp>
+    
       <mets:fileGrp USE="PRESENTATION">
         <mets:file ID="FILE_0000_PRESENTATION" MIMETYPE="image/tiff">
           <mets:FLocat LOCTYPE="URL" xlink:href="file:///san.gdz-srv1/gdz/tiff/PPN517154005/00000001.tif" xmlns:xlink="http://www.w3.org/1999/xlink"/>
@@ -378,6 +391,17 @@
     </mets:structMap>
     <mets:structMap TYPE="PHYSICAL">
       <mets:div ID="PHYS_0000" TYPE="physSequence">
+        
+        <mets:div CONTENTIDS="urn:nbn:de:hebis:66:fuldig-1986" ID="PHYS_00X1" ORDERLABEL="to download" ORDER="101" TYPE="page">
+			<mets:fptr FILEID="FILE_0000_DOWNLOAD" />
+		</mets:div>
+		<mets:div CONTENTIDS="urn:nbn:de:hebis:66:fuldig-1986" ORDER="102" ID="PHYS_00X2" ORDERLABEL="to download" TYPE="page">
+			<mets:fptr FILEID="FILE_0001_DOWNLOAD" />
+		</mets:div>
+		<mets:div CONTENTIDS="urn:nbn:de:hebis:66:fuldig-1986" ORDER="103" ID="PHYS_00X3" ORDERLABEL="to download" TYPE="page">
+			<mets:fptr FILEID="FILE_0002_DOWNLOAD" />
+		</mets:div>
+        
         <mets:div CONTENTIDS="urn:nbn:de:hebis:66:fuldig-1986" ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
           <mets:fptr FILEID="FILE_0000_PRESENTATION"/>
           <mets:fptr FILEID="FILE_0000_THUMBS"/>
@@ -509,6 +533,9 @@
       </mets:div>
     </mets:structMap>
     <mets:structLink>
+      <mets:smLink xlink:to="PHYS_00X1" xlink:from="LOG_0000" xmlns:xlink="http://www.w3.org/1999/xlink" />
+	  <mets:smLink xlink:to="PHYS_00X2" xlink:from="LOG_0000" xmlns:xlink="http://www.w3.org/1999/xlink" />
+	  <mets:smLink xlink:to="PHYS_00X3" xlink:from="LOG_0000" xmlns:xlink="http://www.w3.org/1999/xlink" />
       <mets:smLink xlink:to="PHYS_0001" xlink:from="LOG_0000" xmlns:xlink="http://www.w3.org/1999/xlink"/>
       <mets:smLink xlink:to="PHYS_0002" xlink:from="LOG_0000" xmlns:xlink="http://www.w3.org/1999/xlink"/>
       <mets:smLink xlink:to="PHYS_0003" xlink:from="LOG_0000" xmlns:xlink="http://www.w3.org/1999/xlink"/>

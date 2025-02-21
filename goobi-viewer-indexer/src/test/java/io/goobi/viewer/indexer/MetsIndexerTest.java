@@ -953,6 +953,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
+
         indexer.generatePageDocuments(writeStrategy, new HashMap<>(),
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], PI, 1,
                 false);
@@ -1032,7 +1033,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.DEFAULT_FILEGROUP);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
-        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+        PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.DEFAULT_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), "ppn750544996", page, new HashMap<>(),
                 dataRepositoryStrategy.selectDataRepository("ppn750544996", metsFile, new HashMap<>(),
                         SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
@@ -1098,7 +1099,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
-        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+        PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
                 false);
@@ -1125,7 +1126,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
-        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+        PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
                 false);
@@ -1148,9 +1149,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
-        int page = 3;
+        int page = 3; //3 + DOWNLOAD elements 
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
-        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+        PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, new HashMap<>(),
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], false);
         assertNotNull(pe);
@@ -1302,7 +1303,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     void index_shouldIndexDownloadResourcesCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_media"));
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        Path metPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_download_resources.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
         assertEquals(PI + ".xml", ret[0]);
         Assertions.assertNull(ret[1]);
 
