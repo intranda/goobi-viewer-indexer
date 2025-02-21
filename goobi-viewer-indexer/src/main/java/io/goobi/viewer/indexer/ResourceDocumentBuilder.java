@@ -1,3 +1,18 @@
+/**
+ * This file is part of the Goobi Solr Indexer - a content indexing tool for the Goobi viewer and OAI-PMH/SRU interfaces.
+ *
+ * Visit these websites for more information.
+ *          - http://www.intranda.com
+ *          - http://digiverso.com
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package io.goobi.viewer.indexer;
 
 import java.awt.Dimension;
@@ -112,6 +127,15 @@ public class ResourceDocumentBuilder {
     private boolean hasImages = false;
     private boolean hasFulltext = false;
 
+    /**
+     * Create a builder for pages and other documents based on physical files
+     * 
+     * @param fileGroup the filegroup containing the files to use
+     * @param xp an xml parser
+     * @param httpConnector for http requests
+     * @param dataRepository the repository in which files are to be stored
+     * @param docType the doc type to use for this PhysicalElement
+     */
     public ResourceDocumentBuilder(String fileGroup, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository, DocType docType) {
         this.useFileGroupGlobal = fileGroup;
         this.xp = xp;
@@ -124,18 +148,11 @@ public class ResourceDocumentBuilder {
      * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
      * docstruct (such as docstruct iddoc, type, collection, etc.).
      *
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
      * @param pi a {@link java.lang.String} object.
      * @param pageCountStart a int.
      * @param downloadExternalImages
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @should create documents for all mapped pages
-     * @should set correct ORDER values
-     * @should skip unmapped pages
-     * @should switch to DEFAULT file group correctly
-     * @should maintain page order after parallel processing
      */
     public Collection<PhysicalElement> generatePageDocuments(final Map<String, Path> dataFolders, final String pi,
             Integer pageCountStart, boolean downloadExternalImages)

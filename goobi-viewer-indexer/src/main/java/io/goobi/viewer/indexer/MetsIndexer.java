@@ -17,7 +17,6 @@ package io.goobi.viewer.indexer;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -40,11 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -123,7 +117,6 @@ public class MetsIndexer extends Indexer {
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private String selectedPreferredImageFileGroup = null;
     private List<String> availablePreferredImageFileGroups = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
     private volatile String useFileGroupGlobal = null;
 
@@ -618,6 +611,23 @@ public class MetsIndexer extends Indexer {
         return ret;
     }
 
+    /**
+     * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
+     * docstruct (such as docstruct iddoc, type, collection, etc.).
+     *
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @param dataFolders a {@link java.util.Map} object.
+     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
+     * @param pi a {@link java.lang.String} object.
+     * @param pageCountStart a int.
+     * @param downloadExternalImages
+     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @should create documents for all mapped pages
+     * @should set correct ORDER values
+     * @should skip unmapped pages
+     * @should switch to DEFAULT file group correctly
+     * @should maintain page order after parallel processing
+     */
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
@@ -987,103 +997,6 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
-     * docstruct (such as docstruct iddoc, type, collection, etc.).
-     *
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
-     * @param dataFolders a {@link java.util.Map} object.
-     * @param dataRepository a {@link io.goobi.viewer.indexer.model.datarepository.DataRepository} object.
-     * @param pi a {@link java.lang.String} object.
-     * @param pageCountStart a int.
-     * @param downloadExternalImages
-     * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @should create documents for all mapped pages
-     * @should set correct ORDER values
-     * @should skip unmapped pages
-     * @should switch to DEFAULT file group correctly
-     * @should maintain page order after parallel processing
-     */
-    public void generatePageDocuments2(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
-            final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
-            throws InterruptedException, FatalIndexerException {
-        // Get all physical elements
-        String xpath = buildPagesXpathExpresson();
-        List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
-        if (eleStructMapPhysicalList.isEmpty()) {
-            logger.info("No pages found.");
-            return;
-        }
-
-        useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
-        logger.info("Image file group selected: {}", useFileGroupGlobal);
-        logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
-
-        if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
-            // Generate each page document in its own thread
-            ConcurrentHashMap<String, Boolean> usedIddocsMap = new ConcurrentHashMap<>();
-            try (ForkJoinPool pool = new ForkJoinPool(SolrIndexerDaemon.getInstance().getConfiguration().getThreads())) {
-                pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
-                    try {
-                        String iddoc = getNextIddoc();
-                        if (usedIddocsMap.containsKey(iddoc)) {
-                            logger.error("Duplicate IDDOC: {}", iddoc);
-                        }
-                        PhysicalElement page =
-                                generatePageDocument2(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
-                                        downloadExternalImages);
-                        if (page != null) {
-                            writeStrategy.addPage(page);
-                            // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
-                            for (PhysicalElement shape : page.getShapes()) {
-                                writeStrategy.addPage(shape);
-                            }
-                            page.getShapes().clear();
-
-                            // Add Solr docs for grouped page metadata
-                            int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
-                            if (docsAdded > 0) {
-                                logger.debug("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
-                            }
-                        }
-                        usedIddocsMap.put(iddoc, true);
-                    } catch (FatalIndexerException e) {
-                        logger.error("Should be exiting here now...");
-                    }
-                })).get(GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS, TimeUnit.HOURS);
-            } catch (ExecutionException e) {
-                logger.error(e.getMessage(), e);
-                SolrIndexerDaemon.getInstance().stop();
-            } catch (TimeoutException e) {
-                throw new InterruptedException("Generating page documents timed out for object " + pi);
-            }
-        } else {
-            // Generate pages sequentially
-            int order = pageCountStart;
-            for (final Element eleStructMapPhysical : eleStructMapPhysicalList) {
-                PhysicalElement page = generatePageDocument2(eleStructMapPhysical, String.valueOf(getNextIddoc()),
-                        pi, order, dataFolders, dataRepository, downloadExternalImages);
-                if (page != null) {
-                    writeStrategy.addPage(page);
-                    // Shapes must be added as regular pages to the WriteStrategy to ensure correct docstrcut mapping
-                    for (PhysicalElement shape : page.getShapes()) {
-                        writeStrategy.addPage(shape);
-                    }
-                    page.getShapes().clear();
-
-                    // Add Solr docs for grouped page metadata
-                    int docsAdded = addGroupedMetadataDocsForPage(page, pi, writeStrategy);
-                    if (docsAdded > 0) {
-                        logger.info("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
-                    }
-
-                    order++;
-                }
-            }
-        }
-        logger.info("Generated {} pages.", writeStrategy.getPageDocsSize());
-    }
-
-    /**
      * Builds XPath expression for physical elements.
      * 
      * @return Constructed expression
@@ -1145,445 +1058,24 @@ public class MetsIndexer extends Indexer {
         return ret;
     }
 
+    /**
+     * Generate a single PhysicalElement from the given METS element 'eleStructMapPhysical'
+     * 
+     * @param fileGroup The fileGroup to use. If there is no reference to a file element within that filegroup, this method returns null
+     * @param eleStructMapPhysical The pyhsical struct element in the mets structure to use
+     * @param iddoc a unique identifier string
+     * @param pi Identifier of the topstruct
+     * @param inOrder order for this page. If null, the order is taken from the 'ORDER' attribute of eleStructMapPhysical
+     * @param dataFolders Data folders containing related files
+     * @param dataRepository The data repository to use
+     * @param downloadExternalImages if true, download and store files locally from http(s) urls in the related files
+     * @return a PhysicalElement page
+     * @throws FatalIndexerException
+     */
     PhysicalElement generatePageDocument(String fileGroup, Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
         ResourceDocumentBuilder builder = new ResourceDocumentBuilder(fileGroup, xp, httpConnector, dataRepository, DocType.PAGE);
         return builder.generatePageDocument(eleStructMapPhysical, iddoc, pi, inOrder, dataFolders, dataRepository, downloadExternalImages);
-    }
-
-    /**
-     * 
-     * @param eleStructMapPhysical
-     * @param iddoc
-     * @param pi
-     * @param inOrder
-     * @param dataFolders
-     * @param dataRepository
-     * @param downloadExternalImages
-     * @return Generated {@link PhysicalElement}
-     * @throws FatalIndexerException
-     * @should add all basic fields
-     * @should add crowdsourcing ALTO field correctly
-     * @should add crowdsourcing fulltext field correctly
-     * @should add fulltext field correctly
-     * @should create ALTO file from ABBYY correctly
-     * @should create ALTO file from TEI correctly
-     * @should create ALTO file from fileId if none provided in data folders
-     * @should add FILENAME_HTML-SANDBOXED field for url paths
-     * @should add width and height from techMD correctly
-     * @should add width and height from ABBYY correctly
-     * @should add width and height from MIX correctly
-     * @should add page metadata correctly
-     * @should add shape metadata as page documents
-     */
-    PhysicalElement generatePageDocument2(Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
-            final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
-        if (dataFolders == null) {
-            throw new IllegalArgumentException("dataFolders may not be null");
-        }
-        if (dataRepository == null) {
-            throw new IllegalArgumentException("dataRepository may not be null");
-        }
-        if (useFileGroupGlobal == null) {
-            throw new IllegalStateException("useFileGroupGlobal not set");
-        }
-
-        String id = eleStructMapPhysical.getAttributeValue("ID");
-        Integer order = inOrder;
-        if (order == null) {
-            String orderValue = eleStructMapPhysical.getAttributeValue("ORDER");
-            if (StringUtils.isNotEmpty(orderValue)) {
-                order = Integer.parseInt(orderValue);
-            } else {
-                logger.warn("ORDER attribute no found, skipping...");
-                return null;
-            }
-        }
-        logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().threadId());
-        // Check whether this physical element is mapped to any logical element, skip if not
-        StringBuilder sbXPath = new StringBuilder(70);
-        sbXPath.append("/mets:mets/mets:structLink/mets:smLink[@xlink:to=\"").append(id).append("\"]");
-        List<Element> eleStructLinkList = xp.evaluateToElements(sbXPath.toString(), null);
-        if (eleStructLinkList.isEmpty()) {
-            logger.warn("Page {} (PHYSID: {}) is not mapped to a structure element, skipping...", order, id);
-            return null;
-        }
-
-        List<Element> eleFptrList =
-                eleStructMapPhysical.getChildren("fptr", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
-
-        // Create object for this page
-        PhysicalElement ret = createPhysicalElement(order, iddoc, id);
-
-        // Determine the FILEID root (part of the FILEID that doesn't change for different mets:fileGroups)
-        String fileIdRoot = null;
-        String useFileID = null;
-        for (Element eleFptr : eleFptrList) {
-            String fileID = eleFptr.getAttributeValue("FILEID");
-            logger.trace("fileID: {}", fileID);
-            if (fileID.contains(useFileGroupGlobal)) {
-                useFileID = fileID;
-            }
-
-            // Piggyback shape metadata on fake page documents to ensure their mapping to corresponding shape docstructs
-            if (eleFptr.getChild("seq", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets")) != null) {
-                List<Element> eleListArea = eleFptr.getChild("seq", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"))
-                        .getChildren("area", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"));
-                if (eleListArea != null && !eleListArea.isEmpty()) {
-                    int count = 1;
-                    for (Element eleArea : eleListArea) {
-                        String coords = eleArea.getAttributeValue("COORDS");
-                        String physId = eleArea.getAttributeValue("ID");
-                        String shape = eleArea.getAttributeValue(DocType.SHAPE.name());
-
-                        PhysicalElement shapePage = new PhysicalElement(Utils.generateLongOrderNumber(order, count));
-                        shapePage.getDoc().addField(SolrConstants.IDDOC, getNextIddoc());
-                        shapePage.getDoc().setField(SolrConstants.DOCTYPE, DocType.SHAPE.name());
-                        shapePage.getDoc().addField(SolrConstants.ORDER, shapePage.getOrder());
-                        shapePage.getDoc().addField(SolrConstants.PHYSID, physId);
-                        shapePage.getDoc().addField(FIELD_COORDS, coords);
-                        shapePage.getDoc().addField(FIELD_SHAPE, shape);
-                        shapePage.getDoc().addField("ORDER_PARENT", order);
-                        ret.getShapes().add(shapePage);
-                        count++;
-                        logger.debug("Added SHAPE page document: {}", shapePage.getOrder());
-                    }
-                }
-            }
-        }
-        if (useFileGroupGlobal != null && StringUtils.isEmpty(useFileID)) {
-            logger.warn("FILEID not found for file group {}", useFileGroupGlobal);
-            useFileID = "";
-        }
-
-        boolean fileGroupPrefix = false; // FILEID starts with the file group name
-        boolean fileGroupSuffix = false; // FILEID ends with the file group name
-        char fileIdSeparator = '_'; // Separator character between the group name and the rest and the file ID
-
-        // Remove the file group part from the file ID
-        if (useFileID != null && useFileGroupGlobal != null && useFileID.contains(useFileGroupGlobal)) {
-            if (useFileID.startsWith(useFileGroupGlobal + '_')) {
-                fileGroupPrefix = true;
-            } else if (useFileID.startsWith(useFileGroupGlobal + '.')) {
-                fileGroupPrefix = true;
-                fileIdSeparator = '.';
-            } else if (useFileID.endsWith('_' + useFileGroupGlobal)) {
-                fileGroupSuffix = true;
-            } else if (useFileID.endsWith('.' + useFileGroupGlobal)) {
-                fileGroupSuffix = true;
-                fileIdSeparator = '.';
-            }
-            if (fileGroupPrefix) {
-                fileIdRoot = useFileID.replace(useFileGroupGlobal + fileIdSeparator, "");
-            } else if (fileGroupSuffix) {
-                fileIdRoot = useFileID.replace(fileIdSeparator + useFileGroupGlobal, "");
-            }
-            ret.getDoc().addField(SolrConstants.FILEIDROOT, fileIdRoot);
-        }
-
-        // Double page view
-        boolean doubleImage =
-                "double page".equals(eleStructMapPhysical.getAttributeValue("label",
-                        SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("xlink")));
-        if (doubleImage) {
-            ret.getDoc().addField(SolrConstants.BOOL_DOUBLE_IMAGE, doubleImage);
-        }
-
-        // ORDERLABEL / LABEL
-        String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
-        if (StringUtils.isNotEmpty(orderLabel)) {
-            ret.getDoc().addField(SolrConstants.ORDERLABEL, orderLabel);
-        } else {
-            if (StringUtils.isNotEmpty(orderLabel)) {
-                ret.getDoc().addField(SolrConstants.ORDERLABEL, orderLabel);
-            } else {
-                ret.getDoc().addField(SolrConstants.ORDERLABEL, SolrIndexerDaemon.getInstance().getConfiguration().getEmptyOrderLabelReplacement());
-            }
-        }
-
-        String contentIDs = eleStructMapPhysical.getAttributeValue(ATTRIBUTE_CONTENTIDS);
-        if (Utils.isUrn(contentIDs)) {
-            ret.getDoc().addField(SolrConstants.IMAGEURN, contentIDs);
-        }
-        String dmdId = eleStructMapPhysical.getAttributeValue(SolrConstants.DMDID);
-        if (StringUtils.isNotEmpty(dmdId)) {
-            IndexObject pageObj = new IndexObject("dummy");
-            MetadataHelper.writeMetadataToObject(pageObj, xp.getMdWrap(dmdId), "", xp);
-            for (LuceneField field : pageObj.getLuceneFields()) {
-                ret.getDoc().addField(field.getField(), field.getValue());
-            }
-        }
-
-        String altoURL = null;
-        // For each mets:fileGroup in the mets:fileSec
-        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp";
-        List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
-        for (Element eleFileGrp : eleFileGrpList) {
-            String fileGrpUse = eleFileGrp.getAttributeValue("USE");
-            String fileGrpId = eleFileGrp.getAttributeValue("ID");
-            logger.debug("Found file group: {}", fileGrpUse);
-            String fileId = null;
-            if (fileGroupPrefix) {
-                fileId = fileGrpUse + fileIdSeparator + fileIdRoot;
-            } else if (fileGroupSuffix) {
-                fileId = fileIdRoot + fileIdSeparator + fileGrpUse;
-            } else {
-                fileId = fileIdRoot;
-            }
-            // File ID containing the file group's ID value instead of USE
-            String fileIdAlt = null;
-            if (fileGrpId != null) {
-                if (fileGroupPrefix) {
-                    fileIdAlt = fileGrpId + fileIdSeparator + fileIdRoot;
-                } else if (fileGroupSuffix) {
-                    fileIdAlt = fileIdRoot + fileIdSeparator + fileGrpId;
-                }
-            }
-            logger.debug("fileId: {}", fileId);
-
-            // If fileId is not null, use an XPath expression for the appropriate file element,
-            // otherwise get all file elements and get the one with the index of the page order
-            String fileIdXPathCondition = "";
-            if (fileId != null) {
-                if (fileIdAlt != null) {
-                    // File ID may contain the value of ID instead of USE
-                    fileIdXPathCondition = "[@ID=\"" + fileId + "\" or @ID=\"" + fileIdAlt + "\"]";
-                } else {
-                    fileIdXPathCondition = "[@ID=\"" + fileId + "\"]";
-                }
-            }
-            int attrListIndex = fileId != null ? 0 : order - 1;
-
-            // Check whether the fileId_fileGroup pattern applies for this file group, otherwise just use the fileId
-            xpath = XPATH_FILE + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
-            logger.debug(xpath);
-            List<Attribute> filepathAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-            if (filepathAttrList == null || filepathAttrList.size() <= attrListIndex) {
-                if (useFileGroupGlobal.equals(fileGrpUse)) {
-                    logger.warn("Skipping selected file group {} - nothing found at: {}", fileGrpUse, xpath);
-                } else {
-                    logger.debug("Skipping file group {}", fileGrpUse);
-                }
-                continue;
-            }
-
-            String filePath = filepathAttrList.get(attrListIndex).getValue();
-            logger.trace("filePath: {}", filePath);
-            if (StringUtils.isEmpty(filePath)) {
-                logger.warn("{}: file path not found in file group '{}'.", fileId, fileGrpUse);
-            }
-
-            String fileName;
-            if (Utils.isFileNameMatchesRegex(filePath, IIIF_IMAGE_FILE_NAMES)) {
-                // Extract correct original file name from IIIF
-                fileName = Utils.getFileNameFromIiifUrl(filePath);
-            } else {
-                fileName = FilenameUtils.getName(filePath);
-            }
-
-            // Mime type
-            xpath = XPATH_FILE + fileIdXPathCondition + "/@MIMETYPE";
-            List<Attribute> mimetypeAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-            if (mimetypeAttrList == null || mimetypeAttrList.isEmpty()) {
-                logger.error("{}: mime type not found in file group '{}'.", fileId, fileGrpUse);
-                break;
-            }
-
-            String mimetype = mimetypeAttrList.get(attrListIndex).getValue();
-            if (StringUtils.isEmpty(mimetype)) {
-                logger.error("{}: mime type is blank in file group '{}'.", fileId, fileGrpUse);
-                break;
-            }
-
-            String[] mimetypeSplit = mimetype.split("/");
-            if (mimetypeSplit.length != 2) {
-                logger.error("Illegal mime type '{}' in file group '{}'.", mimetype, fileGrpUse);
-                break;
-            }
-
-            if (fileGrpUse.equals(useFileGroupGlobal)) {
-                // The file name from the main file group (usually PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
-                if (filePath.startsWith("http")) {
-                    // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
-                    if (ret.getDoc().containsKey(SolrConstants.FILENAME)) {
-                        if (StringUtils.isNotEmpty(selectedPreferredImageFileGroup) && selectedPreferredImageFileGroup.equals(fileGrpUse)) {
-                            // Preferred file group overrides any already added values
-                            ret.getDoc().remove(SolrConstants.FILENAME);
-                        } else {
-                            logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc,
-                                    filePath,
-                                    fileGrpUse);
-                        }
-                    }
-
-                    String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
-                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
-                            && !filePath.startsWith(viewerUrl)) {
-                        logger.info("Downloading file: {}", filePath);
-                        try {
-                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName))
-                                    .getFileName()
-                                    .toString();
-                        } catch (IOException | URISyntaxException e) {
-                            logger.warn("Could not download file: {}", filePath);
-                        }
-                    }
-                    ret.getDoc().addField(SolrConstants.FILENAME, filePath);
-                    if (!ret.getShapes().isEmpty()) {
-                        for (PhysicalElement shape : ret.getShapes()) {
-                            shape.getDoc().addField(SolrConstants.FILENAME, filePath);
-                        }
-                    }
-                    // RosDok IIIF
-                    //Don't use if images are downloaded. Then we haven them locally
-                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroupGlobal)
-                            && !ret.getDoc().containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
-                        ret.getDoc().addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
-                    }
-                } else {
-                    if (ret.getDoc().containsKey(SolrConstants.FILENAME)) {
-                        logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc, fileName,
-                                fileGrpUse);
-                    }
-                    ret.getDoc().addField(SolrConstants.FILENAME, fileName);
-                    if (!ret.getShapes().isEmpty()) {
-                        for (PhysicalElement shape : ret.getShapes()) {
-                            shape.getDoc().addField(SolrConstants.FILENAME, fileName);
-                        }
-                    }
-                }
-
-                // Add mime type
-                if (ret.getDoc().containsKey(SolrConstants.MIMETYPE) && StringUtils.isNotEmpty(selectedPreferredImageFileGroup)
-                        && selectedPreferredImageFileGroup.equals(fileGrpUse)) {
-                    // Preferred file group overrides any already added values
-                    ret.getDoc().removeField(SolrConstants.MIMETYPE);
-                }
-                ret.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
-                if (!ret.getShapes().isEmpty()) {
-                    for (PhysicalElement shape : ret.getShapes()) {
-                        shape.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
-                    }
-                }
-
-                // Add file size
-                addFileSizeToDoc(ret.getDoc(), dataFolders.get(DataRepository.PARAM_MEDIA), fileName);
-            } else if (fileGrpUse.equals(ALTO_FILEGROUP) || fileGrpUse.equals(FULLTEXT_FILEGROUP)) {
-                altoURL = filePath;
-            } else {
-                String fieldName = SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase();
-                if (ret.getDoc().getField(fieldName) == null) {
-                    switch (mimetypeSplit[1]) {
-                        case "html-sandboxed":
-                            // Add full URL
-                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), filePath);
-                            break;
-                        case "object":
-                            ret.getDoc().addField(SolrConstants.FILENAME, fileName);
-                            ret.getDoc().addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
-                            break;
-                        default:
-                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
-                    }
-                }
-            }
-
-            // Width + height (from IIIF)
-            if (SolrIndexerDaemon.getInstance().getConfiguration().isReadImageDimensionsFromIIIF()
-                    && ret.getDoc().getField(SolrConstants.WIDTH) == null
-                    && ret.getDoc().getField(SolrConstants.HEIGHT) == null && !downloadExternalImages && filePath != null
-                    && filePath.endsWith("info.json")) {
-                int[] dim = getImageDimensionsFromIIIF(filePath);
-                if (dim.length == 2) {
-                    ret.getDoc().addField(SolrConstants.WIDTH, dim[0]);
-                    ret.getDoc().addField(SolrConstants.HEIGHT, dim[1]);
-                    logger.debug("Added WIDTH from IIIF: {}", ret.getDoc().getFieldValue(SolrConstants.WIDTH));
-                    logger.debug("Added HEIGHT from IIIF: {}", ret.getDoc().getFieldValue(SolrConstants.HEIGHT));
-                }
-            }
-
-            // Width + height (from techMD)
-            if (ret.getDoc().getField(SolrConstants.WIDTH) == null && ret.getDoc().getField(SolrConstants.HEIGHT) == null) {
-                // Width + height (from techMD)
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@ADMID";
-                List<Attribute> amdIdAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                if (amdIdAttrList != null && !amdIdAttrList.isEmpty() && StringUtils.isNotBlank(amdIdAttrList.get(0).getValue())) {
-                    String amdId = amdIdAttrList.get(0).getValue();
-                    xpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + amdId
-                            + "']/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/pbcoreInstantiation/formatFrameSize/text()";
-                    String frameSize = xp.evaluateToString(xpath, null);
-                    if (StringUtils.isNotEmpty(frameSize)) {
-                        String[] frameSizeSplit = frameSize.split("x");
-                        if (frameSizeSplit.length == 2) {
-                            ret.getDoc().addField(SolrConstants.WIDTH, frameSizeSplit[0].trim());
-                            ret.getDoc().addField(SolrConstants.HEIGHT, frameSizeSplit[1].trim());
-                            logger.info("WIDTH: {}", ret.getDoc().getFieldValue(SolrConstants.WIDTH));
-                            logger.info("HEIGHT: {}", ret.getDoc().getFieldValue(SolrConstants.HEIGHT));
-                        } else {
-                            logger.warn("Invalid formatFrameSize value in mets:techMD[@ID='{}']: '{}'", amdId, frameSize);
-                        }
-                    }
-                }
-            }
-
-            // Width + height (invalid)
-            if (ret.getDoc().getField(SolrConstants.WIDTH) == null && ret.getDoc().getField(SolrConstants.HEIGHT) == null) {
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@WIDTH";
-                List<Attribute> widthAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                Integer width = null;
-                Integer height = null;
-                if (widthAttrList != null && !widthAttrList.isEmpty() && StringUtils.isNotBlank(widthAttrList.get(0).getValue())) {
-                    width = Integer.valueOf(widthAttrList.get(0).getValue());
-                    logger.warn("mets:file[@ID='{}'] contains illegal WIDTH attribute. It will still be used, though.", fileId);
-                }
-                xpath = XPATH_FILE + fileIdXPathCondition + "/@HEIGHT";
-                List<Attribute> heightAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
-                if (heightAttrList != null && !heightAttrList.isEmpty() && StringUtils.isNotBlank(heightAttrList.get(0).getValue())) {
-                    height = Integer.valueOf(heightAttrList.get(0).getValue());
-                    logger.warn("mets:file[@ID='{}'] contains illegal HEIGHT attribute. It will still be used, though.", fileId);
-                }
-                if (width != null && height != null) {
-                    ret.getDoc().addField(SolrConstants.WIDTH, width);
-                    ret.getDoc().addField(SolrConstants.HEIGHT, height);
-                }
-
-            }
-        }
-
-        // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
-                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
-            recordHasImages = true;
-        } else {
-            ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
-        }
-
-        if (dataFolders != null || altoURL != null) {
-            addFullTextToPageDoc(ret.getDoc(), dataFolders, dataRepository, pi, order, altoURL);
-        }
-
-        // Page metadata
-        String admId = eleStructMapPhysical.getAttributeValue("ADMID");
-        if (StringUtils.isNotEmpty(admId)) {
-            // Use '//' so faulty duplication in the hierarchy still works
-            String techXpath = "/mets:mets/mets:amdSec/mets:techMD[@ID='" + admId + "']//mets:mdWrap[@MDTYPE='OTHER'][mets:xmlData/mix:mix]";
-            List<Element> eletechMdList = xp.evaluateToElements(techXpath, null);
-            if (!eletechMdList.isEmpty()) {
-                IndexObject indexObj = new IndexObject("dummy", pi);
-                indexObj.setSourceDocFormat(FileFormat.MIX);
-                List<LuceneField> fields = MetadataHelper.retrieveElementMetadata(eletechMdList.get(0), "", indexObj, xp);
-                for (LuceneField field : fields) {
-                    if (!MetadataHelper.FIELD_HAS_WKT_COORDS.equals(field.getField())) {
-                        ret.getDoc().addField(field.getField(), field.getValue());
-                        logger.debug("Added simple techMD field: {}", field);
-                    }
-                }
-                ret.getGroupedMetadata().addAll(indexObj.getGroupedMetadataFields());
-            }
-        }
-
-        return ret;
     }
 
     /**
