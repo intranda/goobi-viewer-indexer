@@ -630,7 +630,8 @@
 		<MD_TITLE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:part/mods:detail[@type="issue"]/mods:title</xpath>
                     <xpath>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</xpath>
                     <xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</xpath>
                     <xpath>dc:title</xpath>
