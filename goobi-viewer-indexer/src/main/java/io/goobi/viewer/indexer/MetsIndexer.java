@@ -463,6 +463,8 @@ public class MetsIndexer extends Indexer {
                 if (thumbnailFields != null) {
                     indexObj.getLuceneFields().addAll(thumbnailFields);
                 }
+                //add AccessConditions to downloadResources
+                downloadResources.forEach(res -> addAccessConditionToPage(indexObj, res, true));
 
                 // ISWORK only for non-anchors
                 indexObj.addToLucene(SolrConstants.ISWORK, "true");
@@ -847,33 +849,7 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
-            // Add of each docstruct access conditions (no duplicates)
-            Set<String> existingAccessConditions = new HashSet<>();
-            if (page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
-                for (Object obj : page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)) {
-                    existingAccessConditions.add((String) obj);
-                }
-            }
-            for (String s : indexObj.getAccessConditions()) {
-                if (!existingAccessConditions.contains(s) && !SolrConstants.OPEN_ACCESS_VALUE.equals(s)) {
-                    // Override OPENACCESS if a different access condition comes from a lower docstruct
-                    if (depth > currentDepth && existingAccessConditions.contains(SolrConstants.OPEN_ACCESS_VALUE)) {
-                        // Remove all instances of ACCESSCONDITION, then re-add existing values (minus OPENACCSS)
-                        page.getDoc().removeField(SolrConstants.ACCESSCONDITION);
-                        for (String existingS : existingAccessConditions) {
-                            if (!SolrConstants.OPEN_ACCESS_VALUE.equals(existingS)) {
-                                page.getDoc().addField(SolrConstants.ACCESSCONDITION, existingS);
-                            }
-                        }
-                    }
-                    // Add new non-OPENACCESS condition
-                    page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
-                } else if (SolrConstants.OPEN_ACCESS_VALUE.equals(s) && depth > currentDepth) {
-                    // If OPENACCESS is on a lower docstruct, however, remove all previous access conditions and override with OPENACCESS
-                    page.getDoc().removeField(SolrConstants.ACCESSCONDITION);
-                    page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
-                }
-            }
+            addAccessConditionToPage(indexObj, page, depth > currentDepth);
             if (indexObj.getAccessConditions().isEmpty()) {
                 logger.warn("{}: {} has no access conditions.", pageFileBaseName, indexObj.getIddoc());
             }
@@ -969,6 +945,36 @@ public class MetsIndexer extends Indexer {
         }
 
         return ret;
+    }
+
+    protected void addAccessConditionToPage(IndexObject indexObj, PhysicalElement page, boolean overrideOpenAccess) {
+        // Add of each docstruct access conditions (no duplicates)
+        Set<String> existingAccessConditions = new HashSet<>();
+        if (page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION) != null) {
+            for (Object obj : page.getDoc().getFieldValues(SolrConstants.ACCESSCONDITION)) {
+                existingAccessConditions.add((String) obj);
+            }
+        }
+        for (String s : indexObj.getAccessConditions()) {
+            if (!existingAccessConditions.contains(s) && !SolrConstants.OPEN_ACCESS_VALUE.equals(s)) {
+                // Override OPENACCESS if a different access condition comes from a lower docstruct
+                if (overrideOpenAccess && existingAccessConditions.contains(SolrConstants.OPEN_ACCESS_VALUE)) {
+                    // Remove all instances of ACCESSCONDITION, then re-add existing values (minus OPENACCSS)
+                    page.getDoc().removeField(SolrConstants.ACCESSCONDITION);
+                    for (String existingS : existingAccessConditions) {
+                        if (!SolrConstants.OPEN_ACCESS_VALUE.equals(existingS)) {
+                            page.getDoc().addField(SolrConstants.ACCESSCONDITION, existingS);
+                        }
+                    }
+                }
+                // Add new non-OPENACCESS condition
+                page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
+            } else if (SolrConstants.OPEN_ACCESS_VALUE.equals(s) && overrideOpenAccess) {
+                // If OPENACCESS is on a lower docstruct, however, remove all previous access conditions and override with OPENACCESS
+                page.getDoc().removeField(SolrConstants.ACCESSCONDITION);
+                page.getDoc().addField(SolrConstants.ACCESSCONDITION, s);
+            }
+        }
     }
 
     /**

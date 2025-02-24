@@ -1332,5 +1332,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         assertEquals(0, docList.stream().filter(doc -> "PAGE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
         assertEquals(1, docList.stream().filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
         assertEquals(1, docList.stream().filter(doc -> "monograph".equals(doc.getFieldValue(SolrConstants.DOCSTRCT))).count());
+        assertTrue(docList.stream()
+                .filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE)))
+                .allMatch(doc -> doc.containsKey(SolrConstants.ACCESSCONDITION)));
     }
+
 }
