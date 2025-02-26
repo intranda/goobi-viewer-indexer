@@ -69,14 +69,14 @@
     </mets:amdSec>
     <mets:fileSec>
     
-    <mets:fileGrp USE="DOWNLOAD">
-		<mets:file ID="FILE_0000_DOWNLOAD" MIMETYPE="text/plain">
+    <mets:fileGrp USE="DOWNLOAD_RESOURCE">
+		<mets:file ID="FILE_0000_DOWNLOAD_RESOURCE" MIMETYPE="text/plain">
 			<mets:FLocat LOCTYPE="URL" xlink:href="000000x1.txt" xmlns:xlink="http://www.w3.org/1999/xlink" />
 		</mets:file>
-		<mets:file ID="FILE_0001_DOWNLOAD" MIMETYPE="text/plain">
+		<mets:file ID="FILE_0001_DOWNLOAD_RESOURCE" MIMETYPE="text/plain">
 			<mets:FLocat LOCTYPE="URL" xlink:href="000000x2.txt" xmlns:xlink="http://www.w3.org/1999/xlink" />
 		</mets:file>
-		<mets:file ID="FILE_0002_DOWNLOAD" MIMETYPE="text/plain">
+		<mets:file ID="FILE_0002_DOWNLOAD_RESOURCE" MIMETYPE="text/plain">
 			<mets:FLocat LOCTYPE="URL" xlink:href="000000x3.txt" xmlns:xlink="http://www.w3.org/1999/xlink" />
 		</mets:file>
 	</mets:fileGrp>
@@ -393,13 +393,13 @@
       <mets:div ID="PHYS_0000" TYPE="physSequence">
         
         <mets:div CONTENTIDS="urn:nbn:de:hebis:66:fuldig-1986" ID="PHYS_00X1" ORDERLABEL="to download" ORDER="101" TYPE="page">
-			<mets:fptr FILEID="FILE_0000_DOWNLOAD" />
+			<mets:fptr FILEID="FILE_0000_DOWNLOAD_RESOURCE" />
 		</mets:div>
 		<mets:div CONTENTIDS="urn:nbn:de:hebis:66:fuldig-1986" ORDER="102" ID="PHYS_00X2" ORDERLABEL="to download" TYPE="page">
-			<mets:fptr FILEID="FILE_0001_DOWNLOAD" />
+			<mets:fptr FILEID="FILE_0001_DOWNLOAD_RESOURCE" />
 		</mets:div>
 		<mets:div CONTENTIDS="urn:nbn:de:hebis:66:fuldig-1986" ORDER="103" ID="PHYS_00X3" ORDERLABEL="to download" TYPE="page">
-			<mets:fptr FILEID="FILE_0002_DOWNLOAD" />
+			<mets:fptr FILEID="FILE_0002_DOWNLOAD_RESOURCE" />
 		</mets:div>
         
         <mets:div CONTENTIDS="urn:nbn:de:hebis:66:fuldig-1986" ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">

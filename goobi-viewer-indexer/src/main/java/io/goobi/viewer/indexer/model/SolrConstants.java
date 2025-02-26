@@ -182,6 +182,8 @@ public final class SolrConstants {
     public static final String NUMPAGES = "NUMPAGES";
     /** Constant <code>NUMVOLUMES="NUMVOLUMES"</code> */
     public static final String NUMVOLUMES = "NUMVOLUMES";
+    /** Constant <code>MDNUM_DOWNLOAD_RESOURCES="MDNUM_DOWNLOAD_RESOURCES"</code> */
+    public static final String MDNUM_DOWNLOAD_RESOURCES = "MDNUM_DOWNLOAD_RESOURCES";
     /** Constant <code>OPACURL="OPACURL"</code> */
     public static final String OPACURL = "OPACURL";
     /** Constant <code>ORDER="ORDER"</code> */

@@ -437,7 +437,7 @@ public class MetsIndexer extends Indexer {
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
                 PhysicalDocumentBuilder downloadResourceBuilder =
-                        new PhysicalDocumentBuilder("DOWNLOAD", xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
+                        new PhysicalDocumentBuilder(DocType.DOWNLOAD_RESOURCE.name(), xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
                 Collection<PhysicalElement> downloadResources =
                         downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
                 downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
@@ -447,6 +447,10 @@ public class MetsIndexer extends Indexer {
                     if (docsAdded > 0) {
                         logger.debug("Added {} grouped metadata for resource {}", docsAdded, resource.getOrder());
                     }
+                }
+
+                if (!downloadResources.isEmpty()) {
+                    indexObj.addToLucene(SolrConstants.MDNUM_DOWNLOAD_RESOURCES, String.valueOf(downloadResources.size()));
                 }
 
                 // If images have been found for any page, set a boolean in the root doc indicating that the record does have images

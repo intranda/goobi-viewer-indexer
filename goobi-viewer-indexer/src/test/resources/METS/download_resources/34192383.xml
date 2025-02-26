@@ -114,9 +114,14 @@
       </mets:digiprovMD>
    </mets:amdSec>
    <mets:fileSec>
-      <mets:fileGrp USE="DOWNLOAD">
-         <mets:file ID="FILE_0001_DOWNLOAD" MIMETYPE="application/pdf">
+      <mets:fileGrp USE="DOWNLOAD_RESOURCE">
+         <mets:file ID="FILE_0001_DOWNLOAD_RESOURCE" MIMETYPE="application/pdf">
             <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383/IZT_Text_4-2018_Fairphone.pdf"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="PRESENTATION">
+         <mets:file ID="FILE_0001_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383/IZT_Text_4-2018_Fairphone.jpeg"/>
          </mets:file>
       </mets:fileGrp>
    </mets:fileSec>
@@ -126,7 +131,8 @@
    <mets:structMap TYPE="PHYSICAL">
       <mets:div ID="PHYS_0000" TYPE="physSequence">
          <mets:div ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
-            <mets:fptr FILEID="FILE_0001_DOWNLOAD"/>
+            <mets:fptr FILEID="FILE_0001_DOWNLOAD_RESOURCE"/>
+            <mets:fptr FILEID="FILE_0001_PRESENTATION"/>
          </mets:div>
       </mets:div>
    </mets:structMap>
