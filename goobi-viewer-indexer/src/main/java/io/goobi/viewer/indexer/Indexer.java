@@ -1233,7 +1233,8 @@ public abstract class Indexer {
             return;
         }
 
-        for (String groupIdField : indexObj.getGroupIds().keySet()) {
+        for (Entry<String, String> entry : indexObj.getGroupIds().entrySet()) {
+            String groupIdField = entry.getKey();
             logger.info("groupIdField: {}", groupIdField);
             String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
             Map<String, String> moreMetadata = new HashMap<>();
@@ -1248,7 +1249,12 @@ public abstract class Indexer {
                     moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
                 }
             }
-            moreMetadata.put(SolrConstants.DOCSTRCT, groupSuffix.toLowerCase());
+            String docstructType = groupSuffix.toLowerCase();
+            moreMetadata.put(SolrConstants.DOCSTRCT, docstructType);
+            // TODO make configurable or smt
+            if ("newspaper".equals(docstructType)) {
+                indexObj.setAnchorPI(entry.getValue());
+            }
             SolrInputDocument doc = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
