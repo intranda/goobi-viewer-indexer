@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets OBJID="48683" xsi:schemaLocation="http://www.loc.gov/standards/premis/ http://www.loc.gov/standards/premis/v2/premis-v2-0.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://zvdd.gdz-cms.de/ 
+	  http://pfad/zu/schema/xsd/zvdd.xsd
+	   http://www.loc.gov/standards/mix/ http://www.loc.gov/standards/mix/mix.xsd" xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:dv="http://dfg-viewer.de/" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <mets:metsHdr CREATEDATE="2019-12-29T12:32:42Z">
+      <mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+         <mets:name>Goobi - 39bca - 2018-12-15 22:54:42+0000</mets:name>
+         <mets:note>Goobi</mets:note>
+      </mets:agent>
+   </mets:metsHdr>
+   <mets:dmdSec ID="DMDLOG_0000">
+      <mets:mdWrap MDTYPE="MODS">
+         <mets:xmlData>
+            <mods:mods>
+               <mods:name authority="gnd" authorityURI="http://d-nb.info/gnd/" type="personal" valueURI="http://d-nb.info/gnd/1173112227">
+                  <mods:role>
+                     <mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+                  </mods:role>
+                  <mods:namePart type="family">Zwiers</mods:namePart>
+                  <mods:namePart type="given">Jakob</mods:namePart>
+                  <mods:displayForm>Zwiers, Jakob</mods:displayForm>
+               </mods:name>
+               <mods:name type="personal">
+                  <mods:role>
+                     <mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+                  </mods:role>
+                  <mods:namePart type="family">Behrendt</mods:namePart>
+                  <mods:namePart type="given">Siegfried</mods:namePart>
+                  <mods:displayForm>Behrendt, Siegfried</mods:displayForm>
+               </mods:name>
+               <mods:name authority="gnd" authorityURI="http://d-nb.info/gnd/" type="personal" valueURI="http://d-nb.info/gnd/113701209">
+                  <mods:role>
+                     <mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+                  </mods:role>
+                  <mods:namePart type="family">Göll</mods:namePart>
+                  <mods:namePart type="given">Edgar</mods:namePart>
+                  <mods:displayForm>Göll, Edgar</mods:displayForm>
+               </mods:name>
+               <mods:titleInfo>
+                  <mods:title>Fairphone</mods:title>
+                  <mods:subTitle>Fallstudie</mods:subTitle>
+               </mods:titleInfo>
+               <mods:typeOfResource>text</mods:typeOfResource>
+               <mods:genre authority="marcgt">book</mods:genre>
+               <mods:originInfo>
+                  <mods:place>
+                     <mods:placeTerm type="text" valueURI="http://www.geonames.org/2950159">Berlin</mods:placeTerm>
+                  </mods:place>
+                  <mods:publisher>IZT</mods:publisher>
+                  <mods:dateIssued displayLabel="displayDate">2018</mods:dateIssued>
+                  <mods:dateIssued encoding="w3cdtf" keyDate="yes">2018</mods:dateIssued>
+               </mods:originInfo>
+               <mods:language>
+                  <mods:languageTerm authority="iso639-2b" type="code">ger</mods:languageTerm>
+               </mods:language>
+               <mods:physicalDescription>
+                  <mods:extent>1 Online-Ressource (37 Seiten)</mods:extent>
+                  <mods:digitalOrigin>born digital</mods:digitalOrigin>
+               </mods:physicalDescription>
+               <mods:note type="source characteristics">Datum des Herunterladens: 4.3.2019</mods:note>
+               <mods:note type="statement of responsibility">Jakob Zwiers, Siegfried Behrendt, Edgar Göll</mods:note>
+               <mods:classification authority="ivdcc">dcauthoritydata#geonames</mods:classification>               
+               <mods:classification authority="ddc">330 Wirtschaft</mods:classification>
+               <mods:classification authority="ivdcc">dcborndigital</mods:classification>
+	       <mods:classification authority="ivdcc">dctext#frompdfextracted</mods:classification>
+	       <mods:classification authority="ivdcc">dccoordinates#geonames</mods:classification>
+               <mods:relatedItem type="series">
+                  <mods:titleInfo>
+                     <mods:title>IZT-Text</mods:title>
+                  </mods:titleInfo>
+                  <mods:recordInfo>
+                     <mods:recordIdentifier source="DE-609">15929110</mods:recordIdentifier>
+                  </mods:recordInfo>
+                  <mods:part type="volume">
+                     <mods:detail>
+                        <mods:number>4-2018</mods:number>
+                     </mods:detail>
+                  </mods:part>
+               </mods:relatedItem>
+               <mods:recordInfo>
+                  <mods:recordIdentifier source="DE-609">34192383</mods:recordIdentifier>
+               </mods:recordInfo>
+               <mods:identifier type="urn">urn:nbn:de:kobv:109-1-15367701</mods:identifier>
+               <mods:identifier type="isbn">9783941374386</mods:identifier>
+               <mods:identifier type="isbn">978-3-941374-38-6</mods:identifier>
+               <mods:accessCondition type="dz">Freier Zugang</mods:accessCondition>
+               <mods:accessCondition type="use and reproduction">Rights reserved</mods:accessCondition>
+            </mods:mods>
+         </mets:xmlData>
+      </mets:mdWrap>
+   </mets:dmdSec>
+   <mets:amdSec ID="AMD">
+      <mets:rightsMD ID="RIGHTS">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+            <mets:xmlData>
+               <dv:rights>
+                  <dv:owner>Zentral- und Landesbibliothek Berlin</dv:owner>
+                  <dv:ownerLogo>https://digital.zlb.de/viewer/resources/themes/zlb/images/zlbdfgviewerlogo.jpg</dv:ownerLogo>
+                  <dv:ownerSiteURL>http://www.zlb.de</dv:ownerSiteURL>
+                  <dv:ownerContact>landesbibliothek-digital@zlb.de</dv:ownerContact>
+               </dv:rights>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:rightsMD>
+      <mets:digiprovMD ID="DIGIPROV">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVLINKS">
+            <mets:xmlData>
+               <dv:links>
+                  <dv:reference>https://www.voebb.de/aDISWeb/app?service=direct/0/Home/$DirectLink&amp;sp=Svb%3A4103&amp;sp=SAK34192383</dv:reference>
+                  <dv:presentation>https://digital.zlb.de/viewer/ppnresolver?id=34192383</dv:presentation>
+               </dv:links>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:digiprovMD>
+   </mets:amdSec>
+   <mets:fileSec>
+      <mets:fileGrp USE="DOWNLOAD_RESOURCE">
+         <mets:file ID="FILE_0001_DOWNLOAD_RESOURCE" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383/IZT_Text_4-2018_Fairphone.pdf"/>
+         </mets:file>
+      </mets:fileGrp>
+      <mets:fileGrp USE="PRESENTATION">
+         <mets:file ID="FILE_0001_PRESENTATION" MIMETYPE="image/jpeg">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383/IZT_Text_4-2018_Fairphone.jpeg"/>
+         </mets:file>
+      </mets:fileGrp>
+   </mets:fileSec>
+   <mets:structMap TYPE="LOGICAL">
+      <mets:div ADMID="AMD" CONTENTIDS="urn:nbn:de:kobv:109-1-15367701" DMDID="DMDLOG_0000" ID="LOG_0000" LABEL="Fairphone" TYPE="monograph"/>
+   </mets:structMap>
+   <mets:structMap TYPE="PHYSICAL">
+      <mets:div ID="PHYS_0000" TYPE="physSequence">
+         <mets:div ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0001_DOWNLOAD_RESOURCE"/>
+            <mets:fptr FILEID="FILE_0001_PRESENTATION"/>
+         </mets:div>
+      </mets:div>
+   </mets:structMap>
+   <mets:structLink>
+      <mets:smLink xlink:to="PHYS_0001" xlink:from="LOG_0000"/>
+   </mets:structLink>
+</mets:mets>

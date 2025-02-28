@@ -953,6 +953,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile);
         ISolrWriteStrategy writeStrategy = AbstractWriteStrategy.create(metsFile, new HashMap<>(), hotfolder);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
+
         indexer.generatePageDocuments(writeStrategy, new HashMap<>(),
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], PI, 1,
                 false);
@@ -1032,7 +1033,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.DEFAULT_FILEGROUP);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
-        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+        PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.DEFAULT_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), "ppn750544996", page, new HashMap<>(),
                 dataRepositoryStrategy.selectDataRepository("ppn750544996", metsFile, new HashMap<>(),
                         SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
@@ -1098,7 +1099,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
-        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+        PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
                 false);
@@ -1125,7 +1126,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
-        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+        PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
                 false);
@@ -1148,9 +1149,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         List<Element> eleStructMapPhysicalList = indexer.xp.evaluateToElements(xpath, null);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
 
-        int page = 3;
+        int page = 3; //3 + DOWNLOAD elements 
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
-        PhysicalElement pe = indexer.generatePageDocument(eleStructMapPhysicalList.get(page - 1),
+        PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, new HashMap<>(),
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], false);
         assertNotNull(pe);
@@ -1296,4 +1297,74 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(Paths.get("src/test/resources/METS/oai5164685802946115306.xml"));
         Assertions.assertFalse(indexer.isVolume());
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void index_shouldIndexDownloadResourcesCorrectly() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_media"));
+        Path metPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_download_resources.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals(PI + ".xml", ret[0]);
+        Assertions.assertNull(ret[1]);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + PI, null);
+
+        assertEquals(3, docList.stream().filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(16, docList.stream().filter(doc -> "PAGE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void index_shouldIndexSingleDownloadResourceCorrectly() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", ret[0]);
+        Assertions.assertNull(ret[1]);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
+
+        assertEquals(1, docList.stream().filter(doc -> "PAGE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(1, docList.stream().filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(1, docList.stream().filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertTrue(docList.stream()
+                .filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE)))
+                .allMatch(doc -> doc.containsKey(SolrConstants.ACCESSCONDITION)));
+    }
+
+    @Test
+    void index_shouldPassAccessConditionToDownloadResources() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", ret[0]);
+        Assertions.assertNull(ret[1]);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
+        assertTrue(docList.stream()
+                .filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE)))
+                .allMatch(doc -> doc.containsKey(SolrConstants.ACCESSCONDITION)));
+    }
+
+    @Test
+    void index_shouldIndexNumDownloadResources() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", ret[0]);
+        Assertions.assertNull(ret[1]);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
+        assertEquals(1, docList.stream().filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertTrue(docList.stream()
+                .filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE)))
+                .allMatch(doc -> Long.valueOf(1).equals(doc.getFieldValue(SolrConstants.MDNUM_DOWNLOAD_RESOURCES))));
+    }
+
 }

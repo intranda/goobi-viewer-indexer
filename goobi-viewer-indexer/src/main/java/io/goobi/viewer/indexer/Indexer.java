@@ -171,7 +171,7 @@ public abstract class Indexer {
     /** Indicates whether any of this record's pages has full-text. */
     protected boolean recordHasFulltext = false;
 
-    private final HttpConnector httpConnector;
+    protected final HttpConnector httpConnector;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
