@@ -1009,23 +1009,6 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * Builds XPath expression for physical elements.
-     * 
-     * @return Constructed expression
-     * @should build expression correctly
-     */
-    static String buildPagesXpathExpresson() {
-        StringBuilder sb = new StringBuilder("/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"");
-        List<String> allowedTypes = SolrIndexerDaemon.getInstance().getConfiguration().getMetsAllowedPhysicalTypes();
-        for (String type : allowedTypes) {
-            sb.append(" or @TYPE=\"").append(type).append('"');
-        }
-        sb.append(']');
-
-        return sb.toString();
-    }
-
-    /**
      * 
      * @param downloadExternalImages
      * @return Selected file group name

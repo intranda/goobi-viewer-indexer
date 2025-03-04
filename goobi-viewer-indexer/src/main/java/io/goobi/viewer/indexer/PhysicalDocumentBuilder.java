@@ -93,7 +93,7 @@ import io.goobi.viewer.indexer.model.file.FileId;
 
 public class PhysicalDocumentBuilder {
 
-    private static final Logger logger = LogManager.getLogger(Indexer.class);
+    private static final Logger logger = LogManager.getLogger(PhysicalDocumentBuilder.class);
 
     private static final int GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS = 6;
 
@@ -1311,7 +1311,7 @@ public class PhysicalDocumentBuilder {
      * @return Constructed expression
      * @should build expression correctly
      */
-    private static String buildPagesXpathExpresson() {
+    static String buildPagesXpathExpresson() {
         StringBuilder sb = new StringBuilder("/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"");
         List<String> allowedTypes = SolrIndexerDaemon.getInstance().getConfiguration().getMetsAllowedPhysicalTypes();
         for (String type : allowedTypes) {
