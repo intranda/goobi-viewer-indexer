@@ -41,10 +41,10 @@ class ImageSizeReaderTest {
         String[] filenames = { "00000001.tif", "00225231.png", "test1.jp2" };
         Dimension[] imageSizes = { new Dimension(3192, 4790), new Dimension(2794, 3838), new Dimension(3448, 6499) };
 
-        File dataFolder = new File("src/test/resources/image_size");
+        File dataFolder = new File("src/test/resources/image_size").getAbsoluteFile();
 
         int i = 0;
-        File outputFolder = new File(dataFolder, "output");
+        File outputFolder = new File(dataFolder, "output").getAbsoluteFile();
         try {
             for (String filename : filenames) {
                 if (outputFolder.isDirectory()) {
@@ -54,7 +54,7 @@ class ImageSizeReaderTest {
 
                 Optional<Dimension> dim = ImageSizeReader.getSize(dataFolder.toPath(), filename);
                 // jp2 image files cannot be read because of missing jp2 library
-                assertTrue(dim.isPresent());
+                assertTrue(dim.isPresent(), "Failed to retrieve size for " + dataFolder.toPath() + "/" + filename);
                 assertEquals(imageSizes[i], dim.get(), "Image size of " + filename + " is " + dim + ", but should be " + imageSizes[i]);
                 i++;
             }
