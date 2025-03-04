@@ -27,9 +27,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.jupiter.api.Test;
 
+import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.Indexer;
 
-class ImageSizeReaderTest {
+class ImageSizeReaderTest extends AbstractSolrEnabledTest {
 
     /**
      * @see Indexer#getSize(Map,SolrInputDocument)
