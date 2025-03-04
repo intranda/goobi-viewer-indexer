@@ -15,20 +15,15 @@
  */
 package io.goobi.viewer.indexer;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,25 +34,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.spi.ImageReaderSpi;
-import javax.imageio.stream.ImageInputStream;
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -72,13 +57,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifIFD0Directory;
-import com.drew.metadata.jpeg.JpegDirectory;
-import com.drew.metadata.png.PngDirectory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -97,6 +75,7 @@ import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
+import io.goobi.viewer.indexer.helper.ImageSizeReader;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -486,60 +465,6 @@ public abstract class Indexer {
         }
 
         return null;
-    }
-
-    /**
-     * Adds named entity fields from the given list to the given SolrInputDocument.
-     *
-     * @param altoData a {@link java.util.Map} object.
-     * @param doc a {@link org.apache.solr.common.SolrInputDocument} object.
-     * @should add field
-     * @should add untokenized field
-     */
-    @SuppressWarnings("unchecked")
-    protected static void addNamedEntitiesFields(Map<String, Object> altoData, SolrInputDocument doc) {
-        List<String> neList = (List<String>) altoData.get(SolrConstants.NAMEDENTITIES);
-        if (neList == null || neList.isEmpty()) {
-            return;
-        }
-
-        for (String ne : neList) {
-            String[] splitString = ne.split("###", 3);
-            if (splitString.length > 1 && splitString[1] != null) {
-                splitString[1] = cleanUpNamedEntityValue(splitString[1]);
-                String fieldName = new StringBuilder("NE_").append(splitString[0]).toString();
-                doc.addField(fieldName, splitString[1]);
-                doc.addField(new StringBuilder(fieldName).append(SolrConstants.SUFFIX_UNTOKENIZED).toString(), splitString[1]);
-            }
-            // Extract NORM_IDENTIFIER from URI for searches
-            if (splitString.length > 2 && splitString[2] != null) {
-                String identifier = de.intranda.digiverso.normdataimporter.Utils.getIdentifierFromURI(splitString[2]);
-                doc.addField("NORM_IDENTIFIER", identifier);
-            }
-        }
-    }
-
-    /**
-     * Removes any non-alphanumeric trailing characters from the given string.
-     *
-     * @param value a {@link java.lang.String} object.
-     * @return Cleaned up value.
-     * @should clean up value correctly
-     * @should throw IllegalArgumentException given null
-     */
-    protected static String cleanUpNamedEntityValue(String value) {
-        if (value == null) {
-            throw new IllegalArgumentException("value may not be null");
-        }
-        StringBuilder sb = new StringBuilder(value);
-        while (sb.length() > 1 && !CharUtils.isAsciiAlphanumeric(sb.charAt(sb.length() - 1))) {
-            sb.deleteCharAt(sb.length() - 1);
-        }
-        while (sb.length() > 1 && !CharUtils.isAsciiAlphanumeric(sb.charAt(0))) {
-            sb.deleteCharAt(0);
-        }
-
-        return sb.toString();
     }
 
     /**
@@ -1066,162 +991,6 @@ public abstract class Indexer {
     }
 
     /**
-     * Retrieves the image size (width/height) for the image referenced in the given page document The image sizes are retrieved from image metadata.
-     * if this doesn't work, no image sizes are set
-     * 
-     * @param mediaFolder
-     * @param filename
-     * @return Optional<Dimension>
-     * @should return size correctly
-     */
-    static Optional<Dimension> getSize(Path mediaFolder, String filename) {
-        logger.trace("getSize: {}", filename);
-        if (filename == null || mediaFolder == null) {
-            return Optional.empty();
-        }
-        File imageFile = new File(filename);
-        imageFile = new File(mediaFolder.toAbsolutePath().toString(), imageFile.getName());
-        if (!imageFile.isFile()) {
-            return Optional.empty();
-        }
-        logger.debug("Found image file {}", imageFile.getAbsolutePath());
-        return readDimension(imageFile);
-    }
-
-    /**
-     * 
-     * @param imageFile
-     * @return Optional<Dimension>
-     */
-    static Optional<Dimension> readDimension(File imageFile) {
-        Dimension imageSize = new Dimension(0, 0);
-        try {
-            Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
-            Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
-            Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-            Directory pngDirectory = imageMetadata.getFirstDirectoryOfType(PngDirectory.class);
-            try {
-                imageSize.width = Integer.valueOf(pngDirectory.getDescription(1).replaceAll("\\D", ""));
-                imageSize.height = Integer.valueOf(pngDirectory.getDescription(2).replaceAll("\\D", ""));
-            } catch (NullPointerException e) {
-                //
-            }
-            try {
-                imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
-                imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
-            } catch (NullPointerException e) {
-                //
-            }
-            try {
-                imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
-                imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
-            } catch (NullPointerException e) {
-                //
-            }
-
-            if (imageSize.getHeight() * imageSize.getHeight() > 0) {
-                return Optional.of(imageSize);
-            }
-        } catch (ImageProcessingException | IOException e) {
-            try {
-                imageSize = getSizeForJp2(imageFile.toPath());
-                return Optional.ofNullable(imageSize);
-            } catch (IOException e2) {
-                logger.warn(e2.toString());
-                try {
-                    BufferedImage image = ImageIO.read(imageFile);
-                    if (image != null) {
-                        return Optional.of(new Dimension(image.getWidth(), image.getHeight()));
-                    }
-                } catch (NullPointerException | IOException e1) {
-                    logger.error("Unable to read image size: {}: {}", e.getMessage(), imageFile.getName());
-                }
-            } catch (UnsatisfiedLinkError e3) {
-                logger.error("Unable to load jpeg2000 ImageReader: {}", e.toString());
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    /**
-     * <p>
-     * getSizeForJp2.
-     * </p>
-     *
-     * @param image a {@link java.nio.file.Path} object.
-     * @return a {@link java.awt.Dimension} object.
-     * @throws java.io.IOException if any.
-     */
-    public static Dimension getSizeForJp2(Path image) throws IOException {
-        if (image.getFileName().toString().matches("(?i).*\\.jp(2|x|2000)")) {
-            logger.debug("Reading with jpeg2000 ImageReader");
-            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpeg2000");
-
-            while (readers.hasNext()) {
-                ImageReader reader = readers.next();
-                logger.trace("Found reader: {}", reader);
-                if (reader != null) {
-                    try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
-                        reader.setInput(iis);
-                        int width = reader.getWidth(0);
-                        int height = reader.getHeight(0);
-                        if (width * height > 0) {
-                            return new Dimension(width, height);
-                        }
-                        logger.error("Error reading image dimensions of {} with image reader {}", image, reader.getClass().getSimpleName());
-                    } catch (IOException e) {
-                        logger.error("Error reading {} with image reader {}", image, reader.getClass().getSimpleName());
-                    }
-                }
-            }
-            ImageReader reader = getOpenJpegReader();
-            if (reader != null) {
-                logger.trace("found openjpeg reader");
-                try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
-                    reader.setInput(iis);
-                    int width = reader.getWidth(0);
-                    int height = reader.getHeight(0);
-                    if (width * height > 0) {
-                        return new Dimension(width, height);
-                    }
-                    logger.error("Error reading image dimensions of {} with image reader {}", image, reader.getClass().getSimpleName());
-                } catch (IOException e) {
-                    logger.error("Error reading {} with image reader {}", image, reader.getClass().getSimpleName());
-                }
-            } else {
-                logger.debug("Not openjpeg image reader found");
-            }
-        }
-
-        throw new IOException("No valid image reader found for 'jpeg2000'");
-
-    }
-
-    /**
-     * <p>
-     * getOpenJpegReader.
-     * </p>
-     *
-     * @return a {@link javax.imageio.ImageReader} object.
-     */
-    public static ImageReader getOpenJpegReader() {
-        ImageReader reader;
-        try {
-            Object readerSpi = Class.forName("de.digitalcollections.openjpeg.imageio.OpenJp2ImageReaderSpi").getConstructor().newInstance();
-            reader = ((ImageReaderSpi) readerSpi).createReaderInstance();
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            return null;
-        } catch (NoClassDefFoundError | ClassNotFoundException | IllegalAccessException | InstantiationException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            logger.warn("No openjpeg reader");
-            return null;
-        }
-        return reader;
-    }
-
-    /**
      * Adds the given {@link PhysicalElement}'s grouped metadata to the write strategy. Must be called after the page has been mapped to a docstruct,
      * so that all relevant metadata has been copied from the structure element.
      * 
@@ -1571,96 +1340,6 @@ public abstract class Indexer {
     }
 
     /**
-     * 
-     * @param doc Solr input document
-     * @param altoData Parsed ALTO data
-     * @param dataFolders Map containing data folders
-     * @param altoParamName name of the data repository folder containing the alto file
-     * @param pi Record identifier
-     * @param baseFileName Base name of the page data file
-     * @param order Page order
-     * @param converted
-     * @return true if any fields were added; false otherwise
-     * @throws IOException
-     * @should return false if altodata null
-     * @should throw IllegalArgumentException if doc null
-     * @should throw IllegalArgumentException if dataFolders null
-     * @should throw IllegalArgumentException if pi null
-     * @should throw IllegalArgumentException if baseFileName null
-     * @should add filename for native alto file
-     * @should add filename for crowdsourcing alto file
-     * @should add filename for converted alto file
-     * @should add fulltext
-     * @should add width and height
-     * @should add named entities
-     */
-    boolean addIndexFieldsFromAltoData(final SolrInputDocument doc, final Map<String, Object> altoData, final Map<String, Path> dataFolders,
-            final String altoParamName, final String pi, final String baseFileName, final int order, final boolean converted) throws IOException {
-        if (altoData == null) {
-            return false;
-        }
-        if (doc == null) {
-            throw new IllegalArgumentException(StringConstants.ERROR_DOC_MAY_NOT_BE_NULL);
-        }
-        if (dataFolders == null) {
-            throw new IllegalArgumentException("dataFolders may not be null");
-        }
-        if (pi == null) {
-            throw new IllegalArgumentException(StringConstants.ERROR_PI_MAY_NOT_BE_NULL);
-        }
-        if (baseFileName == null) {
-            throw new IllegalArgumentException("baseFileName may not be null");
-        }
-
-        boolean ret = false;
-        // Write ALTO converted from ABBYY/TEI
-        if (converted) {
-            if (dataFolders.get(altoParamName) != null) {
-                FileUtils.writeStringToFile(
-                        new File(dataFolders.get(altoParamName).toFile(), baseFileName + FileTools.XML_EXTENSION),
-                        (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
-                ret = true;
-            } else {
-                logger.error("Data folder not defined: {}", dataFolders.get(altoParamName));
-            }
-        }
-
-        // FILENAME_ALTO
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO)) && doc.getField(SolrConstants.FILENAME_ALTO) == null
-                && dataRepository != null) {
-            doc.addField(SolrConstants.FILENAME_ALTO,
-                    dataRepository.getDir(altoParamName)
-                            .getFileName()
-                            .toString() + '/' + pi
-                            + '/' + baseFileName + FileTools.XML_EXTENSION);
-            ret = true;
-            logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName(), order);
-        }
-        // FULLTEXT
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
-                && doc.getField(SolrConstants.FULLTEXT) == null) {
-            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-            logger.debug(LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO, order);
-        }
-        // WIDTH
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-        }
-        // HEIGHT
-        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-            logger.debug("Added WIDTH from regular ALTO for page {}", order);
-        }
-        // NAMEDENTITIES
-        if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-            addNamedEntitiesFields(altoData, doc);
-        }
-
-        return ret;
-    }
-
-    /**
      * Download the content if the given fileUrl into the given Path target. If target denotes a directory, create a file within using the filename
      * from the URI to write the content.
      * 
@@ -1992,243 +1671,6 @@ public abstract class Indexer {
 
     /**
      * 
-     * @param doc Page Solr input document
-     * @param dataFolders Folder paths containing full-text files
-     * @param dataRepo
-     * @param pi Record identifier
-     * @param order Page number
-     * @param altoURL Optional URL for ALTO download
-     */
-    protected void addFullTextToPageDoc(SolrInputDocument doc, Map<String, Path> dataFolders, DataRepository dataRepo, String pi, int order,
-            String altoURL) {
-        if (doc == null || dataFolders == null) {
-            return;
-        }
-
-        Map<String, Object> altoData = null;
-        String baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue(SolrConstants.FILENAME));
-        // If main image file is a IIIF URL or anything with no unique file name, look for alternatives
-        if (!isBaseFileNameUsable(baseFileName)) {
-            if (doc.getFieldValue("FILENAME_JPEG") != null) {
-                baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue("FILENAME_JPEG"));
-            } else if (doc.getFieldValue("FILENAME_TIFF") != null) {
-                baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue("FILENAME_TIFF"));
-            }
-        }
-
-        // Add complete crowdsourcing ALTO document and full-text generated from ALTO, if available
-        boolean foundCrowdsourcingData = false;
-        boolean altoWritten = false;
-        if (dataFolders.get(DataRepository.PARAM_ALTOCROWD) != null) {
-            File altoFile =
-                    new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION);
-            try {
-                altoData = TextHelper.readAltoFile(altoFile);
-                altoWritten =
-                        addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, pi, baseFileName, order, false);
-                if (altoWritten) {
-                    foundCrowdsourcingData = true;
-                }
-            } catch (FileNotFoundException e) {
-                // Not all pages will have custom ALTO docs
-            } catch (IOException | JDOMException e) {
-                if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
-                    logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
-                }
-            }
-        }
-
-        // Look for plain fulltext from crowdsouring, if the FULLTEXT field is still empty
-        if (doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD) != null) {
-            String fulltext =
-                    TextHelper.generateFulltext(baseFileName + FileTools.TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXTCROWD),
-                            false, SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.fulltextForceUTF8", true));
-            if (fulltext != null) {
-                foundCrowdsourcingData = true;
-                doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
-                doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepo.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName().toString()
-                        + '/' + pi + '/' + baseFileName + FileTools.TXT_EXTENSION);
-                logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
-            }
-        }
-
-        // Look for a regular ALTO document for this page and fill ALTO and/or FULLTEXT fields, whichever is still empty
-        if (!foundCrowdsourcingData && (doc.getField(SolrConstants.ALTO) == null || doc.getField(SolrConstants.FULLTEXT) == null)
-                && dataFolders.get(DataRepository.PARAM_ALTO) != null && isBaseFileNameUsable(baseFileName)) {
-            File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION);
-            try {
-                altoData = TextHelper.readAltoFile(altoFile);
-                altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, pi, baseFileName, order, false);
-            } catch (IOException | JDOMException e) {
-                if (!(e instanceof FileNotFoundException) && !e.getMessage().contains("Premature end of file")) {
-                    logger.warn("Could not read ALTO file '{}': {}", altoFile.getName(), e.getMessage());
-                }
-            }
-        }
-
-        // If FULLTEXT is still empty, look for a plain full-text
-        if (!foundCrowdsourcingData && doc.getField(SolrConstants.FULLTEXT) == null && dataFolders.get(DataRepository.PARAM_FULLTEXT) != null
-                && isBaseFileNameUsable(baseFileName)) {
-            String fulltext =
-                    TextHelper.generateFulltext(baseFileName + FileTools.TXT_EXTENSION, dataFolders.get(DataRepository.PARAM_FULLTEXT), true,
-                            SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.fulltextForceUTF8", true));
-            if (fulltext != null) {
-                doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
-                doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepo
-                        .getDir(DataRepository.PARAM_FULLTEXT)
-                        .getFileName()
-                        .toString() + '/'
-                        + pi + '/' + baseFileName + FileTools.TXT_EXTENSION);
-                logger.debug("Added FULLTEXT from regular plain text for page {}", order);
-            }
-        }
-
-        // Convert ABBYY XML to ALTO
-        if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_ABBYY) != null && isBaseFileNameUsable(baseFileName)) {
-            try {
-                altoData = TextHelper.readAbbyyToAlto(
-                        new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(),
-                                baseFileName + FileTools.XML_EXTENSION));
-                altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName,
-                        order, true);
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
-            } catch (XMLStreamException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-
-        // Convert TEI to ALTO
-        if (!altoWritten && !foundCrowdsourcingData && dataFolders.get(DataRepository.PARAM_TEIWC) != null && isBaseFileNameUsable(baseFileName)) {
-            try {
-                altoData = TextHelper.readTeiToAlto(
-                        new File(dataFolders.get(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), baseFileName + FileTools.XML_EXTENSION));
-                altoWritten = addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, pi, baseFileName, order,
-                        true);
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
-            }
-        }
-
-        if (dataFolders.get(DataRepository.PARAM_MIX) != null && isBaseFileNameUsable(baseFileName)) {
-            try {
-                Map<String, String> mixData = TextHelper
-                        .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                                baseFileName + FileTools.XML_EXTENSION));
-                for (Entry<String, String> entry : mixData.entrySet()) {
-                    if (!(entry.getKey().equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
-                            && !(entry.getKey().equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
-                        doc.addField(entry.getKey(), entry.getValue());
-                    }
-                }
-            } catch (JDOMException e) {
-                logger.error(e.getMessage(), e);
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
-            }
-        }
-
-        // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
-        if (!altoWritten && !foundCrowdsourcingData && altoURL != null && Utils.isValidURL(altoURL)
-                && SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl() != null
-                && !altoURL.startsWith(SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl())) {
-            try {
-                String alto = null;
-                if (StringUtils.startsWithIgnoreCase(altoURL, "http")) {
-                    // HTTP(S)
-                    logger.debug("Downloading ALTO from {}", altoURL);
-                    alto = Utils.getWebContentGET(altoURL);
-                } else if (StringUtils.startsWithIgnoreCase(altoURL, "file:/")) {
-                    // FILE
-                    logger.debug("Reading ALTO from {}", altoURL);
-                    alto = FileTools.readFileToString(new File(URI.create(altoURL).toURL().getPath()), StandardCharsets.UTF_8.name());
-                }
-                if (StringUtils.isNotEmpty(alto)) {
-                    Document altoDoc = XmlTools.getDocumentFromString(alto, null);
-                    altoData = TextHelper.readAltoDoc(altoDoc);
-                    if (altoData != null) {
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-                            // Create PARAM_ALTO_CONVERTED dir in hotfolder for download, if it doesn't yet exist
-                            if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) == null) {
-                                dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
-                                        Paths.get(dataRepo.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
-                                Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
-                            }
-                            if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + FileTools.XML_EXTENSION;
-                                doc.addField(SolrConstants.FILENAME_ALTO,
-                                        dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent().getFileName().toString() + '/' + pi + '/'
-                                                + fileName);
-                                // Write ALTO file
-                                File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
-                                FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
-                                logger.info("Added ALTO from external URL for page {}", order);
-                            } else {
-                                logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
-                            }
-                        } else {
-                            logger.warn("No ALTO found");
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
-                                && doc.getField(SolrConstants.FULLTEXT) == null) {
-                            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                            logger.info("Added FULLTEXT from downloaded ALTO for page {}", order);
-                        } else {
-                            logger.warn("No FULLTEXT found");
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.WIDTH)) && doc.getField(SolrConstants.WIDTH) == null) {
-                            doc.addField(SolrConstants.WIDTH, altoData.get(SolrConstants.WIDTH));
-                            logger.debug("Added WIDTH from downloaded ALTO for page {}", order);
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.HEIGHT)) && doc.getField(SolrConstants.HEIGHT) == null) {
-                            doc.addField(SolrConstants.HEIGHT, altoData.get(SolrConstants.HEIGHT));
-                            logger.debug("Added HEIGHT from downloaded ALTO for page {}", order);
-                        }
-                        if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                            addNamedEntitiesFields(altoData, doc);
-                        }
-                    }
-                }
-            } catch (FileNotFoundException e) {
-                logger.error(e.getMessage());
-            } catch (JDOMException | IOException e) {
-                logger.error(e.getMessage(), e);
-            } catch (HTTPException e) {
-                logger.warn("{}: {}", e.getMessage(), altoURL);
-            }
-        }
-
-        // Add image dimension values from EXIF
-        if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)
-                || ("0".equals(doc.getFieldValue(SolrConstants.WIDTH)) && "0".equals(doc.getFieldValue(SolrConstants.HEIGHT)))) {
-            doc.removeField(SolrConstants.WIDTH);
-            doc.removeField(SolrConstants.HEIGHT);
-            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
-                doc.addField(SolrConstants.WIDTH, dimension.width);
-                doc.addField(SolrConstants.HEIGHT, dimension.height);
-            });
-        }
-
-        // FULLTEXTAVAILABLE indicates whether this page has full-text
-        if (doc.getField(SolrConstants.FULLTEXT) != null) {
-            doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
-            recordHasFulltext = true;
-        } else {
-            doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
-        }
-    }
-
-    /**
-     * 
-     * @param baseFileName
-     * @return true if baseFileName is not one of the keywords; false otherwise
-     */
-    static boolean isBaseFileNameUsable(String baseFileName) {
-        return !("default".equals(baseFileName) || "info".equals(baseFileName) || "native".equals(baseFileName));
-    }
-
-    /**
-     * 
      * @param hotfolderPath
      * @param fileNameRoot
      * @return Map<String, Path>
@@ -2446,7 +1888,7 @@ public abstract class Indexer {
 
         // Add image dimension values from EXIF
         if (!page.getDoc().containsKey(SolrConstants.WIDTH) || !page.getDoc().containsKey(SolrConstants.HEIGHT)) {
-            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) page.getDoc().getFieldValue(SolrConstants.FILENAME))
+            ImageSizeReader.getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) page.getDoc().getFieldValue(SolrConstants.FILENAME))
                     .ifPresent(dimension -> {
                         page.getDoc().addField(SolrConstants.WIDTH, dimension.width);
                         page.getDoc().addField(SolrConstants.HEIGHT, dimension.height);

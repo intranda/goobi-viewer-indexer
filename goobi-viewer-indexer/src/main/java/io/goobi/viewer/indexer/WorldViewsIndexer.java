@@ -51,6 +51,7 @@ import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
+import io.goobi.viewer.indexer.helper.FulltextAugmentor;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -834,7 +835,9 @@ public class WorldViewsIndexer extends Indexer {
             ret.getDoc().addField(SolrConstants.DOCSTRCT, "OtherDocStrct"); // TODO
         }
 
-        addFullTextToPageDoc(ret.getDoc(), dataFolders, dataRepository, pi, useOrder, null);
+        if (new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, useOrder, null)) {
+            this.recordHasFulltext = true;
+        }
 
         return ret;
     }

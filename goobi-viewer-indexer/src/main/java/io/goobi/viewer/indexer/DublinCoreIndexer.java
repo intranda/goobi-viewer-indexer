@@ -46,7 +46,9 @@ import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
+import io.goobi.viewer.indexer.helper.FulltextAugmentor;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.helper.ImageSizeReader;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
@@ -590,10 +592,11 @@ public class DublinCoreIndexer extends Indexer {
 
         // Add image dimension values from EXIF
         if (!ret.getDoc().containsKey(SolrConstants.WIDTH) || !ret.getDoc().containsKey(SolrConstants.HEIGHT)) {
-            getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) ret.getDoc().getFieldValue(SolrConstants.FILENAME)).ifPresent(dimension -> {
-                ret.getDoc().addField(SolrConstants.WIDTH, dimension.width);
-                ret.getDoc().addField(SolrConstants.HEIGHT, dimension.height);
-            });
+            ImageSizeReader.getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) ret.getDoc().getFieldValue(SolrConstants.FILENAME))
+                    .ifPresent(dimension -> {
+                        ret.getDoc().addField(SolrConstants.WIDTH, dimension.width);
+                        ret.getDoc().addField(SolrConstants.HEIGHT, dimension.height);
+                    });
         }
 
         // FIELD_IMAGEAVAILABLE indicates whether this page has an image
@@ -605,7 +608,9 @@ public class DublinCoreIndexer extends Indexer {
             ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
         }
 
-        addFullTextToPageDoc(ret.getDoc(), dataFolders, dataRepository, pi, order, null);
+        if (new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, order, null)) {
+            this.recordHasFulltext = true;
+        }
 
         return ret;
     }
