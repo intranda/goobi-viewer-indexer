@@ -24,13 +24,32 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.Indexer;
 
 class ImageSizeReaderTest extends AbstractSolrEnabledTest {
+
+    private static String libraryPath = "";
+
+    @BeforeAll
+    public static void setUpBeforeClass() {
+        File libraryFile = new File("src/test/resources/lib/libopenjp2.so");
+        libraryPath = System.getProperty("java.library.path");
+        System.setProperty("java.library.path", libraryPath + ":" + libraryFile.getParentFile().getAbsolutePath());
+    }
+
+    @AfterAll
+    public static void cleanUpAfterClass() {
+        if (StringUtils.isNotBlank(libraryPath)) {
+            System.setProperty("java.library.path", libraryPath);
+        }
+    }
 
     /**
      * @see Indexer#getSize(Map,SolrInputDocument)
@@ -52,7 +71,8 @@ class ImageSizeReaderTest extends AbstractSolrEnabledTest {
                     FileUtils.deleteDirectory(outputFolder);
                 }
                 outputFolder.mkdirs();
-
+                File file = new File(dataFolder, filename);
+                assertTrue(file.isFile(), "Test image file " + file + " does not exist");
                 Optional<Dimension> dim = ImageSizeReader.getSize(dataFolder.toPath(), filename);
                 // jp2 image files cannot be read because of missing jp2 library
                 assertTrue(dim.isPresent(), "Failed to retrieve size for " + dataFolder.toPath() + "/" + filename);
