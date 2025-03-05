@@ -702,7 +702,7 @@ public class DublinCoreIndexer extends Indexer {
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
                 String oldMetsFilename = new StringBuilder(FilenameUtils.getBaseName(sbNewFilename.toString())).append("_")
-                        .append(LocalDate.now().format(DateTools.formatterBasicDateTime))
+                        .append(LocalDate.now().format(DateTools.FORMATTER_BASIC_DATETIME))
                         .append(".xml")
                         .toString();
                 Files.move(indexed, Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename));

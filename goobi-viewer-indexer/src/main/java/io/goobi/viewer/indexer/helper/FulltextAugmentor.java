@@ -44,6 +44,9 @@ import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
+/**
+ * Augments a solr document with data from fulltext-files (alto and plaintxt)
+ */
 public class FulltextAugmentor {
 
     private static final Logger logger = LogManager.getLogger(FulltextAugmentor.class);
@@ -52,18 +55,24 @@ public class FulltextAugmentor {
 
     private final DataRepository dataRepository;
 
+    /**
+     * Default constructor
+     * 
+     * @param dataRepository the data repository to use
+     */
     public FulltextAugmentor(DataRepository dataRepository) {
         this.dataRepository = dataRepository;
     }
 
     /**
+     * Add fulltext data to given document
      * 
      * @param doc Page Solr input document
      * @param dataFolders Folder paths containing full-text files
-     * @param dataRepo
      * @param pi Record identifier
      * @param order Page number
      * @param altoURL Optional URL for ALTO download
+     * @return true if any fulltext data was found, false otherwise
      */
     public boolean addFullTextToPageDoc(SolrInputDocument doc, Map<String, Path> dataFolders, String pi, int order,
             String altoURL) {

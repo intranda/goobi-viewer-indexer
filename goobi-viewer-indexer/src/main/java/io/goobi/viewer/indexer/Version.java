@@ -66,7 +66,7 @@ public final class Version {
         } else {
             APPLICATION_NAME = "goobi-viewer-indexer";
             VERSION = "unknown";
-            BUILDDATE = LocalDateTime.now().format(DateTools.formatterISO8601DateTimeNoSeconds);
+            BUILDDATE = LocalDateTime.now().format(DateTools.FORMATTER_ISO8601_DATETIMENOSECONDS);
             BUILDVERSION = "unknown";
         }
     }
