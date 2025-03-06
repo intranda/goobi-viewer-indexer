@@ -477,6 +477,11 @@ public final class MetadataHelper {
         if (authorityUrl == null) {
             throw new IllegalArgumentException("authorityUrl may not be null");
         }
+        // TODO remove once it works
+        if (authorityUrl.contains("viaf.org")) {
+            logger.warn("Viaf support ist temporarily suspended.");
+            return Collections.emptyList();
+        }
 
         String url = authorityUrl;
 
@@ -1247,6 +1252,7 @@ public final class MetadataHelper {
             }
         }
 
+        List<LuceneField> sortFields = new ArrayList<>();
         for (LuceneField field : ret.getFields()) {
             String moddedValue;
             switch (field.getField()) {
@@ -1298,7 +1304,13 @@ public final class MetadataHelper {
                     }
                 }
             }
+
+            // Add sorting field
+            addSortField(field.getField(), moddedValue, SolrConstants.PREFIX_SORT,
+                    configurationItem.getNonSortConfigurations(),
+                    configurationItem.getValueNormalizers(), sortFields);
         }
+        ret.getFields().addAll(sortFields);
 
         // If there was no existing GROUPFIELD in the group metadata, add one now using the norm identifier
         if (!groupFieldAlreadyReplaced && StringUtils.isNotEmpty(authorityIdentifier)) {

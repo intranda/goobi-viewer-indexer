@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,11 +29,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrDocument;
@@ -53,7 +50,6 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
-import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.LuceneField;
@@ -283,58 +279,6 @@ class IndexerTest extends AbstractSolrEnabledTest {
     @Test
     void cleanUpDefaultField_shouldReturnNullIfFieldNull() {
         assertNull(Indexer.cleanUpDefaultField(null));
-    }
-
-    /**
-     * @see Indexer#cleanUpNamedEntityValue(String)
-     * @verifies clean up value correctly
-     */
-    @Test
-    void cleanUpNamedEntityValue_shouldCleanUpValueCorrectly() {
-        assertEquals("abcd", Indexer.cleanUpNamedEntityValue("\"(abcd,\""));
-    }
-
-    /**
-     * @see Indexer#cleanUpNamedEntityValue(String)
-     * @verifies throw IllegalArgumentException given null
-     */
-    @Test
-    void cleanUpNamedEntityValue_shouldThrowIllegalArgumentExceptionGivenNull() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.cleanUpNamedEntityValue(null));
-    }
-
-    /**
-     * @see Indexer#getSize(Map,SolrInputDocument)
-     * @verifies return size correctly
-     */
-    @Test
-    void getSize_shouldReturnSizeCorrectly() throws Exception {
-
-        String[] filenames = { "00000001.tif", "00225231.png", "test1.jp2" };
-        Dimension[] imageSizes = { new Dimension(3192, 4790), new Dimension(2794, 3838), new Dimension(3448, 6499) };
-
-        File dataFolder = new File("src/test/resources/image_size");
-
-        int i = 0;
-        File outputFolder = new File(dataFolder, "output");
-        try {
-            for (String filename : filenames) {
-                if (outputFolder.isDirectory()) {
-                    FileUtils.deleteDirectory(outputFolder);
-                }
-                outputFolder.mkdirs();
-
-                Optional<Dimension> dim = Indexer.getSize(dataFolder.toPath(), filename);
-                // jp2 image files cannot be read because of missing jp2 library
-                assertTrue(dim.isPresent());
-                assertEquals(imageSizes[i], dim.get(), "Image size of " + filename + " is " + dim + ", but should be " + imageSizes[i]);
-                i++;
-            }
-        } finally {
-            if (outputFolder.isDirectory()) {
-                FileUtils.deleteDirectory(outputFolder);
-            }
-        }
     }
 
     /**
@@ -707,202 +651,6 @@ class IndexerTest extends AbstractSolrEnabledTest {
         assertEquals(iddocChild, strategy.getDocsToAdd().get(2).getFieldValue(SolrConstants.IDDOC_OWNER));
         assertEquals("foo", strategy.getDocsToAdd().get(2).getFieldValue("MD_ONE"));
         assertEquals("bar", strategy.getDocsToAdd().get(2).getFieldValue("MD_TWO"));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies return false if altodata null
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldReturnFalseIfAltodataNull() throws Exception {
-        Assertions.assertFalse(
-                new MetsIndexer(hotfolder).addIndexFieldsFromAltoData(new SolrInputDocument(new HashMap<>()), null, Collections.emptyMap(),
-                        DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies throw IllegalArgumentException if doc null
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDocNull() {
-        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
-        Map<String, Object> altoData = Collections.emptyMap();
-        Map<String, Path> dataFolders = Collections.emptyMap();
-
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> metsIndeer
-                        .addIndexFieldsFromAltoData(null, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies throw IllegalArgumentException if dataFolders null
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() {
-        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-        Map<String, Object> altoData = Collections.emptyMap();
-
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, null, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies throw IllegalArgumentException if pi null
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfPiNull() {
-        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-        Map<String, Object> altoData = Collections.emptyMap();
-        Map<String, Path> dataFolders = Collections.emptyMap();
-
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, null, "00000010", 10, false));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies throw IllegalArgumentException if baseFileName null
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldThrowIllegalArgumentExceptionIfBaseFileNameNull() {
-        MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-        Map<String, Object> altoData = Collections.emptyMap();
-        Map<String, Path> dataFolders = Collections.emptyMap();
-
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> metsIndeer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", null, 10, false));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies add filename for native alto file
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldAddFilenameForNativeAltoFile() throws Exception {
-        Indexer indexer = new MetsIndexer(hotfolder);
-        indexer.setDataRepository(new DataRepository("src/test/resources", true));
-        Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
-        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-        File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
-        Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
-
-        assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-        assertEquals("alto/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies add filename for crowdsourcing alto file
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldAddFilenameForCrowdsourcingAltoFile() throws Exception {
-        Indexer indexer = new MetsIndexer(hotfolder);
-        indexer.setDataRepository(new DataRepository("src/test/resources", true));
-        Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_ALTOCROWD, Paths.get("src/test/resources/ALTO/"));
-        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTOCROWD)));
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-        File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), "00000010.xml");
-        Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
-
-        assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, "PPN123", "00000010", 10, false));
-        assertEquals("alto_crowd/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies add filename for converted alto file
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldAddFilenameForConvertedAltoFile() throws Exception {
-        Indexer indexer = new MetsIndexer(hotfolder);
-        indexer.setDataRepository(new DataRepository("build/viewer", true));
-        Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_ABBYY, Paths.get("src/test/resources/ABBYYXML"));
-        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ABBYY)));
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-        File abbyyfile = new File(dataFolders.get(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), "00000001.xml");
-        Map<String, Object> altoData = TextHelper.readAbbyyToAlto(abbyyfile);
-
-        assertTrue(
-                indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, "PPN123", "00000001", 1, true));
-        assertEquals("alto/PPN123/00000001.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies add fulltext
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldAddFulltext() throws Exception {
-        Indexer indexer = new MetsIndexer(hotfolder);
-        indexer.setDataRepository(new DataRepository("src/test/resources", true));
-        Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
-        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-        File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
-        Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
-
-        assertTrue(indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-        assertNotNull(doc.getFieldValue(SolrConstants.FULLTEXT));
-    }
-
-    /**
-     * @see Indexer#addIndexFieldsFromAltoData(SolrInputDocument,Map,Map,String,String,String,int,boolean)
-     * @verifies add width and height
-     */
-    @Test
-    void addIndexFieldsFromAltoData_shouldAddWidthAndHeight() throws Exception {
-        Indexer indexer = new MetsIndexer(hotfolder);
-        indexer.setDataRepository(new DataRepository("src/test/resources", true));
-        Map<String, Path> dataFolders = new HashMap<>();
-        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
-        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-        File altoFile = new File(dataFolders.get(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), "00000010.xml");
-        Map<String, Object> altoData = TextHelper.readAltoFile(altoFile);
-
-        assertTrue(
-                indexer.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
-        assertEquals("2480", doc.getFieldValue(SolrConstants.WIDTH));
-        assertEquals("3508", doc.getFieldValue(SolrConstants.HEIGHT));
-    }
-
-    /**
-     * @see Indexer#addNamedEntitiesFields(Map,SolrInputDocument)
-     * @verifies add field
-     */
-    @Test
-    void addNamedEntitiesFields_shouldAddField() {
-        Map<String, Object> altoData = new HashMap<>(1);
-        altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION###Göttingen###https://www.geonames.org/2918632"));
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-
-        Indexer.addNamedEntitiesFields(altoData, doc);
-        assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION"));
-    }
-
-    /**
-     * @see Indexer#addNamedEntitiesFields(Map,SolrInputDocument)
-     * @verifies add untokenized field
-     */
-    @Test
-    void addNamedEntitiesFields_shouldAddUntokenizedField() {
-        Map<String, Object> altoData = new HashMap<>(1);
-        altoData.put(SolrConstants.NAMEDENTITIES, Collections.singletonList("LOCATION###Göttingen###https://www.geonames.org/2918632"));
-        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
-
-        Indexer.addNamedEntitiesFields(altoData, doc);
-        assertEquals("Göttingen", doc.getFieldValue("NE_LOCATION_UNTOKENIZED"));
     }
 
     /**

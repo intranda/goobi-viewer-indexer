@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-17 AS BUILD
+FROM maven:3-eclipse-temurin-21 AS BUILD
 
 LABEL org.opencontainers.image.authors="Matthias Geerdsen <matthias.geerdsen@intranda.com>"
 LABEL org.opencontainers.image.source="https://github.com/intranda/goobi-viewer-indexer"
@@ -13,7 +13,7 @@ RUN echo $build; if [ "$build" = "true" ]; then mvn -f goobi-viewer-indexer clea
 
 
 # start assembling the final image
-FROM eclipse-temurin:17-jre-jammy AS ASSEMBLE
+FROM eclipse-temurin:21-jre-jammy AS ASSEMBLE
 LABEL org.opencontainers.image.authors="Matthias Geerdsen <matthias.geerdsen@intranda.com>"
 
 

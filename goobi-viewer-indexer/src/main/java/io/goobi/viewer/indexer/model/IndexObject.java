@@ -316,7 +316,7 @@ public class IndexObject {
      *
      * @param field {@link java.lang.String}
      * @param value {@link java.lang.String}
-     * @return {@link java.lang.Boolean} true if sucessful
+     * @return {@link java.lang.Boolean} true if successful
      * @should add field to list correctly
      */
     public boolean addToLucene(String field, String value) {

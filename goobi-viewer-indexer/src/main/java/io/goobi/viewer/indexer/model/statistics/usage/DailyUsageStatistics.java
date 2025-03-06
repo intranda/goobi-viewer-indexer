@@ -52,7 +52,7 @@ public class DailyUsageStatistics {
     public DailyUsageStatistics(JSONObject json) {
         try {
             String dateString = json.getString("date");
-            this.date = LocalDate.parse(dateString, DateTools.formatterISO8601Date);
+            this.date = LocalDate.parse(dateString, DateTools.FORMATTER_ISO8601_DATE);
             this.viewerName = json.getString("viewer-name");
             JSONArray records = json.getJSONArray("records");
             requestCounts = new HashMap<>();
@@ -71,7 +71,7 @@ public class DailyUsageStatistics {
      * @return the dateformatter
      */
     public static DateTimeFormatter getDateformatter() {
-        return DateTools.formatterISO8601Date;
+        return DateTools.FORMATTER_ISO8601_DATE;
     }
 
     /**

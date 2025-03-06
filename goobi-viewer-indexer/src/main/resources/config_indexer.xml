@@ -402,8 +402,8 @@
                     <xpath>mets:xmlData/mods:mods/mods:accessCondition[@type="moving wall"]/@type</xpath>
                     <xpath>lido:descriptiveMetadata/lido:objectClassificationWrap/lido:classificationWrap/lido:classification[@lido:type="restriction"]/lido:conceptID[@lido:type="http://terminology.lido-schema.org/identifier_type/local_identifier"]</xpath>
                     <xpath>dc:rights[not(contains(text(),'http'))]</xpath>
-                    <xpath>ead:archdesc/ead:dsc/ead:accessrestrict</xpath>
-                    <xpath>ead:dsc/ead:accessrestrict</xpath>
+                    <xpath>ead:archdesc/ead:accessrestrict/ead:p</xpath>
+                    <xpath>ead:accessrestrict/ead:p</xpath>
                     
 					<addToDefault>false</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
@@ -3023,7 +3023,7 @@
 					<xpath>lido:descriptiveMetadata[@xml:lang="fr"]/lido:objectRelationWrap/lido:relatedWorksWrap/lido:relatedWorkSet/lido:relatedWork/lido:object[lido:objectID[@lido:source="a-z.lu"]]</xpath>
 					<addToDefault>true</addToDefault>
 					<groupEntity type="CITATION" urlType="oai"
-						url="https://bibnet.alma.exlibrisgroup.com/view/oai/352LUX_BIBNET_NETWORK/request?verb=GetRecord&amp;identifier=oai:alma.352LUX_BIBNET_NETWORK:${MD_VALUE}&amp;metadataPrefix=marc21">
+						url="https://oai.example.com/view/oai/FOOBAR/request?verb=GetRecord&amp;identifier=oai:alma.352LUX_BIBNET_NETWORK:${MD_VALUE}&amp;metadataPrefix=marc21">
 						<field name="MD_VALUE">lido:objectID[@lido:source="a-z.lu"]</field>
 						<field name="MD_CITATION_RECORDID">oai:GetRecord/oai:record/oai:metadata/marc:record/marc:controlfield[@tag="001"]</field>
 						<field name="MD_CITATION_TITLE">oai:GetRecord/oai:record/oai:metadata/marc:record/marc:datafield[@tag="245"]/marc:subfield[@code="a"]</field>
@@ -3813,7 +3813,7 @@
             </list>
         </MD_AGENCY_LOCATION_LANG_EN>
 
-        
+       
     </fields>
  
 </root>

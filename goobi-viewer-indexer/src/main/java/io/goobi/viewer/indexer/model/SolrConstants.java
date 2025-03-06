@@ -33,7 +33,8 @@ public final class SolrConstants {
         PAGE,
         SHAPE,
         UGC,
-        CMS;
+        CMS,
+        DOWNLOAD_RESOURCE;
     }
 
     public enum MetadataGroupType {
@@ -181,6 +182,8 @@ public final class SolrConstants {
     public static final String NUMPAGES = "NUMPAGES";
     /** Constant <code>NUMVOLUMES="NUMVOLUMES"</code> */
     public static final String NUMVOLUMES = "NUMVOLUMES";
+    /** Constant <code>MDNUM_DOWNLOAD_RESOURCES="MDNUM_DOWNLOAD_RESOURCES"</code> */
+    public static final String MDNUM_DOWNLOAD_RESOURCES = "MDNUM_DOWNLOAD_RESOURCES";
     /** Constant <code>OPACURL="OPACURL"</code> */
     public static final String OPACURL = "OPACURL";
     /** Constant <code>ORDER="ORDER"</code> */
@@ -276,7 +279,7 @@ public final class SolrConstants {
 
     public static final String SOLR_QUERY_AND = " AND ";
     public static final String SOLR_QUERY_TRUE = ":true";
-    
+
     /** Private constructor. */
     private SolrConstants() {
     }
