@@ -961,18 +961,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see MetsIndexer#buildPagesXpathExpresson()
-     * @verifies build expression correctly
-     */
-    @Test
-    void buildPagesXpathExpresson_shouldBuildExpressionCorrectly() {
-        assertEquals(
-                "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div"
-                        + "[@TYPE=\"page\" or @TYPE=\"object\" or @TYPE=\"audio\" or @TYPE=\"video\"]",
-                MetsIndexer.buildPagesXpathExpresson());
-    }
-
-    /**
      * @see MetsIndexer#generatePageDocuments(JDomXP)
      * @verifies set correct ORDER values
      */
@@ -1001,7 +989,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         indexer.initJDomXP(metsFile2);
         ZonedDateTime dateCreated = indexer.getMetsCreateDate();
         assertNotNull(dateCreated);
-        assertEquals("2013-07-02T13:03:37", dateCreated.format(DateTools.formatterISO8601LocalDateTime));
+        assertEquals("2013-07-02T13:03:37", dateCreated.format(DateTools.FORMATTER_ISO8601_LOCALDATETIME));
 
     }
 

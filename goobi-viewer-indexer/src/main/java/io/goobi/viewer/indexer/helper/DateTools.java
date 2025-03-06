@@ -30,8 +30,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.goobi.viewer.indexer.model.PrimitiveDate;
 
@@ -43,30 +43,30 @@ public final class DateTools {
     private static final Logger logger = LogManager.getLogger(DateTools.class);
 
     /** Constant <code>formatterISO8601Full</code> */
-    public static final DateTimeFormatter formatterISO8601LocalDateTime = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
+    public static final DateTimeFormatter FORMATTER_ISO8601_LOCALDATETIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss
     /** Constant <code>formatterISO8601DateTimeInstant</code> */
-    public static final DateTimeFormatter formatterISO8601DateTimeInstant = DateTimeFormatter.ISO_INSTANT; // yyyy-MM-dd'T'HH:mm:ssZ
+    public static final DateTimeFormatter FORMATTER_ISO8601_DATETIMEINSTANT = DateTimeFormatter.ISO_INSTANT; // yyyy-MM-dd'T'HH:mm:ssZ
     /** Constant <code>formatterISO8601DateTimeWithOffset</code> */
-    public static final DateTimeFormatter formatterISO8601DateTimeWithOffset = DateTimeFormatter.ISO_OFFSET_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss+01:00
+    public static final DateTimeFormatter FORMATTER_ISO8601_DATETIMEWITHOFFSET = DateTimeFormatter.ISO_OFFSET_DATE_TIME; // yyyy-MM-dd'T'HH:mm:ss+01:00
     /** Constant <code>formatterISO8601Date</code> */
-    public static final DateTimeFormatter formatterISO8601Date = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
+    public static final DateTimeFormatter FORMATTER_ISO8601_DATE = DateTimeFormatter.ISO_LOCAL_DATE; // yyyy-MM-dd
     /** Constant <code>formatterISO8601DateTimeNoSeconds</code> */
-    public static final DateTimeFormatter formatterISO8601DateTimeNoSeconds = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public static final DateTimeFormatter FORMATTER_ISO8601_DATETIMENOSECONDS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     /** Constant <code>formatterISO8601YearMonth</code> */
-    public static final DateTimeFormatter formatterISO8601YearMonth = new DateTimeFormatterBuilder()
+    public static final DateTimeFormatter FORMATTER_ISO8601_YEARMONTH = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM")
             .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
             .toFormatter();
     /** Constant <code>formatterDEDate</code> */
-    public static final DateTimeFormatter formatterDEDate = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    public static final DateTimeFormatter FORMATTER_DE_DATE = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     /** Constant <code>formatterUSDate</code> */
-    public static final DateTimeFormatter formatterUSDate = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+    public static final DateTimeFormatter FORMATTER_US_DATE = DateTimeFormatter.ofPattern("MM/dd/yyyy");
     /** Constant <code>formatterCNDate</code> */
-    public static final DateTimeFormatter formatterCNDate = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+    public static final DateTimeFormatter FORMATTER_CN_DATE = DateTimeFormatter.ofPattern("yyyy.MM.dd");
     /** Constant <code>formatterJPDate</code> */
-    public static final DateTimeFormatter formatterJPDate = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    public static final DateTimeFormatter FORMATTER_JP_DATE = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     /** Constant <code>formatterBasicDateTime</code> */
-    public static final DateTimeFormatter formatterBasicDateTime = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    public static final DateTimeFormatter FORMATTER_BASIC_DATETIME = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     /** Private constructor. */
     private DateTools() {
@@ -95,28 +95,28 @@ public final class DateTools {
 
         // Try known date formats first
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterISO8601LocalDateTime);
+            LocalDate date = LocalDate.parse(dateString, FORMATTER_ISO8601_LOCALDATETIME);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
             // Not this format, try next
         }
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterISO8601DateTimeInstant);
+            LocalDate date = LocalDate.parse(dateString, FORMATTER_ISO8601_DATETIMEINSTANT);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
             // Not this format, try next
         }
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterDEDate);
+            LocalDate date = LocalDate.parse(dateString, FORMATTER_DE_DATE);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
             // Not this format, try next
         }
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterISO8601Date);
+            LocalDate date = LocalDate.parse(dateString, FORMATTER_ISO8601_DATE);
             ret.add(new PrimitiveDate(date));
             logger.trace("parsed date: {} (using format yyyy-MM-dd)", date);
             return ret;
@@ -124,28 +124,28 @@ public final class DateTools {
             // Not this format, try next
         }
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterISO8601YearMonth);
+            LocalDate date = LocalDate.parse(dateString, FORMATTER_ISO8601_YEARMONTH);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
             // Not this format, try next
         }
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterUSDate);
+            LocalDate date = LocalDate.parse(dateString, FORMATTER_US_DATE);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
             // Not this format, try next
         }
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterCNDate);
+            LocalDate date = LocalDate.parse(dateString, FORMATTER_CN_DATE);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
             // Not this format, try next
         }
         try {
-            LocalDate date = LocalDate.parse(dateString, formatterJPDate);
+            LocalDate date = LocalDate.parse(dateString, FORMATTER_JP_DATE);
             ret.add(new PrimitiveDate(date));
             return ret;
         } catch (DateTimeParseException e) {
@@ -203,14 +203,14 @@ public final class DateTools {
 
         // UTC instant - no need to adapt
         try {
-            LocalDateTime.parse(value, formatterISO8601DateTimeInstant.withZone(ZoneOffset.UTC));
+            LocalDateTime.parse(value, FORMATTER_ISO8601_DATETIMEINSTANT.withZone(ZoneOffset.UTC));
             return value;
         } catch (DateTimeParseException e) {
             logger.trace(e.getMessage());
         }
         // Local datetime
         try {
-            return LocalDateTime.parse(value, formatterISO8601LocalDateTime).atZone(ZoneOffset.UTC).format(formatterISO8601DateTimeInstant);
+            return LocalDateTime.parse(value, FORMATTER_ISO8601_LOCALDATETIME).atZone(ZoneOffset.UTC).format(FORMATTER_ISO8601_DATETIMEINSTANT);
         } catch (DateTimeParseException e) {
             logger.trace(e.getMessage());
         }
@@ -234,7 +234,7 @@ public final class DateTools {
                 ZonedDateTime ld =
                         LocalDateTime.of(date.getYear(), date.getMonth() != null ? date.getMonth() : 1, date.getDay() != null ? date.getDay() : 1, 0,
                                 0, 0, 0).atZone(useUTC ? ZoneOffset.UTC : ZoneId.systemDefault());
-                return ld.format(formatterISO8601DateTimeInstant);
+                return ld.format(FORMATTER_ISO8601_DATETIMEINSTANT);
             }
         }
 

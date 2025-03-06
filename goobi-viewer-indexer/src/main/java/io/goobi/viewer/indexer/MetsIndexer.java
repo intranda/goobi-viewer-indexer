@@ -166,7 +166,7 @@ public class MetsIndexer extends Indexer {
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
                 String oldMetsFilename =
-                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.formatterBasicDateTime) + ".xml";
+                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.FORMATTER_BASIC_DATETIME) + ".xml";
                 Path newFile = Paths.get(hotfolder.getUpdatedMets().toAbsolutePath().toString(), oldMetsFilename);
                 Files.copy(indexed, newFile);
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
@@ -974,23 +974,6 @@ public class MetsIndexer extends Indexer {
                 }
             }
         }
-    }
-
-    /**
-     * Builds XPath expression for physical elements.
-     * 
-     * @return Constructed expression
-     * @should build expression correctly
-     */
-    static String buildPagesXpathExpresson() {
-        StringBuilder sb = new StringBuilder("/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div[@TYPE=\"page\"");
-        List<String> allowedTypes = SolrIndexerDaemon.getInstance().getConfiguration().getMetsAllowedPhysicalTypes();
-        for (String type : allowedTypes) {
-            sb.append(" or @TYPE=\"").append(type).append('"');
-        }
-        sb.append(']');
-
-        return sb.toString();
     }
 
     /**
@@ -1810,13 +1793,13 @@ public class MetsIndexer extends Indexer {
         }
 
         try {
-            return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeInstant);
+            return ZonedDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_DATETIMEINSTANT);
         } catch (DateTimeParseException e) {
             try {
-                return LocalDateTime.parse(dateString, DateTools.formatterISO8601LocalDateTime).atZone(ZoneId.systemDefault());
+                return LocalDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_LOCALDATETIME).atZone(ZoneId.systemDefault());
             } catch (DateTimeParseException e1) {
                 try {
-                    return ZonedDateTime.parse(dateString, DateTools.formatterISO8601DateTimeWithOffset);
+                    return ZonedDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_DATETIMEWITHOFFSET);
                 } catch (DateTimeParseException e2) {
                     logger.error(e2.getMessage());
                     return null;
@@ -1864,7 +1847,7 @@ public class MetsIndexer extends Indexer {
             } catch (FileAlreadyExistsException e) {
                 // Add a timestamp to the old file nameformatterBasicDateTime
                 String oldMetsFilename = new StringBuilder(FilenameUtils.getBaseName(sbNewFilename.toString())).append("_")
-                        .append(LocalDateTime.now().format(DateTools.formatterBasicDateTime))
+                        .append(LocalDateTime.now().format(DateTools.FORMATTER_BASIC_DATETIME))
                         .append(".xml")
                         .toString();
                 Path destMetsFilePath = Paths.get(updatedMetsFolder.toAbsolutePath().toString(), oldMetsFilename);

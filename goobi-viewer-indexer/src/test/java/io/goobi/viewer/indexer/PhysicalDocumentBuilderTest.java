@@ -13,28 +13,26 @@
  *
  * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package io.goobi.viewer.indexer.model;
+package io.goobi.viewer.indexer;
 
-import java.sql.Date;
-import java.time.LocalDate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import io.goobi.viewer.indexer.helper.DateTools;
+class PhysicalDocumentBuilderTest extends AbstractSolrEnabledTest {
 
-class PrimitiveDateTest {
+    /** Logger for this class. */
+    //    private static final Logger logger = LogManager.getLogger(PhysicalDocumentBuilderTest.class);
 
     /**
-     * @see PrimitiveDate#PrimitiveDate(Date)
-     * @verifies set date correctly
+     * @see MetsIndexer#buildPagesXpathExpresson()
+     * @verifies build expression correctly
      */
     @Test
-    void PrimitiveDate_shouldSetDateCorrectly() throws Exception {
-        LocalDate date = LocalDate.parse("2020-05-29", DateTools.FORMATTER_ISO8601_DATE);
-        PrimitiveDate pd = new PrimitiveDate(date);
-        Assertions.assertEquals(Integer.valueOf(2020), pd.getYear());
-        Assertions.assertEquals(Integer.valueOf(5), pd.getMonth());
-        Assertions.assertEquals(Integer.valueOf(29), pd.getDay());
+    void buildPagesXpathExpresson_shouldBuildExpressionCorrectly() {
+        assertEquals(
+                "/mets:mets/mets:structMap[@TYPE=\"PHYSICAL\"]/mets:div/mets:div"
+                        + "[@TYPE=\"page\" or @TYPE=\"object\" or @TYPE=\"audio\" or @TYPE=\"video\"]",
+                PhysicalDocumentBuilder.buildPagesXpathExpresson());
     }
 }
