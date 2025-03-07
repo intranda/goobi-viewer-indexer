@@ -804,12 +804,11 @@
 		<MD_CREATOR>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority="marcrelator"][@type="code"])]</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="cre"[@authority="marcrelator"][@type="code"]]</xpath>
 					<xpath>lido:eventActor/lido:actorInRole/lido:actor</xpath>
 					<xpath>dc:creator</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
-					<lowercase>true</lowercase>
 					<replace string="&lt;&lt;"></replace>
 					<replace string="&gt;&gt;"></replace>
 					<replace char="152"></replace>
@@ -1004,7 +1003,7 @@
 		<MD2_ALLPERSONS>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority="marcrelator"][@type="code"])]</xpath>
+					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"]</xpath>
 					<xpath>lido:eventActor/lido:actorInRole/lido:actor</xpath>
 					<addToDefault>false</addToDefault>
 					<addSortField>false</addSortField>
@@ -1285,22 +1284,6 @@
 				</item>
 			</list>
 		</MD_CORRESPONDENT>
-
-		<MD_CREATORS>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][not(mods:role/mods:roleTerm="rcp"[@authority="marcrelator"][@type="code"])]</xpath>
-					<xpath>lido:eventActor/lido:actorInRole/lido:actor/lido:nameActorSet/lido:appellationValue</xpath>
-					<replace string="&lt;&lt;"></replace>
-					<replace string="&gt;&gt;"></replace>
-					<replace char="152"></replace>
-					<replace char="156"></replace>
-					<onefield>true</onefield>
-					<addToDefault>false</addToDefault>
-					<addSortField>false</addSortField>
-				</item>
-			</list>
-		</MD_CREATORS>
 
 		<MD_DEDICATEE>
 			<list>
