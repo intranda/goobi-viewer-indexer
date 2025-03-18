@@ -255,8 +255,8 @@ public final class SolrConstants {
     /** Constant <code>PREFIX_SORTNUM="SORTNUM_"</code> */
     public static final String PREFIX_SORTNUM = "SORTNUM_";
 
-    /** Constant <code>MIXFIX_LANG="_LANG_"</code> */
-    public static final String MIXFIX_LANG = "_LANG_";
+    /** Constant <code>MIDFIX_LANG="_LANG_"</code> */
+    public static final String MIDFIX_LANG = "_LANG_";
 
     /** Constant <code>SUFFIX_HTML_SANDBOXED="_HTML-SANDBOXED"</code> */
     public static final String SUFFIX_HTML_SANDBOXED = "_HTML-SANDBOXED";

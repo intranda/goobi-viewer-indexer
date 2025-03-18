@@ -234,7 +234,7 @@ public class CmsPageIndexer extends Indexer {
                         indexObj.setLabel(eleTitle.getTextTrim());
                     }
                     if (eleTitle.getAttribute("lang") != null) {
-                        indexObj.addToLucene("MD_TITLE" + SolrConstants.MIXFIX_LANG + eleTitle.getAttributeValue("lang").toUpperCase(),
+                        indexObj.addToLucene("MD_TITLE" + SolrConstants.MIDFIX_LANG + eleTitle.getAttributeValue("lang").toUpperCase(),
                                 eleTitle.getTextTrim());
                     } else {
                         indexObj.addToLucene("MD_TITLE", eleTitle.getTextTrim());
@@ -261,7 +261,7 @@ public class CmsPageIndexer extends Indexer {
                     String lang = eleText.getAttributeValue("lang");
                     String value = eleText.getText();
                     if (StringUtils.isNotEmpty(value)) {
-                        String fieldName = StringUtils.isNotEmpty(lang) ? "MD_TEXT" + SolrConstants.MIXFIX_LANG + lang.toUpperCase() : "MD_TEXT";
+                        String fieldName = StringUtils.isNotEmpty(lang) ? "MD_TEXT" + SolrConstants.MIDFIX_LANG + lang.toUpperCase() : "MD_TEXT";
                         indexObj.addToLucene(fieldName, value);
                         sbDefault.append(' ').append(value.trim());
                     }
