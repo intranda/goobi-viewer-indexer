@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -194,7 +195,6 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
     }
 
     /**
-     * 
      * @param doc Source doc
      * @param rootDoc Target doc
      */
@@ -204,16 +204,39 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
         }
 
         if (doc.containsKey(SolrConstants.DEFAULT)) {
-            rootDoc.addField(SolrConstants.SUPERDEFAULT, (doc.getFieldValue(SolrConstants.DEFAULT)));
+            rootDoc.addField(SolrConstants.SUPERDEFAULT, doc.getFieldValue(SolrConstants.DEFAULT));
         }
         if (doc.containsKey(SolrConstants.FULLTEXT)) {
-            rootDoc.addField(SolrConstants.SUPERFULLTEXT, (doc.getFieldValue(SolrConstants.FULLTEXT)));
+            rootDoc.addField(SolrConstants.SUPERFULLTEXT, doc.getFieldValue(SolrConstants.FULLTEXT));
         }
         if (doc.containsKey(SolrConstants.UGCTERMS)) {
             rootDoc.addField(SolrConstants.SUPERUGCTERMS, doc.getFieldValue(SolrConstants.UGCTERMS));
         }
         if (doc.containsKey(SolrConstants.SEARCHTERMS_ARCHIVE)) {
             rootDoc.addField(SolrConstants.SUPERSEARCHTERMS_ARCHIVE, doc.getFieldValue(SolrConstants.SEARCHTERMS_ARCHIVE));
+        }
+    }
+
+    /**
+     * Adds a FACET_DEFAULT field for every value in DEFAULT on the given doc.
+     * 
+     * @param doc
+     */
+    protected void addFacetDefaultField(SolrInputDocument doc) {
+        if (doc.containsKey(SolrConstants.DEFAULT)) {
+            String defaultValue = (String) doc.getFieldValue(SolrConstants.DEFAULT);
+            if (StringUtils.isNotBlank(defaultValue)) {
+                String fieldName = SolrConstants.PREFIX_FACET + SolrConstants.DEFAULT;
+                String[] values = defaultValue.split(" ");
+                Set<String> usedValues = new HashSet<>();
+                for (String value : values) {
+                    String val = value.trim().toLowerCase();
+                    if (!usedValues.contains(val)) {
+                        doc.addField(fieldName, val);
+                        usedValues.add(val);
+                    }
+                }
+            }
         }
     }
 }
