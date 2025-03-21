@@ -565,8 +565,11 @@ public final class MetadataHelper {
         List<LuceneField> ret = new ArrayList<>(authorityDataList.size());
         Set<String> nameSearchFieldValues = new HashSet<>();
         Set<String> placeSearchFieldValues = new HashSet<>();
-        Map<String, String> fieldValueMap = new HashMap<>();
         boolean hasWktCoords = false;
+        // Collect certain values in a temp list, so that preferred language values can later be added to the final list
+        List<LuceneField> tempRet = new ArrayList<>(authorityDataList.size());
+        // Map with preferred language values
+        Map<String, List<String>> correctLanguageValueMap = new HashMap<>();
         for (NormData authorityDataField : authorityDataList) {
             if (!authorityDataField.getKey().startsWith("NORM_")) {
                 continue;
@@ -601,23 +604,27 @@ public final class MetadataHelper {
 
                 // Skip fields that have a different language than the main field
                 if (StringUtils.isEmpty(fieldLanguage) || fieldLanguage.equals(language)) {
-                    
-                    ret.add(new LuceneField(authorityDataField.getKey(), textValue));
-                    ret.add(new LuceneField(authorityDataField.getKey() + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
+                    if (StringUtils.isNotEmpty(fieldLanguage) && fieldLanguage.equals(language)) {
+                        List<String> values = correctLanguageValueMap.computeIfAbsent(authorityDataField.getKey(), k -> new ArrayList<>());
+                        values.add(textValue);
+                        logger.info("Found preferred language value: {}:{}", authorityDataField.getKey(), textValue);
+                    }
+                    tempRet.add(new LuceneField(authorityDataField.getKey(), textValue));
+
                     // Aggregate place fields into the same untokenized field for term browsing
                     if (authorityDataField.getKey().equals(FIELD_NORM_NAME)
                             || (authorityDataField.getKey().startsWith("NORM_ALTNAME") || authorityDataField.getKey().startsWith("NORM_OFFICIALNAME"))
                                     && !nameSearchFieldValues.contains(textValue)) {
                         if (StringUtils.isNotEmpty(labelField)) {
-                            ret.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
+                            tempRet.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
                         }
-                        ret.add(new LuceneField(FIELD_NORM_NAME + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
+                        tempRet.add(new LuceneField(FIELD_NORM_NAME + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
                         nameSearchFieldValues.add(textValue);
                     } else if (authorityDataField.getKey().startsWith("NORM_PLACE") && !placeSearchFieldValues.contains(textValue)) {
                         if (StringUtils.isNotEmpty(labelField)) {
-                            ret.add(new LuceneField(labelField + "_PLACE_SEARCH", textValue));
+                            tempRet.add(new LuceneField(labelField + "_PLACE_SEARCH", textValue));
                         }
-                        ret.add(new LuceneField("NORM_PLACE" + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
+                        tempRet.add(new LuceneField("NORM_PLACE" + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
                         placeSearchFieldValues.add(textValue);
                     } else if (authorityDataField.getKey().equals("NORM_LIFEPERIOD")) {
                         String[] valueSplit = textValue.split("-");
@@ -645,6 +652,32 @@ public final class MetadataHelper {
                     }
                 }
             }
+        }
+
+        // Override any NORM_FOO values with values from NORM_FOO_LANG_XX, where XX is the desired language of the main field
+        Set<String> doneFields = new HashSet<>();
+        for (LuceneField field : tempRet) {
+            if (doneFields.contains(field.getField())) {
+                continue;
+            }
+            if (language != null) {
+                String fieldLanguage = extractLanguageCodeFromMetadataField(field.getField());
+                if (StringUtils.isEmpty(fieldLanguage)) {
+                    String langField = field.getField() + SolrConstants.MIDFIX_LANG + language.toUpperCase();
+                    List<String> values = correctLanguageValueMap.get(langField);
+                    if (values != null) {
+                        logger.info("Overriding values of {} with values from {}", field.getField(), langField);
+                        for (String value : values) {
+                            ret.add(new LuceneField(field.getField(), value));
+                            ret.add(new LuceneField(field.getField() + SolrConstants.SUFFIX_UNTOKENIZED, value));
+                        }
+                        doneFields.add(field.getField());
+                        continue;
+                    }
+                }
+            }
+            ret.add(field);
+            ret.add(new LuceneField(field.getField() + SolrConstants.SUFFIX_UNTOKENIZED, field.getValue()));
         }
 
         ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, String.valueOf(hasWktCoords)));
