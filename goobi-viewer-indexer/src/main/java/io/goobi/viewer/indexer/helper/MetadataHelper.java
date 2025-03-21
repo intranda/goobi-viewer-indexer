@@ -677,7 +677,9 @@ public final class MetadataHelper {
                 }
             }
             ret.add(field);
-            ret.add(new LuceneField(field.getField() + SolrConstants.SUFFIX_UNTOKENIZED, field.getValue()));
+            if (!field.getField().endsWith(SolrConstants.SUFFIX_UNTOKENIZED) && !field.getField().endsWith("_SEARCH")) {
+                ret.add(new LuceneField(field.getField() + SolrConstants.SUFFIX_UNTOKENIZED, field.getValue()));
+            }
         }
 
         ret.add(new LuceneField(FIELD_HAS_WKT_COORDS, String.valueOf(hasWktCoords)));
