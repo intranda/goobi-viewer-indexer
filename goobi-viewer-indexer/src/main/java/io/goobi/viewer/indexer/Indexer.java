@@ -1195,6 +1195,7 @@ public abstract class Indexer {
         }
 
         // Add access conditions
+        // Commented out because inherited access conditions trigger metadata locking where not wanted
         //        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
         //            for (String s : indexObj.getAccessConditions()) {
         //                doc.addField(SolrConstants.ACCESSCONDITION, s);
