@@ -527,7 +527,12 @@ public class JDomXP {
     public static boolean writeXmlFile(Document doc, String filePath) {
         if (doc != null) {
             try (FileWriterWithEncoding writer =
-                    FileWriterWithEncoding.builder().setFile(filePath).setCharset(StandardCharsets.UTF_8).setAppend(false).get()) {
+                    FileWriterWithEncoding.builder()
+                            .setFile(filePath)
+                            .setCharset(StandardCharsets.UTF_8)
+                            .setCharsetEncoder(StandardCharsets.UTF_8.newEncoder())
+                            .setAppend(false)
+                            .get()) {
                 new XMLOutputter().output(doc, writer);
                 return true;
             } catch (IOException e) {
