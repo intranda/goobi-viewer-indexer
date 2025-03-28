@@ -438,9 +438,11 @@ public class MetsIndexer extends Indexer {
 
                 PhysicalDocumentBuilder downloadResourceBuilder =
                         new PhysicalDocumentBuilder(DocType.DOWNLOAD_RESOURCE.name(), xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
-                Collection<PhysicalElement> downloadResources =
-                        downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
-                downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
+                Collection<PhysicalElement> downloadResources = Collections.emptyList();
+                if (downloadResourceBuilder.isFileGroupExists()) {
+                    downloadResources = downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+                    downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
+                }
 
                 for (PhysicalElement resource : downloadResources) {
                     int docsAdded = addGroupedMetadataDocsForPage(resource, pi, writeStrategy);
