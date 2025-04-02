@@ -111,6 +111,11 @@ public class PhysicalDocumentBuilder {
         this.docType = docType;
     }
 
+    public boolean isFileGroupExists() {
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='" + this.useFileGroupGlobal + "']";
+        return !xp.evaluateToElements(xpath, null).isEmpty();
+    }
+
     /**
      * Generates a SolrInputDocument for each page that is mapped to a docstruct. Adds all page metadata except those that come from the owning
      * docstruct (such as docstruct iddoc, type, collection, etc.).

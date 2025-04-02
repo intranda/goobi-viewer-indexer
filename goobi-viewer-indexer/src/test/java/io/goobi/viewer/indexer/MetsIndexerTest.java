@@ -403,11 +403,12 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
                     assertNotNull(doc.getFieldValue("MD_SHELFMARK"));
                     //                    assertNotNull(doc.getFieldValue(SolrConstants.NORMDATATERMS));
                 }
+                // Commented out because inherited access conditions trigger metadata locking where not wanted
                 {
-                    Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
-                    assertNotNull(values);
-                    assertEquals(1, values.size());
-                    assertEquals("OPENACCESS", values.iterator().next());
+                    //                    Collection<Object> values = (Collection<Object>) doc.getFieldValue(SolrConstants.ACCESSCONDITION);
+                    //                    assertNotNull(values);
+                    //                    assertEquals(1, values.size());
+                    //                    assertEquals("OPENACCESS", values.iterator().next());
                 }
             }
         }

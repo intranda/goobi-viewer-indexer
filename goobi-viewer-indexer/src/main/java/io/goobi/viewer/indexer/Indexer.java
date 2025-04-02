@@ -1416,11 +1416,12 @@ public abstract class Indexer {
         }
 
         // Add access conditions
-        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
-            for (String s : indexObj.getAccessConditions()) {
-                doc.addField(SolrConstants.ACCESSCONDITION, s);
-            }
-        }
+        // Commented out because inherited access conditions trigger metadata locking where not wanted
+        //        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
+        //            for (String s : indexObj.getAccessConditions()) {
+        //                doc.addField(SolrConstants.ACCESSCONDITION, s);
+        //            }
+        //        }
 
         // Add DC values to metadata doc
         if (dcFields != null) {

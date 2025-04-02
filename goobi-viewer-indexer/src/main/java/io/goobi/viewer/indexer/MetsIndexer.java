@@ -438,9 +438,11 @@ public class MetsIndexer extends Indexer {
 
                 PhysicalDocumentBuilder downloadResourceBuilder =
                         new PhysicalDocumentBuilder(DocType.DOWNLOAD_RESOURCE.name(), xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
-                Collection<PhysicalElement> downloadResources =
-                        downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
-                downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
+                Collection<PhysicalElement> downloadResources = Collections.emptyList();
+                if (downloadResourceBuilder.isFileGroupExists()) {
+                    downloadResources = downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+                    downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
+                }
 
                 for (PhysicalElement resource : downloadResources) {
                     int docsAdded = addGroupedMetadataDocsForPage(resource, pi, writeStrategy);
@@ -502,8 +504,8 @@ public class MetsIndexer extends Indexer {
             addGroupDocs(indexObj, writeStrategy);
 
             // If this is a new volume, force anchor update to keep its volume count consistent
-            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
-                logger.info("This is a new volume - anchor updated needed.");
+            if (indexObj.isVolume() && indexObj.getParent() != null) {
+                logger.info("This is a volume - anchor update needed.");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
 
