@@ -219,6 +219,7 @@ public final class Utils {
         json.put("dataRepositoryName", dataRepositoryName);
 
         String url = viewerUrl + "/api/v1/tasks/";
+        url = url.replace("//", "/");
         Map<String, String> headerParams = HashMap.newHashMap(2);
         headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
@@ -256,6 +257,7 @@ public final class Utils {
         json.put("variant", config);
 
         String url = viewerUrl + "/api/v1/tasks/";
+        url = url.replace("//", "/");
         Map<String, String> headerParams = HashMap.newHashMap(2);
         headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
@@ -276,6 +278,7 @@ public final class Utils {
 
         String url = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl() + "/api/v1/indexer/version?token="
                 + SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken();
+        url = url.replace("//", "/");
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
