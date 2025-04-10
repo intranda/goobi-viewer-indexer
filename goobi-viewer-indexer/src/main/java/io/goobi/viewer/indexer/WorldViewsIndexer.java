@@ -419,6 +419,11 @@ public class WorldViewsIndexer extends Indexer {
             useWriteStrategy.setRootDoc(rootDoc);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
+                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            }
+            
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
