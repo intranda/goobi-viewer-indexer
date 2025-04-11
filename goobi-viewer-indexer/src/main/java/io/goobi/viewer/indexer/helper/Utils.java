@@ -218,8 +218,11 @@ public final class Utils {
         json.put("pi", pi);
         json.put("dataRepositoryName", dataRepositoryName);
 
-        String url = viewerUrl + "/api/v1/tasks/";
-        url = url.replace("//", "/");
+        String url = viewerUrl;
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        url += "api/v1/tasks/";
         Map<String, String> headerParams = HashMap.newHashMap(2);
         headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
@@ -256,8 +259,11 @@ public final class Utils {
         json.put("force", force);
         json.put("variant", config);
 
-        String url = viewerUrl + "/api/v1/tasks/";
-        url = url.replace("//", "/");
+        String url = viewerUrl;
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        url += "api/v1/tasks/";
         Map<String, String> headerParams = HashMap.newHashMap(2);
         headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
         headerParams.put("token", token);
@@ -276,9 +282,11 @@ public final class Utils {
             return;
         }
 
-        String url = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl() + "/api/v1/indexer/version?token="
-                + SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken();
-        url = url.replace("//", "/");
+        String url = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        url += ("api/v1/indexer/version?token=" + SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
