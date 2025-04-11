@@ -1472,7 +1472,7 @@ public abstract class Indexer {
             return;
         }
 
-        logger.info("This file has already been indexed, initiating an UPDATE instead...");
+        logger.debug("This file has already been indexed, initiating an UPDATE instead...");
         indexObj.setUpdate(true);
         SolrDocument doc = hits.get(0);
         // Set creation timestamp, if exists (should never be updated)
