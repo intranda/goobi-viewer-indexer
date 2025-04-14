@@ -153,6 +153,8 @@ public abstract class Indexer {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    protected Set<String> iddocsToDelete = new HashSet<>();
+
     protected Indexer() {
         httpConnector = new HttpConnector(HTTP_CONNECTION_TIMEOUT);
         mapper.registerModule(new JavaTimeModule());
@@ -304,7 +306,7 @@ public abstract class Indexer {
 
         // Delete
         try {
-            if (deleteWithPI(pi, trace, searchIndex)) {
+            if (!deleteWithPI(pi, trace, true, searchIndex).isEmpty()) {
                 searchIndex.commit(searchIndex.isOptimize());
 
                 // Clear cache for record
@@ -329,25 +331,24 @@ public abstract class Indexer {
      *
      * @param pi String
      * @param createTraceDoc a boolean.
+     * @param deleteImmediately
      * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @throws java.io.IOException
      * @throws org.apache.solr.client.solrj.SolrServerException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @return a boolean.
+     * @return Set<String>
      */
-    protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrSearchIndex searchIndex)
+    protected static Set<String> deleteWithPI(String pi, boolean createTraceDoc, boolean deleteImmediately, SolrSearchIndex searchIndex)
             throws IOException, SolrServerException, FatalIndexerException {
-        Set<String> iddocsToDelete = new HashSet<>();
-
         String query = SolrConstants.PI + ":" + pi;
         SolrDocumentList hits = searchIndex.search(query, null);
         if (hits.isEmpty()) {
             logger.error("Not found: {}", pi);
-            return false;
+            return Collections.emptySet();
         }
 
         if (hits.getNumFound() == 1) {
-            logger.info("Removing previous instance of this volume from the index...");
+            logger.info("Found a previous instance of this volume in the index.");
         } else {
             logger.warn(
                     "{} previous instances of this volume have been found in the index. This shouldn't ever be the case."
@@ -360,14 +361,16 @@ public abstract class Indexer {
                 .append(SolrConstants.DOCTYPE)
                 .append(":PAGE")
                 .toString();
+
         // Unless the index is broken, there should be only one hit
+        Set<String> ret = new HashSet<>();
         for (SolrDocument doc : hits) {
             String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             if (iddoc == null) {
                 continue;
             }
             logger.debug("Removing instance: {}", iddoc);
-            iddocsToDelete.add(iddoc);
+            ret.add(iddoc);
 
             // Build replacement document that is marked as deleted
             if (createTraceDoc && doc.getFieldValue(SolrConstants.DATEDELETED) == null) {
@@ -397,14 +400,15 @@ public abstract class Indexer {
         for (SolrDocument doc : hits) {
             String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             if (iddoc != null) {
-                iddocsToDelete.add(iddoc);
+                ret.add(iddoc);
             }
         }
 
-        boolean success = searchIndex.deleteDocuments(new ArrayList<>(iddocsToDelete));
-        logger.info("{} docs deleted.", iddocsToDelete.size());
+        if (deleteImmediately && searchIndex.deleteDocuments(new ArrayList<>(ret))) {
+            logger.info("Immediate deletion requested - {} docs deleted.", ret.size());
+        }
 
-        return success;
+        return ret;
     }
 
     /**
@@ -1500,9 +1504,10 @@ public abstract class Indexer {
             // Keep old IDDOC
             indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
             // Delete old doc
-            SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
-            // Delete secondary docs (aggregated metadata, events)
-            List<String> iddocsToDelete = new ArrayList<>();
+            // SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
+            iddocsToDelete.add(indexObj.getIddoc());
+            // Delete secondary docs (grouped metadata, events)
+            //            List<String> iddocsToDelete = new ArrayList<>();
             hits = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc() + " " + SolrConstants.PI_TOPSTRUCT + ":" + indexObj.getPi(),
@@ -1510,13 +1515,13 @@ public abstract class Indexer {
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
-            if (!iddocsToDelete.isEmpty()) {
-                logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
-                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
-            }
+            //            if (!iddocsToDelete.isEmpty()) {
+            //                logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
+            //                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            //            }
         } else if (!fromOldIndex) {
             // Recursively delete all children, if not an anchor
-            deleteWithPI(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex());
+            iddocsToDelete = deleteWithPI(pi, false, false, SolrIndexerDaemon.getInstance().getSearchIndex());
         }
     }
 
