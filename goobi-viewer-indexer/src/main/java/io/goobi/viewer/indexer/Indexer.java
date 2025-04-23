@@ -1197,6 +1197,11 @@ public abstract class Indexer {
             }
             String docstructType = groupSuffix.toLowerCase();
             moreMetadata.put(SolrConstants.DOCSTRCT, docstructType);
+            if (indexObj.getAnchorPI() != null && indexObj.getAnchorPI().equals(entry.getValue())) {
+                // Avoid overwriting an actual anchor with a group if the identifier is identical
+                logger.info("Group ID equals Anchor PI '{}', skipping group doc...", indexObj.getAnchorPI());
+                continue;
+            }
             // TODO make configurable or smt
             if ("newspaper".equals(docstructType)) {
                 indexObj.setAnchorPI(entry.getValue());
