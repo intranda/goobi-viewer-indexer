@@ -35,8 +35,6 @@ import org.apache.commons.configuration2.builder.ConfigurationBuilderEvent;
 import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
-import org.apache.commons.configuration2.event.Event;
-import org.apache.commons.configuration2.event.EventListener;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
@@ -74,7 +72,6 @@ public final class Configuration {
      * @param configFilePath
      * @throws ConfigurationException
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Configuration(String configFilePath) {
         builder =
                 new ReloadingFileBasedConfigurationBuilder<XMLConfiguration>(XMLConfiguration.class)
@@ -92,16 +89,11 @@ public final class Configuration {
             }
 
             // Check every 10 seconds for changed config files and refresh maps if necessary
-            builder.addEventListener(ConfigurationBuilderEvent.CONFIGURATION_REQUEST,
-                    new EventListener() {
-
-                        @Override
-                        public void onEvent(Event event) {
-                            if (builder.getReloadingController().checkForReloading(null)) {
-                                lastFileReload = System.currentTimeMillis();
-                            }
-                        }
-                    });
+            builder.addEventListener(ConfigurationBuilderEvent.CONFIGURATION_REQUEST, event -> {
+                if (builder.getReloadingController().checkForReloading(null)) {
+                    lastFileReload = System.currentTimeMillis();
+                }
+            });
         } else {
             logger.error("Configuration file not found: {}; Base path is {}", builder.getFileHandler().getFile().getAbsoluteFile(),
                     builder.getFileHandler().getBasePath());

@@ -555,6 +555,10 @@ public class MetsIndexer extends Indexer {
             indexObj.applyFinalModifications();
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
+                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            }
 
             logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
@@ -610,7 +614,7 @@ public class MetsIndexer extends Indexer {
         if (StringUtils.isNotBlank(this.useFileGroupGlobal)) {
             PhysicalDocumentBuilder pageBuilder =
                     new PhysicalDocumentBuilder(useFileGroupGlobal, xp, httpConnector, dataRepository, DocType.PAGE);
-            Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+            Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, pageCountStart, downloadExternalImages);
             pages.forEach(writeStrategy::addPage);
             this.recordHasImages = pageBuilder.isHasImages();
             this.recordHasFulltext = pageBuilder.isHasFulltext();
