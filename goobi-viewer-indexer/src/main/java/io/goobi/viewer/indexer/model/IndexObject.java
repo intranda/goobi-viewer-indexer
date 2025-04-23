@@ -409,7 +409,6 @@ public class IndexObject {
         if (field == null || value == null || !field.startsWith(SolrConstants.PREFIX_GROUPID)) {
             return;
         }
-        logger.info("addToGroupIds: " + field + ":" + value);
         if (groupIds.get(field) == null) {
             groupIds.put(field, value);
         } else {
