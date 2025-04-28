@@ -1732,10 +1732,8 @@ public abstract class Indexer {
             // Keep old IDDOC
             indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
             // Delete old doc
-            // SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
             iddocsToDelete.add(indexObj.getIddoc());
             // Delete secondary docs (grouped metadata, events)
-            //            List<String> iddocsToDelete = new ArrayList<>();
             hits = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc() + " " + SolrConstants.PI_TOPSTRUCT + ":" + indexObj.getPi(),
@@ -1743,10 +1741,6 @@ public abstract class Indexer {
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
-            //            if (!iddocsToDelete.isEmpty()) {
-            //                logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
-            //                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
-            //            }
         } else if (!fromOldIndex) {
             // Recursively delete all children, if not an anchor
             iddocsToDelete = deleteWithPI(pi, false, false, SolrIndexerDaemon.getInstance().getSearchIndex());
