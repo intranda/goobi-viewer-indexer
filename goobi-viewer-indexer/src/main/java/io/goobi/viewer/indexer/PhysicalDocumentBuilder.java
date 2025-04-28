@@ -98,7 +98,7 @@ public class PhysicalDocumentBuilder {
     /**
      * Create a builder for pages and other documents based on physical files
      * 
-     * @param fileGroup the filegroup containing the files to use
+     * @param useFileGroups List of fileGroups containing the files to use
      * @param xp an xml parser
      * @param httpConnector for http requests
      * @param dataRepository the repository in which files are to be stored
@@ -276,7 +276,8 @@ public class PhysicalDocumentBuilder {
         for (String fileGroup : useFileGroups) {
             FileId fileID = FileId.getFileId(getFileId(eleFptrList, fileGroup), fileGroup);
             if (fileID != null) {
-                String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='%s']/mets:file[@ID='%s']".formatted(fileGroup, fileID.getFullId()); //NOSONAR XPath, not URI
+                String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='%s']/mets:file[@ID='%s']"
+                        .formatted(fileGroup, fileID.getFullId()); //NOSONAR XPath, not URI
                 List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
                 if (!eleFileGrpList.isEmpty()) {
                     useFileID = fileID;
@@ -287,8 +288,7 @@ public class PhysicalDocumentBuilder {
             }
         }
 
-        if (useFileID != null) {
-        } else {
+        if (useFileID == null) {
             return null;
         }
 
