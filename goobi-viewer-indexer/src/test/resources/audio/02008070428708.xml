@@ -1,0 +1,945 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/version17/mets.v1-7.xsd http://www.loc.gov/standards/premis/ http://www.loc.gov/standards/premis/v2/premis-v2-0.xsd http://www.loc.gov/standards/mix/ http://www.loc.gov/standards/mix/mix.xsd">
+  <mets:metsHdr CREATEDATE="2012-10-10T14:07:32">
+    <mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+      <mets:name>Goobi - UGH-1.10-bacb4a7 - 21−August−2012</mets:name>
+      <mets:note>Goobi</mets:note>
+    </mets:agent>
+  </mets:metsHdr>
+  <mets:dmdSec ID="DMDLOG_0000">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:originInfo>
+            <mods:place>Aussenaufnahme Berlin</mods:place>
+            <mods:dateCreated encoding="iso8601">1983</mods:dateCreated>
+          </mods:originInfo>
+          <mods:classification authority="ddc">700 - Kuenste, Bildende Kunst allgemein (The arts)</mods:classification>
+          <mods:relatedItem>
+            <mods:identifier type="InventoryNumber">316067</mods:identifier>
+          </mods:relatedItem>
+          <mods:abstract type="MaterialDescription">Audiokassette, Heft mit 34 Seiten</mods:abstract>
+          <mods:abstract type="MotivDescription">A 1: typische Bahnhofgeräusche: Lautsprecherdurchsagen, Zugeinfahrten, Quietschen der Zugbremsen, Schritte, Gesprächsfetzen, Hundegebell.
+A 2: Stimmengewirr von Jugendlichen. Inhalte der Gespräche sind nicht zu verstehen, da es zu viele Stimmen sind. Die Jugendlichen befinden sich am Bahnhof, da in den letzten Sekunden die Geräusche einen einfahrenden Zuges zu hören sind. 
+A 3: Geräusche an einem Bootssteg: Wassergeräusche und Geräusche von vorbeifahrenden Booten.
+A 4: Schritte im Treppenhaus, zwischendurch hört man auch Stimmen die Gesprächsinhalte sind jedoch nicht zu verstehen. 
+B 1: Feuerwerksgeräusche, Achterbahn, Menschenstimmen, Autoverkehr.
+B 2: Ballspielende Kinder, Stimmen, Pfeifen, Verkehrsgeräusche, Hundegebell.
+B 3: Spielende Kinder, Lachen, Gespräche, Verkehrsgeräusche in Hintergrund
+B 4: Vogelgeschrei, undeutliche Hintergrundgeräusche (Autoverkehr?)
+B 5: Hähne, Schafe, Menschenstimmen, Schritte, Verkehrsgeräusche.
+B 6: Verkehrsgeräusche, Möwengeschrei, Schiffssirene, Stimmen.</mods:abstract>
+          <mods:relatedItem type="original">Bill Fontana, Klang Recycling Skulptur, Berlin 1983.</mods:relatedItem>
+          <mods:abstract type="Information">Bill Fontana realisierte 1983 in der Galerie Giannozzo eine „Klang Recycling Skulptur“. Aufgenommene Klangsituationen in Berlin bilden die Einzelelemente des Kunstwerks. Der Künstler hatte die Vorstellung von einer Klangskulptur und einem damit verbundenem anderen Hören, das sich vom semantischen Hören von Musik und Sprache unterscheidet. Zusätzlich zu seinem Werk hat Bill Fontana ein Essay verfasst, welches im beiliegenden Heft abgedruckt wurde. Das Objekt wurde in einer Auflage von 100 Exemplaren hergestellt.
+
+
+Bearbeitet von Olessja Bojko</mods:abstract>
+          <mods:abstract type="Technic">Sonstiges</mods:abstract>
+          <mods:abstract type="Condition">Auf der Kassettenhülle sind Klebstoffreste zu erkennen. Die Kassette hat keine Schäden.</mods:abstract>
+          <mods:titleInfo>
+            <mods:title>Klang Recycling Skulptur</mods:title>
+          </mods:titleInfo>
+          <mods:recordInfo>
+            <mods:recordIdentifier source="DE-34">02008070428708</mods:recordIdentifier>
+          </mods:recordInfo>
+	  <mods:classification authority="ivdcc">dcdownload</mods:classification>
+<mods:classification authority="ivdcc">dctext#frompdfextracted</mods:classification>
+<mods:classification authority="ivdcc">dcmultimedia#audio</mods:classification>
+
+          <mods:location>
+            <mods:shelfLocator>75 SF A 0215</mods:shelfLocator>
+          </mods:location>
+          <mods:name type="personal">
+            <mods:role>
+              <mods:roleTerm authority="marcrelator" type="code">pht</mods:roleTerm>
+            </mods:role>
+            <mods:namePart type="family">Fontana</mods:namePart>
+            <mods:namePart type="given">Bill</mods:namePart>
+            <mods:displayForm>Fontana, Bill</mods:displayForm>
+          </mods:name>
+          <mods:physicalDescription>
+            <mods:note type="source dimensions">Audiokassette und ein beiliegendes Heft zum Werk des Künstlers
+Heft im Format 20,5 cm x 15 cm</mods:note>
+            <mods:form authority="ddc" type="size">Audiokassette und ein beiliegendes Heft zum Werk des Künstlers
+Heft im Format 20,5 cm x 15 cm</mods:form>
+          </mods:physicalDescription>
+          <mods:note type="ownership">Kunsthandel</mods:note>
+          <mods:subject>
+            <mods:topic>Auf der Kassette: Seite A bzw. Seite B – Stereo/Dolby Klangsituationen in Berlin von Bill Fontana. 
+Zettel in der Kassettenhülle: Klangsituation in Berlin (10 Aufnahmen) von Bill Fontana, Edition Giannozzo Berlin, Copyright Bill Fontana, 1983, Galerie Giannozzo, Suarezstr. 28, D–1000 Berlin 19, Tel. 312 77 83, Aufzählung der einzelnen Aufnahmentitel</mods:topic>
+          </mods:subject>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0001">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>Booklet der Audiokassette</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0002">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>A 1: typische Bahnhofgeräusche: Lautsprecherdurchsagen, Zugeinfahrten, Quietschen der Zugbremsen, Schritte, Gesprächsfetzen, Hundegebell.</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0003">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>A 2: Stimmengewirr von Jugendlichen. Inhalte der Gespräche sind nicht zu verstehen, da es zu viele Stimmen sind. Die Jugendlichen befinden sich am Bahnhof, da in den letzten Sekunden die Geräusche einen einfahrenden Zuges zu hören sind.</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0004">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>A 3: Geräusche an einem Bootssteg: Wassergeräusche und Geräusche von vorbeifahrenden Booten.</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0005">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>A 4: Schritte im Treppenhaus, zwischendurch hört man auch Stimmen die Gesprächsinhalte sind jedoch nicht zu verstehen.</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0006">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>B 1: Feuerwerksgeräusche, Achterbahn, Menschenstimmen, Autoverkehr.</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0007">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>B 2: Ballspielende Kinder, Stimmen, Pfeifen, Verkehrsgeräusche, Hundegebell.</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0008">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>B 3: Spielende Kinder, Lachen, Gespräche, Verkehrsgeräusche in Hintergrund</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0009">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>B 4: Vogelgeschrei, undeutliche Hintergrundgeräusche (Autoverkehr?)</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0010">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>B 5: Hähne, Schafe, Menschenstimmen, Schritte, Verkehrsgeräusche.</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="DMDLOG_0011">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+          <mods:titleInfo>
+            <mods:title>B 6: Verkehrsgeräusche, Möwengeschrei, Schiffssirene, Stimmen.</mods:title>
+          </mods:titleInfo>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:amdSec ID="AMD">
+    <mets:rightsMD ID="RIGHTS">
+      <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+        <mets:xmlData>
+          <dv:rights xmlns:dv="http://dfg-viewer.de/">
+            <dv:owner>Unibibliothek Kassel</dv:owner>
+            <dv:ownerLogo>http://orka.bibliothek.uni-kassel.de/resources/themes/kassel/images/dfgviewerkassel.png</dv:ownerLogo>
+            <dv:ownerSiteURL>http://www.ub.uni-kassel.de/</dv:ownerSiteURL>
+            <dv:ownerContact>orka@bibliothek.uni-kassel.de</dv:ownerContact>
+          </dv:rights>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:rightsMD>
+    <mets:digiprovMD ID="DIGIPROV">
+      <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVLINKS">
+        <mets:xmlData>
+          <dv:links xmlns:dv="http://dfg-viewer.de/">
+            <dv:reference>http://orka.bibliothek.uni-kassel.de/viewer/ppnresolver?id=02008070428708</dv:reference>
+            <dv:presentation>http://orka.bibliothek.uni-kassel.de/viewer/ppnresolver?id=02008070428708</dv:presentation>
+          </dv:links>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:digiprovMD>
+  </mets:amdSec>
+  <mets:fileSec>
+    <mets:fileGrp USE="MIN">
+      <mets:file ID="FILE_0000_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000001.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0001_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000002.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0002_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000003.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0003_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000004.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0004_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000005.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0005_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000006.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0006_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000007.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0007_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000008.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0008_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000009.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0009_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000010.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0010_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000011.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0011_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000012.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0012_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000013.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0013_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000014.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0014_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000015.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0015_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000016.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0016_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000017.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0017_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000018.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0018_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000019.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0019_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000020.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0020_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000021.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0021_MIN" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/600/0/00000022.jpg"/>
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="OGG">
+      <mets:file ID="FILE_0022_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000023.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0023_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000024.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0024_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000025.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0025_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000026.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0026_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000027.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0027_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000028.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0028_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000029.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0029_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000030.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0030_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000031.ogg"/>
+      </mets:file>
+      <mets:file ID="FILE_0031_OGG" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000032.ogg"/>
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="PRESENTATION">
+      <mets:file ID="FILE_0000_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000001.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0001_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000002.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0002_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000003.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0003_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000004.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0004_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000005.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0005_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000006.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0006_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000007.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0007_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000008.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0008_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000009.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0009_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000010.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0010_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000011.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0011_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000012.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0012_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000013.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0013_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000014.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0014_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000015.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0015_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000016.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0016_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000017.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0017_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000018.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0018_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000019.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0019_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000020.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0020_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000021.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0021_PRESENTATION" MIMETYPE="image/tiff">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000022.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0022_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000023.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0023_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000024.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0024_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000025.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0025_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000026.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0026_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000027.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0027_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000028.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0028_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000029.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0029_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000030.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0030_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000031.tif"/>
+      </mets:file>
+      <mets:file ID="FILE_0031_PRESENTATION" MIMETYPE="audio/ogg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000032.tif"/>
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="THUMBS">
+      <mets:file ID="FILE_0000_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000001.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0001_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000002.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0002_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000003.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0003_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000004.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0004_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000005.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0005_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000006.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0006_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000007.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0007_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000008.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0008_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000009.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0009_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000010.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0010_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000011.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0011_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000012.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0012_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000013.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0013_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000014.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0014_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000015.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0015_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000016.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0016_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000017.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0017_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000018.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0018_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000019.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0019_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000020.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0020_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000021.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0021_THUMBS" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/150/0/00000022.jpg"/>
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="MP3">
+      <mets:file ID="FILE_0022_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000023.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0023_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000024.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0024_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000025.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0025_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000026.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0026_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000027.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0027_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000028.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0028_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000029.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0029_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000030.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0030_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000031.mp3"/>
+      </mets:file>
+      <mets:file ID="FILE_0031_MP3" MIMETYPE="audio/mpeg3">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/02008070428708/00000032.mp3"/>
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="DEFAULT">
+      <mets:file ID="FILE_0000_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000001.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0001_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000002.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0002_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000003.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0003_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000004.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0004_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000005.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0005_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000006.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0006_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000007.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0007_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000008.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0008_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000009.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0009_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000010.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0010_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000011.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0011_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000012.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0012_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000013.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0013_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000014.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0014_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000015.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0015_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000016.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0016_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000017.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0017_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000018.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0018_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000019.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0019_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000020.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0020_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000021.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0021_DEFAULT" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/800/0/00000022.jpg"/>
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="MAX">
+      <mets:file ID="FILE_0000_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000001.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0001_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000002.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0002_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000003.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0003_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000004.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0004_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000005.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0005_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000006.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0006_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000007.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0007_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000008.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0008_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000009.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0009_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000010.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0010_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000011.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0011_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000012.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0012_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000013.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0013_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000014.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0014_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000015.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0015_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000016.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0016_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000017.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0017_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000018.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0018_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000019.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0019_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000020.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0020_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000021.jpg"/>
+      </mets:file>
+      <mets:file ID="FILE_0021_MAX" MIMETYPE="image/jpeg">
+        <mets:FLocat xmlns:xlink="http://www.w3.org/1999/xlink" LOCTYPE="URL" xlink:href="http://orka.bibliothek.uni-kassel.de/viewer/content/02008070428708/1000/0/00000022.jpg"/>
+      </mets:file>
+    </mets:fileGrp>
+  </mets:fileSec>
+  <mets:structMap TYPE="LOGICAL">
+    <mets:div ADMID="AMD" CONTENTIDS="urn:nbn:de:hebis:34-02008070428708" DMDID="DMDLOG_0000" ID="LOG_0000" LABEL="Klang Recycling Skulptur" TYPE="Audio">
+      <mets:div DMDID="DMDLOG_0001" ID="LOG_0001" LABEL="Booklet der Audiokassette" TYPE="Booklet"/>
+      <mets:div DMDID="DMDLOG_0002" ID="LOG_0002" LABEL="A 1: typische Bahnhofgeräusche: Lautsprecherdurchsagen, Zugeinfahrten, Quietschen der Zugbremsen, Schritte, Gesprächsfetzen, Hundegebell." TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0003" ID="LOG_0003" LABEL="A 2: Stimmengewirr von Jugendlichen. Inhalte der Gespräche sind nicht zu verstehen, da es zu viele Stimmen sind. Die Jugendlichen befinden sich am Bahnhof, da in den letzten Sekunden die Geräusche einen einfahrenden Zuges zu hören sind." TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0004" ID="LOG_0004" LABEL="A 3: Geräusche an einem Bootssteg: Wassergeräusche und Geräusche von vorbeifahrenden Booten." TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0005" ID="LOG_0005" LABEL="A 4: Schritte im Treppenhaus, zwischendurch hört man auch Stimmen die Gesprächsinhalte sind jedoch nicht zu verstehen." TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0006" ID="LOG_0006" LABEL="B 1: Feuerwerksgeräusche, Achterbahn, Menschenstimmen, Autoverkehr." TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0007" ID="LOG_0007" LABEL="B 2: Ballspielende Kinder, Stimmen, Pfeifen, Verkehrsgeräusche, Hundegebell." TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0008" ID="LOG_0008" LABEL="B 3: Spielende Kinder, Lachen, Gespräche, Verkehrsgeräusche in Hintergrund" TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0009" ID="LOG_0009" LABEL="B 4: Vogelgeschrei, undeutliche Hintergrundgeräusche (Autoverkehr?)" TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0010" ID="LOG_0010" LABEL="B 5: Hähne, Schafe, Menschenstimmen, Schritte, Verkehrsgeräusche." TYPE="Track"/>
+      <mets:div DMDID="DMDLOG_0011" ID="LOG_0011" LABEL="B 6: Verkehrsgeräusche, Möwengeschrei, Schiffssirene, Stimmen." TYPE="Track"/>
+    </mets:div>
+  </mets:structMap>
+  <mets:structMap TYPE="PHYSICAL">
+    <mets:div ID="PHYS_0000" TYPE="physSequence">
+      <mets:div ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0000_MIN"/>
+        <mets:fptr FILEID="FILE_0000_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0000_THUMBS"/>
+        <mets:fptr FILEID="FILE_0000_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0000_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0002" ORDER="2" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0001_MIN"/>
+        <mets:fptr FILEID="FILE_0001_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0001_THUMBS"/>
+        <mets:fptr FILEID="FILE_0001_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0001_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0003" ORDER="3" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0002_MIN"/>
+        <mets:fptr FILEID="FILE_0002_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0002_THUMBS"/>
+        <mets:fptr FILEID="FILE_0002_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0002_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0004" ORDER="4" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0003_MIN"/>
+        <mets:fptr FILEID="FILE_0003_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0003_THUMBS"/>
+        <mets:fptr FILEID="FILE_0003_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0003_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0005" ORDER="5" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0004_MIN"/>
+        <mets:fptr FILEID="FILE_0004_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0004_THUMBS"/>
+        <mets:fptr FILEID="FILE_0004_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0004_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0006" ORDER="6" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0005_MIN"/>
+        <mets:fptr FILEID="FILE_0005_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0005_THUMBS"/>
+        <mets:fptr FILEID="FILE_0005_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0005_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0007" ORDER="7" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0006_MIN"/>
+        <mets:fptr FILEID="FILE_0006_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0006_THUMBS"/>
+        <mets:fptr FILEID="FILE_0006_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0006_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0008" ORDER="8" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0007_MIN"/>
+        <mets:fptr FILEID="FILE_0007_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0007_THUMBS"/>
+        <mets:fptr FILEID="FILE_0007_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0007_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0009" ORDER="9" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0008_MIN"/>
+        <mets:fptr FILEID="FILE_0008_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0008_THUMBS"/>
+        <mets:fptr FILEID="FILE_0008_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0008_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0010" ORDER="10" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0009_MIN"/>
+        <mets:fptr FILEID="FILE_0009_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0009_THUMBS"/>
+        <mets:fptr FILEID="FILE_0009_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0009_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0011" ORDER="11" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0010_MIN"/>
+        <mets:fptr FILEID="FILE_0010_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0010_THUMBS"/>
+        <mets:fptr FILEID="FILE_0010_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0010_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0012" ORDER="12" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0011_MIN"/>
+        <mets:fptr FILEID="FILE_0011_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0011_THUMBS"/>
+        <mets:fptr FILEID="FILE_0011_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0011_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0013" ORDER="13" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0012_MIN"/>
+        <mets:fptr FILEID="FILE_0012_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0012_THUMBS"/>
+        <mets:fptr FILEID="FILE_0012_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0012_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0014" ORDER="14" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0013_MIN"/>
+        <mets:fptr FILEID="FILE_0013_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0013_THUMBS"/>
+        <mets:fptr FILEID="FILE_0013_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0013_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0015" ORDER="15" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0014_MIN"/>
+        <mets:fptr FILEID="FILE_0014_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0014_THUMBS"/>
+        <mets:fptr FILEID="FILE_0014_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0014_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0016" ORDER="16" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0015_MIN"/>
+        <mets:fptr FILEID="FILE_0015_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0015_THUMBS"/>
+        <mets:fptr FILEID="FILE_0015_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0015_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0017" ORDER="17" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0016_MIN"/>
+        <mets:fptr FILEID="FILE_0016_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0016_THUMBS"/>
+        <mets:fptr FILEID="FILE_0016_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0016_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0018" ORDER="18" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0017_MIN"/>
+        <mets:fptr FILEID="FILE_0017_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0017_THUMBS"/>
+        <mets:fptr FILEID="FILE_0017_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0017_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0019" ORDER="19" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0018_MIN"/>
+        <mets:fptr FILEID="FILE_0018_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0018_THUMBS"/>
+        <mets:fptr FILEID="FILE_0018_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0018_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0020" ORDER="20" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0019_MIN"/>
+        <mets:fptr FILEID="FILE_0019_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0019_THUMBS"/>
+        <mets:fptr FILEID="FILE_0019_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0019_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0021" ORDER="21" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0020_MIN"/>
+        <mets:fptr FILEID="FILE_0020_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0020_THUMBS"/>
+        <mets:fptr FILEID="FILE_0020_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0020_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0022" ORDER="22" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0021_MIN"/>
+        <mets:fptr FILEID="FILE_0021_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0021_THUMBS"/>
+        <mets:fptr FILEID="FILE_0021_DEFAULT"/>
+        <mets:fptr FILEID="FILE_0021_MAX"/>
+      </mets:div>
+      <mets:div ID="PHYS_0023" ORDER="23" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0022_OGG"/>
+        <mets:fptr FILEID="FILE_0022_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0022_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0024" ORDER="24" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0023_OGG"/>
+        <mets:fptr FILEID="FILE_0023_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0023_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0025" ORDER="25" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0024_OGG"/>
+        <mets:fptr FILEID="FILE_0024_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0024_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0026" ORDER="26" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0025_OGG"/>
+        <mets:fptr FILEID="FILE_0025_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0025_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0027" ORDER="27" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0026_OGG"/>
+        <mets:fptr FILEID="FILE_0026_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0026_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0028" ORDER="28" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0027_OGG"/>
+        <mets:fptr FILEID="FILE_0027_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0027_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0029" ORDER="29" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0028_OGG"/>
+        <mets:fptr FILEID="FILE_0028_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0028_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0030" ORDER="30" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0029_OGG"/>
+        <mets:fptr FILEID="FILE_0029_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0029_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0031" ORDER="31" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0030_OGG"/>
+        <mets:fptr FILEID="FILE_0030_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0030_MP3"/>
+      </mets:div>
+      <mets:div ID="PHYS_0032" ORDER="32" ORDERLABEL=" - " TYPE="page">
+        <mets:fptr FILEID="FILE_0031_OGG"/>
+        <mets:fptr FILEID="FILE_0031_PRESENTATION"/>
+        <mets:fptr FILEID="FILE_0031_MP3"/>
+      </mets:div>
+    </mets:div>
+  </mets:structMap>
+  <mets:structLink>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0001" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0002" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0003" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0004" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0005" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0006" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0007" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0008" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0009" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0010" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0011" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0012" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0013" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0014" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0015" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0016" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0017" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0018" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0019" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0020" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0021" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0022" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0023" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0024" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0025" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0026" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0027" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0028" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0029" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0030" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0031" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0032" xlink:from="LOG_0000"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0001" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0002" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0003" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0004" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0005" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0006" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0007" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0008" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0009" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0010" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0011" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0012" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0013" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0014" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0015" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0016" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0017" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0018" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0019" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0020" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0021" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0022" xlink:from="LOG_0001"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0023" xlink:from="LOG_0002"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0024" xlink:from="LOG_0003"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0025" xlink:from="LOG_0004"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0026" xlink:from="LOG_0005"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0027" xlink:from="LOG_0006"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0028" xlink:from="LOG_0007"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0029" xlink:from="LOG_0008"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0030" xlink:from="LOG_0009"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0031" xlink:from="LOG_0010"/>
+    <mets:smLink xmlns:xlink="http://www.w3.org/1999/xlink" xlink:to="PHYS_0032" xlink:from="LOG_0011"/>
+  </mets:structLink>
+</mets:mets>

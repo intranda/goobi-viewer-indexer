@@ -117,7 +117,7 @@ public class MetsIndexer extends Indexer {
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private List<String> availablePreferredImageFileGroups = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
+    private final List<String> availablePreferredImageFileGroups;
     private volatile String useFileGroupGlobal = null;
 
     /**
@@ -127,8 +127,13 @@ public class MetsIndexer extends Indexer {
      * @should set attributes correctly
      */
     public MetsIndexer(Hotfolder hotfolder) {
+        this(hotfolder, SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups());
+    }
+
+    public MetsIndexer(Hotfolder hotfolder, List<String> availablePreferredImageFileGroups) {
         super();
         this.hotfolder = hotfolder;
+        this.availablePreferredImageFileGroups = availablePreferredImageFileGroups;
     }
 
     /**
@@ -137,8 +142,13 @@ public class MetsIndexer extends Indexer {
      * @param httpConnector
      */
     public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
+        this(hotfolder, httpConnector, SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups());
+    }
+
+    public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector, List<String> availablePreferredImageFileGroups) {
         super(httpConnector);
         this.hotfolder = hotfolder;
+        this.availablePreferredImageFileGroups = availablePreferredImageFileGroups;
     }
 
     /** {@inheritDoc} */
@@ -437,7 +447,8 @@ public class MetsIndexer extends Indexer {
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
                 PhysicalDocumentBuilder downloadResourceBuilder =
-                        new PhysicalDocumentBuilder(DocType.DOWNLOAD_RESOURCE.name(), xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
+                        new PhysicalDocumentBuilder(List.of(DocType.DOWNLOAD_RESOURCE.name()), xp, httpConnector, dataRepository,
+                                DocType.DOWNLOAD_RESOURCE);
                 Collection<PhysicalElement> downloadResources = Collections.emptyList();
                 if (downloadResourceBuilder.isFileGroupExists()) {
                     downloadResources = downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
@@ -639,9 +650,10 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         this.useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
+        List<String> fileGrouList = getFileGroupsToUse(downloadExternalImages);
         if (StringUtils.isNotBlank(this.useFileGroupGlobal)) {
             PhysicalDocumentBuilder pageBuilder =
-                    new PhysicalDocumentBuilder(useFileGroupGlobal, xp, httpConnector, dataRepository, DocType.PAGE);
+                    new PhysicalDocumentBuilder(fileGrouList, xp, httpConnector, dataRepository, DocType.PAGE);
             Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
             pages.forEach(writeStrategy::addPage);
             this.recordHasImages = pageBuilder.isHasImages();
@@ -1011,6 +1023,36 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
+     * get a list of all filegroups to consider for media files to use. This includes the availablePreferredImageFileGroups as well as
+     * {@link PRESENTATION_FILEGROUP} and {@link OBJECT_FILEGROUP}. If 'downloadExternalImages' is true, also include {@link DEFAULT_FILEGROUP} BEFORE
+     * the {@link PRESENTATION_FILEGROUP}. Otherwise include {@link DEFAULT_FILEGROUP} if no {@link PRESENTATION_FILEGROUP} was found in the mets file
+     * 
+     * @param downloadExternalImages
+     * @return Selected file group name
+     */
+    List<String> getFileGroupsToUse(boolean downloadExternalImages) {
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath, not URI
+        List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
+        if (eleFileGrpList.isEmpty()) {
+            logger.info("No file groups found.");
+            return Collections.emptyList();
+        }
+
+        List<String> ret = new ArrayList<>(availablePreferredImageFileGroups);
+        boolean presentationExists = eleFileGrpList.stream().anyMatch(ele -> PRESENTATION_FILEGROUP.equals(ele.getAttributeValue("USE")));
+        ret.add(OBJECT_FILEGROUP);
+        ret.add(PRESENTATION_FILEGROUP);
+        int presentationIndex = ret.indexOf(PRESENTATION_FILEGROUP);
+        if (downloadExternalImages) {
+            ret.add(presentationIndex, DEFAULT_FILEGROUP);
+        } else if (!presentationExists) {
+            ret.add(DEFAULT_FILEGROUP);
+        }
+
+        return ret;
+    }
+
+    /**
      * 
      * @param downloadExternalImages
      * @return Selected file group name
@@ -1071,7 +1113,7 @@ public class MetsIndexer extends Indexer {
      */
     PhysicalElement generatePageDocument(String fileGroup, Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
-        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(fileGroup, xp, httpConnector, dataRepository, DocType.PAGE);
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of(fileGroup), xp, httpConnector, dataRepository, DocType.PAGE);
         return builder.generatePageDocument(eleStructMapPhysical, iddoc, pi, inOrder, dataFolders, dataRepository, downloadExternalImages);
     }
 

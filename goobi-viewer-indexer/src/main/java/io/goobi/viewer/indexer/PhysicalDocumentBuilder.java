@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,7 +86,7 @@ public class PhysicalDocumentBuilder {
 
     private static final String XPATH_FILE = "mets:file";
 
-    private final String useFileGroupGlobal;
+    private final List<String> useFileGroups;
     private final JDomXP xp;
     private final HttpConnector httpConnector;
     private final DataRepository dataRepository;
@@ -103,8 +104,9 @@ public class PhysicalDocumentBuilder {
      * @param dataRepository the repository in which files are to be stored
      * @param docType the doc type to use for this PhysicalElement
      */
-    public PhysicalDocumentBuilder(String fileGroup, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository, DocType docType) {
-        this.useFileGroupGlobal = fileGroup;
+    public PhysicalDocumentBuilder(List<String> useFileGroups, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository,
+            DocType docType) {
+        this.useFileGroups = useFileGroups;
         this.xp = xp;
         this.httpConnector = httpConnector;
         this.dataRepository = dataRepository;
@@ -112,7 +114,11 @@ public class PhysicalDocumentBuilder {
     }
 
     public boolean isFileGroupExists() {
-        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='" + this.useFileGroupGlobal + "']";
+        return this.useFileGroups.stream().anyMatch(this::isFileGroupExists);
+    }
+
+    public boolean isFileGroupExists(String filegroup) {
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='" + filegroup + "']";
         return !xp.evaluateToElements(xpath, null).isEmpty();
     }
 
@@ -138,7 +144,7 @@ public class PhysicalDocumentBuilder {
             return Collections.emptyList();
         }
 
-        logger.info("Image file group selected: {}", useFileGroupGlobal);
+        logger.info("Image file groups selected: {}", useFileGroups);
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         Collection<PhysicalElement> pages = Collections.synchronizedList(new ArrayList<PhysicalElement>());
@@ -239,8 +245,8 @@ public class PhysicalDocumentBuilder {
         if (dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null");
         }
-        if (useFileGroupGlobal == null) {
-            throw new IllegalStateException("useFileGroupGlobal not set");
+        if (useFileGroups == null || useFileGroups.isEmpty()) {
+            throw new IllegalStateException("useFileGroups not set");
         }
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
@@ -265,9 +271,24 @@ public class PhysicalDocumentBuilder {
 
         eleFptrList.forEach(eleFptr -> ret.getShapes().addAll(getShapes(order, eleFptr)));
 
-        FileId useFileID = FileId.getFileId(getFileId(eleFptrList, useFileGroupGlobal), useFileGroupGlobal);
+        Map<String, String> filePtrMap = new HashMap<>();
+        FileId useFileID = null;
+        String useFileGroup = "";
+        for (String fileGroup : useFileGroups) {
+            FileId fileID = FileId.getFileId(getFileId(eleFptrList, fileGroup), fileGroup);
+            if (fileID != null) {
+                String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='%s']/mets:file[@ID='%s']".formatted(fileGroup, fileID.getFullId()); //NOSONAR XPath, not URI
+                List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
+                if (!eleFileGrpList.isEmpty()) {
+                    useFileID = fileID;
+                    ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
+                    useFileGroup = fileGroup;
+                    break;
+                }
+            }
+        }
+
         if (useFileID != null) {
-            ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
         } else {
             return null;
         }
@@ -294,7 +315,7 @@ public class PhysicalDocumentBuilder {
 
             String filePath = getFilepath(useFileID, eleFileGrp, fileGrpUse, fileIdXPathCondition, attrListIndex);
             if (filePath == null) {
-                if (useFileGroupGlobal.equals(fileGrpUse)) {
+                if (useFileGroup.equals(fileGrpUse)) {
                     logger.warn("Skipping selected file group {} - nothing found at: {}", fileGrpUse, xpath);
                 } else {
                     logger.debug("Skipping file group {}", fileGrpUse);
@@ -324,7 +345,7 @@ public class PhysicalDocumentBuilder {
                 break;
             }
 
-            if (fileGrpUse.equals(useFileGroupGlobal)) {
+            if (fileGrpUse.equals(useFileGroup)) {
                 // The file name from the main file group (usually PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
@@ -354,7 +375,7 @@ public class PhysicalDocumentBuilder {
                     }
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
-                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroupGlobal)
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroup)
                             && !ret.getDoc().containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
                         ret.getDoc().addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
                     }

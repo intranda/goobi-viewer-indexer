@@ -24,12 +24,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -1354,6 +1357,31 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         assertTrue(docList.stream()
                 .filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE)))
                 .allMatch(doc -> Long.valueOf(1).equals(doc.getFieldValue(SolrConstants.MDNUM_DOWNLOAD_RESOURCES))));
+    }
+
+    @Test
+    void index_shouldIndexImagesAndAudio() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/audio/02008070428708.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("OGG", "MP3", "PRESENTATION"));
+        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("02008070428708.xml", ret[0]);
+        Assertions.assertNull(ret[1]);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "02008070428708", SolrConstants.DOCTYPE, "PAGE"),
+                        List.of("MIMETYPE", "FILENAME*", "ORDER"));
+        Assertions.assertEquals(32, docList.size());
+        Map<String, List<SolrDocument>> mimetypeMap = docList.stream()
+                .collect(Collectors.toMap(doc -> doc.getFirstValue("MIMETYPE").toString(), doc -> new ArrayList<>(List.of(doc)),
+                        (d1, d2) -> new ArrayList<>(CollectionUtils.union(d1, d2))));
+        Assertions.assertEquals(22, mimetypeMap.get("image/tiff").size());
+        Assertions.assertEquals(10, mimetypeMap.get("audio/ogg").size());
+
+        Assertions.assertTrue(mimetypeMap.get("image/tiff").stream().allMatch(doc -> doc.getFieldValue("FILENAME").toString().matches("\\w+\\.tif")));
+        Assertions.assertTrue(mimetypeMap.get("audio/ogg").stream().allMatch(doc -> doc.getFieldValue("FILENAME").toString().matches("\\w+\\.ogg")));
+
     }
 
 }
