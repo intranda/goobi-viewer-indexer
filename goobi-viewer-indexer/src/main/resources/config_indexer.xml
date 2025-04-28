@@ -54,6 +54,7 @@
 		<indexedDenkXweb>indexed_denkxweb</indexedDenkXweb>
 		<indexedDublinCore>indexed_dublincore</indexedDublinCore>
 		<indexedCMS>indexed_cms</indexedCMS>
+        <indexedStatistics>indexed_statistics</indexedStatistics>
 
 		<!-- Misc folders -->
 		<successFolder>C:/opt/digiverso/viewer/success/</successFolder>
@@ -119,16 +120,16 @@
 				it will be used for indexing image file paths. -->
 			<preferredImageFileGroup>BOOKVIEWER</preferredImageFileGroup>
 			<preferredImageFileGroup>ZOOMIFY</preferredImageFileGroup>
-			<!-- physicalElementTypes/type (0-n): Values of mets:div/@TYPE that shall be processed as pages. Type "page" is always allowed,
-				others must be configured here. -->
-			<physicalElementTypes>
-				<type>object</type>
-				<type>audio</type>
-				<type>video</type>
-			</physicalElementTypes>
-
-			<!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
-			<volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"]/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
+            <!-- physicalElementTypes/type (0-n): Values of mets:div/@TYPE that shall be processed as pages. Type "page" is always allowed,
+                others must be configured here. -->
+            <physicalElementTypes>
+                <type>object</type>
+                <type>audio</type>
+                <type>video</type>
+            </physicalElementTypes>
+            
+            <!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
+            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(mods:titleInfo)]/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
 		</mets>
 
 		<lido>
@@ -569,9 +570,9 @@
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
 			</list>
-			</GROUPORDER_CONVOLUTE>
+		</GROUPORDER_CONVOLUTE>
 
-			<GROUPID_SERIES>
+		<GROUPID_SERIES>
 			<list>
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="series" and not(@otherType)]/mods:recordInfo/mods:recordIdentifier</xpath>
@@ -617,13 +618,15 @@
 		<MD_TITLE>
 			<list>
 				<item>
-					<xpath>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</xpath>
-					<xpath>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</xpath>
-					<xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</xpath>
-					<xpath>dc:title</xpath>
-					<xpath>ead:did/ead:unittitle</xpath>
-					<xpath>ead:archdesc/ead:did/ead:unittitle</xpath>
-					<xpath>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:titleInfo[not(@*)]/mods:title[not(@lang)]</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:part/mods:detail[@type="issue"]/mods:title</xpath>
+                    <xpath>mets:xmlData/bib/record/datafield[@tag="245"]/subfield[@code="a"]</xpath>
+                    <xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</xpath>
+                    <xpath>dc:title</xpath>
+                    <xpath>ead:did/ead:unittitle</xpath>
+                    <xpath>ead:archdesc/ead:did/ead:unittitle</xpath>
+                    <xpath>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</xpath>
+                    
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<replace string="&lt;ns&gt;"></replace>
@@ -3201,6 +3204,117 @@
 			</list>
 		</MD_NODEID>
 
+        <MD_ABSTRACT>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:abstract[not(@type)]</xpath>
+                    <xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:objectDescriptionWrap/lido:objectDescriptionSet[@lido:type="Orginaletikett" or @lido:type="description"]/lido:descriptiveNoteValue</xpath>
+                    <xpath>ead:did/ead:abstract</xpath>
+                    
+                    <onefield>false</onefield>
+                    <addToDefault>true</addToDefault>
+                    <replace char="10">&lt;br /&gt;</replace>
+                    <replace char="10">&lt;br /&gt;</replace>
+                    <replace char="10">&lt;br /&gt;</replace>
+                </item>
+            </list>
+        </MD_ABSTRACT>
+        
+        <!-- TECH MD -->
+        
+        <MD_TECH_FORMAT_NAME>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mix:mix/mix:BasicDigitalObjectInformation/mix:FormatDesignation/mix:formatName</xpath>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </MD_TECH_FORMAT_NAME>
+        
+        <MD_TECH_BYTE_ORDER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mix:mix/mix:BasicDigitalObjectInformation/mix:byteOrder</xpath>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </MD_TECH_BYTE_ORDER>
+        
+        <MD_TECH_BASIC_IMAGE_INFO>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mix:mix/mix:BasicImageInformation/mix:BasicImageCharacteristics</xpath>
+                    <addToDefault>false</addToDefault>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">concat(mix:imageWidth, ' x ', mix:imageHeight)</field>
+                        <field name="MD_TECH_IMAGE_WIDTH">mix:imageWidth</field>
+                        <field name="MD_TECH_IMAGE_HEIGHT">mix:imageHeight</field>
+                        <field name="MD_TECH_IMAGE_COLOR_SPACE">mix:PhotometricInterpretation/mix:colorSpace</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_TECH_BASIC_IMAGE_INFO>
+        
+        <MD_TECH_IMAGE_DATETIME_CREATED>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mix:mix/mix:ImageCaptureMetadata/mix:GeneralCaptureInformation/mix:dateTimeCreated</xpath>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </MD_TECH_IMAGE_DATETIME_CREATED>
+        
+        <MD_ALTNAME_LANG_FR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name/mods:alternativeName</xpath>
+                    <groupEntity type="OTHER" addAuthorityDataToDocstruct="false" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">concat(./mods:namePart[@xml:lang="fre" and not(@type)], mods:namePart[@xml:lang="fre" and @type="given"], " ", mods:namePart[@xml:lang="fre" and @type="family"])</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_TYPE">mods:description[@xml:lang="fre"]</field>
+                        <field name="MD_SOURCEID">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name</field>
+                        <field name="MD_SOURCETYPE">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                    </groupEntity>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_ALTNAME_LANG_FR>
+        
+        <MD_ALTNAME_LANG_EN>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name/mods:alternativeName</xpath>
+                    <groupEntity type="OTHER"  addAuthorityDataToDocstruct="false" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">concat(mods:namePart[@xml:lang="eng" and not(@type)], mods:namePart[@xml:lang="eng" and @type="given"], " ", mods:namePart[@xml:lang="eng" and @type="family"])</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_TYPE">mods:description[@xml:lang="eng"]</field>
+                        <field name="MD_SOURCEID">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name</field>
+                        <field name="MD_SOURCETYPE">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                    </groupEntity>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_ALTNAME_LANG_EN>
+       
+        <MD_ALTNAME_LANG_DE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name/mods:alternativeName</xpath>
+                    <groupEntity type="OTHER"  addAuthorityDataToDocstruct="false" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">concat(mods:namePart[@xml:lang="ger" and not(@type)], mods:namePart[@xml:lang="ger" and @type="given"], " ", mods:namePart[@xml:lang="ger" and @type="family"])</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_TYPE">mods:description[@xml:lang="fre"]</field>
+                        <field name="MD_SOURCEID">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name</field>
+                        <field name="MD_SOURCETYPE">//luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                    </groupEntity>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_ALTNAME_LANG_DE>
+        
 		<MD_EADID>
 			<list>
 				<item>
@@ -3494,6 +3608,156 @@
 			</list>
 		</MD_ABSTRACT>
 
+        <MD_ADMINNOTE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:note[@type="admin"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <onefield>false</onefield>
+                    <groupEntity type="OTHER">
+                        <field name="MD_VALUE">text()</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_ADMINNOTE>
+
+        <MD_AGENCY_LOCATION>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="true">
+                        <field name="MD_VALUE">mods:place/mods:placeTerm</field>
+                        <field name="MD_PLACE">mods:place/mods:placeTerm</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
+                        <field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_AGENCY_LOCATION>
+
+        <MD_AGENCY_LOCATION_LANG_FR>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION" addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">mods:place/mods:placeTerm</field>
+                        <field name="MD_DESCRIPTION">mods:description[@xml:lang="fre"]</field>
+                        <field name="MD_PLACE">mods:place/mods:placeTerm</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_DATESTART">mods:dateCreated</field> 
+                        <field name="MD_DATEEND">mods:dateOther</field> 
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="fre"]</field>
+                        <field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                        <field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
+                        <field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_AGENCY_LOCATION_LANG_FR>
+
+        <MD_AGENCY_LOCATION_LANG_DE>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">mods:place/mods:placeTerm</field>
+                        <field name="MD_DESCRIPTION">mods:description[@xml:lang="ger"]</field>
+                        <field name="MD_PLACE">mods:place/mods:placeTerm</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_DATESTART">mods:dateCreated</field> 
+                        <field name="MD_DATEEND">mods:dateOther</field> 
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="ger"]</field>
+                        <field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                        <field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
+                        <field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_AGENCY_LOCATION_LANG_DE>
+
+        <MD_AGENCY_LOCATION_LANG_EN>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
+                        <field name="MD_VALUE">mods:place/mods:placeTerm</field>
+                        <field name="MD_DESCRIPTION">mods:description[@xml:lang="eng"]</field>
+                        <field name="MD_PLACE">mods:place/mods:placeTerm</field>
+                        <field name="MD_REFID">@ID</field>
+                        <field name="MD_DATESTART">mods:dateCreated</field> 
+                        <field name="MD_DATEEND">mods:dateOther</field> 
+                        <field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
+                        <field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="eng"]</field>
+                        <field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
+                        <field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
+                        <field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_AGENCY_LOCATION_LANG_EN>
+        
+        <GROUPID_NEWSPAPER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="host"]/mods:recordInfo/mods:recordIdentifier</xpath>
+                    <addToDefault>false</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </GROUPID_NEWSPAPER>
+        
+        <GROUPORDER_NEWSPAPER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="publication"]/mods:dateIssued[@encoding="iso8601"]</xpath>
+                    <addToDefault>false</addToDefault>
+                    <replace string="-"></replace>
+                </item>
+            </list>
+        </GROUPORDER_NEWSPAPER>
+        
+        <MD_ACCESSLICENSE_NEWSPAPER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="host"]/mods:accessCondition[@type="use and reproduction"]</xpath>
+                    <addToDefault>false</addToDefault>
+                </item>
+            </list>
+        </MD_ACCESSLICENSE_NEWSPAPER>
+                
+        <MD_TITLE_NEWSPAPER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="host"]/mods:titleInfo/mods:title</xpath>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_TITLE_NEWSPAPER>
+        
+        <MD_SUBTITLE_NEWSPAPER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="host"]/mods:titleInfo/mods:subTitle</xpath>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_SUBTITLE_NEWSPAPER>
+        
+        <MD_PUBLISHER_NEWSPAPER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="host"]/mods:originInfo[@eventType="publication"]/mods:publisher</xpath>
+                    <addToDefault>true</addToDefault>
+                </item>
+            </list>
+        </MD_PUBLISHER_NEWSPAPER>
 
 		<!-- TECH MD -->
 		<MD_TECH_FORMAT_NAME>
@@ -3603,100 +3867,7 @@
 			</list>
 		</MD_PROTECTION_LANG_DE>
 
-		<MD_ADMINNOTE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:note[@type="admin"]</xpath>
-					<addToDefault>true</addToDefault>
-					<onefield>false</onefield>
-					<groupEntity type="OTHER">
-						<field name="MD_VALUE">text()</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_ADMINNOTE>
 
-		<MD_AGENCY_LOCATION>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</xpath>
-					<addToDefault>true</addToDefault>
-					<groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="true">
-						<field name="MD_VALUE">mods:place/mods:placeTerm</field>
-						<field name="MD_PLACE">mods:place/mods:placeTerm</field>
-						<field name="MD_REFID">@ID</field>
-						<field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
-						<field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_AGENCY_LOCATION>
-
-		<MD_AGENCY_LOCATION_LANG_FR>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</xpath>
-					<addToDefault>true</addToDefault>
-					<groupEntity type="LOCATION" addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
-						<field name="MD_VALUE">mods:place/mods:placeTerm</field>
-						<field name="MD_DESCRIPTION">mods:description[@xml:lang="fre"]</field>
-						<field name="MD_PLACE">mods:place/mods:placeTerm</field>
-						<field name="MD_REFID">@ID</field>
-						<field name="MD_DATESTART">mods:dateCreated</field>
-						<field name="MD_DATEEND">mods:dateOther</field>
-						<field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
-						<field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="fre"]</field>
-						<field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
-						<field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
-						<field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_AGENCY_LOCATION_LANG_FR>
-
-		<MD_AGENCY_LOCATION_LANG_DE>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</xpath>
-					<addToDefault>true</addToDefault>
-					<groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
-						<field name="MD_VALUE">mods:place/mods:placeTerm</field>
-						<field name="MD_DESCRIPTION">mods:description[@xml:lang="ger"]</field>
-						<field name="MD_PLACE">mods:place/mods:placeTerm</field>
-						<field name="MD_REFID">@ID</field>
-						<field name="MD_DATESTART">mods:dateCreated</field>
-						<field name="MD_DATEEND">mods:dateOther</field>
-						<field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
-						<field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="ger"]</field>
-						<field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
-						<field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
-						<field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_AGENCY_LOCATION_LANG_DE>
-
-		<MD_AGENCY_LOCATION_LANG_EN>
-			<list>
-				<item>
-					<xpath>mets:xmlData/mods:mods/mods:originInfo[@eventType="location"]</xpath>
-					<addToDefault>true</addToDefault>
-					<groupEntity type="LOCATION"  addAuthorityDataToDocstruct="true" addCoordsToDocstruct="false">
-						<field name="MD_VALUE">mods:place/mods:placeTerm</field>
-						<field name="MD_DESCRIPTION">mods:description[@xml:lang="eng"]</field>
-						<field name="MD_PLACE">mods:place/mods:placeTerm</field>
-						<field name="MD_REFID">@ID</field>
-						<field name="MD_DATESTART">mods:dateCreated</field>
-						<field name="MD_DATEEND">mods:dateOther</field>
-						<field name="MD_SOURCEID">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:sourceID</field>
-						<field name="MD_SOURCETEXT">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:name[@xml:lang="eng"]</field>
-						<field name="MD_SOURCETYPE">luxArtDic:source[luxArtDic:refs="{0}"]/luxArtDic:type</field>
-						<field name="NORM_URI">mods:place/mods:placeTerm/@valueURI</field>
-						<field name="NORM_IDENTIFIER_GEONAMES">substring-after(mods:place/mods:placeTerm/@valueURI, 'http://www.geonames.org/')</field>
-					</groupEntity>
-				</item>
-			</list>
-		</MD_AGENCY_LOCATION_LANG_EN>
-
-	</fields>
+    </fields>
+ 
 </root>

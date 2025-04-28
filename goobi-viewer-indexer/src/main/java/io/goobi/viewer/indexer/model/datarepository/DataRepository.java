@@ -764,6 +764,7 @@ public class DataRepository {
                 logger.info("{} media file(s) copied.", imageCounter);
                 return imageCounter;
             }
+            logger.warn("No media files copied. Check whether file names in folder match file names in document.");
         }
 
         if (imageCounter == 0) {
@@ -782,7 +783,8 @@ public class DataRepository {
                     }
                 }
             } else {
-                logger.warn("No media folder found for '{}'.", recordFileName);
+                logger.warn("No media folder found for '{}', or contained image file names don't match file names in source document.",
+                        recordFileName);
             }
         }
 

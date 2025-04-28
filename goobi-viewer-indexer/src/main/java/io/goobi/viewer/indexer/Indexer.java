@@ -15,12 +15,16 @@
  */
 package io.goobi.viewer.indexer;
 
+import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,13 +38,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.stream.ImageInputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +68,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.jpeg.JpegDirectory;
+import com.drew.metadata.png.PngDirectory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -152,6 +170,8 @@ public abstract class Indexer {
     protected final HttpConnector httpConnector;
 
     private final ObjectMapper mapper = new ObjectMapper();
+
+    protected Set<String> iddocsToDelete = new HashSet<>();
 
     protected Indexer() {
         httpConnector = new HttpConnector(HTTP_CONNECTION_TIMEOUT);
@@ -304,7 +324,7 @@ public abstract class Indexer {
 
         // Delete
         try {
-            if (deleteWithPI(pi, trace, searchIndex)) {
+            if (!deleteWithPI(pi, trace, true, searchIndex).isEmpty()) {
                 searchIndex.commit(searchIndex.isOptimize());
 
                 // Clear cache for record
@@ -329,25 +349,24 @@ public abstract class Indexer {
      *
      * @param pi String
      * @param createTraceDoc a boolean.
+     * @param deleteImmediately
      * @param searchIndex a {@link io.goobi.viewer.indexer.helper.SolrSearchIndex} object.
      * @throws java.io.IOException
      * @throws org.apache.solr.client.solrj.SolrServerException
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
-     * @return a boolean.
+     * @return Set<String>
      */
-    protected static boolean deleteWithPI(String pi, boolean createTraceDoc, SolrSearchIndex searchIndex)
+    protected static Set<String> deleteWithPI(String pi, boolean createTraceDoc, boolean deleteImmediately, SolrSearchIndex searchIndex)
             throws IOException, SolrServerException, FatalIndexerException {
-        Set<String> iddocsToDelete = new HashSet<>();
-
         String query = SolrConstants.PI + ":" + pi;
         SolrDocumentList hits = searchIndex.search(query, null);
         if (hits.isEmpty()) {
             logger.error("Not found: {}", pi);
-            return false;
+            return Collections.emptySet();
         }
 
         if (hits.getNumFound() == 1) {
-            logger.info("Removing previous instance of this volume from the index...");
+            logger.info("Found a previous instance of this volume in the index.");
         } else {
             logger.warn(
                     "{} previous instances of this volume have been found in the index. This shouldn't ever be the case."
@@ -360,14 +379,16 @@ public abstract class Indexer {
                 .append(SolrConstants.DOCTYPE)
                 .append(":PAGE")
                 .toString();
+
         // Unless the index is broken, there should be only one hit
+        Set<String> ret = new HashSet<>();
         for (SolrDocument doc : hits) {
             String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             if (iddoc == null) {
                 continue;
             }
             logger.debug("Removing instance: {}", iddoc);
-            iddocsToDelete.add(iddoc);
+            ret.add(iddoc);
 
             // Build replacement document that is marked as deleted
             if (createTraceDoc && doc.getFieldValue(SolrConstants.DATEDELETED) == null) {
@@ -397,14 +418,15 @@ public abstract class Indexer {
         for (SolrDocument doc : hits) {
             String iddoc = (String) doc.getFieldValue(SolrConstants.IDDOC);
             if (iddoc != null) {
-                iddocsToDelete.add(iddoc);
+                ret.add(iddoc);
             }
         }
 
-        boolean success = searchIndex.deleteDocuments(new ArrayList<>(iddocsToDelete));
-        logger.info("{} docs deleted.", iddocsToDelete.size());
+        if (deleteImmediately && searchIndex.deleteDocuments(new ArrayList<>(ret))) {
+            logger.info("Immediate deletion requested - {} docs deleted.", ret.size());
+        }
 
-        return success;
+        return ret;
     }
 
     /**
@@ -991,6 +1013,216 @@ public abstract class Indexer {
     }
 
     /**
+     * Retrieves the image size (width/height) for the image referenced in the given page document The image sizes are retrieved from image metadata.
+     * if this doesn't work, no image sizes are set
+     * 
+     * @param mediaFolder
+     * @param filename
+     * @return Optional<Dimension>
+     * @should return size correctly
+     */
+    static Optional<Dimension> getSize(Path mediaFolder, String filename) {
+        logger.trace("getSize: {}", filename);
+        if (filename == null || mediaFolder == null) {
+            return Optional.empty();
+        }
+        File imageFile = new File(filename);
+        imageFile = new File(mediaFolder.toAbsolutePath().toString(), imageFile.getName());
+        if (!imageFile.isFile()) {
+            return Optional.empty();
+        }
+        logger.debug("Found image file {}", imageFile.getAbsolutePath());
+        return readDimension(imageFile);
+    }
+
+    /**
+     * 
+     * @param imageFile
+     * @return Optional<Dimension>
+     */
+    static Optional<Dimension> readDimension(File imageFile) {
+        Dimension imageSize = new Dimension(0, 0);
+        try {
+            Metadata imageMetadata = ImageMetadataReader.readMetadata(imageFile);
+            Directory jpegDirectory = imageMetadata.getFirstDirectoryOfType(JpegDirectory.class);
+            Directory exifDirectory = imageMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            Directory pngDirectory = imageMetadata.getFirstDirectoryOfType(PngDirectory.class);
+            try {
+                imageSize.width = Integer.valueOf(pngDirectory.getDescription(1).replaceAll("\\D", ""));
+                imageSize.height = Integer.valueOf(pngDirectory.getDescription(2).replaceAll("\\D", ""));
+            } catch (NullPointerException e) {
+                //
+            }
+            try {
+                imageSize.width = Integer.valueOf(exifDirectory.getDescription(256).replaceAll("\\D", ""));
+                imageSize.height = Integer.valueOf(exifDirectory.getDescription(257).replaceAll("\\D", ""));
+            } catch (NullPointerException e) {
+                //
+            }
+            try {
+                imageSize.width = Integer.valueOf(jpegDirectory.getDescription(3).replaceAll("\\D", ""));
+                imageSize.height = Integer.valueOf(jpegDirectory.getDescription(1).replaceAll("\\D", ""));
+            } catch (NullPointerException e) {
+                //
+            }
+
+            if (imageSize.getHeight() * imageSize.getHeight() > 0) {
+                return Optional.of(imageSize);
+            }
+        } catch (ImageProcessingException | IOException e) {
+            try {
+                imageSize = getSizeForJp2(imageFile.toPath());
+                return Optional.ofNullable(imageSize);
+            } catch (IOException e2) {
+                logger.warn(e2.toString());
+                try {
+                    BufferedImage image = ImageIO.read(imageFile);
+                    if (image != null) {
+                        return Optional.of(new Dimension(image.getWidth(), image.getHeight()));
+                    }
+                } catch (NullPointerException | IOException e1) {
+                    logger.error("Unable to read image size: {}: {}", e.getMessage(), imageFile.getName());
+                }
+            } catch (UnsatisfiedLinkError e3) {
+                logger.error("Unable to load jpeg2000 ImageReader: {}", e.toString());
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * <p>
+     * getSizeForJp2.
+     * </p>
+     *
+     * @param image a {@link java.nio.file.Path} object.
+     * @return a {@link java.awt.Dimension} object.
+     * @throws java.io.IOException if any.
+     */
+    public static Dimension getSizeForJp2(Path image) throws IOException {
+        if (image.getFileName().toString().matches("(?i).*\\.jp(2|x|2000)")) {
+            logger.debug("Reading with jpeg2000 ImageReader");
+            Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpeg2000");
+
+            while (readers.hasNext()) {
+                ImageReader reader = readers.next();
+                logger.trace("Found reader: {}", reader);
+                if (reader != null) {
+                    try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
+                        reader.setInput(iis);
+                        int width = reader.getWidth(0);
+                        int height = reader.getHeight(0);
+                        if (width * height > 0) {
+                            return new Dimension(width, height);
+                        }
+                        logger.error("Error reading image dimensions of {} with image reader {}", image, reader.getClass().getSimpleName());
+                    } catch (IOException e) {
+                        logger.error("Error reading {} with image reader {}", image, reader.getClass().getSimpleName());
+                    }
+                }
+            }
+            ImageReader reader = getOpenJpegReader();
+            if (reader != null) {
+                logger.trace("found openjpeg reader");
+                try (InputStream inStream = Files.newInputStream(image); ImageInputStream iis = ImageIO.createImageInputStream(inStream);) {
+                    reader.setInput(iis);
+                    int width = reader.getWidth(0);
+                    int height = reader.getHeight(0);
+                    if (width * height > 0) {
+                        return new Dimension(width, height);
+                    }
+                    logger.error("Error reading image dimensions of {} with image reader {}", image, reader.getClass().getSimpleName());
+                } catch (IOException e) {
+                    logger.error("Error reading {} with image reader {}", image, reader.getClass().getSimpleName());
+                }
+            } else {
+                logger.debug("Not openjpeg image reader found");
+            }
+        }
+
+        throw new IOException("No valid image reader found for 'jpeg2000'");
+
+    }
+
+    /**
+     * <p>
+     * getOpenJpegReader.
+     * </p>
+     *
+     * @return a {@link javax.imageio.ImageReader} object.
+     */
+    public static ImageReader getOpenJpegReader() {
+        ImageReader reader;
+        try {
+            Object readerSpi = Class.forName("de.digitalcollections.openjpeg.imageio.OpenJp2ImageReaderSpi").getConstructor().newInstance();
+            reader = ((ImageReaderSpi) readerSpi).createReaderInstance();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return null;
+        } catch (NoClassDefFoundError | ClassNotFoundException | IllegalAccessException | InstantiationException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            logger.warn("No openjpeg reader");
+            return null;
+        }
+        return reader;
+    }
+
+    /**
+     * 
+     * @param indexObj
+     * @param writeStrategy
+     * @should add group id as anchor pi to certain docstructs
+     * @should not add group doc if group id equals anchor pi
+     */
+    protected void addGroupDocs(IndexObject indexObj, ISolrWriteStrategy writeStrategy) {
+        logger.info("addGroupDocs");
+        if (indexObj == null || writeStrategy == null) {
+            return;
+        }
+
+        for (Entry<String, String> entry : indexObj.getGroupIds().entrySet()) {
+            String groupIdField = entry.getKey();
+            logger.info("groupIdField: {}", groupIdField);
+            String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
+            Map<String, String> moreMetadata = new HashMap<>();
+            String titleField = "MD_TITLE_" + groupSuffix;
+            for (LuceneField field : indexObj.getLuceneFields()) {
+                if (field.getField().endsWith(groupSuffix) && !field.getField().startsWith(SolrConstants.PREFIX_GROUPID)
+                        && !field.getField().startsWith("GROUPORDER_")) {
+                    if (titleField.equals(field.getField())) {
+                        moreMetadata.put(SolrConstants.LABEL, field.getValue());
+                    }
+                    // Add any MD_*_GROUPSUFFIX field to the group doc
+                    moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
+                }
+            }
+            String docstructType = groupSuffix.toLowerCase();
+            moreMetadata.put(SolrConstants.DOCSTRCT, docstructType);
+            if (indexObj.getAnchorPI() != null && indexObj.getAnchorPI().equals(entry.getValue())) {
+                // Avoid overwriting an actual anchor with a group if the identifier is identical
+                logger.info("Group ID equals Anchor PI '{}', skipping group doc...", indexObj.getAnchorPI());
+                continue;
+            }
+            // TODO make configurable or smt
+            if ("newspaper".equals(docstructType)) {
+                indexObj.setAnchorPI(entry.getValue());
+            }
+            SolrInputDocument doc = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
+                    .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
+            if (doc != null) {
+                writeStrategy.addDoc(doc);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+                }
+            } else if (logger.isDebugEnabled()) {
+                logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
+            }
+        }
+    }
+
+    /**
      * Adds the given {@link PhysicalElement}'s grouped metadata to the write strategy. Must be called after the page has been mapped to a docstruct,
      * so that all relevant metadata has been copied from the structure element.
      * 
@@ -1500,9 +1732,8 @@ public abstract class Indexer {
             // Keep old IDDOC
             indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
             // Delete old doc
-            SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocument(String.valueOf(indexObj.getIddoc()));
-            // Delete secondary docs (aggregated metadata, events)
-            List<String> iddocsToDelete = new ArrayList<>();
+            iddocsToDelete.add(indexObj.getIddoc());
+            // Delete secondary docs (grouped metadata, events)
             hits = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc() + " " + SolrConstants.PI_TOPSTRUCT + ":" + indexObj.getPi(),
@@ -1510,13 +1741,9 @@ public abstract class Indexer {
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
-            if (!iddocsToDelete.isEmpty()) {
-                logger.info("Deleting {} secondary documents...", iddocsToDelete.size());
-                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
-            }
         } else if (!fromOldIndex) {
             // Recursively delete all children, if not an anchor
-            deleteWithPI(pi, false, SolrIndexerDaemon.getInstance().getSearchIndex());
+            iddocsToDelete = deleteWithPI(pi, false, false, SolrIndexerDaemon.getInstance().getSearchIndex());
         }
     }
 

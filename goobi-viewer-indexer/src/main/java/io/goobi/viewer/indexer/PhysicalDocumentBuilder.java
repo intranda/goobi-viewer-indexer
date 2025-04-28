@@ -133,9 +133,8 @@ public class PhysicalDocumentBuilder {
      * @return A list of {@link PhysicalElement} for all pages in the physical structMap with file resources in the given fileGroup
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public Collection<PhysicalElement> generatePageDocuments(final Map<String, Path> dataFolders, final String pi,
-            Integer pageCountStart, boolean downloadExternalImages)
-            throws InterruptedException, FatalIndexerException {
+    public Collection<PhysicalElement> generatePageDocuments(final Map<String, Path> dataFolders, final String pi, Integer pageCountStart,
+            boolean downloadExternalImages) throws InterruptedException, FatalIndexerException {
         // Get all physical elements
         String xpath = buildPagesXpathExpresson();
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);

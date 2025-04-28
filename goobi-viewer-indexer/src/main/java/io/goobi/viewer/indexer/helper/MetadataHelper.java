@@ -479,7 +479,7 @@ public final class MetadataHelper {
         }
         // TODO remove once it works
         if (authorityUrl.contains("viaf.org")) {
-            logger.warn("Viaf support ist temporarily suspended.");
+            logger.warn("Viaf support is temporarily suspended.");
             return Collections.emptyList();
         }
 
