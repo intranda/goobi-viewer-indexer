@@ -1172,6 +1172,8 @@ public abstract class Indexer {
      * 
      * @param indexObj
      * @param writeStrategy
+     * @should add group id as anchor pi to certain docstructs
+     * @should not add group doc if group id equals anchor pi
      */
     protected void addGroupDocs(IndexObject indexObj, ISolrWriteStrategy writeStrategy) {
         logger.info("addGroupDocs");
