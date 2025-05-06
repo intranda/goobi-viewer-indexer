@@ -646,18 +646,17 @@ public class PhysicalDocumentBuilder {
      */
 
     protected String getFileId(List<Element> eleFptrList, String fileGroup) {
-        String useFileID = null;
-        for (Element eleFptr : eleFptrList) {
-            String fileID = eleFptr.getAttributeValue("FILEID");
-            logger.trace("fileID: {}", fileID);
-            if (fileID.contains(fileGroup)) {
-                useFileID = fileID;
+        String useFileID = "";
+        if (eleFptrList != null) {
+            for (Element eleFptr : eleFptrList) {
+                String fileID = eleFptr.getAttributeValue("FILEID");
+                logger.trace("fileID: {}", fileID);
+                if (fileID.contains(fileGroup)) {
+                    useFileID = fileID;
+                }
             }
         }
-        if (fileGroup != null && StringUtils.isEmpty(useFileID)) {
-            logger.warn("FILEID not found for file group {}", fileGroup);
-            useFileID = "";
-        }
+
         return useFileID;
     }
 
