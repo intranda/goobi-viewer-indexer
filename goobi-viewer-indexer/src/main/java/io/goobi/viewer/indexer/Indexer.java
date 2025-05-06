@@ -1176,7 +1176,7 @@ public abstract class Indexer {
      * @should not add group doc if group id equals anchor pi
      */
     protected void addGroupDocs(IndexObject indexObj, ISolrWriteStrategy writeStrategy) {
-        logger.info("addGroupDocs");
+        logger.trace("addGroupDocs");
         if (indexObj == null || writeStrategy == null) {
             return;
         }
@@ -2072,6 +2072,8 @@ public abstract class Indexer {
             } else if (pageDoc.getFieldValue(filenameJpegField) != null) {
                 ret = (String) pageDoc.getFieldValue(filenameJpegField);
                 logger.info("Using {}:{} for {}", filenameJpegField, ret, SolrConstants.THUMBNAIL);
+            } else {
+                logger.warn("'{}' is not a valid thumbnail file name, but no alternative was found.", fileName);
             }
         }
 

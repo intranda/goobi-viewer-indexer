@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -270,7 +269,6 @@ public class PhysicalDocumentBuilder {
 
         eleFptrList.forEach(eleFptr -> ret.getShapes().addAll(getShapes(order, eleFptr)));
 
-        Map<String, String> filePtrMap = new HashMap<>();
         FileId useFileID = null;
         String useFileGroup = "";
         for (String fileGroup : useFileGroups) {
@@ -299,20 +297,22 @@ public class PhysicalDocumentBuilder {
 
         String altoURL = null;
         // For each mets:fileGroup in the mets:fileSec
-        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp";
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
         List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
         for (Element eleFileGrp : eleFileGrpList) {
             String fileGrpUse = eleFileGrp.getAttributeValue("USE");
-            String fileGrpId = eleFileGrp.getAttributeValue("ID");
+            String fileGrpId = eleFileGrp.getAttributeValue("ID"); // TODO This is probably always null
             logger.debug("Found file group: {}", fileGrpUse);
-            logger.debug("fileId: {}", useFileID);
+            logger.debug("fileId: {}", fileGrpId);
+
+            FileId fileID = FileId.getFileId(getFileId(eleFptrList, fileGrpUse), fileGrpUse);
 
             // If fileId is not null, use an XPath expression for the appropriate file element,
             // otherwise get all file elements and get the one with the index of the page order
-            String fileIdXPathCondition = getXPathCondition(useFileID, fileGrpId);
+            String fileIdXPathCondition = getXPathCondition(fileID, fileGrpId);
             int attrListIndex = useFileID != null ? 0 : order - 1;
 
-            String filePath = getFilepath(useFileID, eleFileGrp, fileGrpUse, fileIdXPathCondition, attrListIndex);
+            String filePath = getFilepath(eleFileGrp, fileIdXPathCondition, attrListIndex);
             if (filePath == null) {
                 if (useFileGroup.equals(fileGrpUse)) {
                     logger.warn("Skipping selected file group {} - nothing found at: {}", fileGrpUse, xpath);
@@ -350,8 +350,7 @@ public class PhysicalDocumentBuilder {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     if (ret.getDoc().containsKey(SolrConstants.FILENAME)) {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc,
-                                filePath,
-                                fileGrpUse);
+                                filePath, fileGrpUse);
                     }
 
                     String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
@@ -405,18 +404,15 @@ public class PhysicalDocumentBuilder {
                 altoURL = filePath;
             } else {
                 String fieldName = SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase();
+                String useFileName = filePath.startsWith("http") ? filePath : fileName;
                 if (ret.getDoc().getField(fieldName) == null) {
                     switch (mimetypeSplit[1]) {
-                        case "html-sandboxed":
-                            // Add full URL
-                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), filePath);
-                            break;
                         case "object":
-                            ret.getDoc().addField(SolrConstants.FILENAME, fileName);
+                            ret.getDoc().addField(SolrConstants.FILENAME, useFileName);
                             ret.getDoc().addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
                             break;
                         default:
-                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
+                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), useFileName);
                     }
                 }
             }
@@ -519,6 +515,11 @@ public class PhysicalDocumentBuilder {
         return ret;
     }
 
+    /**
+     * 
+     * @param filePath
+     * @return Extracted file name
+     */
     protected String getFilename(String filePath) {
         String fileName;
         if (Utils.isFileNameMatchesRegex(filePath, IIIF_IMAGE_FILE_NAMES)) {
@@ -530,7 +531,14 @@ public class PhysicalDocumentBuilder {
         return fileName;
     }
 
-    protected String getFilepath(FileId useFileID, Element eleFileGrp, String fileGrpUse, String fileIdXPathCondition, int attrListIndex) {
+    /**
+     * 
+     * @param eleFileGrp
+     * @param fileIdXPathCondition
+     * @param attrListIndex
+     * @return File path; null if none found
+     */
+    protected String getFilepath(Element eleFileGrp, String fileIdXPathCondition, int attrListIndex) {
         String xpath;
         // Check whether the fileId_fileGroup pattern applies for this file group, otherwise just use the fileId
         xpath = XPATH_FILE + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
@@ -548,6 +556,12 @@ public class PhysicalDocumentBuilder {
         return filePath;
     }
 
+    /**
+     * 
+     * @param useFileID
+     * @param fileGrpId
+     * @return Generated condition XPath
+     */
     protected String getXPathCondition(FileId useFileID, String fileGrpId) {
         String fileIdXPathCondition = "";
         if (useFileID != null) {
@@ -561,6 +575,12 @@ public class PhysicalDocumentBuilder {
         return fileIdXPathCondition;
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param ret
+     * @throws FatalIndexerException
+     */
     protected void setDmdId(Element eleStructMapPhysical, PhysicalElement ret) throws FatalIndexerException {
         String dmdId = eleStructMapPhysical.getAttributeValue(SolrConstants.DMDID);
         if (StringUtils.isNotEmpty(dmdId)) {
@@ -572,6 +592,11 @@ public class PhysicalDocumentBuilder {
         }
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param ret
+     */
     protected void setImageUrn(Element eleStructMapPhysical, PhysicalElement ret) {
         String contentIDs = eleStructMapPhysical.getAttributeValue(ATTRIBUTE_CONTENTIDS);
         if (Utils.isUrn(contentIDs)) {
@@ -579,6 +604,11 @@ public class PhysicalDocumentBuilder {
         }
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param ret
+     */
     protected void setDoublePage(Element eleStructMapPhysical, PhysicalElement ret) {
         // Double page view
         boolean doubleImage =
@@ -589,6 +619,11 @@ public class PhysicalDocumentBuilder {
         }
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param ret
+     */
     protected void setOrderLabel(Element eleStructMapPhysical, PhysicalElement ret) {
         String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
@@ -626,6 +661,12 @@ public class PhysicalDocumentBuilder {
         return useFileID;
     }
 
+    /**
+     * 
+     * @param order
+     * @param eleFptr
+     * @return List<PhysicalElement>
+     */
     protected List<PhysicalElement> getShapes(Integer order, Element eleFptr) {
         List<PhysicalElement> shapes = new ArrayList<>();
         if (eleFptr.getChild("seq", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets")) != null) {
@@ -655,15 +696,26 @@ public class PhysicalDocumentBuilder {
         return shapes;
     }
 
+    /**
+     * 
+     * @param iddoc
+     * @param id
+     * @return List<Element>
+     */
     protected List<Element> getStructLinks(String iddoc, String id) {
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().threadId());
         // Check whether this physical element is mapped to any logical element, skip if not
         StringBuilder sbXPath = new StringBuilder(70);
         sbXPath.append("/mets:mets/mets:structLink/mets:smLink[@xlink:to=\"").append(id).append("\"]");
-        List<Element> eleStructLinkList = xp.evaluateToElements(sbXPath.toString(), null);
-        return eleStructLinkList;
+        return xp.evaluateToElements(sbXPath.toString(), null);
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param inOrder
+     * @return Value of inOrder, if present; otherwise value of the ORDER attribute; otherwise null
+     */
     protected Integer getOrder(Element eleStructMapPhysical, final Integer inOrder) {
         Integer order = inOrder;
         if (order == null) {
