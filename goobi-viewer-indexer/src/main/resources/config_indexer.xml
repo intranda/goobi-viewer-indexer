@@ -227,16 +227,10 @@
 			<_default>OtherDocStrct</_default>
 			<monograph>Monograph</monograph>
 			<MultivolumeWork>MultiVolumeWork</MultivolumeWork>
-			<TableOfAbbreviations>TableOfAbbreviations</TableOfAbbreviations>
-			<TableOfContents>TableOfContents</TableOfContents>
-			<TableOfLiteratureRefs>TableOfLiteratureRefs</TableOfLiteratureRefs>
-			<TableOfLiteratureReferences>TableOfLiteratureRefs
-			</TableOfLiteratureReferences>
 			<!-- LIDO -->
 			<Gemälde>Painting</Gemälde>
 			<Grafik>Illustration</Grafik>
-			<pathologisches_Präparat>PathologicalSpecimen
-			</pathologisches_Präparat>
+			<pathologisches_Präparat>PathologicalSpecimen</pathologisches_Präparat>
 			<Münze>Coin</Münze>
 		</list>
 	</docstructmapping>
