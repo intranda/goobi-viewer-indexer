@@ -153,9 +153,6 @@ public class PhysicalDocumentBuilder {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
                         String iddoc = Indexer.getNextIddoc();
-                        if (usedIddocsMap.containsKey(iddoc)) {
-                            logger.error("Duplicate IDDOC: {}", iddoc);
-                        }
                         PhysicalElement page =
                                 generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
                                         downloadExternalImages);
