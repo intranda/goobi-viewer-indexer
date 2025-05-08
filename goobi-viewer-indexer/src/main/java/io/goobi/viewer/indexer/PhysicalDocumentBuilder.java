@@ -446,8 +446,8 @@ public class PhysicalDocumentBuilder {
                         if (frameSizeSplit.length == 2) {
                             ret.getDoc().addField(SolrConstants.WIDTH, frameSizeSplit[0].trim());
                             ret.getDoc().addField(SolrConstants.HEIGHT, frameSizeSplit[1].trim());
-                            logger.info("WIDTH: {}", ret.getDoc().getFieldValue(SolrConstants.WIDTH));
-                            logger.info("HEIGHT: {}", ret.getDoc().getFieldValue(SolrConstants.HEIGHT));
+                            logger.debug("Added WIDTH from techMD: {}", ret.getDoc().getFieldValue(SolrConstants.WIDTH));
+                            logger.debug("Added HEIGHT from techMD: {}", ret.getDoc().getFieldValue(SolrConstants.HEIGHT));
                         } else {
                             logger.warn("Invalid formatFrameSize value in mets:techMD[@ID='{}']: '{}'", amdId, frameSize);
                         }
