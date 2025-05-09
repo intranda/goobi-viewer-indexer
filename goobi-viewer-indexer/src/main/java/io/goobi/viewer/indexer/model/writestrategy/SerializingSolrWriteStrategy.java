@@ -325,7 +325,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                 }
                 executor.shutdown();
                 while (!executor.isTerminated()) {
-                    //
+                    logger.trace("Waiting for executor to terminate...");
                 }
             }
         } else {

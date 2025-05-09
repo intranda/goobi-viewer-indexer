@@ -18,7 +18,9 @@ package io.goobi.viewer.indexer.helper;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -671,7 +673,7 @@ public final class Utils {
             URL url = new URI(urlString).toURL();
             url.toURI();
             return true;
-        } catch (Exception e) {
+        } catch (IllegalArgumentException | MalformedURLException | URISyntaxException e) {
             return false;
         }
     }

@@ -50,6 +50,7 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
@@ -587,7 +588,7 @@ public class MetsIndexer extends Indexer {
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
             Thread.currentThread().interrupt();
-        } catch (Exception e) {
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
@@ -1847,7 +1848,7 @@ public class MetsIndexer extends Indexer {
                 return LocalDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_LOCALDATETIME).atZone(ZoneId.systemDefault());
             } catch (DateTimeParseException e1) {
                 try {
-                    return ZonedDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_DATETIMEWITHOFFSET);
+                    return ZonedDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_DATETIMEOFFSET);
                 } catch (DateTimeParseException e2) {
                     logger.error(e2.getMessage());
                     return null;

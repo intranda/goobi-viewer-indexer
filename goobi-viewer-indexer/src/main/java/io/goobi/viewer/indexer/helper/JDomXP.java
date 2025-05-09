@@ -253,15 +253,17 @@ public class JDomXP {
      * @should return value correctly
      * @should convert string to NFC
      */
-    public String evaluateToString(String expr, final Object parent) {
+    public String evaluateToString(final String expr, final Object parent) {
         if (expr == null) {
             return "";
         }
+        
         // JDOM2 requires '/text()' for string evaluation
-        if (!expr.endsWith(XPATH_TEXT)) {
-            expr += XPATH_TEXT;
+        String expression  = expr;
+        if (!expression.endsWith(XPATH_TEXT)) {
+            expression += XPATH_TEXT;
         }
-        List<Object> list = evaluate(expr, parent != null ? parent : doc, Filters.text());
+        List<Object> list = evaluate(expression, parent != null ? parent : doc, Filters.text());
         if (list == null || list.isEmpty()) {
             return null;
         }
