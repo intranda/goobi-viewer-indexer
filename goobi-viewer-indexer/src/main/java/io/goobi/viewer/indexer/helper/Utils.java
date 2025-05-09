@@ -673,7 +673,7 @@ public final class Utils {
             URL url = new URI(urlString).toURL();
             url.toURI();
             return true;
-        } catch (MalformedURLException | URISyntaxException e) {
+        } catch (IllegalArgumentException | MalformedURLException | URISyntaxException e) {
             return false;
         }
     }
