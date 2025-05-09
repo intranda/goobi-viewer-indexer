@@ -1848,7 +1848,7 @@ public class MetsIndexer extends Indexer {
                 return LocalDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_LOCALDATETIME).atZone(ZoneId.systemDefault());
             } catch (DateTimeParseException e1) {
                 try {
-                    return ZonedDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_DATETIMEWITHOFFSET);
+                    return ZonedDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_DATETIMEOFFSET);
                 } catch (DateTimeParseException e2) {
                     logger.error(e2.getMessage());
                     return null;

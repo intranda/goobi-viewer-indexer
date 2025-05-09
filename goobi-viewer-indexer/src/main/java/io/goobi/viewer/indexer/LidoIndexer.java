@@ -640,9 +640,7 @@ public class LidoIndexer extends Indexer {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
-        if (order == null) {
-            // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
-        }
+        // TODO parallel processing of pages will required Goobi to put values starting with 1 into the ORDER attribute
 
         // Create object for this page
         PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));
