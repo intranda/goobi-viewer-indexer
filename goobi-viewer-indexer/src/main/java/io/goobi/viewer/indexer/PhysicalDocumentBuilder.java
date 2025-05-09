@@ -86,12 +86,14 @@ public class PhysicalDocumentBuilder {
 
     private static final String XPATH_FILE = "mets:file";
 
+    private final Map<String, String> fileIdToFileGrpMap = new HashMap<>();
     private final List<String> useFileGroups;
     private final JDomXP xp;
     private final HttpConnector httpConnector;
     private final DataRepository dataRepository;
     private final DocType docType;
 
+    private List<Element> eleListAllFileGroups;
     private boolean hasImages = false;
     private boolean hasFulltext = false;
 
@@ -145,15 +147,16 @@ public class PhysicalDocumentBuilder {
 
         logger.info("Image file groups selected: {}", useFileGroups);
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
-        
-        logger.info("Buidling fileId to fileGrp map...");
+
+        logger.info("Buidling fileId->fileGrp map...");
         String xpathFileGrpList = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
-        List<Element> eleListAllFileGroups = xp.evaluateToElements(xpathFileGrpList, null);
-        Map<String, String> fileIdToUse = new HashMap<>();
-        for (Element eleFileGroup : eleListFileGroups) {
-            String use = eleFileGroup.getAttributeValue("USE");
-            for (Element eleFile : eleFileGroup.getChildren("mets:file")) {
-                fileIdToUse.put(eleFile.getAttributeValue("ID"), use);
+        eleListAllFileGroups = xp.evaluateToElements(xpathFileGrpList, null);
+        logger.info("Found {} file groups in document.", eleListAllFileGroups.size());
+        fileIdToFileGrpMap.clear();
+        for (Element eleFileGroup : eleListAllFileGroups) {
+            String fileGrp = eleFileGroup.getAttributeValue("USE");
+            for (Element eleFile : eleFileGroup.getChildren("file", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"))) {
+                fileIdToFileGrpMap.put(eleFile.getAttributeValue("ID"), fileGrp);
             }
         }
 
@@ -280,8 +283,6 @@ public class PhysicalDocumentBuilder {
 
         FileId useFileID = null;
         String useFileGroup = "";
-        String xpathFileGrpList = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
-        List<Element> eleListAllFileGroups = xp.evaluateToElements(xpathFileGrpList, null);
         // for each requested file group
         for (String fileGroup : useFileGroups) {
             // find file id that contains the file group name
@@ -328,7 +329,7 @@ public class PhysicalDocumentBuilder {
             String filePath = getFilepath(eleFileGrp, fileIdXPathCondition, attrListIndex);
             if (filePath == null) {
                 if (useFileGroup.equals(fileGrpUse)) {
-                    logger.warn("Skipping selected file group {} - nothing found at: {}", fileGrpUse, xpathFileGrpList);
+                    logger.warn("Skipping selected file group {} - nothing found.", fileGrpUse);
                 } else {
                     logger.debug("Skipping file group {}", fileGrpUse);
                 }
@@ -662,8 +663,6 @@ public class PhysicalDocumentBuilder {
         if (eleFptrList == null) {
             return null;
         }
-        
-        eleFptrList.
 
         for (Element eleFptr : eleFptrList) {
             String fileID = eleFptr.getAttributeValue("FILEID");
@@ -671,14 +670,8 @@ public class PhysicalDocumentBuilder {
                 continue;
             }
             logger.trace("fileID: {}", fileID);
-            for (Element eleFileGroup : eleListFileGroups) {
-                if (fileGroup.equals(eleFileGroup.getAttributeValue("USE"))) {
-                    for (Element eleFile : eleFileGroup.getChildren("mets:file")) {
-                        if (fileID.equals(eleFile.getAttributeValue("ID"))) {
-                            return fileID;
-                        }
-                    }
-                }
+            if (fileGroup.equals(fileIdToFileGrpMap.get(fileID))) {
+                return fileID;
             }
         }
 
