@@ -83,7 +83,7 @@ public class LanguageHelper {
             } else if (isoCode.length() == 2) {
                 languageConfig = getConfig().configurationsAt("language[iso_639-1=\"" + isoCode + "\"]").get(0);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new IllegalArgumentException("No matching language found for " + isoCode, e);
         }
         if (languageConfig == null) {

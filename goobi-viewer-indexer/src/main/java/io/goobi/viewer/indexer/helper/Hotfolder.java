@@ -162,15 +162,11 @@ public class Hotfolder {
         metsFileSizeThreshold = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.metsFileSizeThreshold", 10485760);
         dataFolderSizeThreshold = SolrIndexerDaemon.getInstance().getConfiguration().getInt("performance.dataFolderSizeThreshold", 157286400);
 
-        try {
-            addVolumeCollectionsToAnchor = SolrIndexerDaemon.getInstance().getConfiguration().isAddVolumeCollectionsToAnchor();
-            if (addVolumeCollectionsToAnchor) {
-                logger.info("Volume collections WILL BE ADDED to anchors.");
-            } else {
-                logger.info("Volume collections WILL NOT BE ADDED to anchors.");
-            }
-        } catch (Exception e) {
-            logger.error("<addVolumeCollectionsToAnchor> not defined.");
+        addVolumeCollectionsToAnchor = SolrIndexerDaemon.getInstance().getConfiguration().isAddVolumeCollectionsToAnchor();
+        if (addVolumeCollectionsToAnchor) {
+            logger.info("Volume collections WILL BE ADDED to anchors.");
+        } else {
+            logger.info("Volume collections WILL NOT BE ADDED to anchors.");
         }
 
         String temp = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("deleteContentFilesOnFailure");
@@ -264,29 +260,20 @@ public class Hotfolder {
             metsEnabled = false;
             logger.warn("<{}> not defined - METS indexing is disabled.", DataRepository.PARAM_INDEXED_METS);
         }
-        try {
-            updatedMets = Paths.get(config.getConfiguration("updatedMets"));
-            if (!Utils.checkAndCreateDirectory(updatedMets)) {
-                throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + updatedMets.toAbsolutePath().toString());
-            }
-        } catch (Exception e) {
-            throw new FatalIndexerException("<updatedMets> not defined.");
+
+        updatedMets = Paths.get(config.getConfiguration("updatedMets"));
+        if (!Utils.checkAndCreateDirectory(updatedMets)) {
+            throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + updatedMets.toAbsolutePath().toString());
         }
-        try {
-            deletedMets = Paths.get(config.getConfiguration("deletedMets"));
-            if (!Utils.checkAndCreateDirectory(deletedMets)) {
-                throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + deletedMets.toAbsolutePath().toString());
-            }
-        } catch (Exception e) {
-            throw new FatalIndexerException("<deletedMets> not defined.");
+
+        deletedMets = Paths.get(config.getConfiguration("deletedMets"));
+        if (!Utils.checkAndCreateDirectory(deletedMets)) {
+            throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + deletedMets.toAbsolutePath().toString());
         }
-        try {
-            errorMets = Paths.get(config.getConfiguration("errorMets"));
-            if (!Utils.checkAndCreateDirectory(errorMets)) {
-                throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + errorMets.toAbsolutePath().toString());
-            }
-        } catch (Exception e) {
-            throw new FatalIndexerException("<errorMets> not defined.");
+
+        errorMets = Paths.get(config.getConfiguration("errorMets"));
+        if (!Utils.checkAndCreateDirectory(errorMets)) {
+            throw new FatalIndexerException(ERROR_COULD_NOT_CREATE_DIR + errorMets.toAbsolutePath().toString());
         }
 
         // LIDO folders

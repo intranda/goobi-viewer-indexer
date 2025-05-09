@@ -248,7 +248,8 @@ public class DataRepository {
         String config = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration(dataDirName);
         if (StringUtils.isEmpty(config)) {
             switch (dataDirName) {
-                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB, PARAM_INDEXED_DUBLINCORE, PARAM_INDEXED_CMS, PARAM_INDEXED_STATISTICS:
+                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB:
+                case PARAM_INDEXED_DUBLINCORE, PARAM_INDEXED_CMS, PARAM_INDEXED_STATISTICS:
                     return;
                 default:
                     throw new FatalIndexerException("No configuration found for '" + dataDirName + "', exiting...");
