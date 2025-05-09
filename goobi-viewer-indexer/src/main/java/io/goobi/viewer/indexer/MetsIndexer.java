@@ -622,10 +622,10 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         this.useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
-        List<String> fileGrouList = getFileGroupsToUse(downloadExternalImages);
+        List<String> fileGroupList = getFileGroupsToUse(downloadExternalImages);
         if (StringUtils.isNotBlank(this.useFileGroupGlobal)) {
             PhysicalDocumentBuilder pageBuilder =
-                    new PhysicalDocumentBuilder(fileGrouList, xp, httpConnector, dataRepository, DocType.PAGE);
+                    new PhysicalDocumentBuilder(fileGroupList, xp, httpConnector, dataRepository, DocType.PAGE);
             Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, pageCountStart, downloadExternalImages);
             pages.forEach(writeStrategy::addPage);
             this.recordHasImages = pageBuilder.isHasImages();
