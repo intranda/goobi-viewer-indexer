@@ -77,6 +77,8 @@ public class HierarchicalLazySolrWriteStrategy extends LazySolrWriteStrategy {
                 // Add SUPER* fields to root doc
                 addSuperSearchFields(doc, rootDoc);
             }
+            // Add FACET_DEFAULT
+            addFacetDefaultField(doc);
         }
 
         searchIndex.writeToIndex(rootDoc);

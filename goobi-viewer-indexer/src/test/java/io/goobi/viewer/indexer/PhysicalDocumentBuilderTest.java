@@ -17,7 +17,15 @@ package io.goobi.viewer.indexer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import io.goobi.viewer.indexer.helper.JDomXP;
+import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 
 class PhysicalDocumentBuilderTest extends AbstractSolrEnabledTest {
 
@@ -35,4 +43,21 @@ class PhysicalDocumentBuilderTest extends AbstractSolrEnabledTest {
                         + "[@TYPE=\"page\" or @TYPE=\"object\" or @TYPE=\"audio\" or @TYPE=\"video\"]",
                 PhysicalDocumentBuilder.buildPagesXpathExpresson());
     }
+
+    @Test
+    void index_shouldFindDownloadResourceFilegroup() throws Exception {
+        Path metPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_download_resources.xml").toAbsolutePath();
+        JDomXP xp = new JDomXP(JDomXP.readXmlFile(metPath.toAbsolutePath().toString()));
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of("DOWNLOAD_RESOURCE"), xp, null, null, DocType.DOWNLOAD_RESOURCE);
+        Assertions.assertTrue(builder.isFileGroupExists());
+    }
+
+    @Test
+    void index_shouldFindNoDownloadResourceFilegroup() throws Exception {
+        Path metPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml").toAbsolutePath();
+        JDomXP xp = new JDomXP(JDomXP.readXmlFile(metPath.toAbsolutePath().toString()));
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of("DOWNLOAD_RESOURCE"), xp, null, null, DocType.DOWNLOAD_RESOURCE);
+        Assertions.assertFalse(builder.isFileGroupExists());
+    }
+
 }

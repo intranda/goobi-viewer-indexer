@@ -1,5 +1,6 @@
 package io.goobi.viewer.indexer.helper.language;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -11,8 +12,8 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * <p>
@@ -76,19 +77,26 @@ public class LanguageHelper {
      * @return a {@link io.goobi.viewer.indexer.helper.language.Language} object.
      */
     public Language getLanguage(String isoCode) {
+        if (isoCode == null) {
+            throw new IllegalArgumentException("isoCode may not be null.");
+        }
+
         HierarchicalConfiguration<ImmutableNode> languageConfig = null;
-        try {
-            if (isoCode.length() == 3) {
-                languageConfig = getConfig().configurationsAt("language[iso_639-2=\"" + isoCode + "\"]").get(0);
-            } else if (isoCode.length() == 2) {
-                languageConfig = getConfig().configurationsAt("language[iso_639-1=\"" + isoCode + "\"]").get(0);
+        if (isoCode.length() == 3) {
+            List<HierarchicalConfiguration<ImmutableNode>> configs = getConfig().configurationsAt("language[iso_639-2=\"" + isoCode + "\"]");
+            if (configs != null && !configs.isEmpty()) {
+                languageConfig = configs.get(0);
             }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("No matching language found for " + isoCode, e);
+        } else if (isoCode.length() == 2) {
+            List<HierarchicalConfiguration<ImmutableNode>> configs = getConfig().configurationsAt("language[iso_639-1=\"" + isoCode + "\"]");
+            if (configs != null && !configs.isEmpty()) {
+                languageConfig = configs.get(0);
+            }
         }
         if (languageConfig == null) {
             throw new IllegalArgumentException("No matching language found for " + isoCode);
         }
+        
         Language language = new Language();
         language.setIsoCode(languageConfig.getString("iso_639-2"));
         language.setIsoCodeOld(languageConfig.getString("iso_639-1"));

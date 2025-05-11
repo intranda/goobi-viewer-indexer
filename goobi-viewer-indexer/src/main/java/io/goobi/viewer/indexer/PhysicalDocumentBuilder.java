@@ -85,7 +85,7 @@ public class PhysicalDocumentBuilder {
 
     private static final String XPATH_FILE = "mets:file";
 
-    private final String useFileGroupGlobal;
+    private final List<String> useFileGroups;
     private final JDomXP xp;
     private final HttpConnector httpConnector;
     private final DataRepository dataRepository;
@@ -97,18 +97,28 @@ public class PhysicalDocumentBuilder {
     /**
      * Create a builder for pages and other documents based on physical files
      * 
-     * @param fileGroup the filegroup containing the files to use
+     * @param useFileGroups List of fileGroups containing the files to use
      * @param xp an xml parser
      * @param httpConnector for http requests
      * @param dataRepository the repository in which files are to be stored
      * @param docType the doc type to use for this PhysicalElement
      */
-    public PhysicalDocumentBuilder(String fileGroup, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository, DocType docType) {
-        this.useFileGroupGlobal = fileGroup;
+    public PhysicalDocumentBuilder(List<String> useFileGroups, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository,
+            DocType docType) {
+        this.useFileGroups = useFileGroups;
         this.xp = xp;
         this.httpConnector = httpConnector;
         this.dataRepository = dataRepository;
         this.docType = docType;
+    }
+
+    public boolean isFileGroupExists() {
+        return this.useFileGroups.stream().anyMatch(this::isFileGroupExists);
+    }
+
+    public boolean isFileGroupExists(String filegroup) {
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='" + filegroup + "']";
+        return !xp.evaluateToElements(xpath, null).isEmpty();
     }
 
     /**
@@ -122,9 +132,8 @@ public class PhysicalDocumentBuilder {
      * @return A list of {@link PhysicalElement} for all pages in the physical structMap with file resources in the given fileGroup
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      */
-    public Collection<PhysicalElement> generatePageDocuments(final Map<String, Path> dataFolders, final String pi,
-            Integer pageCountStart, boolean downloadExternalImages)
-            throws InterruptedException, FatalIndexerException {
+    public Collection<PhysicalElement> generatePageDocuments(final Map<String, Path> dataFolders, final String pi, Integer pageCountStart,
+            boolean downloadExternalImages) throws InterruptedException, FatalIndexerException {
         // Get all physical elements
         String xpath = buildPagesXpathExpresson();
         List<Element> eleStructMapPhysicalList = xp.evaluateToElements(xpath, null);
@@ -133,7 +142,7 @@ public class PhysicalDocumentBuilder {
             return Collections.emptyList();
         }
 
-        logger.info("Image file group selected: {}", useFileGroupGlobal);
+        logger.info("Image file groups selected: {}", useFileGroups);
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
 
         Collection<PhysicalElement> pages = Collections.synchronizedList(new ArrayList<PhysicalElement>());
@@ -144,9 +153,6 @@ public class PhysicalDocumentBuilder {
                 pool.submit(() -> eleStructMapPhysicalList.parallelStream().forEach(eleStructMapPhysical -> {
                     try {
                         String iddoc = Indexer.getNextIddoc();
-                        if (usedIddocsMap.containsKey(iddoc)) {
-                            logger.error("Duplicate IDDOC: {}", iddoc);
-                        }
                         PhysicalElement page =
                                 generatePageDocument(eleStructMapPhysical, String.valueOf(iddoc), pi, null, dataFolders, dataRepository,
                                         downloadExternalImages);
@@ -234,8 +240,8 @@ public class PhysicalDocumentBuilder {
         if (dataRepository == null) {
             throw new IllegalArgumentException("dataRepository may not be null");
         }
-        if (useFileGroupGlobal == null) {
-            throw new IllegalStateException("useFileGroupGlobal not set");
+        if (useFileGroups == null || useFileGroups.isEmpty()) {
+            throw new IllegalStateException("useFileGroups not set");
         }
 
         String id = eleStructMapPhysical.getAttributeValue("ID");
@@ -260,10 +266,24 @@ public class PhysicalDocumentBuilder {
 
         eleFptrList.forEach(eleFptr -> ret.getShapes().addAll(getShapes(order, eleFptr)));
 
-        FileId useFileID = FileId.getFileId(getFileId(eleFptrList, useFileGroupGlobal), useFileGroupGlobal);
-        if (useFileID != null) {
-            ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
-        } else {
+        FileId useFileID = null;
+        String useFileGroup = "";
+        for (String fileGroup : useFileGroups) {
+            FileId fileID = FileId.getFileId(getFileId(eleFptrList, fileGroup), fileGroup);
+            if (fileID != null) {
+                String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='%s']/mets:file[@ID='%s']"
+                        .formatted(fileGroup, fileID.getFullId()); //NOSONAR XPath, not URI
+                List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
+                if (!eleFileGrpList.isEmpty()) {
+                    useFileID = fileID;
+                    ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
+                    useFileGroup = fileGroup;
+                    break;
+                }
+            }
+        }
+
+        if (useFileID == null) {
             return null;
         }
 
@@ -274,22 +294,24 @@ public class PhysicalDocumentBuilder {
 
         String altoURL = null;
         // For each mets:fileGroup in the mets:fileSec
-        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp";
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
         List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
         for (Element eleFileGrp : eleFileGrpList) {
             String fileGrpUse = eleFileGrp.getAttributeValue("USE");
-            String fileGrpId = eleFileGrp.getAttributeValue("ID");
+            String fileGrpId = eleFileGrp.getAttributeValue("ID"); // TODO This is probably always null
             logger.debug("Found file group: {}", fileGrpUse);
-            logger.debug("fileId: {}", useFileID);
+            logger.debug("fileId: {}", fileGrpId);
+
+            FileId fileID = FileId.getFileId(getFileId(eleFptrList, fileGrpUse), fileGrpUse);
 
             // If fileId is not null, use an XPath expression for the appropriate file element,
             // otherwise get all file elements and get the one with the index of the page order
-            String fileIdXPathCondition = getXPathCondition(useFileID, fileGrpId);
+            String fileIdXPathCondition = getXPathCondition(fileID, fileGrpId);
             int attrListIndex = useFileID != null ? 0 : order - 1;
 
-            String filePath = getFilepath(useFileID, eleFileGrp, fileGrpUse, fileIdXPathCondition, attrListIndex);
+            String filePath = getFilepath(eleFileGrp, fileIdXPathCondition, attrListIndex);
             if (filePath == null) {
-                if (useFileGroupGlobal.equals(fileGrpUse)) {
+                if (useFileGroup.equals(fileGrpUse)) {
                     logger.warn("Skipping selected file group {} - nothing found at: {}", fileGrpUse, xpath);
                 } else {
                     logger.debug("Skipping file group {}", fileGrpUse);
@@ -319,14 +341,13 @@ public class PhysicalDocumentBuilder {
                 break;
             }
 
-            if (fileGrpUse.equals(useFileGroupGlobal)) {
+            if (fileGrpUse.equals(useFileGroup)) {
                 // The file name from the main file group (usually PRESENTATION or DEFAULT) will be used for thumbnail purposes etc.
                 if (filePath.startsWith("http")) {
                     // Should write the full URL into FILENAME because otherwise a PI_TOPSTRUCT+FILENAME combination may no longer be unique
                     if (ret.getDoc().containsKey(SolrConstants.FILENAME)) {
                         logger.error("Page {} already contains FILENAME={}, but attempting to add another value from filegroup {}", iddoc,
-                                filePath,
-                                fileGrpUse);
+                                filePath, fileGrpUse);
                     }
 
                     String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
@@ -349,7 +370,7 @@ public class PhysicalDocumentBuilder {
                     }
                     // RosDok IIIF
                     //Don't use if images are downloaded. Then we haven them locally
-                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroupGlobal)
+                    if (!downloadExternalImages && DEFAULT_FILEGROUP.equals(useFileGroup)
                             && !ret.getDoc().containsKey(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)) {
                         ret.getDoc().addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, filePath);
                     }
@@ -380,18 +401,15 @@ public class PhysicalDocumentBuilder {
                 altoURL = filePath;
             } else {
                 String fieldName = SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase();
+                String useFileName = filePath.startsWith("http") ? filePath : fileName;
                 if (ret.getDoc().getField(fieldName) == null) {
                     switch (mimetypeSplit[1]) {
-                        case "html-sandboxed":
-                            // Add full URL
-                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), filePath);
-                            break;
                         case "object":
-                            ret.getDoc().addField(SolrConstants.FILENAME, fileName);
+                            ret.getDoc().addField(SolrConstants.FILENAME, useFileName);
                             ret.getDoc().addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
                             break;
                         default:
-                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), fileName);
+                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), useFileName);
                     }
                 }
             }
@@ -425,8 +443,8 @@ public class PhysicalDocumentBuilder {
                         if (frameSizeSplit.length == 2) {
                             ret.getDoc().addField(SolrConstants.WIDTH, frameSizeSplit[0].trim());
                             ret.getDoc().addField(SolrConstants.HEIGHT, frameSizeSplit[1].trim());
-                            logger.info("WIDTH: {}", ret.getDoc().getFieldValue(SolrConstants.WIDTH));
-                            logger.info("HEIGHT: {}", ret.getDoc().getFieldValue(SolrConstants.HEIGHT));
+                            logger.debug("Added WIDTH from techMD: {}", ret.getDoc().getFieldValue(SolrConstants.WIDTH));
+                            logger.debug("Added HEIGHT from techMD: {}", ret.getDoc().getFieldValue(SolrConstants.HEIGHT));
                         } else {
                             logger.warn("Invalid formatFrameSize value in mets:techMD[@ID='{}']: '{}'", amdId, frameSize);
                         }
@@ -494,6 +512,11 @@ public class PhysicalDocumentBuilder {
         return ret;
     }
 
+    /**
+     * 
+     * @param filePath
+     * @return Extracted file name
+     */
     protected String getFilename(String filePath) {
         String fileName;
         if (Utils.isFileNameMatchesRegex(filePath, IIIF_IMAGE_FILE_NAMES)) {
@@ -505,7 +528,14 @@ public class PhysicalDocumentBuilder {
         return fileName;
     }
 
-    protected String getFilepath(FileId useFileID, Element eleFileGrp, String fileGrpUse, String fileIdXPathCondition, int attrListIndex) {
+    /**
+     * 
+     * @param eleFileGrp
+     * @param fileIdXPathCondition
+     * @param attrListIndex
+     * @return File path; null if none found
+     */
+    protected String getFilepath(Element eleFileGrp, String fileIdXPathCondition, int attrListIndex) {
         String xpath;
         // Check whether the fileId_fileGroup pattern applies for this file group, otherwise just use the fileId
         xpath = XPATH_FILE + fileIdXPathCondition + "/mets:FLocat/@xlink:href";
@@ -523,6 +553,12 @@ public class PhysicalDocumentBuilder {
         return filePath;
     }
 
+    /**
+     * 
+     * @param useFileID
+     * @param fileGrpId
+     * @return Generated condition XPath
+     */
     protected String getXPathCondition(FileId useFileID, String fileGrpId) {
         String fileIdXPathCondition = "";
         if (useFileID != null) {
@@ -536,6 +572,12 @@ public class PhysicalDocumentBuilder {
         return fileIdXPathCondition;
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param ret
+     * @throws FatalIndexerException
+     */
     protected void setDmdId(Element eleStructMapPhysical, PhysicalElement ret) throws FatalIndexerException {
         String dmdId = eleStructMapPhysical.getAttributeValue(SolrConstants.DMDID);
         if (StringUtils.isNotEmpty(dmdId)) {
@@ -547,6 +589,11 @@ public class PhysicalDocumentBuilder {
         }
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param ret
+     */
     protected void setImageUrn(Element eleStructMapPhysical, PhysicalElement ret) {
         String contentIDs = eleStructMapPhysical.getAttributeValue(ATTRIBUTE_CONTENTIDS);
         if (Utils.isUrn(contentIDs)) {
@@ -554,6 +601,11 @@ public class PhysicalDocumentBuilder {
         }
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param ret
+     */
     protected void setDoublePage(Element eleStructMapPhysical, PhysicalElement ret) {
         // Double page view
         boolean doubleImage =
@@ -564,6 +616,11 @@ public class PhysicalDocumentBuilder {
         }
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param ret
+     */
     protected void setOrderLabel(Element eleStructMapPhysical, PhysicalElement ret) {
         String orderLabel = eleStructMapPhysical.getAttributeValue("ORDERLABEL");
         if (StringUtils.isNotEmpty(orderLabel)) {
@@ -586,21 +643,26 @@ public class PhysicalDocumentBuilder {
      */
 
     protected String getFileId(List<Element> eleFptrList, String fileGroup) {
-        String useFileID = null;
-        for (Element eleFptr : eleFptrList) {
-            String fileID = eleFptr.getAttributeValue("FILEID");
-            logger.trace("fileID: {}", fileID);
-            if (fileID.contains(fileGroup)) {
-                useFileID = fileID;
+        String useFileID = "";
+        if (eleFptrList != null) {
+            for (Element eleFptr : eleFptrList) {
+                String fileID = eleFptr.getAttributeValue("FILEID");
+                logger.trace("fileID: {}", fileID);
+                if (fileID.contains(fileGroup)) {
+                    useFileID = fileID;
+                }
             }
         }
-        if (fileGroup != null && StringUtils.isEmpty(useFileID)) {
-            logger.warn("FILEID not found for file group {}", fileGroup);
-            useFileID = "";
-        }
+
         return useFileID;
     }
 
+    /**
+     * 
+     * @param order
+     * @param eleFptr
+     * @return List<PhysicalElement>
+     */
     protected List<PhysicalElement> getShapes(Integer order, Element eleFptr) {
         List<PhysicalElement> shapes = new ArrayList<>();
         if (eleFptr.getChild("seq", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets")) != null) {
@@ -630,15 +692,26 @@ public class PhysicalDocumentBuilder {
         return shapes;
     }
 
+    /**
+     * 
+     * @param iddoc
+     * @param id
+     * @return List<Element>
+     */
     protected List<Element> getStructLinks(String iddoc, String id) {
         logger.trace("generatePageDocument: {} (IDDOC {}) processed by thread {}", id, iddoc, Thread.currentThread().threadId());
         // Check whether this physical element is mapped to any logical element, skip if not
         StringBuilder sbXPath = new StringBuilder(70);
         sbXPath.append("/mets:mets/mets:structLink/mets:smLink[@xlink:to=\"").append(id).append("\"]");
-        List<Element> eleStructLinkList = xp.evaluateToElements(sbXPath.toString(), null);
-        return eleStructLinkList;
+        return xp.evaluateToElements(sbXPath.toString(), null);
     }
 
+    /**
+     * 
+     * @param eleStructMapPhysical
+     * @param inOrder
+     * @return Value of inOrder, if present; otherwise value of the ORDER attribute; otherwise null
+     */
     protected Integer getOrder(Element eleStructMapPhysical, final Integer inOrder) {
         Integer order = inOrder;
         if (order == null) {

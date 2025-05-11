@@ -281,10 +281,9 @@ public class FulltextAugmentor {
         if (doc.getField(SolrConstants.FULLTEXT) != null) {
             doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
             return true;
-        } else {
-            doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
-            return false;
         }
+        doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
+        return false;
     }
 
     /**
@@ -292,7 +291,7 @@ public class FulltextAugmentor {
      * @param baseFileName
      * @return true if baseFileName is not one of the keywords; false otherwise
      */
-    private boolean isBaseFileNameUsable(String baseFileName) {
+    private static boolean isBaseFileNameUsable(String baseFileName) {
         return !("default".equals(baseFileName) || "info".equals(baseFileName) || "native".equals(baseFileName));
     }
 

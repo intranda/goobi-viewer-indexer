@@ -29,9 +29,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.output.XMLOutputter;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
@@ -263,7 +265,8 @@ public class DenkXwebIndexer extends Indexer {
             // Set access conditions
             indexObj.writeAccessConditions(null);
 
-            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
+            // Add THUMBNAIL,THUMBPAGENO,THUMBPAGENOLABEL
+            // (must be done AFTER writeDateMondified(), writeAccessConditions() and generatePageDocuments()!)
             List<LuceneField> thumbnailFields = LidoIndexer.mapPagesToDocstruct(indexObj, writeStrategy, 0);
             if (thumbnailFields != null) {
                 indexObj.getLuceneFields().addAll(thumbnailFields);
@@ -304,6 +307,11 @@ public class DenkXwebIndexer extends Indexer {
             writeStrategy.setRootDoc(rootDoc);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
+                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            }
+
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
 
@@ -313,7 +321,7 @@ public class DenkXwebIndexer extends Indexer {
             }
             ret[1] = sbImgFileNames.toString();
             logger.info("Finished writing data for '{}' to Solr.", pi);
-        } catch (Exception e) {
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
                 logger.error("Indexing of '{}' could not be finished due to an error: {}", pi, e.getMessage());
             } else {
@@ -415,9 +423,7 @@ public class DenkXwebIndexer extends Indexer {
         if (dataFolders == null) {
             throw new IllegalArgumentException("dataFolders may not be null");
         }
-        if (order == null) {
-            // TODO page order within the metadata
-        }
+        // TODO page order within the metadata
 
         // Create object for this page
         PhysicalElement ret = createPhysicalElement(order, iddoc, String.valueOf(order));

@@ -276,6 +276,8 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                     // Add SUPER* fields to root doc
                     addSuperSearchFields(doc, rootDoc);
                 }
+                // Add FACET_DEFAULT
+                addFacetDefaultField(doc);
                 sanitizeDoc(doc);
                 batch.add(doc);
                 count++;
@@ -323,7 +325,7 @@ public class SerializingSolrWriteStrategy extends AbstractWriteStrategy {
                 }
                 executor.shutdown();
                 while (!executor.isTerminated()) {
-                    //
+                    logger.trace("Waiting for executor to terminate...");
                 }
             }
         } else {

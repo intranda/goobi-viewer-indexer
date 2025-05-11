@@ -50,6 +50,7 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
@@ -117,7 +118,7 @@ public class MetsIndexer extends Indexer {
     /** */
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
-    private List<String> availablePreferredImageFileGroups = SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups();
+    private final List<String> availablePreferredImageFileGroups;
     private volatile String useFileGroupGlobal = null;
 
     /**
@@ -127,8 +128,13 @@ public class MetsIndexer extends Indexer {
      * @should set attributes correctly
      */
     public MetsIndexer(Hotfolder hotfolder) {
+        this(hotfolder, SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups());
+    }
+
+    public MetsIndexer(Hotfolder hotfolder, List<String> availablePreferredImageFileGroups) {
         super();
         this.hotfolder = hotfolder;
+        this.availablePreferredImageFileGroups = availablePreferredImageFileGroups;
     }
 
     /**
@@ -137,8 +143,13 @@ public class MetsIndexer extends Indexer {
      * @param httpConnector
      */
     public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector) {
+        this(hotfolder, httpConnector, SolrIndexerDaemon.getInstance().getConfiguration().getMetsPreferredImageFileGroups());
+    }
+
+    public MetsIndexer(Hotfolder hotfolder, HttpConnector httpConnector, List<String> availablePreferredImageFileGroups) {
         super(httpConnector);
         this.hotfolder = hotfolder;
+        this.availablePreferredImageFileGroups = availablePreferredImageFileGroups;
     }
 
     /** {@inheritDoc} */
@@ -285,7 +296,7 @@ public class MetsIndexer extends Indexer {
             IndexObject indexObj = new IndexObject(getNextIddoc());
             logger.debug("IDDOC: {}", indexObj.getIddoc());
             indexObj.setVolume(isVolume());
-            logger.debug("Document is volume: {}", indexObj.isVolume());
+            logger.info("Document is volume: {}", indexObj.isVolume());
             indexObj.setAnchor(isAnchor());
             Element structNode = findStructNode(indexObj);
             if (structNode == null) {
@@ -437,10 +448,13 @@ public class MetsIndexer extends Indexer {
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
                 PhysicalDocumentBuilder downloadResourceBuilder =
-                        new PhysicalDocumentBuilder(DocType.DOWNLOAD_RESOURCE.name(), xp, httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
-                Collection<PhysicalElement> downloadResources =
-                        downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
-                downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
+                        new PhysicalDocumentBuilder(List.of(DocType.DOWNLOAD_RESOURCE.name()), xp, httpConnector, dataRepository,
+                                DocType.DOWNLOAD_RESOURCE);
+                Collection<PhysicalElement> downloadResources = Collections.emptyList();
+                if (downloadResourceBuilder.isFileGroupExists()) {
+                    downloadResources = downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+                    downloadResources.stream().map(PhysicalElement::getDoc).forEach(writeStrategy::addDoc);
+                }
 
                 for (PhysicalElement resource : downloadResources) {
                     int docsAdded = addGroupedMetadataDocsForPage(resource, pi, writeStrategy);
@@ -499,43 +513,11 @@ public class MetsIndexer extends Indexer {
             }
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
-            for (String groupIdField : indexObj.getGroupIds().keySet()) {
-                String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
-                Map<String, String> moreMetadata = new HashMap<>();
-                String titleField = "MD_TITLE_" + groupSuffix;
-                String sortTitleField = "SORT_TITLE_" + groupSuffix;
-                for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (titleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put(SolrConstants.LABEL, field.getValue());
-                        moreMetadata.put("MD_TITLE", field.getValue());
-                    } else if (sortTitleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put("SORT_TITLE", field.getValue());
-                    } else if (field.getField().endsWith(groupSuffix)
-                            && (field.getField().startsWith("MD_")
-                                    || field.getField().startsWith("MD2_")
-                                    || field.getField().startsWith("MDNUM_"))) {
-                        // Add any MD_*_GROUPSUFFIX field to the group doc
-                        moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
-                    }
-                }
-                SolrInputDocument doc = SolrIndexerDaemon.getInstance()
-                        .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
-                if (doc != null) {
-                    writeStrategy.addDoc(doc);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                    }
-                } else if (logger.isDebugEnabled()) {
-                    logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                }
-            }
+            addGroupDocs(indexObj, writeStrategy);
 
             // If this is a new volume, force anchor update to keep its volume count consistent
-            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
-                logger.info("This is a new volume - anchor updated needed.");
+            if (indexObj.isVolume() && indexObj.getParent() != null) {
+                logger.info("This is a volume - anchor update needed.");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
 
@@ -585,6 +567,10 @@ public class MetsIndexer extends Indexer {
             indexObj.applyFinalModifications();
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
+                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            }
 
             logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
@@ -602,7 +588,7 @@ public class MetsIndexer extends Indexer {
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
             Thread.currentThread().interrupt();
-        } catch (Exception e) {
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
@@ -637,10 +623,11 @@ public class MetsIndexer extends Indexer {
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         this.useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
+        List<String> fileGrouList = getFileGroupsToUse(downloadExternalImages);
         if (StringUtils.isNotBlank(this.useFileGroupGlobal)) {
             PhysicalDocumentBuilder pageBuilder =
-                    new PhysicalDocumentBuilder(useFileGroupGlobal, xp, httpConnector, dataRepository, DocType.PAGE);
-            Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
+                    new PhysicalDocumentBuilder(fileGrouList, xp, httpConnector, dataRepository, DocType.PAGE);
+            Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, pageCountStart, downloadExternalImages);
             pages.forEach(writeStrategy::addPage);
             this.recordHasImages = pageBuilder.isHasImages();
             this.recordHasFulltext = pageBuilder.isHasFulltext();
@@ -1009,6 +996,36 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
+     * get a list of all filegroups to consider for media files to use. This includes the availablePreferredImageFileGroups as well as
+     * {@link PRESENTATION_FILEGROUP} and {@link OBJECT_FILEGROUP}. If 'downloadExternalImages' is true, also include {@link DEFAULT_FILEGROUP} BEFORE
+     * the {@link PRESENTATION_FILEGROUP}. Otherwise include {@link DEFAULT_FILEGROUP} if no {@link PRESENTATION_FILEGROUP} was found in the mets file
+     * 
+     * @param downloadExternalImages
+     * @return Selected file group name
+     */
+    List<String> getFileGroupsToUse(boolean downloadExternalImages) {
+        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath, not URI
+        List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
+        if (eleFileGrpList.isEmpty()) {
+            logger.info("No file groups found.");
+            return Collections.emptyList();
+        }
+
+        List<String> ret = new ArrayList<>(availablePreferredImageFileGroups);
+        boolean presentationExists = eleFileGrpList.stream().anyMatch(ele -> PRESENTATION_FILEGROUP.equals(ele.getAttributeValue("USE")));
+        ret.add(OBJECT_FILEGROUP);
+        ret.add(PRESENTATION_FILEGROUP);
+        int presentationIndex = ret.indexOf(PRESENTATION_FILEGROUP);
+        if (downloadExternalImages) {
+            ret.add(presentationIndex, DEFAULT_FILEGROUP);
+        } else if (!presentationExists) {
+            ret.add(DEFAULT_FILEGROUP);
+        }
+
+        return ret;
+    }
+
+    /**
      * 
      * @param downloadExternalImages
      * @return Selected file group name
@@ -1069,7 +1086,7 @@ public class MetsIndexer extends Indexer {
      */
     PhysicalElement generatePageDocument(String fileGroup, Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
-        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(fileGroup, xp, httpConnector, dataRepository, DocType.PAGE);
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of(fileGroup), xp, httpConnector, dataRepository, DocType.PAGE);
         return builder.generatePageDocument(eleStructMapPhysical, iddoc, pi, inOrder, dataFolders, dataRepository, downloadExternalImages);
     }
 
@@ -1831,7 +1848,7 @@ public class MetsIndexer extends Indexer {
                 return LocalDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_LOCALDATETIME).atZone(ZoneId.systemDefault());
             } catch (DateTimeParseException e1) {
                 try {
-                    return ZonedDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_DATETIMEWITHOFFSET);
+                    return ZonedDateTime.parse(dateString, DateTools.FORMATTER_ISO8601_DATETIMEOFFSET);
                 } catch (DateTimeParseException e2) {
                     logger.error(e2.getMessage());
                     return null;

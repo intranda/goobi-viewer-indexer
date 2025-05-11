@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1030,5 +1031,44 @@ class IndexerTest extends AbstractSolrEnabledTest {
         SolrInputDocument doc = new SolrInputDocument();
         doc.setField("FILENAME_JPEG", "001.jpg");
         assertEquals("https://foo.bar/info.json", Indexer.checkThumbnailFileName("https://foo.bar/info.json", doc));
+    }
+
+    /**
+     * @throws IOException
+     * @see Indexer#addGroupDocs(IndexObject,ISolrWriteStrategy)
+     * @verifies add group id as anchor pi to certain docstructs
+     */
+    @Test
+    void addGroupDocs_shouldAddGroupIdAsAnchorPiToCertainDocstructs() throws IOException {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
+        indexObj.getGroupIds().put(SolrConstants.PREFIX_GROUPID + "NEWSPAPER", "ID123");
+
+        ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        assertEquals(LazySolrWriteStrategy.class, strategy.getClass());
+
+        indexer.addGroupDocs(indexObj, strategy);
+        assertEquals("ID123", indexObj.getAnchorPI());
+        assertEquals(1, ((LazySolrWriteStrategy) strategy).getDocsToAdd().size());
+    }
+
+    /**
+     * @throws IOException
+     * @see Indexer#addGroupDocs(IndexObject,ISolrWriteStrategy)
+     * @verifies not add group doc if group id equals anchor pi
+     */
+    @Test
+    void addGroupDocs_shouldNotAddGroupDocIfGroupIdEqualsAnchorPi() throws IOException {
+        Indexer indexer = new MetsIndexer(hotfolder);
+        IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
+        indexObj.setAnchorPI("ID123");
+        indexObj.getGroupIds().put(SolrConstants.PREFIX_GROUPID + "NEWSPAPER", "ID123");
+
+        ISolrWriteStrategy strategy = AbstractWriteStrategy.create(null, new HashMap<>(), hotfolder);
+        assertEquals(LazySolrWriteStrategy.class, strategy.getClass());
+
+        indexer.addGroupDocs(indexObj, strategy);
+        assertEquals("ID123", indexObj.getAnchorPI());
+        assertEquals(0, ((LazySolrWriteStrategy) strategy).getDocsToAdd().size());
     }
 }

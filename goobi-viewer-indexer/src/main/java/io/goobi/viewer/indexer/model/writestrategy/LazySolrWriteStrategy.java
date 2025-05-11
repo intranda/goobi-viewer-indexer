@@ -221,6 +221,8 @@ public class LazySolrWriteStrategy extends AbstractWriteStrategy {
                 // Add SUPER* fields to root doc
                 addSuperSearchFields(doc, rootDoc);
             }
+            // Add FACET_DEFAULT
+            addFacetDefaultField(doc);
             sanitizeDoc(doc);
         }
 

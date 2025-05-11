@@ -479,7 +479,7 @@ public final class MetadataHelper {
         }
         // TODO remove once it works
         if (authorityUrl.contains("viaf.org")) {
-            logger.warn("Viaf support ist temporarily suspended.");
+            logger.warn("Viaf support is temporarily suspended.");
             return Collections.emptyList();
         }
 
@@ -557,14 +557,24 @@ public final class MetadataHelper {
             return Collections.emptyList();
         }
 
+        String language = null;
+        if (StringUtils.isNotEmpty(labelField)) {
+            language = extractLanguageCodeFromMetadataField(labelField);
+        }
+
         List<LuceneField> ret = new ArrayList<>(authorityDataList.size());
         Set<String> nameSearchFieldValues = new HashSet<>();
         Set<String> placeSearchFieldValues = new HashSet<>();
         boolean hasWktCoords = false;
+        // Collect certain values in a temp list, so that preferred language values can later be added to the final list
+        List<LuceneField> tempRet = new ArrayList<>(authorityDataList.size());
+        // Map with preferred language values
+        Map<String, List<String>> correctLanguageValueMap = new HashMap<>();
         for (NormData authorityDataField : authorityDataList) {
             if (!authorityDataField.getKey().startsWith("NORM_")) {
                 continue;
             }
+            String fieldLanguage = extractLanguageCodeFromMetadataField(authorityDataField.getKey());
             for (NormDataValue val : authorityDataField.getValues()) {
                 // IKFN norm data browsing hack
                 if (StringUtils.isBlank(val.getText()) || authorityDataField.getKey().equals("NORM_STATICPAGE")) {
@@ -575,8 +585,6 @@ public final class MetadataHelper {
                     textValue = applyReplaceRules(textValue, replaceRules);
                 }
 
-                ret.add(new LuceneField(authorityDataField.getKey(), textValue));
-                ret.add(new LuceneField(authorityDataField.getKey() + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
                 String valWithSpaces = new StringBuilder(" ").append(textValue).append(' ').toString();
 
                 // Add to DEFAULT
@@ -594,46 +602,83 @@ public final class MetadataHelper {
                     logger.trace("Added to NORMDATATERMS: {}", textValue);
                 }
 
-                // Aggregate place fields into the same untokenized field for term browsing
-                if (authorityDataField.getKey().equals(FIELD_NORM_NAME)
-                        || (authorityDataField.getKey().startsWith("NORM_ALTNAME") || authorityDataField.getKey().startsWith("NORM_OFFICIALNAME"))
-                                && !nameSearchFieldValues.contains(textValue)) {
-                    if (StringUtils.isNotEmpty(labelField)) {
-                        ret.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
+                // Skip fields that have a different language than the main field
+                if (StringUtils.isEmpty(fieldLanguage) || fieldLanguage.equals(language)) {
+                    if (StringUtils.isNotEmpty(fieldLanguage) && fieldLanguage.equals(language)) {
+                        List<String> values = correctLanguageValueMap.computeIfAbsent(authorityDataField.getKey(), k -> new ArrayList<>());
+                        values.add(textValue);
+                        logger.info("Found preferred language value: {}:{}", authorityDataField.getKey(), textValue);
                     }
-                    ret.add(new LuceneField(FIELD_NORM_NAME + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
-                    nameSearchFieldValues.add(textValue);
-                } else if (authorityDataField.getKey().startsWith("NORM_PLACE") && !placeSearchFieldValues.contains(textValue)) {
-                    if (StringUtils.isNotEmpty(labelField)) {
-                        ret.add(new LuceneField(labelField + "_PLACE_SEARCH", textValue));
-                    }
-                    ret.add(new LuceneField("NORM_PLACE" + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
-                    placeSearchFieldValues.add(textValue);
-                } else if (authorityDataField.getKey().equals("NORM_LIFEPERIOD")) {
-                    String[] valueSplit = textValue.split("-");
-                    if (valueSplit.length > 0) {
-                        for (String date : valueSplit) {
-                            if (StringUtils.isNotEmpty(labelField)) {
-                                ret.add(new LuceneField(labelField + "_DATE_SEARCH", date.trim()));
+                    tempRet.add(new LuceneField(authorityDataField.getKey(), textValue));
+
+                    // Aggregate place fields into the same untokenized field for term browsing
+                    if (authorityDataField.getKey().equals(FIELD_NORM_NAME)
+                            || (authorityDataField.getKey().startsWith("NORM_ALTNAME") || authorityDataField.getKey().startsWith("NORM_OFFICIALNAME"))
+                                    && !nameSearchFieldValues.contains(textValue)) {
+                        if (StringUtils.isNotEmpty(labelField)) {
+                            tempRet.add(new LuceneField(labelField + "_NAME_SEARCH", textValue));
+                        }
+                        tempRet.add(new LuceneField(FIELD_NORM_NAME + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
+                        nameSearchFieldValues.add(textValue);
+                    } else if (authorityDataField.getKey().startsWith("NORM_PLACE") && !placeSearchFieldValues.contains(textValue)) {
+                        if (StringUtils.isNotEmpty(labelField)) {
+                            tempRet.add(new LuceneField(labelField + "_PLACE_SEARCH", textValue));
+                        }
+                        tempRet.add(new LuceneField("NORM_PLACE" + SolrConstants.SUFFIX_UNTOKENIZED, textValue));
+                        placeSearchFieldValues.add(textValue);
+                    } else if (authorityDataField.getKey().equals("NORM_LIFEPERIOD")) {
+                        String[] valueSplit = textValue.split("-");
+                        if (valueSplit.length > 0) {
+                            for (String date : valueSplit) {
+                                if (StringUtils.isNotEmpty(labelField)) {
+                                    ret.add(new LuceneField(labelField + "_DATE_SEARCH", date.trim()));
+                                }
+                                ret.add(new LuceneField("NORM_DATE" + SolrConstants.SUFFIX_UNTOKENIZED, date.trim()));
                             }
-                            ret.add(new LuceneField("NORM_DATE" + SolrConstants.SUFFIX_UNTOKENIZED, date.trim()));
+                        }
+                    } else if (authorityDataField.getKey().equals(Record.AUTOCOORDS_FIELD)) {
+                        String type = GeoJSONTools.getCoordinatesType(textValue);
+                        GeoCoords coords = GeoJSONTools.convert(textValue, type, " ");
+
+                        // Add searchable WKT lon-lat coordinates
+                        ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWkt()));
+                        hasWktCoords = true;
+
+                        // Add geoJSON
+                        String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSONString(textValue, type, " ");
+                        if (StringUtils.isNotEmpty(geoJSON)) {
+                            ret.add(new LuceneField("NORM_COORDS_GEOJSON", geoJSON));
                         }
                     }
-                } else if (authorityDataField.getKey().equals(Record.AUTOCOORDS_FIELD)) {
-                    String type = GeoJSONTools.getCoordinatesType(textValue);
-                    GeoCoords coords = GeoJSONTools.convert(textValue, type, " ");
+                }
+            }
+        }
 
-                    // Add searchable WKT lon-lat coordinates
-                    ret.add(new LuceneField(FIELD_WKT_COORDS, coords.getWkt()));
-                    hasWktCoords = true;
-
-                    // Add geoJSON
-                    String geoJSON = GeoJSONTools.convertCoordinatesToGeoJSONString(textValue, type, " ");
-                    if (StringUtils.isNotEmpty(geoJSON)) {
-                        ret.add(new LuceneField("NORM_COORDS_GEOJSON", geoJSON));
+        // Override any NORM_FOO values with values from NORM_FOO_LANG_XX, where XX is the desired language of the main field
+        Set<String> doneFields = new HashSet<>();
+        for (LuceneField field : tempRet) {
+            if (doneFields.contains(field.getField())) {
+                continue;
+            }
+            if (language != null) {
+                String fieldLanguage = extractLanguageCodeFromMetadataField(field.getField());
+                if (StringUtils.isEmpty(fieldLanguage)) {
+                    String langField = field.getField() + SolrConstants.MIDFIX_LANG + language.toUpperCase();
+                    List<String> values = correctLanguageValueMap.get(langField);
+                    if (values != null) {
+                        logger.info("Overriding values of {} with values from {}", field.getField(), langField);
+                        for (String value : values) {
+                            ret.add(new LuceneField(field.getField(), value));
+                            ret.add(new LuceneField(field.getField() + SolrConstants.SUFFIX_UNTOKENIZED, value));
+                        }
+                        doneFields.add(field.getField());
+                        continue;
                     }
                 }
-
+            }
+            ret.add(field);
+            if (!field.getField().endsWith(SolrConstants.SUFFIX_UNTOKENIZED) && !field.getField().endsWith("_SEARCH")) {
+                ret.add(new LuceneField(field.getField() + SolrConstants.SUFFIX_UNTOKENIZED, field.getValue()));
             }
         }
 
@@ -1422,8 +1467,8 @@ public final class MetadataHelper {
             throw new IllegalArgumentException("fieldName may not be null");
         }
 
-        if (fieldName.contains(SolrConstants.MIXFIX_LANG)) {
-            int index = fieldName.indexOf(SolrConstants.MIXFIX_LANG) + SolrConstants.MIXFIX_LANG.length();
+        if (fieldName.contains(SolrConstants.MIDFIX_LANG)) {
+            int index = fieldName.indexOf(SolrConstants.MIDFIX_LANG) + SolrConstants.MIDFIX_LANG.length();
             if (fieldName.length() == index + 2) {
                 return fieldName.substring(index).toLowerCase();
             }
@@ -1466,7 +1511,7 @@ public final class MetadataHelper {
                     if (language != null) {
                         String isoCode = LanguageHelper.getInstance().getLanguage(language).getIsoCodeOld();
                         if (isoCode != null) {
-                            fileFieldName += SolrConstants.MIXFIX_LANG + isoCode.toUpperCase();
+                            fileFieldName += SolrConstants.MIDFIX_LANG + isoCode.toUpperCase();
                         }
                         indexObj.getLanguages().add(isoCode);
                     }

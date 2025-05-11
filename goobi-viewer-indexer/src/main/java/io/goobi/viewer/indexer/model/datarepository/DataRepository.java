@@ -248,7 +248,8 @@ public class DataRepository {
         String config = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration(dataDirName);
         if (StringUtils.isEmpty(config)) {
             switch (dataDirName) {
-                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB, PARAM_INDEXED_DUBLINCORE, PARAM_INDEXED_CMS, PARAM_INDEXED_STATISTICS:
+                case PARAM_INDEXED_METS, PARAM_INDEXED_LIDO, PARAM_INDEXED_EAD, PARAM_INDEXED_DENKXWEB:
+                case PARAM_INDEXED_DUBLINCORE, PARAM_INDEXED_CMS, PARAM_INDEXED_STATISTICS:
                     return;
                 default:
                     throw new FatalIndexerException("No configuration found for '" + dataDirName + "', exiting...");
@@ -764,6 +765,7 @@ public class DataRepository {
                 logger.info("{} media file(s) copied.", imageCounter);
                 return imageCounter;
             }
+            logger.warn("No media files copied. Check whether file names in folder match file names in document.");
         }
 
         if (imageCounter == 0) {
@@ -782,7 +784,8 @@ public class DataRepository {
                     }
                 }
             } else {
-                logger.warn("No media folder found for '{}'.", recordFileName);
+                logger.warn("No media folder found for '{}', or contained image file names don't match file names in source document.",
+                        recordFileName);
             }
         }
 

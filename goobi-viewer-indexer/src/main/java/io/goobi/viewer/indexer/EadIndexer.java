@@ -33,8 +33,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
@@ -275,6 +277,10 @@ public class EadIndexer extends Indexer {
             indexObj.applyFinalModifications();
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
+                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            }
 
             logger.debug("Writing document to index...");
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
@@ -282,7 +288,7 @@ public class EadIndexer extends Indexer {
 
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Finished writing data for '{}' to Solr.", pi);
-        } catch (Exception e) {
+        } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", eadFile.getFileName());
             logger.error(e.getMessage(), e);
             ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();

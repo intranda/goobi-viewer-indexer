@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -234,7 +235,7 @@ public class CmsPageIndexer extends Indexer {
                         indexObj.setLabel(eleTitle.getTextTrim());
                     }
                     if (eleTitle.getAttribute("lang") != null) {
-                        indexObj.addToLucene("MD_TITLE" + SolrConstants.MIXFIX_LANG + eleTitle.getAttributeValue("lang").toUpperCase(),
+                        indexObj.addToLucene("MD_TITLE" + SolrConstants.MIDFIX_LANG + eleTitle.getAttributeValue("lang").toUpperCase(),
                                 eleTitle.getTextTrim());
                     } else {
                         indexObj.addToLucene("MD_TITLE", eleTitle.getTextTrim());
@@ -261,7 +262,7 @@ public class CmsPageIndexer extends Indexer {
                     String lang = eleText.getAttributeValue("lang");
                     String value = eleText.getText();
                     if (StringUtils.isNotEmpty(value)) {
-                        String fieldName = StringUtils.isNotEmpty(lang) ? "MD_TEXT" + SolrConstants.MIXFIX_LANG + lang.toUpperCase() : "MD_TEXT";
+                        String fieldName = StringUtils.isNotEmpty(lang) ? "MD_TEXT" + SolrConstants.MIDFIX_LANG + lang.toUpperCase() : "MD_TEXT";
                         indexObj.addToLucene(fieldName, value);
                         sbDefault.append(' ').append(value.trim());
                     }
@@ -298,6 +299,11 @@ public class CmsPageIndexer extends Indexer {
             useWriteStrategy.setRootDoc(rootDoc);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
+                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            }
+            
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Successfully finished indexing '{}'.", cmsFile.getFileName());

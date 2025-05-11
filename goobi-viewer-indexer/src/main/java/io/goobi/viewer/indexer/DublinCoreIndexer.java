@@ -26,7 +26,6 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -288,37 +287,7 @@ public class DublinCoreIndexer extends Indexer {
             }
 
             // Create group documents if this record is part of a group and no doc exists for that group yet
-            for (String groupIdField : indexObj.getGroupIds().keySet()) {
-                String groupSuffix = groupIdField.replace(SolrConstants.PREFIX_GROUPID, "");
-                Map<String, String> moreMetadata = new HashMap<>();
-                String titleField = "MD_TITLE_" + groupSuffix;
-                String sortTitleField = "SORT_TITLE_" + groupSuffix;
-                for (LuceneField field : indexObj.getLuceneFields()) {
-                    if (titleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put(SolrConstants.LABEL, field.getValue());
-                        moreMetadata.put("MD_TITLE", field.getValue());
-                    } else if (sortTitleField.equals(field.getField())) {
-                        // Add title/label
-                        moreMetadata.put("SORT_TITLE", field.getValue());
-                    } else if (field.getField().endsWith(groupSuffix)
-                            && (field.getField().startsWith("MD_") || field.getField().startsWith("MD2_") || field.getField().startsWith("MDNUM_"))) {
-                        // Add any MD_*_GROUPSUFFIX field to the group doc
-                        moreMetadata.put(field.getField().replace("_" + groupSuffix, ""), field.getValue());
-                    }
-                }
-                SolrInputDocument doc = SolrIndexerDaemon.getInstance()
-                        .getSearchIndex()
-                        .checkAndCreateGroupDoc(groupIdField, indexObj.getGroupIds().get(groupIdField), moreMetadata, getNextIddoc());
-                if (doc != null) {
-                    useWriteStrategy.addDoc(doc);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Created group document for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                    }
-                } else if (logger.isDebugEnabled()) {
-                    logger.debug("Group document already exists for {}: {}", groupIdField, indexObj.getGroupIds().get(groupIdField));
-                }
-            }
+            addGroupDocs(indexObj, useWriteStrategy);
 
             // Add grouped metadata as separate documents
             addGroupedMetadataDocs(useWriteStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
@@ -345,6 +314,11 @@ public class DublinCoreIndexer extends Indexer {
             useWriteStrategy.setRootDoc(rootDoc);
 
             // WRITE TO SOLR (POINT OF NO RETURN: any indexObj modifications from here on will not be included in the index!)
+            if (!iddocsToDelete.isEmpty()) {
+                logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
+                SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
+            }
+            
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Finished writing data for '{}' to Solr.", pi);

@@ -256,9 +256,9 @@ public class IndexObject {
         if (languages.isEmpty()) {
             Set<String> languageSet = new HashSet<>();
             for (LuceneField field : luceneFields) {
-                if (field.getField().contains(SolrConstants.MIXFIX_LANG)) {
+                if (field.getField().contains(SolrConstants.MIDFIX_LANG)) {
                     String lang = field.getField()
-                            .substring(field.getField().lastIndexOf(SolrConstants.MIXFIX_LANG) + SolrConstants.MIXFIX_LANG.length())
+                            .substring(field.getField().lastIndexOf(SolrConstants.MIDFIX_LANG) + SolrConstants.MIDFIX_LANG.length())
                             .toLowerCase();
                     languageSet.add(lang);
                 }
