@@ -756,8 +756,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void index_shouldWriteShapeMetadataCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
-        new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        Path file = Paths.get("src/test/resources/METS/74241.xml");
+        new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
         assertEquals(1, SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0004 +" + SolrConstants.METADATATYPE + ":SHAPE",
@@ -805,8 +805,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         // WRITE THUMBNAIL FROM use="banner"
         {
             Map<String, Path> dataFolders = new HashMap<>();
-            Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
-            new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+            Path file = Paths.get("src/test/resources/METS/74241.xml");
+            new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
 
             SolrDocumentList docs = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
@@ -818,8 +818,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         // WRITE THUMBNAIL FROM xlink:label="START_PAGE"
         {
             Map<String, Path> dataFolders = new HashMap<>();
-            Path metsFile = Paths.get("src/test/resources/METS/rosdok_ppn1011383616.dv.mets.xml");
-            String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+            Path file = Paths.get("src/test/resources/METS/rosdok_ppn1011383616.dv.mets.xml");
+            String[] ret = new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
             assertEquals("PPN1011383616.xml", ret[0]);
 
             SolrDocumentList docs = SolrIndexerDaemon.getInstance()
@@ -1294,7 +1294,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertFalse(indexer.isVolume());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void index_shouldIndexDownloadResourcesCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
@@ -1312,7 +1311,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void index_shouldIndexSingleDownloadResourceCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();

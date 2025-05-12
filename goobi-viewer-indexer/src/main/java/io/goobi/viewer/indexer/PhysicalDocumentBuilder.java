@@ -57,7 +57,6 @@ import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
-import io.goobi.viewer.indexer.model.file.FileId;
 
 public class PhysicalDocumentBuilder {
 
@@ -273,21 +272,21 @@ public class PhysicalDocumentBuilder {
 
         eleFptrList.forEach(eleFptr -> ret.getShapes().addAll(getShapes(order, eleFptr)));
 
-        FileId useFileID = null;
+        String useFileID = null;
         String useFileGroup = "";
         // for each requested file group
         for (String fileGroup : useFileGroups) {
             // find file id that contains the file group name
-            FileId fileID = FileId.getFileId(getFileId(eleFptrList, eleListAllFileGroups, fileGroup), fileGroup);
+            String fileID = getFileId(eleFptrList, eleListAllFileGroups, fileGroup);
             if (fileID != null) {
                 // find mets:file matching file group and file id
                 String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='%s']/mets:file[@ID='%s']"
-                        .formatted(fileGroup, fileID.getFullId()); //NOSONAR XPath, not URI
+                        .formatted(fileGroup, fileID); //NOSONAR XPath, not URI
                 List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
                 if (!eleFileGrpList.isEmpty()) {
                     // first match: use as selected file group and file id
                     useFileID = fileID;
-                    ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
+                    // ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
                     useFileGroup = fileGroup;
                     break;
                 }
@@ -312,11 +311,11 @@ public class PhysicalDocumentBuilder {
             logger.debug("Found file group: {}", fileGrpUse);
             logger.debug("fileId: {}", fileGrpId);
 
-            FileId fileID = FileId.getFileId(getFileId(eleFptrList, eleListAllFileGroups, fileGrpUse), fileGrpUse);
+            String fileID = getFileId(eleFptrList, eleListAllFileGroups, fileGrpUse);
 
             // If fileId is not null, use an XPath expression for the appropriate file element,
             // otherwise get all file elements and get the one with the index of the page order
-            String fileIdXPathCondition = getXPathCondition(fileID, fileGrpId);
+            String fileIdXPathCondition = getXPathCondition(fileID);
             int attrListIndex = useFileID != null ? 0 : order - 1;
 
             String filePath = getFilepath(eleFileGrp, fileIdXPathCondition, attrListIndex);
@@ -566,19 +565,14 @@ public class PhysicalDocumentBuilder {
     /**
      * 
      * @param useFileID
-     * @param fileGrpId
      * @return Generated condition XPath
      */
-    protected String getXPathCondition(FileId useFileID, String fileGrpId) {
+    protected String getXPathCondition(String useFileID) {
         String fileIdXPathCondition = "";
         if (useFileID != null) {
-            if (StringUtils.isNotBlank(fileGrpId)) {
-                // File ID may contain the value of ID instead of USE
-                fileIdXPathCondition = "[@ID=\"" + useFileID.getFullId() + "\" or @ID=\"" + useFileID.getFullId(fileGrpId) + "\"]";
-            } else {
-                fileIdXPathCondition = "[@ID=\"" + useFileID.getFullId() + "\"]";
-            }
+            fileIdXPathCondition = "[@ID=\"" + useFileID + "\"]";
         }
+        
         return fileIdXPathCondition;
     }
 
