@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,14 +85,14 @@ public class PhysicalDocumentBuilder {
 
     private static final String XPATH_FILE = "mets:file";
 
-    private final Map<String, String> fileIdToFileGrpMap = new HashMap<>();
     private final List<String> useFileGroups;
     private final JDomXP xp;
     private final HttpConnector httpConnector;
     private final DataRepository dataRepository;
     private final DocType docType;
 
-    private List<Element> eleListAllFileGroups;
+    private final Map<String, String> fileIdToFileGrpMap;
+    private final List<Element> eleListAllFileGroups;
     private boolean hasImages = false;
     private boolean hasFulltext = false;
 
@@ -101,14 +100,19 @@ public class PhysicalDocumentBuilder {
      * Create a builder for pages and other documents based on physical files
      * 
      * @param useFileGroups List of fileGroups containing the files to use
+     * @param eleListAllFileGroups
+     * @param fileIdToFileGrpMap
      * @param xp an xml parser
      * @param httpConnector for http requests
      * @param dataRepository the repository in which files are to be stored
      * @param docType the doc type to use for this PhysicalElement
      */
-    public PhysicalDocumentBuilder(List<String> useFileGroups, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository,
-            DocType docType) {
+    public PhysicalDocumentBuilder(List<String> useFileGroups, List<Element> eleListAllFileGroups, Map<String, String> fileIdToFileGrpMap, JDomXP xp,
+            HttpConnector httpConnector,
+            DataRepository dataRepository, DocType docType) {
         this.useFileGroups = useFileGroups;
+        this.eleListAllFileGroups = eleListAllFileGroups;
+        this.fileIdToFileGrpMap = fileIdToFileGrpMap;
         this.xp = xp;
         this.httpConnector = httpConnector;
         this.dataRepository = dataRepository;
@@ -147,18 +151,6 @@ public class PhysicalDocumentBuilder {
 
         logger.info("Image file groups selected: {}", useFileGroups);
         logger.info("Generating {} page documents (count starts at {})...", eleStructMapPhysicalList.size(), pageCountStart);
-
-        logger.info("Buidling fileId->fileGrp map...");
-        String xpathFileGrpList = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
-        eleListAllFileGroups = xp.evaluateToElements(xpathFileGrpList, null);
-        logger.info("Found {} file groups in document.", eleListAllFileGroups.size());
-        fileIdToFileGrpMap.clear();
-        for (Element eleFileGroup : eleListAllFileGroups) {
-            String fileGrp = eleFileGroup.getAttributeValue("USE");
-            for (Element eleFile : eleFileGroup.getChildren("file", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"))) {
-                fileIdToFileGrpMap.put(eleFile.getAttributeValue("ID"), fileGrp);
-            }
-        }
 
         Collection<PhysicalElement> pages = Collections.synchronizedList(new ArrayList<PhysicalElement>());
         if (SolrIndexerDaemon.getInstance().getConfiguration().getThreads() > 1) {
@@ -262,13 +254,13 @@ public class PhysicalDocumentBuilder {
         String id = eleStructMapPhysical.getAttributeValue("ID");
         Integer order = getOrder(eleStructMapPhysical, inOrder);
         if (order == null) {
-            logger.warn("ORDER attribute no found, skipping...");
+            logger.info("ORDER attribute no found, skipping...");
             return null;
         }
 
         List<Element> eleStructLinkList = getStructLinks(iddoc, id);
         if (eleStructLinkList.isEmpty()) {
-            logger.warn("Page {} (PHYSID: {}) is not mapped to a structure element, skipping...", order, id);
+            logger.info("Page {} (PHYSID: {}) is not mapped to a structure element, skipping...", order, id);
             return null;
         }
 
@@ -303,6 +295,8 @@ public class PhysicalDocumentBuilder {
         }
 
         if (useFileID == null) {
+            logger.error("no useFileID");
+            System.out.println("no useFileID");
             return null;
         }
 
@@ -661,7 +655,10 @@ public class PhysicalDocumentBuilder {
      */
     protected String getFileId(List<Element> eleFptrList, List<Element> eleListFileGroups, String fileGroup) {
         if (eleFptrList == null) {
-            return null;
+            throw new IllegalArgumentException("eleFptrList may not be null");
+        }
+        if (eleListFileGroups == null) {
+            throw new IllegalArgumentException("eleListFileGroups may not be null");
         }
 
         for (Element eleFptr : eleFptrList) {
