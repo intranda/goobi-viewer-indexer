@@ -296,7 +296,6 @@ public class PhysicalDocumentBuilder {
 
         if (useFileID == null) {
             logger.error("no useFileID");
-            System.out.println("no useFileID");
             return null;
         }
 
