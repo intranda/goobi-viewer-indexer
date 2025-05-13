@@ -112,7 +112,7 @@ public final class Utils {
             "^(https?)://.+?/iiif/[^/]+/(full|\\d+,\\d+,\\d+,\\d+)/[^/]+/(default|[^/]+)/\\.(jpg|png|tif|gif)$", Pattern.CASE_INSENSITIVE);
 
     // Alternate IIIF info.json pattern
-    // private static final Pattern PATTERN_IIIF_INFO_JSON = Pattern.compile("^(https?)://.+?/iiif/[^/]+/info\\.json$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN_IIIF_INFO_JSON = Pattern.compile("^https?://.+/info\\.json$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Private constructor.
@@ -695,12 +695,14 @@ public final class Utils {
      * @return true if image or IIIF uri; false otherwise
      * @should return true for image uri
      * @should return true for iiif uri
+     * @should return true for iiif info json uri
      * @should return false for other uris
      */
     public static boolean isValidImageOrIiifURI(String uri) {
         return StringUtils.isNotEmpty(uri)
                 && (PATTERN_IMAGE_URI.matcher(uri).matches()
-                        || PATTERN_IIIF_URI.matcher(uri).matches());
+                        || PATTERN_IIIF_URI.matcher(uri).matches()
+                        || PATTERN_IIIF_INFO_JSON.matcher(uri).matches());
     }
 
     /**
