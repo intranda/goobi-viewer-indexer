@@ -1030,7 +1030,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
     void checkThumbnailFileName_shouldReturnFileNameIfUrl() {
         SolrInputDocument doc = new SolrInputDocument();
         doc.setField("FILENAME_JPEG", "001.jpg");
-        assertEquals("https://foo.bar/info.json", Indexer.checkThumbnailFileName("https://foo.bar/info.json", doc));
+        assertEquals("https://foo.bar/iiif/12345/info.json", Indexer.checkThumbnailFileName("https://foo.bar/iiif/12345/info.json", doc));
     }
 
     /**

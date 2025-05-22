@@ -57,7 +57,6 @@ import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
-import io.goobi.viewer.indexer.model.file.FileId;
 
 public class PhysicalDocumentBuilder {
 
@@ -91,6 +90,8 @@ public class PhysicalDocumentBuilder {
     private final DataRepository dataRepository;
     private final DocType docType;
 
+    private final Map<String, String> fileIdToFileGrpMap;
+    private final List<Element> eleListAllFileGroups;
     private boolean hasImages = false;
     private boolean hasFulltext = false;
 
@@ -98,14 +99,19 @@ public class PhysicalDocumentBuilder {
      * Create a builder for pages and other documents based on physical files
      * 
      * @param useFileGroups List of fileGroups containing the files to use
+     * @param eleListAllFileGroups
+     * @param fileIdToFileGrpMap
      * @param xp an xml parser
      * @param httpConnector for http requests
      * @param dataRepository the repository in which files are to be stored
      * @param docType the doc type to use for this PhysicalElement
      */
-    public PhysicalDocumentBuilder(List<String> useFileGroups, JDomXP xp, HttpConnector httpConnector, DataRepository dataRepository,
-            DocType docType) {
+    public PhysicalDocumentBuilder(List<String> useFileGroups, List<Element> eleListAllFileGroups, Map<String, String> fileIdToFileGrpMap, JDomXP xp,
+            HttpConnector httpConnector,
+            DataRepository dataRepository, DocType docType) {
         this.useFileGroups = useFileGroups;
+        this.eleListAllFileGroups = eleListAllFileGroups;
+        this.fileIdToFileGrpMap = fileIdToFileGrpMap;
         this.xp = xp;
         this.httpConnector = httpConnector;
         this.dataRepository = dataRepository;
@@ -247,13 +253,13 @@ public class PhysicalDocumentBuilder {
         String id = eleStructMapPhysical.getAttributeValue("ID");
         Integer order = getOrder(eleStructMapPhysical, inOrder);
         if (order == null) {
-            logger.warn("ORDER attribute no found, skipping...");
+            logger.info("ORDER attribute no found, skipping...");
             return null;
         }
 
         List<Element> eleStructLinkList = getStructLinks(iddoc, id);
         if (eleStructLinkList.isEmpty()) {
-            logger.warn("Page {} (PHYSID: {}) is not mapped to a structure element, skipping...", order, id);
+            logger.info("Page {} (PHYSID: {}) is not mapped to a structure element, skipping...", order, id);
             return null;
         }
 
@@ -266,17 +272,21 @@ public class PhysicalDocumentBuilder {
 
         eleFptrList.forEach(eleFptr -> ret.getShapes().addAll(getShapes(order, eleFptr)));
 
-        FileId useFileID = null;
+        String useFileID = null;
         String useFileGroup = "";
+        // for each requested file group
         for (String fileGroup : useFileGroups) {
-            FileId fileID = FileId.getFileId(getFileId(eleFptrList, fileGroup), fileGroup);
+            // find file id that contains the file group name
+            String fileID = getFileId(eleFptrList, eleListAllFileGroups, fileGroup);
             if (fileID != null) {
+                // find mets:file matching file group and file id
                 String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='%s']/mets:file[@ID='%s']"
-                        .formatted(fileGroup, fileID.getFullId()); //NOSONAR XPath, not URI
+                        .formatted(fileGroup, fileID); //NOSONAR XPath, not URI
                 List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
                 if (!eleFileGrpList.isEmpty()) {
+                    // first match: use as selected file group and file id
                     useFileID = fileID;
-                    ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
+                    // ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
                     useFileGroup = fileGroup;
                     break;
                 }
@@ -284,6 +294,7 @@ public class PhysicalDocumentBuilder {
         }
 
         if (useFileID == null) {
+            logger.error("no useFileID");
             return null;
         }
 
@@ -294,25 +305,23 @@ public class PhysicalDocumentBuilder {
 
         String altoURL = null;
         // For each mets:fileGroup in the mets:fileSec
-        String xpath = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
-        List<Element> eleFileGrpList = xp.evaluateToElements(xpath, null);
-        for (Element eleFileGrp : eleFileGrpList) {
+        for (Element eleFileGrp : eleListAllFileGroups) {
             String fileGrpUse = eleFileGrp.getAttributeValue("USE");
             String fileGrpId = eleFileGrp.getAttributeValue("ID"); // TODO This is probably always null
             logger.debug("Found file group: {}", fileGrpUse);
             logger.debug("fileId: {}", fileGrpId);
 
-            FileId fileID = FileId.getFileId(getFileId(eleFptrList, fileGrpUse), fileGrpUse);
+            String fileID = getFileId(eleFptrList, eleListAllFileGroups, fileGrpUse);
 
             // If fileId is not null, use an XPath expression for the appropriate file element,
             // otherwise get all file elements and get the one with the index of the page order
-            String fileIdXPathCondition = getXPathCondition(fileID, fileGrpId);
+            String fileIdXPathCondition = getXPathCondition(fileID);
             int attrListIndex = useFileID != null ? 0 : order - 1;
 
             String filePath = getFilepath(eleFileGrp, fileIdXPathCondition, attrListIndex);
             if (filePath == null) {
                 if (useFileGroup.equals(fileGrpUse)) {
-                    logger.warn("Skipping selected file group {} - nothing found at: {}", fileGrpUse, xpath);
+                    logger.warn("Skipping selected file group {} - nothing found.", fileGrpUse);
                 } else {
                     logger.debug("Skipping file group {}", fileGrpUse);
                 }
@@ -322,7 +331,7 @@ public class PhysicalDocumentBuilder {
             String fileName = getFilename(filePath);
 
             // Mime type
-            xpath = XPATH_FILE + fileIdXPathCondition + "/@MIMETYPE";
+            String xpath = XPATH_FILE + fileIdXPathCondition + "/@MIMETYPE";
             List<Attribute> mimetypeAttrList = xp.evaluateToAttributes(xpath, eleFileGrp);
             if (mimetypeAttrList == null || mimetypeAttrList.isEmpty()) {
                 logger.error("{}: mime type not found in file group '{}'.", useFileID, fileGrpUse);
@@ -556,19 +565,14 @@ public class PhysicalDocumentBuilder {
     /**
      * 
      * @param useFileID
-     * @param fileGrpId
      * @return Generated condition XPath
      */
-    protected String getXPathCondition(FileId useFileID, String fileGrpId) {
+    protected String getXPathCondition(String useFileID) {
         String fileIdXPathCondition = "";
         if (useFileID != null) {
-            if (StringUtils.isNotBlank(fileGrpId)) {
-                // File ID may contain the value of ID instead of USE
-                fileIdXPathCondition = "[@ID=\"" + useFileID.getFullId() + "\" or @ID=\"" + useFileID.getFullId(fileGrpId) + "\"]";
-            } else {
-                fileIdXPathCondition = "[@ID=\"" + useFileID.getFullId() + "\"]";
-            }
+            fileIdXPathCondition = "[@ID=\"" + useFileID + "\"]";
         }
+        
         return fileIdXPathCondition;
     }
 
@@ -638,23 +642,50 @@ public class PhysicalDocumentBuilder {
      * Get the `FILEID`property containing the string fileGroup
      * 
      * @param eleFptrList The list of all file pointers
+     * @param eleListFileGroups mets:fileGrp elements to check
      * @param fileGroup The file group to use
      * @return The file id as string. An empty string if no file pointer for the fileGroup is found, and null if fileGroup is null or an empty string
      */
+    protected String getFileId(List<Element> eleFptrList, List<Element> eleListFileGroups, String fileGroup) {
+        if (eleFptrList == null) {
+            throw new IllegalArgumentException("eleFptrList may not be null");
+        }
+        if (eleListFileGroups == null) {
+            throw new IllegalArgumentException("eleListFileGroups may not be null");
+        }
 
-    protected String getFileId(List<Element> eleFptrList, String fileGroup) {
-        String useFileID = "";
-        if (eleFptrList != null) {
-            for (Element eleFptr : eleFptrList) {
-                String fileID = eleFptr.getAttributeValue("FILEID");
+        for (Element eleFptr : eleFptrList) {
+            String fileID = eleFptr.getAttributeValue("FILEID");
+            if (fileID == null) {
+                continue;
+            }
+            logger.trace("fileID: {}", fileID);
+            if (fileGroup.equals(fileIdToFileGrpMap.get(fileID))) {
+                return fileID;
+            }
+        }
+
+        return null;
+    }
+
+    protected String getFileIdViaXpath(List<Element> eleFptrList, String fileGroup) {
+        if (eleFptrList == null) {
+            return null;
+        }
+
+        for (Element eleFptr : eleFptrList) {
+            String fileID = eleFptr.getAttributeValue("FILEID");
+            if (fileID != null) {
                 logger.trace("fileID: {}", fileID);
-                if (fileID.contains(fileGroup)) {
-                    useFileID = fileID;
+                String xpath = "/mets:mets/mets:fileSec/mets:fileGrp[@USE='" + fileGroup + "']/mets:file[@ID='" + fileID + "']";
+                List<Element> eleListFiles = xp.evaluateToElements(xpath, null);
+                if (eleListFiles.isEmpty()) {
+                    return fileID;
                 }
             }
         }
 
-        return useFileID;
+        return null;
     }
 
     /**

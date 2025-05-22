@@ -119,6 +119,8 @@ public class MetsIndexer extends Indexer {
     protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
 
     private final List<String> availablePreferredImageFileGroups;
+    private final Map<String, String> fileIdToFileGrpMap = new HashMap<>();
+    private List<Element> eleListAllFileGroups = null;
     private volatile String useFileGroupGlobal = null;
 
     /**
@@ -448,8 +450,8 @@ public class MetsIndexer extends Indexer {
                 generatePageDocuments(writeStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart, downloadExternalImages);
 
                 PhysicalDocumentBuilder downloadResourceBuilder =
-                        new PhysicalDocumentBuilder(List.of(DocType.DOWNLOAD_RESOURCE.name()), xp, httpConnector, dataRepository,
-                                DocType.DOWNLOAD_RESOURCE);
+                        new PhysicalDocumentBuilder(List.of(DocType.DOWNLOAD_RESOURCE.name()), eleListAllFileGroups, fileIdToFileGrpMap, xp,
+                                httpConnector, dataRepository, DocType.DOWNLOAD_RESOURCE);
                 Collection<PhysicalElement> downloadResources = Collections.emptyList();
                 if (downloadResourceBuilder.isFileGroupExists()) {
                     downloadResources = downloadResourceBuilder.generatePageDocuments(dataFolders, pi, null, downloadExternalImages);
@@ -622,11 +624,13 @@ public class MetsIndexer extends Indexer {
     public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
+        collectFileGroupInfo();
         this.useFileGroupGlobal = selectImageFileGroup(downloadExternalImages);
-        List<String> fileGrouList = getFileGroupsToUse(downloadExternalImages);
+        List<String> fileGroupList = getFileGroupsToUse(downloadExternalImages);
         if (StringUtils.isNotBlank(this.useFileGroupGlobal)) {
             PhysicalDocumentBuilder pageBuilder =
-                    new PhysicalDocumentBuilder(fileGrouList, xp, httpConnector, dataRepository, DocType.PAGE);
+                    new PhysicalDocumentBuilder(fileGroupList, eleListAllFileGroups, fileIdToFileGrpMap, xp, httpConnector, dataRepository,
+                            DocType.PAGE);
             Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, pageCountStart, downloadExternalImages);
             pages.forEach(writeStrategy::addPage);
             this.recordHasImages = pageBuilder.isHasImages();
@@ -637,6 +641,20 @@ public class MetsIndexer extends Indexer {
                 if (docsAdded > 0) {
                     logger.debug("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
                 }
+            }
+        }
+    }
+
+    public void collectFileGroupInfo() {
+        logger.info("Buidling fileId->fileGrp map...");
+        String xpathFileGrpList = "/mets:mets/mets:fileSec/mets:fileGrp"; //NOSONAR XPath expression, not parameter
+        eleListAllFileGroups = xp.evaluateToElements(xpathFileGrpList, null);
+        logger.info("Found {} file groups in document.", eleListAllFileGroups.size());
+        fileIdToFileGrpMap.clear();
+        for (Element eleFileGroup : eleListAllFileGroups) {
+            String fileGrp = eleFileGroup.getAttributeValue("USE");
+            for (Element eleFile : eleFileGroup.getChildren("file", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mets"))) {
+                fileIdToFileGrpMap.put(eleFile.getAttributeValue("ID"), fileGrp);
             }
         }
     }
@@ -1086,7 +1104,14 @@ public class MetsIndexer extends Indexer {
      */
     PhysicalElement generatePageDocument(String fileGroup, Element eleStructMapPhysical, String iddoc, String pi, final Integer inOrder,
             final Map<String, Path> dataFolders, final DataRepository dataRepository, boolean downloadExternalImages) throws FatalIndexerException {
-        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of(fileGroup), xp, httpConnector, dataRepository, DocType.PAGE);
+        if (eleListAllFileGroups == null) {
+            throw new IllegalStateException("eleListAllFileGroups not initilized - run  buildfileGroupMap() first");
+        }
+        if (fileIdToFileGrpMap == null) {
+            throw new IllegalStateException("fileIdToFileGrpMap not initilized - run  buildfileGroupMap() first");
+        }
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of(fileGroup), eleListAllFileGroups, fileIdToFileGrpMap, xp, httpConnector,
+                dataRepository, DocType.PAGE);
         return builder.generatePageDocument(eleStructMapPhysical, iddoc, pi, inOrder, dataFolders, dataRepository, downloadExternalImages);
     }
 

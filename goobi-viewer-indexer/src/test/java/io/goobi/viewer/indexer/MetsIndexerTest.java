@@ -309,7 +309,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
                 assertNotNull(doc.getFieldValue(SolrConstants.DOCSTRCT));
                 assertEquals("Monograph", doc.getFieldValue(SolrConstants.DOCSTRCT_TOP));
                 assertNotNull(doc.getFieldValue(SolrConstants.IMAGEURN));
-                assertNotNull(doc.getFieldValue(SolrConstants.FILEIDROOT));
                 {
                     String value = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
                     assertNotNull(value);
@@ -756,8 +755,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void index_shouldWriteShapeMetadataCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
-        new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        Path file = Paths.get("src/test/resources/METS/74241.xml");
+        new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
         assertEquals(1, SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .search("+" + SolrConstants.PI_TOPSTRUCT + ":74241 +" + SolrConstants.LOGID + ":LOG_0004 +" + SolrConstants.METADATATYPE + ":SHAPE",
@@ -805,8 +804,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         // WRITE THUMBNAIL FROM use="banner"
         {
             Map<String, Path> dataFolders = new HashMap<>();
-            Path metsFile = Paths.get("src/test/resources/METS/74241.xml");
-            new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+            Path file = Paths.get("src/test/resources/METS/74241.xml");
+            new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
 
             SolrDocumentList docs = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
@@ -818,8 +817,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         // WRITE THUMBNAIL FROM xlink:label="START_PAGE"
         {
             Map<String, Path> dataFolders = new HashMap<>();
-            Path metsFile = Paths.get("src/test/resources/METS/rosdok_ppn1011383616.dv.mets.xml");
-            String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+            Path file = Paths.get("src/test/resources/METS/rosdok_ppn1011383616.dv.mets.xml");
+            String[] ret = new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
             assertEquals("PPN1011383616.xml", ret[0]);
 
             SolrDocumentList docs = SolrIndexerDaemon.getInstance()
@@ -1025,6 +1024,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.DEFAULT_FILEGROUP);
         IDataRepositoryStrategy dataRepositoryStrategy = AbstractDataRepositoryStrategy.create(SolrIndexerDaemon.getInstance().getConfiguration());
+        indexer.collectFileGroupInfo();
         PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.DEFAULT_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), "ppn750544996", page, new HashMap<>(),
                 dataRepositoryStrategy.selectDataRepository("ppn750544996", metsFile, new HashMap<>(),
@@ -1091,6 +1091,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
+        indexer.collectFileGroupInfo();
         PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
@@ -1118,6 +1119,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 1;
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
+        indexer.collectFileGroupInfo();
         PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, dataFolders,
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, dataFolders, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0],
@@ -1143,6 +1145,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         int page = 3; //3 + DOWNLOAD elements 
         indexer.setUseFileGroupGlobal(MetsIndexer.PRESENTATION_FILEGROUP);
+        indexer.collectFileGroupInfo();
         PhysicalElement pe = indexer.generatePageDocument(MetsIndexer.PRESENTATION_FILEGROUP, eleStructMapPhysicalList.get(page - 1),
                 String.valueOf(MetsIndexer.getNextIddoc()), PI, page, new HashMap<>(),
                 dataRepositoryStrategy.selectDataRepository(PI, metsFile, null, SolrIndexerDaemon.getInstance().getSearchIndex(), null)[0], false);
@@ -1290,7 +1293,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Assertions.assertFalse(indexer.isVolume());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void index_shouldIndexDownloadResourcesCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
@@ -1308,7 +1310,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void index_shouldIndexSingleDownloadResourceCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();

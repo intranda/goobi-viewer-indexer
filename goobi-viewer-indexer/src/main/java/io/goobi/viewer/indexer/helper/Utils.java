@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -102,6 +103,16 @@ public final class Utils {
     private static final String MAIL_PROPERTY_SMTP_PORT = "mail.smtp.port";
 
     private static final char[] PI_ILLEGAL_CHARS = { '!', '?', '/', '\\', ':', ';', '(', ')', '@', '"', '\'' };
+
+    // Simple image URI pattern (adjust extensions as needed)
+    private static final Pattern PATTERN_IMAGE_URI = Pattern.compile("^https?://.+\\.(jpg|jpeg|png|gif|bmp|tiff?)$", Pattern.CASE_INSENSITIVE);
+
+    // Simplified IIIF URI pattern (v2/v3 Image API)
+    private static final Pattern PATTERN_IIIF_URI = Pattern.compile(
+            "^(https?)://.+?/iiif/[^/]+/(full|\\d+,\\d+,\\d+,\\d+)/[^/]+/(default|[^/]+)/\\.(jpg|png|tif|gif)$", Pattern.CASE_INSENSITIVE);
+
+    // Alternate IIIF info.json pattern
+    private static final Pattern PATTERN_IIIF_INFO_JSON = Pattern.compile("^https?://.+/info\\.json$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Private constructor.
@@ -676,6 +687,22 @@ public final class Utils {
         } catch (IllegalArgumentException | MalformedURLException | URISyntaxException e) {
             return false;
         }
+    }
+
+    /**
+     * 
+     * @param uri
+     * @return true if image or IIIF uri; false otherwise
+     * @should return true for image uri
+     * @should return true for iiif uri
+     * @should return true for iiif info json uri
+     * @should return false for other uris
+     */
+    public static boolean isValidImageOrIiifURI(String uri) {
+        return StringUtils.isNotEmpty(uri)
+                && (PATTERN_IMAGE_URI.matcher(uri).matches()
+                        || PATTERN_IIIF_URI.matcher(uri).matches()
+                        || PATTERN_IIIF_INFO_JSON.matcher(uri).matches());
     }
 
     /**
