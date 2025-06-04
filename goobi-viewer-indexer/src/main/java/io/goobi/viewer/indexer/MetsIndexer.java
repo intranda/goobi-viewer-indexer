@@ -1090,6 +1090,7 @@ public class MetsIndexer extends Indexer {
 
     /**
      * Generate a single PhysicalElement from the given METS element 'eleStructMapPhysical'
+     * TODO Is this only used in unit tests?
      * 
      * @param fileGroup The fileGroup to use. If there is no reference to a file element within that filegroup, this method returns null
      * @param eleStructMapPhysical The pyhsical struct element in the mets structure to use
@@ -1107,9 +1108,9 @@ public class MetsIndexer extends Indexer {
         if (eleListAllFileGroups == null) {
             throw new IllegalStateException("eleListAllFileGroups not initilized - run  buildfileGroupMap() first");
         }
-        if (fileIdToFileGrpMap == null) {
-            throw new IllegalStateException("fileIdToFileGrpMap not initilized - run  buildfileGroupMap() first");
-        }
+        //        if (fileIdToFileGrpMap == null) {
+        //            throw new IllegalStateException("fileIdToFileGrpMap not initilized - run  buildfileGroupMap() first");
+        //        }
         PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of(fileGroup), eleListAllFileGroups, fileIdToFileGrpMap, xp, httpConnector,
                 dataRepository, DocType.PAGE);
         return builder.generatePageDocument(eleStructMapPhysical, iddoc, pi, inOrder, dataFolders, dataRepository, downloadExternalImages);
