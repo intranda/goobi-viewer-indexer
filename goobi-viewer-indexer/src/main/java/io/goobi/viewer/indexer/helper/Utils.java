@@ -109,7 +109,7 @@ public final class Utils {
 
     // Simplified IIIF URI pattern (v2/v3 Image API)
     private static final Pattern PATTERN_IIIF_URI = Pattern.compile(
-            "^(https?)://.+?/iiif/[^/]+/(full|\\d+,\\d+,\\d+,\\d+)/[^/]+/(default|[^/]+)/\\.(jpg|png|tif|gif)$", Pattern.CASE_INSENSITIVE);
+            "^(https?)://.+?/iiif/[^/]+/(full|\\d+,\\d+,\\d+,\\d+)/[^/]+/([^/]+)/\\.(jpg|png|tif|gif)$", Pattern.CASE_INSENSITIVE);
 
     // Alternate IIIF info.json pattern
     private static final Pattern PATTERN_IIIF_INFO_JSON = Pattern.compile("^https?://.+/info\\.json$", Pattern.CASE_INSENSITIVE);
