@@ -2063,7 +2063,7 @@ public abstract class Indexer {
      */
     static String checkThumbnailFileName(String fileName, SolrInputDocument pageDoc) {
         String ret = fileName;
-        if (!Utils.isValidURL(fileName) && !FileTools.isImageFile(fileName) && pageDoc != null) {
+        if (!Utils.isValidImageOrIiifURI(fileName) && !FileTools.isImageFile(fileName) && pageDoc != null) {
             String filenameTiffField = SolrConstants.FILENAME + "_TIFF";
             String filenameJpegField = SolrConstants.FILENAME + "_JPEG";
             if (pageDoc.getFieldValue(filenameTiffField) != null) {
