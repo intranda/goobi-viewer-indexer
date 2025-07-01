@@ -394,8 +394,10 @@ public final class SolrSearchIndex {
                 } else {
                     logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
                 }
-            } catch (SolrServerException | IOException e) {
+            } catch (IOException |  SolrServerException e) {
                 logger.error(e.getMessage(), e);
+            } catch (RemoteSolrException  e) {
+                logger.error(e.getMessage());
             }
         }
 
