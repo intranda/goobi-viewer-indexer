@@ -67,7 +67,7 @@ public abstract class AbstractWriteStrategy implements ISolrWriteStrategy {
     public static ISolrWriteStrategy create(Path sourceFile, Map<String, Path> dataFolders, Hotfolder hotfolder) throws IOException {
         boolean useSerializingStrategy = false;
         long size = sourceFile != null ? Files.size(sourceFile) : 0;
-        if (size >= hotfolder.getMetsFileSizeThreshold()) {
+        if (size >= hotfolder.getMetsFileSizeThreshold() && sourceFile != null) {
             useSerializingStrategy = true;
             logger.info("Source file '{}' is {} bytes, using a slower Solr write strategy to avoid memory overflows.", sourceFile.getFileName(),
                     size);
