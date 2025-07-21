@@ -926,7 +926,7 @@ public class MetsIndexer extends Indexer {
         }
 
         // If a representative image is set but not mapped to any docstructs, do not use it
-        if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && firstPage.getDoc() != null) {
+        if (!thumbnailSet && StringUtils.isNotEmpty(filePathBanner) && firstPage != null && firstPage.getDoc() != null) {
             logger.warn("Selected representative image '{}' is not mapped to any structure element - using first mapped image instead.",
                     filePathBanner);
             String pageFileName = checkThumbnailFileName((String) firstPage.getDoc().getFieldValue(SolrConstants.FILENAME), firstPage.getDoc());
@@ -1089,8 +1089,7 @@ public class MetsIndexer extends Indexer {
     }
 
     /**
-     * Generate a single PhysicalElement from the given METS element 'eleStructMapPhysical'
-     * TODO Is this only used in unit tests?
+     * Generate a single PhysicalElement from the given METS element 'eleStructMapPhysical' TODO Is this only used in unit tests?
      * 
      * @param fileGroup The fileGroup to use. If there is no reference to a file element within that filegroup, this method returns null
      * @param eleStructMapPhysical The pyhsical struct element in the mets structure to use
