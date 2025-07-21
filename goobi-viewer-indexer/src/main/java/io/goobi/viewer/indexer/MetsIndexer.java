@@ -42,6 +42,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -355,7 +356,7 @@ public class MetsIndexer extends Indexer {
                     if (anchorPi != null && parentIddoc != null) {
                         logger.debug("Creating anchor for '{}' (PI:{}, IDDOC:{})", indexObj.getIddoc(), anchorPi, parentIddoc);
                         IndexObject anchor = new IndexObject(parentIddoc, anchorPi);
-                        if (StringUtils.equals(anchor.getIddoc(), indexObj.getIddoc())) {
+                        if (Strings.CS.equals(anchor.getIddoc(), indexObj.getIddoc())) {
                             throw new IndexerException("Anchor and volume have the same IDDOC: " + indexObj.getIddoc());
                         }
                         // Set anchor properties manually because this IndexObject does not undergo the normal procedure
