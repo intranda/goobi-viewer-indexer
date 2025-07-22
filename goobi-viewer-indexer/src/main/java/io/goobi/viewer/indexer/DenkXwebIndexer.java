@@ -308,6 +308,9 @@ public class DenkXwebIndexer extends Indexer {
             // Add grouped metadata as separate documents
             addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
+            // Flag record identifier for submission to the viewer if it's linked to an archive node
+            ret.setSubmitPiToViewer(indexObj.getLuceneFieldWithName(SolrConstants.EAD_NODE_ID) != null);
+
             // Add root doc
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);

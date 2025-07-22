@@ -246,6 +246,9 @@ public class DublinCoreIndexer extends Indexer {
             // Write created/updated timestamps
             indexObj.writeDateModified(true);
 
+            // Flag record identifier for submission to the viewer if it's linked to an archive node
+            ret.setSubmitPiToViewer(indexObj.getLuceneFieldWithName(SolrConstants.EAD_NODE_ID) != null);
+
             // Generate docs for all pages and add to the write strategy
             generatePageDocuments(useWriteStrategy, dataFolders, dataRepository, indexObj.getPi(), pageCountStart);
 

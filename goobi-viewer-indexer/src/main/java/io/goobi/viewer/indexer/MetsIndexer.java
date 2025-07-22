@@ -421,6 +421,9 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
+            // Flag record identifier for submission to the viewer if it's linked to an archive node
+            ret.setSubmitPiToViewer(indexObj.getLuceneFieldWithName(SolrConstants.EAD_NODE_ID) != null);
+
             // Set access conditions
             indexObj.writeAccessConditions(null);
 
