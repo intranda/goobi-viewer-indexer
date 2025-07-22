@@ -45,6 +45,8 @@ class ConfigurationTest extends AbstractTest {
 
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(ConfigurationTest.class);
+    
+    private static final int NUM_FIELD_CONFIGS = 108;
 
     private static Hotfolder hotfolder;
 
@@ -69,7 +71,7 @@ class ConfigurationTest extends AbstractTest {
     void configItemTest() {
         List<String> fieldNames =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getListWithAllFieldNames(FileFormat.METS);
-        assertEquals(107, fieldNames.size());
+        assertEquals(NUM_FIELD_CONFIGS, fieldNames.size());
         List<FieldConfig> fieldConfigList =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assertions.assertNotNull(fieldConfigList);
@@ -135,7 +137,7 @@ class ConfigurationTest extends AbstractTest {
 
     @Test
     void metadataConfigTest() {
-        assertEquals(107,
+        assertEquals(NUM_FIELD_CONFIGS,
                 SolrIndexerDaemon.getInstance()
                         .getConfiguration()
                         .getMetadataConfigurationManager()
