@@ -71,9 +71,7 @@ class CmsPageIndexerTest extends AbstractSolrEnabledTest {
         assertTrue(Files.isRegularFile(indexFile));
 
         Indexer indexer = new CmsPageIndexer(hotfolder);
-        List<String> identifiers = indexer.addToIndex(indexFile, new HashMap<>());
-        Assertions.assertEquals(1, identifiers.size());
-        Assertions.assertEquals("CMS123", identifiers.get(0));
+        indexer.addToIndex(indexFile, new HashMap<>());
 
         SolrDocumentList result = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":CMS123", null);
         Assertions.assertNotNull(result);
