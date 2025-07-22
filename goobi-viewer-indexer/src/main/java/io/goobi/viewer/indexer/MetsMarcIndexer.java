@@ -27,6 +27,7 @@ import org.jdom2.Element;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
 /**
@@ -64,7 +65,7 @@ public class MetsMarcIndexer extends MetsIndexer {
      * @should index record correctly
      */
     @Override
-    public String[] index(Path metsFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
+    public IndexingResult index(Path metsFile, Map<String, Path> dataFolders, ISolrWriteStrategy writeStrategy,
             int pageCountStart, boolean downloadExternalImages) {
         logger.trace("index (METS/MARC)");
         return super.index(metsFile, dataFolders, writeStrategy, pageCountStart, downloadExternalImages);

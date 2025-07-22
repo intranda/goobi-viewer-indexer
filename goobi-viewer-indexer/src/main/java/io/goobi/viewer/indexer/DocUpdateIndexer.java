@@ -45,6 +45,8 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -89,12 +91,10 @@ public class DocUpdateIndexer extends Indexer {
             return Collections.emptyList();
         }
 
-        String[] resp = index(dataFile, dataFolders);
+        IndexingResult result = index(dataFile, dataFolders);
 
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String pi = resp[0];
-
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, new HashMap<>(),
+        if (IndexingResultStatus.OK.equals(result.getStatus())) {
+            dataRepository.copyAndDeleteAllDataFolders(result.getPi(), dataFolders, new HashMap<>(),
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
@@ -106,11 +106,11 @@ public class DocUpdateIndexer extends Indexer {
                 logger.error(LOG_COULD_NOT_BE_DELETED, dataFile.toAbsolutePath());
             }
 
-            return Collections.singletonList(pi);
+            return result.isSubmitPiToViewer() ? Collections.singletonList(result.getPi()) : Collections.emptyList();
         }
 
         // Error
-        logger.error(resp[1]);
+        logger.error(result.getError());
         if (hotfolder.isDeleteContentFilesOnFailure()) {
             // Delete all data folders in hotfolder
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolder.getHotfolderPath(), new DirectoryStream.Filter<Path>() {
@@ -137,7 +137,7 @@ public class DocUpdateIndexer extends Indexer {
                 Utils.deleteDirectory(dataFolders.get(DataRepository.PARAM_UGC));
             }
         }
-        handleError(dataFile, resp[1], FileFormat.UNKNOWN);
+        handleError(dataFile, result.getError(), FileFormat.UNKNOWN);
         try {
             Files.delete(dataFile);
         } catch (IOException e) {
@@ -152,17 +152,17 @@ public class DocUpdateIndexer extends Indexer {
      *
      * @param dataFile a {@link java.nio.file.Path} object.
      * @param dataFolders a {@link java.util.Map} object.
-     * @return an array of {@link java.lang.String} objects.
+     * @return {@link IndexingResult}
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
      * @should update document correctly
      */
     @SuppressWarnings("unchecked")
-    public String[] index(Path dataFile, Map<String, Path> dataFolders) throws FatalIndexerException {
-        String[] ret = { STATUS_ERROR, null };
+    public IndexingResult index(Path dataFile, Map<String, Path> dataFolders) throws FatalIndexerException {
+        IndexingResult ret = new IndexingResult();
         String baseFileName = FilenameUtils.getBaseName(dataFile.getFileName().toString());
         String[] fileNameSplit = baseFileName.split("#");
         if (fileNameSplit.length < 2) {
-            ret[1] = "Faulty data file name: '" + dataFile.getFileName().toString() + "'; cannot extract PI and IDDOC.";
+            ret.setError("Faulty data file name: '" + dataFile.getFileName().toString() + "'; cannot extract PI and IDDOC.");
             return ret;
         }
 
@@ -208,9 +208,9 @@ public class DocUpdateIndexer extends Indexer {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(query, null);
             if (docList == null || docList.isEmpty()) {
                 if (order != null) {
-                    ret[1] = "Page not found in index: " + order;
+                    ret.setError("Page not found in index: " + order);
                 } else {
-                    ret[1] = "IDDOC not found in index: " + iddoc;
+                    ret.setError("IDDOC not found in index: " + iddoc);
                 }
                 return ret;
             }
@@ -227,7 +227,7 @@ public class DocUpdateIndexer extends Indexer {
                     ? (String) doc.getFieldValue(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED)
                     : (String) doc.getFieldValue(SolrConstants.FILENAME);
             if (pageFileName == null) {
-                ret[1] = "Document " + iddoc + " contains no " + SolrConstants.FILENAME + " field, please checks the index.";
+                ret.setError("Document " + iddoc + " contains no " + SolrConstants.FILENAME + " field, please checks the index.");
                 return ret;
             }
             String pageFileBaseName = FilenameUtils.getBaseName(pageFileName);
@@ -390,13 +390,12 @@ public class DocUpdateIndexer extends Indexer {
                 SolrIndexerDaemon.getInstance().getSearchIndex().commit(false);
             }
 
-            ret[0] = pi;
+            ret.setPi(pi);
             logger.info("Successfully finished updating IDDOC={}", iddoc);
         } catch (IOException | SolrServerException e) {
             logger.error("Indexing of IDDOC={} could not be finished due to an error.", iddoc);
             logger.error(e.getMessage(), e);
-            ret[0] = STATUS_ERROR;
-            ret[1] = e.getMessage();
+            ret.setError(e.getMessage());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         }
 

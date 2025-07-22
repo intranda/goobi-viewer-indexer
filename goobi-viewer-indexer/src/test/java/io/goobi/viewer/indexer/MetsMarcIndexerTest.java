@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
@@ -61,9 +62,9 @@ class MetsMarcIndexerTest extends AbstractSolrEnabledTest {
 
         String pi = "11245_3_39779";
         Map<String, Path> dataFolders = new HashMap<>();
-        String[] ret = new MetsMarcIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-        assertEquals(pi + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsMarcIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        assertEquals(pi + ".xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         Map<String, Boolean> iddocMap = new HashMap<>();
         String iddoc;

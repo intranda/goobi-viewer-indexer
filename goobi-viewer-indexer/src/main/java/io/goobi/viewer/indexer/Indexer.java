@@ -135,8 +135,6 @@ public abstract class Indexer {
     protected static final String FIELD_TEXT = "MD_TEXT";
     protected static final String LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO = "Added FULLTEXT from regular ALTO for page {}";
 
-    public static final String STATUS_ERROR = "ERROR";
-
     static final String FOLDER_SUFFIX_ALTOCROWD = "_altocrowd";
     static final String FOLDER_SUFFIX_DOWNLOADIMAGES = "_downloadimages";
     static final String FOLDER_SUFFIX_MEDIA = "_media";
@@ -1754,12 +1752,11 @@ public abstract class Indexer {
      * @param doc
      * @param fileName
      * @param mediaTargetPath
-     * @param sbImgFileNames
      * @param downloadExternalImages
      * @param useOldImageFolderIfAvailable
      * @param representative
      */
-    protected void handleImageUrl(String url, SolrInputDocument doc, String fileName, Path mediaTargetPath, StringBuilder sbImgFileNames,
+    protected void handleImageUrl(String url, SolrInputDocument doc, String fileName, Path mediaTargetPath,
             boolean downloadExternalImages, boolean useOldImageFolderIfAvailable, boolean representative) {
         if (StringUtils.isEmpty(url)) {
             return;
@@ -1782,7 +1779,6 @@ public abstract class Indexer {
                     File file = new File(downloadExternalImage(url, mediaTargetPath, fileName));
                     if (file.isFile()) {
                         logger.info("Downloaded {}", file);
-                        sbImgFileNames.append(';').append(fileName);
                         doc.addField(SolrConstants.FILENAME, fileName);
 
                         // Representative image (local)
@@ -1812,7 +1808,6 @@ public abstract class Indexer {
             }
         } else {
             // For non-remote file, add the file name to the list
-            sbImgFileNames.append(';').append(fileName);
             // Representative image (local)
             if (representative) {
                 doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);

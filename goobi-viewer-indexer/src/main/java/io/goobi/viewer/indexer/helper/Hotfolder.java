@@ -370,7 +370,7 @@ public class Hotfolder {
             logger.warn("E-Mail body is empty.");
         }
         // Send report e-mail if the text body contains at least one ERROR level log message
-        if (!body.contains(Indexer.STATUS_ERROR)) {
+        if (!body.contains("ERROR")) {
             return false;
         }
 

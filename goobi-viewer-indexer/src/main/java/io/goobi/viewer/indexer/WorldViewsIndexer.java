@@ -58,6 +58,8 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -108,19 +110,19 @@ public class WorldViewsIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(mainFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        IndexingResult result = index(mainFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
 
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newMetsFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newMetsFileName);
+        if (IndexingResultStatus.OK.equals(result)) {
+            String newMetsFileName = result.getRecordFileName();
+            String pi = result.getPi();
             Path indexed = Paths.get(getDataRepository().getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
             if (mainFile.equals(indexed)) {
                 return Collections.singletonList(pi);
             }
+            String baseFileName = FilenameUtils.getBaseName(newMetsFileName);
             if (Files.exists(indexed)) {
                 // Add a timestamp to the old file name
-                String oldMetsFilename =
-                        FilenameUtils.getBaseName(newMetsFileName) + "_" + LocalDateTime.now().format(DateTools.FORMATTER_BASIC_DATETIME) + ".xml";
+                String oldMetsFilename = baseFileName + "_" + LocalDateTime.now().format(DateTools.FORMATTER_BASIC_DATETIME) + ".xml";
                 Path newFile = Paths.get(hotfolder.getUpdatedMets().toAbsolutePath().toString(), oldMetsFilename);
                 Files.copy(indexed, newFile);
                 logger.debug("Old METS file copied to '{}'.", newFile.toAbsolutePath());
@@ -131,13 +133,13 @@ public class WorldViewsIndexer extends Indexer {
 
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
-                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newMetsFileName));
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, baseFileName);
             }
 
             // Copy and delete media folder
             if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
-                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
                     logger.info(msg);
                 }
@@ -181,7 +183,7 @@ public class WorldViewsIndexer extends Indexer {
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
 
-            return Collections.singletonList(pi);
+            return result.isSubmitPiToViewer() ? Collections.singletonList(pi) : Collections.emptyList();
         }
 
         // Error
@@ -189,7 +191,7 @@ public class WorldViewsIndexer extends Indexer {
             // Delete all data folders for this record from the hotfolder
             DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         }
-        handleError(mainFile, resp[1], FileFormat.WORLDVIEWS);
+        handleError(mainFile, result.getError(), FileFormat.WORLDVIEWS);
         try {
             Files.delete(mainFile);
         } catch (IOException e) {
@@ -207,11 +209,11 @@ public class WorldViewsIndexer extends Indexer {
      * @param pageCountStart Order number for the first page.
      * @should index record correctly
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
-     * @return an array of {@link java.lang.String} objects.
+     * @return {@link IndexingResult}
      */
-    public String[] index(Path mainFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
+    public IndexingResult index(Path mainFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
-        String[] ret = { null, null };
+        IndexingResult ret = new IndexingResult();
 
         if (mainFile == null || !Files.exists(mainFile)) {
             throw new IllegalArgumentException("mainFile must point to an existing XML file.");
@@ -240,7 +242,7 @@ public class WorldViewsIndexer extends Indexer {
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, mainFile, dataFolders);
 
-            ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
+            ret.setPi(pi).setRecordFileName(pi + FileTools.XML_EXTENSION);
 
             // Check and use old data folders, if no new ones found
             checkOldDataFolders(dataFolders, MetsIndexer.DATA_FOLDER_PARAMS, pi);
@@ -395,7 +397,7 @@ public class WorldViewsIndexer extends Indexer {
                 logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
                 SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
             }
-            
+
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
@@ -406,13 +408,13 @@ public class WorldViewsIndexer extends Indexer {
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
-            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
             Thread.currentThread().interrupt();
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", mainFile.getFileName());
             logger.error(e.getMessage(), e);
-            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (useWriteStrategy != null) {

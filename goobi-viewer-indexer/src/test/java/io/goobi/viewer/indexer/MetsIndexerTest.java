@@ -49,6 +49,7 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -118,9 +119,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
         dataFolders.put(DataRepository.PARAM_CMS, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_cms"));
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-        assertEquals(PI + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        assertEquals(PI + ".xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         Map<String, Boolean> iddocMap = new HashMap<>();
         String iddoc;
@@ -341,9 +342,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void index_shouldIndexMetadataGroupsCorrectly() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile2, dataFolders, null, 1, false);
-        assertEquals(PI2 + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile2, dataFolders, null, 1, false);
+        assertEquals(PI2 + ".xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         Map<String, Boolean> iddocMap = new HashMap<>();
         String iddoc;
@@ -438,9 +439,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Index first volume
         {
-            String[] ret = new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false);
-            assertEquals(piVol1 + ".xml", ret[0]);
-            Assertions.assertNull(ret[1]);
+            IndexingResult result = new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false);
+            assertEquals(piVol1 + ".xml", result.getRecordFileName());
+            Assertions.assertNull(result.getError());
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + piVol1, null);
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
@@ -487,9 +488,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Index anchor
         String anchorIddoc;
         {
-            String[] ret = new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false);
-            assertEquals(piAnchor + ".xml", ret[0]);
-            Assertions.assertNull(ret[1]);
+            IndexingResult result = new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false);
+            assertEquals(piAnchor + ".xml", result.getRecordFileName());
+            Assertions.assertNull(result.getError());
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + piAnchor, null);
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
@@ -500,8 +501,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Re-index first volume
         {
-            String[] ret = new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false);
-            Assertions.assertNull(ret[1]);
+            IndexingResult result = new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false);
+            Assertions.assertNull(result.getError());
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + piVol1, null);
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
@@ -510,8 +511,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         // Index second volume
         {
-            String[] ret = new MetsIndexer(hotfolder).index(metsFileVol2, dataFolders, null, 1, false);
-            Assertions.assertNull(ret[1]);
+            IndexingResult result = new MetsIndexer(hotfolder).index(metsFileVol2, dataFolders, null, 1, false);
+            Assertions.assertNull(result.getError());
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + piVol2, null);
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
@@ -520,9 +521,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         assertEquals(1, hotfolder.getHighPriorityQueue().size());
 
-        String[] ret = new MetsIndexer(hotfolder).index(hotfolder.getHighPriorityQueue().poll(), dataFolders, null, 1, false);
-        assertEquals(piAnchor + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(hotfolder.getHighPriorityQueue().poll(), dataFolders, null, 1, false);
+        assertEquals(piAnchor + ".xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
     }
 
     /**
@@ -534,9 +535,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-        assertEquals(PI + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        assertEquals(PI + ".xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         Map<String, Boolean> iddocMap = new HashMap<>();
         String iddoc;
@@ -593,9 +594,10 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         }
 
         // Re-index
-        ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-        assertEquals(PI + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        assertEquals(PI + ".xml", result.getRecordFileName());
+        ;
+        Assertions.assertNull(result.getError());
 
         // Top document
         {
@@ -658,9 +660,10 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     void index_shouldSetAccessConditionsCorrectly() throws Exception {
         String pi = "AC06736966";
         Map<String, Path> dataFolders = new HashMap<>();
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile3, dataFolders, null, 1, false);
-        assertEquals(pi + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile3, dataFolders, null, 1, false);
+        assertEquals(pi + ".xml", result.getRecordFileName());
+        ;
+        Assertions.assertNull(result.getError());
 
         // Top document
         {
@@ -818,8 +821,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         {
             Map<String, Path> dataFolders = new HashMap<>();
             Path file = Paths.get("src/test/resources/METS/rosdok_ppn1011383616.dv.mets.xml");
-            String[] ret = new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
-            assertEquals("PPN1011383616.xml", ret[0]);
+            IndexingResult result = new MetsIndexer(hotfolder).index(file, dataFolders, null, 1, false);
+            assertEquals("PPN1011383616.xml", result.getRecordFileName());
 
             SolrDocumentList docs = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
@@ -839,9 +842,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void index_shouldReadDatecreatedFromMetsWithCorrectTimeZone() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile2, dataFolders, null, 1, false);
-        assertEquals(PI2 + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile2, dataFolders, null, 1, false);
+        assertEquals(PI2 + ".xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         // Top document
         {
@@ -862,9 +865,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     @Test
     void index_shouldNotAddDateupdatedIfValueAlreadyExists() throws Exception {
         Map<String, Path> dataFolders = new HashMap<>();
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile2, dataFolders, null, 1, false);
-        assertEquals(PI2 + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile2, dataFolders, null, 1, false);
+        assertEquals(PI2 + ".xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         Long timestamp = 1372770217000L;
 
@@ -902,9 +905,10 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Path localMetsFile = Paths.get("src/test/resources/METS/MIX/" + pi + ".xml");
         assertTrue(Files.isRegularFile(localMetsFile));
         Map<String, Path> dataFolders = new HashMap<>();
-        String[] ret = new MetsIndexer(hotfolder).index(localMetsFile, dataFolders, null, 1, false);
-        assertEquals("4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3.xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(localMetsFile, dataFolders, null, 1, false);
+        assertEquals("4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3.xml", result.getRecordFileName());
+        ;
+        Assertions.assertNull(result.getError());
 
         // Pages
 
@@ -1299,9 +1303,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_media"));
         Path metPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_download_resources.xml").toAbsolutePath();
         MetsIndexer indexer = new MetsIndexer(hotfolder);
-        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
-        assertEquals(PI + ".xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals(PI + ".xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + PI, null);
 
@@ -1315,9 +1319,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383.xml").toAbsolutePath();
         MetsIndexer indexer = new MetsIndexer(hotfolder);
-        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
-        assertEquals("34192383.xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
 
@@ -1334,9 +1338,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383.xml").toAbsolutePath();
         MetsIndexer indexer = new MetsIndexer(hotfolder);
-        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
-        assertEquals("34192383.xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
         assertTrue(docList.stream()
@@ -1349,9 +1353,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383.xml").toAbsolutePath();
         MetsIndexer indexer = new MetsIndexer(hotfolder);
-        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
-        assertEquals("34192383.xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
         assertEquals(1, docList.stream().filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
@@ -1365,9 +1369,9 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         Path metPath = Paths.get("src/test/resources/audio/02008070428708.xml").toAbsolutePath();
         MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("OGG", "MP3", "PRESENTATION"));
-        String[] ret = indexer.index(metPath, dataFolders, null, 1, false);
-        assertEquals("02008070428708.xml", ret[0]);
-        Assertions.assertNull(ret[1]);
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("02008070428708.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
 
         SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()

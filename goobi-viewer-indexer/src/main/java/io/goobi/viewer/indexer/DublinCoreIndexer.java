@@ -54,6 +54,8 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -97,10 +99,10 @@ public class DublinCoreIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(dcFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newDcFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newDcFileName);
+        IndexingResult result = index(dcFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        if (IndexingResultStatus.OK.equals(result.getStatus())) {
+            String newDcFileName = result.getRecordFileName();
+            String pi = result.getPi();
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_DUBLINCORE).toAbsolutePath().toString(), newDcFileName);
             if (dcFile.equals(indexed)) {
                 return Collections.singletonList(pi);
@@ -109,15 +111,16 @@ public class DublinCoreIndexer extends Indexer {
             dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newDcFileName, DataRepository.PARAM_INDEXED_DUBLINCORE,
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
+            String baseFileName = FilenameUtils.getBaseName(newDcFileName);
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
-                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newDcFileName));
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, baseFileName);
             }
 
             // Copy and delete media folder
             if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
-                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
                     logger.info(msg);
                 }
@@ -150,7 +153,7 @@ public class DublinCoreIndexer extends Indexer {
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
 
-            return Collections.singletonList(pi);
+            return result.isSubmitPiToViewer() ? Collections.singletonList(pi) : Collections.emptyList();
         }
 
         // Error
@@ -158,7 +161,7 @@ public class DublinCoreIndexer extends Indexer {
             // Delete all data folders for this record from the hotfolder
             DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         }
-        handleError(dcFile, resp[1], FileFormat.DUBLINCORE);
+        handleError(dcFile, result.getError(), FileFormat.DUBLINCORE);
         try {
             Files.delete(dcFile);
         } catch (IOException e) {
@@ -181,11 +184,9 @@ public class DublinCoreIndexer extends Indexer {
      * @should set access conditions correctly
      * @should write cms page texts into index
      * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
-     * @return an array of {@link java.lang.String} objects.
+     * @return {@link IndexingResult}
      */
-    public String[] index(Path dcFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy, int pageCountStart) {
-        String[] ret = { null, null };
-
+    public IndexingResult index(Path dcFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy, int pageCountStart) {
         if (dcFile == null || !Files.exists(dcFile)) {
             throw new IllegalArgumentException("dcfile must point to an existing Dublin Core file.");
         }
@@ -195,6 +196,7 @@ public class DublinCoreIndexer extends Indexer {
 
         logger.debug("Indexing Dublin Core file '{}'...", dcFile.getFileName());
         ISolrWriteStrategy useWriteStrategy = writeStrategy;
+        IndexingResult ret = new IndexingResult();
         try {
             if (useWriteStrategy == null) {
                 // Request appropriate write strategy
@@ -217,7 +219,7 @@ public class DublinCoreIndexer extends Indexer {
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, dcFile, dataFolders);
 
-            ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
+            ret.setPi(pi).setRecordFileName(pi + FileTools.XML_EXTENSION);
 
             // Check and use old data folders, if no new ones found
             checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
@@ -318,14 +320,14 @@ public class DublinCoreIndexer extends Indexer {
                 logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
                 SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
             }
-            
+
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (IOException | IndexerException | FatalIndexerException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", dcFile.getFileName());
             logger.error(e.getMessage(), e);
-            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (useWriteStrategy != null) {

@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.Hotfolder;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -78,9 +79,9 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
             dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_alto"));
             dataFolders.put(DataRepository.PARAM_UGC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_ugc"));
-            String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-            Assertions.assertEquals(PI + ".xml", ret[0]);
-            Assertions.assertNull(ret[1]);
+            IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+            Assertions.assertEquals(PI + ".xml", result.getRecordFileName());
+            Assertions.assertNull(result.getError());
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1 AND " + SolrConstants.FULLTEXT + ":*", null);
@@ -126,9 +127,9 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
 
             // Update doc and check updated values
             Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
-            String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
-            Assertions.assertEquals(PI, ret[0], ret[0] + ": " + ret[1]);
-            Assertions.assertNull(ret[1]);
+            IndexingResult result = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
+            Assertions.assertEquals(PI, result.getPi(), "ERROR: " + result.getError());
+            Assertions.assertNull(result.getError());
             {
                 SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
@@ -187,9 +188,9 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             dataFolders.put(DataRepository.PARAM_FULLTEXTCROWD, updateCrowdsourcingTextFolderHotfolderPath);
 
             Path updateFile = Paths.get(hotfolder.getHotfolderPath().toAbsolutePath().toString(), PI + "#1" + DocUpdateIndexer.FILE_EXTENSION);
-            String[] ret = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
-            Assertions.assertEquals(PI, ret[0], ret[0] + ": " + ret[1]);
-            Assertions.assertNull(ret[1]);
+            IndexingResult result = new DocUpdateIndexer(hotfolder).index(updateFile, dataFolders);
+            Assertions.assertEquals(PI, result.getPi(), "ERROR: " + result.getError());
+            Assertions.assertNull(result.getError());
             SolrDocumentList docList = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
                     .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.ORDER + ":1  AND " + SolrConstants.DOCTYPE + ":"
