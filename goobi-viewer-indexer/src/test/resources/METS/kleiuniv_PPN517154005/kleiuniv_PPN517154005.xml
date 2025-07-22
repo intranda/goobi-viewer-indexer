@@ -28,6 +28,7 @@
             <mods:originInfo>
               <mods:dateIssued encoding="w3cdtf" keyDate="yes">1980-07-10</mods:dateIssued>
             </mods:originInfo>
+            <mods:identifier type="archive-entry-id">archive-node-123</mods:identifier>
           </mods:mods>
         </mets:xmlData>
       </mets:mdWrap>

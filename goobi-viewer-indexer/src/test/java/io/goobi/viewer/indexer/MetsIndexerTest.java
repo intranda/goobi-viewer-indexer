@@ -122,6 +122,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
         assertEquals(PI + ".xml", result.getRecordFileName());
         Assertions.assertNull(result.getError());
+        assertTrue(result.isSubmitPiToViewer());
 
         Map<String, Boolean> iddocMap = new HashMap<>();
         String iddoc;
@@ -442,6 +443,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
             IndexingResult result = new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false);
             assertEquals(piVol1 + ".xml", result.getRecordFileName());
             Assertions.assertNull(result.getError());
+            Assertions.assertFalse(result.isSubmitPiToViewer());
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + piVol1, null);
             assertEquals(1, docList.size());
             SolrDocument doc = docList.get(0);
