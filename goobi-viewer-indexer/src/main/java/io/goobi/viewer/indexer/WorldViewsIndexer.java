@@ -112,7 +112,7 @@ public class WorldViewsIndexer extends Indexer {
 
         IndexingResult result = index(mainFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
 
-        if (IndexingResultStatus.OK.equals(result)) {
+        if (IndexingResultStatus.OK.equals(result.getStatus())) {
             String newMetsFileName = result.getRecordFileName();
             String pi = result.getPi();
             Path indexed = Paths.get(getDataRepository().getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
