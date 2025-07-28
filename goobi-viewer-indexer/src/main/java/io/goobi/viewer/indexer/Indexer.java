@@ -1684,11 +1684,11 @@ public abstract class Indexer {
      */
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+        SolrDocumentList hits = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":\"" + pi + '"', null);
         // Retrieve record from old index, if available
         boolean fromOldIndex = false;
         if (hits.getNumFound() == 0 && SolrIndexerDaemon.getInstance().getOldSearchIndex() != null) {
-            hits = SolrIndexerDaemon.getInstance().getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            hits = SolrIndexerDaemon.getInstance().getOldSearchIndex().search(SolrConstants.PI + ":\"" + pi + '"', null);
             if (hits.getNumFound() > 0) {
                 fromOldIndex = true;
                 logger.info("Retrieving data from old index for record '{}'.", pi);
@@ -1735,7 +1735,7 @@ public abstract class Indexer {
             // Delete secondary docs (grouped metadata, events)
             hits = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
-                    .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc() + " " + SolrConstants.PI_TOPSTRUCT + ":" + indexObj.getPi(),
+                    .search(SolrConstants.IDDOC_OWNER + ":\"" + indexObj.getIddoc() + "\" " + SolrConstants.PI_TOPSTRUCT + ":\"" + indexObj.getPi() + '"',
                             Collections.singletonList(SolrConstants.IDDOC));
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
