@@ -523,8 +523,8 @@ public class MetsIndexer extends Indexer {
             addGroupDocs(indexObj, writeStrategy);
 
             // If this is a new volume, force anchor update to keep its volume count consistent
-            if (indexObj.isVolume() && indexObj.getParent() != null) {
-                logger.info("This is a volume - anchor update needed.");
+            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
+                logger.info("This is a NEW volume - anchor update needed.");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
 
