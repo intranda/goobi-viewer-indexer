@@ -1735,8 +1735,8 @@ public abstract class Indexer {
             // Delete secondary docs (grouped metadata, events)
             hits = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
-                    .search(SolrConstants.IDDOC_OWNER + ":\"" + indexObj.getIddoc() + "\" " + SolrConstants.PI_TOPSTRUCT + ":\"" + indexObj.getPi() + '"',
-                            Collections.singletonList(SolrConstants.IDDOC));
+                    .search(SolrConstants.IDDOC_OWNER + ":\"" + indexObj.getIddoc() + "\" " + SolrConstants.PI_TOPSTRUCT + ":\"" + indexObj.getPi()
+                            + '"', Collections.singletonList(SolrConstants.IDDOC));
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
