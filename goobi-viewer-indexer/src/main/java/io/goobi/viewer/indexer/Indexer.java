@@ -1729,6 +1729,7 @@ public abstract class Indexer {
         if (isAnchor()) {
             // Keep old IDDOC
             indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
+            indexObj.setKeepIddoc(true);
             // Delete old doc
             iddocsToDelete.add(indexObj.getIddoc());
             // Delete secondary docs (grouped metadata, events)

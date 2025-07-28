@@ -44,6 +44,8 @@ public class IndexObject {
     private static final Logger logger = LogManager.getLogger(IndexObject.class);
 
     private String iddoc;
+    /** IDDOC value is kept from the previous indexing, if true. */
+    private boolean keepIddoc = false;
     private String pi;
     private IndexObject parent = null;
     private boolean update = false;
@@ -574,6 +576,17 @@ public class IndexObject {
 
     /**
      * <p>
+     * Getter for the field <code>iddoc</code>.
+     * </p>
+     *
+     * @return a long.
+     */
+    public String getIddoc() {
+        return iddoc;
+    }
+
+    /**
+     * <p>
      * Setter for the field <code>iddoc</code>.
      * </p>
      *
@@ -584,14 +597,17 @@ public class IndexObject {
     }
 
     /**
-     * <p>
-     * Getter for the field <code>iddoc</code>.
-     * </p>
-     *
-     * @return a long.
+     * @return the keepIddoc
      */
-    public String getIddoc() {
-        return iddoc;
+    public boolean isKeepIddoc() {
+        return keepIddoc;
+    }
+
+    /**
+     * @param keepIddoc the keepIddoc to set
+     */
+    public void setKeepIddoc(boolean keepIddoc) {
+        this.keepIddoc = keepIddoc;
     }
 
     /**

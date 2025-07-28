@@ -438,8 +438,9 @@ public class MetsIndexer extends Indexer {
                 indexObj.addToLucene(SolrConstants.ISANCHOR, "true");
                 long numVolumes = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":")
+                        .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":\"")
                                 .append(indexObj.getPi())
+                                .append('"')
                                 .append(SolrConstants.SOLR_QUERY_AND)
                                 .append(SolrConstants.ISWORK)
                                 .append(SolrConstants.SOLR_QUERY_TRUE)
@@ -533,7 +534,9 @@ public class MetsIndexer extends Indexer {
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
                 anchorMerge(indexObj);
                 // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue)
-                updateAnchorChildrenParentIddoc(indexObj);
+                if (!indexObj.isKeepIddoc()) {
+                    updateAnchorChildrenParentIddoc(indexObj);
+                }
             } else {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
@@ -1133,7 +1136,7 @@ public class MetsIndexer extends Indexer {
         SolrDocumentList hits =
                 SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .search(SolrConstants.PI_PARENT + ":" + indexObj.getPi() + SolrConstants.SOLR_QUERY_AND + SolrConstants.ISWORK
+                        .search(SolrConstants.PI_PARENT + ":\"" + indexObj.getPi() + '"' + SolrConstants.SOLR_QUERY_AND + SolrConstants.ISWORK
                                 + SolrConstants.SOLR_QUERY_TRUE, null);
         if (hits.isEmpty()) {
             logger.warn("Anchor '{}' has no volumes, no merge needed.", indexObj.getPi());
