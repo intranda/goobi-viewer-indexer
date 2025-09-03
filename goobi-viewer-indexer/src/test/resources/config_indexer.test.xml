@@ -628,6 +628,9 @@
 					<addSortField>true</addSortField>
 					<nonSortCharacters prefix="&lt;&lt;" suffix="&gt;&gt;" />
 					<nonSortCharacters suffix="\u00AC" />
+                    <replace regex="^, "/>
+                    <replace regex=", $"/>
+                    <replace regex="^,$"/>
 				</item>
 			</list>
 		</MD_AUTHOR>
