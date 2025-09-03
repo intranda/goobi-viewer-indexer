@@ -266,7 +266,7 @@ public final class MetadataHelper {
                                         configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
 
                                 // Add the relevant value as a non-grouped metadata value (for term browsing, etc.)
-                                if (gmd.getMainValue() != null) {
+                                if (StringUtils.isNotEmpty(gmd.getMainValue())) {
                                     if (nonShareable) {
                                         fieldValues.add(StringConstants.ACCESSCONDITION_METADATA_ACCESS_RESTRICTED);
                                         gmd.getFields()
@@ -1187,7 +1187,9 @@ public final class MetadataHelper {
                     || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(groupEntity.getType()))
                     || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(groupEntity.getType()))) {
                 mdValue = cleanUpName(field.getValue());
-                field.setValue(mdValue);
+                if (StringUtils.isNotEmpty(mdValue)) {
+                    field.setValue(mdValue);
+                }
             } else if ("MD_REFID".equals(field.getField()) && ele.getParentElement() != null) {
                 additionalFieldsFromParent.put("{0}", field.getValue());
             }
@@ -1217,7 +1219,7 @@ public final class MetadataHelper {
                 ret.getFields().add(new LuceneField(SolrConstants.MD_VALUE, mdValue));
             }
         }
-        if (mdValue != null) {
+        if (StringUtils.isNotEmpty(mdValue)) {
             ret.setMainValue(applyAllModifications(configurationItem, mdValue));
         }
 
