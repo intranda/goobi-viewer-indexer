@@ -1340,7 +1340,7 @@ public abstract class Indexer {
 
         // Skip if no MD_VALUE found
         if (gmd.getMainValue() == null) {
-            logger.debug("No main value found on grouped field {}, skipping...", gmd.getLabel());
+            logger.info("No main value found on grouped field {}, skipping...", gmd.getLabel());
             return 0;
         }
 

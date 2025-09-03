@@ -260,7 +260,6 @@ public final class MetadataHelper {
 
                             if (configurationItem.isGroupEntity()) {
                                 // Grouped metadata
-                                logger.trace(xpath);
                                 Element eleMods = (Element) xpathAnswerObject;
                                 GroupedMetadata gmd = getGroupedMetadata(eleMods, configurationItem.getGroupEntity(), configurationItem,
                                         configurationItem.getFieldname(), sbDefaultMetadataValues, ret);
@@ -1186,9 +1185,11 @@ public final class MetadataHelper {
             if (field.getField().equals(SolrConstants.MD_VALUE)
                     || (field.getField().equals("MD_DISPLAYFORM") && MetadataGroupType.PERSON.equals(groupEntity.getType()))
                     || (field.getField().equals("MD_LOCATION") && MetadataGroupType.LOCATION.equals(groupEntity.getType()))) {
-                mdValue = cleanUpName(field.getValue());
-                if (StringUtils.isNotEmpty(mdValue)) {
-                    field.setValue(mdValue);
+                // Make sure not to override existing value with useless values (after modifications)
+                String val = applyAllModifications(configurationItem, field.getValue());
+                if (StringUtils.isNotEmpty(val)) {
+                    field.setValue(val);
+                    mdValue = val;
                 }
             } else if ("MD_REFID".equals(field.getField()) && ele.getParentElement() != null) {
                 additionalFieldsFromParent.put("{0}", field.getValue());
@@ -1219,9 +1220,9 @@ public final class MetadataHelper {
                 ret.getFields().add(new LuceneField(SolrConstants.MD_VALUE, mdValue));
             }
         }
-        String finalMdValue = applyAllModifications(configurationItem, mdValue);
-        if (StringUtils.isNotEmpty(finalMdValue)) {
-            ret.setMainValue(finalMdValue);
+        // Set main value (required for metadata display)
+        if (StringUtils.isNotEmpty(mdValue)) {
+            ret.setMainValue(mdValue);
         }
 
         // Query citation resource
@@ -1397,29 +1398,6 @@ public final class MetadataHelper {
                     }
                 }
             }
-        }
-
-        return ret;
-    }
-
-    /**
-     * 
-     * @param value
-     * @return Modified value
-     * @should remove leading comma
-     * @should remove trailing comma
-     */
-    static String cleanUpName(final String value) {
-        if (value == null) {
-            return value;
-        }
-        String ret = value.trim();
-        // Hack to remove the comma if a person has no first or last name (e.g when using concat() in XPath)
-        if (ret.endsWith(",") && ret.length() > 1) {
-            ret = ret.substring(0, ret.length() - 1);
-        }
-        if (ret.startsWith(",") && ret.length() > 1) {
-            ret = ret.substring(1).trim();
         }
 
         return ret;
