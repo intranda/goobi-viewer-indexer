@@ -1219,8 +1219,9 @@ public final class MetadataHelper {
                 ret.getFields().add(new LuceneField(SolrConstants.MD_VALUE, mdValue));
             }
         }
-        if (StringUtils.isNotEmpty(mdValue)) {
-            ret.setMainValue(applyAllModifications(configurationItem, mdValue));
+        String finalMdValue = applyAllModifications(configurationItem, mdValue);
+        if (StringUtils.isNotEmpty(finalMdValue)) {
+            ret.setMainValue(finalMdValue);
         }
 
         // Query citation resource
@@ -1332,7 +1333,9 @@ public final class MetadataHelper {
                 }
             }
 
-            field.setValue(moddedValue);
+            if (StringUtils.isNotEmpty(moddedValue)) {
+                field.setValue(moddedValue);
+            }
 
             if (configurationItem.isAddToDefault()) {
                 // Add main value to owner doc's DEFAULT field
