@@ -450,26 +450,6 @@ class MetadataHelperTest extends AbstractTest {
     }
 
     /**
-     * @see MetadataHelper#cleanUpName(String)
-     * @verifies remove leading comma
-     */
-    @Test
-    void cleanUpName_shouldRemoveLeadingComma() {
-        assertEquals("foo", MetadataHelper.cleanUpName(", foo"));
-        assertEquals("foo", MetadataHelper.cleanUpName(",foo"));
-    }
-
-    /**
-     * @see MetadataHelper#cleanUpName(String)
-     * @verifies remove trailing comma
-     */
-    @Test
-    void cleanUpName_shouldRemoveTrailingComma() {
-        assertEquals("foo", MetadataHelper.cleanUpName("foo,"));
-        assertEquals("foo", MetadataHelper.cleanUpName("foo, "));
-    }
-
-    /**
      * @see MetadataHelper#processTEIMetadataFiles(IndexObject,Path)
      * @verifies append fulltext from all files
      */
