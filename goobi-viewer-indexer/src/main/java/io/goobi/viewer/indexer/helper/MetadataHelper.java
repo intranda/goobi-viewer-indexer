@@ -1178,7 +1178,9 @@ public final class MetadataHelper {
         if (!groupEntity.getSubfields().containsKey(SolrConstants.MD_VALUE)) {
             logger.warn("'{}' not configured for grouped metadata field '{}'.", SolrConstants.MD_VALUE, groupLabel);
         }
+
         String mdValue = null;
+        String mdValueRaw = null;
 
         Map<String, String> additionalFieldsFromParent = new HashMap<>();
         for (LuceneField field : ret.getFields()) {
@@ -1188,6 +1190,7 @@ public final class MetadataHelper {
                 // Make sure not to override existing value with useless values (after modifications)
                 String val = applyAllModifications(configurationItem, field.getValue());
                 if (StringUtils.isNotEmpty(val)) {
+                    mdValueRaw = field.getValue();
                     field.setValue(val);
                     mdValue = val;
                 }
@@ -1231,8 +1234,8 @@ public final class MetadataHelper {
         }
 
         // Add single-valued field by which to group metadata search hits
-        if (mdValue != null) {
-            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValue).toString(), "", null, null,
+        if (mdValueRaw != null) {
+            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValueRaw).toString(), "", null, null,
                     ret.getFields());
         }
 
