@@ -750,7 +750,7 @@ public final class MetadataHelper {
      * @param fieldVal
      * @return Modified fieldValue
      */
-    private static String applyAllModifications(FieldConfig configurationItem, final String fieldVal) {
+    public static String applyAllModifications(FieldConfig configurationItem, final String fieldVal) {
         if (StringUtils.isEmpty(fieldVal)) {
             return fieldVal;
         }
@@ -1173,7 +1173,7 @@ public final class MetadataHelper {
         StringBuilder sbAuthorityDataTerms = new StringBuilder();
 
         Map<String, List<String>> collectedValues = new HashMap<>();
-        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null);
+        ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele, authorityDataEnabled, null, configurationItem);
 
         if (!groupEntity.getSubfields().containsKey(SolrConstants.MD_VALUE)) {
             logger.warn("'{}' not configured for grouped metadata field '{}'.", SolrConstants.MD_VALUE, groupLabel);
@@ -1202,7 +1202,7 @@ public final class MetadataHelper {
         if (!additionalFieldsFromParent.isEmpty()) {
             logger.debug("Collecting source metadata for {}", configurationItem.getFieldname());
             ret.collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(), ele.getParentElement(), authorityDataEnabled,
-                    additionalFieldsFromParent);
+                    additionalFieldsFromParent, configurationItem);
         }
         // if no MD_VALUE field exists, construct one
         if (mdValue == null) {
@@ -1230,7 +1230,7 @@ public final class MetadataHelper {
 
         // Query citation resource
         if (MetadataGroupType.CITATION.equals(groupEntity.getType())) {
-            ret.harvestCitationMetadataFromUrl(groupEntity, collectedValues);
+            ret.harvestCitationMetadataFromUrl(groupEntity, collectedValues, configurationItem);
         }
 
         // Add single-valued field by which to group metadata search hits

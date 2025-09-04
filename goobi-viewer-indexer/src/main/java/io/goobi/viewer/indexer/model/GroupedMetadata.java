@@ -33,6 +33,7 @@ import io.goobi.viewer.indexer.exceptions.HTTPException;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
 
@@ -137,16 +138,18 @@ public class GroupedMetadata {
      * @param ele Root of the XML (sub)tree
      * @param authorityDataEnabled
      * @param xpathReplacements
+     * @param configurationItem Master field configuration
      */
     public void collectGroupMetadataValues(Map<String, List<String>> collectedValues, Map<String, SubfieldConfig> groupEntityFields, Element ele,
-            boolean authorityDataEnabled, Map<String, String> xpathReplacements) {
+            boolean authorityDataEnabled, Map<String, String> xpathReplacements, FieldConfig configurationItem) {
         if (ele == null) {
             throw new IllegalArgumentException("element may not be null");
         }
 
         logger.debug("element: {}", ele.getName());
         for (Entry<String, SubfieldConfig> entry : groupEntityFields.entrySet()) {
-            if (entry.getKey() == null || "type".equals(entry.getKey()) || "url".equals(entry.getKey())
+            if (entry.getKey() == null || "type".equals(entry.getKey()) || "url".equals(entry
+                    .getKey())
                     || groupEntityFields.get(entry.getKey()) == null) {
                 continue;
             }
@@ -185,10 +188,14 @@ public class GroupedMetadata {
                 }
                 for (Object val : values) {
                     String fieldValue = JDomXP.objectToString(val);
+                    fieldValue = MetadataHelper.applyAllModifications(configurationItem, fieldValue.trim());
                     if (StringUtils.isBlank(fieldValue)) {
                         continue;
                     }
-                    fieldValue = fieldValue.trim();
+
+                    if ("MD_PERSON_PRINTER".equals(label) && "MD_VALUE".equals(subfield.getFieldname())) {
+                        logger.info("found: {}:{}", subfield.getFieldname(), fieldValue);
+                    }
                     logger.debug("found: {}:{}", subfield.getFieldname(), fieldValue);
 
                     if (authorityDataEnabled && subfield.getFieldname().startsWith(NormDataImporter.FIELD_URI) && fieldValue.length() > 1) {
@@ -223,8 +230,9 @@ public class GroupedMetadata {
      * 
      * @param groupEntity
      * @param collectedValues
+     * @param configurationItem
      */
-    public void harvestCitationMetadataFromUrl(GroupEntity groupEntity, Map<String, List<String>> collectedValues) {
+    public void harvestCitationMetadataFromUrl(GroupEntity groupEntity, Map<String, List<String>> collectedValues, FieldConfig configurationItem) {
         if (groupEntity == null) {
             throw new IllegalArgumentException("groupEntity may not be null");
         }
@@ -243,7 +251,7 @@ public class GroupedMetadata {
                     .fetch()
                     .build();
             collectGroupMetadataValues(collectedValues, groupEntity.getSubfields(),
-                    xmlDoc.getXp().getRootElement(), MetadataHelper.isAuthorityDataEnabled(), null);
+                    xmlDoc.getXp().getRootElement(), MetadataHelper.isAuthorityDataEnabled(), null, configurationItem);
         } catch (HTTPException | JDOMException | IOException | IllegalStateException e) {
             logger.error(e.getMessage(), e);
         }
