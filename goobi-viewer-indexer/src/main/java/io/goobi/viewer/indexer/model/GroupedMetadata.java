@@ -188,8 +188,8 @@ public class GroupedMetadata {
                 }
                 for (Object val : values) {
                     String fieldValue = JDomXP.objectToString(val);
-                    fieldValue = MetadataHelper.applyAllModifications(configurationItem, fieldValue.trim());
-                    if (StringUtils.isBlank(fieldValue)) {
+                    String moddedValue = MetadataHelper.applyAllModifications(configurationItem, fieldValue.trim());
+                    if (StringUtils.isBlank(moddedValue)) {
                         continue;
                     }
 
