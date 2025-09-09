@@ -41,7 +41,7 @@
 
 		<!-- intranda libraries -->
 		<alto.version>1.6.4</alto.version>
-		<iiif-api-model.version>3.0.4</iiif-api-model.version>
+		<iiif-api-model.version>3.1.0</iiif-api-model.version>
 		<normdataimporter.version>2.0.1</normdataimporter.version>
 
 		<!-- other libraries -->
@@ -58,12 +58,12 @@
 		<icu.version>77.1</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
 		<log4j.version>2.25.1</log4j.version>
-		<jackson.version>2.19.2</jackson.version>
+		<jackson.version>2.20.0</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
-		<jakarta.mail-api.version>2.1.3</jakarta.mail-api.version>
+		<jakarta.mail-api.version>2.1.4</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
-		<jsoup.version>1.21.1</jsoup.version>
+		<jsoup.version>1.21.2</jsoup.version>
 		<json.version>20250517</json.version>
 		<junit.version>5.13.4</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
@@ -534,7 +534,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>11.0.0</version>
+						<version>11.0.1</version>
 					</dependency>
 				</dependencies>
 				<executions>
