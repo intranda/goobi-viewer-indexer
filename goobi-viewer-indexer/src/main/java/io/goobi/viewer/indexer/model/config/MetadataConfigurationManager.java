@@ -87,15 +87,22 @@ public final class MetadataConfigurationManager {
     @SuppressWarnings({ "rawtypes" })
     private Map<String, List<FieldConfig>> loadFieldConfiguration(XMLConfiguration config) throws ConfigurationRuntimeException {
         Map<String, List<FieldConfig>> ret = new HashMap<>();
-        Iterator<String> fields = config.getKeys("fields");
+
+        ImmutableNode fieldsNode = config.getNodeModel()
+                .getNodeHandler()
+                .getRootNode()
+                .getChildren("fields")
+                .stream()
+                .findFirst()
+                .orElse(null);
         List<String> newFields = new ArrayList<>();
-        // each field only once
-        while (fields.hasNext()) {
-            String fieldname = fields.next();
-            fieldname = fieldname.substring(7);
-            fieldname = fieldname.substring(0, fieldname.indexOf('.'));
-            if (!newFields.contains(fieldname)) {
-                newFields.add(fieldname);
+        if (fieldsNode != null) {
+            // each field only once
+            for (ImmutableNode field : fieldsNode.getChildren()) {
+                String fieldname = field.getNodeName();
+                if (!newFields.contains(fieldname)) {
+                    newFields.add(fieldname);
+                }
             }
         }
         for (String fieldname : newFields) {
@@ -112,7 +119,7 @@ public final class MetadataConfigurationManager {
                         HierarchicalConfiguration sub = (HierarchicalConfiguration) it.next();
                         String xpath = sub.getString("");
                         if (StringUtils.isEmpty(xpath)) {
-                            logger.error("Found empty XPath configuration for field: {}", fieldname);
+                            logger.warn("Found empty XPath configuration for field: {}", fieldname);
                             continue;
                         }
                         String prefix = sub.getString(XML_PATH_ATTRIBUTE_PREFIX);
