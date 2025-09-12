@@ -49,6 +49,8 @@ import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.helper.XmlTools;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
@@ -82,12 +84,12 @@ public class CmsPageIndexer extends Indexer {
     public List<String> addToIndex(Path cmsFile, Map<String, Boolean> reindexSettings) throws IOException, FatalIndexerException {
         Map<String, Path> dataFolders = new HashMap<>();
 
-        String fileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
+        String sourceFileNameRoot = FilenameUtils.getBaseName(cmsFile.getFileName().toString());
 
-        String[] resp = index(cmsFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newCmsFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newCmsFileName);
+        IndexingResult result = index(cmsFile, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart());
+        if (IndexingResultStatus.OK.equals(result.getStatus())) {
+            String newCmsFileName = result.getRecordFileName();
+            String pi = result.getPi();
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_CMS).toAbsolutePath().toString(), newCmsFileName);
             if (cmsFile.equals(indexed)) {
                 return Collections.singletonList(pi);
@@ -96,15 +98,16 @@ public class CmsPageIndexer extends Indexer {
             dataRepository.checkOtherRepositoriesForRecordFileDuplicates(newCmsFileName, DataRepository.PARAM_INDEXED_CMS,
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
+            String baseFileName = FilenameUtils.getBaseName(newCmsFileName);
             if (previousDataRepository != null) {
                 // Move non-repository data folders to the selected repository
-                previousDataRepository.moveDataFoldersToRepository(dataRepository, FilenameUtils.getBaseName(newCmsFileName));
+                previousDataRepository.moveDataFoldersToRepository(dataRepository, baseFileName);
             }
 
             // Copy and delete media folder
             if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
-                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                String msg = Utils.removeRecordImagesFromCache(baseFileName);
                 if (msg != null) {
                     logger.info(msg);
                 }
@@ -115,7 +118,7 @@ public class CmsPageIndexer extends Indexer {
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
-            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), fileNameRoot);
+            FileTools.deleteUnsupportedDataFolders(hotfolder.getHotfolderPath(), sourceFileNameRoot);
 
             try {
                 Files.delete(cmsFile);
@@ -132,7 +135,7 @@ public class CmsPageIndexer extends Indexer {
                 }
             }
 
-            return Collections.singletonList(pi);
+            return result.isSubmitPiToViewer() ? Collections.singletonList(pi) : Collections.emptyList();
         }
 
         // Error
@@ -140,7 +143,7 @@ public class CmsPageIndexer extends Indexer {
             // Delete all data folders for this record from the hotfolder
             DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         }
-        handleError(cmsFile, resp[1], FileFormat.CMS);
+        handleError(cmsFile, result.getError(), FileFormat.CMS);
         try {
             Files.delete(cmsFile);
         } catch (IOException e) {
@@ -156,18 +159,18 @@ public class CmsPageIndexer extends Indexer {
      * @param cmsFile {@link java.nio.file.Path}
      * @param dataFolders a {@link java.util.Map} object.
      * @param pageCountStart Order number for the first page.
+     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
+     * @return {@link IndexingResult}
      * @should index record correctly
      * @should index metadata groups correctly
      * @should index multi volume records correctly
      * @should update record correctly
      * @should set access conditions correctly
      * @should write cms page texts into index
-     * @param writeStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
-     * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Path cmsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
+    public IndexingResult index(Path cmsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy writeStrategy,
             int pageCountStart) {
-        String[] ret = { null, null };
+        IndexingResult ret = new IndexingResult();
 
         if (cmsFile == null || !Files.exists(cmsFile)) {
             throw new IllegalArgumentException("dcfile must point to an existing Dublin Core file.");
@@ -209,8 +212,8 @@ public class CmsPageIndexer extends Indexer {
                 Pattern p = Pattern.compile("[^\\w|-]");
                 Matcher m = p.matcher(pi);
                 if (m.find()) {
-                    ret[1] = new StringBuilder("PI contains illegal characters: ").append(pi).toString();
-                    throw new IndexerException(ret[1]);
+                    ret.setError("PI contains illegal characters: " + pi);
+                    throw new IndexerException(ret.getError());
                 }
                 indexObj.setPi(pi);
                 indexObj.setTopstructPI(pi);
@@ -219,10 +222,10 @@ public class CmsPageIndexer extends Indexer {
                 // Determine the data repository to use
                 selectDataRepository(indexObj, pi, cmsFile, dataFolders);
 
-                ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
+                ret.setPi(pi).setRecordFileName(pi + FileTools.XML_EXTENSION);
             } else {
-                ret[1] = "PI not found.";
-                throw new IndexerException(ret[1]);
+                ret.setError("PI not found.");
+                throw new IndexerException(ret.getError());
             }
 
             prepareUpdate(indexObj);
@@ -303,14 +306,14 @@ public class CmsPageIndexer extends Indexer {
                 logger.info("Removing {} docs of the previous instance of this volume from the index...", iddocsToDelete.size());
                 SolrIndexerDaemon.getInstance().getSearchIndex().deleteDocuments(new ArrayList<>(iddocsToDelete));
             }
-            
+
             logger.debug("Writing document to index...");
             useWriteStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
             logger.info("Successfully finished indexing '{}'.", cmsFile.getFileName());
         } catch (IOException | IndexerException | FatalIndexerException | SolrServerException | JDOMException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", cmsFile.getFileName());
             logger.error(e.getMessage(), e);
-            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (useWriteStrategy != null) {

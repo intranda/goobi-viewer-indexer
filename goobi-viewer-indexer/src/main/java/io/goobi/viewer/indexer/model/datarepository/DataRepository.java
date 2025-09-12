@@ -23,10 +23,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -730,13 +728,13 @@ public class DataRepository {
      * @param identifier Record identifier
      * @param recordFileName File name of the source file
      * @param dataRepositoryStrategy
-     * @param fileNames Semicolon-separated file name list
+     * @param fileNames File name list
      * @param reindexing true if using old media folder; false otherwise
      * @return Number of copied files
      * @throws IOException
      */
     public int copyImagesFromMultiRecordMediaFolder(Path sourceMediaFolder, String identifier, String recordFileName,
-            IDataRepositoryStrategy dataRepositoryStrategy, String fileNames, boolean reindexing) throws IOException {
+            IDataRepositoryStrategy dataRepositoryStrategy, Set<String> fileNames, boolean reindexing) throws IOException {
         int imageCounter = 0;
         if (!reindexing) {
             // copy media files
@@ -744,13 +742,11 @@ public class DataRepository {
             if (!Files.exists(destMediaFolder)) {
                 Files.createDirectory(destMediaFolder);
             }
-            if (StringUtils.isNotEmpty(fileNames) && sourceMediaFolder != null) {
+            if (fileNames != null && !fileNames.isEmpty() && sourceMediaFolder != null) {
                 logger.info("Copying image files...");
-                String[] imgFileNamesSplit = fileNames.split(";");
-                Set<String> imgFileNames = new HashSet<>(Arrays.asList(imgFileNamesSplit));
                 try (DirectoryStream<Path> mediaFileStream = Files.newDirectoryStream(sourceMediaFolder)) {
                     for (Path mediaFile : mediaFileStream) {
-                        if (Files.isRegularFile(mediaFile) && imgFileNames.contains(mediaFile.getFileName().toString())) {
+                        if (Files.isRegularFile(mediaFile) && fileNames.contains(mediaFile.getFileName().toString())) {
                             logger.info("Copying file {} to {}", mediaFile.toAbsolutePath(), destMediaFolder.toAbsolutePath());
                             Files.copy(mediaFile, Paths.get(destMediaFolder.toAbsolutePath().toString(), mediaFile.getFileName().toString()),
                                     StandardCopyOption.REPLACE_EXISTING);

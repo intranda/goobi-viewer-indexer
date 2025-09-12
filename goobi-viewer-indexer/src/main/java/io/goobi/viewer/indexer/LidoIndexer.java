@@ -55,6 +55,8 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -81,10 +83,10 @@ public class LidoIndexer extends Indexer {
                     DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
 
     /**
-     * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
+     * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). Must be
      * thread-safe.
      */
-    private StringBuilder sbImgFileNames = new StringBuilder();
+    private Set<String> imgFileNames = Collections.synchronizedSet(new HashSet<>());
 
     /**
      * Constructor.
@@ -125,13 +127,13 @@ public class LidoIndexer extends Indexer {
 
         List<String> ret = new ArrayList<>(lidoDocs.size());
         for (Document doc : lidoDocs) {
-            String[] resp = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
+            IndexingResult result = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"),
                     dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER),
                     reindexSettings.containsKey(DataRepository.PARAM_MEDIA));
 
-            if (!Indexer.STATUS_ERROR.equals(resp[0])) {
-                String identifier = resp[0];
+            if (IndexingResultStatus.OK.equals(result.getStatus())) {
+                String identifier = result.getPi();
                 String newLidoFileName = identifier + ".xml";
 
                 // Write individual LIDO records as separate files
@@ -149,7 +151,7 @@ public class LidoIndexer extends Indexer {
 
                 // Copy media files
                 int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
-                        lidoFile.getFileName().toString(), hotfolder.getDataRepositoryStrategy(), resp[1],
+                        lidoFile.getFileName().toString(), hotfolder.getDataRepositoryStrategy(), result.getMediaFileNames(),
                         reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
                 if (imageCounter > 0) {
                     String msg = Utils.removeRecordImagesFromCache(identifier);
@@ -165,10 +167,9 @@ public class LidoIndexer extends Indexer {
                         Files.createDirectory(destMixDir);
                     }
                     int counter = 0;
-                    if (StringUtils.isNotEmpty(resp[1]) && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
-                        String[] mixFileNamesSplit = resp[1].split(";");
+                    if (!result.getMediaFileNames().isEmpty() && Files.isDirectory(dataFolders.get(DataRepository.PARAM_MIX))) {
                         List<String> mixFileNames = new ArrayList<>();
-                        for (String fileName : mixFileNamesSplit) {
+                        for (String fileName : result.getMediaFileNames()) {
                             mixFileNames.add(FilenameUtils.getBaseName(fileName) + ".xml");
                         }
                         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dataFolders.get(DataRepository.PARAM_MIX))) {
@@ -199,9 +200,11 @@ public class LidoIndexer extends Indexer {
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
 
                 // Add identifier to return list
-                ret.add(identifier);
+                if (result.isSubmitPiToViewer()) {
+                    ret.add(identifier);
+                }
             } else {
-                handleError(lidoFile, resp[1], FileFormat.LIDO);
+                handleError(lidoFile, result.getError(), FileFormat.LIDO);
             }
         }
 
@@ -232,13 +235,13 @@ public class LidoIndexer extends Indexer {
      * @param imageXPaths a {@link java.util.List} object.
      * @param downloadExternalImages a boolean.
      * @param useOldImageFolderIfAvailable
+     * @return {@link IndexingResult}
      * @should index record correctly
      * @should update record correctly
-     * @return an array of {@link java.lang.String} objects.
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy inWriteStrategy, int pageCountStart,
+    public IndexingResult index(Document doc, Map<String, Path> dataFolders, ISolrWriteStrategy inWriteStrategy, int pageCountStart,
             List<String> imageXPaths, boolean downloadExternalImages, boolean useOldImageFolderIfAvailable) {
-        String[] ret = { STATUS_ERROR, null };
+        IndexingResult ret = new IndexingResult();
         String pi = null;
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
@@ -261,7 +264,7 @@ public class LidoIndexer extends Indexer {
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, null, dataFolders);
 
-            ret[0] = indexObj.getPi();
+            ret.setPi(indexObj.getPi());
 
             // Check and use old data folders, if no new ones found
             checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
@@ -340,6 +343,9 @@ public class LidoIndexer extends Indexer {
             // Add grouped metadata as separate documents
             addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
+            // Flag record identifier for submission to the viewer if it's linked to an archive node
+            ret.setSubmitPiToViewer(indexObj.getLuceneFieldWithName(SolrConstants.EAD_NODE_ID) != null);
+
             // Add root doc
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
@@ -353,11 +359,8 @@ public class LidoIndexer extends Indexer {
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
 
-            // Return image file names
-            if (sbImgFileNames.length() > 0 && sbImgFileNames.charAt(0) == ';') {
-                sbImgFileNames.deleteCharAt(0);
-            }
-            ret[1] = sbImgFileNames.toString();
+            // Set image file names belonging to this record
+            ret.setMediaImageFileNames(imgFileNames);
             logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
@@ -366,8 +369,7 @@ public class LidoIndexer extends Indexer {
                 logger.error("Indexing of '{}' could not be finished due to an error.", pi);
                 logger.error(e.getMessage(), e);
             }
-            ret[0] = STATUS_ERROR;
-            ret[1] = e.getMessage();
+            ret.setError(e.getMessage());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
@@ -685,8 +687,9 @@ public class LidoIndexer extends Indexer {
 
         // Handle external/internal file URL
         if (StringUtils.isNotEmpty(fileUri)) {
-            handleImageUrl(fileUri, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages,
+            handleImageUrl(fileUri, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), downloadExternalImages,
                     useOldImageFolderIfAvailable, false);
+            imgFileNames.add(fileName);
         }
 
         String baseFileName = FilenameUtils.getBaseName((String) ret.getDoc().getFieldValue(SolrConstants.FILENAME));

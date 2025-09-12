@@ -53,6 +53,7 @@ import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -148,9 +149,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-        assertEquals(pi + ".xml", ret[0]);
-        assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        assertEquals(pi + ".xml", result.getRecordFileName());
+        assertNull(result.getError());
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             assertEquals(22, docList.size());
@@ -171,9 +172,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
+        IndexingResult result = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
                 SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-        assertEquals(pi, ret[0], "ERROR: " + ret[1]);
+        assertEquals(pi, result.getPi(), "ERROR: " + result.getError());
         String iddoc;
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
@@ -209,9 +210,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
         dataFolders.put(DataRepository.PARAM_MEDIA, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_tif"));
         dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
         dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
-        String[] ret = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
-        assertEquals(pi + ".xml", ret[0]);
-        assertNull(ret[1]);
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+        assertEquals(pi + ".xml", result.getRecordFileName());
+        assertNull(result.getError());
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":" + pi, null);
             assertEquals(22, docList.size());
@@ -237,9 +238,9 @@ class IndexerTest extends AbstractSolrEnabledTest {
         String pi = "V0011127";
         Map<String, Path> dataFolders = new HashMap<>();
         List<Document> lidoDocs = JDomXP.splitLidoFile(lidoFile.toFile());
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
+        IndexingResult result = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
                 SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-        assertEquals(pi, ret[0]);
+        assertEquals(pi, result.getPi());
         String iddoc;
         {
             SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);

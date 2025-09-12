@@ -33,6 +33,8 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -78,9 +80,9 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         dataFolders.put(DataRepository.PARAM_MEDIA, lidoVideoMediaFolder.getAbsoluteFile().toPath());
         for (Document lidoDoc : lidoDocs) {
-            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
+            IndexingResult result = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-            Assertions.assertNotEquals("ERROR", ret[0]);
+            Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus());
         }
 
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":*", null);
@@ -112,9 +114,9 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
-            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
+            IndexingResult result = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-            Assertions.assertNotEquals("ERROR", ret[0]);
+            Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus());
         }
 
         Map<String, Boolean> iddocMap = new HashMap<>();
@@ -146,7 +148,6 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
             iddocMap.put(iddoc, true);
             Assertions.assertEquals(iddoc, doc.getFieldValue(SolrConstants.GROUPFIELD));
             Assertions.assertEquals(true, doc.getFieldValue(SolrConstants.ISWORK));
-            //            Assertions.assertEquals("", doc.getFieldValue(SolrConstants.LABEL));
             Assertions.assertEquals(1, doc.getFieldValue(SolrConstants.NUMPAGES));
             Assertions.assertEquals(PI, doc.getFieldValue(SolrConstants.PI));
             Assertions.assertEquals(PI, doc.getFieldValue(SolrConstants.PI_TOPSTRUCT));
@@ -312,9 +313,9 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document lidoDoc : lidoDocs) {
-            String[] ret = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
+            IndexingResult result = new LidoIndexer(hotfolder).index(lidoDoc, dataFolders, null, 1,
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-            Assertions.assertNotEquals("ERROR", ret[0]);
+            Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus());
         }
 
         Map<String, Boolean> iddocMap = new HashMap<>();
@@ -373,9 +374,9 @@ class LidoIndexerTest extends AbstractSolrEnabledTest {
         }
 
         // Re-index
-        String[] ret = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
+        IndexingResult result = new LidoIndexer(hotfolder).index(lidoDocs.get(0), dataFolders, null, 1,
                 SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.lido.imageXPath"), false, false);
-        Assertions.assertNotEquals("ERROR", ret[0]);
+        Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus());
 
         String newIddoc;
 

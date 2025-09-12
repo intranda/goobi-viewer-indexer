@@ -52,6 +52,8 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -111,10 +113,10 @@ public class EadIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(eadFile, dataFolders, null);
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newFileName);
+        IndexingResult result = index(eadFile, dataFolders, null);
+        if (IndexingResultStatus.OK.equals(result.getStatus())) {
+            String newFileName = result.getRecordFileName();
+            String pi = result.getPi();
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toAbsolutePath().toString(), newFileName);
             if (eadFile.equals(indexed)) {
                 return Collections.singletonList(pi);
@@ -152,7 +154,7 @@ public class EadIndexer extends Indexer {
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
             SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
 
-            return Collections.singletonList(pi);
+            return Collections.singletonList(pi); // Always submit EAD record identifiers
         }
 
         // Error
@@ -160,7 +162,7 @@ public class EadIndexer extends Indexer {
             // Delete all data folders for this record from the hotfolder
             DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         }
-        handleError(eadFile, resp[1], getSourceDocFormat());
+        handleError(eadFile, result.getError(), getSourceDocFormat());
         try {
             Files.delete(eadFile);
         } catch (IOException e) {
@@ -176,13 +178,13 @@ public class EadIndexer extends Indexer {
      * @param eadFile {@link java.nio.file.Path}
      * @param dataFolders a {@link java.util.Map} object.
      * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
-     * @return an array of {@link java.lang.String} objects.
+     * @return {@link IndexingResult}
      * @should index record correctly
      * @should update record correctly
      * @should set access conditions correctly
      */
-    public String[] index(Path eadFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy) {
-        String[] ret = { null, null };
+    public IndexingResult index(Path eadFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy) {
+        IndexingResult ret = new IndexingResult();
 
         if (eadFile == null || !Files.exists(eadFile)) {
             throw new IllegalArgumentException("eadFile must point to an existing EAD file.");
@@ -219,7 +221,7 @@ public class EadIndexer extends Indexer {
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, eadFile, dataFolders);
 
-            ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
+            ret.setPi(pi).setRecordFileName(indexObj.getPi() + FileTools.XML_EXTENSION);
 
             // Check and use old data folders, if no new ones found
             checkOldDataFolders(dataFolders, new String[] { DataRepository.PARAM_ANNOTATIONS }, pi);
@@ -291,7 +293,7 @@ public class EadIndexer extends Indexer {
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", eadFile.getFileName());
             logger.error(e.getMessage(), e);
-            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {

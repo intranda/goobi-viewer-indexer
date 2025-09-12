@@ -34,6 +34,8 @@ import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy;
 
@@ -78,8 +80,8 @@ class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document recordDoc : recordDocs) {
-            String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
-            Assertions.assertNotEquals("ERROR", ret[0], ret[1]);
+            IndexingResult result = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
+            Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus(), result.getError());
         }
 
         // Top document
@@ -115,8 +117,8 @@ class DenkXwebIndexerTest extends AbstractSolrEnabledTest {
 
         Map<String, Path> dataFolders = new HashMap<>();
         for (Document recordDoc : recordDocs) {
-            String[] ret = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
-            Assertions.assertNotEquals("ERROR", ret[0], ret[1]);
+            IndexingResult result = new DenkXwebIndexer(hotfolder).index(recordDoc, dataFolders, null, 1, false);
+            Assertions.assertEquals(IndexingResultStatus.OK, result.getStatus(), result.getError());
         }
 
         // Top document

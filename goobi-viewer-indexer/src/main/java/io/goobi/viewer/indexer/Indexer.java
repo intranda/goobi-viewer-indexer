@@ -135,8 +135,6 @@ public abstract class Indexer {
     protected static final String FIELD_TEXT = "MD_TEXT";
     protected static final String LOG_ADDED_FULLTEXT_FROM_REGULAR_ALTO = "Added FULLTEXT from regular ALTO for page {}";
 
-    public static final String STATUS_ERROR = "ERROR";
-
     static final String FOLDER_SUFFIX_ALTOCROWD = "_altocrowd";
     static final String FOLDER_SUFFIX_DOWNLOADIMAGES = "_downloadimages";
     static final String FOLDER_SUFFIX_MEDIA = "_media";
@@ -1686,11 +1684,11 @@ public abstract class Indexer {
      */
     protected void prepareUpdate(IndexObject indexObj) throws IOException, SolrServerException, FatalIndexerException {
         String pi = indexObj.getPi().trim();
-        SolrDocumentList hits = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+        SolrDocumentList hits = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":\"" + pi + '"', null);
         // Retrieve record from old index, if available
         boolean fromOldIndex = false;
         if (hits.getNumFound() == 0 && SolrIndexerDaemon.getInstance().getOldSearchIndex() != null) {
-            hits = SolrIndexerDaemon.getInstance().getOldSearchIndex().search(SolrConstants.PI + ":" + pi, null);
+            hits = SolrIndexerDaemon.getInstance().getOldSearchIndex().search(SolrConstants.PI + ":\"" + pi + '"', null);
             if (hits.getNumFound() > 0) {
                 fromOldIndex = true;
                 logger.info("Retrieving data from old index for record '{}'.", pi);
@@ -1731,13 +1729,14 @@ public abstract class Indexer {
         if (isAnchor()) {
             // Keep old IDDOC
             indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
+            indexObj.setKeepIddoc(true);
             // Delete old doc
             iddocsToDelete.add(indexObj.getIddoc());
             // Delete secondary docs (grouped metadata, events)
             hits = SolrIndexerDaemon.getInstance()
                     .getSearchIndex()
-                    .search(SolrConstants.IDDOC_OWNER + ":" + indexObj.getIddoc() + " " + SolrConstants.PI_TOPSTRUCT + ":" + indexObj.getPi(),
-                            Collections.singletonList(SolrConstants.IDDOC));
+                    .search(SolrConstants.IDDOC_OWNER + ":\"" + indexObj.getIddoc() + "\" " + SolrConstants.PI_TOPSTRUCT + ":\"" + indexObj.getPi()
+                            + '"', Collections.singletonList(SolrConstants.IDDOC));
             for (SolrDocument doc2 : hits) {
                 iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
             }
@@ -1754,12 +1753,11 @@ public abstract class Indexer {
      * @param doc
      * @param fileName
      * @param mediaTargetPath
-     * @param sbImgFileNames
      * @param downloadExternalImages
      * @param useOldImageFolderIfAvailable
      * @param representative
      */
-    protected void handleImageUrl(String url, SolrInputDocument doc, String fileName, Path mediaTargetPath, StringBuilder sbImgFileNames,
+    protected void handleImageUrl(String url, SolrInputDocument doc, String fileName, Path mediaTargetPath,
             boolean downloadExternalImages, boolean useOldImageFolderIfAvailable, boolean representative) {
         if (StringUtils.isEmpty(url)) {
             return;
@@ -1782,7 +1780,6 @@ public abstract class Indexer {
                     File file = new File(downloadExternalImage(url, mediaTargetPath, fileName));
                     if (file.isFile()) {
                         logger.info("Downloaded {}", file);
-                        sbImgFileNames.append(';').append(fileName);
                         doc.addField(SolrConstants.FILENAME, fileName);
 
                         // Representative image (local)
@@ -1812,7 +1809,6 @@ public abstract class Indexer {
             }
         } else {
             // For non-remote file, add the file name to the list
-            sbImgFileNames.append(';').append(fileName);
             // Representative image (local)
             if (representative) {
                 doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);

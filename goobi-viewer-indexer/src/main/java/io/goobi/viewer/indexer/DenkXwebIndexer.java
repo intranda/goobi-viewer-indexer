@@ -22,8 +22,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +49,8 @@ import io.goobi.viewer.indexer.helper.MetadataHelper;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -70,10 +75,10 @@ public class DenkXwebIndexer extends Indexer {
                     DataRepository.PARAM_ANNOTATIONS };
 
     /**
-     * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). StringBuffer is
+     * Whitelist of file names belonging for this particular record (in case the media folder contains files for multiple records). Must be
      * thread-safe.
      */
-    private StringBuilder sbImgFileNames = new StringBuilder();
+    private Set<String> imgFileNames = Collections.synchronizedSet(new HashSet<>());
 
     /**
      * Constructor.
@@ -98,7 +103,6 @@ public class DenkXwebIndexer extends Indexer {
         }
 
         logger.debug("Indexing DenkXweb file '{}'...", denkxwebFile.getFileName());
-        String[] resp = { null, null };
         String fileNameRoot = FilenameUtils.getBaseName(denkxwebFile.getFileName().toString());
 
         // Check data folders in the hotfolder
@@ -123,10 +127,10 @@ public class DenkXwebIndexer extends Indexer {
 
         List<String> ret = new ArrayList<>(denkxwebDocs.size());
         for (Document doc : denkxwebDocs) {
-            resp = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
+            IndexingResult result = index(doc, dataFolders, null, SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                     dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
-            if (!Indexer.STATUS_ERROR.equals(resp[0])) {
-                String identifier = resp[0];
+            if (IndexingResultStatus.OK.equals(result.getStatus())) {
+                String identifier = result.getPi();
                 String newDenkXwebFileName = identifier + ".xml";
 
                 // Write individual LIDO records as separate files
@@ -145,7 +149,7 @@ public class DenkXwebIndexer extends Indexer {
 
                 // Copy media files
                 int imageCounter = dataRepository.copyImagesFromMultiRecordMediaFolder(dataFolders.get(DataRepository.PARAM_MEDIA), identifier,
-                        denkxwebFile.getFileName().toString(), hotfolder.getDataRepositoryStrategy(), resp[1],
+                        denkxwebFile.getFileName().toString(), hotfolder.getDataRepositoryStrategy(), result.getMediaFileNames(),
                         reindexSettings.get(DataRepository.PARAM_MEDIA) != null && reindexSettings.get(DataRepository.PARAM_MEDIA));
                 if (imageCounter > 0) {
                     String msg = Utils.removeRecordImagesFromCache(identifier);
@@ -169,9 +173,11 @@ public class DenkXwebIndexer extends Indexer {
                 SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(identifier, hotfolder);
 
                 // Add identifier to return list
-                ret.add(identifier);
+                if (result.isSubmitPiToViewer()) {
+                    ret.add(identifier);
+                }
             } else {
-                handleError(denkxwebFile, resp[1], FileFormat.DENKXWEB);
+                handleError(denkxwebFile, result.getError(), FileFormat.DENKXWEB);
             }
         }
 
@@ -200,13 +206,13 @@ public class DenkXwebIndexer extends Indexer {
      * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart a int.
      * @param downloadExternalImages
-     * @return an array of {@link java.lang.String} objects.
+     * @return {@link IndexingResult}
      * @should index record correctly
      * @should update record correctly
      */
-    public String[] index(Document doc, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy, int pageCountStart,
+    public IndexingResult index(Document doc, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy, int pageCountStart,
             boolean downloadExternalImages) {
-        String[] ret = { STATUS_ERROR, null };
+        IndexingResult ret = new IndexingResult();
         String pi = null;
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
         try {
@@ -229,7 +235,7 @@ public class DenkXwebIndexer extends Indexer {
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, null, dataFolders);
 
-            ret[0] = indexObj.getPi();
+            ret.setPi(indexObj.getPi());
 
             // Check and use old data folders, if no new ones found
             checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
@@ -302,6 +308,9 @@ public class DenkXwebIndexer extends Indexer {
             // Add grouped metadata as separate documents
             addGroupedMetadataDocs(writeStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
 
+            // Flag record identifier for submission to the viewer if it's linked to an archive node
+            ret.setSubmitPiToViewer(indexObj.getLuceneFieldWithName(SolrConstants.EAD_NODE_ID) != null);
+
             // Add root doc
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             writeStrategy.setRootDoc(rootDoc);
@@ -315,11 +324,8 @@ public class DenkXwebIndexer extends Indexer {
             logger.debug("Writing document to index...");
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
 
-            // Return image file names
-            if (sbImgFileNames.length() > 0 && sbImgFileNames.charAt(0) == ';') {
-                sbImgFileNames.deleteCharAt(0);
-            }
-            ret[1] = sbImgFileNames.toString();
+            // Set image file names belonging to this record
+            ret.setMediaImageFileNames(imgFileNames);
             logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             if ("No image resource sets found.".equals(e.getMessage())) {
@@ -328,8 +334,7 @@ public class DenkXwebIndexer extends Indexer {
                 logger.error("Indexing of '{}' could not be finished due to an error.", pi);
                 logger.error(e.getMessage(), e);
             }
-            ret[0] = STATUS_ERROR;
-            ret[1] = e.getMessage();
+            ret.setError(e.getMessage());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
@@ -469,7 +474,7 @@ public class DenkXwebIndexer extends Indexer {
 
         // Handle external/internal file URL
         if (StringUtils.isNotEmpty(url)) {
-            handleImageUrl(url, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), sbImgFileNames, downloadExternalImages, false,
+            handleImageUrl(url, ret.getDoc(), fileName, dataFolders.get(DataRepository.PARAM_MEDIA), downloadExternalImages, false,
                     "true".equals(eleImage.getAttributeValue("preferred")));
         }
 

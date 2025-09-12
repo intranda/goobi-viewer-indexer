@@ -33,6 +33,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
@@ -209,11 +210,11 @@ public class FulltextAugmentor {
                 && !altoURL.startsWith(SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl())) {
             try {
                 String alto = null;
-                if (StringUtils.startsWithIgnoreCase(altoURL, "http")) {
+                if (Strings.CI.startsWith(altoURL, "http")) {
                     // HTTP(S)
                     logger.debug("Downloading ALTO from {}", altoURL);
                     alto = Utils.getWebContentGET(altoURL);
-                } else if (StringUtils.startsWithIgnoreCase(altoURL, "file:/")) {
+                } else if (Strings.CI.startsWith(altoURL, "file:/")) {
                     // FILE
                     logger.debug("Reading ALTO from {}", altoURL);
                     alto = FileTools.readFileToString(new File(URI.create(altoURL).toURL().getPath()), StandardCharsets.UTF_8.name());

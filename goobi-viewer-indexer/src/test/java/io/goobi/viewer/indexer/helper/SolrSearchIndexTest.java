@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 import io.goobi.viewer.indexer.AbstractSolrEnabledTest;
 import io.goobi.viewer.indexer.MetsIndexer;
 import io.goobi.viewer.indexer.SolrIndexerDaemon;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
@@ -296,16 +297,17 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     void checkDuplicateFieldValues_shouldReturnCorrectIdentifiers() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
-        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), new HashMap<>(), null, 1, false);
-        Assertions.assertNull(ret[1]);
-        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), new HashMap<>(), null, 1, false);
-        Assertions.assertNull(ret[1]);
-        Set<String> result = SolrIndexerDaemon.getInstance()
+        IndexingResult result =
+                new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), new HashMap<>(), null, 1, false);
+        Assertions.assertNull(result.getError());
+        result = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), new HashMap<>(), null, 1, false);
+        Assertions.assertNull(result.getError());
+        Set<String> duplicates = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .checkDuplicateFieldValues(Collections.singletonList(SolrConstants.PI_TOPSTRUCT), Arrays.asList("AC06736966", "H030001"), null);
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertTrue(result.contains("H030001"));
-        Assertions.assertTrue(result.contains("AC06736966"));
+        Assertions.assertEquals(2, duplicates.size());
+        Assertions.assertTrue(duplicates.contains("H030001"));
+        Assertions.assertTrue(duplicates.contains("AC06736966"));
     }
 
     /**
@@ -316,15 +318,16 @@ class SolrSearchIndexTest extends AbstractSolrEnabledTest {
     void checkDuplicateFieldValues_shouldIgnoreRecordsThatMatchSkipPi() throws Exception {
         hotfolder = new Hotfolder(SolrIndexerDaemon.getInstance().getConfiguration().getHotfolderPath());
 
-        String[] ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), new HashMap<>(), null, 1, false);
-        Assertions.assertNull(ret[1]);
-        ret = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), new HashMap<>(), null, 1, false);
-        Assertions.assertNull(ret[1]);
-        Set<String> result = SolrIndexerDaemon.getInstance()
+        IndexingResult result =
+                new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/H030001_mets.xml"), new HashMap<>(), null, 1, false);
+        Assertions.assertNull(result.getError());
+        result = new MetsIndexer(hotfolder).index(Paths.get("src/test/resources/METS/AC06736966.xml"), new HashMap<>(), null, 1, false);
+        Assertions.assertNull(result.getError());
+        Set<String> duplicates = SolrIndexerDaemon.getInstance()
                 .getSearchIndex()
                 .checkDuplicateFieldValues(Collections.singletonList(SolrConstants.PI_TOPSTRUCT), Arrays.asList("AC06736966", "H030001"),
                         "AC06736966");
-        Assertions.assertEquals(1, result.size());
-        Assertions.assertTrue(result.contains("H030001"));
+        Assertions.assertEquals(1, duplicates.size());
+        Assertions.assertTrue(duplicates.contains("H030001"));
     }
 }

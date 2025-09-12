@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -369,7 +370,7 @@ public class Hotfolder {
             logger.warn("E-Mail body is empty.");
         }
         // Send report e-mail if the text body contains at least one ERROR level log message
-        if (!body.contains(Indexer.STATUS_ERROR)) {
+        if (!body.contains("ERROR")) {
             return false;
         }
 
@@ -572,7 +573,7 @@ public class Hotfolder {
         // Always unselect repository
         String filename = sourceFile.getFileName().toString();
         try {
-            if (StringUtils.endsWithIgnoreCase(filename, FileTools.XML_EXTENSION)) {
+            if (Strings.CI.endsWith(filename, FileTools.XML_EXTENSION)) {
                 // INPUT o. UPDATE
                 if (Files.size(sourceFile) == 0) {
                     // Check whether the file is actually empty or just hasn't finished copying yet

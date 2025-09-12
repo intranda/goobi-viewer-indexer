@@ -339,6 +339,18 @@
 				</item>
 			</list>
 		</PI>
+        
+        <!-- IMPORTANT: Used for references between archive nodes and records -->
+        <EAD_NODE_ID>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:identifier[@type="archive-entry-id"]</xpath>
+                    <xpath>@id</xpath>
+                    <addToDefault>true</addToDefault>
+                    <addUntokenizedVersion>false</addUntokenizedVersion>
+                </item>
+            </list>
+        </EAD_NODE_ID>
 
 		<CURRENTNO>
 			<list>

@@ -42,6 +42,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -68,9 +69,11 @@ import io.goobi.viewer.indexer.helper.TextHelper;
 import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
+import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
@@ -164,16 +167,15 @@ public class MetsIndexer extends Indexer {
         // Use existing folders for those missing in the hotfolder
         checkReindexSettings(dataFolders, reindexSettings);
 
-        String[] resp = index(metsFile, dataFolders, null,
+        IndexingResult result = index(metsFile, dataFolders, null,
                 SolrIndexerDaemon.getInstance().getConfiguration().getPageCountStart(),
                 dataFolders.containsKey(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER));
 
-        if (StringUtils.isNotBlank(resp[0]) && resp[1] == null) {
-            String newMetsFileName = resp[0];
-            String pi = FilenameUtils.getBaseName(newMetsFileName);
+        if (IndexingResultStatus.OK.equals(result.getStatus())) {
+            String newMetsFileName = result.getRecordFileName();
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), newMetsFileName);
             if (metsFile.equals(indexed)) {
-                return Collections.singletonList(pi);
+                return Collections.singletonList(result.getPi());
             }
 
             if (Files.exists(indexed)) {
@@ -194,16 +196,16 @@ public class MetsIndexer extends Indexer {
             }
 
             // Copy and delete media folder
-            if (dataRepository.checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
+            if (dataRepository.checkCopyAndDeleteDataFolder(result.getPi(), dataFolders, reindexSettings, DataRepository.PARAM_MEDIA,
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories()) > 0) {
-                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(resp[0]));
+                String msg = Utils.removeRecordImagesFromCache(FilenameUtils.getBaseName(newMetsFileName));
                 if (msg != null) {
                     logger.info(msg);
                 }
             }
 
             // Copy data folders
-            dataRepository.copyAndDeleteAllDataFolders(pi, dataFolders, reindexSettings,
+            dataRepository.copyAndDeleteAllDataFolders(result.getPi(), dataFolders, reindexSettings,
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
 
             // Delete unsupported data folders
@@ -229,18 +231,18 @@ public class MetsIndexer extends Indexer {
             // Update data repository cache map in the Goobi viewer
             if (previousDataRepository != null) {
                 try {
-                    Utils.updateDataRepositoryCache(pi, dataRepository.getPath());
+                    Utils.updateDataRepositoryCache(result.getPi(), dataRepository.getPath());
                 } catch (HTTPException e) {
                     logger.error(e.getMessage(), e);
                 }
             }
-            prerenderPagePdfsIfRequired(pi);
+            prerenderPagePdfsIfRequired(result.getPi());
             logger.info("Successfully finished indexing '{}'.", metsFile.getFileName());
 
             // Remove this file from lower priority hotfolders to avoid overriding changes with older version
-            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(pi, hotfolder);
+            SolrIndexerDaemon.getInstance().removeRecordFileFromLowerPriorityHotfolders(result.getPi(), hotfolder);
 
-            return Collections.singletonList(pi);
+            return result.isSubmitPiToViewer() ? Collections.singletonList(result.getPi()) : Collections.emptyList();
         }
 
         // Error
@@ -248,7 +250,7 @@ public class MetsIndexer extends Indexer {
             // Delete all data folders for this record from the hotfolder
             DataRepository.deleteDataFoldersFromHotfolder(dataFolders, reindexSettings);
         }
-        handleError(metsFile, resp[1], getSourceDocFormat());
+        handleError(metsFile, result.getError(), getSourceDocFormat());
         try {
             Files.delete(metsFile);
         } catch (IOException e) {
@@ -266,7 +268,7 @@ public class MetsIndexer extends Indexer {
      * @param inWriteStrategy a {@link io.goobi.viewer.indexer.model.writestrategy.ISolrWriteStrategy} object.
      * @param pageCountStart Order number for the first page.
      * @param downloadExternalImages
-     * @return an array of {@link java.lang.String} objects.
+     * @return {@link IndexingResult}
      * @should index record correctly
      * @should index metadata groups correctly
      * @should index multi volume records correctly
@@ -280,10 +282,8 @@ public class MetsIndexer extends Indexer {
      * @should index page metadata correctly
      * 
      */
-    public String[] index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
+    public IndexingResult index(Path metsFile, Map<String, Path> dataFolders, final ISolrWriteStrategy inWriteStrategy,
             int pageCountStart, boolean downloadExternalImages) {
-        String[] ret = { null, null };
-
         if (metsFile == null || !Files.exists(metsFile)) {
             throw new IllegalArgumentException("metsFile must point to an existing METS file.");
         }
@@ -293,6 +293,7 @@ public class MetsIndexer extends Indexer {
 
         logger.debug("Indexing METS file '{}'...", metsFile.getFileName());
         ISolrWriteStrategy writeStrategy = inWriteStrategy;
+        IndexingResult ret = new IndexingResult();
         try {
             initJDomXP(metsFile);
             IndexObject indexObj = new IndexObject(getNextIddoc());
@@ -317,7 +318,7 @@ public class MetsIndexer extends Indexer {
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, metsFile, dataFolders);
 
-            ret[0] = new StringBuilder(indexObj.getPi()).append(FileTools.XML_EXTENSION).toString();
+            ret.setPi(pi).setRecordFileName(pi + FileTools.XML_EXTENSION);
 
             // Check and use old data folders, if no new ones found
             checkOldDataFolders(dataFolders, DATA_FOLDER_PARAMS, pi);
@@ -355,7 +356,7 @@ public class MetsIndexer extends Indexer {
                     if (anchorPi != null && parentIddoc != null) {
                         logger.debug("Creating anchor for '{}' (PI:{}, IDDOC:{})", indexObj.getIddoc(), anchorPi, parentIddoc);
                         IndexObject anchor = new IndexObject(parentIddoc, anchorPi);
-                        if (StringUtils.equals(anchor.getIddoc(), indexObj.getIddoc())) {
+                        if (Strings.CS.equals(anchor.getIddoc(), indexObj.getIddoc())) {
                             throw new IndexerException("Anchor and volume have the same IDDOC: " + indexObj.getIddoc());
                         }
                         // Set anchor properties manually because this IndexObject does not undergo the normal procedure
@@ -420,6 +421,9 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
+            // Flag record identifier for submission to the viewer if it's linked to an archive node
+            ret.setSubmitPiToViewer(indexObj.getLuceneFieldWithName(SolrConstants.EAD_NODE_ID) != null);
+
             // Set access conditions
             indexObj.writeAccessConditions(null);
 
@@ -434,8 +438,9 @@ public class MetsIndexer extends Indexer {
                 indexObj.addToLucene(SolrConstants.ISANCHOR, "true");
                 long numVolumes = SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":")
+                        .getNumHits(new StringBuilder(SolrConstants.PI_PARENT).append(":\"")
                                 .append(indexObj.getPi())
+                                .append('"')
                                 .append(SolrConstants.SOLR_QUERY_AND)
                                 .append(SolrConstants.ISWORK)
                                 .append(SolrConstants.SOLR_QUERY_TRUE)
@@ -518,8 +523,8 @@ public class MetsIndexer extends Indexer {
             addGroupDocs(indexObj, writeStrategy);
 
             // If this is a new volume, force anchor update to keep its volume count consistent
-            if (indexObj.isVolume() && indexObj.getParent() != null) {
-                logger.info("This is a volume - anchor update needed.");
+            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
+                logger.info("This is a NEW volume - anchor update needed.");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
 
@@ -529,7 +534,9 @@ public class MetsIndexer extends Indexer {
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
                 anchorMerge(indexObj);
                 // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue)
-                updateAnchorChildrenParentIddoc(indexObj);
+                if (!indexObj.isKeepIddoc()) {
+                    updateAnchorChildrenParentIddoc(indexObj);
+                }
             } else {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
@@ -587,13 +594,13 @@ public class MetsIndexer extends Indexer {
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
-            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
             Thread.currentThread().interrupt();
         } catch (FatalIndexerException | IndexerException | IOException | JDOMException | SolrServerException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
             logger.error(e.getMessage(), e);
-            ret[1] = e.getMessage() != null ? e.getMessage() : e.getClass().getName();
+            ret.setError(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
             SolrIndexerDaemon.getInstance().getSearchIndex().rollback();
         } finally {
             if (writeStrategy != null) {
@@ -1129,7 +1136,7 @@ public class MetsIndexer extends Indexer {
         SolrDocumentList hits =
                 SolrIndexerDaemon.getInstance()
                         .getSearchIndex()
-                        .search(SolrConstants.PI_PARENT + ":" + indexObj.getPi() + SolrConstants.SOLR_QUERY_AND + SolrConstants.ISWORK
+                        .search(SolrConstants.PI_PARENT + ":\"" + indexObj.getPi() + '"' + SolrConstants.SOLR_QUERY_AND + SolrConstants.ISWORK
                                 + SolrConstants.SOLR_QUERY_TRUE, null);
         if (hits.isEmpty()) {
             logger.warn("Anchor '{}' has no volumes, no merge needed.", indexObj.getPi());
