@@ -129,7 +129,7 @@
             </physicalElementTypes>
             
             <!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
-            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(mods:titleInfo)]/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
+            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"]/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
 		</mets>
 
 		<lido>
@@ -2711,6 +2711,19 @@
 				</item>
 			</list>
 		</MD_SUBJECTTOPIC>
+        
+        <MD_SUBJECTFORM>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:genre</xpath>
+                    <addToDefault>true</addToDefault>
+                    <groupEntity type="OTHER" addCoordsToDocstruct="true">
+                        <field name="MD_VALUE">text()</field>
+                        <field name="NORM_URI">@valueURI</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_SUBJECTFORM>
 
 		<MD_OCCUPATION>
 			<list>
