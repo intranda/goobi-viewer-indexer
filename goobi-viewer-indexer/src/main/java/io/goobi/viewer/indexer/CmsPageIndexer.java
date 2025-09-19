@@ -51,6 +51,7 @@ import io.goobi.viewer.indexer.helper.XmlTools;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
+import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 import io.goobi.viewer.indexer.model.writestrategy.AbstractWriteStrategy;
@@ -230,6 +231,8 @@ public class CmsPageIndexer extends Indexer {
 
             prepareUpdate(indexObj);
 
+            StringBuilder sbDefault = new StringBuilder();
+
             // Set title
             List<Element> eleListTitle = doc.getRootElement().getChildren("title");
             if (eleListTitle != null) {
@@ -242,6 +245,14 @@ public class CmsPageIndexer extends Indexer {
                                 eleTitle.getTextTrim());
                     } else {
                         indexObj.addToLucene("MD_TITLE", eleTitle.getTextTrim());
+                    }
+                    List<FieldConfig> configurationItemList =
+                            SolrIndexerDaemon.getInstance()
+                                    .getConfiguration()
+                                    .getMetadataConfigurationManager()
+                                    .getConfigurationListForField("MD_TITLE");
+                    if (configurationItemList != null && !configurationItemList.isEmpty() && configurationItemList.get(0).isAddToDefault()) {
+                        sbDefault.append(' ').append(eleTitle.getTextTrim());
                     }
                 }
             }
@@ -260,7 +271,6 @@ public class CmsPageIndexer extends Indexer {
             // Texts
             List<Element> eleListTexts = doc.getRootElement().getChildren("text");
             if (eleListTexts != null) {
-                StringBuilder sbDefault = new StringBuilder();
                 for (Element eleText : eleListTexts) {
                     String lang = eleText.getAttributeValue("lang");
                     String value = eleText.getText();
@@ -270,6 +280,9 @@ public class CmsPageIndexer extends Indexer {
                         sbDefault.append(' ').append(value.trim());
                     }
                 }
+            }
+
+            if (sbDefault.length() > 0) {
                 indexObj.setDefaultValue(sbDefault.toString());
             }
 
