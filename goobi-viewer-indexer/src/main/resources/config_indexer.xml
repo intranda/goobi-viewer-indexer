@@ -2000,6 +2000,23 @@
 				</item>
 			</list>
 		</MD_CORPORATEORIGINATOR>
+        
+        <MD_CORPORATEOTHER>
+            <list>
+                <item>
+                    <xpath>mets:xmlData/mods:mods/mods:name[@type="corporate"][mods:role/mods:roleTerm="oth"[@authority="marcrelator"][@type="code"]]</xpath>
+                    <groupEntity type="CORPORATION">
+                        <field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_LINK">@xlink:href</field>
+                        <field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
+                        <field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
+                        <field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                    </groupEntity>
+                </item>
+            </list>
+        </MD_CORPORATEOTHER>
 
 		<MD_ZDB>
 			<list>
@@ -2717,7 +2734,7 @@
                 <item>
                     <xpath>mets:xmlData/mods:mods/mods:genre</xpath>
                     <addToDefault>true</addToDefault>
-                    <groupEntity type="OTHER" addCoordsToDocstruct="true">
+                    <groupEntity type="OTHER">
                         <field name="MD_VALUE">text()</field>
                         <field name="NORM_URI">@valueURI</field>
                     </groupEntity>
