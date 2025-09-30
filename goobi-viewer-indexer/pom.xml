@@ -61,7 +61,7 @@
 		<jackson.version>2.20.0</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
-		<jakarta.mail-api.version>2.1.4</jakarta.mail-api.version>
+		<jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.21.2</jsoup.version>
 		<json.version>20250517</json.version>
