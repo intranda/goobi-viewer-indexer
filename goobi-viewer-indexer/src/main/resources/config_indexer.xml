@@ -101,6 +101,8 @@
 
 		 <!-- authorityData/@enabled: Authority data retrieval can be disabled completely if attribute is set to false. Default is true. -->
 		<authorityData enabled="true">
+            <gnd enabled="true" />
+            <viaf enabled="false" />
 			<!-- addFieldsToDefault: Authority data fields whose values should be added to DEFAULT (e.g. alternative person names). -->
 			<addFieldsToDefault>
 				<field>NORM_IDENTIFIER</field>

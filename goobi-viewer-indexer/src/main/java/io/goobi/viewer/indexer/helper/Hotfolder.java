@@ -182,6 +182,11 @@ public class Hotfolder {
 
         MetadataHelper.setAuthorityDataEnabled(SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.authorityData[@enabled]", true));
         if (MetadataHelper.isAuthorityDataEnabled()) {
+            MetadataHelper.setAuthorityGndEnabled(
+                    SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.authorityData.gnd[@enabled]", true));
+            MetadataHelper.setAuthorityViafEnabled(
+                    SolrIndexerDaemon.getInstance().getConfiguration().getBoolean("init.authorityData.viaf[@enabled]", true));
+
             // Authority data fields to be added to DEFAULT
             MetadataHelper.setAddAuthorityDataFieldsToDefault(
                     SolrIndexerDaemon.getInstance().getConfiguration().getStringList("init.authorityData.addFieldsToDefault.field"));
