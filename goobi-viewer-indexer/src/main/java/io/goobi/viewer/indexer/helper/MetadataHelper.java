@@ -1543,7 +1543,7 @@ public final class MetadataHelper {
     }
 
     /**
-     * @param authorityDataEnabled the authorityGndEnabled to set
+     * @param authorityGndEnabled the authorityGndEnabled to set
      */
     public static void setAuthorityGndEnabled(boolean authorityGndEnabled) {
         MetadataHelper.authorityGndEnabled = authorityGndEnabled;
