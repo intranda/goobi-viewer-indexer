@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>25.08</version>
+	<version>25.09-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -42,30 +42,30 @@
 		<!-- intranda libraries -->
 		<alto.version>1.6.4</alto.version>
 		<iiif-api-model.version>3.1.0</iiif-api-model.version>
-		<normdataimporter.version>2.0.1</normdataimporter.version>
+		<normdataimporter.version>2.0.2</normdataimporter.version>
 
 		<!-- other libraries -->
-		<angus-mail.version>2.0.4</angus-mail.version>
+		<angus-mail.version>2.0.5</angus-mail.version>
 		<commons-beanutils.version>1.11.0</commons-beanutils.version>
 		<commons-configuration2.version>2.12.0</commons-configuration2.version>
 		<commons-io.version>2.20.0</commons-io.version>
 		<commons-jxpath.version>1.4.0</commons-jxpath.version>
-		<commons-lang3.version>3.18.0</commons-lang3.version>
+		<commons-lang3.version>3.19.0</commons-lang3.version>
 		<commons-text.version>1.14.0</commons-text.version>
 		<commons-collections.version>4.5.0</commons-collections.version>
 		<httpclient.version>4.5.14</httpclient.version>
 		<httpcore.version>4.4.16</httpcore.version>
 		<icu.version>77.1</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
-		<log4j.version>2.25.1</log4j.version>
+		<log4j.version>2.25.2</log4j.version>
 		<jackson.version>2.20.0</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
-		<jakarta.mail-api.version>2.1.4</jakarta.mail-api.version>
+		<jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.21.2</jsoup.version>
 		<json.version>20250517</json.version>
-		<junit.version>5.13.4</junit.version>
+		<junit.version>6.0.0</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
 		<solr.version>9.9.0</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
@@ -299,7 +299,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.6.1</version>
+				<version>3.6.2</version>
 				<executions>
 					<execution>
 						<id>enforce-maven</id>
@@ -322,7 +322,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.0</version>
+				<version>3.14.1</version>
 				<configuration>
 					<compilerArgs>
 						<!-- Explicitly enable annotation processing -->
@@ -365,7 +365,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.3</version>
+				<version>3.5.4</version>
 				<configuration>
 					<skipTests>${skipTests}</skipTests>
 				</configuration>
@@ -373,7 +373,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.9.0</version>
 				<executions>
 					<execution>
 						<id>analyze</id>
@@ -478,7 +478,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.13</version>
+				<version>0.8.14</version>
 				<executions>
 					<execution>
 						<goals>
@@ -497,7 +497,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.18.0</version>
+				<version>2.19.1</version>
 				<configuration>
 					<rulesUri>file://${basedir}/version-number-rules.xml</rulesUri>
 				</configuration>
@@ -505,7 +505,7 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>12.1.3</version>
+				<version>12.1.8</version>
 				<configuration>
 					<!--failBuildOnCVSS>5.0</failBuildOnCVSS-->
 					<skipProvidedScope>true</skipProvidedScope>
@@ -534,7 +534,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>11.0.1</version>
+						<version>12.0.1</version>
 					</dependency>
 				</dependencies>
 				<executions>
@@ -559,14 +559,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.11.2</version>
+				<version>3.12.0</version>
 				<configuration>
 					<doclint>none</doclint>
 					<failOnWarnings>true</failOnWarnings>
-					<!-- Specifies the tags to be fixed automatically when running the mvn javadox:fix command, see:
-						 https://maven.apache.org/plugins/maven-javadoc-plugin/fix-mojo.html#fixTags
-					-->
-					<fixTags>link,throws,return,param</fixTags>
 					<tags>
 						<tag>
 							<!-- Disables custom @should tag in Javadoc see:

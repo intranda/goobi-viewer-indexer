@@ -89,6 +89,8 @@ public final class MetadataHelper {
     public static final ThreadLocal<DecimalFormat> FORMAT_EIGHT_DIGITS = ThreadLocal.withInitial(() -> new DecimalFormat("00000000"));
 
     private static boolean authorityDataEnabled = true;
+    private static boolean authorityGndEnabled = true;
+    private static boolean authorityViafEnabled = true;
 
     /** Constant <code>addNormDataFieldsToDefault</code> */
     private static List<String> addAuthorityDataFieldsToDefault;
@@ -476,17 +478,21 @@ public final class MetadataHelper {
         if (authorityUrl == null) {
             throw new IllegalArgumentException("authorityUrl may not be null");
         }
-        // TODO remove once it works
-        if (authorityUrl.contains("viaf.org")) {
-            logger.warn("Viaf support is temporarily suspended.");
-            return Collections.emptyList();
-        }
 
         String url = authorityUrl;
 
         // If it's just an identifier, assume it's GND
         if (!url.startsWith("http")) {
             url = "https://d-nb.info/gnd/" + url;
+        }
+
+        if (authorityUrl.contains("gnd") && !authorityGndEnabled) {
+            logger.warn("GND support is disabled.");
+            return Collections.emptyList();
+        }
+        if (authorityUrl.contains("viaf.org") && !authorityViafEnabled) {
+            logger.warn("Viaf support is disabled.");
+            return Collections.emptyList();
         }
 
         url = url.trim();
@@ -1534,6 +1540,20 @@ public final class MetadataHelper {
      */
     public static void setAuthorityDataEnabled(boolean authorityDataEnabled) {
         MetadataHelper.authorityDataEnabled = authorityDataEnabled;
+    }
+
+    /**
+     * @param authorityGndEnabled the authorityGndEnabled to set
+     */
+    public static void setAuthorityGndEnabled(boolean authorityGndEnabled) {
+        MetadataHelper.authorityGndEnabled = authorityGndEnabled;
+    }
+
+    /**
+     * @param authorityViafEnabled the authorityViafEnabled to set
+     */
+    public static void setAuthorityViafEnabled(boolean authorityViafEnabled) {
+        MetadataHelper.authorityViafEnabled = authorityViafEnabled;
     }
 
     /**

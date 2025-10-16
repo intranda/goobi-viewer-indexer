@@ -4,7 +4,7 @@ After=tomcat10.service
 After=solr.service
 Requires=tomcat10.service
 Requires=solr.service
-
+RequiresMountsFor=/opt/digiverso/indexer /opt/digiverso/logs /opt/digiverso/viewer
 
 [Service]
 Environment="STOPFILE=/opt/digiverso/viewer/hotfolder/.SHUTDOWN_INDEXER"
