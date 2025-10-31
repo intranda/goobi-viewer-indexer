@@ -55,7 +55,7 @@
 		<commons-collections.version>4.5.0</commons-collections.version>
 		<httpclient.version>4.5.14</httpclient.version>
 		<httpcore.version>4.4.16</httpcore.version>
-		<icu.version>77.1</icu.version>
+		<icu.version>78.1</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
 		<log4j.version>2.25.2</log4j.version>
 		<jackson.version>2.20.1</jackson.version>
