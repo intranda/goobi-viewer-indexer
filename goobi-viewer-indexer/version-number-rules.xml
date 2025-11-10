@@ -7,6 +7,12 @@
 
 	<ignoreVersions>
 		<ignoreVersion type="regex">.*[-_\.](alpha|Alpha|ALPHA|beta|Beta|BETA|rc|RC|M|EA|java7)[-_\.]?[0-9]?.*</ignoreVersion>
-    </ignoreVersions>
+	</ignoreVersions>
 
+        <!-- Other -->
+        <rule groupId="commons-io" artifactId="commons-io">
+            <ignoreVersions>
+                <ignoreVersion>20030203.000550</ignoreVersion>
+            </ignoreVersions>
+        </rule>
 </ruleset>
