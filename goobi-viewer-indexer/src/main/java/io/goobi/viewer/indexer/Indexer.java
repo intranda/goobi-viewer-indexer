@@ -459,6 +459,7 @@ public abstract class Indexer {
         }
         fields.add(new LuceneField(SolrConstants.DATEDELETED, dateDeleted));
         fields.add(new LuceneField(SolrConstants.DATEUPDATED, dateUpdated));
+        fields.add(new LuceneField(SolrConstants.ACCESSCONDITION, SolrConstants.OPEN_ACCESS_VALUE));
         searchIndex.writeToIndex(SolrSearchIndex.createDocument(fields));
     }
 
