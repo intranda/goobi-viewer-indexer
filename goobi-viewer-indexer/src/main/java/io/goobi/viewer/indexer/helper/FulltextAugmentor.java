@@ -124,6 +124,7 @@ public class FulltextAugmentor {
                 doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags(fulltext));
                 doc.addField(SolrConstants.FILENAME_FULLTEXT, dataRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).getFileName().toString()
                         + '/' + pi + '/' + baseFileName + FileTools.TXT_EXTENSION);
+                doc.addField(SolrConstants.FILENAME_FULLTEXT_SHORT, baseFileName + FileTools.TXT_EXTENSION);
                 logger.debug("Added FULLTEXT from crowdsourcing plain text for page {}", order);
             }
         }
@@ -155,6 +156,7 @@ public class FulltextAugmentor {
                         .getFileName()
                         .toString() + '/'
                         + pi + '/' + baseFileName + FileTools.TXT_EXTENSION);
+                doc.addField(SolrConstants.FILENAME_FULLTEXT_SHORT, baseFileName + FileTools.TXT_EXTENSION);
                 logger.debug("Added FULLTEXT from regular plain text for page {}", order);
             }
         }
@@ -235,6 +237,7 @@ public class FulltextAugmentor {
                                 doc.addField(SolrConstants.FILENAME_ALTO,
                                         dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent().getFileName().toString() + '/' + pi + '/'
                                                 + fileName);
+                                doc.addField(SolrConstants.FILENAME_ALTO_SHORT, fileName);
                                 // Write ALTO file
                                 File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
                                 FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
@@ -359,6 +362,7 @@ public class FulltextAugmentor {
                             .getFileName()
                             .toString() + '/' + pi
                             + '/' + baseFileName + FileTools.XML_EXTENSION);
+            doc.addField(SolrConstants.FILENAME_ALTO_SHORT, baseFileName + FileTools.XML_EXTENSION);
             ret = true;
             logger.debug("Added ALTO from {} for page {}", dataRepository.getDir(altoParamName).getFileName(), order);
         }

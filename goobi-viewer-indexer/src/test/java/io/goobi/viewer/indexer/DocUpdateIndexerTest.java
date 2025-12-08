@@ -141,6 +141,7 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
                 // Check for updated ALTO file in file system
                 String altoFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_ALTO);
                 Assertions.assertNotNull(altoFileName);
+                Assertions.assertEquals("00000001.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO_SHORT));
                 Path altoFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), altoFileName);
                 Assertions.assertTrue(Files.isRegularFile(altoFile), "File not found at " + altoFile.toAbsolutePath().toString());
                 String altoText = FileTools.readFileToString(altoFile.toFile(), null);
@@ -201,6 +202,7 @@ class DocUpdateIndexerTest extends AbstractSolrEnabledTest {
             // Check for updated text file in file system
             String textFileName = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
             Assertions.assertNotNull(textFileName);
+            Assertions.assertEquals("00000001.txt", doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT_SHORT));
             Path textFile = Paths.get(dataRepository.getRootDir().toAbsolutePath().toString(), textFileName);
             Assertions.assertTrue(Files.isRegularFile(textFile));
             String altoText = FileTools.readFileToString(textFile.toFile(), null);
