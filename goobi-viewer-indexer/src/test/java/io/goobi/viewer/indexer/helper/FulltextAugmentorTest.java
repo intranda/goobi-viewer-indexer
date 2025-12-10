@@ -55,6 +55,7 @@ class FulltextAugmentorTest {
         assertTrue(
                 augmentor.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO_CONVERTED, "PPN123", "00000001", 1, true));
         assertEquals("alto/PPN123/00000001.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+        assertEquals("00000001.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO_SHORT));
     }
 
     /**
@@ -145,6 +146,7 @@ class FulltextAugmentorTest {
 
         assertTrue(augmentor.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTO, "PPN123", "00000010", 10, false));
         assertEquals("alto/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+        assertEquals("00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO_SHORT));
     }
 
     /**
@@ -163,6 +165,7 @@ class FulltextAugmentorTest {
 
         assertTrue(augmentor.addIndexFieldsFromAltoData(doc, altoData, dataFolders, DataRepository.PARAM_ALTOCROWD, "PPN123", "00000010", 10, false));
         assertEquals("alto_crowd/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+        assertEquals("00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO_SHORT));
     }
 
     /**
