@@ -598,6 +598,7 @@ public class Hotfolder {
                 // Check file format and start the appropriate indexing routine
                 List<String> identifiers = Collections.emptyList();
                 FileFormat fileType = JDomXP.determineFileFormat(sourceFile.toFile());
+                logger.info("Document format detected: {}", fileType.name());
                 switch (fileType) {
                     case METS:
                         if (metsEnabled) {
