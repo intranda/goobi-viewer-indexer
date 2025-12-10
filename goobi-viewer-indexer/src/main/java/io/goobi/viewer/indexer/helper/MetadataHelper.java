@@ -978,20 +978,38 @@ public final class MetadataHelper {
             String query = prefix + xPathConfig.getxPath();
             query = query.replace("///", "/");
             logger.debug(query);
-            String pi = xp.evaluateToString(query, null);
-            if (pi == null) {
-                // Attribute evaluation fallback
-                List<Attribute> childrenNodeList = xp.evaluateToAttributes(query, null);
-                if (childrenNodeList != null && !childrenNodeList.isEmpty()) {
-                    pi = childrenNodeList.get(0).getValue();
-                }
+            String pi = evaluatePI(xp, query);
+            if (StringUtils.isNotEmpty(pi)) {
+                return pi;
             }
+
+            // Fallback without prefix
+            pi = evaluatePI(xp, xPathConfig.getxPath());
             if (StringUtils.isNotEmpty(pi)) {
                 return pi;
             }
         }
 
         return null;
+    }
+
+    /**
+     * 
+     * @param xp
+     * @param query
+     * @return String
+     */
+    private static String evaluatePI(JDomXP xp, String query) {
+        String ret = xp.evaluateToString(query, null);
+        if (ret == null) {
+            // Attribute evaluation fallback
+            List<Attribute> childrenNodeList = xp.evaluateToAttributes(query, null);
+            if (childrenNodeList != null && !childrenNodeList.isEmpty()) {
+                ret = childrenNodeList.get(0).getValue();
+            }
+        }
+
+        return ret;
     }
 
     /**
