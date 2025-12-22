@@ -266,6 +266,8 @@ public final class GeoJSONTools {
      * @param dimensions Number of dimensions (usually 2 or 3)
      * @param revert If true, it will be assumed the format is lat-long instead of long-lat
      * @return List of LngLatAlt points
+     * @should return empty list if coords empty
+     * @should return empty list if coords invalid
      */
     static List<Position> convertPoints(String coords, final String separator, int dimensions, boolean revert) {
         if (StringUtils.isEmpty(coords)) {
@@ -276,26 +278,31 @@ public final class GeoJSONTools {
         List<Position> ret = new ArrayList<>(coordsSplit.length / 2);
         double[] point = { -1, -1, -1 };
         int count = 0;
-        for (String coord : coordsSplit) {
-            point[count] = Double.valueOf(coord);
-            count++;
-            if (count == dimensions) {
-                if (point[2] != -1) {
-                    if (revert) {
-                        // Not sure this can ever be the case
-                        ret.add(new Position(point[1], point[0], point[2]));
+        try {
+            for (String coord : coordsSplit) {
+                point[count] = Double.valueOf(coord);
+
+                count++;
+                if (count == dimensions) {
+                    if (point[2] != -1) {
+                        if (revert) {
+                            // Not sure this can ever be the case
+                            ret.add(new Position(point[1], point[0], point[2]));
+                        } else {
+                            ret.add(new Position(point[0], point[1], point[2]));
+                        }
                     } else {
-                        ret.add(new Position(point[0], point[1], point[2]));
+                        if (revert) {
+                            ret.add(new Position(point[1], point[0]));
+                        } else {
+                            ret.add(new Position(point[0], point[1]));
+                        }
                     }
-                } else {
-                    if (revert) {
-                        ret.add(new Position(point[1], point[0]));
-                    } else {
-                        ret.add(new Position(point[0], point[1]));
-                    }
+                    count = 0;
                 }
-                count = 0;
             }
+        } catch (NumberFormatException e) {
+            logger.error("Could not parse coordinates: {}", e.getMessage());
         }
 
         return ret;

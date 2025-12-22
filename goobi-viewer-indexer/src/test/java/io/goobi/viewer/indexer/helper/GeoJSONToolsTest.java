@@ -96,11 +96,31 @@ class GeoJSONToolsTest {
     }
 
     /**
+     * @see GeoJSONTools#convertPoints(String,String,int,boolean)
+     * @verifies return empty list if coords empty
+     */
+    @Test
+    void convertPoints_shouldReturnEmptyListIfCoordsEmpty() {
+        List<Position> result = GeoJSONTools.convertPoints("", " / ", 2, false);
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    /**
+     * @see GeoJSONTools#convertPoints(String,String,int,boolean)
+     * @verifies return empty list if coords invalid
+     */
+    @Test
+    void convertPoints_shouldReturnEmptyListIfCoordsInvalid() {
+        List<Position> result = GeoJSONTools.convertPoints("46.60885883025415 13.847793651957906", " / ", 2, false);
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    /**
      * @see GeoJSONTools#convertSexagesimalToDecimalPoints(String,String)
      * @verifies convert polygons correctly
      */
     @Test
-    void convertSexagesimalToDecimalPoints_shouldConvertPolygonsCorrectly() throws Exception {
+    void convertSexagesimalToDecimalPoints_shouldConvertPolygonsCorrectly() {
         List<Position> result = GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 E0083024 N0465228 N0465228", " ");
         Assertions.assertEquals(5, result.size());
     }
@@ -110,7 +130,7 @@ class GeoJSONToolsTest {
      * @verifies convert points correctly
      */
     @Test
-    void convertSexagesimalToDecimalPoints_shouldConvertPointsCorrectly() throws Exception {
+    void convertSexagesimalToDecimalPoints_shouldConvertPointsCorrectly() {
         Assertions.assertEquals(1, GeoJSONTools.convertSexagesimalToDecimalPoints("E0080756 N0465228", " ").size());
         Assertions.assertEquals(1, GeoJSONTools.convertSexagesimalToDecimalPoints("W0024143 N0544530", " ").size());
     }
