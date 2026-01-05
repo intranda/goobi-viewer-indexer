@@ -771,8 +771,12 @@ public final class Configuration {
      * @should return false until all values configured
      */
     boolean checkEmailConfiguration() {
-        if (StringUtils.isEmpty(getString("init.email.recipients"))) {
-            logger.warn("init.email.recipients not configured, cannot send e-mail report.");
+        if (StringUtils.isNotEmpty(getString("init.email.recipients"))) {
+            logger.warn("init.email.recipients is configured as a single string. Reconfgure using <address> subelements.");
+            return false;
+        }
+        if (getEmailRecipients().isEmpty()) {
+            logger.warn("init.email.recipients.address not configured, cannot send e-mail report.");
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpServer"))) {
@@ -793,6 +797,18 @@ public final class Configuration {
         }
 
         return true;
+    }
+
+    /**
+     * <p>
+     * getFeedbackEmailAddresses.
+     * </p>
+     *
+     * @should return correct values
+     * @return a {@link java.lang.String} object.
+     */
+    public List<String> getEmailRecipients() {
+        return getStringList("init.email.recipients.address");
     }
 
     /**

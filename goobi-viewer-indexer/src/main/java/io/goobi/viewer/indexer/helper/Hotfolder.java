@@ -379,8 +379,8 @@ public class Hotfolder {
             return false;
         }
 
-        String recipients = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.recipients");
-        if (StringUtils.isEmpty(recipients)) {
+        List<String> recipients = SolrIndexerDaemon.getInstance().getConfiguration().getEmailRecipients();
+        if (recipients.isEmpty()) {
             return false;
         }
         String smtpServer = SolrIndexerDaemon.getInstance().getConfiguration().getString("init.email.smtpServer");
@@ -402,10 +402,9 @@ public class Hotfolder {
             return false;
         }
         int smtpPort = SolrIndexerDaemon.getInstance().getConfiguration().getInt("init.email.smtpPort", -1);
-        String[] recipientsSplit = recipients.split(";");
 
         try {
-            Utils.postMail(Arrays.asList(recipientsSplit), subject, body, smtpServer, smtpUser, smtpPassword, smtpSenderAddress, smtpSenderName,
+            Utils.postMail(recipients, subject, body, smtpServer, smtpUser, smtpPassword, smtpSenderAddress, smtpSenderName,
                     smtpSecurity, smtpPort);
             logger.info("Report e-mailed to configured recipients.");
             return true;
