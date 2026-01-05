@@ -374,7 +374,7 @@ class ConfigurationTest extends AbstractTest {
     @Test
     void checkEmailConfiguration_shouldReturnFalseUntilAllValuesConfigured() {
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
-        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "recipient@example.com");
+        SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients.address", "recipient@example.com");
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.com");
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
@@ -384,6 +384,18 @@ class ConfigurationTest extends AbstractTest {
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSecurity", "NONE");
         assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().checkEmailConfiguration());
+    }
+    
+    /**
+     * @see Configuration#getEmailRecipients()
+     * @verifies return correct values
+     */
+    @Test
+    void getEmailRecipients_shouldReturnCorrectValues() {
+        List<String> result = SolrIndexerDaemon.getInstance().getConfiguration().getEmailRecipients();
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(2, result.size());
+        Assertions.assertEquals("foo@example.com", result.get(0));
     }
 
     /**
