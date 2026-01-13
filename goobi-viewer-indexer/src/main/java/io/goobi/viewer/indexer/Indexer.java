@@ -1427,12 +1427,12 @@ public abstract class Indexer {
         }
 
         // Add access conditions
-        // Commented out because inherited access conditions trigger metadata locking where not wanted
-        //        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
-        //            for (String s : indexObj.getAccessConditions()) {
-        //                doc.addField(SolrConstants.ACCESSCONDITION, s);
-        //            }
-        //        }
+        // This should not trigger any false positives with the "locked metadata" functionality. If it does, viewer-core might need an update
+        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
+            for (String s : indexObj.getAccessConditions()) {
+                doc.addField(SolrConstants.ACCESSCONDITION, s);
+            }
+        }
 
         // Add DC values to metadata doc
         if (dcFields != null) {
