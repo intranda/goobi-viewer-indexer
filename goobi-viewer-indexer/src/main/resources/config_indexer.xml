@@ -20,15 +20,17 @@
 		<viewerHome>C:/opt/digiverso/viewer/</viewerHome>
 		<dataRepositories>
 			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
-			<strategy>SingleRepositoryStrategy</strategy>
+			<strategy>MaxRecordNumberStrategy</strategy>
 
 			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 10000) -->
 			<maxRecords>10000</maxRecords>
 
 			<!-- Data repository folders (absolute paths to be used (a new folder structure will be created for each dataRepository) -->
 			<dataRepository>C:/opt/digiverso/viewer/data/1</dataRepository>
+            <!--
 			<dataRepository>C:/opt/digiverso/viewer/data/2</dataRepository>
 			<dataRepository>C:/opt/digiverso/viewer/data/3</dataRepository>
+            -->
 		</dataRepositories>
 
 		<!-- Data subfolder names (path is relative to either a data repository or viewerHome) -->
