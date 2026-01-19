@@ -1545,7 +1545,7 @@ public final class MetadataHelper {
             indexObj.addToLucene(SolrConstants.FULLTEXT, sbFulltext.toString());
         }
     }
-    
+
     /**
      * 
      * @param indexObj
@@ -1569,7 +1569,8 @@ public final class MetadataHelper {
                 writeMetadataToObject(indexObj, mei.getRootElement(), "", mei);
 
                 // Add text body
-                Element eleMusic = mei.getRootElement().getChild("music",  SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mei"));
+                Element eleMusic =
+                        mei.getRootElement().getChild("music", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mei"));
                 if (eleMusic != null) {
                     String fileFieldName = SolrConstants.FILENAME_MEI;
                     indexObj.addToLucene(fileFieldName, path.getFileName().toString());
