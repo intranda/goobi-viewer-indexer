@@ -389,6 +389,11 @@ public class MetsIndexer extends Indexer {
             if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) != null) {
                 MetadataHelper.processTEIMetadataFiles(indexObj, dataFolders.get(DataRepository.PARAM_TEIMETADATA));
             }
+            
+            // Process MEI files
+            if (dataFolders.get(DataRepository.PARAM_MEI) != null) {
+                MetadataHelper.processMEIFiles(indexObj, dataFolders.get(DataRepository.PARAM_MEI));
+            }
 
             // put some simple data in lucene array
             indexObj.pushSimpleDataToLuceneArray();
