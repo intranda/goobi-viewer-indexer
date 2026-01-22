@@ -67,7 +67,7 @@
 		<json.version>20251224</json.version>
 		<junit.version>6.0.2</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
-		<solr.version>9.9.0</solr.version>
+		<solr.version>9.10.1</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
 	</properties>
 
