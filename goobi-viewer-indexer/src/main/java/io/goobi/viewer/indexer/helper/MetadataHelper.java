@@ -1555,6 +1555,7 @@ public final class MetadataHelper {
      * @throws JDOMException
      */
     public static void processMEIFiles(IndexObject indexObj, Path meiFolder) throws FatalIndexerException, IOException, JDOMException {
+        logger.info("processMEIFiles");
         if (indexObj == null) {
             throw new IllegalArgumentException("indexObj may not be null");
         }
@@ -1562,7 +1563,7 @@ public final class MetadataHelper {
             throw new IllegalArgumentException("meiFolder may not be null");
         }
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(meiFolder, "*.{xml}")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(meiFolder, "*.{mei,xml}")) {
             for (Path path : stream) {
                 logger.info("Found MEI file: {}", path.getFileName());
                 JDomXP mei = new JDomXP(path.toFile());
