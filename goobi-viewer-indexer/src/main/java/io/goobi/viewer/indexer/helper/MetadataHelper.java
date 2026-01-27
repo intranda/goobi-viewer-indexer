@@ -1541,8 +1541,45 @@ public final class MetadataHelper {
 
             }
         }
-        if (sbFulltext.length() > 0) {
+        if (!sbFulltext.isEmpty()) {
             indexObj.addToLucene(SolrConstants.FULLTEXT, sbFulltext.toString());
+        }
+    }
+
+    /**
+     * 
+     * @param indexObj
+     * @param meiFolder
+     * @throws FatalIndexerException
+     * @throws IOException
+     * @throws JDOMException
+     */
+    public static void processMEIFiles(IndexObject indexObj, Path meiFolder) throws FatalIndexerException, IOException, JDOMException {
+        if (indexObj == null) {
+            throw new IllegalArgumentException("indexObj may not be null");
+        }
+        if (meiFolder == null) {
+            throw new IllegalArgumentException("meiFolder may not be null");
+        }
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(meiFolder, "*.{xml}")) {
+            for (Path path : stream) {
+                logger.info("Found MEI file: {}", path.getFileName());
+                JDomXP mei = new JDomXP(path.toFile());
+                writeMetadataToObject(indexObj, mei.getRootElement(), "", mei);
+
+                // Add text body
+                Element eleMusic =
+                        mei.getRootElement().getChild("music", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mei"));
+                if (eleMusic != null) {
+                    String fileFieldName = SolrConstants.FILENAME_MEI;
+                    indexObj.addToLucene(fileFieldName, path.getFileName().toString());
+
+                } else {
+                    logger.warn("No music found in MEI");
+                }
+
+            }
         }
     }
 

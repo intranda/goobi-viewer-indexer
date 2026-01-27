@@ -95,6 +95,7 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_MIX).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_CMS).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_ANNOTATIONS).toFile().isDirectory());
+        Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_MEI).toFile().isDirectory());
     }
 
     /**
@@ -125,6 +126,7 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_MIX).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_CMS).toFile().isDirectory());
         Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_ANNOTATIONS).toFile().isDirectory());
+        Assertions.assertTrue(dataRepository.getDir(DataRepository.PARAM_MEI).toFile().isDirectory());
     }
 
     /**
@@ -165,6 +167,7 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MIX));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_CMS));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ANNOTATIONS));
+        Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MEI));
     }
 
     /**
@@ -194,6 +197,7 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MIX));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_CMS));
         Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_ANNOTATIONS));
+        Assertions.assertNotNull(dataRepository.getDir(DataRepository.PARAM_MEI));
     }
 
     /**
@@ -218,7 +222,7 @@ class DataRepositoryTest extends AbstractTest {
         destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_LIDO).toAbsolutePath().toString(), srcFile.getName());
         FileUtils.copyFile(srcFile, destFile);
         Assertions.assertTrue(destFile.isFile());
-        
+
         srcFile = new File("src/test/resources/EAD/Akte_Koch.xml");
         destFile = new File(dataRepository.getDir(DataRepository.PARAM_INDEXED_EAD).toAbsolutePath().toString(), srcFile.getName());
         FileUtils.copyFile(srcFile, destFile);
@@ -459,6 +463,20 @@ class DataRepositoryTest extends AbstractTest {
     void deleteDataFoldersForRecord_shouldDeleteAnnotationsFolderCorrectly() throws Exception {
         DataRepository useRepository = new DataRepository("target/viewer/data/", true);
         File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_ANNOTATIONS).toAbsolutePath().toString(), BASE_FILE_NAME);
+        Assertions.assertTrue(dataFolder.mkdirs());
+        Assertions.assertTrue(dataFolder.exists());
+        useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);
+        Assertions.assertFalse(dataFolder.exists());
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersForRecord(String)
+     * @verifies delete MEI folder correctly
+     */
+    @Test
+    void deleteDataFoldersForRecord_shouldDeleteMEIFolderCorrectly() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getDir(DataRepository.PARAM_MEI).toAbsolutePath().toString(), BASE_FILE_NAME);
         Assertions.assertTrue(dataFolder.mkdirs());
         Assertions.assertTrue(dataFolder.exists());
         useRepository.deleteDataFoldersForRecord(BASE_FILE_NAME);
@@ -784,6 +802,22 @@ class DataRepositoryTest extends AbstractTest {
         Assertions.assertTrue(dataFolder.exists());
 
         DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, dataFolder.toPath()),
+                Collections.emptyMap());
+        Assertions.assertFalse(dataFolder.exists());
+    }
+
+    /**
+     * @see DataRepository#deleteDataFoldersFromHotfolder(Map,Map)
+     * @verifies delete MEI folder correctly
+     */
+    @Test
+    void deleteDataFoldersFromHotfolder_shouldDeleteMEIFolderCorrectly() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+        File dataFolder = new File(useRepository.getRootDir().toAbsolutePath().toString(), DataRepository.PARAM_MEI);
+        Assertions.assertTrue(dataFolder.mkdirs());
+        Assertions.assertTrue(dataFolder.exists());
+
+        DataRepository.deleteDataFoldersFromHotfolder(Collections.singletonMap(DataRepository.PARAM_MEI, dataFolder.toPath()),
                 Collections.emptyMap());
         Assertions.assertFalse(dataFolder.exists());
     }

@@ -165,6 +165,7 @@ public final class Configuration {
         namespaces.put("skos", Namespace.getNamespace("skos", "http://www.w3.org/2004/02/skos/core#"));
         namespaces.put("oai", Namespace.getNamespace("oai", "http://www.openarchives.org/OAI/2.0/"));
         namespaces.put("ead", EadIndexer.NAMESPACE_EAD2);
+        // namespaces.put("mei", Namespace.getNamespace("http://www.music-encoding.org/ns/mei"));
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         for (Entry<String, String> entry : additionalNamespaces.entrySet()) {

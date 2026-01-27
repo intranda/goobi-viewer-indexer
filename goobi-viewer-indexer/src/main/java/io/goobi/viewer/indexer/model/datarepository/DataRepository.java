@@ -100,6 +100,8 @@ public class DataRepository {
     public static final String PARAM_MIX = "mixFolder";
     /** Constant <code>PARAM_ANNOTATIONS="annotationFolder"</code> */
     public static final String PARAM_ANNOTATIONS = "annotationFolder";
+    /** Constant <code>PARAM_MEI="meiFolder"</code> */
+    public static final String PARAM_MEI = "meiFolder";
 
     private boolean valid = false;
     private String path;
@@ -172,6 +174,7 @@ public class DataRepository {
         checkAndCreateDataSubdir(PARAM_MIX, createFolders);
         checkAndCreateDataSubdir(PARAM_CMS, createFolders);
         checkAndCreateDataSubdir(PARAM_ANNOTATIONS, createFolders);
+        checkAndCreateDataSubdir(PARAM_MEI, createFolders);
 
         if (Files.exists(rootDir)) {
             valid = true;
@@ -286,6 +289,7 @@ public class DataRepository {
      * @should delete page PDF folder correctly
      * @should delete CMS folder correctly
      * @should delete annotations folder correctly
+     * @should delete MEI folder correctly
      */
     public void deleteDataFoldersForRecord(String baseFileName) {
         deleteFolder(Paths.get(getDir(PARAM_ALTO).toAbsolutePath().toString(), baseFileName));
@@ -303,6 +307,7 @@ public class DataRepository {
         deleteFolder(Paths.get(getDir(PARAM_PAGEPDF).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_CMS).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_ANNOTATIONS).toAbsolutePath().toString(), baseFileName));
+        deleteFolder(Paths.get(getDir(PARAM_MEI).toAbsolutePath().toString(), baseFileName));
     }
 
     /**
@@ -398,6 +403,7 @@ public class DataRepository {
         moveDataFolderToRepository(toRepository, pi, PARAM_MIX);
         moveDataFolderToRepository(toRepository, pi, PARAM_CMS);
         moveDataFolderToRepository(toRepository, pi, PARAM_ANNOTATIONS);
+        moveDataFolderToRepository(toRepository, pi, PARAM_MEI);
 
         // METS
         if (getDir(PARAM_INDEXED_METS) != null) {
@@ -534,6 +540,7 @@ public class DataRepository {
      * @should delete CMS folder correctly
      * @should delete annotations folder correctly
      * @should delete download images trigger folder correctly
+     * @should delete MEI folder correctly
      */
     public static void deleteDataFoldersFromHotfolder(Map<String, Path> dataFolders, Map<String, Boolean> reindexSettings) {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ALTO);
@@ -552,6 +559,7 @@ public class DataRepository {
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_SOURCE);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS);
         deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER);
+        deleteDataFolder(dataFolders, reindexSettings, DataRepository.PARAM_MEI);
     }
 
     /**
@@ -622,6 +630,8 @@ public class DataRepository {
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_ANNOTATIONS, dataRepositories);
         // Delete image download trigger folder
         checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_DOWNLOAD_IMAGES_TRIGGER, dataRepositories);
+        // Delete MEI folder
+        checkCopyAndDeleteDataFolder(pi, dataFolders, reindexSettings, DataRepository.PARAM_MEI, dataRepositories);
     }
 
     /**

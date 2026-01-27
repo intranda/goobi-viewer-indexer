@@ -1955,6 +1955,9 @@ public abstract class Indexer {
                     case "_cms":
                         dataFolders.put(DataRepository.PARAM_CMS, path);
                         break;
+                    case "_mei":
+                        dataFolders.put(DataRepository.PARAM_MEI, path);
+                        break;
                     case "_tei":
                         dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
                         break;
@@ -2027,6 +2030,9 @@ public abstract class Indexer {
         }
         if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
             reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_MEI) == null) {
+            reindexSettings.put(DataRepository.PARAM_MEI, true);
         }
     }
 

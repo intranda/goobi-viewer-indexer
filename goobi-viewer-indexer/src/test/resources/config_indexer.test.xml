@@ -45,6 +45,7 @@
 		<annotationFolder>annotations</annotationFolder>
 		<mixFolder>mix</mixFolder>
 		<cmsFolder>cms</cmsFolder>
+        <meiFolder>mei</meiFolder>
 		<teiFolder>tei</teiFolder>
 		<cmdiFolder>cmdi</cmdiFolder>
 		
