@@ -17,7 +17,6 @@ package io.goobi.viewer.indexer.model.file;
 
 import org.apache.commons.lang3.StringUtils;
 
-@Deprecated
 public final class FileId {
 
     private final boolean prefix;
