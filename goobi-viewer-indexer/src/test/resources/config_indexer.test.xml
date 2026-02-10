@@ -45,6 +45,7 @@
 		<annotationFolder>annotations</annotationFolder>
 		<mixFolder>mix</mixFolder>
 		<cmsFolder>cms</cmsFolder>
+        <meiFolder>mei</meiFolder>
 		<teiFolder>tei</teiFolder>
 		<cmdiFolder>cmdi</cmdiFolder>
 		
@@ -131,6 +132,13 @@
             <imageXPath>lido:resourceRepresentation[@lido:type='image_overview']/lido:linkResource</imageXPath>
             <imageXPath>lido:resourceID</imageXPath>
         </lido>
+        
+        <email>
+            <recipients>
+                <address>foo@example.com</address>
+                <address>bar@example.com</address>
+            </recipients>
+        </email>
 		
         <!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
         <viewerAuthorizationToken>test</viewerAuthorizationToken>

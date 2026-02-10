@@ -57,6 +57,7 @@ import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
+import io.goobi.viewer.indexer.model.file.FileId;
 
 public class PhysicalDocumentBuilder {
 
@@ -286,7 +287,6 @@ public class PhysicalDocumentBuilder {
                 if (!eleFileGrpList.isEmpty()) {
                     // first match: use as selected file group and file id
                     useFileID = fileID;
-                    // ret.getDoc().addField(SolrConstants.FILEIDROOT, useFileID.getRoot());
                     useFileGroup = fileGroup;
                     break;
                 }
@@ -395,6 +395,10 @@ public class PhysicalDocumentBuilder {
                         }
                     }
                 }
+                
+                // FILEIDROOT is needed for setting a representative image in the viewer
+                ret.getDoc().addField(SolrConstants.FILEIDROOT, FileId.getFileId(useFileID, useFileGroup).getRoot());
+                logger.info("FILEIDROOT: " + FileId.getFileId(useFileID, useFileGroup).getRoot());
 
                 // Add mime type
                 ret.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
@@ -572,7 +576,7 @@ public class PhysicalDocumentBuilder {
         if (useFileID != null) {
             fileIdXPathCondition = "[@ID=\"" + useFileID + "\"]";
         }
-        
+
         return fileIdXPathCondition;
     }
 

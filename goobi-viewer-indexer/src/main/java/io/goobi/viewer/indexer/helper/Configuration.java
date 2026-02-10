@@ -165,6 +165,7 @@ public final class Configuration {
         namespaces.put("skos", Namespace.getNamespace("skos", "http://www.w3.org/2004/02/skos/core#"));
         namespaces.put("oai", Namespace.getNamespace("oai", "http://www.openarchives.org/OAI/2.0/"));
         namespaces.put("ead", EadIndexer.NAMESPACE_EAD2);
+        // namespaces.put("mei", Namespace.getNamespace("http://www.music-encoding.org/ns/mei"));
 
         Map<String, String> additionalNamespaces = getListConfiguration("init.namespaces");
         for (Entry<String, String> entry : additionalNamespaces.entrySet()) {
@@ -771,8 +772,12 @@ public final class Configuration {
      * @should return false until all values configured
      */
     boolean checkEmailConfiguration() {
-        if (StringUtils.isEmpty(getString("init.email.recipients"))) {
-            logger.warn("init.email.recipients not configured, cannot send e-mail report.");
+        if (StringUtils.isNotEmpty(getString("init.email.recipients"))) {
+            logger.warn("init.email.recipients is configured as a single string. Reconfgure using <address> subelements.");
+            return false;
+        }
+        if (getEmailRecipients().isEmpty()) {
+            logger.warn("init.email.recipients.address not configured, cannot send e-mail report.");
             return false;
         }
         if (StringUtils.isEmpty(getString("init.email.smtpServer"))) {
@@ -793,6 +798,18 @@ public final class Configuration {
         }
 
         return true;
+    }
+
+    /**
+     * <p>
+     * getFeedbackEmailAddresses.
+     * </p>
+     *
+     * @should return correct values
+     * @return a {@link java.lang.String} object.
+     */
+    public List<String> getEmailRecipients() {
+        return getStringList("init.email.recipients.address");
     }
 
     /**

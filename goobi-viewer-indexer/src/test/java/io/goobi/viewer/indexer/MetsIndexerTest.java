@@ -315,6 +315,8 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
                     String value = (String) doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT);
                     assertNotNull(value);
                     assertEquals("fulltext/PPN517154005/" + FilenameUtils.getBaseName(fileName) + FileTools.TXT_EXTENSION, value);
+                    assertEquals(FilenameUtils.getBaseName(fileName) + FileTools.TXT_EXTENSION,
+                            doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT_SHORT));
                     assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
                 }
                 {
@@ -1134,6 +1136,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         SolrInputDocument doc = pe.getDoc();
         assertNotNull(doc);
         assertEquals("fulltext/" + PI + "/00000001.txt", doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT));
+        assertEquals("00000001.txt", doc.getFieldValue(SolrConstants.FILENAME_FULLTEXT_SHORT));
         assertEquals(true, doc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
     }
 

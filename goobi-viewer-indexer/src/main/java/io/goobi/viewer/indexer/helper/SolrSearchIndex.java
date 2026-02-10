@@ -252,34 +252,38 @@ public final class SolrSearchIndex {
         }
 
         // Explicitly use numeric value in doc, where applicable
-        switch (luceneField.getField()) {
-            case SolrConstants.CENTURY:
-            case SolrConstants.CURRENTNOSORT:
-            case SolrConstants.MONTHDAY:
-            case SolrConstants.DATECREATED:
-            case SolrConstants.DATEINDEXED:
-            case SolrConstants.DATEUPDATED:
-            case SolrConstants.NUMVOLUMES:
-            case SolrConstants.YEAR:
-            case SolrConstants.YEARMONTH:
-            case SolrConstants.YEARMONTHDAY:
-                doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
-                break;
-            case SolrConstants.HEIGHT:
-            case SolrConstants.NUMPAGES:
-            case SolrConstants.ORDER:
-            case SolrConstants.THUMBPAGENO:
-            case SolrConstants.WIDTH:
-                doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
-                break;
-            default:
-                if (luceneField.getField().startsWith(SolrConstants.PREFIX_MDNUM) || luceneField.getField().startsWith("SORTNUM_")) {
+        try {
+            switch (luceneField.getField()) {
+                case SolrConstants.CENTURY:
+                case SolrConstants.CURRENTNOSORT:
+                case SolrConstants.MONTHDAY:
+                case SolrConstants.DATECREATED:
+                case SolrConstants.DATEINDEXED:
+                case SolrConstants.DATEUPDATED:
+                case SolrConstants.NUMVOLUMES:
+                case SolrConstants.YEAR:
+                case SolrConstants.YEARMONTH:
+                case SolrConstants.YEARMONTHDAY:
                     doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
-                } else if (luceneField.getField().startsWith("GROUPORDER_")) {
+                    break;
+                case SolrConstants.HEIGHT:
+                case SolrConstants.NUMPAGES:
+                case SolrConstants.ORDER:
+                case SolrConstants.THUMBPAGENO:
+                case SolrConstants.WIDTH:
                     doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
-                } else {
-                    doc.addField(luceneField.getField(), luceneField.getValue());
-                }
+                    break;
+                default:
+                    if (luceneField.getField().startsWith(SolrConstants.PREFIX_MDNUM) || luceneField.getField().startsWith("SORTNUM_")) {
+                        doc.addField(luceneField.getField(), Long.parseLong(luceneField.getValue()));
+                    } else if (luceneField.getField().startsWith("GROUPORDER_")) {
+                        doc.addField(luceneField.getField(), Integer.parseInt(luceneField.getValue()));
+                    } else {
+                        doc.addField(luceneField.getField(), luceneField.getValue());
+                    }
+            }
+        } catch (NumberFormatException e) {
+            logger.error("Cannot add value to field {}: {}", luceneField.getField(), e.getMessage());
         }
     }
 
@@ -394,9 +398,9 @@ public final class SolrSearchIndex {
                 } else {
                     logger.error(ERROR_UPDATE_STATUS, ur.getStatus());
                 }
-            } catch (IOException |  SolrServerException e) {
+            } catch (IOException | SolrServerException e) {
                 logger.error(e.getMessage(), e);
-            } catch (RemoteSolrException  e) {
+            } catch (RemoteSolrException e) {
                 logger.error(e.getMessage());
             }
         }

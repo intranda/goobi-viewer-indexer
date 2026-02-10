@@ -459,6 +459,8 @@ public abstract class Indexer {
         }
         fields.add(new LuceneField(SolrConstants.DATEDELETED, dateDeleted));
         fields.add(new LuceneField(SolrConstants.DATEUPDATED, dateUpdated));
+        // add OPENACCESS to make sure it's not filtered out in OAI
+        fields.add(new LuceneField(SolrConstants.ACCESSCONDITION, SolrConstants.OPEN_ACCESS_VALUE));
         searchIndex.writeToIndex(SolrSearchIndex.createDocument(fields));
     }
 
@@ -1425,12 +1427,12 @@ public abstract class Indexer {
         }
 
         // Add access conditions
-        // Commented out because inherited access conditions trigger metadata locking where not wanted
-        //        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
-        //            for (String s : indexObj.getAccessConditions()) {
-        //                doc.addField(SolrConstants.ACCESSCONDITION, s);
-        //            }
-        //        }
+        // This should not trigger any false positives with the "locked metadata" functionality. If it does, viewer-core might need an update
+        if (!doc.containsKey(SolrConstants.ACCESSCONDITION)) {
+            for (String s : indexObj.getAccessConditions()) {
+                doc.addField(SolrConstants.ACCESSCONDITION, s);
+            }
+        }
 
         // Add DC values to metadata doc
         if (dcFields != null) {
@@ -1953,6 +1955,9 @@ public abstract class Indexer {
                     case "_cms":
                         dataFolders.put(DataRepository.PARAM_CMS, path);
                         break;
+                    case "_mei":
+                        dataFolders.put(DataRepository.PARAM_MEI, path);
+                        break;
                     case "_tei":
                         dataFolders.put(DataRepository.PARAM_TEIMETADATA, path);
                         break;
@@ -2025,6 +2030,9 @@ public abstract class Indexer {
         }
         if (dataFolders.get(DataRepository.PARAM_ANNOTATIONS) == null) {
             reindexSettings.put(DataRepository.PARAM_ANNOTATIONS, true);
+        }
+        if (dataFolders.get(DataRepository.PARAM_MEI) == null) {
+            reindexSettings.put(DataRepository.PARAM_MEI, true);
         }
     }
 

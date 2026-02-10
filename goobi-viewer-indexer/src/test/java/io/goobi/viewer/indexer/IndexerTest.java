@@ -226,6 +226,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
             assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
             assertNotNull(doc.getFieldValues(SolrConstants.IMAGEURN_OAI));
             assertEquals(16, doc.getFieldValues(SolrConstants.IMAGEURN_OAI).size());
+            assertEquals(SolrConstants.OPEN_ACCESS_VALUE, SolrSearchIndex.getSingleFieldStringValue(doc, SolrConstants.ACCESSCONDITION));
         }
     }
 
@@ -262,6 +263,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
             SolrDocument doc = docList.get(0);
             assertNotNull(doc.getFieldValue(SolrConstants.DATEDELETED));
             assertNotNull(doc.getFieldValue(SolrConstants.GROUPFIELD));
+            assertEquals(SolrConstants.OPEN_ACCESS_VALUE, SolrSearchIndex.getSingleFieldStringValue(doc, SolrConstants.ACCESSCONDITION));
         }
     }
 

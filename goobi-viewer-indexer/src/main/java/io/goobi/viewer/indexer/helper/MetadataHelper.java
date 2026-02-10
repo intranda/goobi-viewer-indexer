@@ -978,20 +978,38 @@ public final class MetadataHelper {
             String query = prefix + xPathConfig.getxPath();
             query = query.replace("///", "/");
             logger.debug(query);
-            String pi = xp.evaluateToString(query, null);
-            if (pi == null) {
-                // Attribute evaluation fallback
-                List<Attribute> childrenNodeList = xp.evaluateToAttributes(query, null);
-                if (childrenNodeList != null && !childrenNodeList.isEmpty()) {
-                    pi = childrenNodeList.get(0).getValue();
-                }
+            String pi = evaluatePI(xp, query);
+            if (StringUtils.isNotEmpty(pi)) {
+                return pi;
             }
+
+            // Fallback without prefix
+            pi = evaluatePI(xp, xPathConfig.getxPath());
             if (StringUtils.isNotEmpty(pi)) {
                 return pi;
             }
         }
 
         return null;
+    }
+
+    /**
+     * 
+     * @param xp
+     * @param query
+     * @return String
+     */
+    private static String evaluatePI(JDomXP xp, String query) {
+        String ret = xp.evaluateToString(query, null);
+        if (ret == null) {
+            // Attribute evaluation fallback
+            List<Attribute> childrenNodeList = xp.evaluateToAttributes(query, null);
+            if (childrenNodeList != null && !childrenNodeList.isEmpty()) {
+                ret = childrenNodeList.get(0).getValue();
+            }
+        }
+
+        return ret;
     }
 
     /**
@@ -1523,8 +1541,46 @@ public final class MetadataHelper {
 
             }
         }
-        if (sbFulltext.length() > 0) {
+        if (!sbFulltext.isEmpty()) {
             indexObj.addToLucene(SolrConstants.FULLTEXT, sbFulltext.toString());
+        }
+    }
+
+    /**
+     * 
+     * @param indexObj
+     * @param meiFolder
+     * @throws FatalIndexerException
+     * @throws IOException
+     * @throws JDOMException
+     */
+    public static void processMEIFiles(IndexObject indexObj, Path meiFolder) throws FatalIndexerException, IOException, JDOMException {
+        logger.info("processMEIFiles");
+        if (indexObj == null) {
+            throw new IllegalArgumentException("indexObj may not be null");
+        }
+        if (meiFolder == null) {
+            throw new IllegalArgumentException("meiFolder may not be null");
+        }
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(meiFolder, "*.{mei,xml}")) {
+            for (Path path : stream) {
+                logger.info("Found MEI file: {}", path.getFileName());
+                JDomXP mei = new JDomXP(path.toFile());
+                writeMetadataToObject(indexObj, mei.getRootElement(), "", mei);
+
+                // Add text body
+                Element eleMusic =
+                        mei.getRootElement().getChild("music", SolrIndexerDaemon.getInstance().getConfiguration().getNamespaces().get("mei"));
+                if (eleMusic != null) {
+                    String fileFieldName = SolrConstants.FILENAME_MEI;
+                    indexObj.addToLucene(fileFieldName, path.getFileName().toString());
+
+                } else {
+                    logger.warn("No music found in MEI");
+                }
+
+            }
         }
     }
 

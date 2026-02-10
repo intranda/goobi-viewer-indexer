@@ -20,15 +20,17 @@
 		<viewerHome>C:/opt/digiverso/viewer/</viewerHome>
 		<dataRepositories>
 			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
-			<strategy>SingleRepositoryStrategy</strategy>
+			<strategy>MaxRecordNumberStrategy</strategy>
 
 			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 10000) -->
 			<maxRecords>10000</maxRecords>
 
 			<!-- Data repository folders (absolute paths to be used (a new folder structure will be created for each dataRepository) -->
 			<dataRepository>C:/opt/digiverso/viewer/data/1</dataRepository>
+            <!--
 			<dataRepository>C:/opt/digiverso/viewer/data/2</dataRepository>
 			<dataRepository>C:/opt/digiverso/viewer/data/3</dataRepository>
+            -->
 		</dataRepositories>
 
 		<!-- Data subfolder names (path is relative to either a data repository or viewerHome) -->
@@ -45,6 +47,7 @@
 		<annotationFolder>annotations</annotationFolder>
 		<mixFolder>mix</mixFolder>
 		<cmsFolder>cms</cmsFolder>
+        <meiFolder>mei</meiFolder>
 		<teiFolder>tei</teiFolder>
 		<cmdiFolder>cmdi</cmdiFolder>
 
@@ -131,7 +134,7 @@
             </physicalElementTypes>
             
             <!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
-            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"]/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
+            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(@containerType)]/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
 		</mets>
 
 		<lido>
@@ -145,7 +148,9 @@
 		</lido>
 
 		<email>
-			<recipients></recipients>
+			<recipients>
+                <address></address>
+            </recipients>
 			<smtpServer></smtpServer>
 			<smtpUser></smtpUser>
 			<smtpPassword></smtpPassword>
