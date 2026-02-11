@@ -18,6 +18,9 @@ package io.goobi.viewer.indexer.helper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -29,6 +32,7 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
+import io.goobi.viewer.indexer.model.config.FieldConfig;
 
 class JDomXPTest extends AbstractTest {
 
@@ -41,7 +45,7 @@ class JDomXPTest extends AbstractTest {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
-        
+
         // File containing both MODS and MARC
         file = new File("src/test/resources/METS/BV048249088.xml");
         Assertions.assertTrue(file.isFile());
@@ -382,4 +386,15 @@ class JDomXPTest extends AbstractTest {
         Element eleMdWrap = xp.getMdWrap("DMDLOG_0003");
         Assertions.assertNotNull(eleMdWrap);
     }
+
+    @Test
+    void testEscapedHtml() throws IOException {
+        Path path = Path.of("/home/florian/testdata/konschtlexikon/escapedSource.txt");
+        String s = Files.readString(path);
+        FieldConfig field = new FieldConfig("MD_SOURCETEXT");
+        String ret = TextHelper.normalizeSequence(s);
+        System.out.println("Input " + s);
+        System.out.println("Output " + ret);
+    }
+
 }

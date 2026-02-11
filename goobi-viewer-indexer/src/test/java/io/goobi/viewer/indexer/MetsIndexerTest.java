@@ -1394,4 +1394,39 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     }
 
+    @Test
+    void index_shouldIndexPdfPages() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/34192383_pdfpages.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("OGG", "MP3", "PRESENTATION"));
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383_2.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
+
+        SolrDocument mainDoc = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI, "34192383_2", SolrConstants.ISWORK, "true"),
+                        List.of("MIMETYPE", "FILENAME*", "ORDER", "BOOL_IMAGEAVAILABLE"))
+                .get(0);
+        Assertions.assertEquals(mainDoc.get("MIMETYPE"), "application/pdf");
+        Assertions.assertEquals(mainDoc.get("BOOL_IMAGEAVAILABLE"), Boolean.TRUE);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "34192383_2", SolrConstants.DOCTYPE, "PAGE"),
+                        List.of("MIMETYPE", "FILENAME*", "ORDER", "BOOL_IMAGEAVAILABLE"));
+        Assertions.assertEquals(37, docList.size());
+
+        Map<String, List<SolrDocument>> mimetypeMap = docList.stream()
+                .collect(Collectors.toMap(doc -> doc.getFirstValue("MIMETYPE").toString(), doc -> new ArrayList<>(List.of(doc)),
+                        (d1, d2) -> new ArrayList<>(CollectionUtils.union(d1, d2))));
+        Assertions.assertEquals(37, mimetypeMap.get("application/pdf").size());
+
+        Map<Boolean, List<SolrDocument>> hasImagesMap = docList.stream()
+                .collect(Collectors.toMap(doc -> (Boolean) doc.getFirstValue("BOOL_IMAGEAVAILABLE"), doc -> new ArrayList<>(List.of(doc)),
+                        (d1, d2) -> new ArrayList<>(CollectionUtils.union(d1, d2))));
+        Assertions.assertEquals(37, hasImagesMap.get(Boolean.TRUE).size());
+
+    }
+
 }

@@ -2130,8 +2130,7 @@ public abstract class Indexer {
         }
 
         // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (page.getDoc().containsKey(SolrConstants.FILENAME) && page.getDoc().containsKey(SolrConstants.MIMETYPE)
-                && ((String) page.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+        if (hasImage(page.getDoc())) {
             page.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
             recordHasImages = true;
         } else {
@@ -2145,6 +2144,21 @@ public abstract class Indexer {
         } else {
             page.getDoc().addField(SolrConstants.FULLTEXTAVAILABLE, false);
         }
+    }
+
+    /**
+     * Check whether the documents has a filename and a mimetype that allows image view
+     * 
+     * @param doc
+     * @return true if the doc contains a file which is an image or pdf
+     */
+    protected boolean hasImage(SolrInputDocument doc) {
+
+        if (doc.containsKey(SolrConstants.FILENAME)) {
+            String mimetype = doc.containsKey(SolrConstants.MIMETYPE) ? doc.getFieldValue(SolrConstants.MIMETYPE).toString() : "";
+            return mimetype.startsWith("image") || mimetype.equals("application/pdf");
+        }
+        return false;
     }
 
     protected abstract FileFormat getSourceDocFormat();
