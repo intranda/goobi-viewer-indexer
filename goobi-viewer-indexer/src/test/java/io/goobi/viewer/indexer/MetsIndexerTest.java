@@ -1362,11 +1362,38 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         assertEquals("34192383.xml", result.getRecordFileName());
         Assertions.assertNull(result.getError());
 
+        SolrDocument mainDoc = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI, "34192383", SolrConstants.ISWORK, "true"),
+                        List.of("MIMETYPE", "FILENAME*", "ORDER", "BOOL_IMAGEAVAILABLE"))
+                .get(0);
+        //image are available since there is a PDF Page PRESENTATION filegroup element
+        Assertions.assertTrue((Boolean) mainDoc.getFieldValue("BOOL_IMAGEAVAILABLE"));
+
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
         assertEquals(1, docList.stream().filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
         assertTrue(docList.stream()
                 .filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE)))
                 .allMatch(doc -> Long.valueOf(1).equals(doc.getFieldValue(SolrConstants.MDNUM_DOWNLOAD_RESOURCES))));
+    }
+
+    @Test
+    void index_shouldIndexDownloadResourcesNoPages() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383_nopages.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
+        SolrDocument mainDoc = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":34192383", null).get(0);
+
+        assertEquals(0, docList.stream().filter(doc -> "PAGE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(1, docList.stream().filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+
+        //no image are available since there is no PRESENTATION filegroup element
+        Assertions.assertFalse((Boolean) mainDoc.getFieldValue("BOOL_IMAGEAVAILABLE"));
     }
 
     @Test
