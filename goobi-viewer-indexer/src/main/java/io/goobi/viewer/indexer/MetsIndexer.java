@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -70,10 +71,10 @@ import io.goobi.viewer.indexer.helper.Utils;
 import io.goobi.viewer.indexer.model.GroupedMetadata;
 import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexingResult;
+import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.LuceneField;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
-import io.goobi.viewer.indexer.model.IndexingResult.IndexingResultStatus;
 import io.goobi.viewer.indexer.model.SolrConstants.DocType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
 import io.goobi.viewer.indexer.model.config.XPathConfig;
@@ -389,7 +390,7 @@ public class MetsIndexer extends Indexer {
             if (dataFolders.get(DataRepository.PARAM_TEIMETADATA) != null) {
                 MetadataHelper.processTEIMetadataFiles(indexObj, dataFolders.get(DataRepository.PARAM_TEIMETADATA));
             }
-            
+
             // Process MEI files
             if (dataFolders.get(DataRepository.PARAM_MEI) != null) {
                 MetadataHelper.processMEIFiles(indexObj, dataFolders.get(DataRepository.PARAM_MEI));
@@ -495,6 +496,18 @@ public class MetsIndexer extends Indexer {
                 }
                 //add AccessConditions to downloadResources
                 downloadResources.forEach(res -> addAccessConditionToPage(indexObj, res, true));
+                //set mimetype to that of first download resource if no mimetype is set yetd
+                if (indexObj.getLuceneFieldWithName(SolrConstants.MIMETYPE) == null && !downloadResources.isEmpty()) {
+                    String resourceType = downloadResources.stream()
+                            .map(res -> res.getDoc().getFieldValue(SolrConstants.MIMETYPE))
+                            .filter(Objects::nonNull)
+                            .map(Object::toString)
+                            .findFirst()
+                            .orElse("");
+                    if (StringUtils.isNotBlank(resourceType)) {
+                        indexObj.addToLucene(SolrConstants.MIMETYPE, resourceType);
+                    }
+                }
 
                 // ISWORK only for non-anchors
                 indexObj.addToLucene(SolrConstants.ISWORK, "true");
@@ -633,7 +646,7 @@ public class MetsIndexer extends Indexer {
      * @should switch to DEFAULT file group correctly
      * @should maintain page order after parallel processing
      */
-    public void generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
+    public Collection<PhysicalElement> generatePageDocuments(final ISolrWriteStrategy writeStrategy, final Map<String, Path> dataFolders,
             final DataRepository dataRepository, final String pi, int pageCountStart, boolean downloadExternalImages)
             throws InterruptedException, FatalIndexerException {
         collectFileGroupInfo();
@@ -654,6 +667,9 @@ public class MetsIndexer extends Indexer {
                     logger.debug("Added {} grouped metadata for page {}", docsAdded, page.getOrder());
                 }
             }
+            return pages;
+        } else {
+            return Collections.emptyList();
         }
     }
 

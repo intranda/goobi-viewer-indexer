@@ -1369,6 +1369,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
                 .get(0);
         //image are available since there is a PDF Page PRESENTATION filegroup element
         Assertions.assertTrue((Boolean) mainDoc.getFieldValue("BOOL_IMAGEAVAILABLE"));
+        Assertions.assertEquals("image/jpeg", mainDoc.getFieldValue(SolrConstants.MIMETYPE));
 
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
         assertEquals(1, docList.stream().filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
@@ -1394,6 +1395,7 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         //no image are available since there is no PRESENTATION filegroup element
         Assertions.assertFalse((Boolean) mainDoc.getFieldValue("BOOL_IMAGEAVAILABLE"));
+        Assertions.assertEquals("application/pdf", mainDoc.getFieldValue(SolrConstants.MIMETYPE));
     }
 
     @Test
