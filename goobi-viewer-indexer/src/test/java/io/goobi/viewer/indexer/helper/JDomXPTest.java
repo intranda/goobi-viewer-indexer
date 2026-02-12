@@ -18,9 +18,6 @@ package io.goobi.viewer.indexer.helper;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -32,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 import io.goobi.viewer.indexer.AbstractTest;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
-import io.goobi.viewer.indexer.model.config.FieldConfig;
 
 class JDomXPTest extends AbstractTest {
 
@@ -385,16 +381,6 @@ class JDomXPTest extends AbstractTest {
         JDomXP xp = new JDomXP(file);
         Element eleMdWrap = xp.getMdWrap("DMDLOG_0003");
         Assertions.assertNotNull(eleMdWrap);
-    }
-
-    @Test
-    void testEscapedHtml() throws IOException {
-        Path path = Path.of("/home/florian/testdata/konschtlexikon/escapedSource.txt");
-        String s = Files.readString(path);
-        FieldConfig field = new FieldConfig("MD_SOURCETEXT");
-        String ret = TextHelper.normalizeSequence(s);
-        System.out.println("Input " + s);
-        System.out.println("Output " + ret);
     }
 
 }
