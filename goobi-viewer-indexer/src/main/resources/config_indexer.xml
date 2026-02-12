@@ -8,16 +8,16 @@
 		<minStorageSpace>2048</minStorageSpace>
 
 		<!-- Main Solr index URL -->
-		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
+		<solrUrl>https://localhost:8983/solr/collection1</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
 		<oldSolrUrl></oldSolrUrl>
 		<viewerUrl>http://localhost:8080/viewer/</viewerUrl>
 
 		<!-- Folder configuration -->
-		<hotFolder>C:/opt/digiverso/viewer/hotfolder/</hotFolder>
-		<!--hotFolder>C:/opt/digiverso/viewer/reindex_hotfolder/</hotFolder-->
-		<tempFolder>C:/opt/digiverso/indexer/temp/</tempFolder>
-		<viewerHome>C:/opt/digiverso/viewer/</viewerHome>
+		<hotFolder>/opt/digiverso/viewer/hotfolder/</hotFolder>
+		<!--hotFolder>/opt/digiverso/viewer/reindex_hotfolder/</hotFolder-->
+		<tempFolder>/opt/digiverso/indexer/temp/</tempFolder>
+		<viewerHome>/opt/digiverso/viewer/</viewerHome>
 		<dataRepositories>
 			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
 			<strategy>SingleRepositoryStrategy</strategy>
@@ -26,10 +26,10 @@
 			<maxRecords>10000</maxRecords>
 
 			<!-- Data repository folders (absolute paths to be used (a new folder structure will be created for each dataRepository) -->
-			<dataRepository>C:/opt/digiverso/viewer/data/1</dataRepository>
+			<dataRepository>/opt/digiverso/viewer/data/1</dataRepository>
             <!--
-			<dataRepository>C:/opt/digiverso/viewer/data/2</dataRepository>
-			<dataRepository>C:/opt/digiverso/viewer/data/3</dataRepository>
+			<dataRepository>/opt/digiverso/viewer/data/2</dataRepository>
+			<dataRepository>/opt/digiverso/viewer/data/3</dataRepository>
             -->
 		</dataRepositories>
 
@@ -60,12 +60,12 @@
         <indexedStatistics>indexed_statistics</indexedStatistics>
 
 		<!-- Misc folders -->
-		<successFolder>C:/opt/digiverso/viewer/success/</successFolder>
-		<updatedMets>C:/opt/digiverso/viewer/updated_mets/</updatedMets>
-		<deletedMets>C:/opt/digiverso/viewer/deleted_mets/</deletedMets>
-		<errorMets>C:/opt/digiverso/viewer/error_mets/</errorMets>
-		<origLido>C:/opt/digiverso/viewer/orig_lido/</origLido>
-		<origDenkXweb>C:/opt/digiverso/viewer/orig_denkxweb/</origDenkXweb>
+		<successFolder>/opt/digiverso/viewer/success/</successFolder>
+		<updatedMets>/opt/digiverso/viewer/updated_mets/</updatedMets>
+		<deletedMets>/opt/digiverso/viewer/deleted_mets/</deletedMets>
+		<errorMets>/opt/digiverso/viewer/error_mets/</errorMets>
+		<origLido>/opt/digiverso/viewer/orig_lido/</origLido>
+		<origDenkXweb>/opt/digiverso/viewer/orig_denkxweb/</origDenkXweb>
 
 		<!-- Delete images, full-texts, etc. from the hotfolder if indexing has failed (default is false) -->
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
