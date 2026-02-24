@@ -33,6 +33,9 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -45,6 +48,8 @@ import com.drew.metadata.png.PngDirectory;
 public final class ImageSizeReader {
 
     private static final Logger logger = LogManager.getLogger(FulltextAugmentor.class);
+
+    public static final float DEFAULT_PDF_SCALE = 5.0f;
 
     private ImageSizeReader() {
 
@@ -70,7 +75,23 @@ public final class ImageSizeReader {
             return Optional.empty();
         }
         logger.debug("Found image file {}", imageFile.getAbsolutePath());
-        return readDimension(imageFile);
+        if (filename.matches("(?i).*\\.pdf$")) {
+            return readPdfDimension(imageFile);
+        } else {
+            return readDimension(imageFile);
+        }
+    }
+
+    private static Optional<Dimension> readPdfDimension(File pdfFile) {
+        try (PDDocument pdfDoc = Loader.loadPDF(pdfFile)) {
+            PDPage page = pdfDoc.getPage(0);
+            int width = (int) (page.getMediaBox().getWidth() * DEFAULT_PDF_SCALE);
+            int height = (int) (page.getMediaBox().getHeight() * DEFAULT_PDF_SCALE);
+            return Optional.of(new Dimension(width, height));
+        } catch (IOException e) {
+            logger.error("Unable to read pdf size: {}: {}", e.getMessage(), pdfFile.getName());
+            return Optional.empty();
+        }
     }
 
     /**

@@ -58,8 +58,8 @@ class ImageSizeReaderTest extends AbstractSolrEnabledTest {
     @Test
     void getSize_shouldReturnSizeCorrectly() throws Exception {
 
-        String[] filenames = { "00000001.tif", "00225231.png", "test1.jp2" };
-        Dimension[] imageSizes = { new Dimension(3192, 4790), new Dimension(2794, 3838), new Dimension(3448, 6499) };
+        String[] filenames = { "00000001.tif", "00225231.png", "test1.jp2", "00000001.pdf" };
+        Dimension[] imageSizes = { new Dimension(3192, 4790), new Dimension(2794, 3838), new Dimension(3448, 6499), new Dimension(1915, 2875) };
 
         File dataFolder = new File("src/test/resources/image_size").getAbsoluteFile();
 

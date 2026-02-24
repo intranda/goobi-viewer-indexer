@@ -69,6 +69,7 @@
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
 		<solr.version>9.10.1</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
+		<pdfbox.version>3.0.5</pdfbox.version>
 	</properties>
 
 
@@ -282,6 +283,11 @@
 			<artifactId>jaxen</artifactId>
 			<version>${jaxen.version}</version>
 		</dependency>
+		<dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
 	</dependencies>
 
 
