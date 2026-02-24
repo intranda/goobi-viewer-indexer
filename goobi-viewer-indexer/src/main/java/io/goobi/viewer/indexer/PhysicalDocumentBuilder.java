@@ -398,7 +398,6 @@ public class PhysicalDocumentBuilder {
 
                 // FILEIDROOT is needed for setting a representative image in the viewer
                 ret.getDoc().addField(SolrConstants.FILEIDROOT, FileId.getFileId(useFileID, useFileGroup).getRoot());
-                logger.info("FILEIDROOT: " + FileId.getFileId(useFileID, useFileGroup).getRoot());
 
                 // Add mime type
                 ret.getDoc().addField(SolrConstants.MIMETYPE, mimetype);
