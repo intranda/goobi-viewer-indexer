@@ -640,6 +640,8 @@ public class MetsIndexer extends Indexer {
      * @param pageCountStart a int.
      * @param downloadExternalImages
      * @throws io.goobi.viewer.indexer.exceptions.FatalIndexerException
+     * @throws InterruptedException if parallel processing of page documents gets interrupted
+     * @return the collection of generated page documents
      * @should create documents for all mapped pages
      * @should set correct ORDER values
      * @should skip unmapped pages
