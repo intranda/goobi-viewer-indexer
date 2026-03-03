@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>26.01</version>
+	<version>26.02-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -42,7 +42,7 @@
 		<!-- intranda libraries -->
 		<alto.version>1.7.0</alto.version>
 		<iiif-api-model.version>3.2.0</iiif-api-model.version>
-		<normdataimporter.version>2.1.2</normdataimporter.version>
+		<normdataimporter.version>2.1.3</normdataimporter.version>
 
 		<!-- other libraries -->
 		<angus-mail.version>2.0.5</angus-mail.version>
@@ -58,17 +58,18 @@
 		<icu.version>78.2</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
 		<log4j.version>2.25.3</log4j.version>
-		<jackson.version>2.21.0</jackson.version>
+		<jackson.version>2.21.1</jackson.version>
 		<jaxen.version>2.0.0</jaxen.version>
 		<jai.version>1.4.0</jai.version>
 		<jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.22.1</jsoup.version>
 		<json.version>20251224</json.version>
-		<junit.version>6.0.2</junit.version>
+		<junit.version>6.0.3</junit.version>
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
 		<solr.version>9.10.1</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
+		<pdfbox.version>3.0.6</pdfbox.version>
 	</properties>
 
 
@@ -282,6 +283,11 @@
 			<artifactId>jaxen</artifactId>
 			<version>${jaxen.version}</version>
 		</dependency>
+		<dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
 	</dependencies>
 
 
@@ -365,7 +371,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.4</version>
+				<version>3.5.5</version>
 				<configuration>
 					<skipTests>${skipTests}</skipTests>
 				</configuration>

@@ -788,8 +788,7 @@ public class WorldViewsIndexer extends Indexer {
         }
 
         // FIELD_IMAGEAVAILABLE indicates whether this page has an image
-        if (ret.getDoc().containsKey(SolrConstants.FILENAME) && ret.getDoc().containsKey(SolrConstants.MIMETYPE)
-                && ((String) ret.getDoc().getFieldValue(SolrConstants.MIMETYPE)).startsWith("image")) {
+        if (hasImage(ret.getDoc())) {
             ret.getDoc().addField(FIELD_IMAGEAVAILABLE, true);
             recordHasImages = true;
         } else {

@@ -1362,11 +1362,40 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         assertEquals("34192383.xml", result.getRecordFileName());
         Assertions.assertNull(result.getError());
 
+        SolrDocument mainDoc = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI, "34192383", SolrConstants.ISWORK, "true"),
+                        List.of("MIMETYPE", "FILENAME*", "ORDER", "BOOL_IMAGEAVAILABLE"))
+                .get(0);
+        //image are available since there is a PDF Page PRESENTATION filegroup element
+        Assertions.assertTrue((Boolean) mainDoc.getFieldValue("BOOL_IMAGEAVAILABLE"));
+        Assertions.assertEquals("image/jpeg", mainDoc.getFieldValue(SolrConstants.MIMETYPE));
+
         SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
         assertEquals(1, docList.stream().filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
         assertTrue(docList.stream()
                 .filter(doc -> "DOCSTRCT".equals(doc.getFieldValue(SolrConstants.DOCTYPE)))
                 .allMatch(doc -> Long.valueOf(1).equals(doc.getFieldValue(SolrConstants.MDNUM_DOWNLOAD_RESOURCES))));
+    }
+
+    @Test
+    void index_shouldIndexDownloadResourcesNoPages() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/download_resources/34192383_nopages.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI_TOPSTRUCT + ":34192383", null);
+        SolrDocument mainDoc = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":34192383", null).get(0);
+
+        assertEquals(0, docList.stream().filter(doc -> "PAGE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+        assertEquals(1, docList.stream().filter(doc -> "DOWNLOAD_RESOURCE".equals(doc.getFieldValue(SolrConstants.DOCTYPE))).count());
+
+        //no image are available since there is no PRESENTATION filegroup element
+        Assertions.assertFalse((Boolean) mainDoc.getFieldValue("BOOL_IMAGEAVAILABLE"));
+        Assertions.assertEquals("application/pdf", mainDoc.getFieldValue(SolrConstants.MIMETYPE));
     }
 
     @Test
@@ -1391,6 +1420,41 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
         Assertions.assertTrue(mimetypeMap.get("image/tiff").stream().allMatch(doc -> doc.getFieldValue("FILENAME").toString().matches("\\w+\\.tif")));
         Assertions.assertTrue(mimetypeMap.get("audio/ogg").stream().allMatch(doc -> doc.getFieldValue("FILENAME").toString().matches("\\w+\\.ogg")));
+
+    }
+
+    @Test
+    void index_shouldIndexPdfPages() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        Path metPath = Paths.get("src/test/resources/METS/34192383_pdfpages.xml").toAbsolutePath();
+        MetsIndexer indexer = new MetsIndexer(hotfolder, List.of("OGG", "MP3", "PRESENTATION"));
+        IndexingResult result = indexer.index(metPath, dataFolders, null, 1, false);
+        assertEquals("34192383_2.xml", result.getRecordFileName());
+        Assertions.assertNull(result.getError());
+
+        SolrDocument mainDoc = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI, "34192383_2", SolrConstants.ISWORK, "true"),
+                        List.of("MIMETYPE", "FILENAME*", "ORDER", "BOOL_IMAGEAVAILABLE"))
+                .get(0);
+        Assertions.assertEquals(mainDoc.get("MIMETYPE"), "application/pdf");
+        Assertions.assertEquals(mainDoc.get("BOOL_IMAGEAVAILABLE"), Boolean.TRUE);
+
+        SolrDocumentList docList = SolrIndexerDaemon.getInstance()
+                .getSearchIndex()
+                .search("+%s:%s +%s:%s".formatted(SolrConstants.PI_TOPSTRUCT, "34192383_2", SolrConstants.DOCTYPE, "PAGE"),
+                        List.of("MIMETYPE", "FILENAME*", "ORDER", "BOOL_IMAGEAVAILABLE"));
+        Assertions.assertEquals(37, docList.size());
+
+        Map<String, List<SolrDocument>> mimetypeMap = docList.stream()
+                .collect(Collectors.toMap(doc -> doc.getFirstValue("MIMETYPE").toString(), doc -> new ArrayList<>(List.of(doc)),
+                        (d1, d2) -> new ArrayList<>(CollectionUtils.union(d1, d2))));
+        Assertions.assertEquals(37, mimetypeMap.get("application/pdf").size());
+
+        Map<Boolean, List<SolrDocument>> hasImagesMap = docList.stream()
+                .collect(Collectors.toMap(doc -> (Boolean) doc.getFirstValue("BOOL_IMAGEAVAILABLE"), doc -> new ArrayList<>(List.of(doc)),
+                        (d1, d2) -> new ArrayList<>(CollectionUtils.union(d1, d2))));
+        Assertions.assertEquals(37, hasImagesMap.get(Boolean.TRUE).size());
 
     }
 

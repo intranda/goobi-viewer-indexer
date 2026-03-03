@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets OBJID="48683" xsi:schemaLocation="http://www.loc.gov/standards/premis/ http://www.loc.gov/standards/premis/v2/premis-v2-0.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://zvdd.gdz-cms.de/ 
+	  http://pfad/zu/schema/xsd/zvdd.xsd
+	   http://www.loc.gov/standards/mix/ http://www.loc.gov/standards/mix/mix.xsd" xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:dv="http://dfg-viewer.de/" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <mets:metsHdr CREATEDATE="2019-12-29T12:32:42Z">
+      <mets:agent OTHERTYPE="SOFTWARE" ROLE="CREATOR" TYPE="OTHER">
+         <mets:name>Goobi - 39bca - 2018-12-15 22:54:42+0000</mets:name>
+         <mets:note>Goobi</mets:note>
+      </mets:agent>
+   </mets:metsHdr>
+   <mets:dmdSec ID="DMDLOG_0000">
+      <mets:mdWrap MDTYPE="MODS">
+         <mets:xmlData>
+            <mods:mods>
+               <mods:name authority="gnd" authorityURI="http://d-nb.info/gnd/" type="personal" valueURI="http://d-nb.info/gnd/1173112227">
+                  <mods:role>
+                     <mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+                  </mods:role>
+                  <mods:namePart type="family">Zwiers</mods:namePart>
+                  <mods:namePart type="given">Jakob</mods:namePart>
+                  <mods:displayForm>Zwiers, Jakob</mods:displayForm>
+               </mods:name>
+               <mods:name type="personal">
+                  <mods:role>
+                     <mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+                  </mods:role>
+                  <mods:namePart type="family">Behrendt</mods:namePart>
+                  <mods:namePart type="given">Siegfried</mods:namePart>
+                  <mods:displayForm>Behrendt, Siegfried</mods:displayForm>
+               </mods:name>
+               <mods:name authority="gnd" authorityURI="http://d-nb.info/gnd/" type="personal" valueURI="http://d-nb.info/gnd/113701209">
+                  <mods:role>
+                     <mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+                  </mods:role>
+                  <mods:namePart type="family">Göll</mods:namePart>
+                  <mods:namePart type="given">Edgar</mods:namePart>
+                  <mods:displayForm>Göll, Edgar</mods:displayForm>
+               </mods:name>
+               <mods:titleInfo>
+                  <mods:title>Fairphone</mods:title>
+                  <mods:subTitle>Fallstudie</mods:subTitle>
+               </mods:titleInfo>
+               <mods:typeOfResource>text</mods:typeOfResource>
+               <mods:genre authority="marcgt">book</mods:genre>
+               <mods:originInfo>
+                  <mods:place>
+                     <mods:placeTerm type="text" valueURI="http://www.geonames.org/2950159">Berlin</mods:placeTerm>
+                  </mods:place>
+                  <mods:publisher>IZT</mods:publisher>
+                  <mods:dateIssued displayLabel="displayDate">2018</mods:dateIssued>
+                  <mods:dateIssued encoding="w3cdtf" keyDate="yes">2018</mods:dateIssued>
+               </mods:originInfo>
+               <mods:language>
+                  <mods:languageTerm authority="iso639-2b" type="code">ger</mods:languageTerm>
+               </mods:language>
+               <mods:physicalDescription>
+                  <mods:extent>1 Online-Ressource (37 Seiten)</mods:extent>
+                  <mods:digitalOrigin>born digital</mods:digitalOrigin>
+               </mods:physicalDescription>
+               <mods:note type="source characteristics">Datum des Herunterladens: 4.3.2019</mods:note>
+               <mods:note type="statement of responsibility">Jakob Zwiers, Siegfried Behrendt, Edgar Göll</mods:note>
+               <mods:classification authority="ivdcc">dcauthoritydata#geonames</mods:classification>               
+               <mods:classification authority="ddc">330 Wirtschaft</mods:classification>
+               <mods:classification authority="ivdcc">dcborndigital</mods:classification>
+	       <mods:classification authority="ivdcc">dctext#frompdfextracted</mods:classification>
+	       <mods:classification authority="ivdcc">dccoordinates#geonames</mods:classification>
+               <mods:relatedItem type="series">
+                  <mods:titleInfo>
+                     <mods:title>IZT-Text</mods:title>
+                  </mods:titleInfo>
+                  <mods:recordInfo>
+                     <mods:recordIdentifier source="DE-609">15929110</mods:recordIdentifier>
+                  </mods:recordInfo>
+                  <mods:part type="volume">
+                     <mods:detail>
+                        <mods:number>4-2018</mods:number>
+                     </mods:detail>
+                  </mods:part>
+               </mods:relatedItem>
+               <mods:recordInfo>
+                  <mods:recordIdentifier source="DE-609">34192383_2</mods:recordIdentifier>
+               </mods:recordInfo>
+               <mods:identifier type="isbn">9783941374386</mods:identifier>
+               <mods:identifier type="isbn">978-3-941374-38-6</mods:identifier>
+               <mods:accessCondition type="dz">Freier Zugang</mods:accessCondition>
+               <mods:accessCondition type="use and reproduction">Rights reserved</mods:accessCondition>
+            </mods:mods>
+         </mets:xmlData>
+      </mets:mdWrap>
+   </mets:dmdSec>
+   <mets:amdSec ID="AMD">
+      <mets:rightsMD ID="RIGHTS">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVRIGHTS">
+            <mets:xmlData>
+               <dv:rights>
+                  <dv:owner>Zentral- und Landesbibliothek Berlin</dv:owner>
+                  <dv:ownerLogo>https://digital.zlb.de/viewer/resources/themes/zlb/images/zlbdfgviewerlogo.jpg</dv:ownerLogo>
+                  <dv:ownerSiteURL>http://www.zlb.de</dv:ownerSiteURL>
+                  <dv:ownerContact>landesbibliothek-digital@zlb.de</dv:ownerContact>
+               </dv:rights>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:rightsMD>
+      <mets:digiprovMD ID="DIGIPROV">
+         <mets:mdWrap MDTYPE="OTHER" MIMETYPE="text/xml" OTHERMDTYPE="DVLINKS">
+            <mets:xmlData>
+               <dv:links>
+                  <dv:reference>https://www.voebb.de/aDISWeb/app?service=direct/0/Home/$DirectLink&amp;sp=Svb%3A4103&amp;sp=SAK34192383</dv:reference>
+                  <dv:presentation>https://digital.zlb.de/viewer/ppnresolver?id=34192383_2</dv:presentation>
+               </dv:links>
+            </mets:xmlData>
+         </mets:mdWrap>
+      </mets:digiprovMD>
+   </mets:amdSec>
+   <mets:fileSec>
+      <mets:fileGrp USE="PRESENTATION">
+         <mets:file ID="FILE_0001_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000001.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0002_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000002.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0003_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000003.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0004_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000004.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0005_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000005.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0006_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000006.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0007_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000007.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0008_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000008.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0009_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000009.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0010_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000010.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0011_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000011.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0012_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000012.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0013_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000013.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0014_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000014.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0015_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000015.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0016_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000016.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0017_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000017.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0018_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000018.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0019_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000019.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0020_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000020.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0021_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000021.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0022_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000022.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0023_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000023.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0024_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000024.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0025_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000025.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0026_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000026.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0027_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000027.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0028_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000028.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0029_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000029.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0030_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000030.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0031_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000031.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0032_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000032.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0033_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000033.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0034_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000034.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0035_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000035.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0036_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000036.pdf"/>
+         </mets:file>
+         <mets:file ID="FILE_0037_PRESENTATION" MIMETYPE="application/pdf">
+            <mets:FLocat LOCTYPE="URL" xlink:href="file:///opt/digiverso/viewer/media/34192383_2/00000037.pdf"/>
+         </mets:file>
+      </mets:fileGrp>
+   </mets:fileSec>
+   <mets:structMap TYPE="LOGICAL">
+      <mets:div ADMID="AMD" DMDID="DMDLOG_0000" ID="LOG_0000" LABEL="Fairphone" TYPE="monograph"/>
+   </mets:structMap>
+   <mets:structMap TYPE="PHYSICAL">
+      <mets:div ID="PHYS_0000" TYPE="physSequence">
+         <mets:div ID="PHYS_0001" ORDER="1" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0001_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0002" ORDER="2" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0002_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0003" ORDER="3" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0003_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0004" ORDER="4" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0004_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0005" ORDER="5" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0005_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0006" ORDER="6" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0006_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0007" ORDER="7" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0007_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0008" ORDER="8" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0008_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0009" ORDER="9" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0009_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0010" ORDER="10" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0010_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0011" ORDER="11" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0011_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0012" ORDER="12" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0012_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0013" ORDER="13" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0013_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0014" ORDER="14" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0014_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0015" ORDER="15" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0015_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0016" ORDER="16" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0016_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0017" ORDER="17" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0017_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0018" ORDER="18" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0018_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0019" ORDER="19" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0019_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0020" ORDER="20" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0020_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0021" ORDER="21" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0021_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0022" ORDER="22" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0022_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0023" ORDER="23" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0023_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0024" ORDER="24" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0024_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0025" ORDER="25" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0025_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0026" ORDER="26" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0026_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0027" ORDER="27" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0027_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0028" ORDER="28" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0028_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0029" ORDER="29" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0029_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0030" ORDER="30" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0030_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0031" ORDER="31" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0031_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0032" ORDER="32" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0032_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0033" ORDER="33" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0033_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0034" ORDER="34" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0034_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0035" ORDER="35" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0035_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0036" ORDER="36" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0036_PRESENTATION"/>
+         </mets:div>
+         <mets:div ID="PHYS_0037" ORDER="37" ORDERLABEL=" - " TYPE="page">
+            <mets:fptr FILEID="FILE_0037_PRESENTATION"/>
+         </mets:div>
+      </mets:div>
+   </mets:structMap>
+   <mets:structLink>
+      <mets:smLink xlink:to="PHYS_0001" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0002" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0003" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0004" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0005" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0006" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0007" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0008" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0009" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0010" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0011" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0012" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0013" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0014" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0015" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0016" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0017" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0018" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0019" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0020" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0021" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0022" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0023" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0024" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0025" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0026" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0027" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0028" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0029" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0030" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0031" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0032" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0033" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0034" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0035" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0036" xlink:from="LOG_0000"/>
+      <mets:smLink xlink:to="PHYS_0037" xlink:from="LOG_0000"/>
+   </mets:structLink>
+</mets:mets>

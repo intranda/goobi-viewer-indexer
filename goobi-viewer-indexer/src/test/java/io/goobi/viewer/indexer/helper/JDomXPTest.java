@@ -41,7 +41,7 @@ class JDomXPTest extends AbstractTest {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
         Assertions.assertEquals(FileFormat.METS, JDomXP.determineFileFormat(file));
-        
+
         // File containing both MODS and MARC
         file = new File("src/test/resources/METS/BV048249088.xml");
         Assertions.assertTrue(file.isFile());
@@ -382,4 +382,5 @@ class JDomXPTest extends AbstractTest {
         Element eleMdWrap = xp.getMdWrap("DMDLOG_0003");
         Assertions.assertNotNull(eleMdWrap);
     }
+
 }
