@@ -414,14 +414,10 @@ public final class FileTools {
      * @should only delete folders that match fileNameRoot
      */
     public static void deleteUnsupportedDataFolders(Path hotfolderPath, String fileNameRoot) throws IOException {
-        Pattern p = Pattern.compile(fileNameRoot + "_[a-z]+");
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, new DirectoryStream.Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                Matcher m = p.matcher(entry.getFileName().toString());
-                return m.matches();
-            }
-        })) {
+        Pattern p = Pattern.compile(Pattern.quote(fileNameRoot) + "_[a-z]+");
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(
+                hotfolderPath,
+                entry -> p.matcher(entry.getFileName().toString()).matches())) {
             for (Path path : stream) {
                 if (Files.isDirectory(path)) {
                     if (Utils.deleteDirectory(path)) {
