@@ -17,24 +17,35 @@ package io.goobi.viewer.indexer.helper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.util.List;
 
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author florian
  *
  */
 public class HttpConnector {
+
+    private static final Logger logger = LogManager.getLogger(HttpConnector.class);
 
     //handles URL connection for downloading external images. Avoids having too many open http-connections
     private final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
@@ -47,12 +58,27 @@ public class HttpConnector {
     /**
      * @param url
      * @param file
+     * @deprecated Use {@link #downloadFile(URI, Path, long, List)} instead
      */
+    @Deprecated(since = "26.03")
     public void downloadFile(URI url, Path file) throws IOException {
+        downloadFile(url, file, 512L * 1024 * 1024, null);
+    }
+
+    /**
+     * Downloads a file from the given URI, enforcing a maximum file size and validating redirect targets against SSRF.
+     *
+     * @param url the source URI
+     * @param file the target file path
+     * @param maxBytes maximum allowed download size in bytes (0 = unlimited)
+     * @param allowedUrlPrefixes URL prefixes to validate redirect targets against (may be null)
+     * @throws IOException if the download fails or limits are exceeded
+     */
+    public void downloadFile(URI url, Path file, long maxBytes, List<String> allowedUrlPrefixes) throws IOException {
 
         CloseableHttpClient client = HttpClientBuilder.create()
                 .setConnectionManager(connectionManager)
-                .setRedirectStrategy(new LaxRedirectStrategy())
+                .setRedirectStrategy(new SafeRedirectStrategy(allowedUrlPrefixes))
                 .build();
         HttpGet request = new HttpGet(url);
         RequestConfig config =
@@ -66,9 +92,59 @@ public class HttpConnector {
             if (response.getStatusLine().getStatusCode() >= 400) {
                 throw new IOException("Cannot resolve url '" + url + "' successfully. Status code = " + response.getStatusLine().getStatusCode());
             }
-            try (InputStream inStream = response.getEntity().getContent()) {
-                Files.copy(inStream, file, StandardCopyOption.REPLACE_EXISTING);
+
+            // Check Content-Length header before downloading
+            if (maxBytes > 0) {
+                Header contentLengthHeader = response.getFirstHeader("Content-Length");
+                if (contentLengthHeader != null) {
+                    long contentLength = Long.parseLong(contentLengthHeader.getValue());
+                    if (contentLength > maxBytes) {
+                        throw new IOException(
+                                "Response too large: " + contentLength + " bytes exceeds limit of " + maxBytes + " bytes for URL: " + url);
+                    }
+                }
             }
+
+            long totalBytesRead = 0;
+            try (InputStream inStream = response.getEntity().getContent();
+                    OutputStream outStream = Files.newOutputStream(file)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = inStream.read(buffer)) != -1) {
+                    totalBytesRead += bytesRead;
+                    if (maxBytes > 0 && totalBytesRead > maxBytes) {
+                        break;
+                    }
+                    outStream.write(buffer, 0, bytesRead);
+                }
+            }
+            if (maxBytes > 0 && totalBytesRead > maxBytes) {
+                Files.deleteIfExists(file);
+                throw new IOException(
+                        "Download exceeded maximum size of " + maxBytes + " bytes for URL: " + url);
+            }
+        }
+    }
+
+    /**
+     * Redirect strategy that validates redirect targets against SSRF protection rules.
+     */
+    private static class SafeRedirectStrategy extends LaxRedirectStrategy {
+
+        private final List<String> allowedUrlPrefixes;
+
+        SafeRedirectStrategy(List<String> allowedUrlPrefixes) {
+            this.allowedUrlPrefixes = allowedUrlPrefixes;
+        }
+
+        @Override
+        public HttpUriRequest getRedirect(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
+            HttpUriRequest redirect = super.getRedirect(request, response, context);
+            URI redirectUri = redirect.getURI();
+            if (!SsrfProtection.isRedirectAllowed(redirectUri, allowedUrlPrefixes)) {
+                throw new ProtocolException("SSRF protection: redirect to disallowed URL blocked: " + redirectUri);
+            }
+            return redirect;
         }
     }
 }

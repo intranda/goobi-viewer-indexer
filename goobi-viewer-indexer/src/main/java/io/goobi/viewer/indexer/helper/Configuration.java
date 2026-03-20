@@ -823,4 +823,32 @@ public final class Configuration {
         return getBoolean("performance.loadExternalImageInfos", true);
     }
 
+    /**
+     * Returns true if external image download is enabled.
+     *
+     * @return a boolean
+     */
+    public boolean isImageDownloadEnabled() {
+        return getBoolean("init.imageDownload[@enabled]", true);
+    }
+
+    /**
+     * Returns the list of allowed URL prefixes for external image downloads.
+     *
+     * @return a {@link java.util.List} object
+     */
+    public List<String> getAllowedImageDownloadUrls() {
+        return getStringList("init.imageDownload.allowedUrls.url");
+    }
+
+    /**
+     * Returns the maximum file size in bytes for external image downloads.
+     *
+     * @return max file size in bytes
+     */
+    public long getImageDownloadMaxFileSize() {
+        long mb = getInt("init.imageDownload.maxFileSizeInMB", 512);
+        return mb * 1024 * 1024;
+    }
+
 }

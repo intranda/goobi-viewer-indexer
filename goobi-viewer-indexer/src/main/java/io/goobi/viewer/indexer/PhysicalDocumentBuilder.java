@@ -45,8 +45,10 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FulltextAugmentor;
 import io.goobi.viewer.indexer.helper.HttpConnector;
+import io.goobi.viewer.indexer.helper.SsrfProtection;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -360,15 +362,21 @@ public class PhysicalDocumentBuilder {
                     }
 
                     String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
-                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
+                    Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+                    if (downloadExternalImages && config.isImageDownloadEnabled()
+                            && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                             && !filePath.startsWith(viewerUrl)) {
-                        logger.info("Downloading file: {}", filePath);
-                        try {
-                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName))
-                                    .getFileName()
-                                    .toString();
-                        } catch (IOException | URISyntaxException e) {
-                            logger.warn("Could not download file: {}", filePath);
+                        if (!SsrfProtection.isUrlAllowed(filePath, config.getAllowedImageDownloadUrls())) {
+                            logger.warn("Skipping download of disallowed URL: {}", filePath);
+                        } else {
+                            logger.info("Downloading file: {}", filePath);
+                            try {
+                                filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName))
+                                        .getFileName()
+                                        .toString();
+                            } catch (IOException | URISyntaxException e) {
+                                logger.warn("Could not download file: {}", filePath);
+                            }
                         }
                     }
                     ret.getDoc().addField(SolrConstants.FILENAME, filePath);
@@ -794,7 +802,9 @@ public class PhysicalDocumentBuilder {
                 useTargetPath = useTargetPath.resolve(fileName);
             }
         }
-        httpConnector.downloadFile(new URI(fileUrl), useTargetPath);
+        Configuration dlConfig = SolrIndexerDaemon.getInstance().getConfiguration();
+        httpConnector.downloadFile(new URI(fileUrl), useTargetPath, dlConfig.getImageDownloadMaxFileSize(),
+                dlConfig.getAllowedImageDownloadUrls());
         if (Files.isRegularFile(useTargetPath)) {
             logger.info("Downloaded {}", useTargetPath);
             return useTargetPath.toAbsolutePath().toString();
