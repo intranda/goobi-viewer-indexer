@@ -110,7 +110,8 @@ public class MetsIndexer extends Indexer {
     protected static final String[] DATA_FOLDER_PARAMS =
             { DataRepository.PARAM_MEDIA, DataRepository.PARAM_FULLTEXT, DataRepository.PARAM_FULLTEXTCROWD, DataRepository.PARAM_ABBYY,
                     DataRepository.PARAM_TEIWC, DataRepository.PARAM_ALTO, DataRepository.PARAM_ALTOCROWD, DataRepository.PARAM_MIX,
-                    DataRepository.PARAM_UGC, DataRepository.PARAM_CMS, DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS };
+                    DataRepository.PARAM_UGC, DataRepository.PARAM_CMS, DataRepository.PARAM_TEIMETADATA, DataRepository.PARAM_ANNOTATIONS,
+                    DataRepository.PARAM_MEI };
 
     protected static final String XPATH_DMDSEC = "/mets:mets/mets:dmdSec[@ID='"; //NOSONAR XPath, not URI
     public static final String XPATH_FILE = "mets:file";
