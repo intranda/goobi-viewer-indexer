@@ -23,6 +23,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * Tests for {@link SsrfProtection} — validates SSRF protection logic including URL allowlisting,
+ * private/internal IP blocking, scheme validation, and host resolution checks.
+ */
 class SsrfProtectionTest {
 
     /**

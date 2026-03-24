@@ -851,4 +851,34 @@ public final class Configuration {
         return mb * 1024 * 1024;
     }
 
+    /**
+     * Returns true if external fulltext/ALTO download is enabled.
+     *
+     * @return a boolean
+     * @should return correct value
+     */
+    public boolean isFulltextDownloadEnabled() {
+        return getBoolean("init.fulltextDownload[@enabled]", true);
+    }
+
+    /**
+     * Returns the list of allowed URL prefixes for external fulltext/ALTO downloads.
+     *
+     * @return a {@link java.util.List} object
+     * @should return all configured values
+     */
+    public List<String> getAllowedFulltextDownloadUrls() {
+        return getStringList("init.fulltextDownload.allowedUrls.url");
+    }
+
+    /**
+     * Returns true if file:// URLs are allowed for ALTO downloads.
+     *
+     * @return a boolean
+     * @should return false by default
+     */
+    public boolean isFulltextDownloadAllowFileUrls() {
+        return getBoolean("init.fulltextDownload.allowFileUrls", false);
+    }
+
 }

@@ -177,6 +177,17 @@
 				<!-- <url>https://trusted-iiif-server.example.com/</url> -->
 			</allowedUrls>
 		</imageDownload>
+
+		<!-- fulltextDownload: Controls external ALTO/fulltext downloading from METS file group URLs.
+		     enabled: If false, external fulltext download is completely disabled (default: true).
+		     allowedUrls/url: URL prefixes that are permitted for download. If no URLs are configured, all non-private URLs are allowed.
+		     allowFileUrls: If true, file:// URLs are allowed for ALTO downloads (default: false). Only enable in trusted environments. -->
+		<fulltextDownload enabled="true">
+			<allowFileUrls>false</allowFileUrls>
+			<allowedUrls>
+				<!-- <url>https://trusted-content-server.example.com/</url> -->
+			</allowedUrls>
+		</fulltextDownload>
 	</init>
 
 	<!-- proxy/@enabled: If false, the proxy configuration will be ignored; default is false. -->
