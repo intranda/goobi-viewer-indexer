@@ -63,4 +63,35 @@ class PhysicalDocumentBuilderTest extends AbstractSolrEnabledTest {
         Assertions.assertFalse(builder.isFileGroupExists());
     }
 
+    /**
+     * @see PhysicalDocumentBuilder#getImageDimensionsFromIIIF(String)
+     * @verifies return empty array for null url
+     */
+    @Test
+    void getImageDimensionsFromIIIF_shouldReturnEmptyArrayForNullUrl() {
+        assertEquals(0, PhysicalDocumentBuilder.getImageDimensionsFromIIIF(null).length);
+        assertEquals(0, PhysicalDocumentBuilder.getImageDimensionsFromIIIF("").length);
+    }
+
+    /**
+     * @see PhysicalDocumentBuilder#getImageDimensionsFromIIIF(String)
+     * @verifies return empty array for localhost url
+     */
+    @Test
+    void getImageDimensionsFromIIIF_shouldReturnEmptyArrayForLocalhostUrl() {
+        assertEquals(0, PhysicalDocumentBuilder.getImageDimensionsFromIIIF("http://localhost:8182/iiif/3/image/info.json").length);
+        assertEquals(0, PhysicalDocumentBuilder.getImageDimensionsFromIIIF("http://127.0.0.1:8182/iiif/3/image/info.json").length);
+    }
+
+    /**
+     * @see PhysicalDocumentBuilder#getImageDimensionsFromIIIF(String)
+     * @verifies return empty array for private IP url
+     */
+    @Test
+    void getImageDimensionsFromIIIF_shouldReturnEmptyArrayForPrivateIpUrl() {
+        assertEquals(0, PhysicalDocumentBuilder.getImageDimensionsFromIIIF("http://192.168.1.100:8182/iiif/3/image/info.json").length);
+        assertEquals(0, PhysicalDocumentBuilder.getImageDimensionsFromIIIF("http://10.0.0.5:8182/iiif/3/image/info.json").length);
+        assertEquals(0, PhysicalDocumentBuilder.getImageDimensionsFromIIIF("http://169.254.169.254/latest/meta-data/info.json").length);
+    }
+
 }

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -845,15 +846,28 @@ public class PhysicalDocumentBuilder {
      * @param url
      * @return int[]
      * @should fetch dimensions correctly
+     * @should return empty array for null url
+     * @should return empty array for localhost url
+     * @should return empty array for private IP url
      */
-    private static int[] getImageDimensionsFromIIIF(String url) {
+    static int[] getImageDimensionsFromIIIF(String url) {
         if (StringUtils.isEmpty(url)) {
+            return new int[0];
+        }
+
+        // SSRF protection: validate URL before fetching
+        Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+        if (!SsrfProtection.isUrlAllowed(url, config.getAllowedImageDownloadUrls())) {
+            logger.warn("SSRF protection: skipping disallowed IIIF URL: {}", url);
             return new int[0];
         }
 
         try {
             URI uri = new URI(url);
-            JSONTokener tokener = new JSONTokener(uri.toURL().openStream());
+            URLConnection conn = uri.toURL().openConnection();
+            conn.setConnectTimeout(10_000);
+            conn.setReadTimeout(10_000);
+            JSONTokener tokener = new JSONTokener(conn.getInputStream());
             JSONObject root = new JSONObject(tokener);
             int width = root.getInt("width");
             int height = root.getInt("height");
