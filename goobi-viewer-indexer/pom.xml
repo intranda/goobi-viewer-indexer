@@ -69,7 +69,7 @@
 		<metadata-extractor.version>2.19.0</metadata-extractor.version>
 		<solr.version>9.10.1</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
-		<pdfbox.version>3.0.6</pdfbox.version>
+		<pdfbox.version>3.0.7</pdfbox.version>
 	</properties>
 
 
