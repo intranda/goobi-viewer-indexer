@@ -578,4 +578,38 @@ class MetadataHelperTest extends AbstractTest {
     void toOneToken_shouldReplaceSplittingChar() {
         assertEquals("foo.bar", MetadataHelper.toOneToken("foo#bar", "#"));
     }
+
+    /**
+     * @see MetadataHelper#sanitizeAuthorityUrl(String)
+     * @verifies trim whitespace
+     */
+    @Test
+    void sanitizeAuthorityUrl_shouldTrimWhitespace() {
+        assertEquals("http://www.geonames.org/2960267", MetadataHelper.sanitizeAuthorityUrl("  http://www.geonames.org/2960267  "));
+    }
+
+    /**
+     * @see MetadataHelper#sanitizeAuthorityUrl(String)
+     * @verifies use only first line if url contains newline
+     */
+    @Test
+    void sanitizeAuthorityUrl_shouldUseOnlyFirstLineIfUrlContainsNewline() {
+        // Malformed XML data: two GeoNames IDs concatenated with a newline in one element
+        assertEquals("http://www.geonames.org/2960267",
+                MetadataHelper.sanitizeAuthorityUrl("http://www.geonames.org/2960267\n2960682"));
+        // Also handles carriage return
+        assertEquals("http://www.geonames.org/2960267",
+                MetadataHelper.sanitizeAuthorityUrl("http://www.geonames.org/2960267\r\n2960682"));
+    }
+
+    /**
+     * @see MetadataHelper#sanitizeAuthorityUrl(String)
+     * @verifies return empty string for blank input
+     */
+    @Test
+    void sanitizeAuthorityUrl_shouldReturnEmptyStringForBlankInput() {
+        assertEquals("", MetadataHelper.sanitizeAuthorityUrl(null));
+        assertEquals("", MetadataHelper.sanitizeAuthorityUrl(""));
+        assertEquals("", MetadataHelper.sanitizeAuthorityUrl("   "));
+    }
 }

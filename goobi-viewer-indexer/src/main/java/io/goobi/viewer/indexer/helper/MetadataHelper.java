@@ -495,7 +495,10 @@ public final class MetadataHelper {
             return Collections.emptyList();
         }
 
-        url = url.trim();
+        url = sanitizeAuthorityUrl(url);
+        if (url.isEmpty()) {
+            return Collections.emptyList();
+        }
         boolean authorityDataCacheEnabled = SolrIndexerDaemon.getInstance().getConfiguration().isAuthorityDataCacheEnabled();
 
         Record rec = authorityDataCache.get(url);
@@ -524,7 +527,13 @@ public final class MetadataHelper {
                 logger.error(e.getMessage());
             }
 
-            rec = NormDataImporter.getSingleRecord(url, proxyUrl, proxyPort);
+            try {
+                rec = NormDataImporter.getSingleRecord(url, proxyUrl, proxyPort);
+            } catch (IllegalArgumentException e) {
+                // Catch invalid URLs (e.g. containing illegal characters) that slip through sanitization
+                logger.error("Invalid authority URL '{}': {}", url, e.getMessage());
+                return Collections.emptyList();
+            }
             if (rec == null) {
                 logger.warn("Authority dataset could not be retrieved: {}", url);
                 return Collections.emptyList();
@@ -1169,7 +1178,30 @@ public final class MetadataHelper {
     }
 
     /**
-     * 
+     * Sanitizes an authority URL by trimming whitespace and, if the URL contains embedded newline
+     * characters (malformed XML data with multiple identifiers in one element), using only the first line.
+     *
+     * @param url Raw authority URL
+     * @return Sanitized URL, never null but may be empty
+     * @should trim whitespace
+     * @should use only first line if url contains newline
+     * @should return empty string for blank input
+     */
+    static String sanitizeAuthorityUrl(String url) {
+        if (url == null) {
+            return "";
+        }
+        url = url.trim();
+        if (url.contains("\n") || url.contains("\r")) {
+            String sanitized = url.split("[\\n\\r]")[0].trim();
+            logger.warn("Authority URL contains newline characters, only using first line: '{}' -> '{}'", url, sanitized);
+            url = sanitized;
+        }
+        return url;
+    }
+
+    /**
+     *
      * @param ele Relative JDOM2 root element
      * @param groupEntity {@link GroupEntity} configuration from which to create the {@link GroupedMetadata}
      * @param configurationItem Master field configuration
