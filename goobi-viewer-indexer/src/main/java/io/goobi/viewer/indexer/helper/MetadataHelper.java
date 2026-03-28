@@ -1191,13 +1191,14 @@ public final class MetadataHelper {
         if (url == null) {
             return "";
         }
-        url = url.trim();
-        if (url.contains("\n") || url.contains("\r")) {
-            String sanitized = url.split("[\\n\\r]")[0].trim();
-            logger.warn("Authority URL contains newline characters, only using first line: '{}' -> '{}'", url, sanitized);
-            url = sanitized;
+        // Use a local variable to avoid parameter reassignment (checkstyle)
+        String result = url.trim();
+        if (result.contains("\n") || result.contains("\r")) {
+            String sanitized = result.split("[\\n\\r]")[0].trim();
+            logger.warn("Authority URL contains newline characters, only using first line: '{}' -> '{}'", result, sanitized);
+            result = sanitized;
         }
-        return url;
+        return result;
     }
 
     /**
