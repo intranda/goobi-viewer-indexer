@@ -215,6 +215,7 @@ public final class Utils {
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
             throws IOException, HTTPException {
         if (StringUtils.isEmpty(token)) {
+            logger.warn("Cannot update viewer data repository cache: no authorization token configured");
             return;
         }
 
