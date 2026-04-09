@@ -46,6 +46,8 @@ import io.goobi.viewer.indexer.model.datarepository.strategy.IDataRepositoryStra
  * <p>
  * DataRepository class.
  * </p>
+ * 
+ * When introducing new data folder types, also update *Indexer.DATA_FOLDER_PARAMS!
  *
  */
 public class DataRepository {
