@@ -84,7 +84,10 @@ public final class DateTools {
      * @should parse year ranges correctly
      * @should parse single years correctly
      * @should throw IllegalArgumentException if normalizeYearMinDigits less than 1
+     * @should ignore values with too many digits
      */
+    private static final int MAX_YEAR_DIGITS = 5;
+
     static List<PrimitiveDate> normalizeDate(String dateString, int normalizeYearMinDigits) {
         if (normalizeYearMinDigits < 1) {
             throw new IllegalArgumentException("normalizeYearMinDigits must be at least 1");
@@ -159,7 +162,7 @@ public final class DateTools {
             while (m.find()) {
                 try {
                     String sub = dateString.substring(m.start(), m.end());
-                    if (sub.length() >= normalizeYearMinDigits) {
+                    if (sub.length() >= normalizeYearMinDigits && sub.length() <= MAX_YEAR_DIGITS) {
                         int year = Integer.parseInt(sub);
                         ret.add(new PrimitiveDate(year, null, null));
                     }
@@ -175,7 +178,8 @@ public final class DateTools {
         while (m.find()) {
             try {
                 String sub = dateString.substring(m.start(), m.end());
-                if (sub.length() >= (sub.charAt(0) == '-' ? (normalizeYearMinDigits + 1) : normalizeYearMinDigits)) {
+                int digitLength = sub.charAt(0) == '-' ? sub.length() - 1 : sub.length();
+                if (digitLength >= normalizeYearMinDigits && digitLength <= MAX_YEAR_DIGITS) {
                     int year = Integer.parseInt(sub);
                     ret.add(new PrimitiveDate(year, null, null));
                 }

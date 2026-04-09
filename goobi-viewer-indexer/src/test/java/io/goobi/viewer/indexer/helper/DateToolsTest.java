@@ -117,6 +117,22 @@ class DateToolsTest {
     }
 
     /**
+     * @see DateTools#normalizeDate(String,int)
+     * @verifies ignore values with too many digits
+     */
+    @Test
+    void normalizeDate_shouldIgnoreValuesWithTooManyDigits() throws Exception {
+        // Concatenated date range "1848-1848" stripped of hyphens should not produce year 18481848
+        List<PrimitiveDate> ret = DateTools.normalizeDate("18481848", 3);
+        Assertions.assertTrue(ret.isEmpty());
+
+        // Also test in a string with other content
+        ret = DateTools.normalizeDate("18481848 1900", 3);
+        Assertions.assertEquals(1, ret.size());
+        Assertions.assertEquals(Integer.valueOf(1900), ret.get(0).getYear());
+    }
+
+    /**
      * @see DateTools#normalizeDateFieldValue(String)
      * @verifies format years correctly
      */
