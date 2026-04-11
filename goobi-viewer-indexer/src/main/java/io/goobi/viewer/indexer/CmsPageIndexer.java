@@ -282,7 +282,7 @@ public class CmsPageIndexer extends Indexer {
                 }
             }
 
-            if (sbDefault.length() > 0) {
+            if (!sbDefault.isEmpty()) {
                 indexObj.setDefaultValue(sbDefault.toString());
             }
 
