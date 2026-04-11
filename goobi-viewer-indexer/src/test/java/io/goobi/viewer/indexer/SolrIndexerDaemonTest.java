@@ -33,7 +33,7 @@ class SolrIndexerDaemonTest extends AbstractTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         // Reset config before every test
         SolrIndexerDaemon.getInstance().injectConfiguration(new Configuration(TEST_CONFIG_PATH));
     }

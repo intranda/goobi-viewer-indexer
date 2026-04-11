@@ -84,14 +84,14 @@ class IndexerTest extends AbstractSolrEnabledTest {
     }
 
     @BeforeAll
-    public static void setUpBeforeClass() {
+    static void setUpBeforeClass() {
         File libraryFile = new File("src/test/resources/lib/libopenjp2.so");
         libraryPath = System.getProperty("java.library.path");
         System.setProperty("java.library.path", libraryPath + ":" + libraryFile.getParentFile().getAbsolutePath());
     }
 
     @AfterAll
-    public static void cleanUpAfterClass() {
+    static void cleanUpAfterClass() {
         if (StringUtils.isNotBlank(libraryPath)) {
             System.setProperty("java.library.path", libraryPath);
         }

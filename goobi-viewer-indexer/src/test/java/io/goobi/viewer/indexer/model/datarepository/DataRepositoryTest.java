@@ -54,7 +54,7 @@ class DataRepositoryTest extends AbstractTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         File indexerFolder = new File("target/indexer");
         if (indexerFolder.isDirectory()) {
             logger.info("Deleting {}...", indexerFolder);
