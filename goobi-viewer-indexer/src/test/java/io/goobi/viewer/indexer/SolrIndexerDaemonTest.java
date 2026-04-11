@@ -46,7 +46,7 @@ class SolrIndexerDaemonTest extends AbstractTest {
     void init_shouldThrowFatalIndexerExceptionIfSolrSchemaNameCouldNotBeChecked() throws Exception {
         SolrIndexerDaemon instance = SolrIndexerDaemon.getInstance();
         instance.getConfiguration().overrideValue("init.solrUrl", "https://foo.bar/schema.xml");
-        Assertions.assertThrows(FatalIndexerException.class, () -> instance.init());
+        Assertions.assertThrows(FatalIndexerException.class, instance::init);
     }
 
     /**
