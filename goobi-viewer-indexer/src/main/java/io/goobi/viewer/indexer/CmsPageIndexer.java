@@ -65,6 +65,9 @@ public class CmsPageIndexer extends Indexer {
     /** Logger for this class. */
     private static final Logger logger = LogManager.getLogger(CmsPageIndexer.class);
 
+    // Constant for the MD_TITLE Solr field name used multiple times in this class
+    private static final String MD_TITLE = "MD_TITLE";
+
     /**
      * Constructor.
      *
@@ -241,16 +244,16 @@ public class CmsPageIndexer extends Indexer {
                         indexObj.setLabel(eleTitle.getTextTrim());
                     }
                     if (eleTitle.getAttribute("lang") != null) {
-                        indexObj.addToLucene("MD_TITLE" + SolrConstants.MIDFIX_LANG + eleTitle.getAttributeValue("lang").toUpperCase(),
+                        indexObj.addToLucene(MD_TITLE + SolrConstants.MIDFIX_LANG + eleTitle.getAttributeValue("lang").toUpperCase(),
                                 eleTitle.getTextTrim());
                     } else {
-                        indexObj.addToLucene("MD_TITLE", eleTitle.getTextTrim());
+                        indexObj.addToLucene(MD_TITLE, eleTitle.getTextTrim());
                     }
                     List<FieldConfig> configurationItemList =
                             SolrIndexerDaemon.getInstance()
                                     .getConfiguration()
                                     .getMetadataConfigurationManager()
-                                    .getConfigurationListForField("MD_TITLE");
+                                    .getConfigurationListForField(MD_TITLE);
                     if (configurationItemList != null && !configurationItemList.isEmpty() && configurationItemList.get(0).isAddToDefault()) {
                         sbDefault.append(' ').append(eleTitle.getTextTrim());
                     }
