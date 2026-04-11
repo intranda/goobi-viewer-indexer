@@ -26,7 +26,7 @@ class SolrInputDocPageOrderComparatorTest {
      * @verifies compareCorrectly
      */
     @Test
-    void compare_shouldCompareCorrectly() throws Exception {
+    void compare_shouldCompareCorrectly() {
         SolrInputDocument doc1 = new SolrInputDocument();
         doc1.setField(SolrConstants.ORDER, 1);
         SolrInputDocument doc2 = new SolrInputDocument();

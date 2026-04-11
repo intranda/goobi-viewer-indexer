@@ -38,7 +38,7 @@ class FileToolsTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    void compressGzipFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void compressGzipFile_shouldThrowFileNotFoundExceptionIfFileNotFound() {
         File file = new File("notfound.txt");
         Assertions.assertFalse(file.exists());
         Assertions.assertThrows(FileNotFoundException.class, () -> FileTools.compressGzipFile(file, new File("target/test.tar.gz")));
@@ -49,7 +49,7 @@ class FileToolsTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    void decompressGzipFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void decompressGzipFile_shouldThrowFileNotFoundExceptionIfFileNotFound() {
         File gzipFile = new File("notfound.tar.gz");
         Assertions.assertFalse(gzipFile.exists());
         Assertions.assertThrows(FileNotFoundException.class, () -> FileTools.decompressGzipFile(gzipFile, new File("target/target.bla")));
@@ -97,7 +97,7 @@ class FileToolsTest extends AbstractTest {
      * @verifies throw IOException if file not found
      */
     @Test
-    void readFileToString_shouldThrowIOExceptionIfFileNotFound() throws Exception {
+    void readFileToString_shouldThrowIOExceptionIfFileNotFound() {
         File file = new File("src/test/resources/filenotfound.txt");
         Assertions.assertFalse(file.isFile());
         Assertions.assertThrows(IOException.class, () -> FileTools.readFileToString(file, null));

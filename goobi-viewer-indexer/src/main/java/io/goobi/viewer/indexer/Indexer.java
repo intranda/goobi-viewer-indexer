@@ -509,7 +509,7 @@ public abstract class Indexer {
      * @should return empty list if dataFolder null
      */
     List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
-            Map<String, String> groupIds, int order, String fileNameRoot) throws FatalIndexerException {
+            Map<String, String> groupIds, int order, String fileNameRoot) {
         if (dataFolder == null || !Files.isDirectory(dataFolder)) {
             logger.info("UGC folder is empty.");
             return Collections.emptyList();

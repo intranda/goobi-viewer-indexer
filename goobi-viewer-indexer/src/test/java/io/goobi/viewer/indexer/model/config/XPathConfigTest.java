@@ -28,7 +28,7 @@ class XPathConfigTest extends AbstractTest {
      * @verifies set members correctly
      */
     @Test
-    void XPathConfig_shouldSetMembersCorrectly() throws Exception {
+    void XPathConfig_shouldSetMembersCorrectly() {
         XPathConfig xpc = new XPathConfig("path", "pre", "suf");
         Assertions.assertEquals("path", xpc.getxPath());
         Assertions.assertEquals("pre", xpc.getPrefix());

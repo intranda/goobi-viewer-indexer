@@ -48,7 +48,7 @@ class CitationXmlDocumentTest {
      * @verifies find and replace identifier correctly
      */
     @Test
-    void prepare_shouldFindAndReplaceIdentifierCorrectly() throws Exception {
+    void prepare_shouldFindAndReplaceIdentifierCorrectly() {
         Map<String, List<String>> values = new HashMap<>(1);
         values.put("MD_FOO", Collections.singletonList("123"));
         CitationXmlDocument pd = new CitationXmlDocument("https://example.com?id=${MD_FOO}&format=xml");

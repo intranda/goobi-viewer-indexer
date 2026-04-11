@@ -514,7 +514,7 @@ class DataRepositoryTest extends AbstractTest {
      * @verifies return correct path
      */
     @Test
-    void getAbsolutePath_shouldReturnCorrectPath() throws Exception {
+    void getAbsolutePath_shouldReturnCorrectPath() {
         Assertions.assertEquals("target/viewer/data/1", DataRepository.getAbsolutePath("1"));
     }
 

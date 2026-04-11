@@ -58,7 +58,7 @@ class ConfigurationTest extends AbstractTest {
     }
 
     @Test
-    void folderTest() throws Exception {
+    void folderTest() {
         assertTrue(Files.isDirectory(hotfolder.getHotfolderPath()));
         assertTrue(new File(SolrIndexerDaemon.getInstance().getConfiguration().getString("init.viewerHome")).isDirectory());
         assertTrue(Files.isDirectory(hotfolder.getSuccessFolder()));

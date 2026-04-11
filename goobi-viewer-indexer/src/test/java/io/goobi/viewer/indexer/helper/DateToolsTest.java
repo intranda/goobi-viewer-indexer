@@ -31,7 +31,7 @@ class DateToolsTest {
      * @verifies convert date correctly
      */
     @Test
-    void convertDateStringForSolrField_shouldConvertDateCorrectly() throws Exception {
+    void convertDateStringForSolrField_shouldConvertDateCorrectly() {
         Assertions.assertEquals("2016-11-02T00:00:00Z", DateTools.convertDateStringForSolrField("2016-11-02", true));
         Assertions.assertEquals("2016-11-01T00:00:00Z", DateTools.convertDateStringForSolrField("2016-11", true));
         Assertions.assertEquals("2016-01-01T00:00:00Z", DateTools.convertDateStringForSolrField("2016", true));
@@ -43,7 +43,7 @@ class DateToolsTest {
      */
     @ParameterizedTest
     @ValueSource(strings = { "2014-08-05", "05.08.2014", "2014-08-05", "08/05/2014", "2014.08.05", "2014/08/05" })
-    void normalizeDate_shouldParseInternationalDateFormatsCorrectly(String date) throws Exception {
+    void normalizeDate_shouldParseInternationalDateFormatsCorrectly(String date) {
         List<PrimitiveDate> ret = DateTools.normalizeDate(date, 3);
         Assertions.assertEquals(1, ret.size());
         Assertions.assertEquals(Integer.valueOf(2014), ret.get(0).getYear());
@@ -56,7 +56,7 @@ class DateToolsTest {
      * @verifies parse yearmonth correctly
      */
     @Test
-    void normalizeDate_shouldParseYearmonthCorrectly() throws Exception {
+    void normalizeDate_shouldParseYearmonthCorrectly() {
         List<PrimitiveDate> ret = DateTools.normalizeDate("0002-05", 3);
         Assertions.assertEquals(1, ret.size());
         Assertions.assertEquals(Integer.valueOf(2), ret.get(0).getYear());
@@ -68,7 +68,7 @@ class DateToolsTest {
      * @verifies parse year ranges correctly
      */
     @Test
-    void normalizeDate_shouldParseYearRangesCorrectly() throws Exception {
+    void normalizeDate_shouldParseYearRangesCorrectly() {
         List<PrimitiveDate> ret = DateTools.normalizeDate("2010-2014", 3);
         Assertions.assertEquals(2, ret.size());
         Assertions.assertEquals(Integer.valueOf(2010), ret.get(0).getYear());
@@ -90,7 +90,7 @@ class DateToolsTest {
      * @verifies parse single years correctly
      */
     @Test
-    void normalizeDate_shouldParseSingleYearsCorrectly() throws Exception {
+    void normalizeDate_shouldParseSingleYearsCorrectly() {
         List<PrimitiveDate> ret = DateTools.normalizeDate("-300 -30 -3", 2);
         Assertions.assertEquals(2, ret.size());
         Assertions.assertEquals(Integer.valueOf(-300), ret.get(0).getYear());
@@ -112,7 +112,7 @@ class DateToolsTest {
      * @verifies throw IllegalArgumentException if normalizeYearMinDigits less than 1
      */
     @Test
-    void normalizeDate_shouldThrowIllegalArgumentExceptionIfNormalizeYearMinDigitsLessThan1() throws Exception {
+    void normalizeDate_shouldThrowIllegalArgumentExceptionIfNormalizeYearMinDigitsLessThan1() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> DateTools.normalizeDate("05.08.2014", 0));
     }
 
@@ -121,7 +121,7 @@ class DateToolsTest {
      * @verifies format years correctly
      */
     @Test
-    void normalizeDateFieldValue_shouldFormatYearsCorrectly() throws Exception {
+    void normalizeDateFieldValue_shouldFormatYearsCorrectly() {
         Assertions.assertEquals("2022-01-01T00:00:00Z", DateTools.normalizeDateFieldValue("2022"));
     }
 
@@ -130,7 +130,7 @@ class DateToolsTest {
      * @verifies format iso instant correctly
      */
     @Test
-    void normalizeDateFieldValue_shouldFormatIsoInstantCorrectly() throws Exception {
+    void normalizeDateFieldValue_shouldFormatIsoInstantCorrectly() {
         Assertions.assertEquals("2022-01-01T00:01:02Z", DateTools.normalizeDateFieldValue("2022-01-01T00:01:02Z"));
     }
 
@@ -139,7 +139,7 @@ class DateToolsTest {
      * @verifies format iso local time correctly
      */
     @Test
-    void normalizeDateFieldValue_shouldFormatIsoLocalTimeCorrectly() throws Exception {
+    void normalizeDateFieldValue_shouldFormatIsoLocalTimeCorrectly() {
         Assertions.assertEquals("2022-01-01T00:02:03Z", DateTools.normalizeDateFieldValue("2022-01-01T00:02:03"));
     }
 }

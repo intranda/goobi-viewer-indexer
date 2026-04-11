@@ -28,7 +28,7 @@ class ValueNormalizerTest extends AbstractTest {
      * @verifies do nothing if length ok
      */
     @Test
-    void normalize_shouldDoNothingIfLengthOk() throws Exception {
+    void normalize_shouldDoNothingIfLengthOk() {
         ValueNormalizer vn = new ValueNormalizer().setTargetLength(3);
         Assertions.assertEquals("123", vn.normalize("123"));
     }
@@ -38,7 +38,7 @@ class ValueNormalizerTest extends AbstractTest {
      * @verifies normalize too short strings correctly
      */
     @Test
-    void normalize_shouldNormalizeTooShortStringsCorrectly() throws Exception {
+    void normalize_shouldNormalizeTooShortStringsCorrectly() {
         {
             ValueNormalizer vn = new ValueNormalizer().setTargetLength(5);
             Assertions.assertEquals("00123", vn.normalize("123"));
@@ -54,7 +54,7 @@ class ValueNormalizerTest extends AbstractTest {
      * @verifies normalize too long strings correctly
      */
     @Test
-    void normalize_shouldNormalizeTooLongStringsCorrectly() throws Exception {
+    void normalize_shouldNormalizeTooLongStringsCorrectly() {
         {
             ValueNormalizer vn = new ValueNormalizer().setTargetLength(3);
             Assertions.assertEquals("bar", vn.normalize("foobar"));
@@ -70,7 +70,7 @@ class ValueNormalizerTest extends AbstractTest {
      * @verifies normalize regex groups correctly
      */
     @Test
-    void normalize_shouldNormalizeRegexGroupsCorrectly() throws Exception {
+    void normalize_shouldNormalizeRegexGroupsCorrectly() {
         {
             ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("[a-zA-Z]+[\\s]+([0-9]+)[.]([0-9]+).*$");
             Assertions.assertEquals("foo 00004173.00000001 bar", vn.normalize("foo 4173.1 bar"));
@@ -87,7 +87,7 @@ class ValueNormalizerTest extends AbstractTest {
      * @verifies keep parts not matching regex unchanged
      */
     @Test
-    void normalize_shouldKeepPartsNotMatchingRegexUnchanged() throws Exception {
+    void normalize_shouldKeepPartsNotMatchingRegexUnchanged() {
         {
             // front, too short
             ValueNormalizer vn = new ValueNormalizer().setTargetLength(5).setRegex("[0-9]+");
@@ -124,7 +124,7 @@ class ValueNormalizerTest extends AbstractTest {
      * @verifies convert roman numerals correctly
      */
     @Test
-    void normalize_shouldConvertRomanNumeralsCorrectly() throws Exception {
+    void normalize_shouldConvertRomanNumeralsCorrectly() {
         ValueNormalizer vn = new ValueNormalizer().setTargetLength(8).setRegex("foo ([C|I|M|V|X]+)(?:\\.| f\\.| ff\\.| i\\.| ii\\.)[0-9]+.*$").setConvertRoman(true);
         Assertions.assertEquals("foo 1 f.17", vn.normalize("foo I f.17"));
         Assertions.assertEquals("foo 8 ff.1", vn.normalize("foo VIII ff.1"));
