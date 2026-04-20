@@ -268,6 +268,15 @@ class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#isPrioritizeLargeImageFolders()
+     * @verifies return correct value
+     */
+    @Test
+    void isPrioritizeLargeImageFolders_shouldReturnCorrectValue() {
+        assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isPrioritizeLargeImageFolders());
+    }
+
+    /**
      * @see Configuration#isAuthorityDataCacheEnabled()
      * @verifies return correct value
      */
