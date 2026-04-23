@@ -465,6 +465,18 @@ public final class Configuration {
 
     /**
      * <p>
+     * isPrioritizeLargeImageFolders.
+     * </p>
+     *
+     * @should return correct value
+     * @return a boolean
+     */
+    public boolean isPrioritizeLargeImageFolders() {
+        return getBoolean("performance.prioritizeLargeImageFolders", false);
+    }
+
+    /**
+     * <p>
      * isAuthorityDataCacheEnabled.
      * </p>
      *
