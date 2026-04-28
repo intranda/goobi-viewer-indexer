@@ -255,4 +255,46 @@ class UtilsTest extends AbstractTest {
     void isValidImageOrIiifURI_shouldReturnFalseForOtherUris() {
         assertFalse(Utils.isValidImageOrIiifURI("https//example.com/other/text.txt"));
     }
+
+    /**
+     * @see Utils#encodeIllegalUriChars(String)
+     * @verifies encode space as %20
+     */
+    @Test
+    void encodeIllegalUriChars_shouldEncodeSpaceAs20() {
+        assertEquals(
+                "https://oai.bibnet.lu/request?id=oai:alma.352LUX_BIBNET_NETWORK:99001623666%200107251",
+                Utils.encodeIllegalUriChars(
+                        "https://oai.bibnet.lu/request?id=oai:alma.352LUX_BIBNET_NETWORK:99001623666 0107251"));
+    }
+
+    /**
+     * @see Utils#encodeIllegalUriChars(String)
+     * @verifies encode non ascii characters
+     */
+    @Test
+    void encodeIllegalUriChars_shouldEncodeNonAsciiCharacters() {
+        assertEquals("https://example.com/path?q=%C3%A9clair",
+                Utils.encodeIllegalUriChars("https://example.com/path?q=éclair"));
+    }
+
+    /**
+     * @see Utils#encodeIllegalUriChars(String)
+     * @verifies not encode already encoded sequences
+     */
+    @Test
+    void encodeIllegalUriChars_shouldNotEncodeAlreadyEncodedSequences() {
+        String url = "https://example.com/path?q=hello%20world";
+        assertEquals(url, Utils.encodeIllegalUriChars(url));
+    }
+
+    /**
+     * @see Utils#encodeIllegalUriChars(String)
+     * @verifies not encode valid uri characters
+     */
+    @Test
+    void encodeIllegalUriChars_shouldNotEncodeValidUriCharacters() {
+        String url = "https://example.com/path?verb=GetRecord&metadataPrefix=marc21&identifier=oai:alma:123";
+        assertEquals(url, Utils.encodeIllegalUriChars(url));
+    }
 }
