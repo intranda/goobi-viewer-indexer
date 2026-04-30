@@ -328,6 +328,13 @@ public class PhysicalDocumentBuilder {
                 continue;
             }
 
+            // Apply configured URL replacement rules to external URLs
+            String transformedFilePath = SolrIndexerDaemon.getInstance().getConfiguration().applyImageUrlReplaceRules(filePath);
+            if (!filePath.equals(transformedFilePath)) {
+                logger.info("Applied imageUrlReplaceRule: {} -> {}", filePath, transformedFilePath);
+                filePath = transformedFilePath;
+            }
+
             String fileName = getFilename(filePath);
 
             // Mime type

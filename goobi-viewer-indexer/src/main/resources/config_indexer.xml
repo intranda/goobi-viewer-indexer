@@ -219,7 +219,16 @@
 		</authorityDataCache>
 	</performance>
 
-
+	<!-- imageUrlReplaceRules: regex-based URL transformations applied to external image URLs at indexing time.
+	     Each <pattern> has @condition (regex matched against the full URL using Matcher.matches()) and
+	     @replacement (replacement string with $1, $2, ... backrefs).
+	     Rules are evaluated in order; the first match wins. URLs that don't match any rule are stored unchanged. -->
+    <!--
+	<imageUrlReplaceRules>
+		<pattern condition="^https?://foo.bar\.net/(.+?)\?format=image%2Fjpeg$"
+		         replacement="https://example.com/$1"/>
+	</imageUrlReplaceRules>
+    -->
 
 	<!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
 	<languageMapping>

@@ -1771,6 +1771,24 @@ public abstract class Indexer {
             throw new IllegalArgumentException("fileName may not be null");
         }
 
+        // Apply configured URL replacement rules
+        String transformedUrl = SolrIndexerDaemon.getInstance().getConfiguration().applyImageUrlReplaceRules(url);
+        if (!url.equals(transformedUrl)) {
+            logger.info("Applied imageUrlReplaceRule: {} -> {}", url, transformedUrl);
+            url = transformedUrl;
+            // Recompute fileName from the rewritten URL
+            if (url.startsWith("http")) {
+                try {
+                    Path p = Paths.get(new URI(url).getPath());
+                    if (p.getFileName() != null) {
+                        fileName = p.getFileName().toString();
+                    }
+                } catch (URISyntaxException | IllegalArgumentException e) {
+                    logger.warn("Could not derive filename from rewritten URL: {}", url);
+                }
+            }
+        }
+
         // External image
         if (url.startsWith("http")) {
             // Download image, if so requested (and not a local resource)
