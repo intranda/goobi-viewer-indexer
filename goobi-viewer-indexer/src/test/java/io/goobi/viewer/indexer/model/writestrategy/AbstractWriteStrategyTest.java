@@ -28,7 +28,7 @@ class AbstractWriteStrategyTest {
      * @verifies trim to single value correctly
      */
     @Test
-    void sanitizeDoc_shouldTrimToSingleValueCorrectly() throws Exception {
+    void sanitizeDoc_shouldTrimToSingleValueCorrectly() {
         SolrInputDocument doc = new SolrInputDocument();
         doc.addField("BOOL_FOO", false);
         doc.addField("BOOL_FOO", true);

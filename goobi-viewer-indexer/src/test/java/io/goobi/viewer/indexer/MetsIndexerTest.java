@@ -600,7 +600,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Re-index
         result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
         assertEquals(PI + ".xml", result.getRecordFileName());
-        ;
         Assertions.assertNull(result.getError());
 
         // Top document
@@ -666,7 +665,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         IndexingResult result = new MetsIndexer(hotfolder).index(metsFile3, dataFolders, null, 1, false);
         assertEquals(pi + ".xml", result.getRecordFileName());
-        ;
         Assertions.assertNull(result.getError());
 
         // Top document
@@ -911,7 +909,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         IndexingResult result = new MetsIndexer(hotfolder).index(localMetsFile, dataFolders, null, 1, false);
         assertEquals("4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3.xml", result.getRecordFileName());
-        ;
         Assertions.assertNull(result.getError());
 
         // Pages

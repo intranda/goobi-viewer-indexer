@@ -299,7 +299,7 @@ public final class TextHelper {
                 continue;
             }
 
-            if (sbFulltext.length() > 0) {
+            if (!sbFulltext.isEmpty()) {
                 // Add a line break in the full-text if a new line starts
                 sbFulltext.append('\n');
             }

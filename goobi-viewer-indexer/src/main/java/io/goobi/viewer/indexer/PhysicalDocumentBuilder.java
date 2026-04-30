@@ -415,13 +415,11 @@ public class PhysicalDocumentBuilder {
                 String fieldName = SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase();
                 String useFileName = filePath.startsWith("http") ? filePath : fileName;
                 if (ret.getDoc().getField(fieldName) == null) {
-                    switch (mimetypeSplit[1]) {
-                        case "object":
-                            ret.getDoc().addField(SolrConstants.FILENAME, useFileName);
-                            ret.getDoc().addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
-                            break;
-                        default:
-                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), useFileName);
+                    if ("object".equals(mimetypeSplit[1])) {
+                        ret.getDoc().addField(SolrConstants.FILENAME, useFileName);
+                        ret.getDoc().addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
+                    } else {
+                        ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), useFileName);
                     }
                 }
             }

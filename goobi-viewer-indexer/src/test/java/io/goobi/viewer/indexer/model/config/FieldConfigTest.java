@@ -28,7 +28,7 @@ class FieldConfigTest extends AbstractTest {
      * @verifies set attributes correctly
      */
     @Test
-    void FieldConfig_shouldSetAttributesCorrectly() throws Exception {
+    void FieldConfig_shouldSetAttributesCorrectly() {
         FieldConfig ci = new FieldConfig("field_name");
         Assertions.assertEquals("field_name", ci.getFieldname());
     }

@@ -47,7 +47,7 @@ import com.drew.metadata.png.PngDirectory;
 
 public final class ImageSizeReader {
 
-    private static final Logger logger = LogManager.getLogger(FulltextAugmentor.class);
+    private static final Logger logger = LogManager.getLogger(ImageSizeReader.class);
 
     public static final float DEFAULT_PDF_SCALE = 5.0f;
 
