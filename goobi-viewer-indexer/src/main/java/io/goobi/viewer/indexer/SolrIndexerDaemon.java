@@ -98,9 +98,8 @@ public final class SolrIndexerDaemon {
         }
 
         // log uncaught exceptions
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-            logger.error("Uncaught exception in thread {}:", t.getName(), e);
-        });
+        Thread.setDefaultUncaughtExceptionHandler((t, e) ->
+            logger.error("Uncaught exception in thread {}:", t.getName(), e));
 
         try {
             if (!checkSolrSchemaName(

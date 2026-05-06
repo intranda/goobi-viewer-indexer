@@ -29,7 +29,7 @@ class LuceneFieldTest extends AbstractTest {
      * @verifies set attributes correctly
      */
     @Test
-    void LuceneField_shouldSetAttributesCorrectly() throws Exception {
+    void LuceneField_shouldSetAttributesCorrectly() {
         LuceneField field = new LuceneField("field_name", "field_value");
         Assertions.assertEquals("field_name", field.getField());
         Assertions.assertEquals("field_value", field.getValue());
@@ -40,7 +40,7 @@ class LuceneFieldTest extends AbstractTest {
      * @verifies generate SolrInputField correctly
      */
     @Test
-    void generateField_shouldGenerateSolrInputFieldCorrectly() throws Exception {
+    void generateField_shouldGenerateSolrInputFieldCorrectly() {
         LuceneField field = new LuceneField("field_name", "field_value");
         SolrInputField solrInputField = field.generateField();
         Assertions.assertNotNull(solrInputField);

@@ -33,7 +33,7 @@ class RemainingSpaceStrategyTest extends AbstractTest {
      * @verifies select repository with the smallest sufficient space
      */
     @Test
-    void selectRepository_shouldSelectRepositoryWithTheSmallestSufficientSpace() throws Exception {
+    void selectRepository_shouldSelectRepositoryWithTheSmallestSufficientSpace() {
         SortedMap<Long, DataRepository> repositorySpaceMap = new TreeMap<>();
         repositorySpaceMap.put(30L, new DataRepository("/opt/digiverso/viewer/data/3"));
         repositorySpaceMap.put(20L, new DataRepository("/opt/digiverso/viewer/data/2"));
@@ -48,7 +48,7 @@ class RemainingSpaceStrategyTest extends AbstractTest {
      * @verifies return null if recordSize is larger than any available repository space
      */
     @Test
-    void selectRepository_shouldReturnNullIfRecordSizeIsLargerThanAnyAvailableRepositorySpace() throws Exception {
+    void selectRepository_shouldReturnNullIfRecordSizeIsLargerThanAnyAvailableRepositorySpace() {
         SortedMap<Long, DataRepository> repositorySpaceMap = new TreeMap<>();
         repositorySpaceMap.put(30L, new DataRepository("/opt/digiverso/viewer/data/3"));
         repositorySpaceMap.put(20L, new DataRepository("/opt/digiverso/viewer/data/2"));
@@ -61,7 +61,7 @@ class RemainingSpaceStrategyTest extends AbstractTest {
      * @verifies subtract the buffer size from available space
      */
     @Test
-    void generateRepositorySpaceMap_shouldSubtractTheBufferSizeFromAvailableSpace() throws Exception {
+    void generateRepositorySpaceMap_shouldSubtractTheBufferSizeFromAvailableSpace() {
         DummyDataRepository repo = new DummyDataRepository("/opt/digiverso/viewer/data/1", 30L, 3L);
 
         SortedMap<Long, DataRepository> repositorySpaceMap = RemainingSpaceStrategy.generateRepositorySpaceMap(Collections.singletonList(repo));

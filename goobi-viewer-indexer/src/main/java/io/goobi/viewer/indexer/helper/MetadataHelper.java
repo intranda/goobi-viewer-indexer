@@ -339,7 +339,7 @@ public final class MetadataHelper {
                                             }
                                             StringBuilder sb = new StringBuilder();
                                             sb.append(fieldValues.get(0));
-                                            if (sb.length() > 0) {
+                                            if (!sb.isEmpty()) {
                                                 sb.append(configurationItem.getOneFieldSeparator());
                                             }
                                             sb.append(fieldValue);
@@ -435,7 +435,7 @@ public final class MetadataHelper {
                 }
             }
         }
-        if (sbDefaultMetadataValues.length() > 0) {
+        if (!sbDefaultMetadataValues.isEmpty()) {
             indexObj.setDefaultValue(sbDefaultMetadataValues.toString());
         }
         ret.addAll(completeCenturies(ret));
@@ -1269,13 +1269,13 @@ public final class MetadataHelper {
                     sbValue.append(collectedValues.get(SolrConstants.MD_LASTNAME).get(0));
                 }
                 if (collectedValues.containsKey(SolrConstants.MD_FIRSTNAME) && !collectedValues.get(SolrConstants.MD_FIRSTNAME).isEmpty()) {
-                    if (sbValue.length() > 0) {
+                    if (!sbValue.isEmpty()) {
                         sbValue.append(", ");
                     }
                     sbValue.append(collectedValues.get(SolrConstants.MD_FIRSTNAME).get(0));
                 }
             }
-            if (sbValue.length() > 0) {
+            if (!sbValue.isEmpty()) {
                 mdValue = sbValue.toString();
                 ret.getFields().add(new LuceneField(SolrConstants.MD_VALUE, mdValue));
             }
@@ -1434,7 +1434,7 @@ public final class MetadataHelper {
         ret.getAuthorityDataFields().addAll(authorityData); // Add authority data outside the loop over groupMetadata
 
         // NORMDATATERMS is now in the metadata docs, not docstructs
-        if (sbAuthorityDataTerms.length() > 0) {
+        if (!sbAuthorityDataTerms.isEmpty()) {
             ret.getFields().add(new LuceneField(SolrConstants.NORMDATATERMS, sbAuthorityDataTerms.toString()));
         }
 

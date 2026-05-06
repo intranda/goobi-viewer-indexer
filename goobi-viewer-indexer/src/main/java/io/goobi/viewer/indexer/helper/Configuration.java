@@ -838,13 +838,71 @@ public final class Configuration {
     }
 
     /**
+     * Returns true if external image download is enabled.
+     *
+     * @return a boolean
+     */
+    public boolean isImageDownloadEnabled() {
+        return getBoolean("init.imageDownload[@enabled]", true);
+    }
+
+    /**
+     * Returns the list of allowed URL prefixes for external image downloads.
+     *
+     * @return a {@link java.util.List} object
+     */
+    public List<String> getAllowedImageDownloadUrls() {
+        return getStringList("init.imageDownload.allowedUrls.url");
+    }
+
+    /**
+     * Returns the maximum file size in bytes for external image downloads.
+     *
+     * @return max file size in bytes
+     */
+    public long getImageDownloadMaxFileSize() {
+        long mb = getInt("init.imageDownload.maxFileSizeInMB", 512);
+        return mb * 1024 * 1024;
+    }
+
+    /**
+     * Returns true if external fulltext/ALTO download is enabled.
+     *
+     * @return a boolean
+     * @should return correct value
+     */
+    public boolean isFulltextDownloadEnabled() {
+        return getBoolean("init.fulltextDownload[@enabled]", true);
+    }
+
+    /**
+     * Returns the list of allowed URL prefixes for external fulltext/ALTO downloads.
+     *
+     * @return a {@link java.util.List} object
+     * @should return all configured values
+     */
+    public List<String> getAllowedFulltextDownloadUrls() {
+        return getStringList("init.fulltextDownload.allowedUrls.url");
+    }
+
+    /**
+     * Returns true if file:// URLs are allowed for ALTO downloads.
+     *
+     * @return a boolean
+     * @should return false by default
+     */
+    public boolean isFulltextDownloadAllowFileUrls() {
+        return getBoolean("init.fulltextDownload.allowFileUrls", false);
+    }
+
+    /**
      * <p>
      * getImageUrlReplaceRules.
      * </p>
      *
-     * Loads all configured rules from {@code <imageUrlReplaceRules>/<pattern>}. Each pattern element is expected to have a
-     * {@code @condition} attribute (regex matched against the full URL) and a {@code @replacement} attribute (replacement string,
-     * may use {@code $1}, {@code $2}, ... backreferences).
+     * Loads all configured rules from {@code <imageUrlReplaceRules>/<pattern>}. Each pattern element is expected to have a {@code @condition}
+     * attribute (regex matched against the full URL) and a {@code @replacement} attribute (replacement string, may use {@code $1}, {@code $2}, ...
+     * backreferences).
      *
      * @return List of configured rules; empty list if none configured or all rules are invalid
      * @should return empty list if no rules configured
@@ -876,8 +934,8 @@ public final class Configuration {
      * applyImageUrlReplaceRules.
      * </p>
      *
-     * Applies the configured image URL replacement rules to the given URL. Rules are evaluated in order; the first matching rule wins. URLs
-     * that don't match any rule are returned unchanged.
+     * Applies the configured image URL replacement rules to the given URL. Rules are evaluated in order; the first matching rule wins. URLs that
+     * don't match any rule are returned unchanged.
      *
      * @param url URL to test and potentially transform; may be null
      * @return transformed URL if a rule matched, otherwise the original URL (or null if input was null)

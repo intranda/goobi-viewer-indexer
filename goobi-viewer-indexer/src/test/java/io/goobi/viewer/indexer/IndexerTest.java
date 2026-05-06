@@ -84,14 +84,14 @@ class IndexerTest extends AbstractSolrEnabledTest {
     }
 
     @BeforeAll
-    public static void setUpBeforeClass() {
+    static void setUpBeforeClass() throws Exception {
         File libraryFile = new File("src/test/resources/lib/libopenjp2.so");
         libraryPath = System.getProperty("java.library.path");
         System.setProperty("java.library.path", libraryPath + ":" + libraryFile.getParentFile().getAbsolutePath());
     }
 
     @AfterAll
-    public static void cleanUpAfterClass() {
+    static void cleanUpAfterClass() throws Exception {
         if (StringUtils.isNotBlank(libraryPath)) {
             System.setProperty("java.library.path", libraryPath);
         }
@@ -102,7 +102,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies write log file and copy of mets file into errorMets
      */
     @Test
-    void handleError_shouldWriteLogFileAndCopyOfMetsFileIntoErrorMets() {
+    void handleError_shouldWriteLogFileAndCopyOfMetsFileIntoErrorMets() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         indexer.handleError(metsFile, "lorem ipsum dolor sit amet", FileFormat.METS);
         assertTrue(Files.isRegularFile(
@@ -115,7 +115,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if pi empty
      */
     @Test
-    void delete_shouldThrowIllegalArgumentExceptionIfPiEmpty() {
+    void delete_shouldThrowIllegalArgumentExceptionIfPiEmpty() throws Exception {
         SolrSearchIndex searchIndex = SolrIndexerDaemon.getInstance().getSearchIndex();
         Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.delete("", false, searchIndex));
     }
@@ -125,7 +125,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if searchIndex null
      */
     @Test
-    void delete_shouldThrowIllegalArgumentExceptionIfSearchIndexNull() {
+    void delete_shouldThrowIllegalArgumentExceptionIfSearchIndexNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.delete("foo", false, null));
     }
 
@@ -272,7 +272,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies replace irrelevant chars with spaces correctly
      */
     @Test
-    void cleanUpDefaultField_shouldReplaceIrrelevantCharsWithSpacesCorrectly() {
+    void cleanUpDefaultField_shouldReplaceIrrelevantCharsWithSpacesCorrectly() throws Exception {
         assertEquals("A B C D", Indexer.cleanUpDefaultField(" A,B;C:D,  "));
     }
 
@@ -281,7 +281,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return null if field null
      */
     @Test
-    void cleanUpDefaultField_shouldReturnNullIfFieldNull() {
+    void cleanUpDefaultField_shouldReturnNullIfFieldNull() throws Exception {
         assertNull(Indexer.cleanUpDefaultField(null));
     }
 
@@ -290,7 +290,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return empty list if dataFolder null
      */
     @Test
-    void generateAnnotationDocs_shouldReturnEmptyListIfDataFolderNull() throws Exception {
+    void generateAnnotationDocs_shouldReturnEmptyListIfDataFolderNull() {
         List<SolrInputDocument> docs = new MetsIndexer(hotfolder).generateAnnotationDocs(Collections.emptyMap(), null, "PPN517154005", null, null);
         assertTrue(docs.isEmpty());
     }
@@ -675,7 +675,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if eleContent null
      */
     @Test
-    void generateUserGeneratedContentDocForPage_shouldThrowIllegalArgumentExceptionIfEleContentNull() {
+    void generateUserGeneratedContentDocForPage_shouldThrowIllegalArgumentExceptionIfEleContentNull() throws Exception {
         MetsIndexer metsIndeer = new MetsIndexer(hotfolder);
         Map<String, String> groupIds = Collections.emptyMap();
 
@@ -688,7 +688,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return empty list if dataFolder null
      */
     @Test
-    void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() {
+    void generateUserCommentDocsForPage_shouldReturnEmptyListIfDataFolderNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         List<SolrInputDocument> result =
                 indexer.generateUserCommentDocsForPage(new SolrInputDocument("foo", "bar"), null, "foo", null, Collections.emptyMap(), 1);
@@ -700,7 +700,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies construct doc correctly
      */
     @Test
-    void generateUserCommentDocsForPage_shouldConstructDocCorrectly() {
+    void generateUserCommentDocsForPage_shouldConstructDocCorrectly() throws Exception {
         Path dataFolder = Paths.get("src/test/resources/ugc");
         assertTrue(Files.isDirectory(dataFolder));
 
@@ -733,7 +733,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies skip comments for other pages
      */
     @Test
-    void generateUserCommentDocsForPage_shouldSkipCommentsForOtherPages() {
+    void generateUserCommentDocsForPage_shouldSkipCommentsForOtherPages() throws Exception {
         Path dataFolder = Paths.get("src/test/resources/ugc");
         assertTrue(Files.isDirectory(dataFolder));
 
@@ -754,7 +754,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies parse mime type from mp4 file correctly
      */
     @Test
-    void parseMimeType_shouldParseMimeTypeFromMp4FileCorrectly() {
+    void parseMimeType_shouldParseMimeTypeFromMp4FileCorrectly() throws Exception {
         SolrInputDocument doc = new SolrInputDocument();
         Indexer.parseMimeType(doc, "src/text/resouces/LIDO/1292624_media/Film77.mp4");
 
@@ -801,7 +801,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if writeStrategy null
      */
     @Test
-    void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfWriteStrategyNull() {
+    void addGroupedMetadataDocs_shouldThrowIllegalArgumentExceptionIfWriteStrategyNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         IndexObject indexObj = new IndexObject(UUID.randomUUID().toString());
         GroupedMetadata gmd = new GroupedMetadata();
@@ -840,7 +840,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if dataFolders null
      */
     @Test
-    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() {
+    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         Assertions.assertThrows(IllegalArgumentException.class, () -> indexer.checkOldDataFolder(null, DataRepository.PARAM_ALTO, "foo"));
     }
@@ -850,7 +850,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if paramName null
      */
     @Test
-    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfParamNameNull() {
+    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfParamNameNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         Map<String, Path> dataFolders = Collections.emptyMap();
 
@@ -862,7 +862,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if pi null
      */
     @Test
-    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfPiNull() {
+    void checkOldDataFolder_shouldThrowIllegalArgumentExceptionIfPiNull() throws Exception {
         Indexer indexer = new MetsIndexer(hotfolder);
         Map<String, Path> dataFolders = Collections.emptyMap();
 
@@ -924,7 +924,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if dataFolders null
      */
     @Test
-    void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() {
+    void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfDataFoldersNull() throws Exception {
         Map<String, Boolean> reindexSettings = Collections.emptyMap();
         Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(null, reindexSettings));
     }
@@ -934,7 +934,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies throw IllegalArgumentException if reindexSettings null
      */
     @Test
-    void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() {
+    void checkReindexSettings_shouldThrowIllegalArgumentExceptionIfReindexSettingsNull() throws Exception {
         Map<String, Path> dataFolders = Collections.emptyMap();
         Assertions.assertThrows(IllegalArgumentException.class, () -> Indexer.checkReindexSettings(dataFolders, null));
     }
@@ -944,7 +944,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies add reindex flags correctly if data folders missing
      */
     @Test
-    void checkReindexSettings_shouldAddReindexFlagsCorrectlyIfDataFoldersMissing() {
+    void checkReindexSettings_shouldAddReindexFlagsCorrectlyIfDataFoldersMissing() throws Exception {
         Map<String, Boolean> reindexSettings = new HashMap<>();
 
         Indexer.checkReindexSettings(Collections.emptyMap(), reindexSettings);
@@ -967,7 +967,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies not add reindex flags if data folders present
      */
     @Test
-    void checkReindexSettings_shouldNotAddReindexFlagsIfDataFoldersPresent() {
+    void checkReindexSettings_shouldNotAddReindexFlagsIfDataFoldersPresent() throws Exception {
         Map<String, Boolean> reindexSettings = new HashMap<>();
 
         Map<String, Path> dataFolders = new HashMap<>();
@@ -1005,7 +1005,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return alt value correctly
      */
     @Test
-    void checkThumbnailFileName_shouldReturnAltValueCorrectly() {
+    void checkThumbnailFileName_shouldReturnAltValueCorrectly() throws Exception {
         SolrInputDocument doc = new SolrInputDocument();
         doc.setField("FILENAME_JPEG", "001.jpg");
         assertEquals("001.jpg", Indexer.checkThumbnailFileName("001.ogg", doc));
@@ -1019,7 +1019,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return fileName if image
      */
     @Test
-    void checkThumbnailFileName_shouldReturnFileNameIfImage() {
+    void checkThumbnailFileName_shouldReturnFileNameIfImage() throws Exception {
         SolrInputDocument doc = new SolrInputDocument();
         doc.setField("FILENAME_JPEG", "001.jpg");
         assertEquals("001.png", Indexer.checkThumbnailFileName("001.png", doc));
@@ -1030,7 +1030,7 @@ class IndexerTest extends AbstractSolrEnabledTest {
      * @verifies return fileName if url
      */
     @Test
-    void checkThumbnailFileName_shouldReturnFileNameIfUrl() {
+    void checkThumbnailFileName_shouldReturnFileNameIfUrl() throws Exception {
         SolrInputDocument doc = new SolrInputDocument();
         doc.setField("FILENAME_JPEG", "001.jpg");
         assertEquals("https://foo.bar/iiif/12345/info.json", Indexer.checkThumbnailFileName("https://foo.bar/iiif/12345/info.json", doc));
