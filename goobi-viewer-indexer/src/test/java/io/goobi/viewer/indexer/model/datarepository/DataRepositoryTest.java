@@ -54,7 +54,7 @@ class DataRepositoryTest extends AbstractTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         File indexerFolder = new File("target/indexer");
         if (indexerFolder.isDirectory()) {
             logger.info("Deleting {}...", indexerFolder);
@@ -514,7 +514,7 @@ class DataRepositoryTest extends AbstractTest {
      * @verifies return correct path
      */
     @Test
-    void getAbsolutePath_shouldReturnCorrectPath() throws Exception {
+    void getAbsolutePath_shouldReturnCorrectPath() {
         Assertions.assertEquals("target/viewer/data/1", DataRepository.getAbsolutePath("1"));
     }
 

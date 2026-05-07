@@ -28,7 +28,7 @@ class NonSortConfigurationTest extends AbstractTest {
      * @verifies set attributes correctly
      */
     @Test
-    void NonSortConfiguration_shouldSetAttributesCorrectly() throws Exception {
+    void NonSortConfiguration_shouldSetAttributesCorrectly() {
         NonSortConfiguration nsc = new NonSortConfiguration("prefix_value", "suffix_value");
         Assertions.assertEquals("prefix_value", nsc.getPrefix());
         Assertions.assertEquals("suffix_value", nsc.getSuffix());

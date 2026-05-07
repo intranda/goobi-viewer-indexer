@@ -58,7 +58,7 @@ class ConfigurationTest extends AbstractTest {
     }
 
     @Test
-    void folderTest() throws Exception {
+    void folderTest() {
         assertTrue(Files.isDirectory(hotfolder.getHotfolderPath()));
         assertTrue(new File(SolrIndexerDaemon.getInstance().getConfiguration().getString("init.viewerHome")).isDirectory());
         assertTrue(Files.isDirectory(hotfolder.getSuccessFolder()));
@@ -265,6 +265,15 @@ class ConfigurationTest extends AbstractTest {
     @Test
     void isCountHotfolderFiles_shouldReturnCorrectValue() {
         assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isCountHotfolderFiles());
+    }
+
+    /**
+     * @see Configuration#isPrioritizeLargeImageFolders()
+     * @verifies return correct value
+     */
+    @Test
+    void isPrioritizeLargeImageFolders_shouldReturnCorrectValue() {
+        assertFalse(SolrIndexerDaemon.getInstance().getConfiguration().isPrioritizeLargeImageFolders());
     }
 
     /**

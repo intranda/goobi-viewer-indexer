@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,8 +46,10 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FulltextAugmentor;
 import io.goobi.viewer.indexer.helper.HttpConnector;
+import io.goobi.viewer.indexer.helper.SsrfProtection;
 import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.MetadataHelper;
@@ -328,6 +331,13 @@ public class PhysicalDocumentBuilder {
                 continue;
             }
 
+            // Apply configured URL replacement rules to external URLs
+            String transformedFilePath = SolrIndexerDaemon.getInstance().getConfiguration().applyImageUrlReplaceRules(filePath);
+            if (!filePath.equals(transformedFilePath)) {
+                logger.info("Applied imageUrlReplaceRule: {} -> {}", filePath, transformedFilePath);
+                filePath = transformedFilePath;
+            }
+
             String fileName = getFilename(filePath);
 
             // Mime type
@@ -360,15 +370,21 @@ public class PhysicalDocumentBuilder {
                     }
 
                     String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
-                    if (downloadExternalImages && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
+                    Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+                    if (downloadExternalImages && config.isImageDownloadEnabled()
+                            && dataFolders.get(DataRepository.PARAM_MEDIA) != null && viewerUrl != null
                             && !filePath.startsWith(viewerUrl)) {
-                        logger.info("Downloading file: {}", filePath);
-                        try {
-                            filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName))
-                                    .getFileName()
-                                    .toString();
-                        } catch (IOException | URISyntaxException e) {
-                            logger.warn("Could not download file: {}", filePath);
+                        if (!SsrfProtection.isUrlAllowed(filePath, config.getAllowedImageDownloadUrls())) {
+                            logger.warn("Skipping download of disallowed URL: {}", filePath);
+                        } else {
+                            logger.info("Downloading file: {}", filePath);
+                            try {
+                                filePath = Path.of(downloadExternalImage(filePath, dataFolders.get(DataRepository.PARAM_MEDIA), fileName))
+                                        .getFileName()
+                                        .toString();
+                            } catch (IOException | URISyntaxException e) {
+                                logger.warn("Could not download file: {}", filePath);
+                            }
                         }
                     }
                     ret.getDoc().addField(SolrConstants.FILENAME, filePath);
@@ -415,13 +431,11 @@ public class PhysicalDocumentBuilder {
                 String fieldName = SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase();
                 String useFileName = filePath.startsWith("http") ? filePath : fileName;
                 if (ret.getDoc().getField(fieldName) == null) {
-                    switch (mimetypeSplit[1]) {
-                        case "object":
-                            ret.getDoc().addField(SolrConstants.FILENAME, useFileName);
-                            ret.getDoc().addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
-                            break;
-                        default:
-                            ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), useFileName);
+                    if ("object".equals(mimetypeSplit[1])) {
+                        ret.getDoc().addField(SolrConstants.FILENAME, useFileName);
+                        ret.getDoc().addField(SolrConstants.MIMETYPE, mimetypeSplit[1]);
+                    } else {
+                        ret.getDoc().addField(SolrConstants.FILENAME + "_" + mimetypeSplit[1].toUpperCase(), useFileName);
                     }
                 }
             }
@@ -794,7 +808,9 @@ public class PhysicalDocumentBuilder {
                 useTargetPath = useTargetPath.resolve(fileName);
             }
         }
-        httpConnector.downloadFile(new URI(fileUrl), useTargetPath);
+        Configuration dlConfig = SolrIndexerDaemon.getInstance().getConfiguration();
+        httpConnector.downloadFile(new URI(fileUrl), useTargetPath, dlConfig.getImageDownloadMaxFileSize(),
+                dlConfig.getAllowedImageDownloadUrls());
         if (Files.isRegularFile(useTargetPath)) {
             logger.info("Downloaded {}", useTargetPath);
             return useTargetPath.toAbsolutePath().toString();
@@ -835,15 +851,28 @@ public class PhysicalDocumentBuilder {
      * @param url
      * @return int[]
      * @should fetch dimensions correctly
+     * @should return empty array for null url
+     * @should return empty array for localhost url
+     * @should return empty array for private IP url
      */
-    private static int[] getImageDimensionsFromIIIF(String url) {
+    static int[] getImageDimensionsFromIIIF(String url) {
         if (StringUtils.isEmpty(url)) {
+            return new int[0];
+        }
+
+        // SSRF protection: validate URL before fetching
+        Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+        if (!SsrfProtection.isUrlAllowed(url, config.getAllowedImageDownloadUrls())) {
+            logger.warn("SSRF protection: skipping disallowed IIIF URL: {}", url);
             return new int[0];
         }
 
         try {
             URI uri = new URI(url);
-            JSONTokener tokener = new JSONTokener(uri.toURL().openStream());
+            URLConnection conn = uri.toURL().openConnection();
+            conn.setConnectTimeout(10_000);
+            conn.setReadTimeout(10_000);
+            JSONTokener tokener = new JSONTokener(conn.getInputStream());
             JSONObject root = new JSONObject(tokener);
             int width = root.getInt("width");
             int height = root.getInt("height");

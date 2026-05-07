@@ -671,7 +671,7 @@ public class DublinCoreIndexer extends Indexer {
 
         String baseFileName = FilenameUtils.getBaseName(metsFile.getFileName().toString());
         StringBuilder sbNewFilename = new StringBuilder(baseFileName).append(".xml");
-        if (sbNewFilename.length() > 0) {
+        if (!sbNewFilename.isEmpty()) {
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
             try {
                 // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems.

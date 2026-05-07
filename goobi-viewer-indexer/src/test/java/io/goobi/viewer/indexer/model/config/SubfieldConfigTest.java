@@ -25,7 +25,7 @@ class SubfieldConfigTest {
      * @verifies copy xpath expressions correctly
      */
     @Test
-    void ingestXpaths_shouldCopyXpathExpressionsCorrectly() throws Exception {
+    void ingestXpaths_shouldCopyXpathExpressionsCorrectly() {
         SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true, false);
         config1.getXpaths().add("foo:foo");
 
@@ -44,7 +44,7 @@ class SubfieldConfigTest {
      * @verifies copy default values correctly
      */
     @Test
-    void ingestXpaths_shouldCopyDefaultValuesCorrectly() throws Exception {
+    void ingestXpaths_shouldCopyDefaultValuesCorrectly() {
         SubfieldConfig config1 = new SubfieldConfig("MD_FOO", true, false);
         config1.getDefaultValues().put("foo:foo", "foo");
 

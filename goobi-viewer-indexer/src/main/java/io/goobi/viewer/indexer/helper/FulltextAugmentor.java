@@ -207,65 +207,12 @@ public class FulltextAugmentor {
         }
 
         // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
-        if (!altoWritten && !foundCrowdsourcingData && altoURL != null && Utils.isValidURL(altoURL)
-                && SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl() != null
-                && !altoURL.startsWith(SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl())) {
-            try {
-                String alto = null;
-                if (Strings.CI.startsWith(altoURL, "http")) {
-                    // HTTP(S)
-                    logger.debug("Downloading ALTO from {}", altoURL);
-                    alto = Utils.getWebContentGET(altoURL);
-                } else if (Strings.CI.startsWith(altoURL, "file:/")) {
-                    // FILE
-                    logger.debug("Reading ALTO from {}", altoURL);
-                    alto = FileTools.readFileToString(new File(URI.create(altoURL).toURL().getPath()), StandardCharsets.UTF_8.name());
-                }
-                if (StringUtils.isNotEmpty(alto)) {
-                    Document altoDoc = XmlTools.getDocumentFromString(alto, null);
-                    altoData = TextHelper.readAltoDoc(altoDoc);
-                    if (altoData != null) {
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
-                            // Create PARAM_ALTO_CONVERTED dir in hotfolder for download, if it doesn't yet exist
-                            if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) == null) {
-                                dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
-                                        Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
-                                Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
-                            }
-                            if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
-                                String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + FileTools.XML_EXTENSION;
-                                doc.addField(SolrConstants.FILENAME_ALTO,
-                                        dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent().getFileName().toString() + '/' + pi + '/'
-                                                + fileName);
-                                doc.addField(SolrConstants.FILENAME_ALTO_SHORT, fileName);
-                                // Write ALTO file
-                                File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
-                                FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
-                                logger.info("Added ALTO from external URL for page {}", order);
-                            } else {
-                                logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
-                            }
-                        } else {
-                            logger.warn("No ALTO found");
-                        }
-                        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
-                                && doc.getField(SolrConstants.FULLTEXT) == null) {
-                            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
-                            logger.info("Added FULLTEXT from downloaded ALTO for page {}", order);
-                        } else {
-                            logger.warn("No FULLTEXT found");
-                        }
-                        if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
-                            addNamedEntitiesFields(altoData, doc);
-                        }
-                    }
-                }
-            } catch (FileNotFoundException e) {
-                logger.error(e.getMessage());
-            } catch (JDOMException | IOException e) {
-                logger.error(e.getMessage(), e);
-            } catch (HTTPException e) {
-                logger.warn("{}: {}", e.getMessage(), altoURL);
+        if (!altoWritten && !foundCrowdsourcingData && altoURL != null && Utils.isValidURL(altoURL)) {
+            Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+            if (!config.isFulltextDownloadEnabled()) {
+                logger.info("External fulltext download is disabled; skipping ALTO URL: {}", altoURL);
+            } else {
+                tryDownloadAlto(altoURL, config, doc, pi, order, dataFolders);
             }
         }
 
@@ -291,7 +238,100 @@ public class FulltextAugmentor {
     }
 
     /**
-     * 
+     * Downloads ALTO content from an external URL after applying SSRF protection, then indexes the content.
+     *
+     * @param altoURL the URL to download ALTO from
+     * @param config indexer configuration
+     * @param doc Solr input document to augment
+     * @param pi record identifier
+     * @param order page order number
+     * @param dataFolders data folder paths
+     */
+    private void tryDownloadAlto(String altoURL, Configuration config, SolrInputDocument doc, String pi, int order,
+            Map<String, Path> dataFolders) {
+        try {
+            String alto = null;
+            if (Strings.CI.startsWith(altoURL, "http")) {
+                // SSRF protection: validate URL before HTTP request
+                if (!SsrfProtection.isUrlAllowed(altoURL, config.getAllowedFulltextDownloadUrls())) {
+                    logger.warn("Skipping download of disallowed ALTO URL: {}", altoURL);
+                    return;
+                }
+                logger.debug("Downloading ALTO from {}", altoURL);
+                alto = Utils.getWebContentGET(altoURL);
+            } else if (Strings.CI.startsWith(altoURL, "file:/")) {
+                if (!config.isFulltextDownloadAllowFileUrls()) {
+                    logger.warn("file:// URLs are not allowed for ALTO download (enable via fulltextDownload.allowFileUrls): {}", altoURL);
+                    return;
+                }
+                logger.debug("Reading ALTO from {}", altoURL);
+                alto = FileTools.readFileToString(new File(URI.create(altoURL).toURL().getPath()), StandardCharsets.UTF_8.name());
+            }
+            if (StringUtils.isNotEmpty(alto)) {
+                Document altoDoc = XmlTools.getDocumentFromString(alto, null);
+                Map<String, Object> altoData = TextHelper.readAltoDoc(altoDoc);
+                if (altoData != null) {
+                    processDownloadedAltoData(altoData, doc, pi, order, dataFolders);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            logger.error(e.getMessage());
+        } catch (JDOMException | IOException e) {
+            logger.error(e.getMessage(), e);
+        } catch (HTTPException e) {
+            logger.warn("{}: {}", e.getMessage(), altoURL);
+        }
+    }
+
+    /**
+     * Processes downloaded ALTO data: writes the ALTO file to disk and adds fulltext/named-entity fields to the Solr document.
+     *
+     * @param altoData parsed ALTO data map
+     * @param doc Solr input document
+     * @param pi record identifier
+     * @param order page order number
+     * @param dataFolders data folder paths
+     * @throws IOException if writing ALTO file fails
+     */
+    private void processDownloadedAltoData(Map<String, Object> altoData, SolrInputDocument doc, String pi, int order,
+            Map<String, Path> dataFolders) throws IOException {
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.ALTO))) {
+            // Create PARAM_ALTO_CONVERTED dir in hotfolder for download, if it doesn't yet exist
+            if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) == null) {
+                dataFolders.put(DataRepository.PARAM_ALTO_CONVERTED,
+                        Paths.get(dataRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), pi));
+                Files.createDirectory(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
+            }
+            if (dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED) != null) {
+                String fileName = MetadataHelper.FORMAT_EIGHT_DIGITS.get().format(order) + FileTools.XML_EXTENSION;
+                doc.addField(SolrConstants.FILENAME_ALTO,
+                        dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).getParent().getFileName().toString()
+                                + '/' + pi + '/' + fileName);
+                doc.addField(SolrConstants.FILENAME_ALTO_SHORT, fileName);
+                // Write ALTO file
+                File file = new File(dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED).toFile(), fileName);
+                FileUtils.writeStringToFile(file, (String) altoData.get(SolrConstants.ALTO), TextHelper.DEFAULT_CHARSET);
+                logger.info("Added ALTO from external URL for page {}", order);
+            } else {
+                logger.error("Data folder not defined: {}", dataFolders.get(DataRepository.PARAM_ALTO_CONVERTED));
+            }
+        } else {
+            logger.warn("No ALTO found");
+        }
+        if (StringUtils.isNotEmpty((String) altoData.get(SolrConstants.FULLTEXT))
+                && doc.getField(SolrConstants.FULLTEXT) == null) {
+            doc.addField(SolrConstants.FULLTEXT, TextHelper.cleanUpHtmlTags((String) altoData.get(SolrConstants.FULLTEXT)));
+            logger.info("Added FULLTEXT from downloaded ALTO for page {}", order);
+        } else {
+            logger.warn("No FULLTEXT found");
+        }
+        if (altoData.get(SolrConstants.NAMEDENTITIES) != null) {
+            addNamedEntitiesFields(altoData, doc);
+        }
+    }
+
+    /**
+     *
      * @param baseFileName
      * @return true if baseFileName is not one of the keywords; false otherwise
      */

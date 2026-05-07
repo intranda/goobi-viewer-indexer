@@ -121,7 +121,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    void readAltoFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void readAltoFile_shouldThrowFileNotFoundExceptionIfFileNotFound() {
         File folder = new File("src/test/resources/ALTO");
         Assertions.assertTrue(folder.isDirectory());
         Assertions.assertThrows(FileNotFoundException.class, () -> TextHelper.readAltoFile(new File(folder, "filenotfound")));
@@ -132,7 +132,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    void readMix_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void readMix_shouldThrowFileNotFoundExceptionIfFileNotFound() {
         Assertions.assertThrows(FileNotFoundException.class, () -> TextHelper.readMix(new File("filenotfound")));
     }
 
@@ -152,7 +152,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies throw IOException given wrong document format
      */
     @Test
-    void readAbbyyToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
+    void readAbbyyToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() {
         Assertions.assertThrows(IOException.class,
                 () -> TextHelper.readAbbyyToAlto(new File("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc/00000001.xml")));
     }
@@ -174,7 +174,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies throw IOException given wrong document format
      */
     @Test
-    void readTeiToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() throws Exception {
+    void readTeiToAlto_shouldThrowIllegalArgumentExceptionGivenWrongDocumentFormat() {
         Assertions.assertThrows(IOException.class, () -> TextHelper.readTeiToAlto(new File("src/test/resources/ABBYYXML/00000001.xml")));
     }
 
@@ -183,7 +183,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies return text if fulltext file exists
      */
     @Test
-    void generateFulltext_shouldReturnTextIfFulltextFileExists() throws Exception {
+    void generateFulltext_shouldReturnTextIfFulltextFileExists() {
         Path folder = Paths.get("src/test/resources");
         Assertions.assertTrue(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false, false);
@@ -195,7 +195,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies return null if fulltext folder exists but no file
      */
     @Test
-    void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() throws Exception {
+    void generateFulltext_shouldReturnNullIfFulltextFolderExistsButNoFile() {
         Path folder = Paths.get("src/test/resources");
         Assertions.assertTrue(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("filenotfound.txt", folder, false, false);
@@ -207,7 +207,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies return null of fulltext folder does not exist
      */
     @Test
-    void generateFulltext_shouldReturnNullOfFulltextFolderDoesNotExist() throws Exception {
+    void generateFulltext_shouldReturnNullOfFulltextFolderDoesNotExist() {
         Path folder = Paths.get("src/test/resources/dirnotfound");
         Assertions.assertFalse(Files.isDirectory(folder));
         String text = TextHelper.generateFulltext("stopwords_de_en.txt", folder, false, false);
@@ -219,7 +219,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies clean up string correctly
      */
     @Test
-    void cleanUpHtmlTags_shouldCleanUpStringCorrectly() throws Exception {
+    void cleanUpHtmlTags_shouldCleanUpStringCorrectly() {
         Assertions.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("<p><b>foo</b></p><br/>bar"));
         Assertions.assertEquals("foo bar", TextHelper.cleanUpHtmlTags("foo <bar"));
     }
@@ -229,7 +229,7 @@ class TextHelperTest extends AbstractTest {
      * @verifies uppercase type
      */
     @Test
-    void createSimpleNamedEntityTag_shouldUppercaseType() throws Exception {
+    void createSimpleNamedEntityTag_shouldUppercaseType() {
         Element eleTag = new Element("NamedEntityTag");
         eleTag.setAttribute("TYPE", "location");
         eleTag.setAttribute("LABEL", "Göttingen");

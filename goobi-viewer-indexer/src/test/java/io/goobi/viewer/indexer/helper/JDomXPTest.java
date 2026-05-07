@@ -163,7 +163,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies split multi record documents correctly
      */
     @Test
-    void splitLidoFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
+    void splitLidoFile_shouldSplitMultiRecordDocumentsCorrectly() {
         File file = new File("src/test/resources/LIDO/khm_lido_export.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -175,7 +175,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies leave single record documents as is
      */
     @Test
-    void splitLidoFile_shouldLeaveSingleRecordDocumentsAsIs() throws Exception {
+    void splitLidoFile_shouldLeaveSingleRecordDocumentsAsIs() {
         File file = new File("src/test/resources/LIDO/V0011127.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -187,7 +187,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non lido documents
      */
     @Test
-    void splitLidoFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListForNonLidoDocuments() {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -199,7 +199,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non-existing files
      */
     @Test
-    void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListForNonexistingFiles() {
         File file = new File("nosuchfile.xml");
         Assertions.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitLidoFile(file);
@@ -211,7 +211,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies return empty list given null
      */
     @Test
-    void splitLidoFile_shouldReturnEmptyListGivenNull() throws Exception {
+    void splitLidoFile_shouldReturnEmptyListGivenNull() {
         List<Document> docs = JDomXP.splitLidoFile(null);
         Assertions.assertEquals(0, docs.size());
     }
@@ -221,7 +221,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies split multi record documents correctly
      */
     @Test
-    void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() throws Exception {
+    void splitDenkXwebFile_shouldSplitMultiRecordDocumentsCorrectly() {
         File file = new File("src/test/resources/DenkXweb/denkxweb_30596824_short.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
@@ -233,7 +233,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non lido documents
      */
     @Test
-    void splitDenkXwebFile_shouldReturnEmptyListForNonLidoDocuments() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListForNonLidoDocuments() {
         File file = new File("src/test/resources/METS/H030001_mets.xml");
         Assertions.assertTrue(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
@@ -245,7 +245,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies return empty list for non-existing files
      */
     @Test
-    void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListForNonexistingFiles() {
         File file = new File("nosuchfile.xml");
         Assertions.assertFalse(file.isFile());
         List<Document> docs = JDomXP.splitDenkXwebFile(file);
@@ -257,7 +257,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies return empty list given null
      */
     @Test
-    void splitDenkXwebFile_shouldReturnEmptyListGivenNull() throws Exception {
+    void splitDenkXwebFile_shouldReturnEmptyListGivenNull() {
         List<Document> docs = JDomXP.splitDenkXwebFile(null);
         Assertions.assertEquals(0, docs.size());
     }
@@ -366,7 +366,7 @@ class JDomXPTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() {
         Assertions.assertThrows(FileNotFoundException.class, () -> JDomXP.readXmlFile("notfound.xml"));
     }
 

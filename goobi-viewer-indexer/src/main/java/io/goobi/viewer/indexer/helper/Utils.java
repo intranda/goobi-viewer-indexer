@@ -333,7 +333,7 @@ public final class Utils {
                 .setConnectionRequestTimeout(HTTP_TIMEOUT)
                 .build();
         try (CloseableHttpClient httpClient = HttpClients.custom().setDefaultRequestConfig(defaultRequestConfig).build()) {
-            HttpGet get = new HttpGet(urlString);
+            HttpGet get = new HttpGet(encodeIllegalUriChars(urlString));
             try (CloseableHttpResponse response = httpClient.execute(get); StringWriter writer = new StringWriter()) {
                 int code = response.getStatusLine().getStatusCode();
                 if (code == HttpStatus.SC_OK) {
@@ -947,5 +947,47 @@ public final class Utils {
         }
 
         return !StringUtils.containsAny(pi, PI_ILLEGAL_CHARS);
+    }
+
+    /**
+     * Percent-encodes characters that are illegal in a URI, without touching characters that are already valid URI syntax
+     * or sequences that are already percent-encoded (avoids double-encoding).
+     *
+     * @param urlString raw URL string that may contain illegal characters
+     * @return URL string safe to pass to {@link URI#create(String)}
+     * @should encode space as %20
+     * @should encode non ascii characters
+     * @should not encode already encoded sequences
+     * @should not encode valid uri characters
+     */
+    static String encodeIllegalUriChars(String urlString) {
+        StringBuilder result = new StringBuilder(urlString.length());
+        for (int i = 0; i < urlString.length(); i++) {
+            char c = urlString.charAt(i);
+            if (c == '%' && i + 2 < urlString.length()
+                    && isHexChar(urlString.charAt(i + 1))
+                    && isHexChar(urlString.charAt(i + 2))) {
+                result.append(c);
+            } else if (isValidUriChar(c)) {
+                result.append(c);
+            } else {
+                for (byte b : String.valueOf(c).getBytes(StandardCharsets.UTF_8)) {
+                    result.append(String.format("%%%02X", b & 0xFF));
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private static boolean isHexChar(char c) {
+        return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+    }
+
+    private static boolean isValidUriChar(char c) {
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+                || c == '-' || c == '_' || c == '.' || c == '~'
+                || c == ':' || c == '/' || c == '?' || c == '#' || c == '[' || c == ']'
+                || c == '@' || c == '!' || c == '$' || c == '&' || c == '\'' || c == '('
+                || c == ')' || c == '*' || c == '+' || c == ',' || c == ';' || c == '=';
     }
 }

@@ -1943,7 +1943,7 @@ public class MetsIndexer extends Indexer {
             baseFileName = baseFileName.substring(0, baseFileName.indexOf('#'));
         }
         StringBuilder sbNewFilename = new StringBuilder(baseFileName).append(".xml");
-        if (sbNewFilename.length() > 0) {
+        if (!sbNewFilename.isEmpty()) {
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
             try {
                 // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems.

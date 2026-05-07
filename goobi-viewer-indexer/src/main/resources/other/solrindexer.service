@@ -4,6 +4,8 @@ After=tomcat10.service
 After=solr.service
 Requires=tomcat10.service
 Requires=solr.service
+# Propagate stop/restart from tomcat10 so the indexer is started and restarted together with tomcat10
+PartOf=tomcat10.service
 RequiresMountsFor=/opt/digiverso/indexer /opt/digiverso/logs /opt/digiverso/viewer
 
 [Service]

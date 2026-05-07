@@ -40,7 +40,7 @@ public class MetsMarcIndexer extends MetsIndexer {
 
     private static final String[] ANCHOR_PI_XPATHS = { "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='OTHER']/mets:xmlData/anchorIdentifier",
             "/mets:mets/mets:dmdSec/mets:mdWrap[@MDTYPE='MARC']/mets:xmlData/"
-                    + "marc:bib/marc:record/marc:datafield[@tag='773']/marc:subfield[@code='w']" };;
+                    + "marc:bib/marc:record/marc:datafield[@tag='773']/marc:subfield[@code='w']" };
 
     /**
      * Constructor.

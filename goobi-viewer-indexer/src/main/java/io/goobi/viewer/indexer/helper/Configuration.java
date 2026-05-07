@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
@@ -44,6 +45,7 @@ import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.model.config.ImageUrlReplaceRule;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
 
@@ -465,6 +467,18 @@ public final class Configuration {
 
     /**
      * <p>
+     * isPrioritizeLargeImageFolders.
+     * </p>
+     *
+     * @should return correct value
+     * @return a boolean
+     */
+    public boolean isPrioritizeLargeImageFolders() {
+        return getBoolean("performance.prioritizeLargeImageFolders", false);
+    }
+
+    /**
+     * <p>
      * isAuthorityDataCacheEnabled.
      * </p>
      *
@@ -821,6 +835,125 @@ public final class Configuration {
      */
     public boolean isReadImageDimensionsFromIIIF() {
         return getBoolean("performance.loadExternalImageInfos", true);
+    }
+
+    /**
+     * Returns true if external image download is enabled.
+     *
+     * @return a boolean
+     */
+    public boolean isImageDownloadEnabled() {
+        return getBoolean("init.imageDownload[@enabled]", true);
+    }
+
+    /**
+     * Returns the list of allowed URL prefixes for external image downloads.
+     *
+     * @return a {@link java.util.List} object
+     */
+    public List<String> getAllowedImageDownloadUrls() {
+        return getStringList("init.imageDownload.allowedUrls.url");
+    }
+
+    /**
+     * Returns the maximum file size in bytes for external image downloads.
+     *
+     * @return max file size in bytes
+     */
+    public long getImageDownloadMaxFileSize() {
+        long mb = getInt("init.imageDownload.maxFileSizeInMB", 512);
+        return mb * 1024 * 1024;
+    }
+
+    /**
+     * Returns true if external fulltext/ALTO download is enabled.
+     *
+     * @return a boolean
+     * @should return correct value
+     */
+    public boolean isFulltextDownloadEnabled() {
+        return getBoolean("init.fulltextDownload[@enabled]", true);
+    }
+
+    /**
+     * Returns the list of allowed URL prefixes for external fulltext/ALTO downloads.
+     *
+     * @return a {@link java.util.List} object
+     * @should return all configured values
+     */
+    public List<String> getAllowedFulltextDownloadUrls() {
+        return getStringList("init.fulltextDownload.allowedUrls.url");
+    }
+
+    /**
+     * Returns true if file:// URLs are allowed for ALTO downloads.
+     *
+     * @return a boolean
+     * @should return false by default
+     */
+    public boolean isFulltextDownloadAllowFileUrls() {
+        return getBoolean("init.fulltextDownload.allowFileUrls", false);
+    }
+
+    /**
+     * <p>
+     * getImageUrlReplaceRules.
+     * </p>
+     *
+     * Loads all configured rules from {@code <imageUrlReplaceRules>/<pattern>}. Each pattern element is expected to have a {@code @condition}
+     * attribute (regex matched against the full URL) and a {@code @replacement} attribute (replacement string, may use {@code $1}, {@code $2}, ...
+     * backreferences).
+     *
+     * @return List of configured rules; empty list if none configured or all rules are invalid
+     * @should return empty list if no rules configured
+     * @should load all configured rules
+     * @should skip rules with invalid regex
+     */
+    public List<ImageUrlReplaceRule> getImageUrlReplaceRules() {
+        List<HierarchicalConfiguration<ImmutableNode>> elements = getLocalConfigurationsAt("imageUrlReplaceRules.pattern");
+        if (elements == null || elements.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<ImageUrlReplaceRule> ret = new ArrayList<>(elements.size());
+        for (HierarchicalConfiguration<ImmutableNode> sub : elements) {
+            String condition = sub.getString("[@condition]");
+            String replacement = sub.getString("[@replacement]");
+            if (StringUtils.isNotBlank(condition) && replacement != null) {
+                try {
+                    ret.add(new ImageUrlReplaceRule(condition, replacement));
+                } catch (PatternSyntaxException e) {
+                    logger.error("Invalid regex in imageUrlReplaceRules: {}", condition);
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * <p>
+     * applyImageUrlReplaceRules.
+     * </p>
+     *
+     * Applies the configured image URL replacement rules to the given URL. Rules are evaluated in order; the first matching rule wins. URLs that
+     * don't match any rule are returned unchanged.
+     *
+     * @param url URL to test and potentially transform; may be null
+     * @return transformed URL if a rule matched, otherwise the original URL (or null if input was null)
+     * @should return null if url is null
+     * @should return original url if no rule matches
+     * @should return transformed url on first matching rule
+     */
+    public String applyImageUrlReplaceRules(String url) {
+        if (url == null) {
+            return null;
+        }
+        for (ImageUrlReplaceRule rule : getImageUrlReplaceRules()) {
+            String transformed = rule.apply(url);
+            if (!url.equals(transformed)) {
+                return transformed;
+            }
+        }
+        return url;
     }
 
 }

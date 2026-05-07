@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.goobi.viewer</groupId>
 	<artifactId>viewer-indexer</artifactId>
-	<version>26.03</version>
+	<version>26.04-SNAPSHOT</version>
 
 
 	<name>Goobi viewer - Indexer</name>
@@ -40,15 +40,15 @@
 		<buildDate>${maven.build.timestamp}</buildDate>
 
 		<!-- intranda libraries -->
-		<alto.version>1.7.0</alto.version>
+		<alto.version>1.8.0</alto.version>
 		<iiif-api-model.version>3.2.0</iiif-api-model.version>
 		<normdataimporter.version>2.1.3</normdataimporter.version>
 
 		<!-- other libraries -->
 		<angus-mail.version>2.0.5</angus-mail.version>
 		<commons-beanutils.version>1.11.0</commons-beanutils.version>
-		<commons-configuration2.version>2.13.0</commons-configuration2.version>
-		<commons-io.version>2.21.0</commons-io.version>
+		<commons-configuration2.version>2.14.0</commons-configuration2.version>
+		<commons-io.version>2.22.0</commons-io.version>
 		<commons-jxpath.version>1.4.0</commons-jxpath.version>
 		<commons-lang3.version>3.20.0</commons-lang3.version>
 		<commons-text.version>1.15.0</commons-text.version>
@@ -58,15 +58,15 @@
 		<icu.version>78.3</icu.version>
 		<imageio-openjpeg.version>0.6.8</imageio-openjpeg.version>
 		<log4j.version>2.25.4</log4j.version>
-		<jackson.version>2.21.2</jackson.version>
-		<jaxen.version>2.0.0</jaxen.version>
+		<jackson.version>2.21.3</jackson.version>
+		<jaxen.version>2.0.1</jaxen.version>
 		<jai.version>1.4.0</jai.version>
 		<jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
-		<jsoup.version>1.22.1</jsoup.version>
+		<jsoup.version>1.22.2</jsoup.version>
 		<json.version>20251224</json.version>
 		<junit.version>6.0.3</junit.version>
-		<metadata-extractor.version>2.19.0</metadata-extractor.version>
+		<metadata-extractor.version>2.20.0</metadata-extractor.version>
 		<solr.version>9.10.1</solr.version>
 		<sf-geojson.version>3.3.3</sf-geojson.version>
 		<pdfbox.version>3.0.7</pdfbox.version>
@@ -511,7 +511,7 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>12.2.0</version>
+				<version>12.2.1</version>
 				<configuration>
 					<!--failBuildOnCVSS>5.0</failBuildOnCVSS-->
 					<skipProvidedScope>true</skipProvidedScope>
@@ -540,7 +540,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>13.4.0</version>
+						<version>13.4.1</version>
 					</dependency>
 				</dependencies>
 				<executions>
