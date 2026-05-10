@@ -789,6 +789,7 @@ public final class Utils {
      * @param regexes an array of {@link java.lang.String} objects
      * @return true if fileName matches any of the regexes in the array; false otherwise
      * @should match correctly
+     * @should not match local file paths containing IIIF qualifier as substring
      */
     public static boolean isFileNameMatchesRegex(String fileName, String[] regexes) {
         if (StringUtils.isEmpty(fileName) || regexes == null || regexes.length == 0) {

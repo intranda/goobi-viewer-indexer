@@ -73,9 +73,14 @@ public class PhysicalDocumentBuilder {
     private static final String FIELD_FILESIZE = "MDNUM_FILESIZE";
     private static final String FIELD_SHAPE = "MD_SHAPE";
 
+    // Regexes used to detect a path/URL whose final segment is an IIIF "quality.format" token (e.g. ".../color.tif").
+    // The leading "/" anchors the IIIF quality keyword to a path separator so that filenames such as "02_color.tif"
+    // or "page_default.png" are not misclassified as IIIF URLs (which would otherwise be stripped down to an
+    // unrelated path segment by Utils#getFileNameFromIiifUrl). The escaped "\\." pins the literal dot before the
+    // extension and is defensive cleanup, not strictly required for the regression fix.
     private static final String[] IIIF_IMAGE_FILE_NAMES =
-            { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
-                    ".*native.(jpg|png|tif|jp2)$" };
+            { ".*/bitonal\\.(jpg|png|tif|jp2)$", ".*/color\\.(jpg|png|tif|jp2)$", ".*/default\\.(jpg|png|tif|jp2)$", ".*/gray\\.(jpg|png|tif|jp2)$",
+                    ".*/native\\.(jpg|png|tif|jp2)$" };
 
     /** Constant <code>DEFAULT_FILEGROUP="DEFAULT"</code> */
     private static final String DEFAULT_FILEGROUP = "DEFAULT";
@@ -553,9 +558,11 @@ public class PhysicalDocumentBuilder {
     }
 
     /**
-     * 
+     *
      * @param filePath
      * @return Extracted file name
+     * @should extract plain file name for local file URI
+     * @should extract original file name for IIIF url
      */
     protected String getFilename(String filePath) {
         String fileName;

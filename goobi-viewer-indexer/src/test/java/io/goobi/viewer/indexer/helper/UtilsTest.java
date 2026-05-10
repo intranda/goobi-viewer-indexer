@@ -135,6 +135,27 @@ class UtilsTest extends AbstractTest {
     }
 
     /**
+     * Regression: filenames whose last path segment merely contains an IIIF qualifier ("color", "bitonal", ...) as a
+     * substring (e.g. "02_color.tif") were previously misidentified as IIIF URLs because the qualifier in the regex was
+     * not anchored to a path separator and the dot before the extension was unescaped.
+     *
+     * @see Utils#isFileNameMatchesRegex(String,String[])
+     * @verifies not match local file paths containing IIIF qualifier as substring
+     */
+    @Test
+    void isFileNameMatchesRegex_shouldNotMatchLocalFilePathsContainingIiifQualifierAsSubstring() {
+        assertFalse(Utils.isFileNameMatchesRegex("file:///opt/digiverso/viewer/media/test_digiverso_tif_seb/02_color.tif",
+                Indexer.IIIF_IMAGE_FILE_NAMES));
+        assertFalse(Utils.isFileNameMatchesRegex("file:///opt/digiverso/viewer/media/foo/02_bitonal.jp2", Indexer.IIIF_IMAGE_FILE_NAMES));
+        assertFalse(Utils.isFileNameMatchesRegex("file:///opt/digiverso/viewer/media/foo/page_default.png", Indexer.IIIF_IMAGE_FILE_NAMES));
+        assertFalse(Utils.isFileNameMatchesRegex("file:///opt/digiverso/viewer/media/foo/somegray.tif", Indexer.IIIF_IMAGE_FILE_NAMES));
+        assertFalse(Utils.isFileNameMatchesRegex("file:///opt/digiverso/viewer/media/foo/native.bak.tif", Indexer.IIIF_IMAGE_FILE_NAMES));
+        // Must still recognize valid IIIF URLs whose final path segment is exactly the qualifier + extension
+        assertTrue(Utils.isFileNameMatchesRegex(
+                "https://example.com/iiif/2/AC05725455%2F00000001.tif/full/!400,400/0/color.tif", Indexer.IIIF_IMAGE_FILE_NAMES));
+    }
+
+    /**
      * @see Utils#adaptField(String,String)
      * @verifies apply prefix correctly
      */

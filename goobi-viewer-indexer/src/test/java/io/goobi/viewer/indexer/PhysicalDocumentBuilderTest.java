@@ -94,4 +94,39 @@ class PhysicalDocumentBuilderTest extends AbstractSolrEnabledTest {
         assertEquals(0, PhysicalDocumentBuilder.getImageDimensionsFromIIIF("http://169.254.169.254/latest/meta-data/info.json").length);
     }
 
+    /**
+     * @see PhysicalDocumentBuilder#getFilename(String)
+     * @verifies extract plain file name for local file URI
+     */
+    @Test
+    void getFilename_shouldExtractPlainFileNameForLocalFileUri() throws Exception {
+        Path metPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml").toAbsolutePath();
+        JDomXP xp = new JDomXP(JDomXP.readXmlFile(metPath.toAbsolutePath().toString()));
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of("PRESENTATION"), Collections.emptyList(), Collections.emptyMap(),
+                xp, null, null, DocType.PAGE);
+
+        assertEquals("01.tif", builder.getFilename("file:///opt/digiverso/viewer/media/test_digiverso_tif_seb/01.tif"));
+        // Regression for filenames containing an IIIF qualifier as substring (e.g. "_color"). Previously the IIIF
+        // detection regex matched these and getFileNameFromIiifUrl returned a path segment like "digiverso.tif".
+        assertEquals("02_color.tif", builder.getFilename("file:///opt/digiverso/viewer/media/test_digiverso_tif_seb/02_color.tif"));
+        assertEquals("page_default.png", builder.getFilename("file:///opt/digiverso/viewer/media/foo/page_default.png"));
+    }
+
+    /**
+     * @see PhysicalDocumentBuilder#getFilename(String)
+     * @verifies extract original file name for IIIF url
+     */
+    @Test
+    void getFilename_shouldExtractOriginalFileNameForIiifUrl() throws Exception {
+        Path metPath = Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005.xml").toAbsolutePath();
+        JDomXP xp = new JDomXP(JDomXP.readXmlFile(metPath.toAbsolutePath().toString()));
+        PhysicalDocumentBuilder builder = new PhysicalDocumentBuilder(List.of("PRESENTATION"), Collections.emptyList(), Collections.emptyMap(),
+                xp, null, null, DocType.PAGE);
+
+        assertEquals("00000001.jpg",
+                builder.getFilename("https://localhost:8080/viewer/rest/image/AC05725455/00000001.tif/full/!400,400/0/default.jpg"));
+        assertEquals("AFE_1284_1999-17-557-1_a.jpg", builder.getFilename(
+                "https://pecunia2.zaw.uni-heidelberg.de:49200/iiif/2/AFE_1284_1999-17-557-1_a.jpg/full/full/0/default.jpg"));
+    }
+
 }
