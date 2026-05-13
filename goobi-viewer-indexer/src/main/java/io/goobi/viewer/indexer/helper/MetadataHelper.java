@@ -1178,8 +1178,8 @@ public final class MetadataHelper {
     }
 
     /**
-     * Sanitizes an authority URL by trimming whitespace and, if the URL contains embedded newline
-     * characters (malformed XML data with multiple identifiers in one element), using only the first line.
+     * Sanitizes an authority URL by trimming whitespace and, if the URL contains embedded newline characters (malformed XML data with multiple
+     * identifiers in one element), using only the first line.
      *
      * @param url Raw authority URL
      * @return Sanitized URL, never null but may be empty
@@ -1292,7 +1292,10 @@ public final class MetadataHelper {
 
         // Add single-valued field by which to group metadata search hits
         if (mdValueRaw != null) {
-            addSortField(SolrConstants.GROUPFIELD, new StringBuilder(groupLabel).append("_").append(mdValueRaw).toString(), "", null, null,
+            // Truncate GROUPFIELD value because too long SORT_GROUPFIELD values will result in Solr rejecting the document
+            addSortField(SolrConstants.GROUPFIELD,
+                    new StringBuilder(groupLabel).append("_").append(mdValueRaw.substring(0, Math.min(mdValueRaw.length(), 128))).toString(), "",
+                    null, null,
                     ret.getFields());
         }
 

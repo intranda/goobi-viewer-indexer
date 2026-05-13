@@ -117,9 +117,8 @@ public class IndexObject {
      * @should write all required fields
      */
     public void pushSimpleDataToLuceneArray() {
-        String iddocString = String.valueOf(iddoc);
-        addToLucene(SolrConstants.IDDOC, iddocString);
-        addToLucene(SolrConstants.GROUPFIELD, iddocString);
+        addToLucene(SolrConstants.IDDOC, iddoc);
+        addToLucene(SolrConstants.GROUPFIELD, iddoc);
         addToLucene(SolrConstants.DOCTYPE, docType.name());
         addToLucene(SolrConstants.PI, pi);
         addToLucene(SolrConstants.PI_TOPSTRUCT, topstructPI);
