@@ -326,8 +326,13 @@ public final class GeoJSONTools {
         String[] coordsSplit = coords.split(separator != null ? separator : " ");
         List<Position> ret = new ArrayList<>();
         double[] decimalValues = new double[coordsSplit.length];
-        for (int i = 0; i < coordsSplit.length; ++i) {
-            decimalValues[i] = convertSexagesimalCoordinateToDecimal(coordsSplit[i]);
+        try {
+            for (int i = 0; i < coordsSplit.length; ++i) {
+                decimalValues[i] = convertSexagesimalCoordinateToDecimal(coordsSplit[i]);
+            }
+        } catch (IllegalArgumentException e) {
+            logger.warn("Could not parse sexagesimal coordinates '{}': {}", coords, e.getMessage());
+            return Collections.emptyList();
         }
         switch (decimalValues.length) {
             case 2:
