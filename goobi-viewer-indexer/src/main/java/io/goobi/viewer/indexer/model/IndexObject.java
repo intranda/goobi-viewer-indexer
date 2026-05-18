@@ -385,13 +385,14 @@ public class IndexObject {
      * @param field
      * @should remove existing boolean fields
      * @should remove existing sorting fields
+     * @should remove existing group id fields
      */
     void removeNonMultivaluedFields(String field) {
         if (field == null) {
             throw new IllegalArgumentException("field may not be null");
         }
 
-        if (field.startsWith("BOOL_") || field.startsWith("SORT_")) {
+        if (field.startsWith("BOOL_") || field.startsWith("SORT_") || field.startsWith(SolrConstants.PREFIX_GROUPID)) {
             List<LuceneField> existing = getLuceneFieldsWithName(field);
             if (!existing.isEmpty()) {
                 luceneFields.removeAll(existing);

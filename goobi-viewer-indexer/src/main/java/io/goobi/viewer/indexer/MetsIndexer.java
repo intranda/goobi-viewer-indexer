@@ -1582,10 +1582,12 @@ public class MetsIndexer extends Indexer {
             if (parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null) {
                 indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR), false);
             }
-            // Inherit GROUPID_* fields
+            // Inherit GROUPID_* fields (skip if child already has its own value from its dmdSec)
             if (!parentIndexObject.getGroupIds().isEmpty()) {
                 for (String groupId : parentIndexObject.getGroupIds().keySet()) {
-                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
+                    if (indexObj.getLuceneFieldWithName(groupId) == null) {
+                        indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
+                    }
                 }
             }
 

@@ -532,6 +532,20 @@ class IndexObjectTest extends AbstractTest {
     }
 
     /**
+     * @see IndexObject#removeNonMultivaluedFields(String)
+     * @verifies remove existing group id fields
+     */
+    @Test
+    void removeNonMultivaluedFields_shouldRemoveExistingGroupIdFields() {
+        IndexObject indexObj = new IndexObject("1");
+        indexObj.addToLucene("GROUPID_SERIES", "AC01512514");
+        assertEquals(1, indexObj.getLuceneFieldsWithName("GROUPID_SERIES").size());
+
+        indexObj.removeNonMultivaluedFields("GROUPID_SERIES");
+        assertEquals(0, indexObj.getLuceneFieldsWithName("GROUPID_SERIES").size());
+    }
+
+    /**
      * @see IndexObject#writeLanguages()
      * @verifies add languages from metadata fields
      */
