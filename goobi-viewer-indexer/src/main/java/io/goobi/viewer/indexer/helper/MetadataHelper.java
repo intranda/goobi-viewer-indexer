@@ -836,7 +836,12 @@ public final class MetadataHelper {
             } else if (entry.getKey() instanceof String s) {
                 logger.trace("replace rule: {} -> {}", s, entry.getValue());
                 if (s.startsWith("REGEX:")) {
-                    ret = ret.replaceAll(s.substring(6), entry.getValue());
+                    try {
+                        ret = ret.replaceAll(s.substring(6), entry.getValue());
+                    } catch (IndexOutOfBoundsException | IllegalArgumentException e) {
+                        // Bad regex or replacement string (e.g. backreference to a group that does not exist) - skip this rule
+                        logger.error("Could not apply regex replace rule '{}' -> '{}': {}", s, entry.getValue(), e.getMessage());
+                    }
                 } else {
                     ret = ret.replace(s, entry.getValue());
                 }
