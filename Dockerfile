@@ -20,7 +20,10 @@ LABEL org.opencontainers.image.authors="Matthias Geerdsen <matthias.geerdsen@int
 ENV SOLR_HOST=solr
 ENV VIEWER_HOST=viewer
 
-RUN apk add --no-cache openjpeg bash curl && rm -rf /tmp/* /var/tmp/*
+RUN apk add --no-cache openjpeg bash curl su-exec shadow && rm -rf /tmp/* /var/tmp/*
+
+# create the non-root runtime user (UID/GID can be remapped at runtime in run.sh)
+RUN addgroup -g 1000 user && adduser -u 1000 -G user -D -H user
 
 RUN mkdir -p /opt/digiverso/indexer && mkdir /indexer-template
 
