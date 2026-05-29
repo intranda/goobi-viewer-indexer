@@ -13,22 +13,19 @@ RUN echo $build; if [ "$build" = "true" ]; then mvn -f goobi-viewer-indexer clea
 
 
 # start assembling the final image
-FROM eclipse-temurin:21-jre-jammy AS assemble-stage
+FROM eclipse-temurin:21-jre-alpine AS assemble-stage
 LABEL org.opencontainers.image.authors="Matthias Geerdsen <matthias.geerdsen@intranda.com>"
 
 
 ENV SOLR_HOST=solr
 ENV VIEWER_HOST=viewer
 
-RUN apt-get update && \
-	apt-get -y install libopenjp2-7 && \
-	apt-get -y clean && \
-	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apk add --no-cache openjpeg bash curl && rm -rf /tmp/* /var/tmp/*
 
 RUN mkdir -p /opt/digiverso/indexer && mkdir /indexer-template
 
 COPY --from=build-stage  /indexer/goobi-viewer-indexer/target/solr-Indexer.jar /usr/local/bin/solrIndexer.jar
 COPY goobi-viewer-indexer/src/main/resources/config_indexer.xml /indexer-template/
-COPY ./docker/* /
+COPY ./docker/run.sh /
 
 CMD ["/run.sh"]
