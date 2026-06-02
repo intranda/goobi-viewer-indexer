@@ -64,7 +64,7 @@
 		<jakarta.mail-api.version>2.1.5</jakarta.mail-api.version>
 		<jdom2.version>2.0.6.1</jdom2.version>
 		<jsoup.version>1.22.2</jsoup.version>
-		<json.version>20251224</json.version>
+		<json.version>20260522</json.version>
 		<junit.version>6.1.0</junit.version>
 		<metadata-extractor.version>2.20.0</metadata-extractor.version>
 		<solr.version>9.10.1</solr.version>
