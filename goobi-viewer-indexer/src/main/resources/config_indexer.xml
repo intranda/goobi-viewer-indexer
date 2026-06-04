@@ -9,6 +9,8 @@
 
 		<!-- Main Solr index URL -->
 		<solrUrl>https://localhost:8983/solr/current</solrUrl>
+		<!-- Old Solr index URL (for migration purposes) -->
+		<!-- <oldSolrUrl></oldSolrUrl> -->
 		<viewerUrl>http://localhost:8080/viewer/</viewerUrl>
 
 		<!-- Folder configuration -->
