@@ -660,6 +660,7 @@
                     <xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</xpath>
                     <xpath>dc:title</xpath>
                     <xpath>ead:did/ead:unittitle</xpath>
+                    <xpath>ead:did/ead:unittitle/ead:title</xpath>
                     <xpath>ead:archdesc/ead:did/ead:unittitle</xpath>
                     <xpath>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</xpath>
                     
