@@ -661,8 +661,9 @@ public class DataRepository {
             if (!repo.equals(this) && repo.getDir(param) != null) {
                 Path misplacedRecordFile = Paths.get(repo.getDir(param).toAbsolutePath().toString(), fileName);
                 if (Files.isRegularFile(misplacedRecordFile)) {
-                    logger.warn("Found {} file this record in different data repository: {}, deleting file...", param,
+                    logger.warn("Found {} file for this record in different data repository: {}, deleting file...", param,
                             misplacedRecordFile.toAbsolutePath());
+                    logger.warn("Selected data repository is '{}' ", getPath());
                     Files.delete(misplacedRecordFile);
                 }
             }
