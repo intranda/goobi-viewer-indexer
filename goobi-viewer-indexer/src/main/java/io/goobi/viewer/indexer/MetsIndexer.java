@@ -552,10 +552,9 @@ public class MetsIndexer extends Indexer {
                 // Create and index new anchor file that includes all currently indexed children (priority queue)
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
                 anchorMerge(indexObj);
-                // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue)
-                if (!indexObj.isKeepIddoc()) {
-                    updateAnchorChildrenParentIddoc(indexObj);
-                }
+                // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue). Volumes that already
+                // point at the (now stable) anchor IDDOC are skipped inside the method, so this is cheap when nothing changed.
+                updateAnchorChildrenParentIddoc(indexObj);
             } else {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
