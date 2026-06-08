@@ -240,7 +240,7 @@ public class RomanNumeral extends Number {
         for (int i = 0; i < NUM_DIVISORS && num > 0; i++) {
             div = num / DIVISORS[i];
             if (div == 4) {
-                if (this.num.length() == 0
+                if (this.num.isEmpty()
                         || this.num.charAt(this.num.length() - 1) != ROMAN_DIGITS[i - 1]) {
                     if (i == 0) {
                         for (int j = 0; j < div; j++) {

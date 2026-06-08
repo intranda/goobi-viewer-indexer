@@ -8,28 +8,28 @@
 		<minStorageSpace>2048</minStorageSpace>
 
 		<!-- Main Solr index URL -->
-		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
+		<solrUrl>https://localhost:8983/solr/current</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
-		<oldSolrUrl></oldSolrUrl>
+		<!-- <oldSolrUrl></oldSolrUrl> -->
 		<viewerUrl>http://localhost:8080/viewer/</viewerUrl>
 
 		<!-- Folder configuration -->
-		<hotFolder>C:/opt/digiverso/viewer/hotfolder/</hotFolder>
-		<!--hotFolder>C:/opt/digiverso/viewer/reindex_hotfolder/</hotFolder-->
-		<tempFolder>C:/opt/digiverso/indexer/temp/</tempFolder>
-		<viewerHome>C:/opt/digiverso/viewer/</viewerHome>
+		<hotFolder>/opt/digiverso/viewer/hotfolder/</hotFolder>
+		<!--hotFolder>/opt/digiverso/viewer/reindex_hotfolder/</hotFolder-->
+		<tempFolder>/opt/digiverso/indexer/temp/</tempFolder>
+		<viewerHome>/opt/digiverso/viewer/</viewerHome>
 		<dataRepositories>
 			<!-- strategy: SingleRepositoryStrategy, MaxRecordNumberStrategy or RemainingSpaceStrategy -->
-			<strategy>MaxRecordNumberStrategy</strategy>
+			<strategy>SingleRepositoryStrategy</strategy>
 
 			<!-- RecordNumberDistributionStrategy only: max number of records (METS+LIDO) per data repository (default is 10000) -->
 			<maxRecords>10000</maxRecords>
 
 			<!-- Data repository folders (absolute paths to be used (a new folder structure will be created for each dataRepository) -->
-			<dataRepository>C:/opt/digiverso/viewer/data/1</dataRepository>
+			<dataRepository>/opt/digiverso/viewer/data/1</dataRepository>
             <!--
-			<dataRepository>C:/opt/digiverso/viewer/data/2</dataRepository>
-			<dataRepository>C:/opt/digiverso/viewer/data/3</dataRepository>
+			<dataRepository>/opt/digiverso/viewer/data/2</dataRepository>
+			<dataRepository>/opt/digiverso/viewer/data/3</dataRepository>
             -->
 		</dataRepositories>
 
@@ -60,12 +60,12 @@
         <indexedStatistics>indexed_statistics</indexedStatistics>
 
 		<!-- Misc folders -->
-		<successFolder>C:/opt/digiverso/viewer/success/</successFolder>
-		<updatedMets>C:/opt/digiverso/viewer/updated_mets/</updatedMets>
-		<deletedMets>C:/opt/digiverso/viewer/deleted_mets/</deletedMets>
-		<errorMets>C:/opt/digiverso/viewer/error_mets/</errorMets>
-		<origLido>C:/opt/digiverso/viewer/orig_lido/</origLido>
-		<origDenkXweb>C:/opt/digiverso/viewer/orig_denkxweb/</origDenkXweb>
+		<successFolder>/opt/digiverso/viewer/success/</successFolder>
+		<updatedMets>/opt/digiverso/viewer/updated_mets/</updatedMets>
+		<deletedMets>/opt/digiverso/viewer/deleted_mets/</deletedMets>
+		<errorMets>/opt/digiverso/viewer/error_mets/</errorMets>
+		<origLido>/opt/digiverso/viewer/orig_lido/</origLido>
+		<origDenkXweb>/opt/digiverso/viewer/orig_denkxweb/</origDenkXweb>
 
 		<!-- Delete images, full-texts, etc. from the hotfolder if indexing has failed (default is false) -->
 		<deleteContentFilesOnFailure>false</deleteContentFilesOnFailure>
@@ -134,7 +134,7 @@
             </physicalElementTypes>
             
             <!-- volumeCheckXPath: XPath expression to check whether the currently processed records has an anchor host. -->
-            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(@containerType)]/mods:recordInfo/mods:recordIdentifier</volumeCheckXPath>
+            <volumeCheckXPath>/mets:mets/mets:dmdSec[1]/mets:mdWrap[@MDTYPE="MODS"]/mets:xmlData/mods:mods/mods:relatedItem[@type="host"][not(@otherType) or @otherType="hierarchical"][not(@containerType)]/mods:recordInfo/mods:recordIdentifier[not(@source)]</volumeCheckXPath>
 		</mets>
 
 		<lido>
@@ -166,6 +166,28 @@
 
 		<!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
 		<viewerAuthorizationToken>test</viewerAuthorizationToken>
+
+		<!-- imageDownload: Controls external image downloading from METS file URLs.
+		     enabled: If false, external image download is completely disabled (default: true).
+		     maxFileSizeInMB: Maximum allowed download size in MB (default: 512).
+		     allowedUrls/url: URL prefixes that are permitted for download. If no URLs are configured, all non-private URLs are allowed. -->
+		<imageDownload enabled="true">
+			<maxFileSizeInMB>512</maxFileSizeInMB>
+			<allowedUrls>
+				<!-- <url>https://trusted-iiif-server.example.com/</url> -->
+			</allowedUrls>
+		</imageDownload>
+
+		<!-- fulltextDownload: Controls external ALTO/fulltext downloading from METS file group URLs.
+		     enabled: If false, external fulltext download is completely disabled (default: true).
+		     allowedUrls/url: URL prefixes that are permitted for download. If no URLs are configured, all non-private URLs are allowed.
+		     allowFileUrls: If true, file:// URLs are allowed for ALTO downloads (default: false). Only enable in trusted environments. -->
+		<fulltextDownload enabled="true">
+			<allowFileUrls>false</allowFileUrls>
+			<allowedUrls>
+				<!-- <url>https://trusted-content-server.example.com/</url> -->
+			</allowedUrls>
+		</fulltextDownload>
 	</init>
 
 	<!-- proxy/@enabled: If false, the proxy configuration will be ignored; default is false. -->
@@ -201,6 +223,9 @@
 			Should be turned off when indexing large numbers of records at once or if the storage is slow. Default is true. -->
 		<countHotfolderFiles>true</countHotfolderFiles>
 
+		<!-- If true, records with larger image/data folders are indexed before smaller ones. Default is false. -->
+		<prioritizeLargeImageFolders>false</prioritizeLargeImageFolders>
+
 		<!-- If true, allow the indexer to read file information of external image urls in order to index image width and heights.
 		This is usefull to cache information about image dimensions for IIIF resources and image downloads, but requires additional time and possibly resources from the targeted server -->
 		<loadExternalImageInfos>true</loadExternalImageInfos>
@@ -216,7 +241,16 @@
 		</authorityDataCache>
 	</performance>
 
-
+	<!-- imageUrlReplaceRules: regex-based URL transformations applied to external image URLs at indexing time.
+	     Each <pattern> has @condition (regex matched against the full URL using Matcher.matches()) and
+	     @replacement (replacement string with $1, $2, ... backrefs).
+	     Rules are evaluated in order; the first match wins. URLs that don't match any rule are stored unchanged. -->
+    <!--
+	<imageUrlReplaceRules>
+		<pattern condition="^https?://foo.bar\.net/(.+?)\?format=image%2Fjpeg$"
+		         replacement="https://example.com/$1"/>
+	</imageUrlReplaceRules>
+    -->
 
 	<!-- languageMapping: maps ISO 639-2 (or any other) language codes to ISO 639-1 -->
 	<languageMapping>
@@ -557,6 +591,7 @@
 			<list>
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:note[@type="convoluteid"]</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="series" and @otherType="convolute"]/mods:recordInfo/mods:recordIdentifier</xpath>
 					<addToDefault>true</addToDefault>
 					<addUntokenizedVersion>false</addUntokenizedVersion>
 				</item>
@@ -625,6 +660,7 @@
                     <xpath>lido:descriptiveMetadata/lido:objectIdentificationWrap/lido:titleWrap/lido:titleSet/lido:appellationValue</xpath>
                     <xpath>dc:title</xpath>
                     <xpath>ead:did/ead:unittitle</xpath>
+                    <xpath>ead:did/ead:unittitle/ead:title</xpath>
                     <xpath>ead:archdesc/ead:did/ead:unittitle</xpath>
                     <xpath>ead:eadheader/ead:filedesc/ead:titlestmt/ead:titleproper</xpath>
                     
@@ -1034,6 +1070,10 @@
 			<list>
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="rcp"[@authority="marcrelator"][@type="code"]]</xpath>
+                    <xpath>ead:archdesc/ead:controlaccess/ead:persname[@relator="rcp" or @relator="rec"]</xpath>
+                    <xpath>ead:controlaccess/ead:persname[@relator="rcp" or @relator="rec"]</xpath>
+                    <xpath>ead:archdesc/ead:indexentry/ead:persname[@relator="rcp" or @relator="rec"]</xpath>
+                    <xpath>ead:indexentry/ead:persname[@relator="rcp" or @relator="rec"]</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<replace string="&lt;&lt;"></replace>
@@ -1042,12 +1082,16 @@
 					<replace char="156"></replace>
 					<groupEntity type="PERSON">
 						<field name="MD_VALUE">mods:displayForm</field>
+                        <field name="MD_VALUE">concat(ead:part[@localtype="surname"],', ',ead:part[@localtype="givenname"])</field>
 						<field name="MD_LINK">@xlink:href</field>
 						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_LASTNAME">ead:part[@localtype="surname"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_FIRSTNAME">ead:part[@localtype="givenname"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                        <field name="NORM_URI">@identifier</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -1110,6 +1154,10 @@
 				<item>
 					<xpath>mets:xmlData/mods:mods/mods:name[@type="personal"][mods:role/mods:roleTerm="aut"[@authority="marcrelator"][@type="code"]]</xpath>
 					<xpath>mets:xmlData/bib/record/datafield[@tag="100"][subfield[@code="e"] = "author."]</xpath>
+                    <xpath>ead:archdesc/ead:controlaccess/ead:persname[@relator="aut"]</xpath>
+                    <xpath>ead:controlaccess/ead:persname[@relator="aut"]</xpath>
+                    <xpath>ead:indexentry/ead:persname[@relator="aut"]</xpath>
+                    <xpath>ead:archdesc/ead:indexentry/ead:persname[@relator="aut"]</xpath>
 					<addToDefault>true</addToDefault>
 					<addSortField>true</addSortField>
 					<replace string="&lt;&lt;"></replace>
@@ -1119,13 +1167,17 @@
 					<groupEntity type="PERSON">
 						<field name="MD_VALUE">mods:displayForm</field>
 						<field name="MD_VALUE">subfield[@code="a"]</field>
+                        <field name="MD_VALUE">concat(ead:part[@localtype="surname"],', ',ead:part[@localtype="givenname"])</field>
 						<field name="MD_LINK">@xlink:href</field>
 						<field name="MD_CORPORATION">mods:namePart[not(@type)]</field>
 						<field name="MD_LASTNAME">mods:namePart[@type="family"]</field>
+                        <field name="MD_LASTNAME">ead:part[@localtype="surname"]</field>
 						<field name="MD_FIRSTNAME">mods:namePart[@type="given"]</field>
+                        <field name="MD_FIRSTNAME">ead:part[@localtype="givenname"]</field>
 						<field name="MD_LIFEPERIOD">mods:namePart[@type="date"]</field>
 						<field name="MD_LIFEPERIOD">subfield[@code="d"]</field>
 						<field name="MD_TERMSOFADDRESS">mods:namePart[@type="termsOfAddress"]</field>
+                        <field name="NORM_URI">@identifier</field>
 					</groupEntity>
 				</item>
 			</list>
@@ -3768,6 +3820,7 @@
             <list>
                 <item>
                     <xpath>mets:xmlData/mods:mods/mods:relatedItem[@type="host"]/mods:recordInfo/mods:recordIdentifier</xpath>
+                    <xpath>mets:xmlData/mods:mods/mods:recordInfo/mods:recordIdentifier[@source="zdb-ppn"]</xpath>
                     <addToDefault>false</addToDefault>
                     <addUntokenizedVersion>false</addUntokenizedVersion>
                 </item>

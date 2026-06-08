@@ -136,7 +136,16 @@ public class DataRepository {
      */
     public DataRepository(final String path, final boolean createFolders) throws FatalIndexerException {
         this.path = path;
-        rootDir = "".equals(path) ? Paths.get(SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome()) : Paths.get(path);
+        if ("".equals(path)) {
+            String viewerHome = SolrIndexerDaemon.getInstance().getConfiguration().getViewerHome();
+            if (StringUtils.isBlank(viewerHome)) {
+                throw new FatalIndexerException(
+                        "Cannot initialize data repository: 'init.viewerHome' is not configured. Please set it in the indexer configuration.");
+            }
+            rootDir = Paths.get(viewerHome);
+        } else {
+            rootDir = Paths.get(path);
+        }
 
         if (Files.exists(rootDir)) {
             if (Files.isRegularFile(rootDir)) {
@@ -652,8 +661,9 @@ public class DataRepository {
             if (!repo.equals(this) && repo.getDir(param) != null) {
                 Path misplacedRecordFile = Paths.get(repo.getDir(param).toAbsolutePath().toString(), fileName);
                 if (Files.isRegularFile(misplacedRecordFile)) {
-                    logger.warn("Found {} file this record in different data repository: {}, deleting file...", param,
+                    logger.warn("Found {} file for this record in different data repository: {}, deleting file...", param,
                             misplacedRecordFile.toAbsolutePath());
+                    logger.warn("Selected data repository is '{}' ", getPath());
                     Files.delete(misplacedRecordFile);
                 }
             }

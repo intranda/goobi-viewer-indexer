@@ -552,10 +552,9 @@ public class MetsIndexer extends Indexer {
                 // Create and index new anchor file that includes all currently indexed children (priority queue)
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
                 anchorMerge(indexObj);
-                // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue)
-                if (!indexObj.isKeepIddoc()) {
-                    updateAnchorChildrenParentIddoc(indexObj);
-                }
+                // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue). Volumes that already
+                // point at the (now stable) anchor IDDOC are skipped inside the method, so this is cheap when nothing changed.
+                updateAnchorChildrenParentIddoc(indexObj);
             } else {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
@@ -1582,10 +1581,12 @@ public class MetsIndexer extends Indexer {
             if (parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null) {
                 indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR), false);
             }
-            // Inherit GROUPID_* fields
+            // Inherit GROUPID_* fields (skip if child already has its own value from its dmdSec)
             if (!parentIndexObject.getGroupIds().isEmpty()) {
                 for (String groupId : parentIndexObject.getGroupIds().keySet()) {
-                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
+                    if (indexObj.getLuceneFieldWithName(groupId) == null) {
+                        indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
+                    }
                 }
             }
 
@@ -1943,7 +1944,7 @@ public class MetsIndexer extends Indexer {
             baseFileName = baseFileName.substring(0, baseFileName.indexOf('#'));
         }
         StringBuilder sbNewFilename = new StringBuilder(baseFileName).append(".xml");
-        if (sbNewFilename.length() > 0) {
+        if (!sbNewFilename.isEmpty()) {
             Path indexed = Paths.get(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString(), sbNewFilename.toString());
             try {
                 // Java NIO is non-blocking, so copying a file in one call and then deleting it in a second might run into problems.

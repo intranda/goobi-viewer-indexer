@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -126,6 +127,7 @@ public class Hotfolder {
     private Indexer currentIndexer;
     private boolean addVolumeCollectionsToAnchor = false;
     private boolean deleteContentFilesOnFailure = true;
+    private boolean prioritizeLargeImageFolders = false;
     private boolean emailConfigurationComplete = false;
 
     private SecondaryAppender secondaryAppender;
@@ -168,6 +170,11 @@ public class Hotfolder {
             logger.info("Volume collections WILL BE ADDED to anchors.");
         } else {
             logger.info("Volume collections WILL NOT BE ADDED to anchors.");
+        }
+
+        prioritizeLargeImageFolders = SolrIndexerDaemon.getInstance().getConfiguration().isPrioritizeLargeImageFolders();
+        if (prioritizeLargeImageFolders) {
+            logger.info("Large image folder prioritization is ENABLED.");
         }
 
         String temp = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration("deleteContentFilesOnFailure");
@@ -466,23 +473,29 @@ public class Hotfolder {
             }
 
             logger.debug("Hotfolder ({}): Listing files...", getHotfolderPath().getFileName());
+            List<Path> newFiles = new ArrayList<>();
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(hotfolderPath, "*.{xml,json,delete,purge,docupdate,UPDATED}")) {
                 for (Path path : stream) {
-                    // Only one file at a time right now
                     if (currentIndexer != null) {
                         break;
                     }
-                    Path recordFile = path;
-                    if (!recordFile.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !indexQueue.contains(recordFile)) {
-                        if (indexQueue.offer(recordFile)) {
-                            logger.info("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), path.getFileName());
-                        } else {
-                            logger.debug("Queue full ({})", getHotfolderPath().getFileName());
-                        }
+                    if (!path.getFileName().toString().endsWith(MetsIndexer.ANCHOR_UPDATE_EXTENSION) && !indexQueue.contains(path)) {
+                        newFiles.add(path);
                     }
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
+            }
+            if (prioritizeLargeImageFolders && !newFiles.isEmpty()) {
+                newFiles.sort((a, b) -> Long.compare(getDataFolderSize(b), getDataFolderSize(a)));
+            }
+            for (Path recordFile : newFiles) {
+                if (indexQueue.offer(recordFile)) {
+                    logger.info("Added file from '{}' to index queue: {}", getHotfolderPath().getFileName(), recordFile.getFileName());
+                } else {
+                    logger.debug("Queue full ({})", getHotfolderPath().getFileName());
+                    break;
+                }
             }
         }
 
@@ -969,6 +982,29 @@ public class Hotfolder {
             Files.delete(matchingFile);
             logger.info("Deleted '{}' from hotfolder '{}'.", matchingFile.getFileName(), getHotfolderPath().getFileName());
         }
+    }
+
+    /**
+     * Returns the total size of data folders associated with the given record file.
+     *
+     * @param recordFile
+     * @return total size in bytes
+     */
+    long getDataFolderSize(Path recordFile) {
+        String baseName = FilenameUtils.getBaseName(recordFile.getFileName().toString());
+        String mediaFolderSuffix = SolrIndexerDaemon.getInstance().getConfiguration().getConfiguration(DataRepository.PARAM_MEDIA);
+        if (StringUtils.isEmpty(mediaFolderSuffix)) {
+            mediaFolderSuffix = "media";
+        }
+        Path mediaFolder = getHotfolderPath().resolve(baseName + "_" + mediaFolderSuffix);
+        if (Files.isDirectory(mediaFolder)) {
+            try {
+                return FileUtils.sizeOfDirectory(mediaFolder.toFile());
+            } catch (IllegalArgumentException e) {
+                logger.error(e.getMessage());
+            }
+        }
+        return 0;
     }
 
     /**

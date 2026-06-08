@@ -30,7 +30,7 @@ class PrimitiveDateTest {
      * @verifies set date correctly
      */
     @Test
-    void PrimitiveDate_shouldSetDateCorrectly() throws Exception {
+    void PrimitiveDate_shouldSetDateCorrectly() {
         LocalDate date = LocalDate.parse("2020-05-29", DateTools.FORMATTER_ISO8601_DATE);
         PrimitiveDate pd = new PrimitiveDate(date);
         Assertions.assertEquals(Integer.valueOf(2020), pd.getYear());

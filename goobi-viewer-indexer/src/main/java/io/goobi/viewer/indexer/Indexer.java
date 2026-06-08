@@ -125,6 +125,9 @@ public abstract class Indexer {
 
     private static final int HTTP_CONNECTION_TIMEOUT = 4000;
 
+    // Constant for the "image" MIME type prefix used multiple times in this class
+    private static final String MIME_TYPE_IMAGE = "image";
+
     protected static final int GENERATE_PAGE_DOCUMENT_TIMEOUT_HOURS = 6;
 
     protected static final String FIELD_COORDS = "MD_COORDS";
@@ -143,9 +146,14 @@ public abstract class Indexer {
     static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted! Please delete it manually!";
     static final String LOG_FOUND_DATA_FOLDER = "Found data folder: {}";
 
+    // Regexes used to detect a path/URL whose final segment is an IIIF "quality.format" token (e.g. ".../color.tif").
+    // The leading "/" anchors the IIIF quality keyword to a path separator so that filenames such as "02_color.tif"
+    // or "page_default.png" are not misclassified as IIIF URLs (which would otherwise be stripped down to an
+    // unrelated path segment by Utils#getFileNameFromIiifUrl). The escaped "\\." pins the literal dot before the
+    // extension and is defensive cleanup, not strictly required for the regression fix.
     public static final String[] IIIF_IMAGE_FILE_NAMES =
-            { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
-                    ".*native.(jpg|png|tif|jp2)$" };
+            { ".*/bitonal\\.(jpg|png|tif|jp2)$", ".*/color\\.(jpg|png|tif|jp2)$", ".*/default\\.(jpg|png|tif|jp2)$", ".*/gray\\.(jpg|png|tif|jp2)$",
+                    ".*/native\\.(jpg|png|tif|jp2)$" };
 
     // TODO cyclic dependency; find a more elegant way to select a repository w/o passing the hotfolder instance to the indexer
     protected Hotfolder hotfolder;
@@ -506,7 +514,7 @@ public abstract class Indexer {
      * @should return empty list if dataFolder null
      */
     List<SolrInputDocument> generateUserGeneratedContentDocsForPage(SolrInputDocument pageDoc, Path dataFolder, String pi, String anchorPi,
-            Map<String, String> groupIds, int order, String fileNameRoot) throws FatalIndexerException {
+            Map<String, String> groupIds, int order, String fileNameRoot) {
         if (dataFolder == null || !Files.isDirectory(dataFolder)) {
             logger.info("UGC folder is empty.");
             return Collections.emptyList();
@@ -1731,7 +1739,6 @@ public abstract class Indexer {
         if (isAnchor()) {
             // Keep old IDDOC
             indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
-            indexObj.setKeepIddoc(true);
             // Delete old doc
             iddocsToDelete.add(indexObj.getIddoc());
             // Delete secondary docs (grouped metadata, events)
@@ -1771,54 +1778,72 @@ public abstract class Indexer {
             throw new IllegalArgumentException("fileName may not be null");
         }
 
+        // Apply configured URL replacement rules
+        String effectiveUrl = SolrIndexerDaemon.getInstance().getConfiguration().applyImageUrlReplaceRules(url);
+        String effectiveFileName = fileName;
+        if (!url.equals(effectiveUrl)) {
+            logger.info("Applied imageUrlReplaceRule: {} -> {}", url, effectiveUrl);
+            // Recompute fileName from the rewritten URL
+            if (effectiveUrl.startsWith("http")) {
+                try {
+                    Path p = Paths.get(new URI(effectiveUrl).getPath());
+                    if (p.getFileName() != null) {
+                        effectiveFileName = p.getFileName().toString();
+                    }
+                } catch (URISyntaxException | IllegalArgumentException e) {
+                    logger.warn("Could not derive filename from rewritten URL: {}", effectiveUrl);
+                }
+            }
+        }
+
         // External image
-        if (url.startsWith("http")) {
+        if (effectiveUrl.startsWith("http")) {
             // Download image, if so requested (and not a local resource)
             String viewerUrl = SolrIndexerDaemon.getInstance().getConfiguration().getViewerUrl();
             logger.debug("media folder: {}", mediaTargetPath);
-            if (downloadExternalImages && mediaTargetPath != null && viewerUrl != null && !url.startsWith(viewerUrl)) {
+            if (downloadExternalImages && mediaTargetPath != null && viewerUrl != null && !effectiveUrl.startsWith(viewerUrl)) {
                 // Download image and use locally
                 try {
-                    File file = new File(downloadExternalImage(url, mediaTargetPath, fileName));
+                    File file = new File(downloadExternalImage(effectiveUrl, mediaTargetPath, effectiveFileName));
                     if (file.isFile()) {
                         logger.info("Downloaded {}", file);
-                        doc.addField(SolrConstants.FILENAME, fileName);
+                        doc.addField(SolrConstants.FILENAME, effectiveFileName);
 
                         // Representative image (local)
                         if (representative) {
-                            doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
+                            doc.addField(SolrConstants.THUMBNAILREPRESENT, effectiveFileName);
                         }
                     } else {
-                        logger.warn("Could not download file: {}", url);
+                        logger.warn("Could not download file: {}", effectiveUrl);
                     }
                 } catch (IOException | URISyntaxException e) {
-                    logger.error("Could not download image: {}: {}", url, e.getMessage());
+                    logger.error("Could not download image: {}: {}", effectiveUrl, e.getMessage());
                 }
             } else if (mediaTargetPath != null && useOldImageFolderIfAvailable) {
                 // If image previously downloaded, use local version, when re-indexing
-                doc.addField(SolrConstants.FILENAME, fileName);
+                doc.addField(SolrConstants.FILENAME, effectiveFileName);
                 // Representative image (local)
                 if (representative) {
-                    doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
+                    doc.addField(SolrConstants.THUMBNAILREPRESENT, effectiveFileName);
                 }
             } else {
                 // Add external image URL
-                doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, url);
+                doc.addField(SolrConstants.FILENAME + SolrConstants.SUFFIX_HTML_SANDBOXED, effectiveUrl);
                 // Representative image (external)
                 if (representative) {
-                    doc.addField(SolrConstants.THUMBNAILREPRESENT, url);
+                    doc.addField(SolrConstants.THUMBNAILREPRESENT, effectiveUrl);
                 }
             }
         } else {
             // For non-remote file, add the file name to the list
             // Representative image (local)
             if (representative) {
-                doc.addField(SolrConstants.THUMBNAILREPRESENT, fileName);
+                doc.addField(SolrConstants.THUMBNAILREPRESENT, effectiveFileName);
             }
         }
 
         // Mime type
-        parseMimeType(doc, fileName);
+        parseMimeType(doc, effectiveFileName);
     }
 
     /**
@@ -1844,14 +1869,14 @@ public abstract class Indexer {
         if (!fileName.startsWith("http")) {
             fileName = FilenameUtils.getName(fileName);
         }
-        String mimetype = "image";
+        String mimetype = MIME_TYPE_IMAGE;
         String subMimetype = "";
         if (doc.containsKey(SolrConstants.FILENAME)) {
             // Determine mime type from file content
             try {
                 mimetype = Files.probeContentType(Paths.get(filePath));
                 if (StringUtils.isBlank(mimetype)) {
-                    mimetype = "image";
+                    mimetype = MIME_TYPE_IMAGE;
                 } else if (mimetype.contains("/")) {
                     subMimetype = mimetype.substring(mimetype.indexOf("/") + 1);
                 }
@@ -2156,7 +2181,7 @@ public abstract class Indexer {
 
         if (doc.containsKey(SolrConstants.FILENAME)) {
             String mimetype = doc.containsKey(SolrConstants.MIMETYPE) ? doc.getFieldValue(SolrConstants.MIMETYPE).toString() : "";
-            return mimetype.startsWith("image") || mimetype.equals("application/pdf");
+            return mimetype.startsWith(MIME_TYPE_IMAGE) || mimetype.equals("application/pdf");
         }
         return false;
     }

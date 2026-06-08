@@ -182,7 +182,7 @@ class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if body contains no error
      */
     @Test
-    void checkAndSendErrorReport_shouldReturnFalseIfBodyContainsNoError() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfBodyContainsNoError() {
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "bar"));
     }
 
@@ -191,7 +191,7 @@ class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if recipients not configured
      */
     @Test
-    void checkAndSendErrorReport_shouldReturnFalseIfRecipientsNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfRecipientsNotConfigured() {
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
 
@@ -200,7 +200,7 @@ class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if smtpServer not configured
      */
     @Test
-    void checkAndSendErrorReport_shouldReturnFalseIfSmtpServerNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSmtpServerNotConfigured() {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "foo@bar.com");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
     }
@@ -210,7 +210,7 @@ class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if smtpSenderAddress not configured
      */
     @Test
-    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderAddressNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderAddressNotConfigured() {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "foo@bar.com");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "bar.com");
         assertFalse(Hotfolder.checkAndSendErrorReport("foo", "ERROR bar"));
@@ -221,7 +221,7 @@ class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if smtpSenderName not configured
      */
     @Test
-    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderNameNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSenderNameNotConfigured() {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
@@ -233,7 +233,7 @@ class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if smtpSecurity not configured
      */
     @Test
-    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSecurityNotConfigured() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSmtpSecurityNotConfigured() {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");
@@ -246,7 +246,7 @@ class HotfolderTest extends AbstractSolrEnabledTest {
      * @verifies return false if sending mail fails
      */
     @Test
-    void checkAndSendErrorReport_shouldReturnFalseIfSendingMailFails() throws Exception {
+    void checkAndSendErrorReport_shouldReturnFalseIfSendingMailFails() {
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.recipients", "user@example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpServer", "smtp.example.foo");
         SolrIndexerDaemon.getInstance().getConfiguration().overrideValue("init.email.smtpSenderAddress", "indexer@example.foo");

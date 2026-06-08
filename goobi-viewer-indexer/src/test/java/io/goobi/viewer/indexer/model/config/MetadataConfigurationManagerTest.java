@@ -33,7 +33,7 @@ class MetadataConfigurationManagerTest extends AbstractTest {
      * @verifies return correct mapping
      */
     @Test
-    void getLanguageMapping_shouldReturnCorrectMapping() throws Exception {
+    void getLanguageMapping_shouldReturnCorrectMapping() {
         Assertions.assertEquals("en", MetadataConfigurationManager.getLanguageMapping("eng"));
         Assertions.assertEquals("de", MetadataConfigurationManager.getLanguageMapping("ger"));
     }
@@ -43,7 +43,7 @@ class MetadataConfigurationManagerTest extends AbstractTest {
      * @verifies return null if code not configured
      */
     @Test
-    void getLanguageMapping_shouldReturnNullIfCodeNotConfigured() throws Exception {
+    void getLanguageMapping_shouldReturnNullIfCodeNotConfigured() {
         Assertions.assertNull(MetadataConfigurationManager.getLanguageMapping("epo"));
     }
 
@@ -52,7 +52,7 @@ class MetadataConfigurationManagerTest extends AbstractTest {
      * @verifies return correct FieldConfig
      */
     @Test
-    void getConfigurationListForField_shouldReturnCorrectFieldConfig() throws Exception {
+    void getConfigurationListForField_shouldReturnCorrectFieldConfig() {
         List<FieldConfig> result =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assertions.assertNotNull(result);
@@ -65,7 +65,7 @@ class MetadataConfigurationManagerTest extends AbstractTest {
      * @verifies load all field configs correctly
      */
     @Test
-    void loadFieldConfiguration_shouldLoadAllFieldConfigsCorrectly() throws Exception {
+    void loadFieldConfiguration_shouldLoadAllFieldConfigsCorrectly() {
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_TESTFIELD");
         Assertions.assertNotNull(configItems);
@@ -83,7 +83,7 @@ class MetadataConfigurationManagerTest extends AbstractTest {
      * @verifies load nested group entities correctly
      */
     @Test
-    void loadFieldConfiguration_shouldLoadNestedGroupEntitiesCorrectly() throws Exception {
+    void loadFieldConfiguration_shouldLoadNestedGroupEntitiesCorrectly() {
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
         Assertions.assertNotNull(configItems);
@@ -107,7 +107,7 @@ class MetadataConfigurationManagerTest extends AbstractTest {
      * @verifies read group entity correctly
      */
     @Test
-    void readGroupEntity_shouldReadGroupEntityCorrectly() throws Exception {
+    void readGroupEntity_shouldReadGroupEntityCorrectly() {
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance()
                         .getConfiguration()
@@ -127,7 +127,7 @@ class MetadataConfigurationManagerTest extends AbstractTest {
      * @verifies recursively read child group entities
      */
     @Test
-    void readGroupEntity_shouldRecursivelyReadChildGroupEntities() throws Exception {
+    void readGroupEntity_shouldRecursivelyReadChildGroupEntities() {
         List<FieldConfig> configItems =
                 SolrIndexerDaemon.getInstance().getConfiguration().getMetadataConfigurationManager().getConfigurationListForField("MD_EVENT");
         Assertions.assertNotNull(configItems);

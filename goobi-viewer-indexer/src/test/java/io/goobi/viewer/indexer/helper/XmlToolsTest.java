@@ -52,7 +52,7 @@ class XmlToolsTest extends AbstractTest {
      * @verifies return XML string correctly for documents
      */
     @Test
-    void getStringFromElement_shouldReturnXMLStringCorrectlyForDocuments() throws Exception {
+    void getStringFromElement_shouldReturnXMLStringCorrectlyForDocuments() {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
         String xml = XmlTools.getStringFromElement(doc, null);
@@ -65,7 +65,7 @@ class XmlToolsTest extends AbstractTest {
      * @verifies return XML string correctly for elements
      */
     @Test
-    void getStringFromElement_shouldReturnXMLStringCorrectlyForElements() throws Exception {
+    void getStringFromElement_shouldReturnXMLStringCorrectlyForElements() {
         String xml = XmlTools.getStringFromElement(new Element("root"), null);
         Assertions.assertNotNull(xml);
         Assertions.assertTrue(xml.contains("<root></root>"));
@@ -88,7 +88,7 @@ class XmlToolsTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file is directory
      */
     @Test
-    void writeXmlFile_shouldThrowFileNotFoundExceptionIfFileIsDirectory() throws Exception {
+    void writeXmlFile_shouldThrowFileNotFoundExceptionIfFileIsDirectory() {
         Document doc = new Document();
         doc.setRootElement(new Element("root"));
         Assertions.assertThrows(FileSystemException.class, () -> XmlTools.writeXmlFile(doc, "target"));
@@ -99,7 +99,7 @@ class XmlToolsTest extends AbstractTest {
      * @verifies throw FileNotFoundException if file not found
      */
     @Test
-    void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() throws Exception {
+    void readXmlFile_shouldThrowFileNotFoundExceptionIfFileNotFound() {
         Assertions.assertThrows(FileNotFoundException.class, () -> XmlTools.readXmlFile("notfound.xml"));
     }
 
@@ -120,7 +120,7 @@ class XmlToolsTest extends AbstractTest {
      * @verifies throw IOException if file not found
      */
     @Test
-    void readXmlFile_shouldThrowIOExceptionIfFileNotFound() throws Exception {
+    void readXmlFile_shouldThrowIOExceptionIfFileNotFound() {
         Assertions.assertThrows(IOException.class, () -> XmlTools.readXmlFile(Paths.get("filenotfound")));
     }
 }

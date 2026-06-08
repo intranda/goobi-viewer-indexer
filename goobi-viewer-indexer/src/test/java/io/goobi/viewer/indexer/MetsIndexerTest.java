@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,10 +31,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -49,6 +52,7 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -532,6 +536,37 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
+     * @verifies re-index anchor children even if anchor IDDOC is kept
+     */
+    @Test
+    void index_shouldReindexAnchorChildrenEvenIfAnchorIddocIsKept() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        // Index the anchor once so it exists in the index
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+
+        // Re-index the same anchor. This is an UPDATE, so the anchor keeps its old IDDOC (see
+        // Indexer#checkReindexSettings). Regression for #27141 / v25.09 (220d0f8): the child-volume
+        // re-index safety net used to be skipped on this path, leaving volumes without IDDOC_PARENT
+        // until an unrelated re-index. It must always run; volumes already pointing at the (unchanged)
+        // anchor IDDOC are skipped inside the method, so this stays cheap.
+        AtomicBoolean updateAnchorChildrenCalled = new AtomicBoolean(false);
+        MetsIndexer spyIndexer = new MetsIndexer(hotfolder) {
+            @Override
+            protected void updateAnchorChildrenParentIddoc(IndexObject indexObj) throws IOException, SolrServerException {
+                updateAnchorChildrenCalled.set(true);
+                super.updateAnchorChildrenParentIddoc(indexObj);
+            }
+        };
+        result = spyIndexer.index(metsFileAnchor1, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+        assertTrue(updateAnchorChildrenCalled.get(),
+                "updateAnchorChildrenParentIddoc must run when re-indexing an existing anchor, even though its IDDOC is kept");
+    }
+
+    /**
+     * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
      * @verifies update record correctly
      */
     @Test
@@ -600,7 +635,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         // Re-index
         result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
         assertEquals(PI + ".xml", result.getRecordFileName());
-        ;
         Assertions.assertNull(result.getError());
 
         // Top document
@@ -666,7 +700,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         IndexingResult result = new MetsIndexer(hotfolder).index(metsFile3, dataFolders, null, 1, false);
         assertEquals(pi + ".xml", result.getRecordFileName());
-        ;
         Assertions.assertNull(result.getError());
 
         // Top document
@@ -911,7 +944,6 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         Map<String, Path> dataFolders = new HashMap<>();
         IndexingResult result = new MetsIndexer(hotfolder).index(localMetsFile, dataFolders, null, 1, false);
         assertEquals("4cbbdeb2-1279-4b1f-96a7-05c2ec30caa3.xml", result.getRecordFileName());
-        ;
         Assertions.assertNull(result.getError());
 
         // Pages

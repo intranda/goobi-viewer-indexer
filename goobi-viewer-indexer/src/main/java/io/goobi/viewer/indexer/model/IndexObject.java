@@ -44,8 +44,6 @@ public class IndexObject {
     private static final Logger logger = LogManager.getLogger(IndexObject.class);
 
     private String iddoc;
-    /** IDDOC value is kept from the previous indexing, if true. */
-    private boolean keepIddoc = false;
     private String pi;
     private IndexObject parent = null;
     private boolean update = false;
@@ -117,9 +115,8 @@ public class IndexObject {
      * @should write all required fields
      */
     public void pushSimpleDataToLuceneArray() {
-        String iddocString = String.valueOf(iddoc);
-        addToLucene(SolrConstants.IDDOC, iddocString);
-        addToLucene(SolrConstants.GROUPFIELD, iddocString);
+        addToLucene(SolrConstants.IDDOC, iddoc);
+        addToLucene(SolrConstants.GROUPFIELD, iddoc);
         addToLucene(SolrConstants.DOCTYPE, docType.name());
         addToLucene(SolrConstants.PI, pi);
         addToLucene(SolrConstants.PI_TOPSTRUCT, topstructPI);
@@ -386,13 +383,14 @@ public class IndexObject {
      * @param field
      * @should remove existing boolean fields
      * @should remove existing sorting fields
+     * @should remove existing group id fields
      */
     void removeNonMultivaluedFields(String field) {
         if (field == null) {
             throw new IllegalArgumentException("field may not be null");
         }
 
-        if (field.startsWith("BOOL_") || field.startsWith("SORT_")) {
+        if (field.startsWith("BOOL_") || field.startsWith("SORT_") || field.startsWith(SolrConstants.PREFIX_GROUPID)) {
             List<LuceneField> existing = getLuceneFieldsWithName(field);
             if (!existing.isEmpty()) {
                 luceneFields.removeAll(existing);
@@ -594,20 +592,6 @@ public class IndexObject {
      */
     public void setIddoc(String iddoc) {
         this.iddoc = iddoc;
-    }
-
-    /**
-     * @return the keepIddoc
-     */
-    public boolean isKeepIddoc() {
-        return keepIddoc;
-    }
-
-    /**
-     * @param keepIddoc the keepIddoc to set
-     */
-    public void setKeepIddoc(boolean keepIddoc) {
-        this.keepIddoc = keepIddoc;
     }
 
     /**
