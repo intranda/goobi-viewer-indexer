@@ -567,6 +567,37 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
+     * @verifies re-index anchor when an existing volume is re-indexed
+     */
+    @Test
+    void index_shouldReindexAnchorWhenAnExistingVolumeIsReindexed() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        // Index the anchor, then a volume (NEW), so both exist in the index and the volume resolves its parent.
+        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false).getError());
+
+        // Re-index the SAME volume - this time it is an UPDATE. Regression for #27141 / v25.09 (220d0f8):
+        // the revert of #26820 (commit 35ec99dc) re-added a '!isUpdate()' gate, so re-indexing an existing
+        // volume no longer triggered an anchor re-index, leaving the anchor's NUMVOLUMES stale (0 or 1) after
+        // a full re-index. The anchor re-index must be triggered for any (re-)indexed volume.
+        AtomicBoolean anchorReindexTriggered = new AtomicBoolean(false);
+        MetsIndexer spyIndexer = new MetsIndexer(hotfolder) {
+            @Override
+            void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) {
+                if (indexObj.isVolume()) {
+                    anchorReindexTriggered.set(true);
+                }
+                super.copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
+            }
+        };
+        Assertions.assertNull(spyIndexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        assertTrue(anchorReindexTriggered.get(),
+                "re-indexing an existing volume must trigger an anchor re-index so NUMVOLUMES stays up to date");
+    }
+
+    /**
+     * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
      * @verifies update record correctly
      */
     @Test
