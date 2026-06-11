@@ -541,13 +541,14 @@ public class MetsIndexer extends Indexer {
             // Create group documents if this record is part of a group and no doc exists for that group yet
             addGroupDocs(indexObj, writeStrategy);
 
-            // If a volume has been (re-)indexed, force an anchor update to keep its NUMVOLUMES count consistent
-            if (indexObj.isVolume() && indexObj.getParent() != null) {
-                logger.info("This is a volume - anchor update needed.");
-                copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
+            // If this is a NEW volume, its anchor gained a volume: flag the anchor for deferred, coalesced
+            // reconciliation of NUMVOLUMES + METS. Pure metadata updates (unchanged volume count) do not flag it,
+            // and a bulk import of many volumes re-indexes the anchor once per batch instead of once per volume.
+            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
+                logger.info("New volume of anchor '{}' - flagging anchor for reconciliation.", indexObj.getParent().getPi());
+                hotfolder.flagAnchorForReconciliation(indexObj.getParent().getPi());
             }
 
-            boolean indexedChildrenFileList = false;
             if (indexObj.isAnchor()) {
                 // Create and index new anchor file that includes all currently indexed children (priority queue)
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
@@ -560,12 +561,11 @@ public class MetsIndexer extends Indexer {
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
                 indexObj.addChildMetadata(childObjectList);
 
-                // Remove this record from re-index list
+                // Remove this record from the IDDOC_PARENT re-index tracking list, if present
                 logger.debug("reindexedChildrenFileList.size(): {}", MetsIndexer.reindexedChildrenFileList.size());
                 if (MetsIndexer.reindexedChildrenFileList.contains(metsFile)) {
                     logger.debug("{} in reindexedChildrenFileList, removing...", metsFile.toAbsolutePath());
                     MetsIndexer.reindexedChildrenFileList.remove(metsFile);
-                    indexedChildrenFileList = true;
                 }
 
                 if (indexObj.getNumPages() > 0) {
@@ -604,10 +604,6 @@ public class MetsIndexer extends Indexer {
             writeStrategy.setRootDoc(rootDoc);
 
             writeStrategy.writeDocs(SolrIndexerDaemon.getInstance().getConfiguration().isAggregateRecords());
-            if (indexObj.isVolume() && (!indexObj.isUpdate() || indexedChildrenFileList)) {
-                logger.info("Re-indexing anchor...");
-                copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
-            }
             logger.info("Finished writing data for '{}' to Solr.", pi);
         } catch (InterruptedException e) {
             logger.error("Indexing of '{}' could not be finished due to an error.", metsFile.getFileName());
@@ -1467,31 +1463,6 @@ public class MetsIndexer extends Indexer {
         return ret;
     }
 
-    /**
-     * Adds the anchor for the given volume object to the re-index queue.
-     * 
-     * @param indexObj {@link IndexObject}
-     * @param hotfolder
-     * @param dataRepository
-     */
-    void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) {
-        logger.debug("copyAndReIndexAnchor: {}", indexObj.getPi());
-        if (indexObj.getParent() == null) {
-            logger.warn("No anchor file has been indexed for this {} yet.", indexObj.getPi());
-            return;
-        }
-
-        String piParent = indexObj.getParent().getPi();
-        String indexedAnchorFilePath =
-                new StringBuilder(dataRepository.getDir(DataRepository.PARAM_INDEXED_METS).toAbsolutePath().toString()).append("/")
-                        .append(piParent)
-                        .append(FileTools.XML_EXTENSION)
-                        .toString();
-        Path indexedAnchor = Paths.get(indexedAnchorFilePath);
-        if (Files.exists(indexedAnchor)) {
-            hotfolder.getHighPriorityQueue().add(indexedAnchor);
-        }
-    }
 
     /***
      * Re-indexes all child records of the given anchor document, in case the anchor's IDDOC has changed after re-indexing and those child records

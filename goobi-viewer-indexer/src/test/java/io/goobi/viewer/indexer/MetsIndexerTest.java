@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -566,34 +567,97 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
     }
 
     /**
-     * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
-     * @verifies re-index anchor when an existing volume is re-indexed
+     * Copies the test anchor METS file into the data repository location where {@link Hotfolder} reconciliation expects
+     * it. The low-level {@code index()} used by these tests does not populate indexed_mets (the daemon's addToIndex()
+     * does that in production), so we stage it explicitly here.
+     */
+    private void placeIndexedAnchorFile(String piAnchor) throws Exception {
+        DataRepository[] repositories = hotfolder.getDataRepositoryStrategy().selectDataRepository(piAnchor, null, null,
+                SolrIndexerDaemon.getInstance().getSearchIndex(), SolrIndexerDaemon.getInstance().getOldSearchIndex());
+        DataRepository repository = repositories[1] != null ? repositories[1] : repositories[0];
+        Files.copy(metsFileAnchor1, repository.getDir(DataRepository.PARAM_INDEXED_METS).resolve(piAnchor + ".xml"),
+                StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
+     * @see Hotfolder#reconcilePendingAnchors()
+     * @verifies coalesce multiple new volumes into a single anchor re-index
      */
     @Test
-    void index_shouldReindexAnchorWhenAnExistingVolumeIsReindexed() throws Exception {
+    void reconcilePendingAnchors_shouldCoalesceNewVolumesIntoOneAnchorReindex() throws Exception {
+        String piAnchor = "PPN559838239";
         Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
 
-        // Index the anchor, then a volume (NEW), so both exist in the index and the volume resolves its parent.
-        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false).getError());
-        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false).getError());
+        // Index the anchor first (NUMVOLUMES=0), then two NEW volumes. Each new volume only FLAGS the anchor (deduped),
+        // it does not re-index it. So two new volumes must coalesce into a single pending reconciliation.
+        Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileVol2, dataFolders, null, 1, false).getError());
+        placeIndexedAnchorFile(piAnchor);
 
-        // Re-index the SAME volume - this time it is an UPDATE. Regression for #27141 / v25.09 (220d0f8):
-        // the revert of #26820 (commit 35ec99dc) re-added a '!isUpdate()' gate, so re-indexing an existing
-        // volume no longer triggered an anchor re-index, leaving the anchor's NUMVOLUMES stale (0 or 1) after
-        // a full re-index. The anchor re-index must be triggered for any (re-)indexed volume.
-        AtomicBoolean anchorReindexTriggered = new AtomicBoolean(false);
-        MetsIndexer spyIndexer = new MetsIndexer(hotfolder) {
-            @Override
-            void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) {
-                if (indexObj.isVolume()) {
-                    anchorReindexTriggered.set(true);
-                }
-                super.copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
-            }
-        };
-        Assertions.assertNull(spyIndexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
-        assertTrue(anchorReindexTriggered.get(),
-                "re-indexing an existing volume must trigger an anchor re-index so NUMVOLUMES stays up to date");
+        hotfolder.getHighPriorityQueue().clear();
+        hotfolder.reconcilePendingAnchors();
+        assertEquals(1, hotfolder.getHighPriorityQueue().size(), "two new volumes must coalesce into exactly one anchor re-index");
+        assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
+
+        // The pending set was cleared by the flush: a second reconcile enqueues nothing more.
+        hotfolder.getHighPriorityQueue().clear();
+        hotfolder.reconcilePendingAnchors();
+        assertTrue(hotfolder.getHighPriorityQueue().isEmpty(), "pending anchors must be cleared after a flush");
+    }
+
+    /**
+     * @see Hotfolder#reconcilePendingAnchors()
+     * @verifies skip up-to-date anchors and re-index when the volume count drops
+     */
+    @Test
+    void reconcilePendingAnchors_shouldSkipUpToDateAnchorAndReindexOnVolumeDrop() throws Exception {
+        String piAnchor = "PPN559838239";
+        Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+
+        // Index both volumes first, then the anchor -> the anchor's NUMVOLUMES is computed as 2 (accurate).
+        Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileVol2, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+        placeIndexedAnchorFile(piAnchor);
+
+        // Up to date (stored NUMVOLUMES == actual): reconciliation must NOT schedule a re-index.
+        hotfolder.getHighPriorityQueue().clear();
+        hotfolder.flagAnchorForReconciliation(piAnchor);
+        hotfolder.reconcilePendingAnchors();
+        assertTrue(hotfolder.getHighPriorityQueue().isEmpty(), "an up-to-date anchor must not be re-indexed");
+
+        // Remove one volume from the index (as a deletion would): the actual count drops to 1.
+        Indexer.delete("PPN612054551", false, SolrIndexerDaemon.getInstance().getSearchIndex());
+
+        hotfolder.getHighPriorityQueue().clear();
+        hotfolder.flagAnchorForReconciliation(piAnchor);
+        hotfolder.reconcilePendingAnchors();
+        assertEquals(1, hotfolder.getHighPriorityQueue().size(), "an anchor whose volume count dropped must be re-indexed once");
+        assertEquals(piAnchor + ".xml", hotfolder.getHighPriorityQueue().poll().getFileName().toString());
+    }
+
+    /**
+     * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
+     * @verifies not flag anchor for a pure volume metadata update
+     */
+    @Test
+    void index_shouldNotFlagAnchorForVolumeMetadataUpdate() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+        MetsIndexer indexer = new MetsIndexer(hotfolder);
+
+        // Anchor + one new volume; drain the resulting reconciliation so the pending set is empty.
+        Assertions.assertNull(indexer.index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        hotfolder.reconcilePendingAnchors();
+        hotfolder.getHighPriorityQueue().clear();
+
+        // Re-indexing the same volume is an UPDATE (no membership change): it must NOT flag the anchor.
+        Assertions.assertNull(indexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        hotfolder.reconcilePendingAnchors();
+        assertTrue(hotfolder.getHighPriorityQueue().isEmpty(), "a pure volume metadata update must not trigger an anchor re-index");
     }
 
     /**
