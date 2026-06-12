@@ -215,6 +215,7 @@ public final class Utils {
     public static void updateDataRepositoryCache(String pi, String dataRepositoryName, String viewerUrl, String token)
             throws IOException, HTTPException {
         if (StringUtils.isEmpty(token)) {
+            logger.warn("Cannot update viewer data repository cache: no authorization token configured");
             return;
         }
 
@@ -299,14 +300,16 @@ public final class Utils {
         if (!url.endsWith("/")) {
             url += "/";
         }
-        url += ("api/v1/indexer/version?token=" + SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
+        url += "api/v1/indexer/version";
         try {
             JSONObject json = Version.asJSON();
             json.put("hotfolder-file-count", fileCount);
             json.put("record-identifiers", identifiers);
 
-            getWebContentPUT(url, HashMap.newHashMap(0), null, json.toString(),
-                    Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
+            Map<String, String> headerParams = HashMap.newHashMap(2);
+            headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
+            headerParams.put("token", SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
+            getWebContentPUT(url, HashMap.newHashMap(0), null, json.toString(), headerParams);
             logger.info("Version and file count ({}) submitted to Goobi viewer.", fileCount);
             if (!identifiers.isEmpty()) {
                 logger.info("Record identifier(s) submitted to Goobi viewer.");
@@ -651,13 +654,13 @@ public final class Utils {
         }
         sbUrl.append("api/v1/cache/")
                 .append(URLEncoder.encode(pi, StandardCharsets.UTF_8))
-                .append("?content=true&thumbs=true&pdf=true")
-                .append("&token=")
-                .append(SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
+                .append("?content=true&thumbs=true&pdf=true");
 
         try {
-            String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), HashMap.newHashMap(0), null, null,
-                    Collections.singletonMap(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType()));
+            Map<String, String> headerParams = HashMap.newHashMap(2);
+            headerParams.put(HTTP_HEADER_CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
+            headerParams.put("token", SolrIndexerDaemon.getInstance().getConfiguration().getViewerAuthorizationToken());
+            String jsonString = Utils.getWebContentDELETE(sbUrl.toString(), HashMap.newHashMap(0), null, null, headerParams);
             if (StringUtils.isNotEmpty(jsonString)) {
                 return (String) new JSONObject(jsonString).get("message");
             }
@@ -789,6 +792,7 @@ public final class Utils {
      * @param regexes an array of {@link java.lang.String} objects
      * @return true if fileName matches any of the regexes in the array; false otherwise
      * @should match correctly
+     * @should not match local file paths containing IIIF qualifier as substring
      */
     public static boolean isFileNameMatchesRegex(String fileName, String[] regexes) {
         if (StringUtils.isEmpty(fileName) || regexes == null || regexes.length == 0) {

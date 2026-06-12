@@ -146,9 +146,14 @@ public abstract class Indexer {
     static final String LOG_COULD_NOT_BE_DELETED = "'{}' could not be deleted! Please delete it manually!";
     static final String LOG_FOUND_DATA_FOLDER = "Found data folder: {}";
 
+    // Regexes used to detect a path/URL whose final segment is an IIIF "quality.format" token (e.g. ".../color.tif").
+    // The leading "/" anchors the IIIF quality keyword to a path separator so that filenames such as "02_color.tif"
+    // or "page_default.png" are not misclassified as IIIF URLs (which would otherwise be stripped down to an
+    // unrelated path segment by Utils#getFileNameFromIiifUrl). The escaped "\\." pins the literal dot before the
+    // extension and is defensive cleanup, not strictly required for the regression fix.
     public static final String[] IIIF_IMAGE_FILE_NAMES =
-            { ".*bitonal.(jpg|png|tif|jp2)$", ".*color.(jpg|png|tif|jp2)$", ".*default.(jpg|png|tif|jp2)$", ".*gray.(jpg|png|tif|jp2)$",
-                    ".*native.(jpg|png|tif|jp2)$" };
+            { ".*/bitonal\\.(jpg|png|tif|jp2)$", ".*/color\\.(jpg|png|tif|jp2)$", ".*/default\\.(jpg|png|tif|jp2)$", ".*/gray\\.(jpg|png|tif|jp2)$",
+                    ".*/native\\.(jpg|png|tif|jp2)$" };
 
     // TODO cyclic dependency; find a more elegant way to select a repository w/o passing the hotfolder instance to the indexer
     protected Hotfolder hotfolder;
@@ -1734,7 +1739,6 @@ public abstract class Indexer {
         if (isAnchor()) {
             // Keep old IDDOC
             indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
-            indexObj.setKeepIddoc(true);
             // Delete old doc
             iddocsToDelete.add(indexObj.getIddoc());
             // Delete secondary docs (grouped metadata, events)

@@ -153,6 +153,16 @@ class GeoJSONToolsTest {
     }
 
     /**
+     * @see GeoJSONTools#convertSexagesimalToDecimalPoints(String,String)
+     * @verifies return empty list for invalid coordinate
+     */
+    @Test
+    void convertSexagesimalToDecimalPoints_shouldReturnEmptyListForInvalidCoordinate() {
+        List<Position> result = GeoJSONTools.convertSexagesimalToDecimalPoints("E015380 N0465228", " ");
+        Assertions.assertTrue(result.isEmpty());
+    }
+
+    /**
      * @see GeoJSONTools#convertSexagesimalCoordinateToDecimal(String)
      * @verifies convert coordinate correctly
      */

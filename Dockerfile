@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-21 AS BUILD
+FROM maven:3-eclipse-temurin-21 AS build-stage
 
 LABEL org.opencontainers.image.authors="Matthias Geerdsen <matthias.geerdsen@intranda.com>"
 LABEL org.opencontainers.image.source="https://github.com/intranda/goobi-viewer-indexer"
@@ -13,25 +13,22 @@ RUN echo $build; if [ "$build" = "true" ]; then mvn -f goobi-viewer-indexer clea
 
 
 # start assembling the final image
-FROM eclipse-temurin:21-jre-jammy AS ASSEMBLE
+FROM eclipse-temurin:21-jre-alpine AS assemble-stage
 LABEL org.opencontainers.image.authors="Matthias Geerdsen <matthias.geerdsen@intranda.com>"
 
 
-ENV SOLR_URL http://solr:8983/solr/collection1
-ENV VIEWER_URL http://viewer:8080/viewer
+ENV SOLR_HOST=solr
+ENV VIEWER_HOST=viewer
 
-RUN apt-get update && \
-	apt-get -y install libopenjp2-7 && \
-	apt-get -y clean && \
-	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apk add --no-cache openjpeg bash curl su-exec shadow && rm -rf /tmp/* /var/tmp/*
 
-RUN mkdir -p /opt/digiverso/indexer
+# create the non-root runtime user (UID/GID can be remapped at runtime in run.sh)
+RUN addgroup -g 1000 user && adduser -u 1000 -G user -D -H user
 
-COPY --from=BUILD  /indexer/goobi-viewer-indexer/target/solr-Indexer.jar /usr/local/bin/solrIndexer.jar
-COPY --from=BUILD  /indexer/goobi-viewer-indexer/src/main/resources/config_indexer.xml /opt/digiverso/indexer/config_indexer.xml
-COPY ./docker/* /
-RUN sed -e "s|<solrUrl>.*</solrUrl>|<solrUrl>${SOLR_URL}</solrUrl>|" -e 's|C:||g' -e "s|<viewerUrl>.*</viewerUrl>|<viewerUrl>${VIEWER_URL}</viewerUrl>|" -i /opt/digiverso/indexer/config_indexer.xml
+RUN mkdir -p /opt/digiverso/indexer && mkdir /indexer-template
 
-# TODO: check for solr availability before start (wait-for-solr from solr image?)
+COPY --from=build-stage  /indexer/goobi-viewer-indexer/target/solr-Indexer.jar /usr/local/bin/solrIndexer.jar
+COPY goobi-viewer-indexer/src/main/resources/config_indexer.xml /indexer-template/
+COPY ./docker/run.sh /
 
 CMD ["/run.sh"]

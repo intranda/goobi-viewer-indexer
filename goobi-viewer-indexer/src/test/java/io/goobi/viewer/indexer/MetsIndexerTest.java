@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,10 +31,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -49,6 +52,7 @@ import io.goobi.viewer.indexer.helper.JDomXP;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.helper.SolrSearchIndex;
 import io.goobi.viewer.indexer.helper.Utils;
+import io.goobi.viewer.indexer.model.IndexObject;
 import io.goobi.viewer.indexer.model.IndexingResult;
 import io.goobi.viewer.indexer.model.PhysicalElement;
 import io.goobi.viewer.indexer.model.SolrConstants;
@@ -528,6 +532,68 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
         IndexingResult result = new MetsIndexer(hotfolder).index(hotfolder.getHighPriorityQueue().poll(), dataFolders, null, 1, false);
         assertEquals(piAnchor + ".xml", result.getRecordFileName());
         Assertions.assertNull(result.getError());
+    }
+
+    /**
+     * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
+     * @verifies re-index anchor children even if anchor IDDOC is kept
+     */
+    @Test
+    void index_shouldReindexAnchorChildrenEvenIfAnchorIddocIsKept() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        // Index the anchor once so it exists in the index
+        IndexingResult result = new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+
+        // Re-index the same anchor. This is an UPDATE, so the anchor keeps its old IDDOC (see
+        // Indexer#checkReindexSettings). Regression for #27141 / v25.09 (220d0f8): the child-volume
+        // re-index safety net used to be skipped on this path, leaving volumes without IDDOC_PARENT
+        // until an unrelated re-index. It must always run; volumes already pointing at the (unchanged)
+        // anchor IDDOC are skipped inside the method, so this stays cheap.
+        AtomicBoolean updateAnchorChildrenCalled = new AtomicBoolean(false);
+        MetsIndexer spyIndexer = new MetsIndexer(hotfolder) {
+            @Override
+            protected void updateAnchorChildrenParentIddoc(IndexObject indexObj) throws IOException, SolrServerException {
+                updateAnchorChildrenCalled.set(true);
+                super.updateAnchorChildrenParentIddoc(indexObj);
+            }
+        };
+        result = spyIndexer.index(metsFileAnchor1, dataFolders, null, 1, false);
+        Assertions.assertNull(result.getError());
+        assertTrue(updateAnchorChildrenCalled.get(),
+                "updateAnchorChildrenParentIddoc must run when re-indexing an existing anchor, even though its IDDOC is kept");
+    }
+
+    /**
+     * @see MetsIndexer#index(File,ISolrWriteStrategy,boolean,Map)
+     * @verifies re-index anchor when an existing volume is re-indexed
+     */
+    @Test
+    void index_shouldReindexAnchorWhenAnExistingVolumeIsReindexed() throws Exception {
+        Map<String, Path> dataFolders = new HashMap<>();
+
+        // Index the anchor, then a volume (NEW), so both exist in the index and the volume resolves its parent.
+        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFileAnchor1, dataFolders, null, 1, false).getError());
+        Assertions.assertNull(new MetsIndexer(hotfolder).index(metsFileVol1, dataFolders, null, 1, false).getError());
+
+        // Re-index the SAME volume - this time it is an UPDATE. Regression for #27141 / v25.09 (220d0f8):
+        // the revert of #26820 (commit 35ec99dc) re-added a '!isUpdate()' gate, so re-indexing an existing
+        // volume no longer triggered an anchor re-index, leaving the anchor's NUMVOLUMES stale (0 or 1) after
+        // a full re-index. The anchor re-index must be triggered for any (re-)indexed volume.
+        AtomicBoolean anchorReindexTriggered = new AtomicBoolean(false);
+        MetsIndexer spyIndexer = new MetsIndexer(hotfolder) {
+            @Override
+            void copyAndReIndexAnchor(IndexObject indexObj, Hotfolder hotfolder, DataRepository dataRepository) {
+                if (indexObj.isVolume()) {
+                    anchorReindexTriggered.set(true);
+                }
+                super.copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
+            }
+        };
+        Assertions.assertNull(spyIndexer.index(metsFileVol1, dataFolders, null, 1, false).getError());
+        assertTrue(anchorReindexTriggered.get(),
+                "re-indexing an existing volume must trigger an anchor re-index so NUMVOLUMES stays up to date");
     }
 
     /**

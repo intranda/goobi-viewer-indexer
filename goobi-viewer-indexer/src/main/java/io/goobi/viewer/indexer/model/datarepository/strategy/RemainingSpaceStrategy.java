@@ -126,16 +126,9 @@ public class RemainingSpaceStrategy extends AbstractDataRepositoryStrategy {
                 for (DataRepository repository : dataRepositories) {
                     if (Paths.get(previousRepository).equals(Paths.get(repository.getPath()))) {
                         found = true;
-                        // Use this repository if its remaining space (minus the reserved buffer) is larger than the record size
-                        if (recordSize < repository.getUsableSpace() - repository.getBuffer()) {
-                            logger.info("Using previous data repository for '{}': {}", usePi, previousRepository);
-                            ret[0] = repository;
-                            return ret;
-                        }
-                        logger.info(
-                                "Record is currently in repository '{}', but its space is insufficient. Record will be moved to a new repository.",
-                                repository.getPath());
-                        ret[1] = repository;
+                        logger.info("Using previous data repository for '{}': {}", usePi, previousRepository);
+                        ret[0] = repository;
+                        return ret;
                     }
                 }
                 if (!found) {

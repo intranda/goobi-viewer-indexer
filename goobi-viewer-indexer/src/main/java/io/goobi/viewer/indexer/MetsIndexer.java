@@ -541,9 +541,9 @@ public class MetsIndexer extends Indexer {
             // Create group documents if this record is part of a group and no doc exists for that group yet
             addGroupDocs(indexObj, writeStrategy);
 
-            // If this is a new volume, force anchor update to keep its volume count consistent
-            if (indexObj.isVolume() && !indexObj.isUpdate() && indexObj.getParent() != null) {
-                logger.info("This is a NEW volume - anchor update needed.");
+            // If a volume has been (re-)indexed, force an anchor update to keep its NUMVOLUMES count consistent
+            if (indexObj.isVolume() && indexObj.getParent() != null) {
+                logger.info("This is a volume - anchor update needed.");
                 copyAndReIndexAnchor(indexObj, hotfolder, dataRepository);
             }
 
@@ -552,10 +552,9 @@ public class MetsIndexer extends Indexer {
                 // Create and index new anchor file that includes all currently indexed children (priority queue)
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
                 anchorMerge(indexObj);
-                // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue)
-                if (!indexObj.isKeepIddoc()) {
-                    updateAnchorChildrenParentIddoc(indexObj);
-                }
+                // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue). Volumes that already
+                // point at the (now stable) anchor IDDOC are skipped inside the method, so this is cheap when nothing changed.
+                updateAnchorChildrenParentIddoc(indexObj);
             } else {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
@@ -1582,10 +1581,12 @@ public class MetsIndexer extends Indexer {
             if (parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR) != null) {
                 indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(SolrConstants.PI_ANCHOR), false);
             }
-            // Inherit GROUPID_* fields
+            // Inherit GROUPID_* fields (skip if child already has its own value from its dmdSec)
             if (!parentIndexObject.getGroupIds().isEmpty()) {
                 for (String groupId : parentIndexObject.getGroupIds().keySet()) {
-                    indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
+                    if (indexObj.getLuceneFieldWithName(groupId) == null) {
+                        indexObj.addToLucene(parentIndexObject.getLuceneFieldWithName(groupId), false);
+                    }
                 }
             }
 
