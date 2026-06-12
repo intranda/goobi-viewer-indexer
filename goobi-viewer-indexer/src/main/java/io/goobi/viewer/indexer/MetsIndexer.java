@@ -120,9 +120,6 @@ public class MetsIndexer extends Indexer {
             "/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods/mods:relatedItem[@type='host']"
                     + "/mods:recordInfo/mods:recordIdentifier"; //NOSONAR XPathexpression , not URI
 
-    /** */
-    protected static List<Path> reindexedChildrenFileList = new ArrayList<>();
-
     private final List<String> availablePreferredImageFileGroups;
     private final Map<String, String> fileIdToFileGrpMap = new HashMap<>();
     private List<Element> eleListAllFileGroups = null;
@@ -550,23 +547,14 @@ public class MetsIndexer extends Indexer {
             }
 
             if (indexObj.isAnchor()) {
-                // Create and index new anchor file that includes all currently indexed children (priority queue)
+                // Rebuild the anchor METS file so its logical structure lists all currently indexed volumes (priority queue).
+                // Volume<->anchor association is via the stable PI_PARENT, so no IDDOC_PARENT repair of the volumes is needed.
                 logger.debug("'{}' is an anchor file.", metsFile.getFileName());
                 anchorMerge(indexObj);
-                // Then re-index child volumes that need an IDDOC_PARENT update (also priority queue). Volumes that already
-                // point at the (now stable) anchor IDDOC are skipped inside the method, so this is cheap when nothing changed.
-                updateAnchorChildrenParentIddoc(indexObj);
             } else {
                 // Index all child elements recursively
                 List<IndexObject> childObjectList = indexAllChildren(indexObj, hierarchyLevel + 1, writeStrategy);
                 indexObj.addChildMetadata(childObjectList);
-
-                // Remove this record from the IDDOC_PARENT re-index tracking list, if present
-                logger.debug("reindexedChildrenFileList.size(): {}", MetsIndexer.reindexedChildrenFileList.size());
-                if (MetsIndexer.reindexedChildrenFileList.contains(metsFile)) {
-                    logger.debug("{} in reindexedChildrenFileList, removing...", metsFile.toAbsolutePath());
-                    MetsIndexer.reindexedChildrenFileList.remove(metsFile);
-                }
 
                 if (indexObj.getNumPages() > 0) {
                     // Write number of pages
@@ -1461,47 +1449,6 @@ public class MetsIndexer extends Indexer {
         }
 
         return ret;
-    }
-
-
-    /***
-     * Re-indexes all child records of the given anchor document, in case the anchor's IDDOC has changed after re-indexing and those child records
-     * still point to the old IDDOC. The records are added to a high priority re-indexing queue.
-     * 
-     * @param indexObj {@link IndexObject}
-     * @throws IOException -
-     * @throws SolrServerException
-     */
-    protected void updateAnchorChildrenParentIddoc(IndexObject indexObj) throws IOException, SolrServerException {
-        logger.debug("Scheduling all METS files that belong to this anchor for re-indexing...");
-        SolrDocumentList hits = SolrIndexerDaemon.getInstance()
-                .getSearchIndex()
-                .search(new StringBuilder(SolrConstants.PI_PARENT).append(":")
-                        .append(indexObj.getPi())
-                        .append(SolrConstants.SOLR_QUERY_AND)
-                        .append(SolrConstants.ISWORK)
-                        .append(SolrConstants.SOLR_QUERY_TRUE)
-                        .toString(), null);
-        if (hits.isEmpty()) {
-            logger.debug("No volume METS files found for this anchor.");
-            return;
-        }
-        for (SolrDocument doc : hits) {
-            // Do not use PI here, as older documents might not have that field, use PPN instead
-            String pi = doc.getFieldValue(SolrConstants.PI).toString();
-            if (doc.getFieldValue(SolrConstants.IDDOC_PARENT) != null
-                    && doc.getFieldValue(SolrConstants.IDDOC_PARENT).toString().equals(String.valueOf(indexObj.getIddoc()))) {
-                logger.debug("{} already has the correct parent, skipping.", pi);
-                continue;
-            }
-            String indexedMetsFilePath = dataRepository.getDir(DataRepository.PARAM_INDEXED_METS) + File.separator + pi + FileTools.XML_EXTENSION;
-            Path indexedMets = Paths.get(indexedMetsFilePath);
-            if (Files.exists(indexedMets)) {
-                hotfolder.getHighPriorityQueue().add(indexedMets);
-                MetsIndexer.reindexedChildrenFileList.add(indexedMets);
-                logger.debug("Added '{}' to reindexedChildrenPiList.", pi);
-            }
-        }
     }
 
     /**

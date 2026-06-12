@@ -86,8 +86,6 @@ public class WorldViewsIndexer extends Indexer {
     /** Constant <code>DEFAULT_FULLTEXT_CHARSET="Cp1250"</code> */
     public static final String DEFAULT_FULLTEXT_CHARSET = "Cp1250";
 
-    private static List<Path> reindexedChildrenFileList = new ArrayList<>();
-
     /**
      * Constructor.
      *
@@ -379,12 +377,6 @@ public class WorldViewsIndexer extends Indexer {
             // Add grouped metadata as separate Solr docs (remove duplicates first)
             indexObj.removeDuplicateGroupedMetadata();
             addGroupedMetadataDocs(useWriteStrategy, indexObj, indexObj.getGroupedMetadataFields(), indexObj.getIddoc());
-
-            logger.debug("reindexedChildrenFileList.size(): {}", WorldViewsIndexer.reindexedChildrenFileList.size());
-            if (WorldViewsIndexer.reindexedChildrenFileList.contains(mainFile)) {
-                logger.debug("{} in reindexedChildrenFileList, removing...", mainFile.toAbsolutePath());
-                WorldViewsIndexer.reindexedChildrenFileList.remove(mainFile);
-            }
 
             SolrInputDocument rootDoc = SolrSearchIndex.createDocument(indexObj.getLuceneFields());
             useWriteStrategy.setRootDoc(rootDoc);

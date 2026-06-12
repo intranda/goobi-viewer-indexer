@@ -1736,21 +1736,11 @@ public abstract class Indexer {
         if (thumbnail != null) {
             indexObj.setThumbnailRepresent((String) thumbnail);
         }
-        if (isAnchor()) {
-            // Keep old IDDOC
-            indexObj.setIddoc(String.valueOf(doc.getFieldValue(SolrConstants.IDDOC)));
-            // Delete old doc
-            iddocsToDelete.add(indexObj.getIddoc());
-            // Delete secondary docs (grouped metadata, events)
-            hits = SolrIndexerDaemon.getInstance()
-                    .getSearchIndex()
-                    .search(SolrConstants.IDDOC_OWNER + ":\"" + indexObj.getIddoc() + "\" " + SolrConstants.PI_TOPSTRUCT + ":\"" + indexObj.getPi()
-                            + '"', Collections.singletonList(SolrConstants.IDDOC));
-            for (SolrDocument doc2 : hits) {
-                iddocsToDelete.add((String) doc2.getFieldValue(SolrConstants.IDDOC));
-            }
-        } else if (!fromOldIndex) {
-            // Recursively delete all children, if not an anchor
+        if (!fromOldIndex) {
+            // Delete the previous instance of this record before re-indexing it with a fresh IDDOC. For an anchor this
+            // removes only its own doc and secondary docs (grouped metadata/events share its PI_TOPSTRUCT); its volumes
+            // have different PIs and are not affected. Volumes link to the anchor via the stable PI_PARENT, so the
+            // anchor no longer needs to keep its IDDOC across re-indexing.
             iddocsToDelete = deleteWithPI(pi, false, false, SolrIndexerDaemon.getInstance().getSearchIndex());
         }
     }
