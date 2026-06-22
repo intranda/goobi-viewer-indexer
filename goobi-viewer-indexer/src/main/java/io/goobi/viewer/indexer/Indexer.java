@@ -1041,6 +1041,7 @@ public abstract class Indexer {
             // Drop any incoming hotfolder folder and delete it so it is neither promoted nor left behind
             Path hotfolderFolder = dataFolders != null ? dataFolders.remove(param) : null;
             if (hotfolderFolder != null) {
+                logger.info("Full-text suppression: discarding incoming hotfolder full-text folder '{}'.", hotfolderFolder.toAbsolutePath());
                 Utils.deleteDirectory(hotfolderFolder);
             }
             // Prevent "reuse existing" from preserving stale repository folders

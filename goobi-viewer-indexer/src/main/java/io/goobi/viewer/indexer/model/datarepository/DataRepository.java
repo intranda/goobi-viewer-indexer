@@ -339,7 +339,11 @@ public class DataRepository {
      */
     public void deleteFulltextFoldersForRecord(String baseFileName) {
         for (String param : FULLTEXT_PARAMS) {
-            deleteFolder(Paths.get(getDir(param).toAbsolutePath().toString(), baseFileName));
+            Path folder = Paths.get(getDir(param).toAbsolutePath().toString(), baseFileName);
+            if (Files.isDirectory(folder)) {
+                logger.info("Full-text suppression: deleting full-text data folder '{}'.", folder.toAbsolutePath());
+            }
+            deleteFolder(folder);
         }
     }
 

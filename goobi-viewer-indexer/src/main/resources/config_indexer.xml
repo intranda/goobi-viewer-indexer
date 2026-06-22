@@ -196,11 +196,11 @@
 		     condition\@xpath: XPath expression selecting a string value (end in /text() or /@attribute).
 		     condition\@matchMode: EXISTS (default; any non-blank value present) | EQUALS | CONTAINS.
 		     condition\@value: expected value, required for EQUALS and CONTAINS. -->
-		<!--
+		
 		<fulltextSuppression enabled="true">
-			<condition xpath="/mets:mets/mets:dmdSec//mods:accessCondition[@type='use and reproduction']/text()" matchMode="CONTAINS" value="no-fulltext"/>
+			<condition xpath="/mets:mets/mets:dmdSec//mods:accessCondition[@type='restriction on access']/text()" matchMode="CONTAINS" value="no-fulltext"/>
 		</fulltextSuppression>
-		-->
+		
 	</init>
 
 	<!-- proxy/@enabled: If false, the proxy configuration will be ignored; default is false. -->
