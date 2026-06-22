@@ -172,6 +172,8 @@ public abstract class Indexer {
     protected boolean recordHasImages = false;
     /** Indicates whether any of this record's pages has full-text. */
     protected boolean recordHasFulltext = false;
+    /** Indicates whether full-text indexing is suppressed for this record (see {@link #isFulltextSuppressed()}). */
+    protected boolean suppressFulltext = false;
 
     protected final HttpConnector httpConnector;
 
@@ -1005,6 +1007,48 @@ public abstract class Indexer {
      */
     public void initJDomXP(Path xmlFile) throws IOException, JDOMException {
         xp = new JDomXP(xmlFile.toFile());
+    }
+
+    /**
+     * Evaluates the configured full-text suppression conditions against this record's source XML. If any condition matches, full-text indexing is to
+     * be disabled for this record and previously indexed full-text removed.
+     *
+     * @return true if full-text indexing should be suppressed for this record; false otherwise
+     */
+    protected boolean isFulltextSuppressed() {
+        Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
+        if (xp == null || !config.isFulltextSuppressionEnabled()) {
+            return false;
+        }
+        return config.getFulltextSuppressionConditions().stream().anyMatch(c -> c.matches(xp));
+    }
+
+    /**
+     * Removes previously indexed full-text for the given record from on-disk storage and ensures that any incoming hotfolder full-text is neither
+     * promoted into the data repository nor left behind. The Solr documents themselves are already removed via the regular re-index deletion.
+     *
+     * @param dataRepository the data repository holding the record's data folders
+     * @param dataFolders the hotfolder data folders for this indexing run (mutated: full-text params are removed)
+     * @param reindexSettings the re-index settings for this run (mutated: full-text params set to false so existing folders are not reused)
+     * @param baseFileName the record identifier (base file name)
+     */
+    protected static void deleteFulltextFoldersForRecord(DataRepository dataRepository, Map<String, Path> dataFolders,
+            Map<String, Boolean> reindexSettings, String baseFileName) {
+        if (dataRepository == null) {
+            return;
+        }
+        for (String param : DataRepository.FULLTEXT_PARAMS) {
+            // Drop any incoming hotfolder folder and delete it so it is neither promoted nor left behind
+            Path hotfolderFolder = dataFolders != null ? dataFolders.remove(param) : null;
+            if (hotfolderFolder != null) {
+                Utils.deleteDirectory(hotfolderFolder);
+            }
+            // Prevent "reuse existing" from preserving stale repository folders
+            if (reindexSettings != null) {
+                reindexSettings.put(param, false);
+            }
+        }
+        dataRepository.deleteFulltextFoldersForRecord(baseFileName);
     }
 
     /**

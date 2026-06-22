@@ -484,6 +484,43 @@ class DataRepositoryTest extends AbstractTest {
     }
 
     /**
+     * @see DataRepository#deleteFulltextFoldersForRecord(String)
+     * @verifies delete only fulltext folders
+     */
+    @Test
+    void deleteFulltextFoldersForRecord_shouldDeleteOnlyFulltextFolders() throws Exception {
+        DataRepository useRepository = new DataRepository("target/viewer/data/", true);
+
+        // Full-text folders that should be deleted
+        File altoFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTO).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File altoCrowdFolder = new File(useRepository.getDir(DataRepository.PARAM_ALTOCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File fulltextFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXT).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File fulltextCrowdFolder = new File(useRepository.getDir(DataRepository.PARAM_FULLTEXTCROWD).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File abbyyFolder = new File(useRepository.getDir(DataRepository.PARAM_ABBYY).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File wcFolder = new File(useRepository.getDir(DataRepository.PARAM_TEIWC).toAbsolutePath().toString(), BASE_FILE_NAME);
+        for (File folder : Arrays.asList(altoFolder, altoCrowdFolder, fulltextFolder, fulltextCrowdFolder, abbyyFolder, wcFolder)) {
+            Assertions.assertTrue(folder.mkdirs());
+            Assertions.assertTrue(folder.exists());
+        }
+
+        // Non-full-text folders that must remain intact
+        File mediaFolder = new File(useRepository.getDir(DataRepository.PARAM_MEDIA).toAbsolutePath().toString(), BASE_FILE_NAME);
+        File sourceFolder = new File(useRepository.getDir(DataRepository.PARAM_SOURCE).toAbsolutePath().toString(), BASE_FILE_NAME);
+        for (File folder : Arrays.asList(mediaFolder, sourceFolder)) {
+            Assertions.assertTrue(folder.mkdirs());
+            Assertions.assertTrue(folder.exists());
+        }
+
+        useRepository.deleteFulltextFoldersForRecord(BASE_FILE_NAME);
+
+        for (File folder : Arrays.asList(altoFolder, altoCrowdFolder, fulltextFolder, fulltextCrowdFolder, abbyyFolder, wcFolder)) {
+            Assertions.assertFalse(folder.exists(), folder.getAbsolutePath() + " should have been deleted");
+        }
+        Assertions.assertTrue(mediaFolder.exists(), "media folder must not be deleted");
+        Assertions.assertTrue(sourceFolder.exists(), "source folder must not be deleted");
+    }
+
+    /**
      * @see DataRepository#moveDataFolderToRepository(DataRepository,String,String)
      * @verifies move data folder correctly
      */

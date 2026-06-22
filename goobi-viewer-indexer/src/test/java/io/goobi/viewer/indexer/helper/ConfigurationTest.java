@@ -35,6 +35,7 @@ import io.goobi.viewer.indexer.SolrIndexerDaemon;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
 import io.goobi.viewer.indexer.model.SolrConstants.MetadataGroupType;
 import io.goobi.viewer.indexer.model.config.FieldConfig;
+import io.goobi.viewer.indexer.model.config.FulltextSuppressionCondition;
 import io.goobi.viewer.indexer.model.config.GroupEntity;
 import io.goobi.viewer.indexer.model.config.NonSortConfiguration;
 import io.goobi.viewer.indexer.model.config.SubfieldConfig;
@@ -432,5 +433,29 @@ class ConfigurationTest extends AbstractTest {
     @Test
     void getOldSolrUrl_shouldReturnCorrectValue() {
         assertEquals("https://viewer-testing-index.goobi.io/solr/indexer-testing", SolrIndexerDaemon.getInstance().getConfiguration().getSolrUrl());
+    }
+
+    /**
+     * @see Configuration#isFulltextSuppressionEnabled()
+     * @verifies return correct value
+     */
+    @Test
+    void isFulltextSuppressionEnabled_shouldReturnCorrectValue() {
+        assertTrue(SolrIndexerDaemon.getInstance().getConfiguration().isFulltextSuppressionEnabled());
+    }
+
+    /**
+     * @see Configuration#getFulltextSuppressionConditions()
+     * @verifies load all configured conditions
+     */
+    @Test
+    void getFulltextSuppressionConditions_shouldLoadAllConfiguredConditions() {
+        List<FulltextSuppressionCondition> conditions = SolrIndexerDaemon.getInstance().getConfiguration().getFulltextSuppressionConditions();
+        Assertions.assertNotNull(conditions);
+        assertEquals(1, conditions.size());
+        FulltextSuppressionCondition condition = conditions.get(0);
+        assertEquals("/mets:mets/mets:dmdSec//mods:recordIdentifier/text()", condition.getXpath());
+        assertEquals(FulltextSuppressionCondition.MatchMode.EQUALS, condition.getMode());
+        assertEquals("DOES-NOT-EXIST-MARKER", condition.getValue());
     }
 }

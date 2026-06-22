@@ -8,7 +8,7 @@
 		<minStorageSpace>2048</minStorageSpace>
 
 		<!-- Main Solr index URL -->
-		<solrUrl>https://localhost:8983/solr/current</solrUrl>
+		<solrUrl>https://viewer-testing-index.goobi.io/solr/indexer-andrey</solrUrl>
 		<!-- Old Solr index URL (for migration purposes) -->
 		<!-- <oldSolrUrl></oldSolrUrl> -->
 		<viewerUrl>http://localhost:8080/viewer/</viewerUrl>
@@ -188,6 +188,19 @@
 				<!-- <url>https://trusted-content-server.example.com/</url> -->
 			</allowedUrls>
 		</fulltextDownload>
+
+		<!-- fulltextSuppression: If ANY condition matches the record's source XML, full-text indexing is disabled for that record
+		     and any previously indexed full-text is removed from the Solr index and from on-disk storage (alto, alto_crowd, fulltext,
+		     fulltext_crowd, abbyy, wc and the converted-alto folder). Media/images are left intact.
+		     enabled: If false, the trigger is ignored (default: true).
+		     condition\@xpath: XPath expression selecting a string value (end in /text() or /@attribute).
+		     condition\@matchMode: EXISTS (default; any non-blank value present) | EQUALS | CONTAINS.
+		     condition\@value: expected value, required for EQUALS and CONTAINS. -->
+		<!--
+		<fulltextSuppression enabled="true">
+			<condition xpath="/mets:mets/mets:dmdSec//mods:accessCondition[@type='use and reproduction']/text()" matchMode="CONTAINS" value="no-fulltext"/>
+		</fulltextSuppression>
+		-->
 	</init>
 
 	<!-- proxy/@enabled: If false, the proxy configuration will be ignored; default is false. -->

@@ -203,6 +203,12 @@ public class MetsIndexer extends Indexer {
                 }
             }
 
+            // If full-text indexing was suppressed, remove previously indexed full-text from storage and prevent any incoming
+            // hotfolder full-text from being promoted into the repository
+            if (result.isFulltextSuppressed()) {
+                deleteFulltextFoldersForRecord(dataRepository, dataFolders, reindexSettings, FilenameUtils.getBaseName(newMetsFileName));
+            }
+
             // Copy data folders
             dataRepository.copyAndDeleteAllDataFolders(result.getPi(), dataFolders, reindexSettings,
                     hotfolder.getDataRepositoryStrategy().getAllDataRepositories());
@@ -313,6 +319,14 @@ public class MetsIndexer extends Indexer {
 
             // Set PI
             String pi = validateAndApplyPI(findPI(getPiRootPath(indexObj.getDmdid())), indexObj, false);
+
+            // Evaluate the full-text suppression trigger for this record
+            this.suppressFulltext = isFulltextSuppressed();
+            ret.setFulltextSuppressed(this.suppressFulltext);
+            if (this.suppressFulltext) {
+                logger.info("Full-text suppression triggered for record '{}'; full-text will not be indexed and existing full-text will be removed.",
+                        pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, metsFile, dataFolders);
@@ -641,7 +655,7 @@ public class MetsIndexer extends Indexer {
         if (StringUtils.isNotBlank(this.useFileGroupGlobal)) {
             PhysicalDocumentBuilder pageBuilder =
                     new PhysicalDocumentBuilder(fileGroupList, eleListAllFileGroups, fileIdToFileGrpMap, xp, httpConnector, dataRepository,
-                            DocType.PAGE);
+                            DocType.PAGE, suppressFulltext);
             Collection<PhysicalElement> pages = pageBuilder.generatePageDocuments(dataFolders, pi, pageCountStart, downloadExternalImages);
             pages.forEach(writeStrategy::addPage);
             this.recordHasImages = pageBuilder.isHasImages();

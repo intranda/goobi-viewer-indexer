@@ -30,6 +30,7 @@ public class IndexingResult {
     private String recordFileName;
     private String error;
     private boolean submitPiToViewer = false;
+    private boolean fulltextSuppressed = false;
     private Set<String> mediaFileNames = new HashSet<>();
 
     /**
@@ -110,6 +111,22 @@ public class IndexingResult {
      */
     public IndexingResult setSubmitPiToViewer(boolean submitPiToViewer) {
         this.submitPiToViewer = submitPiToViewer;
+        return this;
+    }
+
+    /**
+     * @return the fulltextSuppressed
+     */
+    public boolean isFulltextSuppressed() {
+        return fulltextSuppressed;
+    }
+
+    /**
+     * @param fulltextSuppressed the fulltextSuppressed to set
+     * @return this
+     */
+    public IndexingResult setFulltextSuppressed(boolean fulltextSuppressed) {
+        this.fulltextSuppressed = fulltextSuppressed;
         return this;
     }
 

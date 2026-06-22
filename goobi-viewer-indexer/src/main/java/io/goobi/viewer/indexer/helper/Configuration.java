@@ -45,6 +45,7 @@ import org.jdom2.Namespace;
 
 import io.goobi.viewer.indexer.EadIndexer;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
+import io.goobi.viewer.indexer.model.config.FulltextSuppressionCondition;
 import io.goobi.viewer.indexer.model.config.ImageUrlReplaceRule;
 import io.goobi.viewer.indexer.model.config.MetadataConfigurationManager;
 import io.goobi.viewer.indexer.model.datarepository.DataRepository;
@@ -954,6 +955,54 @@ public final class Configuration {
             }
         }
         return url;
+    }
+
+    /**
+     * Returns true if the full-text suppression trigger is enabled.
+     *
+     * @return a boolean
+     * @should return true by default
+     */
+    public boolean isFulltextSuppressionEnabled() {
+        return getBoolean("init.fulltextSuppression[@enabled]", true);
+    }
+
+    /**
+     * <p>
+     * getFulltextSuppressionConditions.
+     * </p>
+     *
+     * Loads all configured conditions from {@code <init>/<fulltextSuppression>/<condition>}. Each condition element is expected to have an
+     * {@code @xpath} attribute (selecting a string value), an optional {@code @matchMode} attribute (EXISTS (default), EQUALS or CONTAINS) and an
+     * optional {@code @value} attribute (required for EQUALS/CONTAINS).
+     *
+     * @return List of configured conditions; empty list if none configured or all conditions are invalid
+     * @should return empty list if none configured
+     * @should load all configured conditions
+     * @should skip conditions with invalid match mode
+     */
+    public List<FulltextSuppressionCondition> getFulltextSuppressionConditions() {
+        List<HierarchicalConfiguration<ImmutableNode>> elements = getLocalConfigurationsAt("init.fulltextSuppression.condition");
+        if (elements == null || elements.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<FulltextSuppressionCondition> ret = new ArrayList<>(elements.size());
+        for (HierarchicalConfiguration<ImmutableNode> sub : elements) {
+            String xpath = sub.getString("[@xpath]");
+            String value = sub.getString("[@value]", "");
+            String modeStr = sub.getString("[@matchMode]", "EXISTS");
+            if (StringUtils.isBlank(xpath)) {
+                logger.warn("Found fulltextSuppression condition without xpath; skipping.");
+                continue;
+            }
+            try {
+                ret.add(new FulltextSuppressionCondition(xpath, value,
+                        FulltextSuppressionCondition.MatchMode.valueOf(modeStr.trim().toUpperCase())));
+            } catch (IllegalArgumentException e) {
+                logger.error("Invalid fulltextSuppression condition (xpath='{}', matchMode='{}'): {}", xpath, modeStr, e.getMessage());
+            }
+        }
+        return ret;
     }
 
 }

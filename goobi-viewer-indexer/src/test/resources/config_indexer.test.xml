@@ -142,6 +142,12 @@
 		
         <!-- viewerAuthorizationToken: Goobi viewer REST API authorization token -->
         <viewerAuthorizationToken>test</viewerAuthorizationToken>
+
+        <!-- fulltextSuppression: deliberately non-matching condition so that loading is exercised by ConfigurationTest
+             without suppressing full-text for any of the test records. -->
+        <fulltextSuppression enabled="true">
+            <condition xpath="/mets:mets/mets:dmdSec//mods:recordIdentifier/text()" matchMode="EQUALS" value="DOES-NOT-EXIST-MARKER"/>
+        </fulltextSuppression>
 	</init>
     
     <!-- proxy/@enabled: If false, the proxy configuration will be ignored; default is false. -->

@@ -48,6 +48,7 @@ import org.json.JSONTokener;
 import io.goobi.viewer.indexer.exceptions.FatalIndexerException;
 import io.goobi.viewer.indexer.helper.Configuration;
 import io.goobi.viewer.indexer.helper.FulltextAugmentor;
+import io.goobi.viewer.indexer.helper.ImageDimensionsHelper;
 import io.goobi.viewer.indexer.helper.HttpConnector;
 import io.goobi.viewer.indexer.helper.SsrfProtection;
 import io.goobi.viewer.indexer.helper.JDomXP;
@@ -101,12 +102,13 @@ public class PhysicalDocumentBuilder {
 
     private final Map<String, String> fileIdToFileGrpMap;
     private final List<Element> eleListAllFileGroups;
+    private final boolean suppressFulltext;
     private boolean hasImages = false;
     private boolean hasFulltext = false;
 
     /**
      * Create a builder for pages and other documents based on physical files
-     * 
+     *
      * @param useFileGroups List of fileGroups containing the files to use
      * @param eleListAllFileGroups
      * @param fileIdToFileGrpMap
@@ -118,6 +120,24 @@ public class PhysicalDocumentBuilder {
     public PhysicalDocumentBuilder(List<String> useFileGroups, List<Element> eleListAllFileGroups, Map<String, String> fileIdToFileGrpMap, JDomXP xp,
             HttpConnector httpConnector,
             DataRepository dataRepository, DocType docType) {
+        this(useFileGroups, eleListAllFileGroups, fileIdToFileGrpMap, xp, httpConnector, dataRepository, docType, false);
+    }
+
+    /**
+     * Create a builder for pages and other documents based on physical files
+     *
+     * @param useFileGroups List of fileGroups containing the files to use
+     * @param eleListAllFileGroups
+     * @param fileIdToFileGrpMap
+     * @param xp an xml parser
+     * @param httpConnector for http requests
+     * @param dataRepository the repository in which files are to be stored
+     * @param docType the doc type to use for this PhysicalElement
+     * @param suppressFulltext if true, no full-text (FULLTEXT/ALTO) is added to the generated page documents
+     */
+    public PhysicalDocumentBuilder(List<String> useFileGroups, List<Element> eleListAllFileGroups, Map<String, String> fileIdToFileGrpMap, JDomXP xp,
+            HttpConnector httpConnector,
+            DataRepository dataRepository, DocType docType, boolean suppressFulltext) {
         this.useFileGroups = useFileGroups;
         this.eleListAllFileGroups = eleListAllFileGroups;
         this.fileIdToFileGrpMap = fileIdToFileGrpMap;
@@ -125,6 +145,7 @@ public class PhysicalDocumentBuilder {
         this.httpConnector = httpConnector;
         this.dataRepository = dataRepository;
         this.docType = docType;
+        this.suppressFulltext = suppressFulltext;
     }
 
     public boolean isFileGroupExists() {
@@ -515,7 +536,11 @@ public class PhysicalDocumentBuilder {
             ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
         }
 
-        if (dataFolders != null || altoURL != null) {
+        // FULLTEXTAVAILABLE defaults to false and is flipped to true by the augmentor only if full-text is actually added
+        ret.getDoc().setField(SolrConstants.FULLTEXTAVAILABLE, false);
+        // Image dimensions are independent of full-text and are always extracted
+        ImageDimensionsHelper.addImageDimensions(ret.getDoc(), dataFolders);
+        if (!suppressFulltext && (dataFolders != null || altoURL != null)) {
             this.hasFulltext = new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, order, altoURL);
         }
 

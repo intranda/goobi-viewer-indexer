@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -188,24 +187,6 @@ public class FulltextAugmentor {
             }
         }
 
-        if (dataFolders.get(DataRepository.PARAM_MIX) != null && isBaseFileNameUsable(baseFileName)) {
-            try {
-                Map<String, String> mixData = TextHelper
-                        .readMix(new File(dataFolders.get(DataRepository.PARAM_MIX).toAbsolutePath().toString(),
-                                baseFileName + FileTools.XML_EXTENSION));
-                for (Entry<String, String> entry : mixData.entrySet()) {
-                    if (!(entry.getKey().equals(SolrConstants.WIDTH) && doc.getField(SolrConstants.WIDTH) != null)
-                            && !(entry.getKey().equals(SolrConstants.HEIGHT) && doc.getField(SolrConstants.HEIGHT) != null)) {
-                        doc.addField(entry.getKey(), entry.getValue());
-                    }
-                }
-            } catch (JDOMException e) {
-                logger.error(e.getMessage(), e);
-            } catch (IOException e) {
-                logger.warn(e.getMessage());
-            }
-        }
-
         // If there is still no ALTO at this point and the METS document contains a file group for ALTO, download and use it
         if (!altoWritten && !foundCrowdsourcingData && altoURL != null && Utils.isValidURL(altoURL)) {
             Configuration config = SolrIndexerDaemon.getInstance().getConfiguration();
@@ -216,24 +197,12 @@ public class FulltextAugmentor {
             }
         }
 
-        // Add image dimension values from EXIF
-        if (!doc.containsKey(SolrConstants.WIDTH) || !doc.containsKey(SolrConstants.HEIGHT)
-                || ("0".equals(doc.getFieldValue(SolrConstants.WIDTH)) && "0".equals(doc.getFieldValue(SolrConstants.HEIGHT)))) {
-            doc.removeField(SolrConstants.WIDTH);
-            doc.removeField(SolrConstants.HEIGHT);
-            ImageSizeReader.getSize(dataFolders.get(DataRepository.PARAM_MEDIA), (String) doc.getFieldValue(SolrConstants.FILENAME))
-                    .ifPresent(dimension -> {
-                        doc.addField(SolrConstants.WIDTH, dimension.width);
-                        doc.addField(SolrConstants.HEIGHT, dimension.height);
-                    });
-        }
-
-        // FULLTEXTAVAILABLE indicates whether this page has full-text
+        // FULLTEXTAVAILABLE is set to false on the page document by the caller before invoking this method.
+        // Flip it to true only if full-text was actually added.
         if (doc.getField(SolrConstants.FULLTEXT) != null) {
-            doc.addField(SolrConstants.FULLTEXTAVAILABLE, true);
+            doc.setField(SolrConstants.FULLTEXTAVAILABLE, true);
             return true;
         }
-        doc.addField(SolrConstants.FULLTEXTAVAILABLE, false);
         return false;
     }
 

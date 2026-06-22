@@ -105,6 +105,14 @@ public class DataRepository {
     /** Constant <code>PARAM_MEI="meiFolder"</code> */
     public static final String PARAM_MEI = "meiFolder";
 
+    /**
+     * Data folder params that hold full-text content (ALTO, plain text, ABBYY, TEI word coordinates and their crowdsourcing variants). Used when
+     * full-text indexing is suppressed for a record. {@link #PARAM_ALTO_CONVERTED} is omitted because it resolves to the same folder as
+     * {@link #PARAM_ALTO}.
+     */
+    public static final List<String> FULLTEXT_PARAMS =
+            List.of(PARAM_ALTO, PARAM_ALTOCROWD, PARAM_FULLTEXT, PARAM_FULLTEXTCROWD, PARAM_ABBYY, PARAM_TEIWC);
+
     private boolean valid = false;
     private String path;
     private Path rootDir;
@@ -319,6 +327,20 @@ public class DataRepository {
         deleteFolder(Paths.get(getDir(PARAM_CMS).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_ANNOTATIONS).toAbsolutePath().toString(), baseFileName));
         deleteFolder(Paths.get(getDir(PARAM_MEI).toAbsolutePath().toString(), baseFileName));
+    }
+
+    /**
+     * Deletes the on-disk full-text folders (ALTO, plain text, ABBYY, TEI word coordinates and their crowdsourcing variants) for the given record.
+     * Used when full-text indexing is suppressed for a record so that previously indexed full-text is removed from storage. Media/image folders are
+     * left intact.
+     *
+     * @param baseFileName Record identifier (base file name)
+     * @should delete only fulltext folders
+     */
+    public void deleteFulltextFoldersForRecord(String baseFileName) {
+        for (String param : FULLTEXT_PARAMS) {
+            deleteFolder(Paths.get(getDir(param).toAbsolutePath().toString(), baseFileName));
+        }
     }
 
     /**

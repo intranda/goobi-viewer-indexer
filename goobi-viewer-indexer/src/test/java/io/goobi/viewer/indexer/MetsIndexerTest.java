@@ -1550,4 +1550,47 @@ class MetsIndexerTest extends AbstractSolrEnabledTest {
 
     }
 
+    /**
+     * @see MetsIndexer#index(Path,Map,ISolrWriteStrategy,int,boolean)
+     * @verifies suppress fulltext when trigger matches
+     */
+    @Test
+    void index_shouldSuppressFulltextWhenTriggerMatches() throws Exception {
+        io.goobi.viewer.indexer.helper.Configuration original = SolrIndexerDaemon.getInstance().getConfiguration();
+        Path tempConfig = Files.createTempFile("config_indexer_suppress", ".xml");
+        try {
+            // Build a config whose suppression condition matches the kleiuniv record identifier
+            String content = Files.readString(Paths.get(AbstractTest.TEST_CONFIG_PATH));
+            content = content.replace("DOES-NOT-EXIST-MARKER", PI);
+            Files.writeString(tempConfig, content);
+            SolrIndexerDaemon.getInstance().injectConfiguration(new io.goobi.viewer.indexer.helper.Configuration(tempConfig.toString()));
+
+            Map<String, Path> dataFolders = new HashMap<>();
+            dataFolders.put(DataRepository.PARAM_FULLTEXT, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_txt"));
+            dataFolders.put(DataRepository.PARAM_TEIWC, Paths.get("src/test/resources/METS/kleiuniv_PPN517154005/kleiuniv_PPN517154005_wc"));
+            IndexingResult result = new MetsIndexer(hotfolder).index(metsFile, dataFolders, null, 1, false);
+            Assertions.assertNull(result.getError());
+            assertTrue(result.isFulltextSuppressed());
+
+            // Record-level flag must be false
+            SolrDocumentList topDocs = SolrIndexerDaemon.getInstance().getSearchIndex().search(SolrConstants.PI + ":" + PI, null);
+            assertEquals(1, topDocs.size());
+            assertEquals(false, topDocs.get(0).getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
+
+            // No page may carry full-text
+            SolrDocumentList pageDocs = SolrIndexerDaemon.getInstance()
+                    .getSearchIndex()
+                    .search(SolrConstants.PI_TOPSTRUCT + ":" + PI + " AND " + SolrConstants.DOCTYPE + ":" + DocType.PAGE.name(), null);
+            Assertions.assertFalse(pageDocs.isEmpty());
+            for (SolrDocument pageDoc : pageDocs) {
+                assertEquals(false, pageDoc.getFieldValue(SolrConstants.FULLTEXTAVAILABLE));
+                Assertions.assertNull(pageDoc.getFieldValue(SolrConstants.FULLTEXT));
+                Assertions.assertNull(pageDoc.getFieldValue(SolrConstants.ALTO));
+            }
+        } finally {
+            SolrIndexerDaemon.getInstance().injectConfiguration(original);
+            Files.deleteIfExists(tempConfig);
+        }
+    }
+
 }

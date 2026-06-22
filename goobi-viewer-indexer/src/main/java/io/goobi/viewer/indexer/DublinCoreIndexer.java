@@ -46,6 +46,7 @@ import io.goobi.viewer.indexer.exceptions.IndexerException;
 import io.goobi.viewer.indexer.helper.DateTools;
 import io.goobi.viewer.indexer.helper.FileTools;
 import io.goobi.viewer.indexer.helper.FulltextAugmentor;
+import io.goobi.viewer.indexer.helper.ImageDimensionsHelper;
 import io.goobi.viewer.indexer.helper.Hotfolder;
 import io.goobi.viewer.indexer.helper.ImageSizeReader;
 import io.goobi.viewer.indexer.helper.JDomXP.FileFormat;
@@ -124,6 +125,12 @@ public class DublinCoreIndexer extends Indexer {
                 if (msg != null) {
                     logger.info(msg);
                 }
+            }
+
+            // If full-text indexing was suppressed, remove previously indexed full-text from storage and prevent any incoming
+            // hotfolder full-text from being promoted into the repository
+            if (result.isFulltextSuppressed()) {
+                deleteFulltextFoldersForRecord(dataRepository, dataFolders, reindexSettings, baseFileName);
             }
 
             // Copy data folders
@@ -215,6 +222,14 @@ public class DublinCoreIndexer extends Indexer {
 
             // Set PI
             String pi = validateAndApplyPI(findPI("/record/"), indexObj, false);
+
+            // Evaluate the full-text suppression trigger for this record
+            this.suppressFulltext = isFulltextSuppressed();
+            ret.setFulltextSuppressed(this.suppressFulltext);
+            if (this.suppressFulltext) {
+                logger.info("Full-text suppression triggered for record '{}'; full-text will not be indexed and existing full-text will be removed.",
+                        pi);
+            }
 
             // Determine the data repository to use
             selectDataRepository(indexObj, pi, dcFile, dataFolders);
@@ -586,7 +601,11 @@ public class DublinCoreIndexer extends Indexer {
             ret.getDoc().addField(FIELD_IMAGEAVAILABLE, false);
         }
 
-        if (new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, order, null)) {
+        // FULLTEXTAVAILABLE defaults to false and is flipped to true by the augmentor only if full-text is actually added
+        ret.getDoc().setField(SolrConstants.FULLTEXTAVAILABLE, false);
+        // Image dimensions are independent of full-text and are always extracted
+        ImageDimensionsHelper.addImageDimensions(ret.getDoc(), dataFolders);
+        if (!suppressFulltext && new FulltextAugmentor(dataRepository).addFullTextToPageDoc(ret.getDoc(), dataFolders, pi, order, null)) {
             this.recordHasFulltext = true;
         }
 
