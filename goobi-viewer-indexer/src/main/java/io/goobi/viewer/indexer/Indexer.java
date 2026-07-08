@@ -1914,7 +1914,7 @@ public abstract class Indexer {
      * 
      * @param hotfolderPath
      * @param fileNameRoot
-     * @return Map<String, Path>
+     * @return {@code Map<String, Path>}
      * @throws IOException
      * @should add data folder paths correctly
      */
