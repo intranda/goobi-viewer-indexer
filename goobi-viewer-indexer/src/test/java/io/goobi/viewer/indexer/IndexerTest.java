@@ -1016,6 +1016,17 @@ class IndexerTest extends AbstractSolrEnabledTest {
 
     /**
      * @see Indexer#checkReindexSettings(Map,Map)
+     * @verifies return png alt value if no other alternative available
+     */
+    @Test
+    void checkThumbnailFileName_shouldReturnPngAltValueIfNoOtherAlternativeAvailable() throws Exception {
+        SolrInputDocument doc = new SolrInputDocument();
+        doc.setField("FILENAME_PNG", "001.png");
+        assertEquals("001.png", Indexer.checkThumbnailFileName("001.ogg", doc));
+    }
+
+    /**
+     * @see Indexer#checkReindexSettings(Map,Map)
      * @verifies return fileName if image
      */
     @Test

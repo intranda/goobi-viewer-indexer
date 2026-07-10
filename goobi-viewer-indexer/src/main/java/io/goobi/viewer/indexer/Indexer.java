@@ -2077,6 +2077,7 @@ public abstract class Indexer {
      * @param pageDoc
      * @return Alternative file name if fileName not image and alternatives available; otherwise fileName
      * @should replace value correctly
+     * @should return png alt value if no other alternative available
      * @should return fileName if image
      * @should return fileNAme if url
      */
@@ -2085,12 +2086,16 @@ public abstract class Indexer {
         if (!Utils.isValidImageOrIiifURI(fileName) && !FileTools.isImageFile(fileName) && pageDoc != null) {
             String filenameTiffField = SolrConstants.FILENAME + "_TIFF";
             String filenameJpegField = SolrConstants.FILENAME + "_JPEG";
+            String filenamePngField = SolrConstants.FILENAME + "_PNG";
             if (pageDoc.getFieldValue(filenameTiffField) != null) {
                 ret = (String) pageDoc.getFieldValue(filenameTiffField);
                 logger.info("Using {}:{} for {}", filenameTiffField, ret, SolrConstants.THUMBNAIL);
             } else if (pageDoc.getFieldValue(filenameJpegField) != null) {
                 ret = (String) pageDoc.getFieldValue(filenameJpegField);
                 logger.info("Using {}:{} for {}", filenameJpegField, ret, SolrConstants.THUMBNAIL);
+            } else if (pageDoc.getFieldValue(filenamePngField) != null) {
+                ret = (String) pageDoc.getFieldValue(filenamePngField);
+                logger.info("Using {}:{} for {}", filenamePngField, ret, SolrConstants.THUMBNAIL);
             } else {
                 logger.warn("'{}' is not a valid thumbnail file name, but no alternative was found.", fileName);
             }

@@ -187,6 +187,24 @@ class FulltextAugmentorTest {
     }
 
     /**
+     * @see FulltextAugmentor#addFullTextToPageDoc(SolrInputDocument,Map,String,int,String)
+     * @verifies use png alternative file name if primary file name unusable
+     */
+    @Test
+    void addFullTextToPageDoc_shouldUsePngAlternativeFileNameIfPrimaryFileNameUnusable() throws Exception {
+        FulltextAugmentor augmentor = new FulltextAugmentor(new DataRepository("src/test/resources", true));
+        Map<String, Path> dataFolders = new HashMap<>();
+        dataFolders.put(DataRepository.PARAM_ALTO, Paths.get("src/test/resources/ALTO/"));
+        assertTrue(Files.isDirectory(dataFolders.get(DataRepository.PARAM_ALTO)));
+        SolrInputDocument doc = new SolrInputDocument(new HashMap<>());
+        doc.setField(SolrConstants.FILENAME, "https://example.com/iiif/PPN123/default.jpg");
+        doc.setField("FILENAME_PNG", "00000010.png");
+
+        assertTrue(augmentor.addFullTextToPageDoc(doc, dataFolders, "PPN123", 10, null));
+        assertEquals("alto/PPN123/00000010.xml", doc.getFieldValue(SolrConstants.FILENAME_ALTO));
+    }
+
+    /**
      * @see Indexer#addNamedEntitiesFields(Map,SolrInputDocument)
      * @verifies add field
      */

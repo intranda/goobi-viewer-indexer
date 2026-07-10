@@ -74,6 +74,7 @@ public class FulltextAugmentor {
      * @param order Page number
      * @param altoURL Optional URL for ALTO download
      * @return true if any fulltext data was found, false otherwise
+     * @should use png alternative file name if primary file name unusable
      */
     public boolean addFullTextToPageDoc(SolrInputDocument doc, Map<String, Path> dataFolders, String pi, int order,
             String altoURL) {
@@ -89,6 +90,8 @@ public class FulltextAugmentor {
                 baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue("FILENAME_JPEG"));
             } else if (doc.getFieldValue("FILENAME_TIFF") != null) {
                 baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue("FILENAME_TIFF"));
+            } else if (doc.getFieldValue("FILENAME_PNG") != null) {
+                baseFileName = FilenameUtils.getBaseName((String) doc.getFieldValue("FILENAME_PNG"));
             }
         }
 
