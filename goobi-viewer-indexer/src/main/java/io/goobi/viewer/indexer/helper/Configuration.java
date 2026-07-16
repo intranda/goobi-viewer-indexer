@@ -745,6 +745,20 @@ public final class Configuration {
 
     /**
      * <p>
+     * getMetsThumbnailFileGroup.
+     * </p>
+     * File group whose first file is used as the THUMBNAIL value if no other representative image could be determined. This group is never used to
+     * generate PAGE documents. Defaults to "TEASER".
+     *
+     * @return Configured thumbnailFileGroup value
+     * @should return default value if nothing configured
+     */
+    public String getMetsThumbnailFileGroup() {
+        return getString("init.mets.thumbnailFileGroup", "TEASER");
+    }
+
+    /**
+     * <p>
      * getMetsAllowedPhysicalTypes.
      * </p>
      *

@@ -352,6 +352,15 @@ class ConfigurationTest extends AbstractTest {
     }
 
     /**
+     * @see Configuration#getMetsThumbnailFileGroup()
+     * @verifies return default value if nothing configured
+     */
+    @Test
+    void getMetsThumbnailFileGroup_shouldReturnDefaultValueIfNothingConfigured() {
+        assertEquals("TEASER", SolrIndexerDaemon.getInstance().getConfiguration().getMetsThumbnailFileGroup());
+    }
+
+    /**
      * @see Configuration#getMetsAllowedPhysicalTypes()
      * @verifies return configured values
      */
